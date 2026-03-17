@@ -20,8 +20,9 @@
 
 #include <entropy_poll.h>
 #include <mbedtls/base64.h>
-#include "mbedtls/ecp.h"
+#include <mbedtls/ecp.h>
 #include <mbedtls/entropy.h>
+#include <mbedtls/error.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/pem.h>
 #include <LittleFS.h>
@@ -29,9 +30,12 @@
 #include "build.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#include "options.h"
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
+
+extern char local_uid_str[32];
 
 [[gnu::noinline]]
 static void log_mbedtls_error(int error, const char *msg)
@@ -470,7 +474,7 @@ bool Cert::load_external_impl(const cert_load_info *load_info, mbedtls_x509_crt 
 }
 #else
 [[gnu::const]]
-bool Cert::load_external_impl(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out)
+bool Cert::load_external_impl(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error)
 {
     return false;
 }
@@ -571,6 +575,7 @@ bool Cert::load_external_with_internal_fallback_impl(const cert_load_info *load_
     return load_internal_impl(load_info, crt_out, key_out, cert_error);
 }
 
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
 bool Cert::load_external(const cert_load_info *load_info)
 {
     return load_external_impl(load_info, nullptr, nullptr, nullptr);
@@ -907,7 +912,11 @@ bool Cert::default_cert_fill_fn(mbedtls_x509write_cert *mbed_cert)
 
     mbedtls_x509write_crt_set_version(mbed_cert, MBEDTLS_X509_CRT_VERSION_3);
 
+#if MODULE_NETWORK_AVAILABLE()
     const String &hostname = network.get_hostname();
+#else
+    const String hostname = String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str;
+#endif
 
     if (!cert_set_subject_issuer(mbed_cert, hostname)) {
         return false;

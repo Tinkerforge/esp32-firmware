@@ -441,7 +441,9 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
     TristateBool cached_is_remote_access_connection = TristateBool::Undefined;
+#endif
 
     if (listen_port_index == 0 && port_handlers->listen_index_0_ra_only) {
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
