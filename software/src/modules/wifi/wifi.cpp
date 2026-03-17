@@ -134,6 +134,7 @@ void Wifi::pre_setup()
         {"sta_ip6_link_local", Config::Str("", 0, 45)},
         {"sta_ip6_global", Config::Str("", 0, 45)},
         {"sta_ip6_unique_local", Config::Str("", 0, 45)},
+        {"sta_ip6_site_local", Config::Str("", 0, 45)},
         {"sta_rssi", Config::Int8(-127)},
         {"sta_bssid", Config::Str("", 0, 17)},
         {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)},
@@ -969,8 +970,15 @@ void Wifi::register_sta_event_handlers()
                         state.get("sta_ip6_unique_local")->updateString(ip_str);
                     });
                     break;
-                case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
                 case ESP_IP6_ADDR_IS_SITE_LOCAL:
+                    task_scheduler.scheduleOnce([this, ip6_addr]() {
+                        char ip_str[INET6_ADDRSTRLEN];
+                        tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip6_addr), ip_str, ARRAY_SIZE(ip_str));
+                        logger.printfln("Site Local IPv6 address: %s", ip_str);
+                        state.get("sta_ip6_site_local")->updateString(ip_str);
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
                 case ESP_IP6_ADDR_IS_UNKNOWN:
                 default:
                     char ip_str[INET6_ADDRSTRLEN];
@@ -994,6 +1002,8 @@ void Wifi::register_sta_event_handlers()
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_ip6_link_local")->updateString("");
                 state.get("sta_ip6_global")->updateString("");
+                state.get("sta_ip6_unique_local")->updateString("");
+                state.get("sta_ip6_site_local")->updateString("");
                 state.get("sta_bssid")->updateString("");
             });
         },
