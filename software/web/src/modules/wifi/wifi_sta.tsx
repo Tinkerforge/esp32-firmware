@@ -80,6 +80,7 @@ export function wifi_symbol(rssi: number, size: number = 24) {
 export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState> {
     ipconfig_valid: boolean = true;
     last_interface: boolean = false;
+    ip6config_valid: boolean = true;
     scan_timeout: number = null;
 
     constructor() {
@@ -398,7 +399,21 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                     : __("wifi.content.status_sta_ip_none")}
                             />
                         </FormRow>
+                        {state.enable_ip6 &&
+                            <FormRow label={__("wifi.content.status_sta_ipv6")}>
+                                <InputText
+                                    value={(() => {
+                                        const gl = wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::" ? wifi_state.sta_ip6_global : null;
+                                        const ll = wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::" ? wifi_state.sta_ip6_link_local : null;
 
+                                        if (gl && ll) return `${gl} (global), ${ll} (link-local)`;
+                                        if (gl) return `${gl} (global)`;
+                                        if (ll) return `${ll} (link-local)`;
+                                        return __("wifi.content.status_sta_ip_none");
+                                    })()}
+                                />
+                            </FormRow>
+                        }
                         <FormRow label={__("wifi.content.status_sta_rssi")}>
                             <InputText
                                 value={wifi_state.connection_state == WifiState.Connected
@@ -565,29 +580,50 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             </FormRow>
                         </div>
                     </Collapse>
-
-                    <IPConfiguration
-                        showAnyAddress
-                        showDhcp
-                        showDns
-                        onValue={(v) => this.setState(v)}
-                        value={state}
-                        setValid={(v) => this.ipconfig_valid = v}
-                        forbidNetwork={[
-                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
-                            ].concat(
-                                [{ip: util.parseIP(API.get("wifi/ap_config").ip),
-                                subnet: util.parseIP(API.get("wifi/ap_config").subnet),
-                                name: __("component.ip_configuration.wifi_ap")}]
-                            ).concat(
-                                !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
-                                [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
-                                subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
-                                name: __("component.ip_configuration.wireguard")}]
-                            )
-                        }
-                        />
-
+                    <FormRow label={"IPv4"}>
+                        <IPConfiguration
+                            showAnyAddress
+                            showDhcp
+                            showDns
+                            onValue={(v) => this.setState(v)}
+                            value={state}
+                            setValid={(v) => this.ipconfig_valid = v}
+                            forbidNetwork={[
+                                    {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                                ].concat(
+                                    [{ip: util.parseIP(API.get("wifi/ap_config").ip),
+                                    subnet: util.parseIP(API.get("wifi/ap_config").subnet),
+                                    name: __("component.ip_configuration.wifi_ap")}]
+                                ).concat(
+                                    !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                    [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
+                                    subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
+                                    name: __("component.ip_configuration.wireguard")}]
+                                )
+                            }
+                            />
+                    </FormRow>
+                    <FormRow label={"IPv6"}>
+                        <Switch desc={__("ethernet.content.ipv6_switch")}
+                                checked={state.enable_ip6}
+                                onClick={this.toggle('enable_ip6')}/>
+                        {state.enable_ip6 &&
+                            <IPConfiguration
+                                showAnyAddress
+                                showDhcp
+                                showDns
+                                ipv6={true}
+                                onValue={(v) => this.setState({ipv6: {
+                                        ip: v.ip,
+                                        gateway: v.gateway,
+                                        subnet: v.subnet,
+                                        dns: v.dns || "::",
+                                        dns2: v.dns2 || "::",
+                                    }})}
+                                value={state.ipv6}
+                                setValid={(v) => this.ip6config_valid = v}
+                            />}
+                    </FormRow>
                     <FormRow label={__("wifi.content.sta_enable_11b")}>
                         <Switch desc={__("wifi.content.sta_enable_11b_desc")}
                                 checked={state.enable_11b}

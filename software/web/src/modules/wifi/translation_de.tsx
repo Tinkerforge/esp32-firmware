@@ -27,6 +27,7 @@ let x = {
             "sta_connected_bssid_none": "Nicht verbunden",
             "sta_connection": "WLAN-Verbindung",
             "status_sta_ip": "IP-Adresse",
+            "status_sta_ipv6": "IPv6-Adresse",
             "status_sta_ip_none": "Keine IP-Adresse",
             "status_sta_rssi": "Signalstärke",
             "status_sta_rssi_none": "Nicht verbunden",
