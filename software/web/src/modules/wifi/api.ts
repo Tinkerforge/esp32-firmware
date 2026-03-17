@@ -90,6 +90,8 @@ export interface state {
     sta_disconnect_reason: number;
     sta_ip6_link_local: string;
     sta_ip6_global: string;
+    sta_ip6_unique_local: string;
+    sta_ip6_site_local: string;
 }
 
 export interface scan {
