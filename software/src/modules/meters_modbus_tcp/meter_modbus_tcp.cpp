@@ -856,7 +856,7 @@ void MeterModbusTCP::read_done_callback()
             return;
         }
 
-        read_allowed = true;
+        read_allowed = connected_client != nullptr; // stop reading while disconnected
         register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
         return;
     }

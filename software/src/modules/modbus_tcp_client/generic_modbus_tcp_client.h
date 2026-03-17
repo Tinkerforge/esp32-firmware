@@ -60,4 +60,6 @@ private:
 
     TFModbusTCPClientTransactionResult last_read_result = TFModbusTCPClientTransactionResult::Success;
     size_t last_read_result_burst_length = 0;
+
+    bool read_pending = false;
 };

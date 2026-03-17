@@ -244,7 +244,7 @@ void MeterSunSpec::read_start(size_t model_regcount)
 
 void MeterSunSpec::read_done_callback()
 {
-    read_allowed = true;
+    read_allowed = connected_client != nullptr; // stop reading while disconnected
 
     trace_response();
 

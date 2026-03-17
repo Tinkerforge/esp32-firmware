@@ -370,6 +370,6 @@ void MeterRCTPower::read_next()
             ++value_index;
         }
 
-        read_allowed = true;
+        read_allowed = connected_client != nullptr; // stop reading while disconnected
     });
 }

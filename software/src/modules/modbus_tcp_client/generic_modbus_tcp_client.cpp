@@ -52,11 +52,19 @@ void GenericModbusTCPClient::start_generic_read()
         return;
     }
 
+    if (read_pending) {
+        esp_system_abort("generic_modbus_tcp_client: Previous read pending while trying to read");
+    }
+
+    read_pending = true;
+
     if (deadline_elapsed(last_successful_read + SUCCESSFUL_READ_TIMEOUT)) {
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "%sLast successful read occurred too long ago, reconnecting to %s:%u",
                                  event_log_message_prefix,
                                  host.c_str(), port);
+
+        read_pending = false;
         force_reconnect();
         return;
     }
@@ -65,6 +73,7 @@ void GenericModbusTCPClient::start_generic_read()
     registers_done_count = 0;
 
     if (generic_read_request.register_count == 0) {
+        read_pending = false;
         generic_read_request.result = TFModbusTCPClientTransactionResult::InvalidArgument;
         generic_read_request.done_callback();
         return;
@@ -129,6 +138,7 @@ void GenericModbusTCPClient::read_next()
                                          error_message != nullptr ? error_message : "");
             }
 
+            read_pending = false;
             generic_read_request.result = result;
             generic_read_request.done_callback();
             return;
@@ -145,6 +155,7 @@ void GenericModbusTCPClient::read_next()
             } else {
                 // Only one read requested or second buffer done. -> All done.
                 last_successful_read = now_us();
+                read_pending = false;
                 generic_read_request.result = TFModbusTCPClientTransactionResult::Success;
                 generic_read_request.done_callback();
                 return;
