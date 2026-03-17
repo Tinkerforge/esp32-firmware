@@ -30,6 +30,7 @@ import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "reac
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
+import { OutputTextarea  } from "../../ts/components/output_textarea";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { WifiState } from "./generated/wifi_state.enum";
@@ -401,15 +402,27 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         </FormRow>
                         {state.enable_ip6 &&
                             <FormRow label={__("wifi.content.status_sta_ipv6")}>
-                                <InputText
+                                <OutputTextarea
+                                    rows={(() => {
+                                        let count = 0;
+                                        if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::") count++;
+                                        if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::") count++;
+                                        if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::") count++;
+                                        if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::") count++;
+                                        return count > 0 ? count : 1;
+                                    })()}
+                                    resize="none"
                                     value={(() => {
-                                        const gl = wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::" ? wifi_state.sta_ip6_global : null;
-                                        const ll = wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::" ? wifi_state.sta_ip6_link_local : null;
-
-                                        if (gl && ll) return `${gl} (global), ${ll} (link-local)`;
-                                        if (gl) return `${gl} (global)`;
-                                        if (ll) return `${ll} (link-local)`;
-                                        return __("wifi.content.status_sta_ip_none");
+                                        const addrs: string[] = [];
+                                        if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::") 
+                                            addrs.push(`${wifi_state.sta_ip6_global} (global)`);
+                                        if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::") 
+                                            addrs.push(`${wifi_state.sta_ip6_unique_local} (unique-local)`);
+                                        if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::") 
+                                            addrs.push(`${wifi_state.sta_ip6_site_local} (site-local)`);
+                                        if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::") 
+                                            addrs.push(`${wifi_state.sta_ip6_link_local} (link-local)`);
+                                        return addrs.length > 0 ? addrs.join('\n') : __("wifi.content.status_sta_ip_none");
                                     })()}
                                 />
                             </FormRow>
