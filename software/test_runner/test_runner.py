@@ -23,6 +23,7 @@ import datetime
 import atexit
 import fcntl
 import errno
+import fnmatch
 
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
 
@@ -65,7 +66,12 @@ def main():
         if not quiet:
             print(*args, **kwargs, flush=True)
 
-    for suite_path in Path(".").glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"):
+
+    suite_paths = list(Path(__file__).parent.glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"))
+    if fnmatch.fnmatch("test_runner", module_filter):
+        suite_paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
+
+    for suite_path in suite_paths:
         path = suite_path.absolute()
 
         module_name = Path(path).parts[-3]
