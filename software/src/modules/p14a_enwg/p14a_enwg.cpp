@@ -60,10 +60,15 @@ void P14aEnwg::pre_setup()
     }), [this](Config &update, ConfigSource source) -> String {
         bool was_enabled = config.get("enable")->asBool();
         bool will_enable = update.get("enable")->asBool();
+        bool was_input = config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::Input;
+        bool will_input = update.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::Input;
 
-        if (!was_enabled && will_enable) {
+        bool had_timer = was_enabled && was_input;
+        bool need_timer = will_enable && will_input;
+
+        if (!had_timer && need_timer) {
             start_input_check();
-        } else if (was_enabled && !will_enable) {
+        } else if (had_timer && !need_timer) {
             stop_input_check();
         }
 
@@ -89,7 +94,7 @@ void P14aEnwg::setup()
 {
     api.restorePersistentConfig("p14a_enwg/config", &config);
 
-    if (is_enabled()) {
+    if (is_enabled() && config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::Input) {
         start_input_check();
     }
 
