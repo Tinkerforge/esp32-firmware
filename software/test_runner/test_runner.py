@@ -63,7 +63,7 @@ def main():
 
     def tprint(*args, **kwargs):
         if not quiet:
-            print(*args, **kwargs)
+            print(*args, **kwargs, flush=True)
 
     for suite_path in Path(".").glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"):
         path = suite_path.absolute()
