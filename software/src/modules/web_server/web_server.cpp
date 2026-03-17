@@ -203,6 +203,8 @@ void WebServer::post_setup()
                 } else {
                     ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
                     ssl_config->port_secure = extra_port->port;
+                    ssl_config->cert_select_cb = &custom_tls_handshake_callback;
+                    ssl_config->ssl_userdata = port_handler;
 
                     if (!Cert::load_and_export_external_with_internal_fallback(&extra_port->cert_info, &port_handler->own_cert, &port_handler->own_cert_key, nullptr)) {
                         logger.printfln("Cannot listen on extra port %hu: Failed to load certificate", extra_port->port);
