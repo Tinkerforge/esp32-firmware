@@ -56,6 +56,9 @@
 
 #include "gcc_warnings.h"
 
+// Some functions may or may not be const, depending on whether or not HTTPS is available
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
+
 #define HTTPD_STACK_SIZE 8192
 
 static void dummy_free_fn(void *) {}
