@@ -1238,10 +1238,14 @@ def main():
 
     main_branch_info = ""
     if branch_name not in ["master", "main"]:
-        main_branch_name = subprocess.run(["git", "symbolic-ref", "refs/remotes/origin/HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip().split('/')[-1]
-        # For some reason we use 15 char long commit ids above? When in Rome...
-        main_commit = subprocess.run(["git", "merge-base", "--fork-point", main_branch_name], check=True, capture_output=True).stdout.decode("utf-8").strip()[:15]
-        main_branch_info = f";{main_branch_name}@{main_commit}"
+        try:
+            # This fails if we are on a detached HEAD or an unpushed branch.
+            main_branch_name = subprocess.run(["git", "symbolic-ref", "refs/remotes/origin/HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip().split('/')[-1]
+            # For some reason we use 15 char long commit ids above? When in Rome...
+            main_commit = subprocess.run(["git", "merge-base", "--fork-point", main_branch_name], check=True, capture_output=True).stdout.decode("utf-8").strip()[:15]
+            main_branch_info = f";{main_branch_name}@{main_commit}"
+        except subprocess.CalledProcessError:
+            print("Failed to fetch main branch name or commit. Skipping")
 
     build_lines.append('const char *build_info_str() {{ return "{};{}@{}{}"; }}'.format(git_url, branch_name, git_commit_id, main_branch_info))
     build_lines.append('const char *build_filename_str() {{ return "{}"; }}'.format(firmware_basename))
