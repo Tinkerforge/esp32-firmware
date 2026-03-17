@@ -68,8 +68,8 @@ def main():
     for suite_path in Path(".").glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"):
         path = suite_path.absolute()
 
-        module_name = Path(suite_path).parts[-3]
-        suite_name = Path(suite_path).stem
+        module_name = Path(path).parts[-3]
+        suite_name = Path(path).stem
 
         jsuite = JTestSuite(f"{module_name}/{suite_name}")
 
