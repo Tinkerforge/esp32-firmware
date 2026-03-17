@@ -232,6 +232,7 @@ void MeterSunSpec::trace_response()
 void MeterSunSpec::read_start(size_t model_regcount)
 {
     if (!alloc_read_buffer(model_regcount)) {
+        read_allowed = false;
         return;
     }
 
