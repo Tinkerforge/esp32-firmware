@@ -4,7 +4,8 @@
 # dependencies = [
 #   "tinkerforge_util",
 #   "junit-xml",
-#   "esptool"
+#   "esptool",
+#   "jsonpath-ng"
 # ]
 # ///
 

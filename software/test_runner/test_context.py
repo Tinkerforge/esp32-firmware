@@ -6,8 +6,11 @@ from dataclasses import dataclass
 import argparse
 import fnmatch
 import json
+import re
 import io
+import time
 from urllib.request import Request, urlopen, HTTPError
+import jsonpath_ng
 
 import esptool.cmds
 from esptool.targets import ESP32ROM
@@ -47,14 +50,9 @@ class TestContext:
     _esp_host: str
     _brickd_host: str | None
 
-
     def _get_callee(self):
         stack = traceback.extract_stack()
         return traceback.format_list([stack[-3]])[0]
-
-    def assert_(self, pred):
-        if not pred:
-            raise AssertionError(self._get_callee())
 
     class SkipTestError(Exception):
         pass
@@ -123,7 +121,7 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
-    def api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
+    def call_api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
         req = Request(f'http://{self._esp_host}/{api}', data=json.dumps(payload).encode("utf-8"), method=method, headers={"Content-Type": "application/json"})
         try:
             with urlopen(req, timeout=timeout) as resp:
@@ -137,19 +135,235 @@ class TestContext:
             raise
 
     def api_get(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.api('GET', api, payload, timeout, parse)
+        return self.call_api('GET', api, payload, timeout, parse)
 
     def api_put(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.api('PUT', api, payload, timeout, parse)
+        return self.call_api('PUT', api, payload, timeout, parse)
 
     def api_post(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.api('POST', api, payload, timeout, parse)
+        return self.call_api('POST', api, payload, timeout, parse)
 
     def factory_reset(self):
         if self._serial_port:
             self._erase_littlefs_header()
         else:
-            self.api_put('factory_reset', None)
+            self.api_put('factory_reset', {"do_i_know_what_i_am_doing": True})
+
+    def assert_(self, actual):
+        if not actual:
+            raise AssertionError(f"Expected {actual=} to be true\n" + self._get_callee())
+
+        return actual
+
+    def assert_true(self, actual):
+        if not actual:
+            raise AssertionError(f"Expected {actual=} to be true\n" + self._get_callee())
+
+        return actual
+
+    def assert_false(self, actual):
+        if actual:
+            raise AssertionError(f"Expected {actual=} to be false\n" + self._get_callee())
+
+        return actual
+
+    def assert_not(self, actual):
+        if actual:
+            raise AssertionError(f"Expected {actual=} to be false\n" + self._get_callee())
+
+        return actual
+
+    def assert_eq(self, expected, actual):
+        if not (actual == expected):
+            raise AssertionError(f"Expected {actual=} to be equal to {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_ne(self, expected, actual):
+        if not (actual != expected):
+            raise AssertionError(f"Expected{actual=} to not be equal to {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_le(self, expected, actual):
+        if not (actual <= expected):
+            raise AssertionError(f"Expected {actual=} to be less than or equal to {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_lt(self, expected, actual):
+        if not (actual < expected):
+            raise AssertionError(f"Expected {actual=} to be less than {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_ge(self, expected, actual):
+        if not (actual >= expected):
+            raise AssertionError(f"Expected {actual=} to be greater than {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_gt(self, expected, actual):
+        if not (actual > expected):
+            raise AssertionError(f"Expected {actual=} to be greater than {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_search(self, expected: typing.Union[str, re.Pattern], actual) -> re.Match:
+        if isinstance(expected, re.Pattern):
+            match = expected.search(actual)
+        else:
+            match = re.search(expected, actual)
+
+        if match is None:
+            raise AssertionError(f"Expected {actual=} to contain pattern {expected=}\n" + self._get_callee())
+
+        return match
+
+    def assert_in(self, expected, actual):
+        if not (actual in expected):
+            raise AssertionError(f"Expected {actual=} to contain {expected=}\n" + self._get_callee())
+
+        return actual
+
+    def assert_epsilon(self, expected, epsilon, actual):
+        if not (expected - epsilon) <= actual <= (expected + epsilon):
+            raise AssertionError(f"Expected {actual=} to be in range {expected=} ± {epsilon=}\n" + self._get_callee())
+
+        return actual
+
+    def _fixup_json_path(self, json_path: str):
+        if not json_path.startswith('$') and not json_path.startswith('['):
+            json_path = '$.' + json_path
+        return json_path
+
+    def api(self, api, json_path=None):
+        result = self.api_get(api)
+        if json_path is None:
+            return result
+
+        json_path = self._fixup_json_path(json_path)
+        expr = jsonpath_ng.parse(json_path)
+
+        result = [match.value for match in expr.find(self.api_get(api))]
+        if len(result) == 1:
+            return result[0]
+        return result
+
+    def fail(self, message: str):
+        raise AssertionError(f"Test failure: {message}")
+
+    def wait_for(self, assert_fn: typing.Callable[[], typing.Any], *, timeout: float = 5.0, poll_delay: float = 0.1) -> typing.Any:
+        start = time.monotonic()
+        end = start + timeout
+
+        act = '___assert_fn not executed yet___'
+        while time.monotonic() <= end:
+            try:
+                act = assert_fn()
+                break
+            except AssertionError:
+                time.sleep(poll_delay)
+        else:
+            raise AssertionError(f"Timed out while waiting for {assert_fn=} (last value was {repr(act)}) to not fail\n" + self._get_callee())
+
+        return act
+
+    def assert_fail(self, assert_fn: typing.Callable[[], typing.Any]):
+        """Assert that the passed function raises an AssertionError"""
+        error = None
+        self.dbg("Assert fail {")
+        try:
+            assert_fn()
+        except AssertionError as e:
+            error = e
+            self.dbg(" Failed")
+        self.dbg("}")
+
+        if error is None:
+            raise AssertionError(f"Assertion failed: expected inner asserts to fail but all succeeded. ({self._get_callee()})")
+
+    def assert_xor(self, assert_fn_left, assert_fn_right):
+        """Assert that exactly one of the passed functions raises an AssertionError"""
+        left_error = None
+        right_error = None
+
+        self.dbg("Assert XOR {")
+        self.dbg("left:")
+
+        try:
+            assert_fn_left()
+        except AssertionError as e:
+            left_error = e
+            self.dbg(" Failed")
+
+        self.dbg("right:")
+
+        try:
+            assert_fn_right()
+        except AssertionError as e:
+            right_error = e
+            self.dbg(" Failed")
+
+        self.dbg("}")
+
+        if left_error is None and right_error is None:
+            raise AssertionError(f"Assertion failed: expected one failed assertion but both succeeded\n" + self._get_callee())
+
+        if left_error is not None and right_error is not None:
+            raise AssertionError(f"Assertion failed: expected one failed assertion but both failed. Left {left_error} right {right_error}\n" + self._get_callee())
+
+    # @dataclass
+    # class Cap:
+    #     val: typing.Any
+    #     "Value at the given point in time"
+
+    #     at: float = -1
+    #     "Absolute timestamp of captured data point"
+
+    #     after: float = -1
+    #     "Relative (to last) timestamp of captured data point"
+
+    #     less: float = 0
+    #     "Allow data point to be this much before the specified timestamp"
+
+    #     more: float = 0
+    #     "Allow data point to be this much after the specified timestamp"
+
+    # def assert_capture_eq(self, expected: list[Cap], actual, *, print_cap_on_fail = False):
+    #     """Assert that collected capture (see start_capture() and stop_capture()) is equal to the expected capture."""
+    #     try:
+    #         if len(expected) != len(actual):
+    #             raise AssertionError(f"Assertion failed: actual capture has length {len(actual)}, expected {len(expected)}: " + self._get_callee())
+
+    #         abs_time = 0
+
+    #         for i, x in enumerate(zip(expected, actual)):
+    #             e: TestContext.Cap = x[0]
+    #             if e.at == -1 and e.after == -1:
+    #                 raise Exception("Both at and after of an expected capture datapoint were not set! Set exactly one.")
+    #             if e.at != -1 and e.after != -1:
+    #                 raise Exception("Both at and after of an expected capture datapoint were set! Set exactly one.")
+
+    #             if e.at == -1:
+    #                 e.at = abs_time + e.after
+
+    #             a_time, a_val = x[1]
+
+    #             if not e.val.get(a_val):
+    #                 raise AssertionError(f"Assertion failed: actual capture \"{e.val.message(a_val)}\" at index {i} (timestamp{a_time:.3f}): " + self._get_callee())
+
+    #             lower = e.at - e.less
+    #             upper = e.at + e.more
+    #             if not lower <= a_time <= upper:
+    #                 raise AssertionError(f"Assertion failed: actual capture has correct value {a_val} but timestamp {a_time:.3f} at index {i}, expected in range of {lower:.3f} to {upper:.3f}: " + self._get_callee())
+
+    #             abs_time = a_time
+    #     except:
+    #         if print_cap_on_fail:
+    #             print(f'{expected=}')
+    #             print(f'{actual=}')
+    #         raise
 
 
 def run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
