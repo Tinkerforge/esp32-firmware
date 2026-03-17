@@ -994,13 +994,15 @@ static const ConfigMigration migrations[] = {
                 DynamicJsonDocument p14a_cfg{1024};
                 p14a_cfg.to<JsonObject>();
                 p14a_cfg["enable"] = true;
-                p14a_cfg["source"] = 0; // P14aEnwgSource::Input
-                p14a_cfg["limit"] = 4200;
-                p14a_cfg["active_on_close"] = (type == 0); // old 0 = active on close, old 1 = active on open
-                p14a_cfg["input_index"] = input_index;
-                p14a_cfg["this_charger"] = false;
-                p14a_cfg["managed_chargers"] = false;
-                p14a_cfg["heating"] = true;
+                auto source = p14a_cfg.createNestedArray("source");
+                source.add(0); // P14aEnwgSource::Input
+                auto source_cfg = source.createNestedObject();
+                source_cfg["limit_on_close"] = (type == 0); // old 0 = active on close, old 1 = active on open
+                source_cfg["limit_w"] = 4200;
+                source_cfg["input_index"] = input_index;
+                p14a_cfg["limit_charger"] = false;
+                p14a_cfg["limit_charge_manager"] = false;
+                p14a_cfg["limit_heating"] = true;
                 p14a_cfg["heating_max_power"] = 4200;
                 write_config_file("p14a_enwg/config", p14a_cfg);
             }
