@@ -42,7 +42,7 @@
 #include "generated/current_decision.union.h"
 #include "modules/cm_networking/generated/client_error.enum.h"
 #include "modules/cm_networking/cm_networking_defs.h"
-#include "cas_auth_state.enum.h"
+#include "generated/cas_auth_state.enum.h"
 
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
 
@@ -1053,12 +1053,12 @@ void ChargeManager::setup()
                 }
 
                 this->state.get("state")->updateUint(result);
-            }, 1_s, ca_config->allocation_interval.to<millis_t>());
-        }
 
 #if MODULE_P14A_ENWG_AVAILABLE()
-            this->limits = limits_before;
+                this->limits = limits_before;
 #endif
+            }, 1_s, ca_config->allocation_interval.to<millis_t>());
+        }
     }, 1_s);
 
     if (config.get("verbose")->asBool()) {
