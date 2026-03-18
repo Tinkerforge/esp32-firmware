@@ -45,7 +45,12 @@ EvcemUsecase::EvcemUsecase()
     usecase_actor = "EV";
     usecase_name = "measurementOfElectricityDuringEvCharging";
     usecase_version = "1.0.1";
-    supported_scenarios = {1, 2, 3};
+
+    // Build supported_scenarios from scenario switches (no usecase_updated() call yet since not connected)
+    supported_scenarios.clear();
+    supported_scenarios.push_back(1); // Scenario 1: Current per phase (Mandatory)
+    if (monitorPowerSupported) supported_scenarios.push_back(2);  // Scenario 2: Power per phase (Optional)
+    if (monitorEnergySupported) supported_scenarios.push_back(3); // Scenario 3: Charged energy (Optional)
 };
 
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -133,9 +138,28 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
     milliamps_draw_phase[0] = amps_phase_1;
     milliamps_draw_phase[1] = amps_phase_2;
     milliamps_draw_phase[2] = amps_phase_3;
+    if (power_phase_1 == EEBUS_NO_VALUE || power_phase_2 == EEBUS_NO_VALUE || power_phase_3 == EEBUS_NO_VALUE) {
+        monitorPowerSupported = false;
+        updateSupportedScenarios();
+    }else {
+        if (!monitorPowerSupported) {
+            monitorPowerSupported = true;
+            updateSupportedScenarios();
+        }
+    }
     power_draw_phase[0] = power_phase_1;
     power_draw_phase[1] = power_phase_2;
     power_draw_phase[2] = power_phase_3;
+    if (charged_wh == EEBUS_NO_VALUE) {
+        monitorEnergySupported = false;
+        updateSupportedScenarios();
+     } else {
+        if (!monitorEnergySupported) {
+            monitorEnergySupported = true;
+            updateSupportedScenarios();
+        }
+
+     }
     power_charged_wh = charged_wh;
     power_charged_measured = charged_measured;
 
@@ -194,25 +218,31 @@ void EvcemUsecase::get_measurement_description_list(MeasurementDescriptionListDa
         MeasurementTypeEnumType type;
         UnitOfMeasurementEnumType unit;
         ScopeTypeEnumType scope;
+        bool supported;
     };
     const std::array<Entrydata, 7> entries{{
-        {id_x_1, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
-        {id_x_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
-        {id_x_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
-        {id_x_4, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
-        {id_x_5, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
-        {id_x_6, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
-        {id_x_7, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::charge},
+        // Scenario 1: Current per phase (Mandatory) - only include phases with active measurements
+        {id_x_1, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, true},
+        {id_x_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, true},
+        {id_x_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, true},
+        // Scenario 2: Power per phase (Optional) - only include phases with active measurements
+        {id_x_4, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
+        {id_x_5, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
+        {id_x_6, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
+        // Scenario 3: Charged energy (Optional)
+        {id_x_7, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::charge, monitorEnergySupported},
     }};
 
     for (const auto &entrydata : entries) {
-        MeasurementDescriptionDataType measurement_description_data{};
-        measurement_description_data.measurementId = entrydata.id;
-        measurement_description_data.unit = entrydata.unit;
-        measurement_description_data.scopeType = entrydata.scope;
-        measurement_description_data.measurementType = entrydata.type;
-        measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
-        data->measurementDescriptionData->push_back(measurement_description_data);
+        if (entrydata.supported) {
+            MeasurementDescriptionDataType measurement_description_data{};
+            measurement_description_data.measurementId = entrydata.id;
+            measurement_description_data.unit = entrydata.unit;
+            measurement_description_data.scopeType = entrydata.scope;
+            measurement_description_data.measurementType = entrydata.type;
+            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
+            data->measurementDescriptionData->push_back(measurement_description_data);
+        }
     }
 }
 
@@ -224,28 +254,34 @@ void EvcemUsecase::get_measurement_constraints(MeasurementConstraintsListDataTyp
         int max;
         int stepsize;
         int scale;
+        bool supported;
     };
 
     const std::array<Entrydata, 7> entries{{
-        {id_x_1, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
-        {id_x_2, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
-        {id_x_3, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
-        {id_x_4, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
-        {id_x_5, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
-        {id_x_6, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
-        {id_x_7, measurement_limit_energy_min, measurement_limit_energy_max, measurement_limit_energy_stepsize, 0},
+        // Scenario 1: Current per phase (Mandatory) - only include phases with active measurements
+        {id_x_1, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3, true},
+        {id_x_2, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3, true},
+        {id_x_3, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3, true},
+        // Scenario 2: Power per phase (Optional) - only include phases with active measurements
+        {id_x_4, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
+        {id_x_5, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
+        {id_x_6, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
+        // Scenario 3: Charged energy (Optional)
+        {id_x_7, measurement_limit_energy_min, measurement_limit_energy_max, measurement_limit_energy_stepsize, 0, monitorEnergySupported },
     }};
 
     for (const auto &entrydata : entries) {
-        MeasurementConstraintsDataType measurement_constraints_data{};
-        measurement_constraints_data.measurementId = entrydata.id;
-        measurement_constraints_data.valueRangeMin->number = entrydata.min;
-        measurement_constraints_data.valueRangeMin->scale = entrydata.scale;
-        measurement_constraints_data.valueRangeMax->number = entrydata.max;
-        measurement_constraints_data.valueRangeMax->scale = entrydata.scale;
-        measurement_constraints_data.valueStepSize->number = entrydata.stepsize;
-        measurement_constraints_data.valueStepSize->scale = entrydata.scale;
-        data->measurementConstraintsData->push_back(measurement_constraints_data);
+        if (entrydata.supported) {
+            MeasurementConstraintsDataType measurement_constraints_data{};
+            measurement_constraints_data.measurementId = entrydata.id;
+            measurement_constraints_data.valueRangeMin->number = entrydata.min;
+            measurement_constraints_data.valueRangeMin->scale = entrydata.scale;
+            measurement_constraints_data.valueRangeMax->number = entrydata.max;
+            measurement_constraints_data.valueRangeMax->scale = entrydata.scale;
+            measurement_constraints_data.valueStepSize->number = entrydata.stepsize;
+            measurement_constraints_data.valueStepSize->scale = entrydata.scale;
+            data->measurementConstraintsData->push_back(measurement_constraints_data);
+        }
     }
 }
 
@@ -255,19 +291,26 @@ void EvcemUsecase::get_measurement_list(MeasurementListDataType *data) const
         uint8_t id;
         int value;
         int scale;
+        bool supported;
     };
 
     const std::array<Entrydata, 7> entries{{
-        {id_x_1, milliamps_draw_phase[0], -3},
-        {id_x_2, milliamps_draw_phase[1], -3},
-        {id_x_3, milliamps_draw_phase[2], -3},
-        {id_x_4, power_draw_phase[0], 0},
-        {id_x_5, power_draw_phase[1], 0},
-        {id_x_6, power_draw_phase[2], 0},
-        {id_x_7, power_charged_wh, 0},
+        // Scenario 1: Current per phase (Mandatory) - only include phases with active measurements
+        {id_x_1, milliamps_draw_phase[0], -3, true},
+        {id_x_2, milliamps_draw_phase[1], -3, true},
+        {id_x_3, milliamps_draw_phase[2], -3, true},
+        // Scenario 2: Power per phase (Optional) - only include if scenario enabled and value > 0
+        {id_x_4, power_draw_phase[0], 0, monitorPowerSupported },
+        {id_x_5, power_draw_phase[1], 0, monitorPowerSupported },
+        {id_x_6, power_draw_phase[2], 0, monitorPowerSupported },
+        // Scenario 3: Charged energy (Optional) - only include if scenario enabled and value > 0
+        {id_x_7, power_charged_wh, 0, monitorEnergySupported },
     }};
 
     for (const auto &entry : entries) {
+        if (!entry.supported)
+            continue;
+
         MeasurementDataType measurement_data{};
         measurement_data.measurementId = entry.id;
         measurement_data.valueType = MeasurementValueTypeEnumType::value;
@@ -302,13 +345,13 @@ void EvcemUsecase::get_electrical_connection_parameters(ElectricalConnectionPara
         bool to_be_added;
     };
     const std::array<Entrydata, 7> entries{{
-        {id_z_1, id_x_1, ElectricalConnectionPhaseNameEnumType::a, milliamps_draw_phase[0] > 0},
-        {id_z_2, id_x_2, ElectricalConnectionPhaseNameEnumType::b, milliamps_draw_phase[1] > 0},
-        {id_z_3, id_x_3, ElectricalConnectionPhaseNameEnumType::c, milliamps_draw_phase[2] > 0},
-        {id_z_4, id_x_4, ElectricalConnectionPhaseNameEnumType::a, power_draw_phase[0] > 0},
-        {id_z_5, id_x_5, ElectricalConnectionPhaseNameEnumType::b, power_draw_phase[1] > 0},
-        {id_z_6, id_x_6, ElectricalConnectionPhaseNameEnumType::c, power_draw_phase[2] > 0},
-        {id_z_7, id_x_7, ElectricalConnectionPhaseNameEnumType::abc, true},
+        {id_z_1, id_x_1, ElectricalConnectionPhaseNameEnumType::a, true},
+        {id_z_2, id_x_2, ElectricalConnectionPhaseNameEnumType::b, true},
+        {id_z_3, id_x_3, ElectricalConnectionPhaseNameEnumType::c, true},
+        {id_z_4, id_x_4, ElectricalConnectionPhaseNameEnumType::a, monitorPowerSupported},
+        {id_z_5, id_x_5, ElectricalConnectionPhaseNameEnumType::b, monitorPowerSupported},
+        {id_z_6, id_x_6, ElectricalConnectionPhaseNameEnumType::c, monitorPowerSupported},
+        {id_z_7, id_x_7, ElectricalConnectionPhaseNameEnumType::abc, monitorEnergySupported},
     }};
 
     for (const auto &entry : entries) {
@@ -328,6 +371,31 @@ void EvcemUsecase::get_electrical_connection_parameters(ElectricalConnectionPara
         }
         data->electricalConnectionParameterDescriptionData->push_back(connection_parameters_data);
     }
+}
+
+void EvcemUsecase::updateSupportedScenarios()
+{
+    supported_scenarios.clear();
+    supported_scenarios.push_back(1); // Scenario 1: Current per phase (Mandatory)
+    if (monitorPowerSupported) {
+        supported_scenarios.push_back(2); // Scenario 2: Power per phase (Optional)
+    }
+    if (monitorEnergySupported) {
+        supported_scenarios.push_back(3); // Scenario 3: Charged energy (Optional)
+    }
+
+    // Notify peers of scenario change
+    usecase_updated();
+
+    // Notify subscribers of description/constraints/parameter changes since available measurements changed
+    ElectricalConnectionParameterDescriptionListDataType ec_parameter_description_data = EVEntity::get_electrical_connection_parameter_description_list_data();
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), ec_parameter_description_data, "electricalConnectionParameterDescriptionListData");
+
+    MeasurementDescriptionListDataType measurement_description_data = EVEntity::get_measurement_description_list_data();
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_description_data, "measurementDescriptionListData");
+
+    MeasurementConstraintsListDataType constraints_data = EVEntity::get_measurement_constraints_list_data();
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints_data, "measurementConstraintsListData");
 }
 
 void EvcemUsecase::update_api() const

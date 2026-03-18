@@ -74,16 +74,16 @@ public:
      * @brief Update the measurements.
      *
      * Updates current, power, and energy measurements and informs all subscribers.
-     * Values at or below 0 are ignored and not sent.
+     * Current values mandatory. Power and Charged energy is optional.
      *
-     * @param amps_phase_1 Milliamps on phase a
-     * @param amps_phase_2 Milliamps on phase b
-     * @param amps_phase_3 Milliamps on phase c
-     * @param power_phase_1 Total power on phase 1 in watts
+     * @param amps_phase_1 Milliamps on phase a. Will always be sent. If only one phase is measured, set one phase to the measured value and the other to 0. If a phase is not measured, set to 0.
+     * @param amps_phase_2 Milliamps on phase b.
+     * @param amps_phase_3 Milliamps on phase c.
+     * @param power_phase_1 Total power on phase 1 in watts. If any power_phase is set to EEBUS_NO_VALUE, all power phase values will be omitted. If only one phase is measured, set it ot the value and the rest to 0.
      * @param power_phase_2 Total power on phase 2 in watts
      * @param power_phase_3 Total power on phase 3 in watts
-     * @param charged_wh Total charged into the EV during the current session in Wh
-     * @param charged_measured If the charged_wh value is measured (true) or calculated (false)
+     * @param charged_wh Total charged into the EV during the current session in Wh. If set to EEBUS_NO_VALUE, the charged energy measurement will be omitted.
+     * @param charged_measured If the charged_wh value is measured (true) or calculated (false). Defaults to false
      */
     void update_measurements(int amps_phase_1, int amps_phase_2, int amps_phase_3, int power_phase_1, int power_phase_2, int power_phase_3, int charged_wh, bool charged_measured = false);
 
@@ -166,6 +166,19 @@ private:
     int measurement_limit_energy_stepsize = 10;
 
     void update_api() const;
+
+    // ========================================================================
+    // Scenario switches
+    // ========================================================================
+    // Scenario 1 (current) is mandatory - no switch needed
+    bool monitorPowerSupported = true;  ///< Scenario 2: Power per phase (Optional)
+    bool monitorEnergySupported = true; ///< Scenario 3: Charged energy (Optional)
+
+    /**
+     * @brief Rebuild supported_scenarios from switches and notify peers.
+     * Call this when a scenario switch changes at runtime.
+     */
+    void updateSupportedScenarios();
 };
 
 #endif // EEBUS_ENABLE_EVCEM_USECASE
