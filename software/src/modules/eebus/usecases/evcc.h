@@ -80,6 +80,7 @@ public:
      *
      * This will inform the subscribers of the NodeManagement entity about the change.
      * Implements Scenario 1 (2.3.1, 3.4.1) and Scenario 8 (2.3.8, 3.4.8).
+     * Setting this is mandatory when an EV is connected or disconnected, otherwise the use case and other EV usecases will not work properly.
      *
      * @param connected True if EV is connected, false if disconnected
      */
@@ -92,14 +93,14 @@ public:
      * This will inform all subscribers of the new configuration.
      *
      * @param communication_standard The communication standard. Should only be "iso15118-2ed1", "iso15118-2ed2", or "iec61851"
-     * @param asymmetric_supported If asymmetric charging is supported or not
+     * @param asymmetric_supported If asymmetric charging is supported or not. Defaults to false
      */
     void update_device_config(const String &communication_standard, bool asymmetric_supported = false);
 
     /**
      * @brief Update the identification of the EV.
      *
-     * As required by Scenario 4 of the Usecase.
+     * As required by Scenario 4 of the Usecase. This scenario is not Mandatory but recommended. If the Information is unknown this shall be left empty.
      * This will inform all subscribers of the new identification.
      *
      * @param mac_address MAC address of the EV. Should be in the format given as mac_type
@@ -110,7 +111,7 @@ public:
     /**
      * @brief Updates the manufacturer data of the EV.
      *
-     * As required by Scenario 5 of the Usecase.
+     * As required by Scenario 5 of the Usecase. This scenario is not Mandatory but recommended. If the Information is unknown this shall be left empty.
      * This will inform all subscribers of the new manufacturer data.
      * Entries with a length < 1 will not be added.
      *
@@ -130,7 +131,7 @@ public:
     /**
      * @brief Update the Electrical Connection feature.
      *
-     * As required by Scenario 6 of the Usecase.
+     * As required by Scenario 6 of the Usecase. This scenario is not Mandatory but recommended. If the Information is unknown this shall be left empty.
      * This will inform all subscribers of the new electrical connection data.
      *
      * @param min_power In Watts. Minimum power at which the EV can still charge. Default is 0W
@@ -142,7 +143,7 @@ public:
     /**
      * @brief Update the DeviceDiagnosis state.
      *
-     * As required by Scenario 7 of the Usecase.
+     * As required by Scenario 7 of the Usecase. This scenario is not Mandatory but recommended. If the Information is unknown this shall be left empty.
      * This will inform all subscribers of the new device diagnosis state.
      *
      * @param standby If the device is in standby mode or not

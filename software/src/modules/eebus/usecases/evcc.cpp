@@ -171,7 +171,7 @@ void EvccUsecase::ev_connected_state(bool connected)
     bool changed = (ev_connected != connected);
     entity_active = ev_connected = connected;
     if (changed) {
-        eebus.usecases->node_management.detailed_discovery_update();
+        entities_updated();
         update_api();
     }
 }
@@ -191,8 +191,8 @@ void EvccUsecase::update_device_config(const String &comm_standard, bool asym_su
         return;
     DeviceConfigurationKeyValueDescriptionListDataType generate_dev_desc = EVEntity::get_device_configuration_value_description_list();
     DeviceConfigurationKeyValueListDataType generate_dev_list = EVEntity::get_device_configuration_value_list();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), generate_dev_list, "deviceConfigurationKeyValueListData");
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), generate_dev_list, "deviceConfigurationKeyValueListData");
 
     update_api();
 }
@@ -322,12 +322,13 @@ void EvccUsecase::get_device_config_list(DeviceConfigurationKeyValueListDataType
 
 void EvccUsecase::get_identification_list(IdentificationListDataType *data) const
 {
-
-    IdentificationDataType identification_data_entry{};
-    identification_data_entry.identificationId = 1;
-    identification_data_entry.identificationType = mac_type;
-    identification_data_entry.identificationValue = mac_address.c_str();
-    data->identificationData->push_back(identification_data_entry);
+    if (mac_address.length() > 0) {
+        IdentificationDataType identification_data_entry{};
+        identification_data_entry.identificationId = 1;
+        identification_data_entry.identificationType = mac_type;
+        identification_data_entry.identificationValue = mac_address.c_str();
+        data->identificationData->push_back(identification_data_entry);
+    }
 }
 
 void EvccUsecase::get_device_classification_manufacturer(DeviceClassificationManufacturerDataType *data) const
