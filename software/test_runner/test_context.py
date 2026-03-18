@@ -10,6 +10,7 @@ import re
 import io
 import time
 from urllib.request import Request, urlopen, HTTPError
+
 import jsonpath_ng
 
 import esptool.cmds
