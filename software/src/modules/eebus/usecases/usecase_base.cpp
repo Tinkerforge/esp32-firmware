@@ -37,6 +37,16 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     dst.createNestedObject(function_name);
     eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
+
+void EebusUsecase::entities_updated() const
+{
+    eebus.usecases->node_management.detailed_discovery_update();
+}
+void EebusUsecase::usecase_updated() const
+{
+    eebus.usecases->node_management.usecase_data_update();
+}
+
 UseCaseInformationDataType EebusUsecase::get_usecase_information() const
 {
     if (usecase_actor.empty() || usecase_name.empty() || usecase_version.empty() || supported_scenarios.empty()) {

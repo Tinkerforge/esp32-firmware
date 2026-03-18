@@ -142,6 +142,11 @@ void NodeManagementEntity::detailed_discovery_update()
     auto detailed_data = get_detailed_discovery_data();
     this->inform_subscribers(entity_address, nodemgmt_feature_address, detailed_data, "nodeManagementDetailedDiscoveryData");
 }
+void NodeManagementEntity::usecase_data_update()
+{
+    auto usecase_data = get_usecase_data();
+    this->inform_subscribers(entity_address, nodemgmt_feature_address, usecase_data, "nodeManagementUseCaseData");
+}
 
 NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
 {

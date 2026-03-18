@@ -121,6 +121,16 @@ public:
     void send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const;
 
     /**
+     * @brief Inform the use case that supported entities have been updated and that the NodeManagement shall be informed of the updated structure.
+     */
+    void entities_updated() const;
+
+    /**
+     * @brief Inform the use case that the usecase or supported scenarios have been updated and that the NodeManagement shall be informed of the updated structure.
+     */
+    void usecase_updated() const;
+
+    /**
      * @brief Handle an incoming SPINE message.
      *
      * Each use case must implement this to handle messages targeted at its features.
@@ -199,6 +209,8 @@ public:
     virtual void inform_spineconnection_usecase_update(SpineConnection *conn)
     {
     }
+
+
 
 protected:
     std::vector<int> entity_address{}; ///< The entity address for this use case.

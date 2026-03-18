@@ -112,6 +112,11 @@ public:
      */
     void detailed_discovery_update();
 
+    /**
+     * @brief Informs that use case data has changed.
+     */
+    void usecase_data_update();
+
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::NodeManagement};

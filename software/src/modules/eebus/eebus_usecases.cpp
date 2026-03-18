@@ -319,3 +319,4 @@ template bool EEBusUseCases::send_spine_message<ElectricalConnectionPermittedVal
 template bool EEBusUseCases::send_spine_message<BillListDataType>(const FeatureAddressType &, FeatureAddressType &, BillListDataType, CmdClassifierType, const char *, bool);
 template bool EEBusUseCases::send_spine_message<TimeSeriesListDataType>(const FeatureAddressType &, FeatureAddressType &, TimeSeriesListDataType, CmdClassifierType, const char *, bool);
 template bool EEBusUseCases::send_spine_message<IncentiveTableDataType>(const FeatureAddressType &, FeatureAddressType &, IncentiveTableDataType, CmdClassifierType, const char *, bool);
+template bool EEBusUseCases::send_spine_message<NodeManagementUseCaseDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementUseCaseDataType, CmdClassifierType, const char *, bool);
