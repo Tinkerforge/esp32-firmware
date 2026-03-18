@@ -952,6 +952,10 @@ static const ConfigMigration migrations[] = {
         #endif
         // Changes
         // - Migrate day ahead prices resolution from 60min to 15min for DE, AT and LU
+        // - Migrate §14a EnWG settings from heating/config to p14a_enwg/config.
+        //   The old heating module had p14enwg, p14enwg_input, p14enwg_type fields
+        //   that directly read EM hardware inputs. These are now handled by the
+        //   dedicated p14a_enwg module.
         [](){
             DynamicJsonDocument cfg{4096};
             if (read_config_file("day_ahead_prices/config", cfg)) {
@@ -965,20 +969,8 @@ static const ConfigMigration migrations[] = {
                     }
                 }
             }
-        }
-    },
-#endif
 
-
-#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2()
-    {
-        1, 4, 1,
-        // Changes
-        // - Migrate §14a EnWG settings from heating/config to p14a_enwg/config.
-        //   The old heating module had p14enwg, p14enwg_input, p14enwg_type fields
-        //   that directly read EM hardware inputs. These are now handled by the
-        //   dedicated p14a_enwg module.
-        [](){
+            #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
             DynamicJsonDocument heating_cfg{4096};
             if (!read_config_file("heating/config", heating_cfg))
                 return;
@@ -1011,6 +1003,7 @@ static const ConfigMigration migrations[] = {
             heating_cfg.remove("p14enwg_input");
             heating_cfg.remove("p14enwg_type");
             write_config_file("heating/config", heating_cfg);
+            #endif
         }
     },
 #endif
