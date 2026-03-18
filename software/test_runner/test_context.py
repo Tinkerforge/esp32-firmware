@@ -17,12 +17,16 @@ from esptool.targets import ESP32ROM
 
 if typing.TYPE_CHECKING:
     from test_runner import parttool
+    from test_runner.testbox.testbox import TestBox
     from test_runner.testbox.warp3 import WARP3TestBox
+    from test_runner.testbox.warp2 import WARP2TestBox
 else:
     import tinkerforge_util as tfutil
     tfutil.create_parent_module(__file__, 'software')
     from software.test_runner import parttool
+    from software.test_runner.testbox.testbox import TestBox
     from software.test_runner.testbox.warp3 import WARP3TestBox
+    from software.test_runner.testbox.warp2 import WARP2TestBox
 
 type TestFn = Callable[[TestContext], typing.Any]
 
@@ -52,23 +56,29 @@ class TestContext:
     _esp_host: str
     _brickd_host: str | None
 
-    _testbox: WARP3TestBox | None = None
+    _testbox: TestBox | None = None
 
     def init_testbox(self):
         if self._brickd_host is None:
             return False
 
-        if self._esp_host.startswith('warp3'):
+        if self._brickd_host.startswith('warp3'):
             self._testbox = WARP3TestBox()
-            self._testbox.start(self._brickd_host, 4223)
-            return True
-        return False
+        elif self._brickd_host.startswith('warp2'):
+            self._testbox = WARP2TestBox()
+        else:
+            return False
 
-    def get_testbox(self) -> WARP3TestBox:
+        self._testbox.tc = self
+        self._testbox.start(self._brickd_host, 4223)
+        return True
+
+    def get_testbox(self) -> TestBox:
         if self._testbox is None:
             if not self.init_testbox():
-                raise Exception("No testbox connected")
+                self.skip("No testbox connected")
 
+        assert self._testbox is not None
         return self._testbox
 
     def _get_callee(self):

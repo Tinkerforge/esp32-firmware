@@ -1,8 +1,4 @@
-import sys
 from time import sleep
-from struct import pack, unpack
-import os
-import typing
 from dataclasses import dataclass, field
 
 from tinkerforge.ip_connection import IPConnection
@@ -12,7 +8,7 @@ from tinkerforge.bricklet_industrial_dual_relay import BrickletIndustrialDualRel
 from tinkerforge.bricklet_rs485 import BrickletRS485
 from tinkerforge.bricklet_color_v2 import BrickletColorV2
 
-from tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
+from .testbox import TestBox, CP, Meter, Aux
 
 """
 RPi Port    Bricklet            Pin     Function
@@ -42,12 +38,8 @@ G           RS485 Bricklet              Use to fake energy meters
 H           Color Bricklet              Front LED color
 """
 
-CP = typing.Literal['A', 'B', 'C', 'D']
-Meter = typing.Literal['real', 'fake']
-Aux = typing.Literal['real', 'open', 'closed']
-
 @dataclass
-class WARP3TestBox:
+class WARP3TestBox(TestBox):
     ipcon: IPConnection = None
 
     A: BrickletIndustrialQuadRelayV2 = None
@@ -58,19 +50,6 @@ class WARP3TestBox:
     F: BrickletIndustrialDualRelay = None
     G: BrickletRS485 = None
     H: BrickletColorV2 = None
-
-    def bricklets(self):
-        return [self.A, self.B, self.C, self.D, self.E, self.F, self.G, self.H]
-
-    def bricklet_names(self):
-        return [BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
-                BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
-                BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
-                BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME,
-                BrickletIndustrialDigitalIn4V2.DEVICE_DISPLAY_NAME,
-                BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME,
-                BrickletRS485.DEVICE_DISPLAY_NAME,
-                BrickletColorV2.DEVICE_DISPLAY_NAME]
 
     cp_relays: dict[CP, tuple[bool, bool, bool]] = field(default_factory=lambda: {
         'A': (False, False, False),
@@ -186,15 +165,15 @@ class WARP3TestBox:
 
         self.ipcon.enumerate()
         for _ in range(30):
-            if all(x is not None for x in self.bricklets()):
+            if all(x is not None for x in self._bricklets()):
                 break
             sleep(0.1)
 
-        for i, x in enumerate(self.bricklets()):
+        for i, x in enumerate(self._bricklets()):
             if x is None:
                 print("Missing device at port {}!".format(chr(ord('A') + i)))
 
-        for x in self.bricklets():
+        for x in self._bricklets():
             x.set_response_expected_all(True)
 
         self.reset()
@@ -202,15 +181,20 @@ class WARP3TestBox:
     def stop(self):
         self.ipcon.disconnect()
 
-    def state(self):
-        if self.ipcon.get_connection_state() != self.ipcon.CONNECTION_STATE_CONNECTED:
-            return "Not connected to Brick Daemon"
-        if any(x is None for x in self.bricklets()):
-            return ", ".join([f"{self.bricklet_names()[i]} not found" for i, x in enumerate(self.bricklets()) if x is None])
-
-        return "OK"
-
     ## Internals
+
+    def _bricklets(self):
+        return [self.A, self.B, self.C, self.D, self.E, self.F, self.G, self.H]
+
+    def _bricklet_names(self):
+        return [BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
+                BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
+                BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME,
+                BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME,
+                BrickletIndustrialDigitalIn4V2.DEVICE_DISPLAY_NAME,
+                BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME,
+                BrickletRS485.DEVICE_DISPLAY_NAME,
+                BrickletColorV2.DEVICE_DISPLAY_NAME]
 
     def _cb_enumerate(self, uid, connected_uid, position, hardware_version, firmware_version,
                     device_identifier, enumeration_type):
