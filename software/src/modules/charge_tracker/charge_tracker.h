@@ -29,7 +29,7 @@
 #include "generated/file_type.enum.h"
 #include "generated/csv_flavor.enum.h"
 #include "generated/generation_state.enum.h"
-#include "charge_log_send_error.enum.h"
+#include "generated/charge_log_send_error.enum.h"
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 #include "../remote_access/remote_access_packets.h"
@@ -109,14 +109,13 @@ public:
     // Stores the metadata context and sends RequestChargeLogSend with a config hash.
     // config_hash: SHA-256 hash of the generation config + month (32 bytes).
     // Returns true if the request was sent successfully.
-    bool start_charge_log_send_sm(const char *filename, size_t filename_len,
-                                  const char *display_name, size_t display_name_len,
-                                  const uint8_t user_uuid[16],
-                                  Language language,
-                                  bool is_monthly_email = false);
-
-                                  bool is_monthly_email,
-                                  const uint8_t config_hash[32]);
+    bool start_charge_log_send_sm(
+        const char *filename, size_t filename_len,
+        const char *display_name, size_t display_name_len,
+        const uint8_t user_uuid[16],
+        Language language,
+        bool is_monthly_email,
+        const uint8_t config_hash[32]);
 
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
 

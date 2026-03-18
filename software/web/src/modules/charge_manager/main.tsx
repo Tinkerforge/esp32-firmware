@@ -52,6 +52,7 @@ import { FormSeparator } from "ts/components/form_separator";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { Dropdown } from "react-bootstrap";
 import { useId } from "preact/hooks";
+import { CASAuthState } from "./generated/cas_auth_state.enum";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
