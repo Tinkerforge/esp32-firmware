@@ -47,7 +47,7 @@ extern char local_uid_str[32];
  */
 static int sanitized(float x, float scale)
 {
-    return isnan(x) ? INT32_MIN : static_cast<int>(x * scale);
+    return isnan(x) ? EEBUS_NO_VALUE : static_cast<int>(x * scale);
 }
 
 // ============================================================================
@@ -258,7 +258,7 @@ static void run_eebus_usecase_tests()
             if (dev_test_iteration % 5 == 0) {
                 eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 405, 398);
             } else if (dev_test_iteration % 5 == 2) {
-                eebus.usecases->mpc->update_voltage(235, 236, 234, 410, INT32_MIN, 408);
+                eebus.usecases->mpc->update_voltage(235, 236, 234, 410, EEBUS_NO_VALUE, 408);
             }
 
             // Simulate frequency drift
@@ -810,7 +810,7 @@ void EEBus::register_meter_events()
             // Calculate charged energy for current session (EVSE mode only)
             bool charging = (charge_tracker.current_charge.get("user_id")->asInt16() != -1);
             float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
-            int charged_wh = !charging ? INT32_MIN : sanitized(floats.energy_import - meter_start, 1000.0f);
+            int charged_wh = !charging ? EEBUS_NO_VALUE : sanitized(floats.energy_import - meter_start, 1000.0f);
 
             // Update EVCEM usecase (EV charging measurements)
 #ifdef EEBUS_ENABLE_EVCEM_USECASE

@@ -32,7 +32,7 @@
  * Provides EVSE manufacturer information and operating state/error reporting.
  *
  * Scenarios:
- *   1 (2.3.1, 3.4.1): EVSE manufacturer information
+ *   1 (2.3.1, 3.4.1): EVSE manufacturer information. This is read automatically from options.h
  *   2 (2.3.2, 3.4.2): EVSE error state
  *
  * Actor: EVSE

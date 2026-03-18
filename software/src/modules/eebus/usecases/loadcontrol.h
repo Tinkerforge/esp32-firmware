@@ -119,7 +119,7 @@ public:
 
     /**
      * @brief Update the constraints of the system.
-     * @param power_max Maximum power the system is capable of
+     * @param power_max Maximum power consumption the system is capable of
      * @param power_contract_max Maximum power the contract allows
      */
     void update_constraints(int power_max = 0, int power_contract_max = 0);
