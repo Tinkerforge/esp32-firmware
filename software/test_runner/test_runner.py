@@ -1,15 +1,4 @@
 #!/usr/bin/env -S uv run --script
-#
-# /// script
-# dependencies = [
-#   "tinkerforge",
-#   "tinkerforge_util",
-#   "junit-xml",
-#   "esptool",
-#   "jsonpath-ng"
-# ]
-# ///
-
 
 from pathlib import Path
 import subprocess

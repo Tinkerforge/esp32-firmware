@@ -1,7 +1,0 @@
-platformio
-pyphen
-tinkerforge
-flask
-flask_sock
-websocket
-Xlsx2csv

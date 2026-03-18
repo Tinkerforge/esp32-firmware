@@ -1,0 +1,26 @@
+[project]
+name = "software"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    # firmware build
+    "platformio",
+    "pyphen",
+    "tinkerforge >= 2.1.31", # 2.1.31 adds industrial dual ac in
+    "tinkerforge_util >= 1.2.2",
+
+    # sunspec model parser
+    "Xlsx2csv",
+
+    # web/server.py
+    "flask",
+    "flask_sock",
+    "websocket",
+
+    # test_runner
+    "junit-xml",
+    "esptool",
+    "jsonpath-ng"
+]

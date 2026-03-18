@@ -1,10 +1,4 @@
 #!/usr/bin/env -S uv run --script
-#
-# /// script
-# dependencies = [
-#   "tinkerforge_util"
-# ]
-# ///
 
 from typing import TYPE_CHECKING
 
