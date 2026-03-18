@@ -229,7 +229,7 @@ requires-dist = [
     { name = "platformio" },
     { name = "pyphen" },
     { name = "tinkerforge", specifier = ">=2.1.31" },
-    { name = "tinkerforge-util", specifier = ">=1.2.2" },
+    { name = "tinkerforge-util", specifier = "==1.2.2" },
     { name = "websocket" },
     { name = "xlsx2csv" },
 ]
@@ -671,9 +671,9 @@ sdist = { url = "https://files.pythonhosted.org/packages/77/5d/b1ec953d9b3df1468
 
 [[package]]
 name = "tinkerforge-util"
-version = "1.4.0"
+version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/04/72/12c599cf1e7967805167bf772ab9bf4659d1537f046e529272c5dbab1fb4/tinkerforge_util-1.4.0.tar.gz", hash = "sha256:20600fbd1c3ee7456106f21bcaf5063844501ae68e2d58a46d98603c57b834da", size = 4804, upload-time = "2026-01-13T11:03:42.71Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/ba/d9b7cf998898b258dc5ab2132e7dbb18d633f039103698fad24bccdfc4cf/tinkerforge_util-1.2.2.tar.gz", hash = "sha256:3cccb4caca9bf1c9dbcc5031778807c1709b7b27e14a6e37823dfed48f13b904", size = 4786, upload-time = "2025-05-30T12:04:11.891Z" }
 
 [[package]]
 name = "typing-extensions"
