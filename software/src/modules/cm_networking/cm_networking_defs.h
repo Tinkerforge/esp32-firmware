@@ -24,8 +24,8 @@
 
 #include "generated/client_error.enum.h"
 #include "generated/config_charge_mode.enum.h"
-#include "cm_auth_feedback.enum.h"
-#include "module_available.h"
+#include "generated/cm_auth_feedback.enum.h"
+#include "generated/module_available.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
@@ -313,4 +313,6 @@ struct cm_state_packet {
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
 static_assert(CM_STATE_PACKET_LENGTH == 104, "Unexpected CM_STATE_PACKET_LENGTH");
 
-#include "module_available_end.h"
+#include "generated/client_error.enum.h"
+
+#include "generated/module_available_end.h"

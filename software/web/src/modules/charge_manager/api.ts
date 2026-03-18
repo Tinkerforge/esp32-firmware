@@ -6,7 +6,7 @@ import { CurrentDecision } from "./generated/current_decision.union";
 
 import { CASState } from "./generated/cas_state.enum";
 import { CASError } from "./generated/cas_error.enum";
-import { CASAuthState } from "./cas_auth_state.enum";
+import { CASAuthState } from "./generated/cas_auth_state.enum";
 
 type ChargerState = {
     /** state */

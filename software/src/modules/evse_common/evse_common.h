@@ -24,7 +24,7 @@
 #include "modules/meters/meter_value_availability.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
-#include "modules/cm_networking/cm_auth_feedback.enum.h"
+#include "modules/cm_networking/generated/cm_auth_feedback.enum.h"
 #include "tools.h"
 #include "generated/module_available.h"
 

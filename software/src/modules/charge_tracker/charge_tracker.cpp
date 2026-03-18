@@ -59,6 +59,7 @@ static constexpr BaseType_t pdPASS_safe = pdPASS;
     #pragma GCC diagnostic pop
 #endif
 
+extern char local_uid_str[32];
 
 static bool repair_logic(Charge *);
 
@@ -2190,10 +2191,6 @@ void ChargeTracker::finish_monthly_upload()
     monthly_upload_config_count = 0;
     pending_generation_lock.reset();
     task_scheduler.updateDelay(monthly_upload_task_id, 4_h);
-    if (ret != pdPASS_nowarn) {
-        logger.printfln("ChargeLogUpload task could not be created (insufficient system resources): %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-        delete args;
-    }
 }
 
 void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const int device_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)

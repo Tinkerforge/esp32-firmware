@@ -23,7 +23,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "nack_reason.enum.h"
+#include "generated/nack_reason.enum.h"
 
 // Packet type definitions from backend/src/udp_server/packet.rs
 enum class PacketType : uint8_t {
