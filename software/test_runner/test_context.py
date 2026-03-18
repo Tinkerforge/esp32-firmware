@@ -20,6 +20,7 @@ if typing.TYPE_CHECKING:
     from test_runner.testbox.testbox import TestBox
     from test_runner.testbox.warp3 import WARP3TestBox
     from test_runner.testbox.warp2 import WARP2TestBox
+    from test_runner.testbox.wem import WEMTestBox
 else:
     import tinkerforge_util as tfutil
     tfutil.create_parent_module(__file__, 'software')
@@ -27,6 +28,7 @@ else:
     from software.test_runner.testbox.testbox import TestBox
     from software.test_runner.testbox.warp3 import WARP3TestBox
     from software.test_runner.testbox.warp2 import WARP2TestBox
+    from software.test_runner.testbox.wem import WEMTestBox
 
 type TestFn = Callable[[TestContext], typing.Any]
 
@@ -66,6 +68,8 @@ class TestContext:
             self._testbox = WARP3TestBox()
         elif self._brickd_host.startswith('warp2'):
             self._testbox = WARP2TestBox()
+        elif self._brickd_host.startswith('wem'):
+            self._testbox = WEMTestBox()
         else:
             return False
 
