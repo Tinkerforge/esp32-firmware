@@ -76,8 +76,6 @@ def test_per_day_pattern(tc: TestContext):
 
     tc.api_put('day_ahead_prices/calendar', {'prices': cal_prices}, parse=False)
 
-    time.sleep(0.5)
-
     # Verify calendar
     calendar = tc.api_get('day_ahead_prices/calendar')
     tc.assert_eq(cal_prices, calendar['prices'])

@@ -146,7 +146,6 @@ def _trigger_refetch(tc: TestContext):
     config = tc.api_get('day_ahead_prices/config')
     config['enable'] = False
     tc.api_put('day_ahead_prices/config_update', config, parse=False)
-    time.sleep(0.25)
     config['enable'] = True
     tc.api_put('day_ahead_prices/config_update', config, parse=False)
 
