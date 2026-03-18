@@ -8,7 +8,8 @@ let x = {
             "protocol": "Protocol"
         },
         "script": {
-            "protocol_0": "None",
+            "protocol_no_ev": "No EV connected",
+            "protocol_0": "IEC 61851",
             "protocol_1": "DIN 70121",
             "protocol_2": "ISO 15118-2",
             "protocol_3": "ISO 15118-20"

@@ -8,7 +8,8 @@ let x = {
             "protocol": "Protokoll"
         },
         "script": {
-            "protocol_0": "Keins",
+            "protocol_no_ev": "Kein Fahrzeug verbunden",
+            "protocol_0": "IEC 61851",
             "protocol_1": "DIN 70121",
             "protocol_2": "ISO 15118-2",
             "protocol_3": "ISO 15118-20"

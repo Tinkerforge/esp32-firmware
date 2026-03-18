@@ -58,12 +58,24 @@ export function pre_init() {
             },
             get_extra_rows: (meter_slot: number) => {
                 let protocol = API.get_unchecked(`meters/${meter_slot}/state`)?.protocol;
-                let protocol_string = protocol == null ? __("meters.script.reboot_required") : translate_unchecked(`meters_iso15118.script.protocol_${protocol}`)
+                let protocol_string: string;
+                if (protocol == null) {
+                    protocol_string = __("meters.script.reboot_required");
+                } else if (protocol == EVDataProtocol.None) {
+                    let charger_state = API.get("evse/state").charger_state;
+                    protocol_string = charger_state == 0
+                        ? translate_unchecked("meters_iso15118.script.protocol_no_ev")
+                        : translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
+                } else {
+                    protocol_string = translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
+                }
 
                 return <FormRow label={__("meters_iso15118.content.protocol")} small>
-                    <div class="row"><div class="col-sm-4">
-                        <InputText class="form-control-sm" value={protocol_string}/>
-                    </div></div>
+                    <div class="row gx-2 gy-1">
+                        <div class="col-sm-4">
+                            <InputText class="form-control-sm" value={protocol_string}/>
+                        </div>
+                    </div>
                 </FormRow>
             },
         },
