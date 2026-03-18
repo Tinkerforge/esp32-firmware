@@ -6,8 +6,12 @@ from dataclasses import dataclass
 import argparse
 import fnmatch
 import json
+import os
 import re
 import io
+import socket
+import subprocess
+import tempfile
 import time
 from urllib.request import Request, urlopen, HTTPError
 
@@ -49,6 +53,7 @@ class TestSuiteInfo:
     test_teardown:  TestFn | None = None
 
 JSON: typing.TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
+
 
 @dataclass
 class TestContext:
@@ -351,6 +356,51 @@ class TestContext:
 
         if left_error is not None and right_error is not None:
             raise AssertionError(f"Assertion failed: expected one failed assertion but both failed. Left {left_error} right {right_error}\n" + self._get_callee())
+
+    def get_local_ip(self) -> str:
+        """Returns local IP address that can reach the DUT.
+
+        Uses UDP-connect trick: Connecting a UDP socket to the
+        device (without sending data) lets the OS pick the right source address.
+        """
+        if self._esp_host is None:
+            self.skip("Can't detect local IP")
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect((self._esp_host, 80))
+            return s.getsockname()[0]
+        finally:
+            s.close()
+
+    def generate_self_signed_cert(self, ip: str | None = None) -> tuple[str, str]:
+        """Generate a self-signed EC P-256 certificate valid for the given IP.
+
+        If ip is None, use get_local_ip.
+        Returns (cert_pem, key_pem).
+        Requires the openssl CLI to be available on the test machine.
+        """
+        if ip is None:
+            ip = self.get_local_ip()
+        with tempfile.TemporaryDirectory() as d:
+            key_path = os.path.join(d, "key.pem")
+            cert_path = os.path.join(d, "cert.pem")
+            subprocess.check_call([
+                "openssl", "req", "-x509",
+                "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1",
+                "-days", "3650", "-nodes",
+                "-subj", "/CN=test",
+                "-addext", f"subjectAltName=IP:{ip}",
+                "-keyout", key_path,
+                "-out", cert_path,
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            with open(key_path) as f:
+                key_pem = f.read()
+            with open(cert_path) as f:
+                cert_pem = f.read()
+
+        return cert_pem, key_pem
+
 
     # @dataclass
     # class Cap:
