@@ -97,16 +97,17 @@ public:
     // Update methods - Power measurements
     // =========================================================================
     /**
-     * @brief Update the power measurements.
+     * @brief Update the power measurements. (Mandatory)
      *
      * This will inform all subscribers of the new measurements.
      * All values are accepted including 0 and negative values (negative = power feed-in).
+     * Total power is mandatory. The per-phase values are optional and will be omitted if set to EEBUS_NO_VALUE.
      *
      * @param total_power Total power consumption in watts (id_m_1) - Linked to LPC.
      *                    Negative values indicate power feed-in.
-     * @param power_phase_1 Power on phase 1 in watts (id_m_2_1). Negative values indicate power feed-in.
-     * @param power_phase_2 Power on phase 2 in watts (id_m_2_2). Negative values indicate power feed-in.
-     * @param power_phase_3 Power on phase 3 in watts (id_m_2_3). Negative values indicate power feed-in.
+     * @param power_phase_1 Power on phase 1 in watts. Negative values indicate power feed-in.
+     * @param power_phase_2 Power on phase 2 in watts. Negative values indicate power feed-in.
+     * @param power_phase_3 Power on phase 3 in watts. Negative values indicate power feed-in.
      */
     void update_power(int total_power, int power_phase_1, int power_phase_2, int power_phase_3);
 
@@ -114,13 +115,13 @@ public:
     // Update methods - Energy measurements
     // =========================================================================
     /**
-     * @brief Update the energy measurements.
+     * @brief Update the energy measurements. (Optional)
      *
      * This will inform all subscribers of the new measurements.
      * All values are accepted including 0.
      *
-     * @param energy_consumed Energy consumed in watt-hours (id_m_3)
-     * @param energy_produced Energy produced in watt-hours (id_m_4)
+     * @param energy_consumed Energy consumed in watt-hours. Shall only be provided if the device is capable of consuming energy.
+     * @param energy_produced Energy produced in watt-hours. Shall only be provided if the device is capable of producing energy.
      */
     void update_energy(uint32_t energy_consumed, uint32_t energy_produced);
 
@@ -128,14 +129,15 @@ public:
     // Update methods - Current measurements
     // =========================================================================
     /**
-     * @brief Update the current measurements.
+     * @brief Update the current measurements. (Recommended)
      *
      * This will inform all subscribers of the new measurements.
      * All values are accepted including 0 and negative values (negative = reverse current flow).
+     * All Values are mandatory.
      *
-     * @param current_phase_1 Current on phase 1 in milliamps (id_m_5_1). Negative values indicate reverse flow.
-     * @param current_phase_2 Current on phase 2 in milliamps (id_m_5_2). Negative values indicate reverse flow.
-     * @param current_phase_3 Current on phase 3 in milliamps (id_m_5_3). Negative values indicate reverse flow.
+     * @param current_phase_1 Current on phase 1 in milliamps. Negative values indicate reverse flow.
+     * @param current_phase_2 Current on phase 2 in milliamps. Negative values indicate reverse flow.
+     * @param current_phase_3 Current on phase 3 in milliamps. Negative values indicate reverse flow.
      */
     void update_current(int current_phase_1, int current_phase_2, int current_phase_3);
 
@@ -143,19 +145,19 @@ public:
     // Update methods - Voltage measurements
     // =========================================================================
     /**
-     * @brief Update the voltage measurements.
+     * @brief Update the voltage measurements. (Optional)
      *
      * This will inform all subscribers of the new measurements.
-     * All values are accepted including 0. If INT32_MIN is passed to any of the
+     * All values are accepted including 0. If EEBUS_NO_VALUE is passed to any of the
      * phase_to_phase voltage parameters, it is assumed that the phase-to-phase
      * voltage is not measured and shall therefore be omitted from the data.
      *
-     * @param voltage_phase_1 Voltage on phase 1 (phase-to-neutral) in volts (id_m_6_1)
-     * @param voltage_phase_2 Voltage on phase 2 (phase-to-neutral) in volts (id_m_6_2)
-     * @param voltage_phase_3 Voltage on phase 3 (phase-to-neutral) in volts (id_m_6_3)
-     * @param voltage_phase_1_2 Voltage between phase 1 and 2 in volts (id_m_6_4)
-     * @param voltage_phase_2_3 Voltage between phase 2 and 3 in volts (id_m_6_5)
-     * @param voltage_phase_3_1 Voltage between phase 3 and 1 in volts (id_m_6_6)
+     * @param voltage_phase_1 Voltage on phase 1 (phase-to-neutral) in volts.
+     * @param voltage_phase_2 Voltage on phase 2 (phase-to-neutral) in volts.
+     * @param voltage_phase_3 Voltage on phase 3 (phase-to-neutral) in volts.
+     * @param voltage_phase_1_2 Voltage between phase 1 and 2 in volts.
+     * @param voltage_phase_2_3 Voltage between phase 2 and 3 in volts.
+     * @param voltage_phase_3_1 Voltage between phase 3 and 1 in volts.
      */
     void update_voltage(int voltage_phase_1, int voltage_phase_2, int voltage_phase_3, int voltage_phase_1_2, int voltage_phase_2_3, int voltage_phase_3_1);
 
@@ -163,10 +165,10 @@ public:
     // Update methods - Frequency measurement
     // =========================================================================
     /**
-     * @brief Update the frequency measurement.
+     * @brief Update the frequency measurement. (Optional)
      *
      * This will inform all subscribers of the new measurement.
-     * All values are accepted including 0.
+     * All values are accepted including 0. If EEBUS_NO_VALUE is passed it is assumed frequency measurement is unavailable and shall therefore be omitted from the data.
      *
      * @param frequency_millihertz Grid frequency in millihertz (id_m_7), default is 50000 (50Hz)
      */
@@ -317,6 +319,15 @@ private:
     // Helper methods
     // =========================================================================
     void update_api() const;
+
+    // Supported scenarios
+    bool monitorPowerSupported = true; // Scenario 1: Mandatory, should never be set to false
+    bool monitorEnergySupported = true; // Scenario 2: Optional
+    bool monitorCurrentSupported = true; // Scenario 3: Recommended
+    bool monitorVoltageSupported = true; // Scenario 4: Optional
+    bool monitorFrequencySupported = true; // Scenario 5: Optional
+
+    void updateSupportedScenarios();
 };
 
 #endif // EEBUS_ENABLE_MPC_USECASE

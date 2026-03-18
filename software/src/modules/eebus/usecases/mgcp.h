@@ -183,6 +183,7 @@ public:
      * @brief Update the per-phase current measurements.
      *
      * Uses load/passive sign convention: positive = consumption, negative = production.
+     * If a value is unavailable, setting it to EEBUS_NO_VALUE omits it from the data.
      *
      * @param current_phase_1_ma Current on phase 1 in milliamps
      * @param current_phase_2_ma Current on phase 2 in milliamps
@@ -196,6 +197,8 @@ public:
 
     /**
      * @brief Update the per-phase voltage measurements.
+     * If a value is unavailable, setting it to EEBUS_NO_VALUE omits it from the data.
+     *
      * @param voltage_phase_1_v Voltage on phase 1 (phase-to-neutral) in volts
      * @param voltage_phase_2_v Voltage on phase 2 (phase-to-neutral) in volts
      * @param voltage_phase_3_v Voltage on phase 3 (phase-to-neutral) in volts
@@ -208,6 +211,8 @@ public:
 
     /**
      * @brief Update the grid frequency measurement.
+     * If a value is unavailable, setting it to EEBUS_NO_VALUE omits it from the data.
+     *
      * @param frequency_mhz Grid frequency in millihertz (e.g., 50000 for 50Hz)
      */
     void update_frequency(int frequency_mhz);
@@ -218,6 +223,8 @@ public:
 
     /**
      * @brief Update all measurement constraints.
+     * If a value is unavailable, setting it to EEBUS_NO_VALUE omits it from the data.
+     *
      * @param power_min Minimum power that can be measured in watts
      * @param power_max Maximum power that can be measured in watts
      * @param current_min_ma Minimum current in milliamps
@@ -320,6 +327,21 @@ private:
      * @brief Update the API state with current values.
      */
     void update_api() const;
+
+    // ========================================================================
+    // Scenario switches
+    // ========================================================================
+    bool monitorPvCurtailmentSupported = true;  ///< Scenario 1: PV curtailment (Optional)
+    // Scenarios 2, 3, 4 are mandatory - no switches needed
+    bool monitorCurrentSupported = true;        ///< Scenario 5: Current monitoring (Recommended)
+    bool monitorVoltageSupported = true;        ///< Scenario 6: Voltage monitoring (Optional)
+    bool monitorFrequencySupported = true;      ///< Scenario 7: Frequency monitoring (Optional)
+
+    /**
+     * @brief Rebuild supported_scenarios from switches and notify peers.
+     * Call this when a scenario switch changes at runtime.
+     */
+    void updateSupportedScenarios();
 };
 
 #endif // EEBUS_ENABLE_MGCP_USECASE
