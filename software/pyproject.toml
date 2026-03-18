@@ -1,8 +1,6 @@
 [project]
-name = "software"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+name = "esp32"
+dynamic = ["version"]
 requires-python = "==3.12.*"
 dependencies = [
     # firmware build
@@ -11,7 +9,7 @@ dependencies = [
     "tinkerforge >= 2.1.31", # 2.1.31 adds industrial dual ac in
     "tinkerforge_util >= 1.2.2",
 
-    # sunspec model parser
+    # SunSpec model parser
     "Xlsx2csv",
 
     # web/server.py
