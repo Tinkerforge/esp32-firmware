@@ -56,7 +56,7 @@ class TestContext:
     _fifo_out: typing.TextIO | None
 
     _serial_port: str | None
-    _esp_host: str
+    _esp_host: str | None
     _brickd_host: str | None
 
     _testbox: TestBox | None = None
@@ -158,6 +158,9 @@ class TestContext:
         return True
 
     def call_api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
+        if self._esp_host is None:
+            self.skip("ESP Host not passed. Can't call APIs")
+
         req = Request(f'http://{self._esp_host}/{api}', data=json.dumps(payload).encode("utf-8"), method=method, headers={"Content-Type": "application/json"})
         try:
             with urlopen(req, timeout=timeout) as resp:
