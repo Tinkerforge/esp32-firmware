@@ -62,6 +62,9 @@ def main():
     if fnmatch.fnmatch("test_runner", module_filter):
         suite_paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
 
+    # Skip underscore-prefixed helper modules
+    suite_paths = [p for p in suite_paths if not p.name.startswith('_')]
+
     for suite_path in suite_paths:
         path = suite_path.absolute()
 
