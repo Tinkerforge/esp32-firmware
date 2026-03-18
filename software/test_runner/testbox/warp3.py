@@ -147,6 +147,7 @@ class WARP3TestBox(TestBox):
         return not self.E.get_value()[contactor]
 
     def reset(self):
+        # TODO why is this not called
         self.set_cp('A')
         self.connect_meter('real')
         self.set_gpio_shutdown_closed(False)
@@ -221,5 +222,5 @@ class WARP3TestBox(TestBox):
     def _cb_connected(self, reason):
         self.ipcon.enumerate()
 
-    def get_led_state(self):
+    def _get_led_state(self):
         return 'unknown'

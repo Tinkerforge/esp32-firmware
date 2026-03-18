@@ -2,8 +2,9 @@ from typing import Protocol, Literal, TYPE_CHECKING, Any
 import inspect
 
 CP = Literal['A', 'B', 'C', 'D']
-Meter = Literal['real', 'fake']
+Meter = Literal['none', 'real', 'fake']
 Aux = Literal['real', 'open', 'closed']
+Input = Literal['open', 'closed', 'contactor']
 
 if TYPE_CHECKING:
     from ..test_context import TestContext
@@ -44,6 +45,14 @@ class TestBox(Protocol):
     def get_meter_connected(self): self.__not_implemented()
 
     def is_contactor_closed(self, contactor: int): self.__not_implemented()
+
+    def set_input_3(self, i: Input) -> None: self.__not_implemented()
+    def get_input_3(self) -> Input: self.__not_implemented()
+
+    def set_input_4(self, i: Input) -> None: self.__not_implemented()
+    def get_input_4(self) -> Input: self.__not_implemented()
+
+    def is_relay_closed(self) -> bool: self.__not_implemented()
 
     def reset(self): ...
     def start(self, host, port): ...
