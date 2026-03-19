@@ -117,19 +117,19 @@ def suite_setup(tc: TestContext):
     _server.__enter__()
 
     # Upload CA cert to device
-    tc.api_post('certs/add', {
+    tc.api('certs/add', {
         'id': _CERT_ID,
         'name': 'dap-pull-test',
         'cert': ca_pem,
-    }, parse=False)
+    })
 
     # Zero out calendar
-    tc.api_put('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL}, parse=False)
+    tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
 
     api_url = f"https://{local_ip}:{_server.port}/"
 
     # Configure device
-    config = tc.api_get('day_ahead_prices/config')
+    config = tc.api('day_ahead_prices/config')
     config['enable'] = True
     config['source'] = 0  # SpotMarket (pull)
     config['api_url'] = api_url
@@ -137,17 +137,17 @@ def suite_setup(tc: TestContext):
     config['region'] = 0  # DE
     config['resolution'] = 0  # Min15
     config['enable_calendar'] = False
-    tc.api_put('day_ahead_prices/config_update', config, parse=False)
+    tc.api('day_ahead_prices/config_update', config)
 
 
 def _trigger_refetch(tc: TestContext):
     # Disable and re-enable the module to force a re-fetch
     # (clears prices, last_sync, last_check).
-    config = tc.api_get('day_ahead_prices/config')
+    config = tc.api('day_ahead_prices/config')
     config['enable'] = False
-    tc.api_put('day_ahead_prices/config_update', config, parse=False)
+    tc.api('day_ahead_prices/config_update', config)
     config['enable'] = True
-    tc.api_put('day_ahead_prices/config_update', config, parse=False)
+    tc.api('day_ahead_prices/config_update', config)
 
 
 def test_pull_15min(tc: TestContext):
@@ -165,7 +165,7 @@ def test_pull_15min(tc: TestContext):
 
     # Wait for the device to pull and apply the prices
     def check():
-        state = tc.api_get('day_ahead_prices/prices')
+        state = tc.api('day_ahead_prices/prices')
         tc.assert_eq(first_date_minutes, state.get('first_date'))
         tc.assert_eq(0, state.get('resolution'))  # Min15
         tc.assert_eq(count, len(state.get('prices', [])))
@@ -186,12 +186,12 @@ def test_pull_60min(tc: TestContext):
     _server.set_prices(first_date_seconds, prices, next_date_seconds)
 
     # Switch to 60-min resolution (also triggers re-fetch)
-    config = tc.api_get('day_ahead_prices/config')
+    config = tc.api('day_ahead_prices/config')
     config['resolution'] = 1  # Min60
-    tc.api_put('day_ahead_prices/config_update', config, parse=False)
+    tc.api('day_ahead_prices/config_update', config)
 
     def check():
-        state = tc.api_get('day_ahead_prices/prices')
+        state = tc.api('day_ahead_prices/prices')
         tc.assert_eq(first_date_minutes, state.get('first_date'))
         tc.assert_eq(1, state.get('resolution'))  # Min60
         tc.assert_eq(count, len(state.get('prices', [])))
@@ -216,9 +216,9 @@ def test_pull_updates_next_check(tc: TestContext):
     _trigger_refetch(tc)
 
     def check_v1():
-        state = tc.api_get('day_ahead_prices/state')
+        state = tc.api('day_ahead_prices/state')
         tc.assert_eq(next_date_minutes, state.get('next_check'))
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(prices_v1, p.get('prices'))
 
     tc.wait_for(check_v1, timeout=15, poll_delay=1)
@@ -229,7 +229,7 @@ def test_pull_updates_next_check(tc: TestContext):
     _server.set_prices(first_date_seconds, prices_v2, far_future_seconds)
 
     def check_v2():
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(prices_v2, p.get('prices'))
 
     tc.wait_for(check_v2, timeout=150, poll_delay=5)
@@ -244,10 +244,10 @@ def test_pull_server_error(tc: TestContext):
 
     # After the failed fetch: last_check > 0 but last_sync == 0, no prices
     def check_error():
-        state = tc.api_get('day_ahead_prices/state')
+        state = tc.api('day_ahead_prices/state')
         tc.assert_gt(0, state.get('last_check'))
         tc.assert_eq(0, state.get('last_sync'))
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(0, len(p.get('prices', [])))
 
     tc.wait_for(check_error, timeout=15, poll_delay=1)
@@ -262,9 +262,9 @@ def test_pull_server_error(tc: TestContext):
     _trigger_refetch(tc)
 
     def check_recovery():
-        state = tc.api_get('day_ahead_prices/state')
+        state = tc.api('day_ahead_prices/state')
         tc.assert_gt(0, state.get('last_sync'))
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(48, len(p.get('prices', [])))
         tc.assert_eq(prices, p.get('prices'))
 
@@ -280,10 +280,10 @@ def test_pull_invalid_json(tc: TestContext):
 
     # After the failed parse: last_check > 0 but last_sync == 0, no prices
     def check_error():
-        state = tc.api_get('day_ahead_prices/state')
+        state = tc.api('day_ahead_prices/state')
         tc.assert_gt(0, state.get('last_check'))
         tc.assert_eq(0, state.get('last_sync'))
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(0, len(p.get('prices', [])))
 
     tc.wait_for(check_error, timeout=15, poll_delay=1)
@@ -298,9 +298,9 @@ def test_pull_invalid_json(tc: TestContext):
     _trigger_refetch(tc)
 
     def check_recovery():
-        state = tc.api_get('day_ahead_prices/state')
+        state = tc.api('day_ahead_prices/state')
         tc.assert_gt(0, state.get('last_sync'))
-        p = tc.api_get('day_ahead_prices/prices')
+        p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(48, len(p.get('prices', [])))
         tc.assert_eq(prices, p.get('prices'))
 
@@ -316,7 +316,7 @@ def suite_teardown(tc: TestContext):
         _server = None
 
     # Remove test cert from the device
-    tc.api_post('certs/remove', {'id': _CERT_ID}, parse=False)
+    tc.api('certs/remove', {'id': _CERT_ID})
 
 if __name__ == '__main__':
     run_testsuite(locals())

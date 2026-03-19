@@ -15,8 +15,6 @@ import tempfile
 import time
 from urllib.request import Request, urlopen, HTTPError
 
-import jsonpath_ng
-
 import esptool.cmds
 from esptool.targets import ESP32ROM
 
@@ -162,11 +160,14 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
-    def call_api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
+    def http_request(self, method: str, api: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False):
         if self._esp_host is None:
-            self.skip("ESP Host not passed. Can't call APIs")
+            self.skip("ESP Host not passed. Can't send HTTP requests")
 
-        req = Request(f'http://{self._esp_host}/{api}', data=json.dumps(payload).encode("utf-8"), method=method, headers={"Content-Type": "application/json"})
+        if isinstance(payload, str):
+            payload = payload.encode('utf-8')
+
+        req = Request(f'http://{self._esp_host}/{api}', data=payload, method=method, headers=headers)
         try:
             with urlopen(req, timeout=timeout) as resp:
                 result = resp.read()
@@ -178,20 +179,11 @@ class TestContext:
             e.msg += ":" + e.read().decode('utf-8')
             raise
 
-    def api_get(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.call_api('GET', api, payload, timeout, parse)
-
-    def api_put(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.call_api('PUT', api, payload, timeout, parse)
-
-    def api_post(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
-        return self.call_api('POST', api, payload, timeout, parse)
-
     def factory_reset(self):
         if self._serial_port:
             self._erase_littlefs_header()
         else:
-            self.api_put('factory_reset', {"do_i_know_what_i_am_doing": True})
+            self.api('factory_reset', {"do_i_know_what_i_am_doing": True})
 
     def assert_(self, actual):
         if not actual:
@@ -276,23 +268,14 @@ class TestContext:
 
         return actual
 
-    def _fixup_json_path(self, json_path: str):
-        if not json_path.startswith('$') and not json_path.startswith('['):
-            json_path = '$.' + json_path
-        return json_path
+    class NoPayload:
+        pass
 
-    def api(self, api, json_path=None):
-        result = self.api_get(api)
-        if json_path is None:
-            return result
+    def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 1) -> typing.Any:
+        if isinstance(payload, TestContext.NoPayload):
+            return self.http_request('GET', api, timeout=timeout, parse=True)
 
-        json_path = self._fixup_json_path(json_path)
-        expr = jsonpath_ng.parse(json_path)
-
-        result = [match.value for match in expr.find(self.api_get(api))]
-        if len(result) == 1:
-            return result[0]
-        return result
+        return self.http_request('PUT', api, json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=timeout, parse=False)
 
     def fail(self, message: str):
         raise AssertionError(f"Test failure: {message}")

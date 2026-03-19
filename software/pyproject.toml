@@ -20,5 +20,4 @@ dependencies = [
     # test_runner
     "junit-xml",
     "esptool",
-    "jsonpath-ng"
 ]

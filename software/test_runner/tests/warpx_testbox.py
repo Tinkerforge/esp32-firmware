@@ -13,13 +13,13 @@ def test_warpx_testbox(tc: TestContext):
     b = tc.get_testbox()
 
     b.set_cp('A')
-    tc.wait_for(lambda: tc.assert_eq(0, tc.api('evse/state', 'charger_state')))
+    tc.wait_for(lambda: tc.assert_eq(0, tc.api('evse/state')['charger_state']))
 
     b.set_cp('B')
-    tc.wait_for(lambda: tc.assert_eq(2, tc.api('evse/state', 'charger_state')))
+    tc.wait_for(lambda: tc.assert_eq(2, tc.api('evse/state')['charger_state']))
 
     b.set_cp('A')
-    tc.wait_for(lambda: tc.assert_eq(0, tc.api('evse/state', 'charger_state')))
+    tc.wait_for(lambda: tc.assert_eq(0, tc.api('evse/state')['charger_state']))
 
 
 if __name__ == '__main__':

@@ -17,13 +17,13 @@ from software.src.modules.day_ahead_prices.tests._common import make_prices, mid
 
 
 def suite_setup(tc: TestContext):
-    config = tc.api_get('day_ahead_prices/config')
+    config = tc.api('day_ahead_prices/config')
     config['enable'] = True
     config['source'] = 1  # Push
-    tc.api_put('day_ahead_prices/config_update', config, parse=False)
+    tc.api('day_ahead_prices/config_update', config)
 
     # Zero out calendar price
-    tc.api_put('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL}, parse=False)
+    tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
 
 
 def test_push_60min(tc: TestContext):
@@ -44,9 +44,9 @@ def test_push_60min(tc: TestContext):
         'prices': prices,
     }
 
-    tc.api_put('day_ahead_prices/prices_update', payload, timeout=10, parse=False)
+    tc.api('day_ahead_prices/prices_update', payload, timeout=10)
 
-    prices_state = tc.api_get('day_ahead_prices/prices')
+    prices_state = tc.api('day_ahead_prices/prices')
     tc.assert_eq(first_date, prices_state.get('first_date'))
     tc.assert_eq(resolution_enum, prices_state.get('resolution'))
     tc.assert_eq(count, len(prices_state.get('prices', [])))
@@ -71,9 +71,9 @@ def test_push_15min(tc: TestContext):
         'prices': prices,
     }
 
-    tc.api_put('day_ahead_prices/prices_update', payload, timeout=10, parse=False)
+    tc.api('day_ahead_prices/prices_update', payload, timeout=10)
 
-    prices_state = tc.api_get('day_ahead_prices/prices')
+    prices_state = tc.api('day_ahead_prices/prices')
     tc.assert_eq(first_date, prices_state.get('first_date'))
     tc.assert_eq(resolution_enum, prices_state.get('resolution'))
     tc.assert_eq(count, len(prices_state.get('prices', [])))
