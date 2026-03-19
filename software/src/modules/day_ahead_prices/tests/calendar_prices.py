@@ -28,7 +28,7 @@ def suite_setup(tc: TestContext):
         'first_date': midnight_today_minutes(),
         'resolution': 0,
         'prices': [0] * 192,
-    }, timeout=10)
+    })
 
     # Start with zeroed calendar
     tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
@@ -108,7 +108,7 @@ def test_push_plus_calendar(tc: TestContext):
 
     # Zero calendar
     tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
-    tc.api('day_ahead_prices/prices_update', payload, timeout=10)
+    tc.api('day_ahead_prices/prices_update', payload)
 
     # Verify spot-only prices
     prices_state = tc.api('day_ahead_prices/prices')

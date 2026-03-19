@@ -77,7 +77,7 @@ def test_pull(tc: TestContext):
         tc.assert_eq(count, len(state.get('temperatures', [])))
         tc.assert_eq(temps, state.get('temperatures'))
 
-    tc.wait_for(check, timeout=15, poll_delay=1)
+    tc.wait_for(check)
 
 
 def test_pull_server_error(tc: TestContext):
@@ -95,7 +95,7 @@ def test_pull_server_error(tc: TestContext):
         t = tc.api('temperatures/temperatures')
         tc.assert_eq(0, len(t.get('temperatures', [])))
 
-    tc.wait_for(check_error, timeout=15, poll_delay=1)
+    tc.wait_for(check_error)
 
     # Serve valid data and trigger another fetch for recovery
     first_date_minutes = midnight_today_minutes()
@@ -112,7 +112,7 @@ def test_pull_server_error(tc: TestContext):
         tc.assert_eq(TEMP_COUNT, len(t.get('temperatures', [])))
         tc.assert_eq(temps, t.get('temperatures'))
 
-    tc.wait_for(check_recovery, timeout=15, poll_delay=1)
+    tc.wait_for(check_recovery)
 
 
 def test_pull_invalid_json(tc: TestContext):
@@ -130,7 +130,7 @@ def test_pull_invalid_json(tc: TestContext):
         t = tc.api('temperatures/temperatures')
         tc.assert_eq(0, len(t.get('temperatures', [])))
 
-    tc.wait_for(check_error, timeout=15, poll_delay=1)
+    tc.wait_for(check_error)
 
     # Serve valid data and trigger another fetch for recovery
     first_date_minutes = midnight_today_minutes()
@@ -147,7 +147,7 @@ def test_pull_invalid_json(tc: TestContext):
         tc.assert_eq(TEMP_COUNT, len(t.get('temperatures', [])))
         tc.assert_eq(temps, t.get('temperatures'))
 
-    tc.wait_for(check_recovery, timeout=15, poll_delay=1)
+    tc.wait_for(check_recovery)
 
 
 def suite_teardown(tc: TestContext):

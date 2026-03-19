@@ -31,7 +31,7 @@ def test_push_std(tc: TestContext):
         'temperatures': temps,
     }
 
-    tc.api('temperatures/temperatures_update', payload, timeout=10)
+    tc.api('temperatures/temperatures_update', payload)
 
     state = tc.api('temperatures/temperatures')
     tc.assert_eq(first_date, state.get('first_date'))
@@ -49,7 +49,7 @@ def test_push_daylight_saving_time_minus1(tc: TestContext):
         'temperatures': temps,
     }
 
-    tc.api('temperatures/temperatures_update', payload, timeout=10)
+    tc.api('temperatures/temperatures_update', payload)
 
     state = tc.api('temperatures/temperatures')
     tc.assert_eq(first_date, state.get('first_date'))
@@ -67,7 +67,7 @@ def test_push_daylight_saving_time_plus1(tc: TestContext):
         'temperatures': temps,
     }
 
-    tc.api('temperatures/temperatures_update', payload, timeout=10)
+    tc.api('temperatures/temperatures_update', payload)
 
     state = tc.api('temperatures/temperatures')
     tc.assert_eq(first_date, state.get('first_date'))
@@ -77,7 +77,6 @@ def test_push_daylight_saving_time_plus1(tc: TestContext):
 
 def test_push_updates_state(tc: TestContext):
     """Push sets last_sync, last_check, and clears next_check."""
-    tc.set_test_timeout(30)
 
     first_date = midnight_today_minutes()
     temps = make_temperatures(TEMP_COUNT)
@@ -87,7 +86,7 @@ def test_push_updates_state(tc: TestContext):
         'temperatures': temps,
     }
 
-    tc.api('temperatures/temperatures_update', payload, timeout=10)
+    tc.api('temperatures/temperatures_update', payload)
 
     state = tc.api('temperatures/state')
     tc.assert_gt(0, state.get('last_sync'))

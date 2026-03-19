@@ -90,7 +90,7 @@ def test_pull_15min(tc: TestContext):
         tc.assert_eq(count, len(state.get('prices', [])))
         tc.assert_eq(prices, state.get('prices'))
 
-    tc.wait_for(check, timeout=15, poll_delay=1)
+    tc.wait_for(check)
 
 
 def test_pull_60min(tc: TestContext):
@@ -115,7 +115,7 @@ def test_pull_60min(tc: TestContext):
         tc.assert_eq(count, len(state.get('prices', [])))
         tc.assert_eq(prices, state.get('prices'))
 
-    tc.wait_for(check, timeout=15, poll_delay=1)
+    tc.wait_for(check)
 
 
 def test_pull_updates_next_check(tc: TestContext):
@@ -138,7 +138,7 @@ def test_pull_updates_next_check(tc: TestContext):
         p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(prices_v1, p.get('prices'))
 
-    tc.wait_for(check_v1, timeout=15, poll_delay=1)
+    tc.wait_for(check_v1)
 
     # Phase 2: Swap server to new prices and wait for DUT to fetch again
     prices_v2 = make_prices(48, base_price=8000, amplitude=500)
@@ -167,7 +167,7 @@ def test_pull_server_error(tc: TestContext):
         p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(0, len(p.get('prices', [])))
 
-    tc.wait_for(check_error, timeout=15, poll_delay=1)
+    tc.wait_for(check_error)
 
     # Serve valid data and trigger another fetch
     first_date_minutes = midnight_today_minutes()
@@ -185,7 +185,7 @@ def test_pull_server_error(tc: TestContext):
         tc.assert_eq(48, len(p.get('prices', [])))
         tc.assert_eq(prices, p.get('prices'))
 
-    tc.wait_for(check_recovery, timeout=15, poll_delay=1)
+    tc.wait_for(check_recovery)
 
 
 def test_pull_invalid_json(tc: TestContext):
@@ -203,7 +203,7 @@ def test_pull_invalid_json(tc: TestContext):
         p = tc.api('day_ahead_prices/prices')
         tc.assert_eq(0, len(p.get('prices', [])))
 
-    tc.wait_for(check_error, timeout=15, poll_delay=1)
+    tc.wait_for(check_error)
 
     # Serve valid data and trigger another fetch
     first_date_minutes = midnight_today_minutes()
@@ -221,7 +221,7 @@ def test_pull_invalid_json(tc: TestContext):
         tc.assert_eq(48, len(p.get('prices', [])))
         tc.assert_eq(prices, p.get('prices'))
 
-    tc.wait_for(check_recovery, timeout=15, poll_delay=1)
+    tc.wait_for(check_recovery)
 
 
 def suite_teardown(tc: TestContext):

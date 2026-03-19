@@ -134,7 +134,7 @@ def _configure_and_probe(tc: TestContext) -> str | None:
         return place
 
     try:
-        return tc.wait_for(check_probe, timeout=15, poll_delay=1)
+        return tc.wait_for(check_probe)
     except AssertionError:
         return None
 
@@ -194,7 +194,7 @@ def test_pull(tc: TestContext):
         tc.assert_eq(12, mod_state.get('rate_limit'))
         tc.assert_eq(11, mod_state.get('rate_remaining'))
 
-    tc.wait_for(check, timeout=20, poll_delay=1)
+    tc.wait_for(check)
 
 
 def test_pull_server_error(tc: TestContext):
@@ -214,7 +214,7 @@ def test_pull_server_error(tc: TestContext):
         forecast = tc.api('solar_forecast/planes/0/forecast')
         tc.assert_eq(0, len(forecast.get('forecast', [])))
 
-    tc.wait_for(check_error, timeout=20, poll_delay=1)
+    tc.wait_for(check_error)
 
 
 def suite_teardown(tc: TestContext):
