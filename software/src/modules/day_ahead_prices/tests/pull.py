@@ -5,112 +5,33 @@
 # configures it to pull from local server.
 
 import json
-import ssl
 import time
-import threading
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite
+    from .....test_runner.test_context import TestContext, run_testsuite, TestHTTPSServer
     from ._common import make_prices, midnight_today_minutes, SLOTS_TOTAL
 else:
     import tinkerforge_util as tfutil
     tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner.test_context import run_testsuite, TestContext
+    from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
     from software.src.modules.day_ahead_prices.tests._common import make_prices, midnight_today_minutes, SLOTS_TOTAL
 
 _CERT_ID = 7
 
 
-# HTTPServer subclass with typed response fields.
-class ESPHTTPServer(HTTPServer):
-    response_body: str = '{"error":"no data configured"}'
-    response_status: int = 404
+def _set_prices(server: TestHTTPSServer, first_date_seconds: int, prices: list[int], next_date_seconds: int):
+    payload = {
+        "first_date": first_date_seconds,
+        "prices": prices,
+        "next_date": next_date_seconds,
+    }
+    server.set_response(json.dumps(payload, separators=(",", ":")))
 
 
-# Tiny HTTPS server that serves a configurable JSON response on any path.
-class _Handler(BaseHTTPRequestHandler):
-    server: ESPHTTPServer  # type: ignore[assignment]
-
-    def do_GET(self):
-        body = self.server.response_body
-        status = self.server.response_status
-        encoded = body.encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(encoded)))
-        self.end_headers()
-        self.wfile.write(encoded)
-
-    # Suppress per-request log lines.
-    def log_message(self, format, *args):
-        pass
-
-
-# Wrapper around HTTPS server running in a thread
-class _PriceServer:
-    def __init__(self, cert_pem: str, key_pem: str, bind_ip: str = "0.0.0.0"):
-        self._cert_pem = cert_pem
-        self._key_pem = key_pem
-        self._bind_ip = bind_ip
-        self._httpd: ESPHTTPServer | None = None
-        self._thread: threading.Thread | None = None
-
-    def __enter__(self):
-        import tempfile, os
-
-        # Write cert/key to temp files for ssl.SSLContext.load_cert_chain
-        self._tmpdir = tempfile.mkdtemp()
-        cert_path = os.path.join(self._tmpdir, "cert.pem")
-        key_path = os.path.join(self._tmpdir, "key.pem")
-        with open(cert_path, "w") as f:
-            f.write(self._cert_pem)
-        with open(key_path, "w") as f:
-            f.write(self._key_pem)
-
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ctx.load_cert_chain(cert_path, key_path)
-
-        self._httpd = ESPHTTPServer((self._bind_ip, 0), _Handler)
-        self._httpd.socket = ctx.wrap_socket(self._httpd.socket, server_side=True)
-        self._httpd.response_body = '{"error":"no data configured"}'
-        self._httpd.response_status = 404
-
-        self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
-        self._thread.start()
-        return self
-
-    def __exit__(self, *exc):
-        if self._httpd:
-            self._httpd.shutdown()
-        if self._thread:
-            self._thread.join(timeout=5)
-        import shutil
-        shutil.rmtree(self._tmpdir, ignore_errors=True)
-
-    @property
-    def port(self) -> int:
-        assert self._httpd is not None
-        return self._httpd.server_address[1]
-
-    def set_response(self, body: str, status: int = 200):
-        assert self._httpd is not None
-        self._httpd.response_body = body
-        self._httpd.response_status = status
-
-    def set_prices(self, first_date_seconds: int, prices: list[int], next_date_seconds: int):
-        payload = {
-            "first_date": first_date_seconds,
-            "prices": prices,
-            "next_date": next_date_seconds,
-        }
-        self.set_response(json.dumps(payload, separators=(",", ":")))
-
-
-_server: _PriceServer | None = None
-def _get_server() -> _PriceServer:
+_server: TestHTTPSServer | None = None
+def _get_server() -> TestHTTPSServer:
     assert _server is not None, "suite_setup must run before tests"
     return _server
 
@@ -120,30 +41,16 @@ def suite_setup(tc: TestContext):
 
     tc.set_test_timeout(30)
 
-    local_ip = tc.get_local_ip()
-    ca_pem, server_key_pem = tc.generate_self_signed_cert(local_ip)
-
-    # Start HTTPS server
-    _server = _PriceServer(ca_pem, server_key_pem)
-    _server.__enter__()
-
-    # Upload CA cert to device
-    tc.api('certs/add', {
-        'id': _CERT_ID,
-        'name': 'dap-pull-test',
-        'cert': ca_pem,
-    })
+    _server = tc.create_test_https_server(_CERT_ID, 'dap-pull-test')
 
     # Zero out calendar
     tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
-
-    api_url = f"https://{local_ip}:{_server.port}/"
 
     # Configure device
     config = tc.api('day_ahead_prices/config')
     config['enable'] = True
     config['source'] = 0  # SpotMarket (pull)
-    config['api_url'] = api_url
+    config['api_url'] = _server.url
     config['cert_id'] = _CERT_ID
     config['region'] = 0  # DE
     config['resolution'] = 0  # Min15
@@ -172,7 +79,7 @@ def test_pull_15min(tc: TestContext):
     next_date_seconds = first_date_seconds + 7 * 86400
 
     server = _get_server()
-    server.set_prices(first_date_seconds, prices, next_date_seconds)
+    _set_prices(server, first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     # Wait for the device to pull and apply the prices
@@ -196,7 +103,7 @@ def test_pull_60min(tc: TestContext):
     next_date_seconds = first_date_seconds + 7 * 86400
 
     server = _get_server()
-    server.set_prices(first_date_seconds, prices, next_date_seconds)
+    _set_prices(server, first_date_seconds, prices, next_date_seconds)
 
     # Switch to 60-min resolution (also triggers re-fetch)
     config = tc.api('day_ahead_prices/config')
@@ -226,7 +133,7 @@ def test_pull_updates_next_check(tc: TestContext):
 
     prices_v1 = make_prices(48, base_price=5000, amplitude=1000)
     server = _get_server()
-    server.set_prices(first_date_seconds, prices_v1, next_date_seconds)
+    _set_prices(server, first_date_seconds, prices_v1, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_v1():
@@ -240,7 +147,7 @@ def test_pull_updates_next_check(tc: TestContext):
     # Phase 2: Swap server to new prices and wait for DUT to fetch again
     prices_v2 = make_prices(48, base_price=8000, amplitude=500)
     far_future_seconds = first_date_seconds + 14 * 86400
-    server.set_prices(first_date_seconds, prices_v2, far_future_seconds)
+    _set_prices(server, first_date_seconds, prices_v2, far_future_seconds)
 
     def check_v2():
         p = tc.api('day_ahead_prices/prices')
@@ -273,7 +180,7 @@ def test_pull_server_error(tc: TestContext):
     prices = make_prices(48, base_price=3000, amplitude=1000)
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    server.set_prices(first_date_seconds, prices, next_date_seconds)
+    _set_prices(server, first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_recovery():
@@ -310,7 +217,7 @@ def test_pull_invalid_json(tc: TestContext):
     prices = make_prices(48, base_price=7000, amplitude=2000)
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    server.set_prices(first_date_seconds, prices, next_date_seconds)
+    _set_prices(server, first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_recovery():
@@ -328,7 +235,7 @@ def suite_teardown(tc: TestContext):
 
     # Stop HTTPS server
     if _server is not None:
-        _server.__exit__(None, None, None)
+        _server.stop()
         _server = None
 
     # Remove test cert from the device
