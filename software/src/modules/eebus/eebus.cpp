@@ -225,9 +225,9 @@ static void run_eebus_usecase_tests()
             logger.printfln("EEBUS Test [5]: MPC initial measurements");
             eebus.usecases->mpc->update_constraints(0, 22000, 100, 0, 16000, 10, 0, 1000000, 10, 0, 400, 1, 10, 100, 1);
             eebus.usecases->mpc->update_power(6500, 2200, -150, 4450); // Phase 2 negative = feed-in
-            eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 405, 398);
+            eebus.usecases->mpc->update_voltage(230, 231, 229, EEBUS_NO_VALUE, 0, 0);
             eebus.usecases->mpc->update_current(9570, 6520, 19350);
-            eebus.usecases->mpc->update_frequency(51000); // 51 Hz
+            eebus.usecases->mpc->update_frequency(EEBUS_NO_VALUE); // 51 Hz
             eebus.usecases->mpc->update_energy(150000, 25000);
 #endif
             break;
@@ -242,7 +242,7 @@ static void run_eebus_usecase_tests()
             eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(654321);
             eebus.usecases->monitoring_of_grid_connection_point.update_current(-7500, -8200, -6800);
             eebus.usecases->monitoring_of_grid_connection_point.update_voltage(231, 229, 230);
-            eebus.usecases->monitoring_of_grid_connection_point.update_frequency(50020); // 50.02 Hz
+            eebus.usecases->monitoring_of_grid_connection_point.update_frequency(EEBUS_NO_VALUE); // 50.02 Hz
 #endif
             break;
 

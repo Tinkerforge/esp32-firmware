@@ -53,13 +53,7 @@ MpcUsecase::MpcUsecase()
     usecase_name = "monitoringOfPowerConsumption";
     usecase_version = "1.0.0";
 
-    // Build supported_scenarios from scenario switches (no usecase_updated() call yet since not connected)
-    supported_scenarios.clear();
-    if (monitorPowerSupported) supported_scenarios.push_back(1);
-    if (monitorEnergySupported) supported_scenarios.push_back(2);
-    if (monitorCurrentSupported) supported_scenarios.push_back(3);
-    if (monitorVoltageSupported) supported_scenarios.push_back(4);
-    if (monitorFrequencySupported) supported_scenarios.push_back(5);
+    supported_scenarios = {1, 2, 3, 4, 5};
 }
 
 MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -134,128 +128,119 @@ void MpcUsecase::get_electricalConnection_description_list_data(ElectricalConnec
 
 void MpcUsecase::get_electricalConnection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const
 {
-    if (monitorPowerSupported) {
-        // This links the parameter, electrical connection to the measurement ID for the measuring of total wattage
-        ElectricalConnectionParameterDescriptionDataType w_description_data{};
-        w_description_data.electricalConnectionId = id_ec_1;
-        w_description_data.parameterId = id_p_1;
-        w_description_data.measurementId = id_m_1;
-        w_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-        w_description_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc;
-        w_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
-        w_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-        w_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-        data->electricalConnectionParameterDescriptionData->push_back(w_description_data);
 
-        // Per-phase power parameters
-        constexpr std::array<std::pair<uint8_t, uint8_t>, 3> power_phase_ids{{
-            {id_p_2_1, id_m_2_1},
-            {id_p_2_2, id_m_2_2},
-            {id_p_2_3, id_m_2_3},
-        }};
-        constexpr std::array<ElectricalConnectionPhaseNameEnumType, 3> phase_names{{
-            ElectricalConnectionPhaseNameEnumType::a,
-            ElectricalConnectionPhaseNameEnumType::b,
-            ElectricalConnectionPhaseNameEnumType::c,
-        }};
-        for (int i = 0; i < 3; i++) {
-            ElectricalConnectionParameterDescriptionDataType a_description_data{};
-            a_description_data.electricalConnectionId = id_ec_1;
-            a_description_data.parameterId = power_phase_ids[i].first;
-            a_description_data.measurementId = power_phase_ids[i].second;
-            a_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-            a_description_data.acMeasuredPhases = phase_names[i];
-            a_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
-            a_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-            a_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-            data->electricalConnectionParameterDescriptionData->push_back(a_description_data);
-        }
-    }
-    if (monitorEnergySupported) {
-        // This links the parameter, electrical connection to the measurement ID for the measuring of energy consumed (watt hours)
-        ElectricalConnectionParameterDescriptionDataType consumed_description_data{};
-        consumed_description_data.electricalConnectionId = id_ec_1;
-        consumed_description_data.parameterId = id_p_3;
-        consumed_description_data.measurementId = id_m_3;
-        consumed_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-        consumed_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-        data->electricalConnectionParameterDescriptionData->push_back(consumed_description_data);
+    // This links the parameter, electrical connection to the measurement ID for the measuring of total wattage
+    ElectricalConnectionParameterDescriptionDataType w_description_data{};
+    w_description_data.electricalConnectionId = id_ec_1;
+    w_description_data.parameterId = id_p_1;
+    w_description_data.measurementId = id_m_1;
+    w_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+    w_description_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc;
+    w_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
+    w_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+    w_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+    data->electricalConnectionParameterDescriptionData->push_back(w_description_data);
 
-        // This links the parameter, electrical connection to the measurement ID for the measuring of energy produced (watt hours)
-        ElectricalConnectionParameterDescriptionDataType produced_description_data{};
-        produced_description_data.electricalConnectionId = id_ec_1;
-        produced_description_data.parameterId = id_p_4;
-        produced_description_data.measurementId = id_m_4;
-        produced_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-        produced_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-        data->electricalConnectionParameterDescriptionData->push_back(produced_description_data);
+    // Per-phase power parameters
+    constexpr std::array<std::pair<uint8_t, uint8_t>, 3> power_phase_ids{{
+        {id_p_2_1, id_m_2_1},
+        {id_p_2_2, id_m_2_2},
+        {id_p_2_3, id_m_2_3},
+    }};
+    constexpr std::array<ElectricalConnectionPhaseNameEnumType, 3> phase_name_enums{{
+        ElectricalConnectionPhaseNameEnumType::a,
+        ElectricalConnectionPhaseNameEnumType::b,
+        ElectricalConnectionPhaseNameEnumType::c,
+    }};
+    for (int i = 0; i < 3; i++) {
+        ElectricalConnectionParameterDescriptionDataType a_description_data{};
+        a_description_data.electricalConnectionId = id_ec_1;
+        a_description_data.parameterId = power_phase_ids[i].first;
+        a_description_data.measurementId = power_phase_ids[i].second;
+        a_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+        a_description_data.acMeasuredPhases = phase_name_enums[i];
+        a_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
+        a_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+        a_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+        data->electricalConnectionParameterDescriptionData->push_back(a_description_data);
     }
-    if (monitorCurrentSupported) {
-        // Current per phase parameters
-        constexpr std::array<std::pair<uint8_t, uint8_t>, 3> current_phase_ids{{
-            {id_p_5_1, id_m_5_1},
-            {id_p_5_2, id_m_5_2},
-            {id_p_5_3, id_m_5_3},
-        }};
-        constexpr std::array<ElectricalConnectionPhaseNameEnumType, 3> phase_names{{
-            ElectricalConnectionPhaseNameEnumType::a,
-            ElectricalConnectionPhaseNameEnumType::b,
-            ElectricalConnectionPhaseNameEnumType::c,
-        }};
-        for (int i = 0; i < 3; i++) {
-            ElectricalConnectionParameterDescriptionDataType a_description_data{};
-            a_description_data.electricalConnectionId = id_ec_1;
-            a_description_data.parameterId = current_phase_ids[i].first;
-            a_description_data.measurementId = current_phase_ids[i].second;
-            a_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-            a_description_data.acMeasuredPhases = phase_names[i];
-            a_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
-            a_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-            a_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-            data->electricalConnectionParameterDescriptionData->push_back(a_description_data);
+
+    // This links the parameter, electrical connection to the measurement ID for the measuring of energy consumed (watt hours)
+    ElectricalConnectionParameterDescriptionDataType consumed_description_data{};
+    consumed_description_data.electricalConnectionId = id_ec_1;
+    consumed_description_data.parameterId = id_p_3;
+    consumed_description_data.measurementId = id_m_3;
+    consumed_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+    consumed_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+    data->electricalConnectionParameterDescriptionData->push_back(consumed_description_data);
+
+    // This links the parameter, electrical connection to the measurement ID for the measuring of energy produced (watt hours)
+    ElectricalConnectionParameterDescriptionDataType produced_description_data{};
+    produced_description_data.electricalConnectionId = id_ec_1;
+    produced_description_data.parameterId = id_p_4;
+    produced_description_data.measurementId = id_m_4;
+    produced_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+    produced_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+    data->electricalConnectionParameterDescriptionData->push_back(produced_description_data);
+
+    // Current per phase parameters
+    constexpr std::array<std::pair<uint8_t, uint8_t>, 3> current_phase_ids{{
+        {id_p_5_1, id_m_5_1},
+        {id_p_5_2, id_m_5_2},
+        {id_p_5_3, id_m_5_3},
+    }};
+
+    for (int i = 0; i < 3; i++) {
+        ElectricalConnectionParameterDescriptionDataType a_description_data{};
+        a_description_data.electricalConnectionId = id_ec_1;
+        a_description_data.parameterId = current_phase_ids[i].first;
+        a_description_data.measurementId = current_phase_ids[i].second;
+        a_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+        a_description_data.acMeasuredPhases = phase_name_enums[i];
+        a_description_data.acMeasuredInReferenceTo = ElectricalConnectionPhaseNameEnumType::neutral;
+        a_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+        a_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+        data->electricalConnectionParameterDescriptionData->push_back(a_description_data);
+    }
+
+    // Voltage phase-to-neutral and phase-to-phase parameters
+    struct RelativePhaseAssignment {
+        uint8_t parameter_id;
+        uint8_t measurement_id;
+        ElectricalConnectionPhaseNameEnumType measured_phase;
+        ElectricalConnectionPhaseNameEnumType measured_in_reference_to;
+        bool supported = true;
+    };
+    constexpr std::array<RelativePhaseAssignment, 6> relative_phase_assignments{{
+        {id_p_6_1, id_m_6_1, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::neutral},
+        {id_p_6_2, id_m_6_2, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::neutral},
+        {id_p_6_3, id_m_6_3, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::neutral},
+        {id_p_6_4, id_m_6_4, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::b},
+        {id_p_6_5, id_m_6_5, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::c},
+        {id_p_6_6, id_m_6_6, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::a},
+    }};
+    for (const auto &assignment : relative_phase_assignments) {
+        if (assignment.supported) {
+            ElectricalConnectionParameterDescriptionDataType current_description_data{};
+            current_description_data.electricalConnectionId = id_ec_1;
+            current_description_data.parameterId = assignment.parameter_id;
+            current_description_data.measurementId = assignment.measurement_id;
+            current_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+            current_description_data.acMeasuredPhases = assignment.measured_phase;
+            current_description_data.acMeasuredInReferenceTo = assignment.measured_in_reference_to;
+            current_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::apparent;
+            current_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+            data->electricalConnectionParameterDescriptionData->push_back(current_description_data);
         }
     }
-    if (monitorVoltageSupported) {
-        // Voltage phase-to-neutral and phase-to-phase parameters
-        struct RelativePhaseAssignment {
-            uint8_t parameter_id;
-            uint8_t measurement_id;
-            ElectricalConnectionPhaseNameEnumType measured_phase;
-            ElectricalConnectionPhaseNameEnumType measured_in_reference_to;
-            bool supported = true;
-        };
-        const std::array<RelativePhaseAssignment, 6> relative_phase_assignments{{
-            {id_p_6_1, id_m_6_1, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::neutral},
-            {id_p_6_2, id_m_6_2, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::neutral},
-            {id_p_6_3, id_m_6_3, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::neutral},
-            {id_p_6_4, id_m_6_4, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::b, phase_to_phase_available},
-            {id_p_6_5, id_m_6_5, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::c, phase_to_phase_available},
-            {id_p_6_6, id_m_6_6, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::a, phase_to_phase_available},
-        }};
-        for (const auto &assignment : relative_phase_assignments) {
-            if (assignment.supported) {
-                ElectricalConnectionParameterDescriptionDataType current_description_data{};
-                current_description_data.electricalConnectionId = id_ec_1;
-                current_description_data.parameterId = assignment.parameter_id;
-                current_description_data.measurementId = assignment.measurement_id;
-                current_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-                current_description_data.acMeasuredPhases = assignment.measured_phase;
-                current_description_data.acMeasuredInReferenceTo = assignment.measured_in_reference_to;
-                current_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::apparent;
-                current_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-                data->electricalConnectionParameterDescriptionData->push_back(current_description_data);
-            }
-        }
-    }
-    if (monitorFrequencySupported) {
-        // This links the parameter, electrical connection to the measurement ID for the measuring of frequency
-        ElectricalConnectionParameterDescriptionDataType w_description_data{};
-        w_description_data.electricalConnectionId = id_ec_1;
-        w_description_data.parameterId = id_p_7;
-        w_description_data.measurementId = id_m_7;
-        w_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-        data->electricalConnectionParameterDescriptionData->push_back(w_description_data);
-    }
+
+    // This links the parameter, electrical connection to the measurement ID for the measuring of frequency
+    ElectricalConnectionParameterDescriptionDataType freq_description_data{};
+    freq_description_data.electricalConnectionId = id_ec_1;
+    freq_description_data.parameterId = id_p_7;
+    freq_description_data.measurementId = id_m_7;
+    freq_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+    data->electricalConnectionParameterDescriptionData->push_back(freq_description_data);
 }
 
 void MpcUsecase::get_measurement_description_list_data(MeasurementDescriptionListDataType *data)
@@ -269,26 +254,26 @@ void MpcUsecase::get_measurement_description_list_data(MeasurementDescriptionLis
     };
     const std::array<MeasurementDescriptionEntry, 16> measurement_descriptions{{
         // Scenario 1: Monitor Power
-        {id_m_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPowerTotal, monitorPowerSupported},
-        {id_m_2_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
-        {id_m_2_2, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
-        {id_m_2_3, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower, monitorPowerSupported},
+        {id_m_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPowerTotal},
+        {id_m_2_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
+        {id_m_2_2, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
+        {id_m_2_3, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
         // Scenario 2: Monitor Energy
-        {id_m_3, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::acEnergyConsumed, monitorEnergySupported},
-        {id_m_4, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::acEnergyProduced, monitorEnergySupported},
+        {id_m_3, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::acEnergyConsumed},
+        {id_m_4, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::acEnergyProduced},
         // Scenario 3: Monitor Current
-        {id_m_5_1, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, monitorCurrentSupported},
-        {id_m_5_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, monitorCurrentSupported},
-        {id_m_5_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent, monitorCurrentSupported},
+        {id_m_5_1, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
+        {id_m_5_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
+        {id_m_5_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
         // Scenario 4: Monitor Voltage
-        {id_m_6_1, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported},
-        {id_m_6_2, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported},
-        {id_m_6_3, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported},
-        {id_m_6_4, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported && phase_to_phase_available},
-        {id_m_6_5, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported && phase_to_phase_available},
-        {id_m_6_6, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, monitorVoltageSupported && phase_to_phase_available},
+        {id_m_6_1, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_2, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_3, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_4, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_5, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_6, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
         // Scenario 5: Monitor Frequency
-        {id_m_7, MeasurementTypeEnumType::frequency, UnitOfMeasurementEnumType::Hz, ScopeTypeEnumType::acFrequency, monitorFrequencySupported},
+        {id_m_7, MeasurementTypeEnumType::frequency, UnitOfMeasurementEnumType::Hz, ScopeTypeEnumType::acFrequency},
     }};
 
     for (const auto &entry : measurement_descriptions) {
@@ -320,26 +305,38 @@ void MpcUsecase::get_measurement_constraints_list_data(MeasurementConstraintsLis
     // Use non-constexpr array since we access member variables
     const std::array<ConstraintEntry, 17> entries{{
         // Scenario 1: Power measurements (W) - scale 0
-        {id_m_1, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0, monitorPowerSupported},
-        {id_m_2_1, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0, monitorPowerSupported},
-        {id_m_2_2, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0, monitorPowerSupported},
-        {id_m_2_3, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0, monitorPowerSupported},
+        {id_m_1, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0},
+        {
+            id_m_2_1,
+            power_limit_min_w,
+            power_limit_max_w,
+            power_limit_stepsize_w,
+            0,
+        },
+        {id_m_2_2, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0},
+        {id_m_2_3, power_limit_min_w, power_limit_max_w, power_limit_stepsize_w, 0},
         // Scenario 2: Energy measurements (Wh) - scale 0
-        {id_m_3, static_cast<int32_t>(energy_limit_min_wh), static_cast<int32_t>(energy_limit_max_wh), static_cast<int32_t>(energy_limit_stepsize_wh), 0, monitorEnergySupported},
-        {id_m_4, static_cast<int32_t>(energy_limit_min_wh), static_cast<int32_t>(energy_limit_max_wh), static_cast<int32_t>(energy_limit_stepsize_wh), 0, monitorEnergySupported},
+        {id_m_3, static_cast<int32_t>(energy_limit_min_wh), static_cast<int32_t>(energy_limit_max_wh), static_cast<int32_t>(energy_limit_stepsize_wh), 0},
+        {id_m_4, static_cast<int32_t>(energy_limit_min_wh), static_cast<int32_t>(energy_limit_max_wh), static_cast<int32_t>(energy_limit_stepsize_wh), 0},
         // Scenario 3: Current measurements (A) - scale -3 (mA)
-        {id_m_5_1, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3, monitorCurrentSupported},
-        {id_m_5_2, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3, monitorCurrentSupported},
-        {id_m_5_3, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3, monitorCurrentSupported},
+        {id_m_5_1, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3},
+        {id_m_5_2, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3},
+        {id_m_5_3, current_limit_min_ma, current_limit_max_ma, current_limit_stepsize_ma, -3},
         // Scenario 4: Voltage measurements (V) - scale 0
-        {id_m_6_1, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported},
-        {id_m_6_2, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported},
-        {id_m_6_3, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported},
-        {id_m_6_4, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported && phase_to_phase_available},
-        {id_m_6_5, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported && phase_to_phase_available},
-        {id_m_6_6, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, monitorVoltageSupported && phase_to_phase_available},
+        {id_m_6_1, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
+        {id_m_6_2, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
+        {
+            id_m_6_3,
+            voltage_limit_min_v,
+            voltage_limit_max_v,
+            voltage_limit_stepsize_v,
+            0,
+        },
+        {id_m_6_4, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
+        {id_m_6_5, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
+        {id_m_6_6, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
         // Scenario 5: Frequency (Hz) - scale -3 (mHz)
-        {id_m_7, frequency_limit_min_mhz, frequency_limit_max_mhz, frequency_limit_stepsize_mhz, -3, monitorFrequencySupported},
+        {id_m_7, frequency_limit_min_mhz, frequency_limit_max_mhz, frequency_limit_stepsize_mhz, -3},
     }};
 
     for (const auto &entry : entries) {
@@ -362,100 +359,90 @@ void MpcUsecase::get_measurement_list_data(MeasurementListDataType *data) const
     // Measurement entries filtered by scenario switches and EEBUS_NO_VALUE
     // NOTE: MPC allows all values including 0 and negative (e.g., power feed-in)
 
-    if (monitorPowerSupported) {
-        // Total power (id_m_1) - always included when scenario supported, negative values allowed (power feed-in)
-        MeasurementDataType m_total{};
-        m_total.measurementId = id_m_1;
-        m_total.valueType = MeasurementValueTypeEnumType::value;
-        m_total.value->number = total_power_w;
-        m_total.value->scale = 0;
-        m_total.valueSource = MeasurementValueSourceEnumType::measuredValue;
-        data->measurementData->push_back(m_total);
+    // Total power (id_m_1) - always included when scenario supported, negative values allowed (power feed-in)
+    MeasurementDataType m_total{};
+    m_total.measurementId = id_m_1;
+    m_total.valueType = MeasurementValueTypeEnumType::value;
+    m_total.value->number = total_power_w;
+    m_total.value->scale = 0;
+    m_total.valueSource = MeasurementValueSourceEnumType::measuredValue;
+    data->measurementData->push_back(m_total);
 
-        // Power per phase (id_m_2_1, id_m_2_2, id_m_2_3) - omit if EEBUS_NO_VALUE
-        for (int i = 0; i < 3; i++) {
-            if (power_phase_w[i] != EEBUS_NO_VALUE) {
-                MeasurementDataType m{};
-                m.measurementId = id_m_2_1 + i;
-                m.valueType = MeasurementValueTypeEnumType::value;
-                m.value->number = power_phase_w[i];
-                m.value->scale = 0;
-                m.valueSource = MeasurementValueSourceEnumType::measuredValue;
-                data->measurementData->push_back(m);
-            }
-        }
-    }
-
-    if (monitorEnergySupported) {
-        // Energy consumed (id_m_3)
-        MeasurementDataType m_consumed{};
-        m_consumed.measurementId = id_m_3;
-        m_consumed.valueType = MeasurementValueTypeEnumType::value;
-        m_consumed.value->number = static_cast<int32_t>(energy_consumed_wh);
-        m_consumed.value->scale = 0;
-        m_consumed.valueSource = MeasurementValueSourceEnumType::measuredValue;
-        data->measurementData->push_back(m_consumed);
-
-        // Energy produced (id_m_4)
-        MeasurementDataType m_produced{};
-        m_produced.measurementId = id_m_4;
-        m_produced.valueType = MeasurementValueTypeEnumType::value;
-        m_produced.value->number = static_cast<int32_t>(energy_produced_wh);
-        m_produced.value->scale = 0;
-        m_produced.valueSource = MeasurementValueSourceEnumType::measuredValue;
-        data->measurementData->push_back(m_produced);
-    }
-
-    if (monitorCurrentSupported) {
-        // Current per phase (id_m_5_1, id_m_5_2, id_m_5_3) - scale -3 (mA)
-        for (int i = 0; i < 3; i++) {
+    // Power per phase (id_m_2_1, id_m_2_2, id_m_2_3) - omit if EEBUS_NO_VALUE
+    for (int i = 0; i < 3; i++) {
+        if (power_phase_w[i] != EEBUS_NO_VALUE) {
             MeasurementDataType m{};
-            m.measurementId = id_m_5_1 + i;
+            m.measurementId = id_m_2_1 + i;
             m.valueType = MeasurementValueTypeEnumType::value;
-            m.value->number = current_phase_ma[i];
-            m.value->scale = -3;
-            m.valueSource = MeasurementValueSourceEnumType::measuredValue;
-            data->measurementData->push_back(m);
-        }
-    }
-
-    if (monitorVoltageSupported) {
-        // Voltage phase-to-neutral (id_m_6_1, id_m_6_2, id_m_6_3)
-        for (int i = 0; i < 3; i++) {
-            MeasurementDataType m{};
-            m.measurementId = id_m_6_1 + i;
-            m.valueType = MeasurementValueTypeEnumType::value;
-            m.value->number = voltage_phase_to_neutral_v[i];
+            m.value->number = power_phase_w[i];
             m.value->scale = 0;
             m.valueSource = MeasurementValueSourceEnumType::measuredValue;
             data->measurementData->push_back(m);
         }
+    }
 
-        // Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6) - only if available
-        if (phase_to_phase_available) {
-            for (int i = 0; i < 3; i++) {
-                MeasurementDataType m{};
-                m.measurementId = id_m_6_4 + i;
-                m.valueType = MeasurementValueTypeEnumType::value;
-                m.value->number = voltage_phase_to_phase_v[i];
-                m.value->scale = 0;
-                m.valueSource = MeasurementValueSourceEnumType::measuredValue;
-                data->measurementData->push_back(m);
-            }
+    // Energy consumed (id_m_3)
+    MeasurementDataType m_consumed{};
+    m_consumed.measurementId = id_m_3;
+    m_consumed.valueType = MeasurementValueTypeEnumType::value;
+    m_consumed.value->number = static_cast<int32_t>(energy_consumed_wh);
+    m_consumed.value->scale = 0;
+    m_consumed.valueSource = MeasurementValueSourceEnumType::measuredValue;
+    data->measurementData->push_back(m_consumed);
+
+    // Energy produced (id_m_4)
+    MeasurementDataType m_produced{};
+    m_produced.measurementId = id_m_4;
+    m_produced.valueType = MeasurementValueTypeEnumType::value;
+    m_produced.value->number = static_cast<int32_t>(energy_produced_wh);
+    m_produced.value->scale = 0;
+    m_produced.valueSource = MeasurementValueSourceEnumType::measuredValue;
+    data->measurementData->push_back(m_produced);
+
+    // Current per phase (id_m_5_1, id_m_5_2, id_m_5_3) - scale -3 (mA)
+    for (int i = 0; i < 3; i++) {
+        MeasurementDataType m{};
+        m.measurementId = id_m_5_1 + i;
+        m.valueType = MeasurementValueTypeEnumType::value;
+        m.value->number = current_phase_ma[i];
+        m.value->scale = -3;
+        m.valueSource = MeasurementValueSourceEnumType::measuredValue;
+        data->measurementData->push_back(m);
+    }
+
+    // Voltage phase-to-neutral (id_m_6_1, id_m_6_2, id_m_6_3)
+    for (int i = 0; i < 3; i++) {
+        MeasurementDataType m{};
+        m.measurementId = id_m_6_1 + i;
+        m.valueType = MeasurementValueTypeEnumType::value;
+        m.value->number = voltage_phase_to_neutral_v[i];
+        m.value->scale = 0;
+        m.valueSource = MeasurementValueSourceEnumType::measuredValue;
+        data->measurementData->push_back(m);
+    }
+
+    // Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6) - only if available
+    if (phase_to_phase_available) {
+        for (int i = 0; i < 3; i++) {
+            MeasurementDataType m{};
+            m.measurementId = id_m_6_4 + i;
+            m.valueType = MeasurementValueTypeEnumType::value;
+            m.value->number = voltage_phase_to_phase_v[i];
+            m.value->scale = 0;
+            m.valueSource = MeasurementValueSourceEnumType::measuredValue;
+            data->measurementData->push_back(m);
         }
     }
 
-    if (monitorFrequencySupported) {
-        // Frequency (id_m_7) - scale -3 (mHz), omit if EEBUS_NO_VALUE
-        if (frequency_mhz != EEBUS_NO_VALUE) {
-            MeasurementDataType m_freq{};
-            m_freq.measurementId = id_m_7;
-            m_freq.valueType = MeasurementValueTypeEnumType::value;
-            m_freq.value->number = frequency_mhz;
-            m_freq.value->scale = -3;
-            m_freq.valueSource = MeasurementValueSourceEnumType::measuredValue;
-            data->measurementData->push_back(m_freq);
-        }
+    // Frequency (id_m_7) - scale -3 (mHz), omit if EEBUS_NO_VALUE
+    if (frequency_mhz != EEBUS_NO_VALUE) {
+        MeasurementDataType m_freq{};
+        m_freq.measurementId = id_m_7;
+        m_freq.valueType = MeasurementValueTypeEnumType::value;
+        m_freq.value->number = frequency_mhz;
+        m_freq.value->scale = -3;
+        m_freq.valueSource = MeasurementValueSourceEnumType::measuredValue;
+        data->measurementData->push_back(m_freq);
     }
 }
 
@@ -500,21 +487,6 @@ void MpcUsecase::update_power(int total_power, int power_phase_1, int power_phas
 
 void MpcUsecase::update_energy(uint32_t energy_consumed, uint32_t energy_produced)
 {
-    // Auto-toggle scenario support based on value availability
-    // Energy is considered unavailable only if BOTH values are 0 (initial state)
-    // Individual 0 values are valid (e.g., no production from grid, no consumption during export)
-    if (energy_consumed == 0 && energy_produced == 0) {
-        if (monitorEnergySupported) {
-            monitorEnergySupported = false;
-            updateSupportedScenarios();
-        }
-    } else {
-        if (!monitorEnergySupported) {
-            monitorEnergySupported = true;
-            updateSupportedScenarios();
-        }
-    }
-
     // Update all values including 0
     energy_consumed_wh = energy_consumed;
     energy_produced_wh = energy_produced;
@@ -528,24 +500,11 @@ void MpcUsecase::update_energy(uint32_t energy_consumed, uint32_t energy_produce
 
 void MpcUsecase::update_current(int current_phase_1, int current_phase_2, int current_phase_3)
 {
-    // Auto-toggle scenario support based on value availability
-    // Current is unavailable if ANY phase is EEBUS_NO_VALUE
-    if (current_phase_1 == EEBUS_NO_VALUE || current_phase_2 == EEBUS_NO_VALUE || current_phase_3 == EEBUS_NO_VALUE) {
-        if (monitorCurrentSupported) {
-            monitorCurrentSupported = false;
-            updateSupportedScenarios();
-        }
-    } else {
-        if (!monitorCurrentSupported) {
-            monitorCurrentSupported = true;
-            updateSupportedScenarios();
-        }
-    }
-
+    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
     // Update all values including 0 and negative (negative = reverse current)
-    current_phase_ma[0] = current_phase_1;
-    current_phase_ma[1] = current_phase_2;
-    current_phase_ma[2] = current_phase_3;
+    current_phase_ma[0] = (current_phase_1 == EEBUS_NO_VALUE) ? 0 : current_phase_1;
+    current_phase_ma[1] = (current_phase_2 == EEBUS_NO_VALUE) ? 0 : current_phase_2;
+    current_phase_ma[2] = (current_phase_3 == EEBUS_NO_VALUE) ? 0 : current_phase_3;
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
@@ -556,24 +515,11 @@ void MpcUsecase::update_current(int current_phase_1, int current_phase_2, int cu
 
 void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int voltage_phase_3, int voltage_phase_1_2, int voltage_phase_2_3, int voltage_phase_3_1)
 {
-    // Auto-toggle scenario support based on value availability
-    // Voltage is unavailable if ALL phase-to-neutral values are EEBUS_NO_VALUE
-    if (voltage_phase_1 == EEBUS_NO_VALUE && voltage_phase_2 == EEBUS_NO_VALUE && voltage_phase_3 == EEBUS_NO_VALUE) {
-        if (monitorVoltageSupported) {
-            monitorVoltageSupported = false;
-            updateSupportedScenarios();
-        }
-    } else {
-        if (!monitorVoltageSupported) {
-            monitorVoltageSupported = true;
-            updateSupportedScenarios();
-        }
-    }
-
+    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
     // Update all values including 0
-    voltage_phase_to_neutral_v[0] = voltage_phase_1;
-    voltage_phase_to_neutral_v[1] = voltage_phase_2;
-    voltage_phase_to_neutral_v[2] = voltage_phase_3;
+    voltage_phase_to_neutral_v[0] = (voltage_phase_1 == EEBUS_NO_VALUE) ? 0 : voltage_phase_1;
+    voltage_phase_to_neutral_v[1] = (voltage_phase_2 == EEBUS_NO_VALUE) ? 0 : voltage_phase_2;
+    voltage_phase_to_neutral_v[2] = (voltage_phase_3 == EEBUS_NO_VALUE) ? 0 : voltage_phase_3;
 
     bool phase_to_phase_supported_before = phase_to_phase_available;
     phase_to_phase_available = !(voltage_phase_1_2 == INT32_MIN || voltage_phase_2_3 == INT32_MIN || voltage_phase_3_1 == INT32_MIN);
@@ -600,21 +546,9 @@ void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int vo
 
 void MpcUsecase::update_frequency(int frequency_millihertz)
 {
-    // EEBUS_NO_VALUE means frequency measurement is unavailable, store as-is for filtering in get_measurement_list_data()
-    frequency_mhz = frequency_millihertz;
-
-    // Auto-toggle Scenario 5 (Frequency) based on data availability
-    if (frequency_millihertz == EEBUS_NO_VALUE) {
-        if (monitorFrequencySupported) {
-            monitorFrequencySupported = false;
-            updateSupportedScenarios();
-        }
-    } else {
-        if (!monitorFrequencySupported) {
-            monitorFrequencySupported = true;
-            updateSupportedScenarios();
-        }
-    }
+    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
+    // Update value including 0
+    frequency_mhz = (frequency_millihertz == EEBUS_NO_VALUE) ? 0 : frequency_millihertz;
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
@@ -685,39 +619,6 @@ void MpcUsecase::update_constraints(int power_min, int power_max, int power_step
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints_data, "measurementConstraintsListData");
 
     update_api();
-}
-
-void MpcUsecase::updateSupportedScenarios()
-{
-    supported_scenarios.clear();
-    if (monitorPowerSupported) {
-        supported_scenarios.push_back(1); // Scenario 1: Monitor Power (Mandatory)
-    }
-    if (monitorEnergySupported) {
-        supported_scenarios.push_back(2); // Scenario 2: Monitor Energy (Optional)
-    }
-    if (monitorCurrentSupported) {
-        supported_scenarios.push_back(3); // Scenario 3: Monitor Current (Recommended)
-    }
-    if (monitorVoltageSupported) {
-        supported_scenarios.push_back(4); // Scenario 4: Monitor Voltage (Optional)
-    }
-    if (monitorFrequencySupported) {
-        supported_scenarios.push_back(5); // Scenario 5: Monitor Frequency (Optional)
-    }
-
-    // Notify peers of scenario change
-    usecase_updated();
-
-    // Notify subscribers of description/constraints/parameter changes since available measurements changed
-    ElectricalConnectionParameterDescriptionListDataType ec_parameter_description_data = EVSEEntity::get_electrical_connection_parameter_description_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), ec_parameter_description_data, "electricalConnectionParameterDescriptionListData");
-
-    MeasurementDescriptionListDataType measurement_description_data = EVSEEntity::get_measurement_description_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_description_data, "measurementDescriptionListData");
-
-    MeasurementConstraintsListDataType constraints_data = EVSEEntity::get_measurement_constraints_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints_data, "measurementConstraintsListData");
 }
 
 #endif // EEBUS_ENABLE_MPC_USECASE

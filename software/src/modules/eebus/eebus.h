@@ -32,13 +32,24 @@
 #define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 #endif
 
-
 //#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
 
-
-// What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
-#ifdef EEBUS_MODE_EVSE
+// If we are in testmode enable only the tested usecases, otherwise enable the usecases either for energy manager or evse
 // To disabled a usecase simply comment the respective line
+#ifdef EEBUS_DEV_TEST_ENABLE
+//#define EEBUS_ENABLE_EVCEM_USECASE
+//#define EEBUS_ENABLE_EVCC_USECASE
+//#define EEBUS_ENABLE_EVSECC_USECASE
+#define EEBUS_ENABLE_LPC_USECASE
+//#define EEBUS_ENABLE_MPC_USECASE
+//#define EEBUS_ENABLE_LPP_USECASE
+//#define EEBUS_ENABLE_EVCS_USECASE
+//#define EEBUS_ENABLE_CEVC_USECASE
+//#define EEBUS_ENABLE_OPEV_USECASE
+#define EEBUS_ENABLE_MGCP_USECASE
+// What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
+#else
+#ifdef EEBUS_MODE_EVSE
 //#define EEBUS_ENABLE_EVCS_USECASE
 #define EEBUS_ENABLE_EVCEM_USECASE
 #define EEBUS_ENABLE_EVCC_USECASE
@@ -53,18 +64,6 @@
 #define EEBUS_ENABLE_LPC_USECASE
 #define EEBUS_ENABLE_MGCP_USECASE
 #endif
-
-#ifdef EEBUS_DEV_TEST_ENABLE
-#define EEBUS_ENABLE_EVCEM_USECASE
-#define EEBUS_ENABLE_EVCC_USECASE
-#define EEBUS_ENABLE_EVSECC_USECASE
-#define EEBUS_ENABLE_LPC_USECASE
-#define EEBUS_ENABLE_MPC_USECASE
-#define EEBUS_ENABLE_LPP_USECASE
-//#define EEBUS_ENABLE_EVCS_USECASE
-//#define EEBUS_ENABLE_CEVC_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
-#define EEBUS_ENABLE_MGCP_USECASE
 #endif
 
 #include "config.h"
@@ -81,9 +80,8 @@
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 #define EEBUS_NO_VALUE INT32_MIN
 
-//#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for
+//#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for disabl
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
-
 
 // Forward declarations (so we don't have to include spine_types.h here)
 class EEBusUseCases;

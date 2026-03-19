@@ -30,6 +30,10 @@ class LpcUsecase;
 class LppUsecase;
 #endif
 
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+#warning  "EEBUS MPC and MGCP usecase enabled at the same time. This is know to cause issues with EEBUS communication and is therefore not recommended"
+#endif
+
 #ifdef EEBUS_ENABLE_MPC_USECASE
 
 /**
@@ -320,14 +324,6 @@ private:
     // =========================================================================
     void update_api() const;
 
-    // Supported scenarios
-    bool monitorPowerSupported = true; // Scenario 1: Mandatory, should never be set to false
-    bool monitorEnergySupported = true; // Scenario 2: Optional
-    bool monitorCurrentSupported = true; // Scenario 3: Recommended
-    bool monitorVoltageSupported = true; // Scenario 4: Optional
-    bool monitorFrequencySupported = true; // Scenario 5: Optional
-
-    void updateSupportedScenarios();
 };
 
 #endif // EEBUS_ENABLE_MPC_USECASE

@@ -328,20 +328,6 @@ private:
      */
     void update_api() const;
 
-    // ========================================================================
-    // Scenario switches
-    // ========================================================================
-    bool monitorPvCurtailmentSupported = true;  ///< Scenario 1: PV curtailment (Optional)
-    // Scenarios 2, 3, 4 are mandatory - no switches needed
-    bool monitorCurrentSupported = true;        ///< Scenario 5: Current monitoring (Recommended)
-    bool monitorVoltageSupported = true;        ///< Scenario 6: Voltage monitoring (Optional)
-    bool monitorFrequencySupported = true;      ///< Scenario 7: Frequency monitoring (Optional)
-
-    /**
-     * @brief Rebuild supported_scenarios from switches and notify peers.
-     * Call this when a scenario switch changes at runtime.
-     */
-    void updateSupportedScenarios();
 };
 
 #endif // EEBUS_ENABLE_MGCP_USECASE
