@@ -11,38 +11,36 @@ jobs:
         environment: [warp4, warp3, warp2, warp, energy_manager_v2, energy_manager, eltako, smart_energy_broker, esp32_ethernet, esp32]
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache/restore@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache/restore@v5
         with:
           path: |
-            ~/.cache/pip
             ~/.platformio
             ./software/.pio
             ./software/packages
           key: ${{ matrix.os }}-${{ github.run_id }}
           restore-keys: ${{ matrix.os }}-
-      - uses: actions/setup-python@v5
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+      - name: Sync UV
+        run: uv sync
+      - name: Install Node.JS
+        uses: actions/setup-node@v6
         with:
-          python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install PlatformIO Core
-        run: pip install --upgrade platformio
+          node-version: 22
       - name: 'Build Firmware: ${{ matrix.environment }}'
         working-directory: ./software
-        run: pio run -e ${{ matrix.environment }} -t clean && pio run -e ${{ matrix.environment }}
+        run: uv run pio run -e ${{ matrix.environment }} -t clean && uv run pio run -e ${{ matrix.environment }}
       - name: 'Deleting Caches: ${{ matrix.os }}-'
         if: matrix.environment == 'warp4'
         run: gh cache delete ${{ matrix.os }}- || true
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v5
         if: matrix.environment == 'warp4'
         with:
           path: |
-            ~/.cache/pip
             ~/.platformio
             ./software/.pio
             ./software/packages
