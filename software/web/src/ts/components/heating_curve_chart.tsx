@@ -218,8 +218,11 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
     }
 
     render() {
-        const { extended_hours_warm, extended_hours_cold, blocking_hours_warm, blocking_hours_cold,
-                current_temperature, show_extended, show_blocking } = this.props;
+        const { current_temperature, show_extended, show_blocking } = this.props;
+        const extended_hours_warm  = Math.max(0, this.props.extended_hours_warm);
+        const extended_hours_cold  = Math.max(0, this.props.extended_hours_cold);
+        const blocking_hours_warm  = Math.max(0, this.props.blocking_hours_warm);
+        const blocking_hours_cold  = Math.max(0, this.props.blocking_hours_cold);
         const { dragging, hovered } = this.state;
         const M = HeatingCurveChart.MARGIN;
         const VW = HeatingCurveChart.VIEWBOX_WIDTH;
