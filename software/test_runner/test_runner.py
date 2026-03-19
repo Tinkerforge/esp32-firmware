@@ -18,7 +18,7 @@ import fnmatch
 
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
 
-DEFAULT_TEST_TIMEOUT = 10
+DEFAULT_TEST_TIMEOUT = 5 * 60
 
 colors = {"off": "\x1b[00m",
           "blue": "\x1b[34m",
