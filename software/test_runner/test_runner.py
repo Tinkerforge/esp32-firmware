@@ -272,9 +272,9 @@ def main():
                             elif payload["testname"] == "teardown":
                                 x: list[JTestCase] = jsuite.test_cases
                                 if len(stdout_buf) > 0:
-                                    x[-1].stdout += "\n---BEGIN TEARDOWN---\n" + stdout_buf.decode('utf-8')
+                                    x[-1].stdout = (x[-1].stdout or "") + "\n---BEGIN TEARDOWN---\n" + stdout_buf.decode('utf-8')
                                 if len(stderr_buf) > 0:
-                                    x[-1].stderr += "\n---BEGIN TEARDOWN---\n" + stderr_buf.decode('utf-8')
+                                    x[-1].stderr = (x[-1].stderr or "") + "\n---BEGIN TEARDOWN---\n" + stderr_buf.decode('utf-8')
                                 if len(dbg_buf) > 0:
                                     x[-1].log += "\n---BEGIN TEARDOWN---\n" + dbg_buf
                                 stdout_buf = b""
