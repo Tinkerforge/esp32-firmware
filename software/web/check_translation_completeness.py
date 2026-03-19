@@ -178,7 +178,7 @@ def main():
 
         print("Unused placeholders:")
         for x in sorted(unused_filtered):
-            print("\t" + x)
+            print("  " + x)
 
 if __name__ == "__main__":
     main()
