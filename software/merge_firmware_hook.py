@@ -23,24 +23,6 @@ env.AddPostAction(
     env.VerboseAction(lambda **kwargs: os.makedirs("build_latest", exist_ok=True), "Ensuring build_latest directory exists")
 )
 
-if env.GetProjectOption("custom_autoclean_build_dir", default="false") == "true": # Option is a string, not a Python boolean.
-    firmware_name = product_id + "_firmware"
-
-    def delete_old(fwname):
-        fileList = glob.glob(f'build{os.sep}{fwname}*')
-        for filePath in fileList:
-            try:
-                os.remove(filePath)
-            except:
-                pass
-        return None
-
-    env.AddPostAction(
-        f"$BUILD_DIR{os.sep}${{PROGNAME}}.elf",
-        env.VerboseAction(lambda **kwargs: delete_old(firmware_name),
-                          "Cleaning old {}*".format(firmware_name))
-    )
-
 def copy2(src, dst): # hide shutil.copy2 return value
     shutil.copy2(src, dst)
     return None
