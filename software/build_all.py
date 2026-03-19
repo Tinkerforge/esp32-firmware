@@ -1,15 +1,8 @@
 #!/usr/bin/env -S uv run --script
 
-import sys
-
-if sys.hexversion < 0x3060000:
-    print('Python >= 3.6 required')
-    sys.exit(1)
-
 import glob
 import configparser
 import subprocess
-
 
 def main():
     for ini_path in sorted(glob.glob('*.ini')):
