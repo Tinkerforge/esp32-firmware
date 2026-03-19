@@ -101,7 +101,7 @@ class _PriceServer:
         self.set_response(json.dumps(payload, separators=(",", ":")))
 
 
-_server: _PriceServer | None = None
+_server: _PriceServer = None # type: ignore
 
 
 def suite_setup(tc: TestContext):
