@@ -99,9 +99,12 @@ def check_call(*args): # hide subprocess.check_call return value
 env.AddPostAction(
     f"$BUILD_DIR{os.sep}${{PROGNAME}}.bin",
     env.VerboseAction(lambda env, **kwargs: check_call(
-        env.subst('$PYTHONEXE'),
-        "-u",
-        env.subst(f"$PROJECT_PACKAGES_DIR{os.sep}tool-esptoolpy{os.sep}esptool.py"),
+        "pio",
+        "pkg",
+        "exec",
+        "-p", "tool-esptoolpy",
+        "--",
+        "esptool",
         "--chip", "esp32",
         "merge-bin",
         "-o", env.subst(f"$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin"),
