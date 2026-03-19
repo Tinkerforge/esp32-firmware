@@ -41,14 +41,13 @@ def blue(s):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("test_filter", default='*/*/*')
+    parser.add_argument("test_filter", nargs='+')
     parser.add_argument("--junit-xml", action='store_true')
     parser.add_argument("--host")
     parser.add_argument("--tty")
     parser.add_argument("--brickd")
 
     args = parser.parse_args()
-    module_filter, suite_filter, test_filter = args.test_filter.split('/')
     quiet = args.junit_xml
 
     result = []
@@ -57,10 +56,21 @@ def main():
         if not quiet:
             print(*args, **kwargs, flush=True)
 
+    suite_paths: list[Path] = []
+    test_filters: dict[str, list[str]] = {} # suite_path -> list of test filter patterns
 
-    suite_paths = list(Path(__file__).parent.glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"))
-    if fnmatch.fnmatch("test_runner", module_filter):
-        suite_paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
+    for tf in args.test_filter:
+        module_filter, suite_filter, test_filter = tf.split('/')
+        paths = list(Path(__file__).parent.glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"))
+        if module_filter != '*' and fnmatch.fnmatch("test_runner", module_filter):
+            paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
+        for p in paths:
+            key = str(p.absolute())
+            if key not in test_filters:
+                suite_paths.append(p)
+                test_filters[key] = [test_filter]
+            elif '*' not in test_filters[key]:
+                test_filters[key].append(test_filter)
 
     # Skip underscore-prefixed helper modules and modules without "run_testsuite"
     suite_paths = [p for p in suite_paths if not p.name.startswith('_') and 'run_testsuite' in p.read_text()]
@@ -93,7 +103,7 @@ def main():
                 "run",
                 "--active", # "Prefer the active virtual environment over the project's virtual environment" ensures that test scripts can use transitive dependencies of test context (for example esptool)
                 "--script", path,
-                "--test-filter", test_filter,
+                *[arg for f in test_filters[str(path)] for arg in ("--test-filter", f)],
                 "--fifo-in-path", fifo_in_path,
                 "--fifo-out-path", fifo_out_path
             ]
