@@ -119,8 +119,8 @@ let x = {
             "blocking_hours_at_warm": "Blockierende Stunden bei 20 °C",
             "blocking_hours_at_cold": "Blockierende Stunden bei -10 °C",
 
-            "daytime_extension": "Luft-Luft-Wärmepumpe",
-            "daytime_extension_desc": "Wenn die Tagesmitteltemperatur unter 5 °C liegt, wird der erweiterte Betrieb auf 09:00–18:00 Uhr begrenzt. Empfohlen für Luft-Luft-Wärmepumpen, die bei niedrigen Außentemperaturen ineffizient arbeiten. So wird verhindert, dass der preisbasierte Plan den erweiterten Betrieb in den kältesten Stunden (Nacht/früher Morgen) aktiviert, wenn die Effizienz besonders schlecht ist.",
+            "daytime_extension": "Luft-Wärmepumpe",
+            "daytime_extension_desc": "Wenn die Tagesmitteltemperatur unter 5 °C liegt, wird der erweiterte Betrieb auf 09:00–18:00 Uhr begrenzt. Empfohlen für Luft-Wärmepumpen, die bei niedrigen Außentemperaturen ineffizient arbeiten. So wird verhindert, dass der preisbasierte Plan den erweiterten Betrieb in den kältesten Stunden (Nacht/früher Morgen) aktiviert, wenn die Effizienz besonders schlecht ist.",
             "legend_extended": "Erweiterter Betrieb",
             "legend_suppressed": "Unterdrückt",
             "legend_blocking": "Blockierender Betrieb"

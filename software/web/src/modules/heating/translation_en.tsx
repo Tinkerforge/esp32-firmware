@@ -118,7 +118,7 @@ let x = {
             "blocking_hours_at_warm": "Blocking hours at 20 °C",
             "blocking_hours_at_cold": "Blocking hours at -10 °C",
 
-            "daytime_extension": "Air-to-air heat pump",
+            "daytime_extension": "Air heat pump",
             "daytime_extension_desc": "If the daily average temperature is below 5 °C, extended operation is limited to 09:00–18:00. Recommended for air-to-air heat pumps, which operate inefficiently at low outdoor temperatures. This prevents the price-based plan from activating extended operation during the coldest hours (night/early morning), when efficiency is particularly poor.",
             "legend_extended": "Extended operation",
             "legend_suppressed": "Suppressed",
