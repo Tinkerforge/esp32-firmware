@@ -31,15 +31,17 @@ def _set_prices(server: TestHTTPSServer, first_date_seconds: int, prices: list[i
 
 
 _server: TestHTTPSServer | None = None
+_original_config: dict | None = None
+
 def _get_server() -> TestHTTPSServer:
     assert _server is not None, "suite_setup must run before tests"
     return _server
 
 
 def suite_setup(tc: TestContext):
-    global _server
+    global _server, _original_config
 
-    tc.set_test_timeout(30)
+    _original_config = tc.api('day_ahead_prices/config')
 
     _server = tc.create_test_https_server(_CERT_ID, 'dap-pull-test')
 
@@ -49,11 +51,11 @@ def suite_setup(tc: TestContext):
     # Configure device
     config = tc.api('day_ahead_prices/config')
     config['enable'] = True
-    config['source'] = 0  # SpotMarket (pull)
+    config['source'] = 0 # SpotMarket (pull)
     config['api_url'] = _server.url
     config['cert_id'] = _CERT_ID
-    config['region'] = 0  # DE
-    config['resolution'] = 0  # Min15
+    config['region'] = 0 # DE
+    config['resolution'] = 0 # Min15
     config['enable_calendar'] = False
     tc.api('day_ahead_prices/config_update', config)
 
@@ -69,9 +71,7 @@ def _trigger_refetch(tc: TestContext):
 
 
 def test_pull_15min(tc: TestContext):
-    tc.set_test_timeout(30)
-
-    count = 192  # 48 hours x 4 slots/hour
+    count = 192 # 48 hours x 4 slots/hour
     first_date_minutes = midnight_today_minutes()
     first_date_seconds = first_date_minutes * 60
     prices = make_prices(count, base_price=4000, amplitude=2000)
@@ -86,7 +86,7 @@ def test_pull_15min(tc: TestContext):
     def check():
         state = tc.api('day_ahead_prices/prices')
         tc.assert_eq(first_date_minutes, state.get('first_date'))
-        tc.assert_eq(0, state.get('resolution'))  # Min15
+        tc.assert_eq(0, state.get('resolution')) # Min15
         tc.assert_eq(count, len(state.get('prices', [])))
         tc.assert_eq(prices, state.get('prices'))
 
@@ -94,8 +94,6 @@ def test_pull_15min(tc: TestContext):
 
 
 def test_pull_60min(tc: TestContext):
-    tc.set_test_timeout(30)
-
     count = 48
     first_date_minutes = midnight_today_minutes()
     first_date_seconds = first_date_minutes * 60
@@ -107,7 +105,7 @@ def test_pull_60min(tc: TestContext):
 
     # Switch to 60-min resolution (also triggers re-fetch)
     config = tc.api('day_ahead_prices/config')
-    config['resolution'] = 1  # Min60
+    config['resolution'] = 1 # Min60
     tc.api('day_ahead_prices/config_update', config)
 
     def check():
@@ -121,8 +119,6 @@ def test_pull_60min(tc: TestContext):
 
 
 def test_pull_updates_next_check(tc: TestContext):
-    tc.set_test_timeout(180)
-
     first_date_minutes = midnight_today_minutes()
     first_date_seconds = first_date_minutes * 60
 
@@ -158,7 +154,6 @@ def test_pull_updates_next_check(tc: TestContext):
 
 def test_pull_server_error(tc: TestContext):
     """Server returns HTTP 500. DUT should update last_check but not last_sync, prices stay empty."""
-    tc.set_test_timeout(60)
 
     server = _get_server()
     server.set_response('{"error":"internal server error"}', status=500)
@@ -195,7 +190,6 @@ def test_pull_server_error(tc: TestContext):
 
 def test_pull_invalid_json(tc: TestContext):
     """Server returns HTTP 200 with garbage body. DUT should fail to parse, prices stay empty."""
-    tc.set_test_timeout(60)
 
     server = _get_server()
     server.set_response('this is not valid json at all', status=200)
@@ -240,6 +234,10 @@ def suite_teardown(tc: TestContext):
 
     # Remove test cert from the device
     tc.api('certs/remove', {'id': _CERT_ID})
+
+    # Restore original config
+    if _original_config is not None:
+        tc.api('day_ahead_prices/config_update', _original_config)
 
 if __name__ == '__main__':
     run_testsuite(locals())

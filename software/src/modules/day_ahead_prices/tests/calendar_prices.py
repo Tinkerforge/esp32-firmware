@@ -96,8 +96,6 @@ def test_per_day_pattern(tc: TestContext):
 
 
 def test_push_plus_calendar(tc: TestContext):
-    tc.set_test_timeout(30)
-
     count = 192
     spot_prices = make_prices(count, base_price=5000, amplitude=3000)
 

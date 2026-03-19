@@ -21,44 +21,39 @@ _CERT_ID = 6
 
 
 def _set_temperatures(server: TestHTTPSServer, first_date_seconds: int, temperatures: list[int]):
-    """Set server response. Note: API sends first_date in seconds (device divides by 60)."""
     payload = {
         "first_date": first_date_seconds,
         "temperatures": temperatures,
     }
     server.set_response(json.dumps(payload, separators=(",", ":")))
 
-
 _server: TestHTTPSServer | None = None
+_original_config: dict | None = None
+
 def _get_server() -> TestHTTPSServer:
     assert _server is not None, "suite_setup must run before tests"
     return _server
 
 
 def suite_setup(tc: TestContext):
-    global _server
+    global _server, _original_config
 
-    tc.set_test_timeout(30)
+    _original_config = tc.api('temperatures/config')
 
     _server = tc.create_test_https_server(_CERT_ID, 'temp-pull-test')
 
     # Configure device for pull mode
     config = tc.api('temperatures/config')
     config['enable'] = True
-    config['source'] = 0  # WeatherService (pull)
+    config['source'] = 0 # WeatherService (pull)
     config['api_url'] = _server.url
     config['cert_id'] = _CERT_ID
-    config['lat'] = 519035   # 51.9035 (German location)
-    config['long'] = 86720   # 8.6720
+    config['lat'] = 519035 # 51.9035
+    config['long'] = 86720 # 8.6720
     tc.api('temperatures/config_update', config)
 
 
 def _trigger_refetch(tc: TestContext):
-    """Disable and re-enable to force a re-fetch.
-
-    Uses enable toggle (not other config fields) to avoid race conditions
-    with in-flight downloads. When enable=false, update() returns immediately.
-    """
     config = tc.api('temperatures/config')
     config['enable'] = False
     tc.api('temperatures/config_update', config)
@@ -67,9 +62,6 @@ def _trigger_refetch(tc: TestContext):
 
 
 def test_pull(tc: TestContext):
-    """Serve 48 temperatures, trigger fetch, verify device got them."""
-    tc.set_test_timeout(30)
-
     count = TEMP_COUNT
     first_date_minutes = midnight_today_minutes()
     first_date_seconds = first_date_minutes * 60
@@ -90,7 +82,6 @@ def test_pull(tc: TestContext):
 
 def test_pull_server_error(tc: TestContext):
     """Server returns HTTP 500. DUT should set last_check but not last_sync, temperatures stay empty."""
-    tc.set_test_timeout(60)
 
     server = _get_server()
     server.set_response('{"error":"internal server error"}', status=500)
@@ -126,7 +117,6 @@ def test_pull_server_error(tc: TestContext):
 
 def test_pull_invalid_json(tc: TestContext):
     """Server returns HTTP 200 with garbage body. DUT should fail to parse, temperatures stay empty."""
-    tc.set_test_timeout(60)
 
     server = _get_server()
     server.set_response('this is not valid json at all', status=200)
@@ -170,6 +160,10 @@ def suite_teardown(tc: TestContext):
 
     # Remove test cert from the device
     tc.api('certs/remove', {'id': _CERT_ID})
+
+    # Restore original config
+    if _original_config is not None:
+        tc.api('temperatures/config_update', _original_config)
 
 if __name__ == '__main__':
     run_testsuite(locals())
