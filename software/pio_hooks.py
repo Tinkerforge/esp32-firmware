@@ -1,5 +1,3 @@
-Import("env")
-
 import sys
 import configparser
 import os
@@ -18,6 +16,10 @@ import tinkerforge_util as tfutil
 import util
 from hyphenations import hyphenations, allowed_missing
 from web.tfpp import tfpp_lines, tfpp_paths
+
+env = None
+
+Import("env")
 
 FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
 FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')

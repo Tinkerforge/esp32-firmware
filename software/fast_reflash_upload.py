@@ -29,14 +29,15 @@ Note on otadata (boot_app0.bin): This region is modified by the ESP32 at runtime
 boot_app0.bin. We always skip diffing for this region.
 """
 
-Import("env")
-
 import os
 import shutil
 import subprocess
 import time
 import re
 
+env = None
+
+Import("env")
 
 # Minimum esptool version that supports --diff-with
 MIN_ESPTOOL_VERSION = (5, 2, 0)

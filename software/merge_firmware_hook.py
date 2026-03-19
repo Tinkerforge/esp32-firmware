@@ -1,11 +1,12 @@
-Import("env")
-
 import sys
 import glob
 import os
-import re
 import shutil
 import subprocess
+
+env = None
+
+Import("env")
 
 with open(env.subst(f'$BUILD_DIR{os.sep}firmware_basename'), 'r', encoding='utf-8') as f:
     firmware_basename = f.read().strip()
