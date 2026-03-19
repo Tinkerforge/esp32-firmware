@@ -24,8 +24,16 @@ else:
 _CERT_ID = 7
 
 
+# HTTPServer subclass with typed response fields.
+class ESPHTTPServer(HTTPServer):
+    response_body: str = '{"error":"no data configured"}'
+    response_status: int = 404
+
+
 # Tiny HTTPS server that serves a configurable JSON response on any path.
 class _Handler(BaseHTTPRequestHandler):
+    server: ESPHTTPServer  # type: ignore[assignment]
+
     def do_GET(self):
         body = self.server.response_body
         status = self.server.response_status
@@ -47,7 +55,7 @@ class _PriceServer:
         self._cert_pem = cert_pem
         self._key_pem = key_pem
         self._bind_ip = bind_ip
-        self._httpd: HTTPServer | None = None
+        self._httpd: ESPHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
     def __enter__(self):
@@ -65,7 +73,7 @@ class _PriceServer:
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ctx.load_cert_chain(cert_path, key_path)
 
-        self._httpd = HTTPServer((self._bind_ip, 0), _Handler)
+        self._httpd = ESPHTTPServer((self._bind_ip, 0), _Handler)
         self._httpd.socket = ctx.wrap_socket(self._httpd.socket, server_side=True)
         self._httpd.response_body = '{"error":"no data configured"}'
         self._httpd.response_status = 404
@@ -101,7 +109,10 @@ class _PriceServer:
         self.set_response(json.dumps(payload, separators=(",", ":")))
 
 
-_server: _PriceServer = None # type: ignore
+_server: _PriceServer | None = None
+def _get_server() -> _PriceServer:
+    assert _server is not None, "suite_setup must run before tests"
+    return _server
 
 
 def suite_setup(tc: TestContext):
@@ -160,7 +171,8 @@ def test_pull_15min(tc: TestContext):
 
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    _server.set_prices(first_date_seconds, prices, next_date_seconds)
+    server = _get_server()
+    server.set_prices(first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     # Wait for the device to pull and apply the prices
@@ -183,7 +195,8 @@ def test_pull_60min(tc: TestContext):
     prices = make_prices(count, base_price=6000, amplitude=4000)
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    _server.set_prices(first_date_seconds, prices, next_date_seconds)
+    server = _get_server()
+    server.set_prices(first_date_seconds, prices, next_date_seconds)
 
     # Switch to 60-min resolution (also triggers re-fetch)
     config = tc.api('day_ahead_prices/config')
@@ -212,7 +225,8 @@ def test_pull_updates_next_check(tc: TestContext):
     next_date_minutes = next_date_seconds // 60
 
     prices_v1 = make_prices(48, base_price=5000, amplitude=1000)
-    _server.set_prices(first_date_seconds, prices_v1, next_date_seconds)
+    server = _get_server()
+    server.set_prices(first_date_seconds, prices_v1, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_v1():
@@ -226,7 +240,7 @@ def test_pull_updates_next_check(tc: TestContext):
     # Phase 2: Swap server to new prices and wait for DUT to fetch again
     prices_v2 = make_prices(48, base_price=8000, amplitude=500)
     far_future_seconds = first_date_seconds + 14 * 86400
-    _server.set_prices(first_date_seconds, prices_v2, far_future_seconds)
+    server.set_prices(first_date_seconds, prices_v2, far_future_seconds)
 
     def check_v2():
         p = tc.api('day_ahead_prices/prices')
@@ -239,7 +253,8 @@ def test_pull_server_error(tc: TestContext):
     """Server returns HTTP 500. DUT should update last_check but not last_sync, prices stay empty."""
     tc.set_test_timeout(60)
 
-    _server.set_response('{"error":"internal server error"}', status=500)
+    server = _get_server()
+    server.set_response('{"error":"internal server error"}', status=500)
     _trigger_refetch(tc)
 
     # After the failed fetch: last_check > 0 but last_sync == 0, no prices
@@ -258,7 +273,7 @@ def test_pull_server_error(tc: TestContext):
     prices = make_prices(48, base_price=3000, amplitude=1000)
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    _server.set_prices(first_date_seconds, prices, next_date_seconds)
+    server.set_prices(first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_recovery():
@@ -275,7 +290,8 @@ def test_pull_invalid_json(tc: TestContext):
     """Server returns HTTP 200 with garbage body. DUT should fail to parse, prices stay empty."""
     tc.set_test_timeout(60)
 
-    _server.set_response('this is not valid json at all', status=200)
+    server = _get_server()
+    server.set_response('this is not valid json at all', status=200)
     _trigger_refetch(tc)
 
     # After the failed parse: last_check > 0 but last_sync == 0, no prices
@@ -294,7 +310,7 @@ def test_pull_invalid_json(tc: TestContext):
     prices = make_prices(48, base_price=7000, amplitude=2000)
     next_date_seconds = first_date_seconds + 7 * 86400
 
-    _server.set_prices(first_date_seconds, prices, next_date_seconds)
+    server.set_prices(first_date_seconds, prices, next_date_seconds)
     _trigger_refetch(tc)
 
     def check_recovery():
