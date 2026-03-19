@@ -52,7 +52,7 @@ class TestSuiteInfo:
     test_setup:     TestFn | None = None
     test_teardown:  TestFn | None = None
 
-JSON: typing.TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
+type JSON = typing.Mapping[str, JSON] | typing.Sequence[JSON] | str | int | float | bool | None
 
 
 @dataclass
