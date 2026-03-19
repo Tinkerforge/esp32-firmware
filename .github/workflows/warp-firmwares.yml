@@ -25,10 +25,10 @@ jobs:
       - name: Sync UV
         working-directory: ./software
         run: uv sync
-      - name: Install Node.JS
+      - name: Install Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
       - name: 'Build Firmware: ${{ matrix.environment }}'
         working-directory: ./software
         run: uv run pio run -e ${{ matrix.environment }} -t clean && uv run pio run -e ${{ matrix.environment }}
