@@ -23,6 +23,7 @@ jobs:
       - name: Install UV
         uses: astral-sh/setup-uv@v7
       - name: Sync UV
+        working-directory: ./software
         run: uv sync
       - name: Install Node.JS
         uses: actions/setup-node@v6
