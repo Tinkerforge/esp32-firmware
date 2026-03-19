@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Test script for Temperatures push mode.
 
 Pushes sample temperature data via the HTTP API to a WARP device
 with temperatures enabled in Push mode.
 
 Usage:
-    python3 temp_push_test.py <device-ip> [--today-min N] [--today-max N] ...
+    uv run temp_push_test.py <device-ip> [--today-min N] [--today-max N] ...
 
 Prerequisites on the device:
     - temperatures/config: enable=true, source=1 (Push)
@@ -89,8 +89,8 @@ def main():
         description="Push test temperature data to a WARP device.",
         epilog=(
             "Example:\n"
-            "  python3 temp_push_test.py 192.168.0.33 --today-min -500 --today-max 1200\n"
-            "  python3 temp_push_test.py 192.168.0.33 --check"
+            "  uv run temp_push_test.py 192.168.0.33 --today-min -500 --today-max 1200\n"
+            "  uv run temp_push_test.py 192.168.0.33 --check"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

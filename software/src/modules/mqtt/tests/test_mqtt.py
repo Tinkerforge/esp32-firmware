@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for MQTT live-reconfigure.
 
 Tests that the MQTT module can be enabled, disabled, and reconfigured at
@@ -6,9 +6,9 @@ runtime without requiring a device reboot. Also tests that automation MQTT
 triggers and actions work correctly and are rebuilt on config changes.
 
 Usage:
-    python3 test_mqtt.py <device-ip>
-    python3 test_mqtt.py <device-ip> --verbose
-    python3 test_mqtt.py <device-ip> --test 09
+    uv run test_mqtt.py <device-ip>
+    uv run test_mqtt.py <device-ip> --verbose
+    uv run test_mqtt.py <device-ip> --test 09
 
 Prerequisites:
     - Energy Manager 2.0
@@ -1124,10 +1124,10 @@ def main():
         description="Integration test for MQTT live-reconfigure.",
         epilog=(
             "Example:\n"
-            "  python3 test_mqtt.py 192.168.1.246\n"
-            "  python3 test_mqtt.py 192.168.1.246 --verbose\n"
-            "  python3 test_mqtt.py 192.168.1.246 --test 09\n"
-            "  python3 test_mqtt.py 192.168.1.246 --broker mqtt.local"
+            "  uv run test_mqtt.py 192.168.1.246\n"
+            "  uv run test_mqtt.py 192.168.1.246 --verbose\n"
+            "  uv run test_mqtt.py 192.168.1.246 --test 09\n"
+            "  uv run test_mqtt.py 192.168.1.246 --broker mqtt.local"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

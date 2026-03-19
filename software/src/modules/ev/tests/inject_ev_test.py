@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Inject a random EV via the ev/inject_ev HTTP API.
 
 Generates a random MAC address and calls ev/inject_ev on the device,
 then reads back ev/state and ev/seen_macs to verify.
 
 Usage:
-    python3 inject_ev_test.py <device-ip> [--mac AA:BB:CC:DD:EE:FF]
+    uv run inject_ev_test.py <device-ip> [--mac AA:BB:CC:DD:EE:FF]
 """
 
 import argparse

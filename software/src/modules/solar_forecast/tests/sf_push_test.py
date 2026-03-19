@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Test script for Solar Forecast push mode.
 
 Pushes sample forecast data via the HTTP API to a WARP device
 with solar_forecast enabled in Push mode.
 
 Usage:
-    python3 sf_push_test.py <device-ip> [--planes 0,1] [--hours N]
+    uv run sf_push_test.py <device-ip> [--planes 0,1] [--hours N]
 
 Prerequisites on the device:
     - solar_forecast/config: enable=true, source=1 (Push)
@@ -70,10 +70,10 @@ def main():
         description="Push test forecast data to a WARP device (solar forecast).",
         epilog=(
             "Examples:\n"
-            "  python3 sf_push_test.py 192.168.0.33\n"
-            "  python3 sf_push_test.py 192.168.0.33 --planes 0,1 --hours 48\n"
-            "  python3 sf_push_test.py 192.168.0.33 --check\n"
-            "  python3 sf_push_test.py 192.168.0.33 --planes 0 --base 1000 --amplitude 500"
+            "  uv run sf_push_test.py 192.168.0.33\n"
+            "  uv run sf_push_test.py 192.168.0.33 --planes 0,1 --hours 48\n"
+            "  uv run sf_push_test.py 192.168.0.33 --check\n"
+            "  uv run sf_push_test.py 192.168.0.33 --planes 0 --base 1000 --amplitude 500"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

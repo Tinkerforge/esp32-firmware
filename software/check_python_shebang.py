@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -u
+#!/usr/bin/env -S uv run --script
 
 import os
 import subprocess
@@ -8,6 +8,7 @@ for root, dirs, files in os.walk('.'):
         path = os.path.join(root, name)
 
         if path.startswith('./.pio/') or \
+           path.startswith('./.venv/') or \
            path.startswith('./build/') or \
            path.startswith('./build_latest/') or \
            path.startswith('./packages/') or \
@@ -30,7 +31,7 @@ for root, dirs, files in os.walk('.'):
             expected_first_line_prefix = ''
             expected_st_mode = 0o100664
         else:
-            expected_first_line_prefix = '#!/usr/bin/env -S python3 -u'
+            expected_first_line_prefix = '#!/usr/bin/env -S uv run --script'
             expected_st_mode = 0o100775
 
         if not first_line.startswith(expected_first_line_prefix) or st_mode != expected_st_mode:

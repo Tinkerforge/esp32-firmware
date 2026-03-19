@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Test script for the heating module's DP-based plan computation.
 
 Pushes known day-ahead prices to a WARP Energy Manager,
@@ -11,7 +11,7 @@ from the firmware's block-based Dynamic Programming, making it a
 truly independent cross-check.
 
 Usage:
-    python3 test_heating_plan.py <device-ip> [options]
+    uv run test_heating_plan.py <device-ip> [options]
 
 Prerequisites on the device:
     - day_ahead_prices/config: enable=true, source=1 (Push)
@@ -20,10 +20,10 @@ Prerequisites on the host:
     - scipy (pip install scipy)
 
 Example:
-    python3 test_heating_plan.py 192.168.0.33
-    python3 test_heating_plan.py 192.168.0.33 --resolution 60
-    python3 test_heating_plan.py 192.168.0.33 --verbose
-    python3 test_heating_plan.py --skip-device  # offline mode, ILP solver only
+    uv run test_heating_plan.py 192.168.0.33
+    uv run test_heating_plan.py 192.168.0.33 --resolution 60
+    uv run test_heating_plan.py 192.168.0.33 --verbose
+    uv run test_heating_plan.py --skip-device  # offline mode, ILP solver only
 """
 
 import argparse
@@ -1000,13 +1000,13 @@ def main():
         epilog="""\
 Examples:
   # Run all tests against device
-  python3 test_heating_plan.py 192.168.0.33
+  uv run test_heating_plan.py 192.168.0.33
 
   # Run only ILP reference solver (no device needed)
-  python3 test_heating_plan.py --skip-device
+  uv run test_heating_plan.py --skip-device
 
   # Verbose output with 60-min resolution
-  python3 test_heating_plan.py 192.168.0.33 --resolution 60 --verbose
+  uv run test_heating_plan.py 192.168.0.33 --resolution 60 --verbose
 """,
     )
     parser.add_argument("host", nargs="?", default=None,

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -u
+#!/usr/bin/env -S uv run --script
 
 # https://github.com/sunspec/models/blob/master/json
 

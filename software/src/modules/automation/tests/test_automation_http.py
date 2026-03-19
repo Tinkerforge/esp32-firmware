@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for automation with HTTP triggers.
 
 Tests that HTTP triggers fire automation actions correctly. The HTTP
@@ -6,8 +6,8 @@ trigger is the most directly testable trigger mechanism: send a request
 to /automation_trigger/<suffix> and the action executes immediately.
 
 Usage:
-    python3 test_automation_http.py <device-ip>
-    python3 test_automation_http.py <device-ip> --verbose
+    uv run test_automation_http.py <device-ip>
+    uv run test_automation_http.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays
@@ -455,9 +455,9 @@ def main():
         description="Integration test for automation HTTP triggers.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_http.py 192.168.0.33\n"
-            "  python3 test_automation_http.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_http.py 192.168.0.33 --test 06"
+            "  uv run test_automation_http.py 192.168.0.33\n"
+            "  uv run test_automation_http.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_http.py 192.168.0.33 --test 06"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

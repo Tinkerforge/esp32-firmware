@@ -38,7 +38,7 @@ for test in "${TESTS[@]}"; do
     echo "================================================================"
     echo "  Running: $test"
     echo "================================================================"
-    if python3 "$SCRIPT_DIR/$test" "$HOST" "${EXTRA_ARGS[@]}"; then
+    if uv run "$SCRIPT_DIR/$test" "$HOST" "${EXTRA_ARGS[@]}"; then
         PASSED=$((PASSED + 1))
     else
         FAILED=$((FAILED + 1))

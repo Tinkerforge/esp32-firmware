@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for ethernet config validation.
 
 Tests that the ethernet config validator correctly rejects invalid configs
@@ -6,8 +6,8 @@ Tests that the ethernet config validator correctly rejects invalid configs
 routing) and accepts valid configs.
 
 Usage:
-    python3 test_ethernet_config.py <device-ip>
-    python3 test_ethernet_config.py <device-ip> --verbose
+    uv run test_ethernet_config.py <device-ip>
+    uv run test_ethernet_config.py <device-ip> --verbose
 
 This script needs some very specific requirements to run:
     - Device connected via ethernet
@@ -677,9 +677,9 @@ def main():
         description="Integration test for ethernet config validation.",
         epilog=(
             "Example:\n"
-            "  python3 test_ethernet_config.py 192.168.0.47\n"
-            "  python3 test_ethernet_config.py 192.168.0.47 --verbose\n"
-            "  python3 test_ethernet_config.py 192.168.0.47 --test 07"
+            "  uv run test_ethernet_config.py 192.168.0.47\n"
+            "  uv run test_ethernet_config.py 192.168.0.47 --verbose\n"
+            "  uv run test_ethernet_config.py 192.168.0.47 --test 07"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

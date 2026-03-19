@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Stress test for ESP32 web server.
 
 Rapidly enables/disables solar_forecast and day_ahead_prices modules
@@ -8,7 +8,7 @@ Designed to trigger heap corruption, use-after-free, and cross-thread
 race conditions in the HTTP/WS path.
 
 Usage:
-    python3 stress_test.py <device-ip> [--duration 300] [--fetchers 10] [--ws-clients 10] [--seed 42]
+    uv run stress_test.py <device-ip> [--duration 300] [--fetchers 10] [--ws-clients 10] [--seed 42]
 """
 
 import argparse
@@ -437,9 +437,9 @@ def main():
         description="Stress test ESP32 web server with config toggling and concurrent HTTP/WS load.",
         epilog=(
             "Examples:\n"
-            "  python3 stress_test.py 192.168.0.33\n"
-            "  python3 stress_test.py 192.168.0.33 --duration 600 --fetchers 4\n"
-            "  python3 stress_test.py 192.168.0.33 --seed 42 --ws-clients 3\n"
+            "  uv run stress_test.py 192.168.0.33\n"
+            "  uv run stress_test.py 192.168.0.33 --duration 600 --fetchers 4\n"
+            "  uv run stress_test.py 192.168.0.33 --seed 42 --ws-clients 3\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

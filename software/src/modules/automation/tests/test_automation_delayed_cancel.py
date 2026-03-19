@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for cancellation of pending delayed actions on config change.
 
 When a trigger fires with delay > 0, the action is scheduled to run after the
@@ -14,8 +14,8 @@ These tests verify:
   - A delayed action that is NOT interrupted still fires normally (sanity check).
 
 Usage:
-    python3 test_automation_delayed_cancel.py <device-ip>
-    python3 test_automation_delayed_cancel.py <device-ip> --verbose
+    uv run test_automation_delayed_cancel.py <device-ip>
+    uv run test_automation_delayed_cancel.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays
@@ -441,9 +441,9 @@ def main():
         description="Integration test: delayed action cancellation on config change.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_delayed_cancel.py 192.168.0.47\n"
-            "  python3 test_automation_delayed_cancel.py 192.168.0.47 --verbose\n"
-            "  python3 test_automation_delayed_cancel.py 192.168.0.47 --test 03"
+            "  uv run test_automation_delayed_cancel.py 192.168.0.47\n"
+            "  uv run test_automation_delayed_cancel.py 192.168.0.47 --verbose\n"
+            "  uv run test_automation_delayed_cancel.py 192.168.0.47 --test 03"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for ethernet enable/disable and state transitions.
 
 Tests the save-without-restart behavior for enabling/disabling ethernet and
@@ -9,8 +9,8 @@ cannot fully disconnect, but we can verify:
   - State transitions on IP config changes (DHCP <-> static)
 
 Usage:
-    python3 test_ethernet_enable.py <device-ip>
-    python3 test_ethernet_enable.py <device-ip> --verbose
+    uv run test_ethernet_enable.py <device-ip>
+    uv run test_ethernet_enable.py <device-ip> --verbose
 
 This script needs some very specific requirements to run:
     - Device connected via ethernet
@@ -570,9 +570,9 @@ def main():
         description="Integration test for ethernet enable/disable and state transitions.",
         epilog=(
             "Example:\n"
-            "  python3 test_ethernet_enable.py 192.168.0.47\n"
-            "  python3 test_ethernet_enable.py 192.168.0.47 --verbose\n"
-            "  python3 test_ethernet_enable.py 192.168.0.47 --test 05"
+            "  uv run test_ethernet_enable.py 192.168.0.47\n"
+            "  uv run test_ethernet_enable.py 192.168.0.47 --verbose\n"
+            "  uv run test_ethernet_enable.py 192.168.0.47 --test 05"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

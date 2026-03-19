@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for automation with SG Ready outputs and cross-module triggers.
 
 Tests SG Ready actions, EMRelaySwitch triggers (relay state change triggers
@@ -6,8 +6,8 @@ another action), and EMSGReadySwitch triggers (SG Ready state change
 triggers another action).
 
 Usage:
-    python3 test_automation_sg_ready.py <device-ip>
-    python3 test_automation_sg_ready.py <device-ip> --verbose
+    uv run test_automation_sg_ready.py <device-ip>
+    uv run test_automation_sg_ready.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays and SG Ready outputs
@@ -551,9 +551,9 @@ def main():
         description="Integration test for automation SG Ready and cross-module triggers.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_sg_ready.py 192.168.0.33\n"
-            "  python3 test_automation_sg_ready.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_sg_ready.py 192.168.0.33 --test 04"
+            "  uv run test_automation_sg_ready.py 192.168.0.33\n"
+            "  uv run test_automation_sg_ready.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_sg_ready.py 192.168.0.33 --test 04"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

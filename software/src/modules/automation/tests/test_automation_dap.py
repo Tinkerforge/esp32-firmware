@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for automation with day-ahead price triggers.
 
 Tests that day-ahead price triggers fire automation actions correctly.
@@ -6,8 +6,8 @@ Pushes price data via the HTTP API, and verifies that the trigger fires
 when the current price crosses the configured threshold.
 
 Usage:
-    python3 test_automation_dap.py <device-ip>
-    python3 test_automation_dap.py <device-ip> --verbose
+    uv run test_automation_dap.py <device-ip>
+    uv run test_automation_dap.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays
@@ -532,9 +532,9 @@ def main():
         description="Integration test for automation day-ahead price triggers.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_dap.py 192.168.0.33\n"
-            "  python3 test_automation_dap.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_dap.py 192.168.0.33 --test 05"
+            "  uv run test_automation_dap.py 192.168.0.33\n"
+            "  uv run test_automation_dap.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_dap.py 192.168.0.33 --test 05"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

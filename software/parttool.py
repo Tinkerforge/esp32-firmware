@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -u
+#!/usr/bin/env -S uv run --script
 
 # Stripped down parttool.py from here: https://github.com/espressif/esp-idf/blob/v4.4.5/components/partition_table/parttool.py
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for combined / mixed automation scenarios.
 
 Tests that multiple trigger types coexist in a single config, that one
@@ -7,8 +7,8 @@ triggers trigger B), and various edge cases (max rules, empty config,
 rapid config replacement).
 
 Usage:
-    python3 test_automation_combined.py <device-ip>
-    python3 test_automation_combined.py <device-ip> --verbose
+    uv run test_automation_combined.py <device-ip>
+    uv run test_automation_combined.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays
@@ -635,9 +635,9 @@ def main():
         description="Integration test for combined / mixed automation scenarios.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_combined.py 192.168.0.33\n"
-            "  python3 test_automation_combined.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_combined.py 192.168.0.33 --test 05"
+            "  uv run test_automation_combined.py 192.168.0.33\n"
+            "  uv run test_automation_combined.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_combined.py 192.168.0.33 --test 05"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for automation save-without-restart.
 
 Tests that automation rules can be created, modified, and deleted at runtime
@@ -6,8 +6,8 @@ without requiring a device reboot. Uses temperature triggers to switch EM
 relays, verifying end-to-end automation behavior on a real Energy Manager.
 
 Usage:
-    python3 test_automation_relay.py <device-ip>
-    python3 test_automation_relay.py <device-ip> --verbose
+    uv run test_automation_relay.py <device-ip>
+    uv run test_automation_relay.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with at least one relay
@@ -484,9 +484,9 @@ def main():
         description="Integration test for automation save-without-restart.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_relay.py 192.168.0.33\n"
-            "  python3 test_automation_relay.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_relay.py 192.168.0.33 --test 03"
+            "  uv run test_automation_relay.py 192.168.0.33\n"
+            "  uv run test_automation_relay.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_relay.py 192.168.0.33 --test 03"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

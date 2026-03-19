@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for automation delay / cooldown functionality.
 
 The ``delay`` field on each automation task specifies a delay in seconds
@@ -8,8 +8,8 @@ The ``delay`` field on each automation task specifies a delay in seconds
   - A config change (apply_config) resets all cooldown timers.
 
 Usage:
-    python3 test_automation_delay.py <device-ip>
-    python3 test_automation_delay.py <device-ip> --verbose
+    uv run test_automation_delay.py <device-ip>
+    uv run test_automation_delay.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with relays
@@ -476,9 +476,9 @@ def main():
         description="Integration test for automation delay / cooldown.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_delay.py 192.168.0.33\n"
-            "  python3 test_automation_delay.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_delay.py 192.168.0.33 --test 03"
+            "  uv run test_automation_delay.py 192.168.0.33\n"
+            "  uv run test_automation_delay.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_delay.py 192.168.0.33 --test 03"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

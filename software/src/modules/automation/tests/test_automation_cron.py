@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 """Integration test for cron-triggered automation rules.
 
 Tests that cron triggers fire at the correct device-local minute and that
@@ -7,8 +7,8 @@ non-matching cron triggers do not fire.  Uses the device's own NTP clock
 in local time, because the firmware's cron scheduler uses localtime_r().
 
 Usage:
-    python3 test_automation_cron.py <device-ip>
-    python3 test_automation_cron.py <device-ip> --verbose
+    ./test_automation_cron.py <device-ip>
+    ./test_automation_cron.py <device-ip> --verbose
 
 Prerequisites on the device:
     - Energy Manager v2 with at least one relay
@@ -299,9 +299,9 @@ def main():
         description="Integration test for cron-triggered automation rules.",
         epilog=(
             "Example:\n"
-            "  python3 test_automation_cron.py 192.168.0.33\n"
-            "  python3 test_automation_cron.py 192.168.0.33 --verbose\n"
-            "  python3 test_automation_cron.py 192.168.0.33 --test 01"
+            "  uv run test_automation_cron.py 192.168.0.33\n"
+            "  uv run test_automation_cron.py 192.168.0.33 --verbose\n"
+            "  uv run test_automation_cron.py 192.168.0.33 --test 01"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
