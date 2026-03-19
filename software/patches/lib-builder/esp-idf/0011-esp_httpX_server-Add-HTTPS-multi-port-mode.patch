@@ -9,8 +9,8 @@ Subject: [PATCH] esp_httpX_server: Add HTTPS multi-port mode
  components/esp_http_server/src/httpd_main.c   | 172 +++++++++++-------
  components/esp_http_server/src/httpd_sess.c   |  19 +-
  .../include/esp_https_server.h                |  11 +-
- .../esp_https_server/src/https_server.c       | 138 +++++++++-----
- 6 files changed, 233 insertions(+), 121 deletions(-)
+ .../esp_https_server/src/https_server.c       | 139 +++++++++-----
+ 6 files changed, 234 insertions(+), 121 deletions(-)
 
 diff --git a/components/esp_http_server/include/esp_http_server.h b/components/esp_http_server/include/esp_http_server.h
 index 708dd019c0..baf1f4a3b6 100644
@@ -518,7 +518,15 @@ index b3d22e5346..32715b1bcc 100644
  
              if (cfg->serverkey_buf) {
                  memcpy((char *) cfg->serverkey_buf, config->prvtkey_pem, config->prvtkey_len);
-@@ -380,58 +397,81 @@ exit:
+@@ -373,6 +390,7 @@ exit:
+         free((void *) cfg->servercert_buf);
+         free((void *) cfg->cacert_buf);
+     }
++    (*ssl_ctx)->tls_cfg = NULL;
+     free(cfg);
+     return ret;
+ }
+@@ -380,58 +398,81 @@ exit:
  /** Start the server */
  esp_err_t httpd_ssl_start(httpd_handle_t *pHandle, struct httpd_ssl_config *config)
  {
