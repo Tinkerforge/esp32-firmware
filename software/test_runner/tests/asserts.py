@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --group tests --script
 
 from typing import TYPE_CHECKING
 

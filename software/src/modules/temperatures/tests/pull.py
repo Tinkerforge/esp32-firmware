@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --group tests --script
 
 # Tests for temperatures pull API: Starts a local HTTPS server with a
 # self-signed certificate, uploads the CA cert to the device,

@@ -3,21 +3,29 @@ name = "esp32"
 dynamic = ["version"]
 requires-python = "==3.12.*"
 dependencies = [
-    # firmware build
     "platformio",
     "pyphen",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
     "tinkerforge_util >= 1.5.1",
+]
 
-    # SunSpec model parser
-    "Xlsx2csv",
-
-    # web/server.py
+[dependency-groups]
+web-server-proxy = [
     "flask",
     "flask_sock",
-    "websocket",
+    "websocket-client",
+]
 
-    # test_runner
+sun-spec-model-generator = [
+    "Xlsx2csv",
+]
+
+test-runner = [
     "junit-xml",
     "esptool",
+]
+
+tests = [
+    {include-group = "test-runner"},
+    # FIXME: add all test dependencies here
 ]

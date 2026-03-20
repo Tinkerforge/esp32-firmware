@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --group sun-spec-model-generator --script
 
 import glob
 import io
