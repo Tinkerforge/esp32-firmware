@@ -19,9 +19,9 @@ class EebusTest:
 
 
     def update_config(self, tc: TestContext):
-        self._eebus_config = tc.api_get("eebus/config")
-        self._eebus_state = tc.api_get("eebus/state")
-        self._eebus_usecase_state = tc.api_get("eebus/usecases")
+        self._eebus_config = tc.api("eebus/config")
+        self._eebus_state = tc.api("eebus/state")
+        self._eebus_usecase_state = tc.api("eebus/usecases")
 
     def is_enabled(self):
         return self._eebus_config.get("enable", False)
@@ -35,8 +35,8 @@ class EebusTest:
     def toggle_eebus(self, tc: TestContext, on: bool):
         self.update_config(tc)
         self._eebus_config["enable"] = on
-        tc.api_put("eebus/config_update", self._eebus_config, parse=False)
-        time.sleep(2) # give the module some time to process the change
+        tc.api("eebus/config_update", self._eebus_config)
+        time.sleep(1) # give the module some time to process the change
         self.update_config(tc)
 
     def peer_in_config(self, peer_ski: str):
@@ -48,7 +48,7 @@ class EebusTest:
 
     def add_peer(self, tc: TestContext, peer_ski: str, peer_ip: str):
         tc.assert_true(self.is_enabled())
-        self._eebus_config = tc.api_get("eebus/config")
+        self._eebus_config = tc.api("eebus/config")
         peer_data = {
             "ski": peer_ski,
             "ip": peer_ip,
@@ -58,12 +58,12 @@ class EebusTest:
             "dns_name": "",
             "wss_path": "/ship/",
         }
-        tc.api_post("eebus/add", peer_data, parse=False)
+        tc.api("eebus/add", peer_data)
         self.update_config(tc)
 
     def remove_peer(self, tc: TestContext, peer_ski: str):
         tc.assert_true(self.is_enabled())
-        tc.api_post("eebus/remove", {"ski": peer_ski}, parse=False)
+        tc.api("eebus/remove", {"ski": peer_ski})
         self.update_config(tc)
 
 
