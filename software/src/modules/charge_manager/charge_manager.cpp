@@ -579,17 +579,17 @@ void ChargeManager::setup()
     this->next_allocation = now_us() + 1_s;
 
     task_scheduler.scheduleUncancelable([this](){
-        auto now = now_us();
+        const micros_t unreachable_threshold = now_us() - CHARGER_UNREACHABLE_TIMEOUT;
         this->allocated_currents = Cost();
 
         for (int i = 0; i < this->charger_count; ++i) {
             auto &charger = this->charger_state[i];
 
-            if ((charger.last_update + CHARGER_UNREACHABLE_TIMEOUT) < now)
-                continue; // Unreachable chargers stop charging after this timeout.
-
             if (charger.charger_state != 3)
                 continue; // Charger not charging. Allocated current can't be used because contactor is not closed.
+
+            if (charger.last_update < unreachable_threshold)
+                continue; // Unreachable chargers stop charging after the timeout.
 
             this->allocated_currents += get_cost(charger.allowed_current, charger.phases, charger.phase_rotation, 0, 0);
         }
