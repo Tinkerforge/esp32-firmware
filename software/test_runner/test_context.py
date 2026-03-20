@@ -18,22 +18,12 @@ from urllib.request import Request, urlopen, HTTPError
 import esptool.cmds
 from esptool.targets import ESP32ROM
 
-if typing.TYPE_CHECKING:
-    from test_runner import parttool
-    from test_runner.testbox.testbox import TestBox
-    from test_runner.testbox.warp3 import WARP3TestBox
-    from test_runner.testbox.warp2 import WARP2TestBox
-    from test_runner.testbox.wem import WEMTestBox
-    from .https_server import TestHTTPSServer
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner import parttool
-    from software.test_runner.testbox.testbox import TestBox
-    from software.test_runner.testbox.warp3 import WARP3TestBox
-    from software.test_runner.testbox.warp2 import WARP2TestBox
-    from software.test_runner.testbox.wem import WEMTestBox
-    from software.test_runner.https_server import TestHTTPSServer
+from . import parttool
+from .https_server import TestHTTPSServer
+from .testbox.testbox import TestBox
+from .testbox.warp2 import WARP2TestBox
+from .testbox.warp3 import WARP3TestBox
+from .testbox.wem import WEMTestBox
 
 type TestFn = Callable[[TestContext], typing.Any]
 
