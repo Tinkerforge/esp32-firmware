@@ -1922,8 +1922,7 @@ def main():
                     if is_fragment:
                         string = json_to_tsx(value)
                     elif is_string_function or is_fragment_function:
-                        # removeprefix/suffix are new in Python 3.9. We have to support 3.8.
-                        string = json_to_tsx(value)#[len("/*SFN*/"):-len("/*NF*/")]
+                        string = json_to_tsx(value)
                     elif is_backtick:
                         string = json_to_tsx(value)
                     else:
