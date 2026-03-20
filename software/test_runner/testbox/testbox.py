@@ -6,6 +6,8 @@ Meter = Literal['none', 'real', 'fake']
 Aux = Literal['real', 'open', 'closed']
 Input = Literal['open', 'closed', 'contactor']
 
+# This is not the usual "software package is created at runtime"-hack
+# but a work-around for a circular import.
 if TYPE_CHECKING:
     from ..test_context import TestContext
     tc_type = TestContext
