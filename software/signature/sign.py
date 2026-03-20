@@ -1,6 +1,5 @@
 #!/usr/bin/env -S uv run --script
 
-import re
 import os
 import sys
 import ctypes
@@ -10,8 +9,8 @@ import configparser
 import subprocess
 import getpass
 import hashlib
-from shutil import which
 from zlib import crc32
+from tinkerforge_util import notify, notify_clear
 
 directory = os.path.normpath(os.path.dirname(__file__))
 
@@ -95,26 +94,6 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
         return None
 
 
-def notify(msg):
-    if not which('notify-send'):
-        return -1
-
-    version = [int(x) for x in re.search(r"(\d+)\.(\d+)\.(\d+)", subprocess.check_output(["notify-send", "--version"], text=True)).groups()]
-
-    if version >= [0, 8, 0]:
-        return subprocess.check_output(["notify-send", "-p", "-t", "3600000", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", msg], text=True).strip()
-    else:
-        subprocess.call(["notify-send", "-t", "3600000", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", msg])
-        return -1
-
-
-def notify_clear(n_id):
-    if n_id == -1:
-        return
-
-    subprocess.call(["notify-send", "-r", n_id, "-t", "1", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", "clear"])
-
-
 def main():
     libsodium = load_libsodium()
 
@@ -182,7 +161,7 @@ def main():
 
         if preset['sodium_secret_key_protection'] == 'password':
             if args.sodium_secret_key_password == None:
-                n_id = notify('Enter password for sodium secret key file')
+                notify_ctx = notify('Enter password for sodium secret key file', 'esp32-firmware', os.path.abspath(make_path('icon.png')))
                 print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
                 try:
@@ -190,7 +169,7 @@ def main():
                 except KeyboardInterrupt:
                     raise Exception('Aborted')
 
-                notify_clear(n_id)
+                notify_clear(notify_ctx)
             else:
                 sodium_secret_key_password = args.sodium_secret_key_password
 
@@ -290,7 +269,7 @@ def main():
 
             if preset['gpg_keyring_passphrase_protection'] == 'password':
                 if args.gpg_keyring_passphrase_password == None:
-                    n_id = notify('Enter password for GPG keyring passphrase file')
+                    notify_ctx = notify('Enter password for GPG keyring passphrase file', 'esp32-firmware', os.path.abspath(make_path('icon.png')))
                     print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
 
                     try:
@@ -298,7 +277,7 @@ def main():
                     except KeyboardInterrupt:
                         raise Exception('Aborted')
 
-                    notify_clear(n_id)
+                    notify_clear(notify_ctx)
                 else:
                     gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
 

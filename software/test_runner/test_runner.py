@@ -15,29 +15,10 @@ import atexit
 import fcntl
 import errno
 import fnmatch
-
+from tinkerforge_util.colored import red, green, blue, purple
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
 
 DEFAULT_TEST_TIMEOUT = 5 * 60
-
-colors = {"off": "\x1b[00m",
-          "blue": "\x1b[34m",
-          "cyan": "\x1b[36m",
-          "green": "\x1b[32m",
-          "red": "\x1b[31m",
-          "gray": "\x1b[90m"}
-
-def red(s):
-    return colors["red"]+s+colors["off"]
-
-def green(s):
-    return colors["green"]+s+colors["off"]
-
-def gray(s):
-    return colors['gray']+s+colors["off"]
-
-def blue(s):
-    return colors['blue']+s+colors["off"]
 
 def main():
     parser = argparse.ArgumentParser()
@@ -242,13 +223,13 @@ def main():
                                 else:
                                     x: list[JTestCase] = jsuite.test_cases
                                     x[-1].add_error_info(payload["error"], payload["tb"], "error")
-                                tprint(blue("Error"), f"({time.monotonic() - start:.3f}s)")
+                                tprint(purple("Error"), f"({time.monotonic() - start:.3f}s)")
                                 tprint("    " + "\n    ".join(payload["tb"].split("\n")))
 
                             case 'notify_test_skipped':
                                 test_finished = True
                                 if not meta_test:
-                                    tprint(gray("Skipped"), payload["reason"])
+                                    tprint(blue("Skipped"), payload["reason"])
                                     x: list[JTestCase] = jsuite.test_cases
                                     x[-1].add_skipped_info(payload["reason"])
 

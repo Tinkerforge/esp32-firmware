@@ -758,11 +758,6 @@ def write_generated_file(path, content):
     root_dir = os.path.split(os.path.realpath(__file__))[0]
 
     if content != None:
-        path_dir = os.path.split(path)[0]
-
-        if len(path_dir) > 0:
-            os.makedirs(path_dir, exist_ok=True)
-
         tfutil.write_file_if_different(path, content)
     else:
         with open(path, 'r', encoding='utf-8') as f:

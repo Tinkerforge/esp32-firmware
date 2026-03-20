@@ -7,7 +7,7 @@ dependencies = [
     "platformio",
     "pyphen",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
-    "tinkerforge_util == 1.2.2", # > 1.2.2 has a not yet fixed incompatibily with Windows
+    "tinkerforge_util >= 1.5.1",
 
     # SunSpec model parser
     "Xlsx2csv",
