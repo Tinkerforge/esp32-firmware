@@ -352,8 +352,6 @@ void EEBus::pre_setup()
 
     config = ConfigRoot{Config::Object({
                             {"enable", Config::Bool(false)},
-                            {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
-                            {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"peers", Config::Array({config_peers_prototype}, &config_peers_prototype, 0, MAX_PEER_REMEMBERED, Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &update, ConfigSource source) -> String {

@@ -96,8 +96,8 @@ void Ship::setup()
         .transport_mode = TransportMode::Secure,
         .cert_info =
             {
-                .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
-                .key_id = static_cast<int16_t>(eebus.config.get("key_id")->asInt()),
+                .cert_id = -1,
+                .key_id = -1,
                 .cert_path = "/eebus/cert",
                 .key_path = "/eebus/key",
                 .generator_fn = eebus_ship_certificate_generator_fn,
@@ -152,8 +152,8 @@ void Ship::setup_wss()
 
     if (!cert.is_loaded()) {
         const cert_load_info cert_info = {
-            .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
-            .key_id = static_cast<int16_t>(eebus.config.get("key_id")->asInt()),
+            .cert_id = -1,
+            .key_id = -1,
             .cert_path = "/eebus/cert",
             .key_path = "/eebus/key",
             .generator_fn = eebus_ship_certificate_generator_fn,
