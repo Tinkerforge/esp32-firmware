@@ -221,12 +221,16 @@ struct cm_state_v2 {
 static_assert(CM_STATE_V2_LENGTH == 4, "Unexpected CM_STATE_V2_LENGTH");
 
 struct cm_state_v3 {
+    // bit 3: currently switching
     // bit 2: can switch phases now
     // bit 0-1: phases "connected"
     uint8_t phases;
     uint8_t padding[3];
 };
 
+#define CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS 3
+#define CM_STATE_V3_CURRENTLY_SWITCHING_MASK (1u << CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS)
+#define CM_STATE_V3_CURRENTLY_SWITCHING_IS_SET(PHASES) (((PHASES) & CM_STATE_V3_CURRENTLY_SWITCHING_MASK) != 0)
 #define CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS 2
 #define CM_STATE_V3_CAN_PHASE_SWITCH_MASK (1u << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS)
 #define CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(PHASES) (((PHASES) & CM_STATE_V3_CAN_PHASE_SWITCH_MASK) != 0)

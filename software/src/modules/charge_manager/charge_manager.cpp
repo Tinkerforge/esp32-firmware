@@ -588,6 +588,9 @@ void ChargeManager::setup()
             if (charger.charger_state != 3)
                 continue; // Charger not charging. Allocated current can't be used because contactor is not closed.
 
+            if (charger.currently_switching_phases)
+                continue;
+
             if (charger.last_update < unreachable_threshold)
                 continue; // Unreachable chargers stop charging after the timeout.
 

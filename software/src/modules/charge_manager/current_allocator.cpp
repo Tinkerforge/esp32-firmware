@@ -250,12 +250,16 @@ bool update_from_client_packet(
     if (v3 != nullptr) {
         uint8_t new_phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
         uint8_t new_pss =  CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
+        uint8_t new_switching =  CM_STATE_V3_CURRENTLY_SWITCHING_IS_SET(v3->phases);
         if (new_phases != target.phases)
             trace("RECV %d: phases %u -> %u", client_id, target.phases, new_phases);
         if (new_pss != target.phase_switch_supported)
             trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
+        if (new_switching != target.currently_switching_phases)
+            trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
         target.phases = new_phases;
         target.phase_switch_supported = new_pss;
+        target.currently_switching_phases = new_switching;
     } else {
         target.phases = 3;
         target.phase_switch_supported = false;

@@ -444,6 +444,7 @@ void EvseCommon::send_cm_client_update() {
         backend->get_control_pilot_disconnect(),
         phases,
         backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
+        backend->get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Busy,
         deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->charge_mode.get("mode")->asEnum<ConfigChargeMode>()
     );
 #endif

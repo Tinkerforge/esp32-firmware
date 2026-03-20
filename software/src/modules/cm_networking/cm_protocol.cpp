@@ -630,6 +630,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       bool cp_disconnected_state,
                                       int8_t phases,
                                       bool can_switch_phases_now,
+                                      bool currently_switching_phases,
                                       ConfigChargeMode requested_charge_mode)
 {
     static uint16_t next_seq_num = 0;
@@ -729,6 +730,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     state_pkt.v3.phases = phases;
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
+    state_pkt.v3.phases |= currently_switching_phases << CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS;
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
 

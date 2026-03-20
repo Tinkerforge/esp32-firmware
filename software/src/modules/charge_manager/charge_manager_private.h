@@ -112,6 +112,7 @@ struct ChargerState {
     bool meter_supported;
 
     bool phase_switch_supported;
+    bool currently_switching_phases;
 
     // TODO move everything below into charger allocation state.
 
