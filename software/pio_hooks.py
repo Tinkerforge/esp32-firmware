@@ -943,7 +943,7 @@ def main():
     remove_orphaned_enum_files()
     remove_orphaned_union_files()
 
-    check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
+    check_call(['uv', 'run', 'update_packages.py'])
 
     build_flags = env.GetProjectOption("build_flags")
     product_id = env.GetProjectOption("custom_product_id", None)
@@ -1697,7 +1697,7 @@ def main():
             environ['PLATFORMIO_METADATA'] = metadata
 
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+                check_call(['uv', 'run', 'prepare.py'], env=environ)
 
     # Prepare frontend modules
     for frontend_module in frontend_modules:
@@ -1712,7 +1712,7 @@ def main():
             environ['PLATFORMIO_METADATA'] = metadata
 
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+                check_call(['uv', 'run', 'prepare.py'], env=environ)
 
     # API
     api_imports = []
@@ -2098,13 +2098,13 @@ def main():
     util.log('Checking translation completeness')
 
     with tfutil.ChangedDirectory('web'):
-        check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
+        check_call(['uv', 'run', 'check_translation_completeness.py'] + [x.under for x in frontend_modules])
 
     # Check translation override completeness
     util.log('Checking translation override completeness')
 
     with tfutil.ChangedDirectory('web'):
-        check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
+        check_call(['uv', 'run', 'check_override_completeness.py'])
 
     if prepare_only:
         print("Stopping build after prepare")

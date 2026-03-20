@@ -20,7 +20,7 @@ while i < len(args):
 begin = time.monotonic()
 
 try:
-    return_code = subprocess.run(['pio'] + args).returncode
+    return_code = subprocess.run(['uv', 'run', 'pio'] + args).returncode
 
     if return_code != 0:
         sys.exit(return_code)

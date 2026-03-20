@@ -19,4 +19,4 @@ https://docs.nitrokey.com/de/software/nk-app2/keepassxc
 # Configure the choosen protection (token, keyfile or password) in config.ini
 
 # Run keygen.py once for each preset configured in config.ini to generate the keys
-python keygen.py <preset>
+uv run keygen.py <preset>
