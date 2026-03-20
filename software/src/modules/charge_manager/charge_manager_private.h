@@ -18,6 +18,9 @@
 #include "generated/three_phase_decision.union.h"
 #include "generated/current_decision.union.h"
 
+constexpr micros_t RE_RESOLVE_TIMEOUT = 6_s; // Must be less than CHARGER_UNREACHABLE_TIMEOUT.
+constexpr micros_t CHARGER_UNREACHABLE_TIMEOUT = 32_s;
+
 struct ChargerDecision {
     ZeroPhaseDecision zero;
     OnePhaseDecision one;

@@ -46,9 +46,6 @@
 
 #define LOCAL_LOG(fmt, ...) LOCAL_LOG_FULL("    ", fmt __VA_OPT__(,) __VA_ARGS__)
 
-static constexpr micros_t RE_RESOLVE_TIMEOUT = 6_s; // Must be less than TIMEOUT.
-static constexpr micros_t TIMEOUT = 32_s;
-
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
 
 #define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
@@ -2282,7 +2279,7 @@ int allocate_current(
                 notify_charger_unresponsive(i);
 
                 // Charger does not respond anymore
-                if (last_update_age > TIMEOUT) {
+                if (last_update_age > CHARGER_UNREACHABLE_TIMEOUT) {
                     // Only shut down this charger.
                     // If a charger does not receive manager packets anymore,
                     // it will shut down after 30 seconds.
@@ -2312,7 +2309,7 @@ int allocate_current(
             if ((charger_alloc.allocated_current < charger.allowed_current
                 || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
                 || (charger_alloc.allocated_phases == 0 && charger.is_charging))
-               && sc.elapsed(charger_alloc.last_sent_config + TIMEOUT)) {
+               && sc.elapsed(charger_alloc.last_sent_config + CHARGER_UNREACHABLE_TIMEOUT)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
