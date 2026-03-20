@@ -632,8 +632,6 @@ void ChargeManager::setup()
 
             this->next_allocation = now_us() + ca_config->allocation_interval;
 
-            uint32_t allocated_current = 0;
-
             this->limits_post_allocation = this->limits;
 
             for(size_t i = 0; i < charger_count; ++i) {
@@ -651,7 +649,6 @@ void ChargeManager::setup()
 
                 this->ca_state,
                 this->charger_allocation_state,
-                &allocated_current,
                 this->charger_decisions
             );
 

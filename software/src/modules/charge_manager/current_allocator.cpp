@@ -2204,7 +2204,6 @@ int allocate_current(
 
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
-    uint32_t *allocated_current,
     ChargerDecision *charger_decisions
     )
 {
@@ -2527,12 +2526,6 @@ int allocate_current(
                 len = strlen(local_log);
             }
         }
-    }
-
-    *allocated_current = 0;
-    for (int i = 0; i < cfg->charger_count; ++i) {
-        auto &charger_alloc = charger_allocation_state[i];
-        *allocated_current += charger_alloc.allocated_current;
     }
 
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
