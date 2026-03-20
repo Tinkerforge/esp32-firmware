@@ -578,6 +578,23 @@ void ChargeManager::setup()
 
     this->next_allocation = now_us() + 1_s;
 
+    task_scheduler.scheduleUncancelable([this](){
+        auto now = now_us();
+        this->allocated_currents = Cost();
+
+        for (int i = 0; i < this->charger_count; ++i) {
+            auto &charger = this->charger_state[i];
+
+            if ((charger.last_update + CHARGER_UNREACHABLE_TIMEOUT) < now)
+                continue; // Unreachable chargers stop charging after this timeout.
+
+            if (charger.charger_state != CHARGER_STATE_CHARGING)
+                continue; // Charger not charging. Allocated current can't be used because contactor is not closed.
+
+            this->allocated_currents += get_cost(charger.allowed_current, charger.phases, charger.phase_rotation, 0, 0);
+        }
+    }, 1_s);
+
     task_scheduler.scheduleUncancelable([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
             if (!deadline_elapsed(this->next_allocation))
                 return;
@@ -653,11 +670,10 @@ void ChargeManager::setup()
             );
 
             for (size_t i = 0; i < 4; i++) {
-                allocated_currents[i] = this->limits.raw[i] - limits_post_allocation.raw[i];
                 this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
                 this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
                 this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
-                this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
+                this->state.get("alloc")->get(i)->updateInt(this->limits.raw[i] - limits_post_allocation.raw[i]);
                 this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
                 this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
