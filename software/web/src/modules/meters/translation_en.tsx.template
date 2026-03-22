@@ -95,7 +95,20 @@ let x = {
         "automation": {
             "meter_reset": "Reset energy meter",
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>reset</b> energy meter <b>{meter_name}</b>.</>/*NF*/,
-            "meter_slot": "Meter"
+            "meter_slot": "Meter",
+            "meter_value": "Meter value",
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {comparator} <b>{threshold} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "value_id": "Value",
+            "comparator": "Condition",
+            "comparator_gt": "Greater than (>)",
+            "comparator_lt": "Less than (<)",
+            "comparator_gte": "Greater than or equal (\u2265)",
+            "comparator_lte": "Less than or equal (\u2264)",
+            "comparator_eq": "Equal to (=)",
+            "comparator_neq": "Not equal to (\u2260)",
+            "threshold": "Threshold",
+            "hysteresis": "Hysteresis",
+            "hysteresis_muted": "prevents re-triggering"
         },
         "script": {
             "time": "Time of day",

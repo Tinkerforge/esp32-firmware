@@ -95,7 +95,20 @@ let x = {
         "automation": {
             "meter_reset": "Stromzähler zurücksetzen",
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>setze</b> den Zähler <b>{meter_name}</b> zurück.</> /*NF*/,
-            "meter_slot": "Meter"
+            "meter_slot": "Meter",
+            "meter_value": "Zählerwert",
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold: string, hyst: string, unit: string) => <>wenn Zähler <b>{meter_name}</b> Wert <b>{value_name}</b> {comparator} <b>{threshold} {unit}</b>{hyst !== "" ? <> (Hysterese: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "value_id": "Wert",
+            "comparator": "Bedingung",
+            "comparator_gt": "Größer als (>)",
+            "comparator_lt": "Kleiner als (<)",
+            "comparator_gte": "Größer oder gleich (\u2265)",
+            "comparator_lte": "Kleiner oder gleich (\u2264)",
+            "comparator_eq": "Gleich (=)",
+            "comparator_neq": "Ungleich (\u2260)",
+            "threshold": "Schwellwert",
+            "hysteresis": "Hysterese",
+            "hysteresis_muted": "verhindert wiederholtes Auslösen"
         },
         "script": {
             "time": "Uhrzeit",

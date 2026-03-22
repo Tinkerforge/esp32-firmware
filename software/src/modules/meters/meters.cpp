@@ -235,6 +235,17 @@ void Meters::pre_setup()
             }
         }
     );
+
+    automation.register_trigger(
+        AutomationTriggerID::MeterValue,
+        Config::Object({
+            {"meter_slot", Config::Uint(0, 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
+            {"value_id",   Config::Uint16(0)},
+            {"comparator", Config::Uint8(0, 5)}, // 0: >, 1: <, 2: >=, 3: <=, 4: ==, 5: !=
+            {"threshold",  Config::Float(0.0f)},
+            {"hysteresis", Config::Float(0.0f)},
+        })
+    );
 #endif
 }
 
@@ -417,6 +428,28 @@ void Meters::setup()
 
         last_history_slot = current_history_slot;
     }, 500_ms);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    task_scheduler.scheduleUncancelable([this](){
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+            MeterSlot &meter_slot = this->meter_slots[slot];
+
+            if (meter_slot.meter->get_class() == MeterClassID::None) {
+                continue;
+            }
+
+            if (meter_slot.values_last_updated_at != automation_last_values_updated_at[slot]) {
+                automation_last_values_updated_at[slot] = meter_slot.values_last_updated_at;
+                automation.trigger(AutomationTriggerID::MeterValue, nullptr, this);
+                break; // Only trigger once per check cycle
+            }
+        }
+    }, 1_s);
+
+    automation.register_on_config_applied([this]() {
+        trigger_state_count = 0;
+    });
+#endif
 
     initialized = true;
 }
@@ -1408,3 +1441,102 @@ float Meters::live_samples_per_second()
 
     return samples_per_second;
 }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+bool Meters::has_triggered(const Config *conf, void *data)
+{
+    if (conf->getTag<AutomationTriggerID>() != AutomationTriggerID::MeterValue) {
+        return false;
+    }
+
+    const Config   *cfg        = static_cast<const Config *>(conf->get());
+    const uint32_t  meter_slot = cfg->get("meter_slot")->asUint();
+    const uint16_t  value_id   = static_cast<uint16_t>(cfg->get("value_id")->asUint());
+    const uint8_t   comparator = static_cast<uint8_t>(cfg->get("comparator")->asUint());
+    const float     threshold  = cfg->get("threshold")->asFloat();
+    const float     hysteresis = cfg->get("hysteresis")->asFloat();
+
+    if (meter_slot >= OPTIONS_METERS_MAX_SLOTS()) {
+        return false;
+    }
+
+    // Find the index of the requested value_id in this meter's value_ids
+    const MeterSlot &slot = meter_slots[meter_slot];
+    const Config &vid_config = slot.value_ids;
+    const size_t vid_count = vid_config.count();
+
+    uint32_t value_index = UINT32_MAX;
+    for (uint32_t i = 0; i < vid_count; i++) {
+        if (vid_config.get(i)->asUint() == value_id) {
+            value_index = i;
+            break;
+        }
+    }
+
+    if (value_index == UINT32_MAX) {
+        return false;
+    }
+
+    float value;
+    MeterValueAvailability avail = get_value_by_index(meter_slot, value_index, &value);
+    if ((avail != MeterValueAvailability::Fresh) || isnan(value)) {
+        return false;
+    }
+
+    // Check trigger condition:
+    // Use hysteresis for == and != (e.g. to allow matching 42 as 42.000001)
+    // For >, <, >=, <= the user does set an explicit "set point", we want to trigger on
+    // this point when it is reached. The hysteresis is applied to the reset condition.
+    bool condition_met = false;
+    switch (comparator) {
+        case 0: condition_met = value >  threshold;                           break; // >
+        case 1: condition_met = value <  threshold;                           break; // <
+        case 2: condition_met = value >= threshold;                           break; // >=
+        case 3: condition_met = value <= threshold;                           break; // <=
+        case 4: condition_met = std::fabs(value - threshold) <= hysteresis;   break; // == (within hysteresis band)
+        case 5: condition_met = std::fabs(value - threshold) >  hysteresis;   break; // != (outside hysteresis band)
+        default: return false;
+    }
+
+    // Check reset condition
+    bool reset_condition = false;
+    switch (comparator) {
+        case 0: reset_condition = value < (threshold - hysteresis);           break; // >  trigger, reset when < (threshold - hysteresis)
+        case 1: reset_condition = value > (threshold + hysteresis);           break; // <  trigger, reset when > (threshold + hysteresis)
+        case 2: reset_condition = value < (threshold - hysteresis);           break; // >= trigger, reset when < (threshold - hysteresis)
+        case 3: reset_condition = value > (threshold + hysteresis);           break; // <= trigger, reset when > (threshold + hysteresis)
+        case 4: reset_condition = std::fabs(value - threshold) > hysteresis;  break; // == trigger, reset when outside hysteresis band
+        case 5: reset_condition = std::fabs(value - threshold) <= hysteresis; break; // != trigger, reset when within hysteresis band
+        default: return false;
+    }
+
+    // Only fire on the transition from not-triggered to triggered.
+    bool was_triggered = false;
+    size_t state_idx = trigger_state_count; // Will point to existing entry or next free slot
+
+    for (size_t i = 0; i < trigger_state_count; i++) {
+        if (trigger_state[i].conf == conf) {
+            was_triggered = trigger_state[i].triggered;
+            state_idx = i;
+            break;
+        }
+    }
+
+    if (!was_triggered) {
+        if (condition_met) {
+            if (state_idx == trigger_state_count && trigger_state_count < ARRAY_SIZE(trigger_state)) {
+                trigger_state[trigger_state_count++] = {conf, true};
+            } else if (state_idx < trigger_state_count) {
+                trigger_state[state_idx].triggered = true;
+            }
+            return true;
+        }
+    } else {
+        if (reset_condition) {
+            trigger_state[state_idx].triggered = false;
+        }
+    }
+
+    return false;
+}
+#endif

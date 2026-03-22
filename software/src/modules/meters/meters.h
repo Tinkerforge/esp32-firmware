@@ -30,7 +30,12 @@
 #include "meter_value_availability.h"
 #include "value_history.h"
 #include "generated/meter_value_id.h"
+#include "generated/module_available.h"
 #include "tools.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
 
 #define METERS_MAX_FILTER_VALUES 7
 
@@ -47,6 +52,9 @@
 #define INDEX_CACHE_CURRENT_COUNT 3
 
 class Meters final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                  , public IAutomationBackend
+#endif
 {
 public:
     enum class PathType {
@@ -91,6 +99,10 @@ public:
     void register_urls() override;
     void register_events() override;
     void pre_reboot() override;
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
     void register_meter_generator(MeterClassID meter_class, IMeterGenerator *generator);
     IMeter *get_meter(uint32_t slot);
@@ -189,6 +201,17 @@ private:
     friend class ScreenshotDataFaker;
 #endif
 #endif
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    // Edge detection state for meter value automation triggers.
+    struct TriggerStateEntry {
+        const Config *conf;
+        bool          triggered;
+    };
+    TriggerStateEntry trigger_state[OPTIONS_AUTOMATION_MAX_RULES()] = {};
+    size_t            trigger_state_count = 0;
+    micros_t automation_last_values_updated_at[OPTIONS_METERS_MAX_SLOTS()] = {};
+#endif
 };
 
 extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, std::initializer_list<MeterValueID> ids);
@@ -197,3 +220,5 @@ inline uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t va
 {
     return meters_find_id_index(value_ids, value_id_count, {id});
 }
+
+#include "generated/module_available_end.h"
