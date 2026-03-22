@@ -22,6 +22,7 @@ Day Ahead Price Now
 EM Relay Switch
 EM SG Ready Switch
 Temperature Now
+Meter Value
 Vendor Trigger 3 = 252 // Reserved for downstream extensions
 Vendor Trigger 2 = 253 // Reserved for downstream extensions
 Vendor Trigger 1 = 254 // Reserved for downstream extensions
