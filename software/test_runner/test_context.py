@@ -479,7 +479,7 @@ def run_testsuite(l: dict[str, typing.Any]):
     suite = TestSuiteInfo(Path(l['__file__']).parts[-3], Path(l['__file__']).stem, [])
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--test-filter", action='append', default=[])
+    parser.add_argument("--test-filter", default='*')
     parser.add_argument("--fifo-in-path")
     parser.add_argument("--fifo-out-path")
     parser.add_argument("--host")
@@ -488,12 +488,11 @@ def run_testsuite(l: dict[str, typing.Any]):
     args = parser.parse_args()
 
     # l is locals() of the calling test suite script, containing test, setup and teardown functions.
-    test_filters = args.test_filter or ['*']
     for k, v in l.items():
         if not callable(v):
             continue
 
-        if k.startswith("test_") and any(fnmatch.fnmatch(k, f) for f in test_filters):
+        if k.startswith("test_") and fnmatch.fnmatch(k, args.test_filter):
             suite.tests.append(TestCaseInfo(f"{suite.module}/{suite.suite}/{k}", v))
 
         if k == "suite_setup": suite.suite_setup = v

@@ -37,8 +37,7 @@ def main():
         if not quiet:
             print(*args, **kwargs, flush=True)
 
-    suite_paths: list[Path] = []
-    test_filters: dict[str, list[str]] = {} # suite_path -> list of test filter patterns
+    suite_runs: list[tuple[Path, str]] = []  # (suite_path, test_filter)
 
     for tf in args.test_filter:
         module_filter, suite_filter, test_filter = tf.split('/')
@@ -46,17 +45,12 @@ def main():
         if module_filter != '*' and fnmatch.fnmatch("test_runner", module_filter):
             paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
         for p in paths:
-            key = str(p.absolute())
-            if key not in test_filters:
-                suite_paths.append(p)
-                test_filters[key] = [test_filter]
-            elif '*' not in test_filters[key]:
-                test_filters[key].append(test_filter)
+            suite_runs.append((p, test_filter))
 
     # Skip underscore-prefixed helper modules and modules without "run_testsuite"
-    suite_paths = [p for p in suite_paths if not p.name.startswith('_') and 'run_testsuite' in p.read_text()]
+    suite_runs = [(p, f) for p, f in suite_runs if not p.name.startswith('_') and 'run_testsuite' in p.read_text()]
 
-    for suite_path in suite_paths:
+    for suite_path, test_filter in suite_runs:
         path = suite_path.absolute()
 
         module_name = Path(path).parts[-3]
@@ -84,7 +78,7 @@ def main():
                 "run",
                 "--active", # "Prefer the active virtual environment over the project's virtual environment" ensures that test scripts can use transitive dependencies of test context (for example esptool)
                 "--script", path,
-                *[arg for f in test_filters[str(path)] for arg in ("--test-filter", f)],
+                "--test-filter", test_filter,
                 "--fifo-in-path", fifo_in_path,
                 "--fifo-out-path", fifo_out_path
             ]
