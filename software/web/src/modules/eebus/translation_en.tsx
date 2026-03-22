@@ -85,6 +85,7 @@ let x = {
             "commands": "Commands",
             "received": "Received",
             "sent": "Sent",
+            "usecase_inactive": "This use case is inactive because not all required meter data has been received yet.",
             "usecases": "Use Cases"
         },
         "navbar": {

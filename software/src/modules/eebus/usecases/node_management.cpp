@@ -153,7 +153,11 @@ NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (EebusUsecase *uc : usecase_interface->usecase_list) {
         if (uc->get_usecase_type() != Usecases::NMC && uc->get_usecase_type() != Usecases::HEARTBEAT) {
-            node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
+            auto info = uc->get_usecase_information();
+            if (info.useCaseSupport->empty()) {
+                continue;
+            }
+            node_management_usecase_data.useCaseInformation->push_back(info);
         }
     }
     return node_management_usecase_data;

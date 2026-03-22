@@ -46,11 +46,9 @@ EvcemUsecase::EvcemUsecase()
     usecase_name = "measurementOfElectricityDuringEvCharging";
     usecase_version = "1.0.1";
 
-    // Build supported_scenarios from scenario switches (no usecase_updated() call yet since not connected)
-    supported_scenarios.clear();
-    supported_scenarios.push_back(1); // Scenario 1: Current per phase (Mandatory)
-    if (monitorPowerSupported) supported_scenarios.push_back(2);  // Scenario 2: Power per phase (Optional)
-    if (monitorEnergySupported) supported_scenarios.push_back(3); // Scenario 3: Charged energy (Optional)
+    // Start inactive with no scenarios, activated when first measurement data arrives from meter
+    supported_scenarios = {};
+    entity_active = false;
 };
 
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -162,6 +160,15 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
      }
     power_charged_wh = charged_wh;
     power_charged_measured = charged_measured;
+
+    // One-time activation: first call to update_measurements() activates the use case.
+    if (!mandatory_data_seen) {
+        mandatory_data_seen = true;
+        entity_active = true;
+        updateSupportedScenarios();
+        entities_updated();
+        // usecase_updated() already called by updateSupportedScenarios()
+    }
 
     bool phases_measured_after[3] = {false, false, false};
     for (int i = 0; i < 3; i++) {
@@ -375,6 +382,10 @@ void EvcemUsecase::get_electrical_connection_parameters(ElectricalConnectionPara
 
 void EvcemUsecase::updateSupportedScenarios()
 {
+    // Don't rebuild scenarios until first measurement data has activated the use case
+    if (!mandatory_data_seen)
+        return;
+
     supported_scenarios.clear();
     supported_scenarios.push_back(1); // Scenario 1: Current per phase (Mandatory)
     if (monitorPowerSupported) {
@@ -401,6 +412,7 @@ void EvcemUsecase::updateSupportedScenarios()
 void EvcemUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("ev_charging_electricity_measurement");
+    api_entry->get("active")->updateBool(entity_active);
     api_entry->get("amps_phase_1")->updateUint(milliamps_draw_phase[0]);
     api_entry->get("amps_phase_2")->updateUint(milliamps_draw_phase[1]);
     api_entry->get("amps_phase_3")->updateUint(milliamps_draw_phase[2]);

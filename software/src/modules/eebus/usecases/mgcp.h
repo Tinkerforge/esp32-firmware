@@ -287,7 +287,7 @@ private:
     // ========================================================================
     // Scenario 2: Power measurement
     // ========================================================================
-    int total_power_w = 0; ///< Total power (positive = consumption, negative = feed-in)
+    int total_power_w = EEBUS_NO_VALUE; ///< Total power (positive = consumption, negative = feed-in)
 
     // ========================================================================
     // Scenario 3 & 4: Energy measurements
@@ -298,17 +298,17 @@ private:
     // ========================================================================
     // Scenario 5: Current measurements
     // ========================================================================
-    int current_phase_ma[3] = {0, 0, 0}; ///< Per-phase current in mA
+    int current_phase_ma[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE}; ///< Per-phase current in mA
 
     // ========================================================================
     // Scenario 6: Voltage measurements
     // ========================================================================
-    int voltage_phase_v[3] = {230, 230, 230}; ///< Per-phase voltage in V (default 230V)
+    int voltage_phase_v[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE}; ///< Per-phase voltage in V
 
     // ========================================================================
     // Scenario 7: Frequency measurement
     // ========================================================================
-    int frequency_mhz = 50000; ///< Grid frequency in mHz (default 50Hz)
+    int frequency_mhz = EEBUS_NO_VALUE; ///< Grid frequency in mHz
 
     // ========================================================================
     // Constraints
@@ -327,6 +327,11 @@ private:
      * @brief Update the API state with current values.
      */
     void update_api() const;
+
+    bool power_seen = false;
+    bool feed_in_energy_seen = false;
+    bool consumed_energy_seen = false;
+    void try_activate();
 
 };
 

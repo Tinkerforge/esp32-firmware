@@ -61,8 +61,9 @@ MgcpUsecase::MgcpUsecase()
     usecase_name = "monitoringOfGridConnectionPoint";
     usecase_version = "1.0.0";
 
-    // Build supported_scenarios from scenario switches (no usecase_updated() call yet since not connected)
-    supported_scenarios = {1, 2, 3, 4, 5, 6, 7};
+    // Start inactive with no scenarios, activated when all mandatory data has been seen from meter
+    supported_scenarios = {};
+    entity_active = false;
 }
 
 MessageReturn MgcpUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -456,6 +457,11 @@ void MgcpUsecase::update_power(int total_power)
 {
     total_power_w = total_power;
 
+    if (!power_seen && total_power != EEBUS_NO_VALUE) {
+        power_seen = true;
+        try_activate();
+    }
+
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
@@ -465,7 +471,16 @@ void MgcpUsecase::update_power(int total_power)
 
 void MgcpUsecase::update_energy_feed_in(uint32_t energy_wh)
 {
+    if (energy_wh == static_cast<uint32_t>(EEBUS_NO_VALUE)) {
+        return;
+    }
+
     energy_feed_in_wh = energy_wh;
+
+    if (!feed_in_energy_seen) {
+        feed_in_energy_seen = true;
+        try_activate();
+    }
 
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
@@ -476,7 +491,16 @@ void MgcpUsecase::update_energy_feed_in(uint32_t energy_wh)
 
 void MgcpUsecase::update_energy_consumed(uint32_t energy_wh)
 {
+    if (energy_wh == static_cast<uint32_t>(EEBUS_NO_VALUE)) {
+        return;
+    }
+
     energy_consumed_wh = energy_wh;
+
+    if (!consumed_energy_seen) {
+        consumed_energy_seen = true;
+        try_activate();
+    }
 
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
@@ -487,10 +511,9 @@ void MgcpUsecase::update_energy_consumed(uint32_t energy_wh)
 
 void MgcpUsecase::update_current(int current_phase_1_ma, int current_phase_2_ma, int current_phase_3_ma)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    current_phase_ma[0] = (current_phase_1_ma == EEBUS_NO_VALUE) ? 0 : current_phase_1_ma;
-    current_phase_ma[1] = (current_phase_2_ma == EEBUS_NO_VALUE) ? 0 : current_phase_2_ma;
-    current_phase_ma[2] = (current_phase_3_ma == EEBUS_NO_VALUE) ? 0 : current_phase_3_ma;
+    current_phase_ma[0] = current_phase_1_ma;
+    current_phase_ma[1] = current_phase_2_ma;
+    current_phase_ma[2] = current_phase_3_ma;
 
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
@@ -501,10 +524,9 @@ void MgcpUsecase::update_current(int current_phase_1_ma, int current_phase_2_ma,
 
 void MgcpUsecase::update_voltage(int voltage_phase_1_v, int voltage_phase_2_v, int voltage_phase_3_v)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    voltage_phase_v[0] = (voltage_phase_1_v == EEBUS_NO_VALUE) ? 0 : voltage_phase_1_v;
-    voltage_phase_v[1] = (voltage_phase_2_v == EEBUS_NO_VALUE) ? 0 : voltage_phase_2_v;
-    voltage_phase_v[2] = (voltage_phase_3_v == EEBUS_NO_VALUE) ? 0 : voltage_phase_3_v;
+    voltage_phase_v[0] = voltage_phase_1_v;
+    voltage_phase_v[1] = voltage_phase_2_v;
+    voltage_phase_v[2] = voltage_phase_3_v;
 
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
@@ -515,8 +537,7 @@ void MgcpUsecase::update_voltage(int voltage_phase_1_v, int voltage_phase_2_v, i
 
 void MgcpUsecase::update_frequency(int freq_mhz)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    frequency_mhz = (freq_mhz == EEBUS_NO_VALUE) ? 0 : freq_mhz;
+    frequency_mhz = freq_mhz;
 
     // Inform subscribers of measurement changes
     auto measurement_data = EVSEEntity::get_measurement_list_data();
@@ -544,9 +565,25 @@ void MgcpUsecase::update_constraints(int power_min, int power_max, int current_m
     update_api();
 }
 
+void MgcpUsecase::try_activate()
+{
+    if (entity_active) {
+        return;
+    }
+    if (!power_seen || !feed_in_energy_seen || !consumed_energy_seen) {
+        return;
+    }
+
+    entity_active = true;
+    supported_scenarios = {1, 2, 3, 4, 5, 6, 7};
+    entities_updated();
+    usecase_updated();
+}
+
 void MgcpUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("monitoring_of_grid_connection_point");
+    api_entry->get("active")->updateBool(entity_active);
     api_entry->get("pv_curtailment_limit_factor_percent")->updateFloat(pv_curtailment_limit_factor_percent);
     api_entry->get("total_power_w")->updateInt(total_power_w);
     api_entry->get("energy_feed_in_wh")->updateUint(energy_feed_in_wh);

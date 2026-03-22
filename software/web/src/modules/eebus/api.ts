@@ -95,6 +95,7 @@ export interface usecases {
         evse_failure_description: string;
     }
     ev_charging_electricity_measurement: {
+        active: boolean;
         amps_phase_1: number;
         amps_phase_2: number;
         amps_phase_3: number;
@@ -105,6 +106,7 @@ export interface usecases {
         charged_valuesource_measured: boolean;
     };
     monitoring_of_power_consumption: {
+        active: boolean;
         total_power_w: number;
         power_phase_1_w: number;
         power_phase_2_w: number;
@@ -131,6 +133,7 @@ export interface usecases {
         energy_broker_heartbeat_ok: boolean;
     };
     monitoring_of_grid_connection_point: {
+        active: boolean;
         pv_curtailment_limit_factor_percent: number;
         total_power_w: number;
         energy_feed_in_wh: number;

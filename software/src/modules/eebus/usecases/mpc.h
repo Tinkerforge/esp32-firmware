@@ -258,31 +258,31 @@ private:
     // =========================================================================
     // Measurement values - Scenario 1: Monitor Power
     // =========================================================================
-    int total_power_w = 0;            ///< Total power (id_m_1) - Linked to LPC
-    int power_phase_w[3] = {0, 0, 0}; ///< Power per phase (id_m_2_1, id_m_2_2, id_m_2_3)
+    int total_power_w = EEBUS_NO_VALUE;            ///< Total power (id_m_1) - Linked to LPC
+    int power_phase_w[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE}; ///< Power per phase (id_m_2_1, id_m_2_2, id_m_2_3)
 
     // =========================================================================
     // Measurement values - Scenario 2: Monitor Energy
     // =========================================================================
-    uint32_t energy_consumed_wh = 0; ///< Energy consumed (id_m_3)
-    uint32_t energy_produced_wh = 0; ///< Energy produced (id_m_4)
+    uint32_t energy_consumed_wh = static_cast<uint32_t>(EEBUS_NO_VALUE); ///< Energy consumed (id_m_3)
+    uint32_t energy_produced_wh = static_cast<uint32_t>(EEBUS_NO_VALUE); ///< Energy produced (id_m_4)
 
     // =========================================================================
     // Measurement values - Scenario 3: Monitor Current
     // =========================================================================
-    int current_phase_ma[3] = {0, 0, 0}; ///< Current per phase in mA (id_m_5_1, id_m_5_2, id_m_5_3)
+    int current_phase_ma[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE}; ///< Current per phase in mA (id_m_5_1, id_m_5_2, id_m_5_3)
 
     // =========================================================================
     // Measurement values - Scenario 4: Monitor Voltage
     // =========================================================================
-    int voltage_phase_to_neutral_v[3] = {0, 0, 0}; ///< Voltage phase-to-neutral (id_m_6_1, id_m_6_2, id_m_6_3)
-    int voltage_phase_to_phase_v[3] = {0, 0, 0};   ///< Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6)
+    int voltage_phase_to_neutral_v[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE}; ///< Voltage phase-to-neutral (id_m_6_1, id_m_6_2, id_m_6_3)
+    int voltage_phase_to_phase_v[3] = {EEBUS_NO_VALUE, EEBUS_NO_VALUE, EEBUS_NO_VALUE};   ///< Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6)
     bool phase_to_phase_available = true;          ///< Whether phase-to-phase voltage measurement is available
 
     // =========================================================================
     // Measurement values - Scenario 5: Monitor Frequency
     // =========================================================================
-    int frequency_mhz = 50000; ///< Grid frequency in millihertz (id_m_7), default 50Hz
+    int frequency_mhz = EEBUS_NO_VALUE; ///< Grid frequency in millihertz (id_m_7)
 
     // =========================================================================
     // Constraint values - Power
@@ -323,6 +323,8 @@ private:
     // Helper methods
     // =========================================================================
     void update_api() const;
+
+    bool mandatory_data_seen = false;
 
 };
 

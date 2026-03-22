@@ -53,7 +53,8 @@ MpcUsecase::MpcUsecase()
     usecase_name = "monitoringOfPowerConsumption";
     usecase_version = "1.0.0";
 
-    supported_scenarios = {1, 2, 3, 4, 5};
+    supported_scenarios = {};
+    entity_active = false;
 }
 
 MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -450,6 +451,7 @@ void MpcUsecase::update_api() const
 {
     // Update API state for monitoring
     auto api_entry = eebus.eebus_usecase_state.get("monitoring_of_power_consumption");
+    api_entry->get("active")->updateBool(entity_active);
     api_entry->get("total_power_w")->updateInt(total_power_w);
     api_entry->get("power_phase_1_w")->updateInt(power_phase_w[0]);
     api_entry->get("power_phase_2_w")->updateInt(power_phase_w[1]);
@@ -465,7 +467,7 @@ void MpcUsecase::update_api() const
     api_entry->get("voltage_phase_1_2_v")->updateInt(voltage_phase_to_phase_v[0]);
     api_entry->get("voltage_phase_2_3_v")->updateInt(voltage_phase_to_phase_v[1]);
     api_entry->get("voltage_phase_3_1_v")->updateInt(voltage_phase_to_phase_v[2]);
-    api_entry->get("frequency_mhz")->updateUint(frequency_mhz);
+    api_entry->get("frequency_mhz")->updateInt(frequency_mhz);
 }
 
 void MpcUsecase::update_power(int total_power, int power_phase_1, int power_phase_2, int power_phase_3)
@@ -477,6 +479,15 @@ void MpcUsecase::update_power(int total_power, int power_phase_1, int power_phas
     power_phase_w[0] = power_phase_1;
     power_phase_w[1] = power_phase_2;
     power_phase_w[2] = power_phase_3;
+
+    // Activate use case on first power data from meter
+    if (!mandatory_data_seen && total_power != EEBUS_NO_VALUE) {
+        mandatory_data_seen = true;
+        entity_active = true;
+        supported_scenarios = {1, 2, 3, 4, 5};
+        entities_updated();
+        usecase_updated();
+    }
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
@@ -500,11 +511,9 @@ void MpcUsecase::update_energy(uint32_t energy_consumed, uint32_t energy_produce
 
 void MpcUsecase::update_current(int current_phase_1, int current_phase_2, int current_phase_3)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    // Update all values including 0 and negative (negative = reverse current)
-    current_phase_ma[0] = (current_phase_1 == EEBUS_NO_VALUE) ? 0 : current_phase_1;
-    current_phase_ma[1] = (current_phase_2 == EEBUS_NO_VALUE) ? 0 : current_phase_2;
-    current_phase_ma[2] = (current_phase_3 == EEBUS_NO_VALUE) ? 0 : current_phase_3;
+    current_phase_ma[0] = current_phase_1;
+    current_phase_ma[1] = current_phase_2;
+    current_phase_ma[2] = current_phase_3;
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
@@ -515,11 +524,9 @@ void MpcUsecase::update_current(int current_phase_1, int current_phase_2, int cu
 
 void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int voltage_phase_3, int voltage_phase_1_2, int voltage_phase_2_3, int voltage_phase_3_1)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    // Update all values including 0
-    voltage_phase_to_neutral_v[0] = (voltage_phase_1 == EEBUS_NO_VALUE) ? 0 : voltage_phase_1;
-    voltage_phase_to_neutral_v[1] = (voltage_phase_2 == EEBUS_NO_VALUE) ? 0 : voltage_phase_2;
-    voltage_phase_to_neutral_v[2] = (voltage_phase_3 == EEBUS_NO_VALUE) ? 0 : voltage_phase_3;
+    voltage_phase_to_neutral_v[0] = voltage_phase_1;
+    voltage_phase_to_neutral_v[1] = voltage_phase_2;
+    voltage_phase_to_neutral_v[2] = voltage_phase_3;
 
     bool phase_to_phase_supported_before = phase_to_phase_available;
     phase_to_phase_available = !(voltage_phase_1_2 == INT32_MIN || voltage_phase_2_3 == INT32_MIN || voltage_phase_3_1 == INT32_MIN);
@@ -546,9 +553,7 @@ void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int vo
 
 void MpcUsecase::update_frequency(int frequency_millihertz)
 {
-    // Convert EEBUS_NO_VALUE to 0 to ensure valid data is always sent
-    // Update value including 0
-    frequency_mhz = (frequency_millihertz == EEBUS_NO_VALUE) ? 0 : frequency_millihertz;
+    frequency_mhz = frequency_millihertz;
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();

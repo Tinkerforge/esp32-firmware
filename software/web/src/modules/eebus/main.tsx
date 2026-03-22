@@ -41,6 +41,8 @@ import {OutputFloat} from "../../ts/components/output_float";
 import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
 import {IPConfiguration} from "../../ts/components/ip_configuration";
 
+const EEBUS_NO_VALUE = -2147483648;
+
 const loadcontrolStateMap: { [key: number]: string } = {
     [LoadcontrolState.Startup]: "Startup",
     [LoadcontrolState.Init]: "Init",
@@ -80,6 +82,9 @@ function PhaseRow(props: {
     digits?: 0 | 1 | 2 | 3,
     scale?: number
 }) {
+    if (props.values[0] === EEBUS_NO_VALUE && props.values[1] === EEBUS_NO_VALUE && props.values[2] === EEBUS_NO_VALUE) {
+        return null;
+    }
     const digits = props.digits ?? 0;
     const scale = props.scale ?? 0;
     return <FormRow label={props.label} label_muted={props.label_muted} small>
@@ -513,6 +518,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             hideRemoveButton: true,
                                             columnValues: ["EVCEM (EV Charging Electricity Measurement)"],
                                             extraValue: <>
+                                                {!evcem.active && <div class="alert alert-secondary mb-2 py-1 px-2" role="alert">
+                                                    <small>{__("eebus.content.usecase_inactive")}</small>
+                                                </div>}
+                                                <div style={!evcem.active ? "opacity: 0.4; pointer-events: none;" : ""}>
                                                 <FormRow label="EV Connected" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -532,6 +541,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         evcem.power_phase_2,
                                                         evcem.power_phase_3
                                                     ]} unit="W"/>
+                                                    {evcem.charged_wh !== EEBUS_NO_VALUE &&
                                                     <FormRow label="Charged" small>
                                                         <div class="row gx-2 gy-1">
                                                             <div class="col-sm-4">
@@ -539,7 +549,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                              scale={0} unit="Wh" small/>
                                                             </div>
                                                         </div>
-                                                    </FormRow>
+                                                    </FormRow>}
                                                     <FormRow label="Method of Obtaining Charged Wh" small>
                                                         <div class="row gx-2 gy-1">
                                                             <div class="col-sm-4">
@@ -549,6 +559,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         </div>
                                                     </FormRow>
                                                 </>}
+                                                </div>
                                             </>
                                         });
                                     }
@@ -618,6 +629,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             hideRemoveButton: true,
                                             columnValues: ["MPC (Monitoring of Power Consumption)"],
                                             extraValue: <>
+                                                {!mpc.active && <div class="alert alert-secondary mb-2 py-1 px-2" role="alert">
+                                                    <small>{__("eebus.content.usecase_inactive")}</small>
+                                                </div>}
+                                                <div style={!mpc.active ? "opacity: 0.4; pointer-events: none;" : ""}>
+                                                {mpc.total_power_w !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Total Power" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -625,12 +641,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          unit="W" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
                                                 <PhaseRow label="Power" label_muted="L1, L2, L3" values={[
                                                     mpc.power_phase_1_w,
                                                     mpc.power_phase_2_w,
                                                     mpc.power_phase_3_w
                                                 ]} unit="W"/>
+                                                {mpc.energy_consumed_wh !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Energy Consumed" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -638,7 +655,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          scale={0} unit="Wh" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
+                                                {mpc.energy_produced_wh !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Energy Produced" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -646,7 +664,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          scale={0} unit="Wh" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
                                                 <PhaseRow label="Current" label_muted="L1, L2, L3" values={[
                                                     mpc.current_phase_1_ma,
                                                     mpc.current_phase_2_ma,
@@ -663,6 +681,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                               mpc.voltage_phase_2_3_v,
                                                               mpc.voltage_phase_3_1_v
                                                           ]} unit="V"/>
+                                                {mpc.frequency_mhz !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Grid Frequency" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -670,7 +689,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          unit="Hz" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
+                                                </div>
                                             </>
                                         });
                                     }
@@ -739,6 +759,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             hideRemoveButton: true,
                                             columnValues: ["MGCP (Monitoring of Grid Connection Point)"],
                                             extraValue: <>
+                                                {!mgcp.active && <div class="alert alert-secondary mb-2 py-1 px-2" role="alert">
+                                                    <small>{__("eebus.content.usecase_inactive")}</small>
+                                                </div>}
+                                                <div style={!mgcp.active ? "opacity: 0.4; pointer-events: none;" : ""}>
                                                 <FormRow label="PV Curtailment Factor" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -748,6 +772,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         </div>
                                                     </div>
                                                 </FormRow>
+                                                {mgcp.total_power_w !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Total Power" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -755,7 +780,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          unit="W" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
+                                                {mgcp.energy_feed_in_wh > 0 &&
                                                 <FormRow label="Energy Feed-In" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -763,7 +789,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          scale={0} unit="Wh" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
+                                                {mgcp.energy_consumed_wh > 0 &&
                                                 <FormRow label="Energy Consumed" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -771,7 +798,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          scale={0} unit="Wh" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
                                                 <PhaseRow label="Current" label_muted="L1, L2, L3" values={[
                                                     mgcp.current_phase_1_ma,
                                                     mgcp.current_phase_2_ma,
@@ -782,6 +809,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                     mgcp.voltage_phase_2_v,
                                                     mgcp.voltage_phase_3_v
                                                 ]} unit="V"/>
+                                                {mgcp.frequency_mhz !== EEBUS_NO_VALUE &&
                                                 <FormRow label="Grid Frequency" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
@@ -789,7 +817,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          unit="Hz" small/>
                                                         </div>
                                                     </div>
-                                                </FormRow>
+                                                </FormRow>}
+                                                </div>
                                             </>
                                         });
                                     }

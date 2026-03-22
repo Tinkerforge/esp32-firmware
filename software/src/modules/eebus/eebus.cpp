@@ -456,6 +456,7 @@ void EEBus::pre_setup()
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
         {"ev_charging_electricity_measurement",
          Config::Object({
+             {"active", Config::Bool(false)},
              // This might have to be changed to ints if bi-directional charging will be supported
              {"amps_phase_1", Config::Uint16(0)},
              {"amps_phase_2", Config::Uint16(0)},
@@ -470,23 +471,24 @@ void EEBus::pre_setup()
 #ifdef EEBUS_ENABLE_MPC_USECASE
         {"monitoring_of_power_consumption",
          Config::Object({
+             {"active", Config::Bool(false)},
              // Usecase Monitoring of power consumption
-             {"total_power_w", Config::Int32(0)},
-             {"power_phase_1_w", Config::Int32(0)},
-             {"power_phase_2_w", Config::Int32(0)},
-             {"power_phase_3_w", Config::Int32(0)},
-             {"energy_consumed_wh", Config::Int32(0)},
-             {"energy_produced_wh", Config::Int32(0)},
-             {"current_phase_1_ma", Config::Int32(0)},
-             {"current_phase_2_ma", Config::Int32(0)},
-             {"current_phase_3_ma", Config::Int32(0)},
-             {"voltage_phase_1_v", Config::Int32(0)},
-             {"voltage_phase_2_v", Config::Int32(0)},
-             {"voltage_phase_3_v", Config::Int32(0)},
-             {"voltage_phase_1_2_v", Config::Int32(0)},
-             {"voltage_phase_2_3_v", Config::Int32(0)},
-             {"voltage_phase_3_1_v", Config::Int32(0)},
-             {"frequency_mhz", Config::Uint32(50000)}, // Default 50Hz in millihertz
+             {"total_power_w", Config::Int32(EEBUS_NO_VALUE)},
+             {"power_phase_1_w", Config::Int32(EEBUS_NO_VALUE)},
+             {"power_phase_2_w", Config::Int32(EEBUS_NO_VALUE)},
+             {"power_phase_3_w", Config::Int32(EEBUS_NO_VALUE)},
+             {"energy_consumed_wh", Config::Int32(EEBUS_NO_VALUE)},
+             {"energy_produced_wh", Config::Int32(EEBUS_NO_VALUE)},
+             {"current_phase_1_ma", Config::Int32(EEBUS_NO_VALUE)},
+             {"current_phase_2_ma", Config::Int32(EEBUS_NO_VALUE)},
+             {"current_phase_3_ma", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_1_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_2_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_3_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_1_2_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_2_3_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_3_1_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"frequency_mhz", Config::Int32(EEBUS_NO_VALUE)},
          })},
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
@@ -503,24 +505,25 @@ void EEBus::pre_setup()
 #ifdef EEBUS_ENABLE_MGCP_USECASE
         {"monitoring_of_grid_connection_point",
          Config::Object({
+             {"active", Config::Bool(false)},
              // Scenario 1: PV curtailment limit factor
              {"pv_curtailment_limit_factor_percent", Config::Float(100.0f)},
              // Scenario 2: Momentary power
-             {"total_power_w", Config::Int32(0)},
+             {"total_power_w", Config::Int32(EEBUS_NO_VALUE)},
              // Scenario 3: Energy feed-in
              {"energy_feed_in_wh", Config::Uint32(0)},
              // Scenario 4: Energy consumed
              {"energy_consumed_wh", Config::Uint32(0)},
              // Scenario 5: Per-phase current
-             {"current_phase_1_ma", Config::Int32(0)},
-             {"current_phase_2_ma", Config::Int32(0)},
-             {"current_phase_3_ma", Config::Int32(0)},
+             {"current_phase_1_ma", Config::Int32(EEBUS_NO_VALUE)},
+             {"current_phase_2_ma", Config::Int32(EEBUS_NO_VALUE)},
+             {"current_phase_3_ma", Config::Int32(EEBUS_NO_VALUE)},
              // Scenario 6: Per-phase voltage
-             {"voltage_phase_1_v", Config::Int32(230)},
-             {"voltage_phase_2_v", Config::Int32(230)},
-             {"voltage_phase_3_v", Config::Int32(230)},
+             {"voltage_phase_1_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_2_v", Config::Int32(EEBUS_NO_VALUE)},
+             {"voltage_phase_3_v", Config::Int32(EEBUS_NO_VALUE)},
              // Scenario 7: Frequency
-             {"frequency_mhz", Config::Int32(50000)}, // Default 50Hz in millihertz
+             {"frequency_mhz", Config::Int32(EEBUS_NO_VALUE)},
          })},
 #endif
 #ifdef EEBUS_ENABLE_OPEV_USECASE

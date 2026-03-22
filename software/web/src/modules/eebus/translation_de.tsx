@@ -83,6 +83,7 @@ let x = {
             "commands": "Befehle",
             "received": "Empfangen",
             "sent": "Gesendet",
+            "usecase_inactive": "Dieser Use Case ist inaktiv, da noch nicht alle notwendigen Zählerdaten empfangen wurden.",
             "usecases": "Use Cases"
         },
         "navbar": {
