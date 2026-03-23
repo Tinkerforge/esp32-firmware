@@ -195,6 +195,7 @@ const MeterValueID rs485_helper_dsz15dzmod_ids[] = {
     MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
+    MeterValueID::FrequencyLAvg,
 };
 
 const MeterValueID rs485_helper_dsz16dze_ids[] = {
