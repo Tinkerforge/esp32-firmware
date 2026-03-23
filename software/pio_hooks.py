@@ -2175,7 +2175,7 @@ def main():
                     raise
 
         with tfutil.ChangedDirectory('web'):
-            if sys.platform == 'linux':
+            if sys.platform != 'win32':
                 NODE_VERSION = '24.14.0'
                 NPM_VERSION = '11.12.0'
 
