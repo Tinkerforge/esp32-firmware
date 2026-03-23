@@ -9,6 +9,7 @@ data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
 packages/*-dev
+src/esp32.egg-info
 src/index_html.digest
 src/index_html.embedded.h
 src/index_html.embedded.cpp
