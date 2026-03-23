@@ -12,6 +12,7 @@ import hashlib
 from base64 import b64encode
 from zlib import crc32
 from collections import namedtuple
+import tomllib
 import tinkerforge_util as tfutil
 import util
 from pyphen import Pyphen
@@ -2110,12 +2111,20 @@ def main():
     # Build web interface
     util.log('Checking web interface dependencies')
 
+    with open('pyproject.toml', 'rb') as f:
+        pyproject_toml = tomllib.load(f)
+
+    requires_node = pyproject_toml['tool']['pio-hooks']['requires-node']
+    requires_npm = pyproject_toml['tool']['pio-hooks']['requires-npm']
+
     node_modules_src_paths = ['web/package-lock.json']
 
     # FIXME: Scons runs this script using exec(), resulting in __file__ being not available
     #node_modules_src_paths.append(__file__)
 
-    node_modules_needs_update, node_modules_reason, node_modules_digest = util.check_digest(node_modules_src_paths, [], 'web', 'node_modules', env=env)
+    node_modules_src_datas = [requires_node.encode('utf-8'), requires_npm.encode('utf-8')]
+
+    node_modules_needs_update, node_modules_reason, node_modules_digest = util.check_digest(node_modules_src_paths, node_modules_src_datas, 'web', 'node_modules', env=env)
     node_modules_digest_paths = util.get_digest_paths('web', 'node_modules', env=env)
 
     if not node_modules_needs_update and os.path.exists('web/node_modules/tinkerforge.marker'):
@@ -2163,9 +2172,6 @@ def main():
 
         with tfutil.ChangedDirectory('web'):
             if sys.platform != 'win32':
-                NODE_VERSION = '24.14.0'
-                NPM_VERSION = '11.12.0'
-
                 try:
                     node_version = subprocess.check_output(['uv', 'run', 'node', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].lstrip('v').strip()
                 except subprocess.CalledProcessError:
@@ -2176,10 +2182,10 @@ def main():
                 except subprocess.CalledProcessError:
                     npm_version = None
 
-                if node_version != NODE_VERSION or npm_version != NPM_VERSION:
-                    print(f'Found Node.js/NPM {node_version}/{npm_version}, expecting {NODE_VERSION}/{NPM_VERSION}, installing {NODE_VERSION}/{NPM_VERSION} now')
+                if node_version != requires_node or npm_version != requires_npm:
+                    print(f'Found Node.js/NPM {node_version}/{npm_version}, requiring {requires_node}/{requires_npm}, installing {requires_node}/{requires_npm} now')
 
-                    check_call(['uv', 'run', 'nodeenv', '-p', '-n', NODE_VERSION, '--with-npm', '--npm', NPM_VERSION])
+                    check_call(['uv', 'run', 'nodeenv', '-p', '-n', requires_node, '--with-npm', '--npm', requires_npm])
 
                 check_call(['uv', 'run', 'npm', 'ci'], shell=sys.platform == 'win32')
             else:

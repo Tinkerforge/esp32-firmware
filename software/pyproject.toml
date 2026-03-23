@@ -35,3 +35,7 @@ tests = [
     {include-group = "test-runner"},
     # FIXME: add all test dependencies here
 ]
+
+[tool.pio-hooks]
+requires-node = "24.14.0"
+requires-npm = "11.12.0"
