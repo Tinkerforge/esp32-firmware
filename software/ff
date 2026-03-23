@@ -7,20 +7,7 @@ import signal
 import subprocess
 import serial
 import time
-
-
-colors = {"off":"\x1b[00m",
-          "blue":   "\x1b[34m",
-          "cyan":   "\x1b[36m",
-          "green":  "\x1b[32m",
-          "red":    "\x1b[31m",
-          "gray": "\x1b[90m"}
-
-def red(s):
-    return colors["red"]+s+colors["off"]
-
-def green(s):
-    return colors["green"]+s+colors["off"]
+from tinkerforge_util.colored import red, green
 
 
 parser = argparse.ArgumentParser()
