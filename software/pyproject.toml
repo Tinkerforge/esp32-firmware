@@ -22,7 +22,7 @@ web-server-proxy = [
 ]
 
 sun-spec-model-generator = [
-    "Xlsx2csv",
+    "xlsx2csv",
 ]
 
 test-runner = [
