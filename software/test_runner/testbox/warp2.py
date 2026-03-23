@@ -231,7 +231,7 @@ class WARP2TestBox(TestBox):
 
         for i, x in enumerate(self._bricklets()):
             if x is None:
-                print("Missing device at port {}!".format(chr(ord('A') + i)))
+                raise Exception("Missing device at port {}!".format(chr(ord('A') + i)))
 
         for x in self._bricklets():
             x.set_response_expected_all(True)
