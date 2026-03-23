@@ -14,6 +14,7 @@ from zlib import crc32
 from collections import namedtuple
 import tinkerforge_util as tfutil
 import util
+from pyphen import Pyphen
 from hyphenations import hyphenations, allowed_missing
 from web.tfpp import tfpp_lines, tfpp_paths
 
@@ -1782,15 +1783,11 @@ def main():
     if len(missing_hyphenations) > 0:
         print("Missing hyphenations detected. Add those to hyphenations.py!")
         dicts = None
-        try:
-            from pyphen import Pyphen
-            langs = {
-                'de': 'de_DE',
-                'en': 'en_US'
-            }
-            dicts = {k: Pyphen(lang=langs[k]) for k in missing_hyphenations.keys()}
-        except ImportError:
-            print("Pyphen not installed. Will not print hyphenation suggestions.")
+        langs = {
+            'de': 'de_DE',
+            'en': 'en_US'
+        }
+        dicts = {k: Pyphen(lang=langs[k]) for k in missing_hyphenations.keys()}
 
         for lang, lst in missing_hyphenations.items():
             print("  {}".format(lang))
