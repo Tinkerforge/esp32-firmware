@@ -214,6 +214,9 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+ff = [
+    { name = "pyserial" },
+]
 sun-spec-model-generator = [
     { name = "xlsx2csv" },
 ]
@@ -239,6 +242,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+ff = [{ name = "pyserial" }]
 sun-spec-model-generator = [{ name = "xlsx2csv" }]
 test-runner = [{ name = "junit-xml" }]
 tests = [{ name = "junit-xml" }]

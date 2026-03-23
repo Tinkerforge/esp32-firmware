@@ -11,6 +11,10 @@ dependencies = [
 ]
 
 [dependency-groups]
+ff = [
+    "pyserial",
+]
+
 web-server-proxy = [
     "flask",
     "flask_sock",
