@@ -776,6 +776,8 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         print('tsc...')
         check_call([
+            'uv',
+            'run',
             'npx',
             'tsc',
             '--build',
@@ -784,6 +786,8 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         print('esbuild...')
         esbuild_args = [
+            'uv',
+            'run',
             'npx',
             'esbuild',
             'main.tsx',
@@ -808,6 +812,8 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         print('sass...')
         scss_args = [
+            'uv',
+            'run',
             'npx',
             'sass',
             '--silence-deprecation',
@@ -826,6 +832,8 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         print('postcss...')
         check_call([
+            'uv',
+            'run',
             'npx',
             'postcss',
             str(build_dir / 'main.css'),
@@ -845,9 +853,11 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         print('html-minifier-terser...')
         check_call([
+            'uv',
+            'run',
             'npx',
-            'html-minifier-terser'] +
-            html_minifier_terser_options + [
+            'html-minifier-terser'
+        ] + html_minifier_terser_options + [
             '-o',
             str(build_dir / 'index.min.html'),
             'index.html'
@@ -2165,19 +2175,40 @@ def main():
                     raise
 
         with tfutil.ChangedDirectory('web'):
-            npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
+            if sys.platform == 'linux':
+                NODE_VERSION = '24.14.0'
+                NPM_VERSION = '11.12.0'
 
-            m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
+                try:
+                    node_version = subprocess.check_output(['uv', 'run', 'node', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].lstrip('v').strip()
+                except subprocess.CalledProcessError:
+                    node_version = None
 
-            if m == None:
-                print('Error: npm version has unexpected format: {0}'.format(npm_version))
-                sys.exit(1)
+                try:
+                    npm_version = subprocess.check_output(['uv', 'run', 'npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].strip()
+                except subprocess.CalledProcessError:
+                    npm_version = None
 
-            if int(m.group(1)) < 8:
-                print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
-                sys.exit(1)
+                if node_version != NODE_VERSION or npm_version != NPM_VERSION:
+                    print(f'Found Node.js/NPM {node_version}/{npm_version}, expecting {NODE_VERSION}/{NPM_VERSION}, installing {NODE_VERSION}/{NPM_VERSION} now')
 
-            check_call(['npm', 'ci'], shell=sys.platform == 'win32')
+                    check_call(['uv', 'run', 'nodeenv', '-p', '-n', NODE_VERSION, '--with-npm', '--npm', NPM_VERSION])
+
+                check_call(['uv', 'run', 'npm', 'ci'], shell=sys.platform == 'win32')
+            else:
+                npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
+
+                m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
+
+                if m == None:
+                    print('Error: npm version has unexpected format: {0}'.format(npm_version))
+                    sys.exit(1)
+
+                if int(m.group(1)) < 8:
+                    print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
+                    sys.exit(1)
+
+                check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass

@@ -6,6 +6,7 @@ dependencies = [
     "esptool",  # FIXME: moved from test-runner here for now. it's needed here, otherwise the platformio tool-esptoolpy package is broken
     "platformio",
     "pyphen",
+    "nodeenv",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
     "tinkerforge_util >= 1.5.1",
 ]
