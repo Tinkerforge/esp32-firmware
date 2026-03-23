@@ -13,6 +13,7 @@ import socket
 import subprocess
 import tempfile
 import time
+from urllib.error import URLError
 from urllib.request import Request, urlopen, HTTPError
 
 import esptool.cmds
@@ -176,6 +177,39 @@ class TestContext:
             self._erase_littlefs_header()
         else:
             self.api('factory_reset', {"do_i_know_what_i_am_doing": True})
+
+    def reboot(self):
+        rebooted = False
+
+        # Fast reboot via esptool, if serial port available
+        if (self._serial_port):
+            with ESP32ROM(self._serial_port) as esp:
+                esp.connect()
+                esptool.cmds.reset_chip(esp)
+                time.sleep(6.5)
+                rebooted = True
+
+        # No serial port, use slow reboot via API
+        if not rebooted:
+            self.api('reboot', '')
+            time.sleep(9)
+
+        # Wait for the host to be responsive
+        for i in range(10, 0, -1):
+            try:
+                self.api('info/version', timeout=1)
+                break
+            except URLError as e:
+                errtype = type(e.reason)
+                if errtype is TimeoutError:
+                    # ESP's interface not up yet
+                    pass
+                elif errtype is ConnectionRefusedError:
+                    # ESP's interface up but web server not running yet
+                    if i > 1:
+                        time.sleep(1)
+                else:
+                    raise e
 
     def assert_(self, actual):
         if not actual:
