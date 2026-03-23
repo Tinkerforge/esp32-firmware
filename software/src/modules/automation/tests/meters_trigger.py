@@ -131,7 +131,7 @@ def test_gt_fires(tc: TestContext):
 
     _push_meter_values(tc, 200.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_lt_fires(tc: TestContext):
@@ -146,7 +146,7 @@ def test_lt_fires(tc: TestContext):
 
     _push_meter_values(tc, 10.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_gte_exact_boundary(tc: TestContext):
@@ -161,7 +161,7 @@ def test_gte_exact_boundary(tc: TestContext):
 
     _push_meter_values(tc, 42.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_lte_exact_boundary(tc: TestContext):
@@ -176,7 +176,7 @@ def test_lte_exact_boundary(tc: TestContext):
 
     _push_meter_values(tc, 42.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_eq_within_hysteresis(tc: TestContext):
@@ -194,7 +194,7 @@ def test_eq_within_hysteresis(tc: TestContext):
 
     _push_meter_values(tc, 103.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_neq_outside_hysteresis(tc: TestContext):
@@ -212,7 +212,7 @@ def test_neq_outside_hysteresis(tc: TestContext):
 
     _push_meter_values(tc, 200.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_condition_not_met(tc: TestContext):
@@ -270,7 +270,7 @@ def test_edge_no_retrigger(tc: TestContext):
 
     # First push above threshold -> should fire once
     _push_meter_values(tc, 200.0)
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
     tc.assert_eq(1, _get_event_log(tc).count(marker))
 
     # Push another value still above threshold and above reset band -> must NOT fire again
@@ -299,7 +299,7 @@ def test_edge_hysteresis_retrigger(tc: TestContext):
 
     # Step 1: Push above threshold -> fires (count = 1)
     _push_meter_values(tc, 200.0)
-    tc.wait_for(lambda: tc.assert_eq(1, _get_event_log(tc).count(marker)), timeout=15)
+    tc.wait_for(lambda: tc.assert_eq(1, _get_event_log(tc).count(marker)))
 
     # Step 2: Push below reset band (< 80 W) -> resets trigger state
     _push_meter_values(tc, 50.0)
@@ -307,7 +307,7 @@ def test_edge_hysteresis_retrigger(tc: TestContext):
 
     # Step 3: Push above threshold again -> fires again (count = 2)
     _push_meter_values(tc, 200.0)
-    tc.wait_for(lambda: tc.assert_eq(2, _get_event_log(tc).count(marker)), timeout=15)
+    tc.wait_for(lambda: tc.assert_eq(2, _get_event_log(tc).count(marker)))
 
 
 def test_modify_rule(tc: TestContext):
@@ -325,7 +325,7 @@ def test_modify_rule(tc: TestContext):
     time.sleep(1)
 
     _push_meter_values(tc, 200.0)
-    tc.wait_for(lambda: tc.assert_true(marker_a in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker_a in _get_event_log(tc)))
 
     # Modify rule: different message (config_update resets edge state)
     marker_b = _make_marker("MOD_B")
@@ -337,7 +337,7 @@ def test_modify_rule(tc: TestContext):
     time.sleep(1)
 
     _push_meter_values(tc, 300.0)
-    tc.wait_for(lambda: tc.assert_true(marker_b in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker_b in _get_event_log(tc)))
 
     # marker_a must not have fired a second time
     tc.assert_eq(1, _get_event_log(tc).count(marker_a))
@@ -362,8 +362,8 @@ def test_multiple_rules(tc: TestContext):
 
     _push_meter_values(tc, 200.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker_1 in _get_event_log(tc)), timeout=15)
-    tc.wait_for(lambda: tc.assert_true(marker_2 in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker_1 in _get_event_log(tc)))
+    tc.wait_for(lambda: tc.assert_true(marker_2 in _get_event_log(tc)))
 
 
 def test_second_value_id(tc: TestContext):
@@ -379,7 +379,7 @@ def test_second_value_id(tc: TestContext):
     # Push: power=0, voltage=240 V (> 200 V threshold)
     _push_meter_values(tc, 0.0, voltage=240.0)
 
-    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)), timeout=15)
+    tc.wait_for(lambda: tc.assert_true(marker in _get_event_log(tc)))
 
 
 def test_delete_rules(tc: TestContext):
