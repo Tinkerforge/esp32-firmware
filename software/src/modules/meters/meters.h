@@ -203,6 +203,8 @@ private:
 #endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    void handle_automation_task();
+
     // Edge detection state for meter value automation triggers.
     struct TriggerStateEntry {
         const Config *conf;
@@ -211,6 +213,7 @@ private:
     TriggerStateEntry trigger_state[OPTIONS_AUTOMATION_MAX_RULES()] = {};
     size_t            trigger_state_count = 0;
     micros_t automation_last_values_updated_at[OPTIONS_METERS_MAX_SLOTS()] = {};
+    uint64_t automation_task_id = 0;
 #endif
 };
 

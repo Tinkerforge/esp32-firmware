@@ -430,24 +430,14 @@ void Meters::setup()
     }, 500_ms);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    task_scheduler.scheduleUncancelable([this](){
-        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-            MeterSlot &meter_slot = this->meter_slots[slot];
-
-            if (meter_slot.meter->get_class() == MeterClassID::None) {
-                continue;
-            }
-
-            if (meter_slot.values_last_updated_at != automation_last_values_updated_at[slot]) {
-                automation_last_values_updated_at[slot] = meter_slot.values_last_updated_at;
-                automation.trigger(AutomationTriggerID::MeterValue, nullptr, this);
-                break; // Only trigger once per check cycle
-            }
-        }
-    }, 1_s);
-
     automation.register_on_config_applied([this]() {
         trigger_state_count = 0;
+        handle_automation_task();
+    });
+
+    // Deferred so that it runs after automation has loaded its config.
+    task_scheduler.scheduleOnce([this]() {
+        handle_automation_task();
     });
 #endif
 
@@ -1443,6 +1433,32 @@ float Meters::live_samples_per_second()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
+void Meters::handle_automation_task()
+{
+    bool need_meter_automation = automation.has_task_with_trigger(AutomationTriggerID::MeterValue);
+
+    if (need_meter_automation && automation_task_id == 0) {
+        automation_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+                MeterSlot &meter_slot = this->meter_slots[slot];
+
+                if (meter_slot.meter->get_class() == MeterClassID::None) {
+                    continue;
+                }
+
+                if (meter_slot.values_last_updated_at != automation_last_values_updated_at[slot]) {
+                    automation_last_values_updated_at[slot] = meter_slot.values_last_updated_at;
+                    automation.trigger(AutomationTriggerID::MeterValue, nullptr, this);
+                    break; // Only trigger once per check cycle
+                }
+            }
+        }, 1_s);
+    } else if (!need_meter_automation && automation_task_id != 0) {
+        task_scheduler.cancel(automation_task_id);
+        automation_task_id = 0;
+    }
+}
+
 bool Meters::has_triggered(const Config *conf, void *data)
 {
     if (conf->getTag<AutomationTriggerID>() != AutomationTriggerID::MeterValue) {
