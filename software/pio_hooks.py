@@ -774,21 +774,20 @@ def build_web(js_source_map, css_source_map, no_minify):
 
         build_dir.mkdir(parents=True)
 
+        if sys.platform != 'win32':
+            npx_args = ['uv', 'run', 'npx']
+        else:
+            npx_args = ['npx']
+
         print('tsc...')
-        check_call([
-            'uv',
-            'run',
-            'npx',
+        check_call(npx_args + [
             'tsc',
             '--build',
             'tsconfig.json'
         ], shell=sys.platform == 'win32')
 
         print('esbuild...')
-        esbuild_args = [
-            'uv',
-            'run',
-            'npx',
+        esbuild_args = npx_args + [
             'esbuild',
             'main.tsx',
             f'--metafile={build_dir / "meta.json"}',
@@ -811,10 +810,7 @@ def build_web(js_source_map, css_source_map, no_minify):
         check_call(esbuild_args, shell=sys.platform == 'win32')
 
         print('sass...')
-        scss_args = [
-            'uv',
-            'run',
-            'npx',
+        scss_args = npx_args + [
             'sass',
             '--silence-deprecation',
             'color-functions,import,global-builtin,if-function'  # still used by bootstrap 5
@@ -831,10 +827,7 @@ def build_web(js_source_map, css_source_map, no_minify):
         check_call(scss_args, shell=sys.platform == 'win32')
 
         print('postcss...')
-        check_call([
-            'uv',
-            'run',
-            'npx',
+        check_call(npx_args + [
             'postcss',
             str(build_dir / 'main.css'),
             '-o',
@@ -852,10 +845,7 @@ def build_web(js_source_map, css_source_map, no_minify):
             (build_dir / 'main.min.css').write_text(css_src, encoding='utf-8')
 
         print('html-minifier-terser...')
-        check_call([
-            'uv',
-            'run',
-            'npx',
+        check_call(npx_args + [
             'html-minifier-terser'
         ] + html_minifier_terser_options + [
             '-o',
