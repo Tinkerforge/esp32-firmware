@@ -78,6 +78,8 @@ add_post_action_elf(f'Symlinking build{os.sep}{firmware_basename}.elf -> build{o
 
 add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_merged.bin',
                     lambda: subprocess.check_call([
+                        'uv',
+                        'run',
                         'pio',
                         'pkg',
                         'exec',
