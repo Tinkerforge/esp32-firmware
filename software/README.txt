@@ -1,10 +1,12 @@
 Build instructions
 ------------------
 
-- Install Python >= 3.12, Node.js >= 20, NPM >= 9 and uv https://docs.astral.sh/uv/ (left as exercise for the reader)
-- Either run uv sync to create the venv or build once with "uv run pio..."
+- Install uv: https://docs.astral.sh/uv/
+- On Windows additionally install Node.js >= 20 and NPM >= 9
+- Either run "uv sync" to create the venv or build once with "uv run pio..."
 - Either source the generated venv in .venv or always prefix "uv run" before "pio run"
-- If using vscode select the venv by pressing Ctrl+P, typing "python select interpreter" and selecting .venv/bin/python (or .venv/Scripts/python.exe on Windows)
+- If using vscode select the venv by pressing ctrl+shift+p, typing "python select interpreter"
+  and selecting .venv/bin/python (or .venv/Scripts/python.exe on Windows)
 - The firmwares are organized as PlatformIO environments:
   - "pio run -e warp" builds the WARP Charger firmware
   - "pio run -e warp2" builds the WARP2 Charger firmware

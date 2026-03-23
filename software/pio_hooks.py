@@ -2204,8 +2204,8 @@ def main():
                     print('Error: npm version has unexpected format: {0}'.format(npm_version))
                     sys.exit(1)
 
-                if int(m.group(1)) < 8:
-                    print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
+                if int(m.group(1)) < 9:
+                    print('Error: npm >= 9 required, found npm {0}'.format(npm_version))
                     sys.exit(1)
 
                 check_call(['npm', 'ci'], shell=sys.platform == 'win32')
