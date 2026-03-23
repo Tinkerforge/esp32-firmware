@@ -206,6 +206,7 @@ wheels = [
 name = "esp32"
 source = { virtual = "." }
 dependencies = [
+    { name = "esptool" },
     { name = "platformio" },
     { name = "pyphen" },
     { name = "tinkerforge" },
@@ -217,11 +218,9 @@ sun-spec-model-generator = [
     { name = "xlsx2csv" },
 ]
 test-runner = [
-    { name = "esptool" },
     { name = "junit-xml" },
 ]
 tests = [
-    { name = "esptool" },
     { name = "junit-xml" },
 ]
 web-server-proxy = [
@@ -232,6 +231,7 @@ web-server-proxy = [
 
 [package.metadata]
 requires-dist = [
+    { name = "esptool" },
     { name = "platformio" },
     { name = "pyphen" },
     { name = "tinkerforge", specifier = ">=2.1.31" },
@@ -240,14 +240,8 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 sun-spec-model-generator = [{ name = "xlsx2csv" }]
-test-runner = [
-    { name = "esptool" },
-    { name = "junit-xml" },
-]
-tests = [
-    { name = "esptool" },
-    { name = "junit-xml" },
-]
+test-runner = [{ name = "junit-xml" }]
+tests = [{ name = "junit-xml" }]
 web-server-proxy = [
     { name = "flask" },
     { name = "flask-sock" },

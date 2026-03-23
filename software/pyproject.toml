@@ -3,6 +3,7 @@ name = "esp32"
 dynamic = ["version"]
 requires-python = "==3.12.*"
 dependencies = [
+    "esptool",  # FIXME: moved from test-runner here for now. it's needed here, otherwise the platformio tool-esptoolpy package is broken
     "platformio",
     "pyphen",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
@@ -22,7 +23,7 @@ sun-spec-model-generator = [
 
 test-runner = [
     "junit-xml",
-    "esptool",
+    #"esptool",  # FIXME: moved to main dependencies for now
 ]
 
 tests = [
