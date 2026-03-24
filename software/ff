@@ -1,4 +1,4 @@
-#!/usr/bin/env -S /bin/sh -c 'uv run --project "$(dirname "$0")" --group ff --script "$0" "$@"'
+#!/usr/bin/env -S /bin/sh -c 'uv run --project "$(dirname $(realpath "$0"))" --group ff --script "$0" "$@"'
 
 import argparse
 import os

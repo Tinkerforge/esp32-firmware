@@ -1,4 +1,4 @@
-#!/usr/bin/env -S /bin/sh -c 'uv run --project "$(dirname "$0")" --script "$0" "$@"'
+#!/usr/bin/env -S /bin/sh -c 'uv run --project "$(dirname $(realpath "$0"))" --script "$0" "$@"'
 
 import base64
 import string
