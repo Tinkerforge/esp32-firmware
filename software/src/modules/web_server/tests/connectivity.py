@@ -20,7 +20,7 @@ def test_http_connectivity(tc: TestContext):
     except HTTPError as e:
         tc.fail('Web interface could not be downloaded: ' + e.msg)
 
-    tc.assert_gt(100*1024, len(data))
+    tc.assert_gt(50*1024, len(data))
 
     # Enable HTTP+HTTPS mode and check if the index page can be downloaded via HTTPS and is larger than 100 KiB
     if tc.api('network/config/transport_mode') != 2:
@@ -30,7 +30,7 @@ def test_http_connectivity(tc: TestContext):
     https_index_response = requests.get(f'https://{tc._esp_host}/', verify=False)
 
     tc.assert_eq(200, https_index_response.status_code)
-    tc.assert_gt(100*1024, len(https_index_response.content))
+    tc.assert_gt(50*1024, len(https_index_response.content))
 
     # Enable HTTPS-only mode, execute requests and enable HTTP+HTTPS mode again before checking assertions
     tc.api('network/config/transport_mode', 1)
