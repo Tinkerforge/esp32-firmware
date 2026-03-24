@@ -1387,6 +1387,9 @@ void DayAheadPrices::update_calendar()
     calendar_last_generated_wday = wday;
 
     auto cal_prices = calendar.get("prices");
+    if (cal_prices->count() != DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY) {
+        return;
+    }
 
     // Build 2-day (192 slot) calendar price array: today + tomorrow
     int8_t tomorrow_wday = (wday + 1) % 7;
