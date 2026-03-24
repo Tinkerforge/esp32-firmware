@@ -2172,15 +2172,20 @@ def main():
 
         with tfutil.ChangedDirectory('web'):
             if sys.platform != 'win32':
-                try:
-                    node_version = subprocess.check_output(['uv', 'run', 'node', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].lstrip('v').strip()
-                except subprocess.CalledProcessError:
-                    node_version = None
+                node_version = None
+                npm_version = None
 
-                try:
-                    npm_version = subprocess.check_output(['uv', 'run', 'npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].strip()
-                except subprocess.CalledProcessError:
-                    npm_version = None
+                if shutil.which('node') != None:
+                    try:
+                        node_version = subprocess.check_output(['uv', 'run', 'node', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].lstrip('v').strip()
+                    except subprocess.CalledProcessError:
+                        pass
+
+                if shutil.which('npm') != None:
+                    try:
+                        npm_version = subprocess.check_output(['uv', 'run', 'npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').split('\n')[0].strip()
+                    except subprocess.CalledProcessError:
+                        pass
 
                 if node_version != requires_node or npm_version != requires_npm:
                     print(f'Found Node.js/NPM {node_version}/{npm_version}, requiring {requires_node}/{requires_npm}, installing {requires_node}/{requires_npm} now')
