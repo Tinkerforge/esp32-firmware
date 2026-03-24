@@ -15,7 +15,7 @@ import atexit
 import fcntl
 import errno
 import fnmatch
-from tinkerforge_util.colored import red, green, blue, purple
+from tinkerforge_util.colored import red, green, blue, purple, gray
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
 from typing import TYPE_CHECKING
 
@@ -199,17 +199,16 @@ def main():
                                     tprint(f"{now} Started {payload["testname"]}", end=" ")
                                     jcase = JTestCase(payload["testname"], timestamp=now)
                                     jsuite.test_cases.append(jcase)
+                                else:
+                                    tprint(gray(f"{now} Started {payload["testname"]}", bold=False), end=" ")
 
                             case 'notify_test_success':
                                 test_finished = True
-                                if not meta_test:
-                                    tprint(green("Success"), f"({time.monotonic() - start:.3f}s)")
+                                tprint(green("Success"), f"({time.monotonic() - start:.3f}s)")
 
                             case 'notify_test_failure':
                                 test_finished = True
-                                if meta_test:
-                                    tprint(payload["testname"], end=" ")
-                                else:
+                                if not meta_test:
                                     x: list[JTestCase] = jsuite.test_cases
                                     x[-1].add_failure_info(payload["error"], payload["tb"], "failure")
                                 tprint(red("Failure"), f"({time.monotonic() - start:.3f}s)")
@@ -217,9 +216,7 @@ def main():
 
                             case 'notify_test_error':
                                 test_finished = True
-                                if meta_test:
-                                    tprint(payload["testname"], end=" ")
-                                else:
+                                if not meta_test:
                                     x: list[JTestCase] = jsuite.test_cases
                                     x[-1].add_error_info(payload["error"], payload["tb"], "error")
                                 tprint(purple("Error"), f"({time.monotonic() - start:.3f}s)")
@@ -227,15 +224,13 @@ def main():
 
                             case 'notify_test_skipped':
                                 test_finished = True
+                                tprint(blue("Skipped"), payload["reason"])
                                 if not meta_test:
-                                    tprint(blue("Skipped"), payload["reason"])
                                     x: list[JTestCase] = jsuite.test_cases
                                     x[-1].add_skipped_info(payload["reason"])
 
                             case 'set_test_timeout':
                                 test_timeout = payload["timeout"]
-                                if meta_test:
-                                    tprint(f"Set test timeout to {test_timeout}")
 
                             case 'dbg':
                                 dbg_buf += payload["message"]
