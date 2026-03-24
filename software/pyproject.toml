@@ -8,7 +8,7 @@ dependencies = [
     "pyphen",
     "nodeenv",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
-    "tinkerforge_util >= 1.5.1",
+    "tinkerforge_util >= 1.6.0",
 ]
 
 [dependency-groups]
