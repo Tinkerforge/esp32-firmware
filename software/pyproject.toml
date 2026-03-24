@@ -34,9 +34,10 @@ test-runner = [
 tests = [
     {include-group = "test-runner"},
     # FIXME: add all test dependencies here
-    "scipy",
-    "numpy",
-    "requests" # web_server/connectivity
+    "scipy", # heating/plan
+    "numpy", # heating/plan
+    "requests", # web_server/connectivity
+    "amqtt", # mqtt/reconfigure
 ]
 
 [tool.pio-hooks]
