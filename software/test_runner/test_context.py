@@ -25,6 +25,7 @@ from .testbox.testbox import TestBox
 from .testbox.warp2 import WARP2TestBox
 from .testbox.warp3 import WARP3TestBox
 from .testbox.wem import WEMTestBox
+from .device_type import DeviceType
 
 try:
     from ..src.modules.meters.generated.meter_value_id import MeterValueID
@@ -441,6 +442,15 @@ class TestContext:
 
         return server
 
+    def device_type(self) -> DeviceType:
+        """Example usage:
+        dt = tc.device_type()
+        dt.is_wem()        # any WARP Energy Manager
+        dt.is_warp()       # any WARP Charger
+        dt.is_warp(3)      # only WARP3
+        dt.is_warp([2, 3]) # WARP2 or WARP3
+        """
+        return DeviceType(self.api('info/name/type'))
 
     # @dataclass
     # class Cap:
