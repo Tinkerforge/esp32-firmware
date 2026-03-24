@@ -26,6 +26,7 @@ jobs:
         working-directory: ./software
         run: uv sync
       - name: Install Node.js
+        if: matrix.os == 'windows-latest'
         uses: actions/setup-node@v6
         with:
           node-version: 24
