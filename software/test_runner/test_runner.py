@@ -183,7 +183,7 @@ def main():
 
                         now = datetime.datetime.now().isoformat()
 
-                        meta_test = payload["testname"] in ["setup", "teardown"]
+                        meta_test = payload["testname"].split("/")[-1] in ["suite_setup", "suite_teardown", "setup", "teardown"]
                         test_finished = False
 
                         match cmd:

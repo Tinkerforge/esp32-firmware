@@ -542,17 +542,17 @@ def run_testsuite(l: dict[str, typing.Any]):
             args.brickd
         )
 
-    if not _run_test(tc, "suite_setup", suite.suite_setup):
-        _run_test(tc, "suite_teardown", suite.suite_teardown)
+    if not _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup):
+        _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
         return
 
     for t in suite.tests:
-        if not _run_test(tc, "setup", suite.test_setup):
-            _run_test(tc, "teardown", suite.test_teardown)
+        if not _run_test(tc, f"{suite.module}/{suite.suite}/setup", suite.test_setup):
+            _run_test(tc, f"{suite.module}/{suite.suite}/teardown", suite.test_teardown)
             break
 
         _run_test(tc, t.name, t.fn)
-        if not _run_test(tc, "teardown", suite.test_teardown):
+        if not _run_test(tc, f"{suite.module}/{suite.suite}/teardown", suite.test_teardown):
             break
 
-    _run_test(tc, "suite_teardown", suite.suite_teardown)
+    _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
