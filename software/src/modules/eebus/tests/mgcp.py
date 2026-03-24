@@ -35,7 +35,7 @@ def suite_setup(tc: TestContext):
         ],
     )
 
-    reboot_and_wait(tc)
+    tc.reboot()
     enable_eebus(tc)
 
 
@@ -96,7 +96,7 @@ def test_no_activation_without_power(tc: TestContext):
         ],
     )
 
-    reboot_and_wait(tc)
+    tc.reboot()
     enable_eebus(tc)
 
     tc.api("meters/0/update", VOLTAGE_ONLY_VALUES)

@@ -59,20 +59,6 @@ METER_VALUES = [
 VOLTAGE_ONLY_IDS = [MeterValueID.VoltageL1N, MeterValueID.VoltageL2N, MeterValueID.VoltageL3N]
 VOLTAGE_ONLY_VALUES = [230.0, 231.0, 229.0]
 
-def reboot_and_wait(tc):
-    try:
-        tc.api("reboot", None)
-    except Exception:
-        pass
-    time.sleep(5)
-    for _ in range(60):
-        try:
-            tc.http_request("GET", "eebus/state", timeout=2, parse=True)
-            return
-        except Exception:
-            time.sleep(1)
-    tc.fail("Device did not come back after reboot")
-
 def enable_eebus(tc):
     config = tc.api("eebus/config")
     config["enable"] = True
