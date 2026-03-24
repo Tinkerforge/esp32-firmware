@@ -36,6 +36,7 @@ tests = [
     # FIXME: add all test dependencies here
     "scipy",
     "numpy",
+    "requests" # web_server/connectivity
 ]
 
 [tool.pio-hooks]
