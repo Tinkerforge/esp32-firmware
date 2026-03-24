@@ -106,7 +106,6 @@ class WARP2TestBox(TestBox):
         except Exception as e:
             print(e)
 
-
     def get_cp(self):
         try:
             r = self.A.get_value()[1:]
@@ -115,7 +114,8 @@ class WARP2TestBox(TestBox):
                     return k
         except Exception as e:
             print(e)
-            return 'D'
+
+        return 'D'
 
     def connect_meter(self, m: Meter):
         try:
@@ -131,7 +131,8 @@ class WARP2TestBox(TestBox):
                     return k
         except Exception as e:
             print(e)
-            return 'none'
+
+        return 'none'
 
     def set_gpio_shutdown_closed(self, val: bool):
         try:
