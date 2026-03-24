@@ -1138,6 +1138,18 @@ de_hyph = [
     "Netz-werk-schnitt-stel-le",
     "Au-to-char-ge",
     "Fahr-zeug-i-den-ti-fi-ka-ti-on",
+    "Ta-ges-mit-tel-tem-pe-ra-tur",
+    "selbst-si-gnier-tes",
+    "Zer-ti-fi-kats-ket-te",
+    "Ge-rä-te-zer-ti-fi-kat",
+    "Per-for-man-ce-grün-den",
+    "al-ter-na-tiv",
+    "Schlüs-sel-län-gen",
+    "si-gni-fi-kant",
+    "si-gni-fi-kan-ten",
+    "Si-cher-heits-ge-winn",
+    "Bi-när-for-mat",
+    "ver-brei-te-te",
 ]
 
 en_hyph = [
@@ -1435,6 +1447,11 @@ en_hyph = [
     "Si-mul-tane-ity",
     "Auto-charge",
     "iden-ti-fi-ca-tion",
+    "per-for-mance",
+    "al-ter-na-tive-ly",
+    "sig-nif-i-cant-ly",
+    "sig-nif-i-cant",
+    "in-ter-pret-ed",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
