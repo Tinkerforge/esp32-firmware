@@ -161,14 +161,14 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
-    def http_request(self, method: str, api: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False):
+    def http_request(self, method: str, path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False):
         if self._esp_host is None:
             self.skip("ESP Host not passed. Can't send HTTP requests")
 
         if isinstance(payload, str):
             payload = payload.encode('utf-8')
 
-        req = Request(f'http://{self._esp_host}/{api}', data=payload, method=method, headers=headers)
+        req = Request(f'http://{self._esp_host}{path}', data=payload, method=method, headers=headers)
         try:
             with urlopen(req, timeout=timeout) as resp:
                 result = resp.read()
@@ -307,9 +307,9 @@ class TestContext:
 
     def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 1) -> typing.Any:
         if isinstance(payload, TestContext.NoPayload):
-            return self.http_request('GET', api, timeout=timeout, parse=True)
+            return self.http_request('GET', '/' + api, timeout=timeout, parse=True)
 
-        return self.http_request('PUT', api, json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=timeout, parse=False)
+        return self.http_request('PUT', '/' + api, json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=timeout, parse=False)
 
     def fail(self, message: str):
         raise AssertionError(f"Test failure: {message}")

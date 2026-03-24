@@ -27,7 +27,7 @@ def test_boot_id(tc: TestContext):
 ### Test if the event log can be downloaded and vaguely looks like one.
 def test_event_log(tc: TestContext):
     try:
-        data = tc.http_request('GET', 'event_log')
+        data = tc.http_request('GET', '/event_log')
     except HTTPError as e:
         tc.fail('Event log could not be downloaded: ' + e.msg)
 
@@ -62,10 +62,10 @@ def trace_log_test(tc: TestContext, uri: str, compressed: bool):
     tc.assert_ge(0, begin_rtc_position)
 
 def test_trace_log(tc: TestContext):
-    trace_log_test(tc, 'trace_log', compressed=False)
+    trace_log_test(tc, '/trace_log', compressed=False)
 
 def test_trace_log_compressed(tc: TestContext):
-    trace_log_test(tc, 'trace_log/10020', compressed=True)
+    trace_log_test(tc, '/trace_log/10020', compressed=True)
 
 
 if __name__ == '__main__':

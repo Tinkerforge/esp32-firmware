@@ -16,7 +16,7 @@ else:
 def test_http_connectivity(tc: TestContext):
     # Check if the index page can be downloaded via HTTP and is larger than 100 KiB
     try:
-        data = tc.http_request('GET', '')
+        data = tc.http_request('GET', '/')
     except HTTPError as e:
         tc.fail('Web interface could not be downloaded: ' + e.msg)
 
