@@ -74,7 +74,7 @@ public:
 
     // Also edit get_quality_name() in rtc.cpp when modifying this!
     enum class Quality : uint8_t {
-        None = 0, // Never sycned.
+        None = 0, // Never synced.
         RTC = 1, // Use for any RTC: Will not write RTCs. Will be ignored if the time was set for example via NTP or the API not too long ago.
         Low = 2, // Use for example for the API: Will be ignored if the time was set for example via NTP not too long ago.
         High = 3, // Use for example for NTP: A time received via NTP is more trustworthy than a time received via the API.
