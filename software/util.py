@@ -12,6 +12,7 @@ from collections import namedtuple
 import functools
 import json
 import collections
+import shlex
 from dataclasses import dataclass, InitVar, field
 from collections.abc import Callable
 import importlib.util
@@ -766,3 +767,18 @@ def write_generated_file(path, content):
 
     with open(os.path.join(root_dir, 'generated_files_v2'), 'a', encoding='utf-8') as f:
         f.write(f'{digest} {os.path.relpath(os.path.abspath(path), root_dir)}\n')
+
+def extract_shebang(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        line = f.read(1024).strip().split('\n', 1)[0]
+
+    if not line.startswith('#!'):
+        raise Exception(f'Shebang is missing in {path}')
+
+    line = line[2:].strip()
+    parts = shlex.split(line)
+
+    if parts[0] != '/usr/bin/env' or parts[1] != '-S':
+        raise Exception(f'Shebang does not start with /usr/bin/env -S in {path}')
+
+    return parts[2:]

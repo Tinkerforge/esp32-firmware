@@ -17,6 +17,14 @@ import errno
 import fnmatch
 from tinkerforge_util.colored import red, green, blue, purple
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import util
+else:
+    import tinkerforge_util as tfutil
+    tfutil.create_parent_module(__file__, 'software')
+    from software import util
 
 DEFAULT_TEST_TIMEOUT = 5 * 60
 
@@ -73,11 +81,8 @@ def main():
             env = os.environ.copy()
             env["PYTHONUNBUFFERED"] = "1"
 
-            proc_args = [
-                "uv",
-                "run",
-                "--active", # "Prefer the active virtual environment over the project's virtual environment" ensures that test scripts can use transitive dependencies of test context (for example esptool)
-                "--script", path,
+            proc_args = util.extract_shebang(path) + [
+                path,
                 "--test-filter", test_filter,
                 "--fifo-in-path", fifo_in_path,
                 "--fifo-out-path", fifo_out_path
