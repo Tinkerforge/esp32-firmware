@@ -20,7 +20,7 @@ class TestBox(Protocol):
     def __not_implemented(self):
         self.tc.skip(f"No suitable testbox connected to call {inspect.stack()[1][3]}")
 
-    def set_cp(self, cp: CP): self.__not_implemented()
+    def set_cp(self, cp: CP) -> None: self.__not_implemented()
     def get_cp(self) -> CP: self.__not_implemented()
 
     def set_diode_faulted(self, fault: bool, clear_after_s: int = 0) -> None: self.__not_implemented()
@@ -36,17 +36,17 @@ class TestBox(Protocol):
     def is_dc_fauled(self) -> bool: self.__not_implemented()
 
     def set_gpio_shutdown_closed(self, val: bool) -> None: self.__not_implemented()
-    def is_gpio_shutdown_closed(self) -> None: self.__not_implemented()
+    def is_gpio_shutdown_closed(self) -> bool: self.__not_implemented()
 
     def set_gpio_input_closed(self, val: bool) -> None: self.__not_implemented()
-    def is_gpio_input_closed(self) -> None: self.__not_implemented()
+    def is_gpio_input_closed(self) -> bool: self.__not_implemented()
 
     def is_gpio_output_closed(self) -> bool: self.__not_implemented()
 
-    def connect_meter(self, m: Meter): self.__not_implemented()
-    def get_meter_connected(self): self.__not_implemented()
+    def connect_meter(self, m: Meter) -> None: self.__not_implemented()
+    def get_meter_connected(self) -> str: self.__not_implemented()
 
-    def is_contactor_closed(self, contactor: int): self.__not_implemented()
+    def is_contactor_closed(self, contactor: int) -> bool: self.__not_implemented()
 
     def set_input_3(self, i: Input) -> None: self.__not_implemented()
     def get_input_3(self) -> Input: self.__not_implemented()
