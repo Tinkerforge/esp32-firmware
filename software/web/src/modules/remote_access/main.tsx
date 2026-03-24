@@ -122,7 +122,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     constructor() {
         super("remote_access/config",
               () => __("remote_access.script.save_failed"),
-              () => __("remote_access.script.reboot_content_changed"));
+              undefined);
 
         this.resolve = undefined;
         this.reject = undefined;
@@ -245,19 +245,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         await registrationPromise;
 
         this.setState({status_modal_string: ""});
-        const modal = util.async_modal_ref.current;
-        if(!await modal.show({
-                title: () => __("main.reboot_title"),
-                body: () => __("main.reboot_content")(__("remote_access.script.reboot_content_changed")),
-                no_text: () => __("main.abort"),
-                yes_text: () => __("main.reboot"),
-                no_variant: "secondary",
-                yes_variant: "danger",
-                nestingDepth: 1,
-            }))
-            return;
-
-        util.reboot();
     }
 
     async registerCharger(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
@@ -273,7 +260,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 keys: []
             };
 
-            await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"), 10000);
+            await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), undefined, 10000);
             return;
         }
 
@@ -611,7 +598,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             cert_id: this.state.cert_id,
             mtu: this.state.mtu,
         }
-        API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
+        API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"));
     }
 
     override getIsModified(topic: "remote_access/config"): boolean {
@@ -637,7 +624,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         // If a user is removed and then the config is resetted, clear the users to be removed.
         this.setState({removeUsers: []});
 
-        API.reset("remote_access/config", () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
+        API.reset("remote_access/config", () => __("remote_access.script.save_failed"));
     }
 
     checkUserExisting(email?: string, userId?: string) {

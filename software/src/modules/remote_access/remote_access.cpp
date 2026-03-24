@@ -346,6 +346,7 @@ void RemoteAccess::register_urls()
             config.get("cert_id")->updateInt(registration_config.get("cert_id")->asInt());
             config.get("mtu")->updateUint(registration_config.get("mtu")->asUint());
             api.writeConfig("remote_access/config", &config);
+            task_scheduler.scheduleOnce([this]() { this->apply_config(); });
         },
         false);
 
@@ -361,6 +362,9 @@ void RemoteAccess::register_urls()
                     remove_key(user_id, i);
                 }
             }
+
+            config.get("enable")->updateBool(false);
+            task_scheduler.scheduleOnce([this]() { this->apply_config(); });
         },
         true);
 
@@ -1042,6 +1046,10 @@ void RemoteAccess::register_urls()
 
         API::writeConfig("remote_access/config", &config);
 
+        if (!one_left) {
+            task_scheduler.scheduleOnce([this]() { this->apply_config(); });
+        }
+
         return request.send_plain(200);
     });
 
@@ -1058,50 +1066,56 @@ void RemoteAccess::register_urls()
 
 void RemoteAccess::register_events()
 {
-    if (!config.get("enable")->asBool())
-        return;
-
-    network.on_network_connected([this](const Config *connected) {
-        if (connected->asBool()) {
-            // Start task if not scheduled yet.
-            if (!this->task_id) {
-                const millis_t random_delay = millis_t{esp_random() % 4096};
-                this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-                    if (!this->management_request_done && !this->management_auth_failed) {
-                        this->resolve_management();
-                    }
-                }, random_delay, 30_s + random_delay);
-            }
-        } else {
-            // Cancel task if currently scheduled.
-            if (this->task_id) {
-                task_scheduler.cancel(this->task_id);
-                this->task_id = 0;
-            }
-
-            // Cancel management polling task if running.
-            if (this->management_task_id) {
-                task_scheduler.cancel(this->management_task_id);
-                this->management_task_id = 0;
-            }
-
-            // Tear down the management WireGuard tunnel so that
-            // its stale lwIP netif and UDP socket don't linger.
-            if (this->management != nullptr) {
-                in_seq_number = 0;
-                this->management_request_done = false;
-                // Close remote connections first to stop all incoming
-                // tunnel traffic before tearing down the management tunnel.
-                this->close_all_remote_connections();
-                if (inner_socket >= 0) {
-                    close(inner_socket);
-                    inner_socket = -1;
-                }
-                this->management = nullptr;
-            }
-        }
+    network.on_network_connected([this](const Config */*connected*/) {
+        this->apply_config();
         return EventResult::OK;
     });
+}
+
+void RemoteAccess::apply_config()
+{
+    // Cancel periodic resolve task if running.
+    if (this->task_id) {
+        task_scheduler.cancel(this->task_id);
+        this->task_id = 0;
+    }
+
+    // Cancel management polling task if running.
+    if (this->management_task_id) {
+        task_scheduler.cancel(this->management_task_id);
+        this->management_task_id = 0;
+    }
+
+    // Tear down the management WireGuard tunnel and all remote connections.
+    if (this->management != nullptr) {
+        in_seq_number = 0;
+        this->close_all_remote_connections();
+        if (inner_socket >= 0) {
+            close(inner_socket);
+            inner_socket = -1;
+        }
+        this->management = nullptr;
+    }
+
+    // Reset state flags.
+    this->management_auth_failed = false;
+    this->management_request_failed = false;
+    this->management_request_done = false;
+
+    if (config.get("enable")->asBool() && network.is_connected()) {
+        // Start periodic resolve_management task.
+        const millis_t random_delay = millis_t{esp_random() % 4096};
+        this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            if (!this->management_request_done && !this->management_auth_failed) {
+                this->resolve_management();
+            }
+        }, random_delay, 30_s + random_delay);
+    } else {
+        // Reset connection state to disconnected.
+        for (uint8_t i = 0; i < MAX_USER_CONNECTIONS + 1; i++) {
+            connection_state.get(i)->get("state")->updateUint(1);
+        }
+    }
 }
 
 bool RemoteAccess::user_already_registered(const String &email)
@@ -1457,6 +1471,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
 
     API::writeConfig("remote_access/config", &this->config);
+    this->apply_config();
     update_registration_state(RegistrationState::Success);
     this->request_cleanup();
 }

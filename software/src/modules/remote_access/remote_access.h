@@ -60,6 +60,8 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    void apply_config();
+
     bool is_connected_local_ip(const IPAddress &local_address, const IPAddress &remote_address);
 
     Config &get_ping_state();
