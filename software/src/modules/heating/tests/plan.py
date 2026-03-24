@@ -11,19 +11,11 @@ import random
 import time
 from dataclasses import dataclass
 from typing import Optional
-
 from scipy.optimize import milp, LinearConstraint, Bounds
 import numpy as np
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite
-else:
-    import tinkerforge_util as tfutil
-
-    tfutil.create_parent_module(__file__, "software")
-    from software.test_runner.test_context import run_testsuite, TestContext
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, "software")
+from software.test_runner.test_context import run_testsuite, TestContext
 
 
 # ILP reference solver

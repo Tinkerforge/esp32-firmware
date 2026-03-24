@@ -17,14 +17,9 @@ import errno
 import fnmatch
 from tinkerforge_util.colored import red, green, blue, purple, gray
 from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from . import util
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software import util
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software import util
 
 DEFAULT_TEST_TIMEOUT = 5 * 60
 

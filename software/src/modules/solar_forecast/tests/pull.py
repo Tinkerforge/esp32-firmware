@@ -5,19 +5,11 @@
 # configures it to pull from local server.
 
 import json
-import time
-
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite, TestHTTPSServer
-    from ._common import make_forecast, FORECAST_COUNT
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
-    from software.src.modules.solar_forecast.tests._common import make_forecast, FORECAST_COUNT
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
+from software.src.modules.solar_forecast.tests._common import make_forecast, FORECAST_COUNT
 
 _CERT_ID = 5
 

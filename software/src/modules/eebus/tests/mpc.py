@@ -2,19 +2,10 @@
 
 # Tests for MPC (Monitoring of Power Consumption) use case.
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite
-    from ._common import *
-else:
-    import tinkerforge_util as tfutil
-
-    tfutil.create_parent_module(__file__, "software")
-    from software.test_runner.test_context import run_testsuite, TestContext
-    from software.src.modules.eebus.tests._common import *
-
-
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, "software")
+from software.test_runner.test_context import run_testsuite, TestContext
+from software.src.modules.eebus.tests._common import *
 
 _original_meter_config = None
 _meter_slot = 0

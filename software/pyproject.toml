@@ -42,3 +42,9 @@ tests = [
 [tool.pio-hooks]
 requires-node = "24.14.0"
 requires-npm = "11.12.0"
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+extraPaths = [".."]

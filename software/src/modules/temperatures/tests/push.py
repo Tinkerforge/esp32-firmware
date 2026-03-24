@@ -2,16 +2,10 @@
 
 # Tests for temperatures push API
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite
-    from ._common import make_temperatures, midnight_today_minutes, TEMP_COUNT
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner.test_context import run_testsuite, TestContext
-    from software.src.modules.temperatures.tests._common import make_temperatures, midnight_today_minutes, TEMP_COUNT
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software.test_runner.test_context import run_testsuite, TestContext
+from software.src.modules.temperatures.tests._common import make_temperatures, midnight_today_minutes, TEMP_COUNT
 
 
 def suite_setup(tc: TestContext):

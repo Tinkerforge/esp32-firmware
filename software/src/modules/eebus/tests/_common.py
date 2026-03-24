@@ -1,20 +1,13 @@
 import time
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, "software")
+from software.test_runner.test_context import MeterValueID
 
 METER_CLASS_API = 4
 METER_LOCATION_CHARGER = 2
 METER_LOCATION_GRID = 4
 
 EEBUS_NO_VALUE = -2147483648
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .....test_runner.test_context import MeterValueID
-else:
-    import tinkerforge_util as tfutil
-
-    tfutil.create_parent_module(__file__, "software")
-    from software.test_runner.test_context import MeterValueID
-
 
 # MeterValueID constants matching the mvids[] array in eebus.cpp.
 METER_VALUE_IDS = [

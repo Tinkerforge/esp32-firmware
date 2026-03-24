@@ -3,15 +3,9 @@
 import requests
 import time
 from urllib.request import HTTPError
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner.test_context import run_testsuite, TestContext
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software.test_runner.test_context import run_testsuite, TestContext
 
 def test_http_connectivity(tc: TestContext):
     # Check if the index page can be downloaded via HTTP and is larger than 100 KiB

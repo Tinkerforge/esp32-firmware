@@ -6,17 +6,10 @@
 
 import json
 import time
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .....test_runner.test_context import TestContext, run_testsuite, TestHTTPSServer
-    from ._common import make_prices, midnight_today_minutes, SLOTS_TOTAL
-else:
-    import tinkerforge_util as tfutil
-    tfutil.create_parent_module(__file__, 'software')
-    from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
-    from software.src.modules.day_ahead_prices.tests._common import make_prices, midnight_today_minutes, SLOTS_TOTAL
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
+from software.src.modules.day_ahead_prices.tests._common import make_prices, midnight_today_minutes, SLOTS_TOTAL
 
 _CERT_ID = 7
 
