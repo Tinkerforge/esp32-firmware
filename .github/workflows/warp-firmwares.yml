@@ -15,6 +15,7 @@ jobs:
       - uses: actions/cache/restore@v5
         with:
           path: |
+            ~/.cache/uv
             ~/.platformio
             ./software/.pio
             ./software/packages
@@ -22,6 +23,8 @@ jobs:
           restore-keys: ${{ matrix.os }}-
       - name: Install UV
         uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
       - name: Sync UV
         working-directory: ./software
         run: uv sync
@@ -33,6 +36,8 @@ jobs:
       - name: 'Build Firmware: ${{ matrix.env }}'
         working-directory: ./software
         run: uv run pio run -e ${{ matrix.env }} -t clean && uv run pio run -e ${{ matrix.env }}
+      - name: Minimize UV cache
+        run: uv cache prune --ci
       - name: 'Deleting Caches: ${{ matrix.os }}-'
         if: matrix.env == 'warp4'
         run: gh cache delete ${{ matrix.os }}- || true
@@ -43,6 +48,7 @@ jobs:
         if: matrix.env == 'warp4'
         with:
           path: |
+            ~/.cache/uv
             ~/.platformio
             ./software/.pio
             ./software/packages
