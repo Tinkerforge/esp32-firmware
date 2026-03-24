@@ -1672,17 +1672,10 @@ int ChargeTracker::generate_pdf(
                 memcpy(&cs, charge_buf, sizeof(ChargeStart));
                 memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
                 if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
-                    charge_records = 0;
-                    first_file = -1;
-                    first_charge = -1;
-                    charged_sum = 0;
-                    charged_cost_sum = 0;
                     continue;
                 }
                 if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                    last_file = i;
-                    last_charge = j;
-                    goto search_done;
+                    continue;
                 }
                 bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
                 if (!include_user)
