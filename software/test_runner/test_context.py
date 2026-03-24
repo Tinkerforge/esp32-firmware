@@ -27,12 +27,22 @@ from .testbox.warp3 import WARP3TestBox
 from .testbox.wem import WEMTestBox
 from .device_type import DeviceType
 
-try:
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
     from ..src.modules.meters.generated.meter_value_id import MeterValueID
-except:
-    import subprocess
-    subprocess.check_call(["uv", "run", "../src/modules/meters/prepare.py"])
-    from ..src.modules.meters.generated.meter_value_id import MeterValueID
+else:
+    import tinkerforge_util as tfutil
+    tfutil.create_parent_module(__file__, 'software')
+
+    try:
+        from software.src.modules.meters.generated.meter_value_id import MeterValueID
+    except:
+        import subprocess
+        prepare_path = Path(__file__).parent / "../src/modules/meters/prepare.py"
+        with tfutil.ChangedDirectory(prepare_path.parent):
+            subprocess.check_call(["uv", "run", prepare_path])
+        from software.src.modules.meters.generated.meter_value_id import MeterValueID
 
 type TestFn = Callable[[TestContext], typing.Any]
 
