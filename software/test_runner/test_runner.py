@@ -253,7 +253,7 @@ def main():
                                 if len(stderr_buf) > 0:
                                     stderr_buf += b"\n---END SETUP---\n"
                                 if len(dbg_buf) > 0:
-                                    dbg_buf +="---END SETUP---\n"
+                                    dbg_buf += "---END SETUP---\n"
                             elif payload["testname"] == "teardown":
                                 x: list[JTestCase] = jsuite.test_cases
                                 if len(stdout_buf) > 0:
