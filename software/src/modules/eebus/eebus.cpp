@@ -185,14 +185,14 @@ static void run_eebus_usecase_tests()
     switch (dev_test_iteration) {
         case 0: // EVSECC: Simulate error state
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
-            logger.printfln("EEBUS Test [0]: Simulating EVSECC error state");
+            logger.printfln("Test [0]: Simulating EVSECC error state");
             eebus.usecases->evse_commissioning_and_configuration.update_operating_state(true, "Test error: Will be cleared in 30 seconds");
 #endif
             break;
 
         case 1: // EVCS: Populate charging summary
 #ifdef EEBUS_ENABLE_EVCS_USECASE
-            logger.printfln("EEBUS Test [1]: Adding charging summary entries");
+            logger.printfln("Test [1]: Adding charging summary entries");
             eebus.usecases->charging_summary.update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
             eebus.usecases->charging_summary.update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
 #endif
@@ -200,7 +200,7 @@ static void run_eebus_usecase_tests()
 
         case 2: // EVCC: Full EV connection scenario
 #ifdef EEBUS_ENABLE_EVCC_USECASE
-            logger.printfln("EEBUS Test [2]: Simulating EV connection with full data");
+            logger.printfln("Test [2]: Simulating EV connection with full data");
             eebus.usecases->ev_commissioning_and_configuration.ev_connected_state(true);
             eebus.usecases->ev_commissioning_and_configuration.update_device_config("iso15118-2ed1", true);
             eebus.usecases->ev_commissioning_and_configuration.update_identification("12:34:56:78:9a:bc");
@@ -212,7 +212,7 @@ static void run_eebus_usecase_tests()
 
         case 3: // EVSECC: Clear error state
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
-            logger.printfln("EEBUS Test [3]: Clearing EVSECC error state");
+            logger.printfln("Test [3]: Clearing EVSECC error state");
             eebus.usecases->evse_commissioning_and_configuration.update_operating_state(false);
 #endif
             break;
@@ -222,7 +222,7 @@ static void run_eebus_usecase_tests()
 
         case 5: // MPC: Initial measurements
 #ifdef EEBUS_ENABLE_MPC_USECASE
-            logger.printfln("EEBUS Test [5]: MPC initial measurements");
+            logger.printfln("Test [5]: MPC initial measurements");
             eebus.usecases->mpc->update_constraints(0, 22000, 100, 0, 16000, 10, 0, 1000000, 10, 0, 400, 1, 10, 100, 1);
             eebus.usecases->mpc->update_power(6500, 2200, -150, 4450); // Phase 2 negative = feed-in
             eebus.usecases->mpc->update_voltage(230, 231, 229, EEBUS_NO_VALUE, 0, 0);
@@ -234,7 +234,7 @@ static void run_eebus_usecase_tests()
 
         case 6: // MGCP: Initial measurements
 #ifdef EEBUS_ENABLE_MGCP_USECASE
-            logger.printfln("EEBUS Test [6]: MGCP initial measurements");
+            logger.printfln("Test [6]: MGCP initial measurements");
             eebus.usecases->monitoring_of_grid_connection_point.update_constraints(-22000, 22000, 0, 32000, 1000000, 180, 260, 45000, 55000);
             eebus.usecases->monitoring_of_grid_connection_point.update_pv_curtailment_limit_factor(85.5f);
             eebus.usecases->monitoring_of_grid_connection_point.update_power(-5200); // Negative = feed-in
@@ -566,7 +566,7 @@ void EEBus::setup()
         },
         20_s,  // Start after 20 seconds
         10_s); // Repeat every 10 seconds
-    logger.printfln("EEBUS: Development testing enabled - simulating use case scenarios");
+    logger.printfln("Development testing enabled - simulating use case scenarios");
 #endif
 
     // Schedule periodic limit updates (LPC/OPEV integration)
@@ -776,7 +776,7 @@ void EEBus::register_meter_events()
     // First, wait for value IDs to be published
     event.registerEvent(meters.get_path(meter_slot, Meters::PathType::ValueIDs), {}, [meter_slot](const Config *value_ids) {
         if (value_ids->count() == 0) {
-            logger.printfln("EEBUS: Ignoring blank value IDs from meter");
+            logger.printfln("Ignoring blank value IDs from meter");
             return EventResult::OK;
         }
 
@@ -861,7 +861,7 @@ void EEBus::toggle_module()
 #endif
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.enable_ship();
-        logger.printfln("EEBUS Module enabled");
+        logger.printfln("Module enabled");
 
     } else {
         module_enabled = false;
@@ -869,7 +869,7 @@ void EEBus::toggle_module()
         data_handler = nullptr;
         ship.disable_ship();
         if (initialized) {
-            logger.printfln("EEBUS Module disabled");
+            logger.printfln("Module disabled");
         }
     }
 }
@@ -1014,7 +1014,7 @@ void EEBus::sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node
             new_peer->get("model_type")->updateString(node->txt_type);
             api.writeConfig("eebus/config", &config);
         } else {
-            logger.printfln("EEBUS: Cannot add persistent peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
+            logger.printfln("Cannot add persistent peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
         }
     }
 }

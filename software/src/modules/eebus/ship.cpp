@@ -235,7 +235,7 @@ void Ship::setup_wss()
 
     // Start websocket on the HTTPS server
     web_sockets.start("/ship/", "/eebus/ws", "ship", SHIP_PORT);
-    logger.printfln("EEBUS SHIP started up and accepting connections");
+    logger.printfln("SHIP started up and accepting connections");
 
     wss_registered = true;
 }
@@ -276,7 +276,7 @@ void Ship::connect_trusted_peers()
             ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, node)));
         }
     }
-    logger.printfln("EEBUS SHIP: %d trusted peers configured", trusted_peer_count);
+    logger.printfln("SHIP: %d trusted peers configured", trusted_peer_count);
 #endif
 }
 
@@ -285,7 +285,7 @@ void Ship::setup_mdns()
     eebus.trace_fmtln("setup_mdns() start");
 
     if (!network.is_mdns_started()) {
-        logger.printfln("EEBUS Ship mDNS setup failed: mDNS is disabled or failed to start.");
+        logger.printfln("Ship mDNS setup failed: mDNS is disabled or failed to start.");
         eebus.trace_fmtln("setup_mdns() failed; mDNS not started");
         return;
     }
@@ -294,7 +294,7 @@ void Ship::setup_mdns()
     // SHIP 7.2 Service Name
     ret = mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to add mDNS service. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to add mDNS service. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_add returned %d", ret);
         return;
     }
@@ -302,26 +302,26 @@ void Ship::setup_mdns()
     // Mandatory Fields
     ret = mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set txtvers TXT record. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to set txtvers TXT record. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for txtvers returned %d", ret);
         return;
     }
     ret = mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str());
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set id TXT record. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to set id TXT record. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for id returned %d", ret);
         return;
     }
     // ManufaturerName-Model-UniqueID (max 63 bytes)
     ret = mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set path TXT record. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to set path TXT record. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for path returned %d", ret);
         return;
     }
     ret = mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr());
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set ski TXT record. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to set ski TXT record. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for ski returned %d", ret);
         return;
     }
@@ -329,7 +329,7 @@ void Ship::setup_mdns()
 
     ret = mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     if (ret != ESP_OK) {
-        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set register TXT record. Error %d", ret);
+        logger.printfln("Ship mDNS setup failed: Failed to set register TXT record. Error %d", ret);
         eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for register returned %d", ret);
         return;
     }
@@ -482,7 +482,7 @@ void Ship::discover_ship_peers()
     eebus.trace_fmtln("discover_ship_peers start");
 
     if (!network.is_mdns_started()) {
-        logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
+        logger.printfln("MDNS Query Failed: mDNS is disabled or failed to start");
         eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
         update_discovery_state(ShipDiscoveryState::Error);
         return;
@@ -493,7 +493,7 @@ void Ship::discover_ship_peers()
     mdns_scan = mdns_query_async_new(NULL, service, proto, MDNS_TYPE_PTR, 1000, INT8_MAX, &check_mdns_results_cb);
 
     if (!mdns_scan) {
-        logger.printfln("EEBUS MDNS Query Failed.");
+        logger.printfln("MDNS Query Failed.");
         update_discovery_state(ShipDiscoveryState::Error);
     }
 }
