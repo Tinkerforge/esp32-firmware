@@ -109,7 +109,7 @@ def main():
                     break
                 except OSError as e:
                     if e.errno == errno.ENXIO:
-                        if time.monotonic() - start > 1:
+                        if time.monotonic() - start > 10:
                             print(red("test script crashed"))
                             try:
                                 print(os.read(stdout, 10000).decode('utf-8'))
