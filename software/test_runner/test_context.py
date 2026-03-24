@@ -26,6 +26,13 @@ from .testbox.warp2 import WARP2TestBox
 from .testbox.warp3 import WARP3TestBox
 from .testbox.wem import WEMTestBox
 
+try:
+    from ..src.modules.meters.generated.meter_value_id import MeterValueID
+except:
+    import subprocess
+    subprocess.check_call(["uv", "run", "../src/modules/meters/prepare.py"])
+    from ..src.modules.meters.generated.meter_value_id import MeterValueID
+
 type TestFn = Callable[[TestContext], typing.Any]
 
 @dataclass

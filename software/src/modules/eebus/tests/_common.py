@@ -6,24 +6,34 @@ METER_LOCATION_GRID = 4
 
 EEBUS_NO_VALUE = -2147483648
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .....test_runner.test_context import MeterValueID
+else:
+    import tinkerforge_util as tfutil
+
+    tfutil.create_parent_module(__file__, "software")
+    from software.test_runner.test_context import MeterValueID
+
+
 # MeterValueID constants matching the mvids[] array in eebus.cpp.
 METER_VALUE_IDS = [
-    14,  # CurrentL1ImExDiff (A)
-    18,  # CurrentL2ImExDiff (A)
-    22,  # CurrentL3ImExDiff (A)
-    39,  # PowerActiveL1ImExDiff (W)
-    48,  # PowerActiveL2ImExDiff (W)
-    57,  # PowerActiveL3ImExDiff (W)
-    74,  # PowerActiveLSumImExDiff (W)
-    209, # EnergyActiveLSumImport (kWh)
-    211, # EnergyActiveLSumExport (kWh)
-    1,   # VoltageL1N (V)
-    2,   # VoltageL2N (V)
-    3,   # VoltageL3N (V)
-    4,   # VoltageL1L2 (V)
-    5,   # VoltageL2L3 (V)
-    6,   # VoltageL3L1 (V)
-    364, # FrequencyLAvg (Hz)
+    MeterValueID.CurrentL1ImExDiff,
+    MeterValueID.CurrentL2ImExDiff,
+    MeterValueID.CurrentL3ImExDiff,
+    MeterValueID.PowerActiveL1ImExDiff,
+    MeterValueID.PowerActiveL2ImExDiff,
+    MeterValueID.PowerActiveL3ImExDiff,
+    MeterValueID.PowerActiveLSumImExDiff,
+    MeterValueID.EnergyActiveLSumImport,
+    MeterValueID.EnergyActiveLSumExport,
+    MeterValueID.VoltageL1N,
+    MeterValueID.VoltageL2N,
+    MeterValueID.VoltageL3N,
+    MeterValueID.VoltageL1L2,
+    MeterValueID.VoltageL2L3,
+    MeterValueID.VoltageL3L1,
+    MeterValueID.FrequencyLAvg,
 ]
 
 # Test values matching METER_VALUE_IDS order.
@@ -46,7 +56,7 @@ METER_VALUES = [
     50.0,   # Frequency (Hz)
 ]
 
-VOLTAGE_ONLY_IDS = [1, 2, 3] # VoltageL1N, VoltageL2N, VoltageL3N
+VOLTAGE_ONLY_IDS = [MeterValueID.VoltageL1N, MeterValueID.VoltageL2N, MeterValueID.VoltageL3N]
 VOLTAGE_ONLY_VALUES = [230.0, 231.0, 229.0]
 
 def reboot_and_wait(tc):
