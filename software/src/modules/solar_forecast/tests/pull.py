@@ -69,26 +69,6 @@ def _skip_if_needed(tc: TestContext):
         tc.skip(_skip_reason)
 
 
-def _reboot_and_wait(tc: TestContext):
-    """Reboot the ESP and wait for it to come back online."""
-    try:
-        tc.api('reboot', None, timeout=2)
-    except Exception:
-        pass  # Device drops connection during reboot
-
-    time.sleep(3)
-
-    deadline = time.monotonic() + 30
-    while time.monotonic() < deadline:
-        try:
-            tc.api('solar_forecast/state')
-            return
-        except Exception:
-            time.sleep(1)
-
-    raise RuntimeError("Device did not come back after reboot")
-
-
 def _trigger_refetch(tc: TestContext):
     config = tc.api('solar_forecast/config')
     config['enable'] = False
@@ -153,7 +133,7 @@ def suite_setup(tc: TestContext):
         tc.api('solar_forecast/config_update', config)
 
         # Reboot to reset next_sync_forced
-        _reboot_and_wait(tc)
+        tc.reboot()
 
         place = _configure_and_probe(tc)
         if place is None:
