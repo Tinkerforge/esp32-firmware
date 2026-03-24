@@ -746,7 +746,7 @@ export type {self.name.camel} =
 def import_from_path(module_name, file_path):
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None or spec.loader is None:
-        raise Exception(f"Failed to import spec from file locaton {module_name=} {file_path=}")
+        raise Exception(f"Failed to import spec from file location {module_name=} {file_path=}")
 
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
