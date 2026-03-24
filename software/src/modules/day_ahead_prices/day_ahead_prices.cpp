@@ -1387,7 +1387,7 @@ void DayAheadPrices::update_calendar()
     calendar_last_generated_wday = wday;
 
     auto cal_prices = calendar.get("prices");
-    if (cal_prices->count() != DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY) {
+    if (cal_prices->count() != DAY_AHEAD_PRICE_CALENDAR_SLOTS) {
         return;
     }
 
