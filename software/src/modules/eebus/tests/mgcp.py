@@ -2,8 +2,6 @@
 
 # Tests for MGCP (Monitoring of Grid Connection Point) use case.
 
-import time
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

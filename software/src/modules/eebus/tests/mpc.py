@@ -2,8 +2,6 @@
 
 # Tests for MPC (Monitoring of Power Consumption) use case.
 
-import time
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
