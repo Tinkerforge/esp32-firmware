@@ -227,6 +227,7 @@ test-runner = [
 tests = [
     { name = "junit-xml" },
     { name = "numpy" },
+    { name = "requests" },
     { name = "scipy" },
 ]
 web-server-proxy = [
@@ -242,7 +243,7 @@ requires-dist = [
     { name = "platformio" },
     { name = "pyphen" },
     { name = "tinkerforge", specifier = ">=2.1.31" },
-    { name = "tinkerforge-util", specifier = ">=1.5.1" },
+    { name = "tinkerforge-util", specifier = ">=1.6.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -252,6 +253,7 @@ test-runner = [{ name = "junit-xml" }]
 tests = [
     { name = "junit-xml" },
     { name = "numpy" },
+    { name = "requests" },
     { name = "scipy" },
 ]
 web-server-proxy = [
@@ -698,12 +700,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/77/5d/b1ec953d9b3df1468
 
 [[package]]
 name = "tinkerforge-util"
-version = "1.5.1"
+version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyserial" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/36/493267764a95369901291725cef7d27263bedb664dbc904b57420848783d/tinkerforge_util-1.5.1.tar.gz", hash = "sha256:7766252320b499029edafc95324b26827148158fb2a3ecd333eb35318f070d4b", size = 6840, upload-time = "2026-03-20T15:58:20.055Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/49/7c07542a8dfe7d7a9573cc9d9f6ef4ddba2030c26a9961904859bdfdae5e/tinkerforge_util-1.6.0.tar.gz", hash = "sha256:739fd7003d78e8cf9d27fe1bb23cab8e675f3c3c2b2cf377a60cf29110e52786", size = 6872, upload-time = "2026-03-24T10:36:23.157Z" }
 
 [[package]]
 name = "typing-extensions"
