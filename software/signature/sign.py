@@ -202,7 +202,7 @@ def main():
         raise Exception(f'Could not read input from {args.input_path}: {e}')
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
-    assert(crypto_sign_BYTES == 64)
+    assert crypto_sign_BYTES == 64
 
     firmware_info_offset = 0xd000 - 0x1000
     signature_info_offset = firmware_info_offset - 0x1000
