@@ -25,7 +25,7 @@ let x = {
             "sma_unsupported_warning": <>Diese SMA Wechselrichterserien werden nicht unterstüzt: Sunny Boy Smart Energy, Sunny Tripower Storage und Sunny Island.</>,
             "sma_forecast_based_charging_warning": <>Das SMA eigene <a href="https://manuals.sma.de/HM-20/de-DE/8644254859.html">prognosebasierte Batterieladen</a> kann die Batteriesteuerung beinträchtigen. Bitte sicherstellen, dass das prognosebasierte Batterieladen im SMA Sunny Portal deaktiviert ist.</>,
             "sax_power_home_basic_mode_register_warning": <>Bitte sicherstellen, dass die Modbus/TCP-Register 40044/40045 (43/44) beim SAX Power Home Batteriespeicher freigeschaltet sind.</>,
-            "sax_power_home_basic_mode_force_warning": <>Bedingt durch die limitierte Steuerbarkeit des SAX Power Home Batteriespeicher, können Laden und Entladen nicht erwungen werden. Stattdessen wird in diesen fällen das Laden bzw. Entladen auf normal belassen.</>,
+            "sax_power_home_basic_mode_force_warning": <>Bedingt durch die limitierte Steuerbarkeit des SAX Power Home Batteriespeicher, können Laden und Entladen nicht erzwungen werden. Stattdessen wird in diesen fällen das Laden bzw. Entladen auf normal belassen.</>,
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
