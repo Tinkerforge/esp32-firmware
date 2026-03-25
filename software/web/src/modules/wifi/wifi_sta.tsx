@@ -405,7 +405,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             />
                         </FormRow>
 
-                        <FormRow label={__("wifi.content.status_sta_rssi")}>
+                        <FormRow label={<>{__("wifi.content.status_sta_rssi")}<span class="ms-2">{wifi_symbol(wifi_state.sta_rssi)}</span></>}>
                             <InputText
                                 value={wifi_state.connection_state == WifiState.Connected
                                     ? wifi_state.sta_rssi + " dBm"
