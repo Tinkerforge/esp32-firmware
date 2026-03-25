@@ -24,6 +24,7 @@
 #include <ArduinoJson.h>
 
 #include <TFTools/Option.h>
+#include <bitset>
 
 #include "async_https_client.h"
 #include "module.h"
@@ -41,6 +42,7 @@
 #define DAY_AHEAD_PRICE_MAX_AMOUNT (25*4*2) // Two days with 15min resolution and one additional hour for daylight savings time switch
 #define DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY 96  // 24h * 4 (15min resolution)
 #define DAY_AHEAD_PRICE_CALENDAR_SLOTS (7 * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY) // 7 days * 96 = 672
+#define DAY_AHEAD_PRICE_DP_MAX_SLOTS DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY
 
 enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_OK,
@@ -61,7 +63,7 @@ struct DpCacheEntry {
     bool     success;
     uint32_t generation;
     bool     valid;
-    bool     result[96]; // max dp_N
+    std::bitset<DAY_AHEAD_PRICE_DP_MAX_SLOTS> result;
 };
 
 static constexpr size_t DP_CACHE_SIZE = 12;

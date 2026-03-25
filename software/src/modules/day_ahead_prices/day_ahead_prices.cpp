@@ -1238,7 +1238,7 @@ bool DayAheadPrices::get_cheap_and_expensive_15m_blocked(const int32_t start_tim
     }
 
     // Helper to expand hourly DP result to 15-min output by replicating each entry 4x
-    auto expand_result = [use_hourly_dp, dp_N, duration_15m](const bool *dp_result, bool *out) {
+    auto expand_result = [use_hourly_dp, dp_N, duration_15m](const auto &dp_result, bool *out) {
         if (use_hourly_dp) {
             for (uint8_t i = 0; i < dp_N; i++) {
                 out[i * 4]     = dp_result[i];
@@ -1247,7 +1247,9 @@ bool DayAheadPrices::get_cheap_and_expensive_15m_blocked(const int32_t start_tim
                 out[i * 4 + 3] = dp_result[i];
             }
         } else {
-            std::copy_n(dp_result, duration_15m, out);
+            for (uint8_t i = 0; i < duration_15m; i++) {
+                out[i] = dp_result[i];
+            }
         }
     };
 
@@ -1288,12 +1290,15 @@ bool DayAheadPrices::get_cheap_and_expensive_15m_blocked(const int32_t start_tim
         e.generation = gen;
         e.valid = true;
         if (success) {
-            std::copy_n(result, dp_N, e.result);
+            e.result.reset();
+            for (uint8_t i = 0; i < dp_N; i++) {
+                e.result[i] = result[i];
+            }
         }
     };
 
     bool success = true;
-    bool dp_result[dp_N];
+    bool dp_result[DAY_AHEAD_PRICE_DP_MAX_SLOTS];
 
     if (cheap_hours != nullptr) {
         DpCacheEntry *hit = cache_lookup(false);
