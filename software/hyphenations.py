@@ -1150,6 +1150,9 @@ de_hyph = [
     "Si-cher-heits-ge-winn",
     "Bi-när-for-mat",
     "ver-brei-te-te",
+    "Ent-la-de-ra-te",
+    "not-wen-di-gen",
+    "Zäh-ler-da-ten",
 ]
 
 en_hyph = [
