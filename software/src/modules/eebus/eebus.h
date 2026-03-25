@@ -22,12 +22,14 @@
 // IMPORTANT: options.h and EEBUS_MODE_* must be defined BEFORE any other includes
 // because eebus_usecases.h may be transitively included (e.g., via ship.h -> ship_connection.h -> spine_connection.h)
 // and it checks EEBUS_MODE_* to determine which use cases to enable.
+#include "generated/module_available.h"
 #include "options.h"
 
-#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+// If the EVSE module is available we are probably a charger.
+#if MODULE_EVSE_COMMON_AVAILABLE()
 #define EEBUS_MODE_EVSE
 #define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
-#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() == 1
+#else
 #define EEBUS_MODE_EM
 #define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 #endif
@@ -192,3 +194,5 @@ private:
      */
     void register_meter_events();
 };
+
+#include "generated/module_available_end.h"
