@@ -135,9 +135,9 @@ private:
 
     bool read_only = false;
 
-    const unsigned char *broker_cert_buf = nullptr;
-    const unsigned char *client_cert_buf = nullptr;
-    const unsigned char *client_key_buf  = nullptr;
+    std::unique_ptr<unsigned char[]> broker_cert_buf = nullptr;
+    std::unique_ptr<unsigned char[]> client_cert_buf = nullptr;
+    std::unique_ptr<unsigned char[]> client_key_buf  = nullptr;
 
     int subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos);
 };

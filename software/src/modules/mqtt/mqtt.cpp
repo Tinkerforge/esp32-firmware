@@ -737,14 +737,13 @@ bool Mqtt::create_client()
     if (encrypted && cert_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)cert_id, &cert_len);
-        if (cert == nullptr) {
+        this->broker_cert_buf = certs.get_cert((uint8_t)cert_id, &cert_len);
+        if (this->broker_cert_buf == nullptr) {
             logger.printfln("Certificate with ID %d is not available", cert_id);
             return false;
         }
-        // Track the buffer so it can be freed in stop_and_destroy_client().
-        broker_cert_buf = cert.release();
-        mqtt_cfg.broker.verification.certificate = (const char *)broker_cert_buf;
+
+        mqtt_cfg.broker.verification.certificate = (const char *)this->broker_cert_buf.get();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -761,14 +760,13 @@ bool Mqtt::create_client()
     if (encrypted && client_cert_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)client_cert_id, &cert_len);
-        if (cert == nullptr) {
+        this->client_cert_buf = certs.get_cert((uint8_t)client_cert_id, &cert_len);
+        if (this->client_cert_buf == nullptr) {
             logger.printfln("Client certificate with ID %d is not available", client_cert_id);
             return false;
         }
-        // Track the buffer so it can be freed in stop_and_destroy_client().
-        client_cert_buf = cert.release();
-        mqtt_cfg.credentials.authentication.certificate = (const char *)client_cert_buf;
+
+        mqtt_cfg.credentials.authentication.certificate = (const char *)this->client_cert_buf.get();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -782,14 +780,12 @@ bool Mqtt::create_client()
     if (encrypted && client_key_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)client_key_id, &cert_len);
-        if (cert == nullptr) {
+        this->client_key_buf = certs.get_cert((uint8_t)client_key_id, &cert_len);
+        if (this->client_key_buf == nullptr) {
             logger.printfln("Client key with ID %d is not available", client_key_id);
             return false;
         }
-        // Track the buffer so it can be freed in stop_and_destroy_client().
-        client_key_buf = cert.release();
-        mqtt_cfg.credentials.authentication.key = (const char *)client_key_buf;
+        mqtt_cfg.credentials.authentication.key = (const char *)this->client_key_buf.get();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -833,11 +829,8 @@ void Mqtt::stop_and_destroy_client()
 
     // Free certificate/key buffers that were allocated in create_client().
     // Must happen after esp_mqtt_client_destroy() since the client references them.
-    delete[] broker_cert_buf;
     broker_cert_buf = nullptr;
-    delete[] client_cert_buf;
     client_cert_buf = nullptr;
-    delete[] client_key_buf;
     client_key_buf = nullptr;
 
     state.get("connection_state")->updateEnum(MqttConnectionState::NotConfigured);
