@@ -30,7 +30,7 @@ let x = {
                 <ul class="mb-0">
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. {__("This_device")} ist vollständig eigenständig.</li>
                     {has_managed_mode ?
-                        <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
+                        <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen Lastmanager kontrolliert. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
                         : undefined}
                     <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV-Überschussladen</a> : <span>PV-Überschussladen</span>} ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
                 </ul>
