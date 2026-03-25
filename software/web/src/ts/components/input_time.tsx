@@ -77,60 +77,6 @@ export function InputTime(props: InputTimeProps) {
         </>;
 
     return inner;
-/*
-    return (
-        <div class="input-group">
-            {inner}
-            <div class="input-group-append">
-                <Button variant="primary"
-                        className="form-control px-1"
-                        style="margin-right: .125rem !important;"
-                        onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
-
-                            if (props.buttons == "year") {
-                                date.setFullYear(date.getFullYear() - 1);
-                            }
-
-                            if (props.buttons == "month") {
-                                date.setMonth(date.getMonth() - 1);
-                            }
-
-                            if (props.buttons == "day") {
-                                date.setDate(date.getDate() - 1);
-                            }
-
-                            props.onDate(date);
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <ArrowLeft/>
-                </Button>
-                <Button variant="primary"
-                        className="form-control px-1 rounded-end"
-                        onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
-
-                            if (props.buttons == "year") {
-                                date.setFullYear(date.getFullYear() + 1);
-                            }
-
-                            if (props.buttons == "month") {
-                                date.setMonth(date.getMonth() + 1);
-                            }
-
-                            if (props.buttons == "day") {
-                                date.setDate(date.getDate() + 1);
-                            }
-
-                            props.onDate(date);
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <ArrowRight/>
-                </Button>
-            </div>
-        </div>
-    );
-*/
 }
 
 register_id_context_component_type(InputTime);
