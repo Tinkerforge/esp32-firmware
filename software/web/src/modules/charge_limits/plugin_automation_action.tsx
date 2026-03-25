@@ -38,7 +38,7 @@ export type ChargeLimitsAutomationAction = [
         restart: boolean;
         duration: number;
         energy_wh: number;
-        soc_target_pct: number;
+        soc_target_pct?: number;
     },
 ];
 
@@ -94,26 +94,15 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
         ["10", __("charge_limits.automation.h12")],
     ];
 
-    const soc_items: [string, string][] = [
-        ["-1", __("charge_limits.automation.unchanged")],
-        ["0",  __("charge_limits.automation.unlimited")],
-        ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
-    ];
-
-    const meter_entry = API.hasFeature("meter") ? [
-        <FormRow label={__("charge_limits.automation.energy")}>
-            <InputSelect
-                items={energy_items}
-                value={action[1].energy_wh.toString()}
-                onValue={(v) => {
-                    const restart = v === "0" && action[1].duration === 0 && (!options.PRODUCT_ID_IS_WARP4 || action[1].soc_target_pct === 0) ? false : action[1].restart;
-                    on_action(util.get_updated_union(action, {energy_wh: parseInt(v), restart: restart}));
-                }} />
-        </FormRow>,
-    ] : [];
-
     let ev_has_soc = false;
+    let soc_items: [string, string][] = [];
     if (options.PRODUCT_ID_IS_WARP4) {
+        soc_items = [
+            ["-1", __("charge_limits.automation.unchanged")],
+            ["0",  __("charge_limits.automation.unlimited")],
+            ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
+        ];
+
         for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
             try {
                 const meter_config = API.get_unchecked(`meters/${i}/config`);
@@ -129,6 +118,18 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
             }
         }
     }
+
+    const meter_entry = API.hasFeature("meter") ? [
+        <FormRow label={__("charge_limits.automation.energy")}>
+            <InputSelect
+                items={energy_items}
+                value={action[1].energy_wh.toString()}
+                onValue={(v) => {
+                    const restart = v === "0" && action[1].duration === 0 && (!options.PRODUCT_ID_IS_WARP4 || action[1].soc_target_pct === 0) ? false : action[1].restart;
+                    on_action(util.get_updated_union(action, {energy_wh: parseInt(v), restart: restart}));
+                }} />
+        </FormRow>,
+    ] : [];
 
     const soc_entry = ev_has_soc ? [
         <FormRow label={__("charge_limits.automation.soc_target")}>
@@ -176,7 +177,7 @@ function new_charge_limits_config(): AutomationAction {
             restart: false,
             duration: 0,
             energy_wh: 0,
-            soc_target_pct: 0,
+            ...(options.PRODUCT_ID_IS_WARP4 ? {soc_target_pct: 0} : {}),
         },
     ];
 }
