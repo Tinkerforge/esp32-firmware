@@ -46,6 +46,8 @@
 
 extern char local_uid_str[32];
 
+// IGMP all-hosts multicast MAC (01:00:5e:00:00:01) for IPv4 multicast reception.
+// Registered individually because ETH_CMD_S_ALL_MULTICAST is only enabled when IPv6 is active.
 static constexpr uint8_t IGMP_MAC[6] = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x01};
 
 // Generation counter for async ETH.begin() tasks. Incremented on every
@@ -210,10 +212,29 @@ void Ethernet::setup()
             ETH.setRoutePrio(110);             // Prefer Ethernet over WiFi, which has priority 100.
 
             // Manually add a MAC filter to accept IGMP packets because lwIP is bugged and doesn't do it.
-            const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
+            esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
 
             if (err != ESP_OK) {
                 logger.printfln("Setting IGMP filter failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+            }
+
+            if (this->ipv6_enable) {
+                // Enable "pass all multicast" mode on the ESP32 EMAC hardware.
+                // By default, the EMAC's frame filter register (gmacff.pam) is 0, meaning multicast
+                // frames are only received if their destination MAC matches a registered filter entry.
+                // IPv6 NDP relies on receiving Router Advertisements sent to the all-nodes multicast
+                // address ff02::1 (MAC 33:33:00:00:00:01) and solicited-node multicast addresses.
+                // Neither the ESP-IDF lwIP integration nor the Arduino framework registers these
+                // multicast MACs with the EMAC hardware (the lwIP netif's mld_mac_filter callback is
+                // not set for Ethernet interfaces). WiFi is unaffected because the WiFi driver passes
+                // all multicast frames regardless.
+                // Enabling pass-all-multicast allows the EMAC to receive all multicast-addressed frames
+                // (both IPv4 IGMP and IPv6 MLD/NDP), which is required for SLAAC to work.
+                bool enable = true;
+                err = esp_eth_ioctl(ETH.handle(), ETH_CMD_S_ALL_MULTICAST, &enable);
+                if (err != ESP_OK) {
+                    logger.printfln("Enabling all-multicast mode failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                }
             }
 
             this->runtime_data->connection_state = EthernetState::NotConnected;
