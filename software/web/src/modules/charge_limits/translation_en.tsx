@@ -29,13 +29,19 @@ let x = {
             "custom_energy_modal_title": "Custom energy limit",
             "custom_energy_modal_apply": "Apply",
             "custom_energy_limit_label": "Energy limit",
-            "custom_energy_limit_cost_label": "Price ~"
+            "custom_energy_limit_cost_label": "Price ~",
+
+            "soc_target": "SoC target",
+            "soc_target_muted": "May be overwritten for a charge on the status page.",
+            "override_soc": "SoC target",
+            "soc_currently": "currently"
         },
         "automation": {
             "restart": "Reset charge limit",
             "charge_limits_expiration": "Charge limit expired",
             "energy": "Energy limit",
             "duration": "Duration limit",
+            "soc_target": "SoC target",
             "charge_limits": "Set charge limits",
             "unlimited": "Unlimited",
             "unchanged": "Unchanged",
@@ -50,12 +56,12 @@ let x = {
             "h8": "8 hours",
             "h12": "12 hours",
             "automation_trigger_text": <>When the <b>charge limit</b> is reached, </>,
-            "automation_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
-                if (duration === undefined && energy === -1 && restart) {
+            "automation_action_text": /*FFN*/(duration: string, energy: number, soc_target_pct: number, restart: boolean) => {
+                if (duration === undefined && energy === -1 && soc_target_pct === -1 && restart) {
                     return <>allow the current charge limit again.</>;
-                } else if (duration === undefined && energy === -1) {
+                } else if (duration === undefined && energy === -1 && soc_target_pct === -1) {
                     return <>leave the charge limit <b>unchanged</b>.</>
-                } else if (duration === "Unlimited" && energy === 0) {
+                } else if (duration === "Unlimited" && energy === 0 && soc_target_pct === 0) {
                     return <>set the charge limit to <b>unlimited</b>.</>
                 }
 
@@ -86,9 +92,18 @@ let x = {
                             energy_limit = <>remove the energy limit</>
                         }
 
+                        let soc_part = <></>;
+                        if (soc_target_pct === -1) {
+                            soc_part = <> and allow the current SoC target again</>;
+                        } else if (soc_target_pct > 0) {
+                            soc_part = <> and set the SoC target to <b>{soc_target_pct} %</b></>;
+                        } else if (soc_target_pct === 0) {
+                            soc_part = <> and remove the SoC target</>;
+                        }
+
                         return (
                         <>
-                            {duration_limit}{glue}{energy_limit}.
+                            {duration_limit}{glue}{energy_limit}{soc_part}.
                         </>
                         );
                 }
@@ -115,9 +130,18 @@ let x = {
                     energy_limit = <> set the energy_limit to {energy_limit_value}</>
                 }
 
+                let soc_part = <></>;
+                if (soc_target_pct === -1) {
+                    soc_part = <> and leave the SoC target unchanged</>;
+                } else if (soc_target_pct > 0) {
+                    soc_part = <> and set the SoC target to <b>{soc_target_pct} %</b></>;
+                } else if (soc_target_pct === 0) {
+                    soc_part = <> and remove the SoC target</>;
+                }
+
                 return (
                   <>
-                    {duration_limit} {glue} {energy_limit}.
+                    {duration_limit} {glue} {energy_limit}{soc_part}.
                   </>
                 );
             }/*NF*/

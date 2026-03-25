@@ -28,6 +28,9 @@ import { InputFloat } from "ts/components/input_float";
 import { Button, Modal } from "react-bootstrap";
 import { ItemModal } from "ts/components/item_modal";
 import { useState } from "preact/hooks";
+import { MeterLocation } from "../meters/generated/meter_location.enum";
+import { MeterValueID } from "../meters/generated/meter_value_id";
+import * as options from "../../options";
 
 export function CustomLimitModal(props: {show: boolean, onHide: () => void, onSubmit: (custom_limit: number) => void}) {
     const [customLimit, setCustomLimit] = useState(0);
@@ -219,6 +222,63 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
             </FormRow>
         }
 
+        let soc_row = <></>;
+
+        if (options.PRODUCT_ID_IS_WARP4) {
+            let ev_has_soc = false;
+            for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
+                try {
+                    const meter_config = API.get_unchecked(`meters/${i}/config`);
+                    if (meter_config[1]?.location !== MeterLocation.EV)
+                        continue;
+                    const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
+                    if (Array.isArray(value_ids) && value_ids.indexOf(MeterValueID.StateOfCharge) >= 0) {
+                        ev_has_soc = true;
+                        break;
+                    }
+                } catch {
+                    continue;
+                }
+            }
+
+            if (ev_has_soc) {
+                let soc_items: [string, string][] = [
+                    ["0", __("charge_limits.content.unlimited")],
+                    ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
+                ];
+
+                let soc_placeholder = __("charge_limits.content.unlimited");
+
+                if (config_in_use.soc_target_pct != 0) {
+                    soc_placeholder = config_in_use.soc_target_pct + " %";
+                    if (state.current_soc_pct != null) {
+                        soc_placeholder += " | " + __("charge_limits.content.soc_currently") + " " + util.toLocaleFixed(state.current_soc_pct, 0) + " %";
+                    }
+                }
+
+                let soc_conf_idx = soc_items.findIndex(x => x[0] == config.soc_target_pct.toString());
+                if (soc_conf_idx >= 0) {
+                    soc_items[soc_conf_idx][1] += " " + __("charge_limits.content.configured");
+                }
+
+                if (config.soc_target_pct != config_in_use.soc_target_pct) {
+                    let soc_active_idx = soc_items.findIndex(x => x[0] == config_in_use.soc_target_pct.toString());
+                    if (soc_active_idx >= 0) {
+                        soc_items[soc_active_idx][1] += " " + __("charge_limits.content.overridden");
+                    }
+                }
+
+                soc_row = <FormRow label={__("charge_limits.content.override_soc")}>
+                    <InputSelect items={soc_items}
+                        placeholder={soc_placeholder}
+                        value=""
+                        onValue={(v) => {
+                            API.call("charge_limits/override_soc", {soc_target_pct: parseInt(v)}, () => __("charge_limits.script.override_failed"));
+                        }}/>
+                </FormRow>
+            }
+        }
+
         return <StatusSection name="charge_limits">
                 <FormRow label={__("charge_limits.content.override_duration")}>
                     <InputSelect items={duration_items}
@@ -229,6 +289,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                     }}/>
                 </FormRow>
                 {energy_row}
+                {soc_row}
             </StatusSection>;
     }
 }

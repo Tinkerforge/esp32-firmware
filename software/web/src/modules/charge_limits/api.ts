@@ -1,11 +1,13 @@
 export interface default_limits {
     duration: number;
     energy_wh: number;
+    soc_target_pct: number;
 }
 
 export interface active_limits {
     duration: number;
     energy_wh: number;
+    soc_target_pct: number;
 }
 
 export interface state {
@@ -13,6 +15,8 @@ export interface state {
     start_energy_kwh: number;
     target_timestamp_ms: number;
     target_energy_kwh: number;
+    soc_target_pct: number;
+    current_soc_pct: number;
 }
 
 export interface override_duration {
@@ -21,4 +25,8 @@ export interface override_duration {
 
 export interface override_energy {
     energy_wh: number;
+}
+
+export interface override_soc {
+    soc_target_pct: number;
 }

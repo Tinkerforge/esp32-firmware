@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "options.h"
 #include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -37,6 +38,9 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    void register_events() override;
+#endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
@@ -45,15 +49,28 @@ public:
     float get_energy_limit();
 
 private:
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    void setup_ev_meter_soc(uint32_t slot);
+#endif
+
     ConfigRoot config;
     ConfigRoot active_limits;
     ConfigRoot state;
 
     ConfigRoot override_duration;
     ConfigRoot override_energy;
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    ConfigRoot override_soc;
+#endif
 
     bool was_charging  = false;
     bool was_triggered = false;
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    uint32_t ev_meter_slot = UINT32_MAX;
+    uint32_t ev_meter_soc_index = UINT32_MAX;
+    bool ev_meter_has_soc = false;
+#endif
 };
 
 #include "generated/module_available_end.h"

@@ -29,13 +29,19 @@ let x = {
             "custom_energy_modal_title": "Anderes Energielimit",
             "custom_energy_modal_apply": "Anwenden",
             "custom_energy_limit_label": "Energielimit",
-            "custom_energy_limit_cost_label": "Preis ~"
+            "custom_energy_limit_cost_label": "Preis ~",
+
+            "soc_target": "SoC-Ziel",
+            "soc_target_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
+            "override_soc": "SoC-Ziel",
+            "soc_currently": "aktuell"
         },
         "automation": {
             "restart": "Ladelimit zurücksetzen",
             "charge_limits_expiration": "Ladelimit abgelaufen",
             "energy": "Energielimit",
             "duration": "Zeitlimit",
+            "soc_target": "SoC-Ziel",
             "charge_limits": "Setze Ladelimit",
             "unlimited": "Unbegrenzt",
             "unchanged": "Unverändert",
@@ -50,12 +56,12 @@ let x = {
             "h8": "8 Stunden",
             "h12": "12 Stunden",
             "automation_trigger_text": <>Wenn das <b>Ladelimit</b> erreicht ist, </>,
-            "automation_action_text": /*FFN*/(duration: string, energy: number, restart: boolean) => {
-                if (duration === undefined && energy === -1 && restart) {
+            "automation_action_text": /*FFN*/(duration: string, energy: number, soc_target_pct: number, restart: boolean) => {
+                if (duration === undefined && energy === -1 && soc_target_pct === -1 && restart) {
                     return <>erlaube das aktuelle Ladelimit nochmal.</>;
-                } else if (duration === undefined && energy === -1) {
+                } else if (duration === undefined && energy === -1 && soc_target_pct === -1) {
                     return <>lasse das Ladelimit unverändert.</>
-                } else if (duration === "Unbegrenzt" && energy === 0) {
+                } else if (duration === "Unbegrenzt" && energy === 0 && soc_target_pct === 0) {
                     return <>setze das Ladelimit auf <b>unbegrenzt</b>.</>
                 }
 
@@ -85,9 +91,18 @@ let x = {
                         energy_limit = <>entferne das Energielimit</>
                     }
 
+                    let soc_part = <></>;
+                    if (soc_target_pct === -1) {
+                        soc_part = <> und erlaube das aktuelle SoC-Ziel nochmal</>;
+                    } else if (soc_target_pct > 0) {
+                        soc_part = <> und setze das SoC-Ziel auf <b>{soc_target_pct} %</b></>;
+                    } else if (soc_target_pct === 0) {
+                        soc_part = <> und entferne das SoC-Ziel</>;
+                    }
+
                     return (
                     <>
-                        {duration_limit}{glue}{energy_limit}.
+                        {duration_limit}{glue}{energy_limit}{soc_part}.
                     </>
                     );
                 }
@@ -114,9 +129,18 @@ let x = {
                     energy_limit = <> das Energielimit auf {energy_limit_value}</>
                 }
 
+                let soc_part = <></>;
+                if (soc_target_pct === -1) {
+                    soc_part = <> und lasse das SoC-Ziel unverändert</>;
+                } else if (soc_target_pct > 0) {
+                    soc_part = <> und setze das SoC-Ziel auf <b>{soc_target_pct} %</b></>;
+                } else if (soc_target_pct === 0) {
+                    soc_part = <> und entferne das SoC-Ziel</>;
+                }
+
                 return (
                   <>
-                    {duration_limit} {glue} {energy_limit}.
+                    {duration_limit} {glue} {energy_limit}{soc_part}.
                   </>
                 );
             }/*NF*/

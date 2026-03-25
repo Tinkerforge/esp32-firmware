@@ -59,15 +59,22 @@ static uint32_t map_duration(uint32_t val)
 void ChargeLimits::pre_setup()
 {
     config = Config::Object({
-        {"duration",  Config::Uint(0, 0, 10)},
-        {"energy_wh", Config::Uint32(0)},
+        {"duration",       Config::Uint(0, 0, 10)},
+        {"energy_wh",      Config::Uint32(0)},
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+        {"soc_target_pct", Config::Uint(0, 0, 100)},
+#endif
     });
 
     state = Config::Object({
         {"start_timestamp_ms", Config::Uint32(0)},
-        {"start_energy_kwh", Config::Float(NAN)},
+        {"start_energy_kwh",   Config::Float(NAN)},
         {"target_timestamp_ms", Config::Uint32(0)},
-        {"target_energy_kwh", Config::Float(NAN)}
+        {"target_energy_kwh",  Config::Float(NAN)},
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+        {"soc_target_pct",     Config::Uint(0, 0, 100)},
+        {"current_soc_pct",    Config::Float(NAN)},
+#endif
     });
 
     override_duration = Config::Object({
@@ -78,15 +85,24 @@ void ChargeLimits::pre_setup()
         {"energy_wh", Config::Uint32(0)}
     });
 
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    override_soc = Config::Object({
+        {"soc_target_pct", Config::Uint(0, 0, 100)}
+    });
+#endif
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(AutomationTriggerID::ChargeLimits, *Config::Null());
 
     automation.register_action(
         AutomationActionID::ChargeLimits,
         Config::Object({
-            {"restart", Config::Bool(false)},
-            {"duration",  Config::Int(0, -1, 10)},
-            {"energy_wh", Config::Int(0, -1, std::numeric_limits<int32_t>::max())},
+            {"restart",        Config::Bool(false)},
+            {"duration",       Config::Int(0, -1, 10)},
+            {"energy_wh",      Config::Int(0, -1, std::numeric_limits<int32_t>::max())},
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+            {"soc_target_pct", Config::Int(0, -1, 100)},
+#endif
         }),
         [this](const Config *conf) {
             if (conf->get("restart")->asBool()) {
@@ -106,6 +122,15 @@ void ChargeLimits::pre_setup()
                     {"energy_wh", static_cast<uint32_t>(energy_wh)}
                 }});
             }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+            int soc_target_pct = conf->get("soc_target_pct")->asInt();
+            if (soc_target_pct >= 0) {
+                api.callCommand("charge_limits/override_soc", Config::ConfUpdateObject{{
+                    {"soc_target_pct", static_cast<uint32_t>(soc_target_pct)}
+                }});
+            }
+#endif
         }
     );
 #endif
@@ -149,6 +174,14 @@ void ChargeLimits::register_urls()
             state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0f);
     }, true);
 
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    api.addCommand("charge_limits/override_soc", &override_soc, {}, [this](Language /*language*/, String &/*errmsg*/) {
+        was_triggered = false;
+        active_limits.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+        state.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+    }, true);
+#endif
+
     api.addCommand("charge_limits/restart", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (charge_tracker.current_charge.get("user_id")->asInt() == -1) {
             return;
@@ -165,6 +198,10 @@ void ChargeLimits::register_urls()
             state.get("start_energy_kwh")-> updateFloat(energy_now);
             state.get("target_energy_kwh")->updateFloat(energy_now + active_limits.get("energy_wh")->asUint() / 1000.0f);
         }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+        state.get("soc_target_pct")->updateUint(active_limits.get("soc_target_pct")->asUint());
+#endif
     }, true);
 
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
@@ -180,8 +217,11 @@ void ChargeLimits::register_urls()
         if (!charging) {
             if (was_charging) {
                 // Reset limits to configured defaults.
-                active_limits.get("duration" )->updateUint(config.get("duration" )->asUint());
-                active_limits.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
+                active_limits.get("duration"      )->updateUint(config.get("duration"      )->asUint());
+                active_limits.get("energy_wh"     )->updateUint(config.get("energy_wh"     )->asUint());
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+                active_limits.get("soc_target_pct")->updateUint(config.get("soc_target_pct")->asUint());
+#endif
 
                 evse_common.set_charge_limits_slot(32000, true);
 
@@ -189,6 +229,10 @@ void ChargeLimits::register_urls()
                 state.get("start_energy_kwh")->updateFloat(NAN);
                 state.get("target_timestamp_ms")->updateUint(map_duration(active_limits.get("duration")->asUint()));
                 state.get("target_energy_kwh")->updateFloat(NAN);
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+                state.get("soc_target_pct")->updateUint(0);
+                state.get("current_soc_pct")->updateFloat(NAN);
+#endif
             }
         } else { // charging
             float energy_now_kwh;
@@ -225,6 +269,23 @@ void ChargeLimits::register_urls()
                     }
                 }
             }
+
+            // SoC target check
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+            if (active_limits.get("soc_target_pct")->asUint() > 0 && ev_meter_has_soc) {
+                if (!was_charging) {
+                    state.get("soc_target_pct")->updateUint(active_limits.get("soc_target_pct")->asUint());
+                }
+
+                float soc = NAN;
+                meters.get_soc(ev_meter_slot, &soc);
+                state.get("current_soc_pct")->updateFloat(soc);
+
+                if (!isnan(soc) && soc >= static_cast<float>(active_limits.get("soc_target_pct")->asUint())) {
+                    target_current = 0;
+                }
+            }
+#endif
         }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -242,6 +303,43 @@ void ChargeLimits::register_urls()
 
     }, 1_s);
 }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+void ChargeLimits::setup_ev_meter_soc(uint32_t slot)
+{
+    event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *cfg) {
+        const size_t count = cfg->count();
+
+        if (count == 0) {
+            return EventResult::OK;
+        }
+
+        const MeterValueID soc_vid = MeterValueID::StateOfCharge;
+        uint32_t soc_index = UINT32_MAX;
+        meters.fill_index_cache(slot, 1, &soc_vid, &soc_index);
+
+        if (soc_index == UINT32_MAX) {
+            return EventResult::OK;
+        }
+
+        ev_meter_slot = slot;
+        ev_meter_soc_index = soc_index;
+        ev_meter_has_soc = true;
+
+        return EventResult::Deregister;
+    });
+}
+
+void ChargeLimits::register_events()
+{
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        if (meters.get_meter_location(slot) == MeterLocation::EV) {
+            setup_ev_meter_soc(slot);
+            break;
+        }
+    }
+}
+#endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
 bool ChargeLimits::has_triggered(const Config *conf, void *data) {
