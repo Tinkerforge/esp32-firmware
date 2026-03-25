@@ -396,24 +396,21 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             ]}/>
                     </FormRow>
 
-                    {wifi_state.connection_state != WifiState.NotConfigured && <>
+                    {wifi_state.connection_state != WifiState.NotConfigured &&
                         <FormRow label={__("wifi.content.status_sta_ip")}>
                             <InputText
                                 value={wifi_state.sta_ip != "0.0.0.0"
                                     ? wifi_state.sta_ip + " (/" + util.countBits(util.parseIP(wifi_state.sta_subnet)) + ")"
                                     : __("wifi.content.status_sta_ip_none")}
                             />
-                        </FormRow>
+                        </FormRow>}
 
+                    {wifi_state.connection_state == WifiState.Connected &&
                         <FormRow label={<>{__("wifi.content.status_sta_rssi")}<span class="ms-2">{wifi_symbol(wifi_state.sta_rssi)}</span></>}>
                             <InputText
-                                value={wifi_state.connection_state == WifiState.Connected
-                                    ? wifi_state.sta_rssi + " dBm"
-                                    : __("wifi.content.status_sta_rssi_none")}
+                                value={wifi_state.sta_rssi + " dBm"}
                             />
-                        </FormRow>
-
-                    </>}
+                        </FormRow>}
 
                     <FormRow label={__("wifi.content.sta_mac")}>
                         <InputText
@@ -422,12 +419,13 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
                     </FormRow>
 
-                    <FormRow label={__("wifi.content.sta_connected_bssid")}>
-                        <InputText
-                            value={wifi_state.sta_bssid.length == 0 ? __("wifi.content.sta_connected_bssid_none") : wifi_state.sta_bssid}
-                            style={wifi_state.sta_bssid.length == 0 ? undefined : "font-family:monospace"}
-                        />
-                    </FormRow>
+                    {wifi_state.connection_state == WifiState.Connected &&
+                        <FormRow label={__("wifi.content.sta_connected_bssid")}>
+                            <InputText
+                                value={wifi_state.sta_bssid}
+                                style="font-family:monospace"
+                            />
+                        </FormRow>}
 
                     {wifi_state.connection_state == WifiState.NotConnected && wifi_state.sta_disconnect_reason != WifiDisconnectReason.None &&
                         <Alert variant="danger">
