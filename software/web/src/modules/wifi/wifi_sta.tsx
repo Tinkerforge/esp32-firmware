@@ -377,6 +377,12 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
                 <SubPage.Status>
+                    {wifi_state.connection_state == WifiState.Connected && wifi_state.sta_rssi < -70 &&
+                        <Alert variant="warning">
+                            {__("wifi.content.status_sta_rssi_weak")}
+                        </Alert>
+                    }
+
                     <FormRow label={__("wifi.content.sta_connection")}>
                         <IndicatorGroup
                             style="width: 100%"

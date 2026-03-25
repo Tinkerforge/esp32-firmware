@@ -126,6 +126,12 @@ export function init() {
 
             switch (state?.connection_state) {
                 case WifiState.Connected:
+                    if (state.sta_rssi < -70) {
+                        return {
+                            status: ModuleStatus.Warning,
+                            text: () => __("wifi.status.weak_signal")(state.sta_rssi)
+                        };
+                    }
                     return {
                         status: ModuleStatus.Ok,
                         text: () => state.sta_ip,
