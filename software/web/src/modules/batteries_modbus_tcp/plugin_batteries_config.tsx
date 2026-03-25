@@ -1281,6 +1281,36 @@ export function pre_init() {
                             max_normal_discharge_power: config[1].table[1].max_normal_discharge_power,
                         };
                     }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.GrowattHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_rate")}>
+                                <InputNumber
+                                    required
+                                    min={1}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].force_charge_rate}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_rate: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_rate")}>
+                                <InputNumber
+                                    required
+                                    min={1}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].force_discharge_rate}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_rate: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            force_charge_rate: config[1].table[1].force_charge_rate,
+                            force_discharge_rate: config[1].table[1].force_discharge_rate,
+                        };
+                    }
 
                     edit_children.push(
                         <TestRunner

@@ -42,6 +42,8 @@ let x = {
             "max_normal_discharge_current": "Maximum normal discharge current",
             "max_normal_charge_power": "Maximum normal charge power",
             "max_normal_discharge_power": "Maximum normal discharge power",
+            "force_charge_rate": "Force charge rate",
+            "force_discharge_rate": "Force discharge rate",
             "register_title": /*SFN*/(mode: string) => "Battery mode: " + mode/*NF*/,
             "register_address_mode": "Address mode",
             "register_address_mode_address": "Register address (begins at 0)",

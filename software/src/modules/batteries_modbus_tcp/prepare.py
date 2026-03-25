@@ -8,6 +8,7 @@ import sungrow
 import sma
 import solis
 import sax_power
+import growatt
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -22,6 +23,7 @@ modules = [
     sma,
     solis,
     sax_power,
+    growatt,
 ]
 
 display_names = {}
