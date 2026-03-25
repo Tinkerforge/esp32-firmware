@@ -43,7 +43,7 @@ export class PageHeader extends Component<PageHeaderProps, {}> {
                     <div class="row">
                         <div class={this.props.titleColClass ? this.props.titleColClass : "col"}>
                             {this.props.small
-                                ? <h3 class={title_class}>{this.props.title}</h3>
+                                ? <h2 class={title_class}>{this.props.title}</h2>
                                 : <h1 class={"page-header " + title_class}>{this.props.title}</h1>
                             }
                         </div>
