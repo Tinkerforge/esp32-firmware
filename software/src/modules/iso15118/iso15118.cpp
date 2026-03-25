@@ -536,7 +536,7 @@ void ISO15118::register_urls()
         evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
-        }, 1000_ms, 20_ms);
+        }, 1_s, 20_ms);
     }
 }
 
@@ -708,7 +708,7 @@ void ISO15118::switch_to_iec_temporary()
     // TODO: ef_reset is currently turned off.
     //       The EVSE Bricklet needs additional support for this. Currently this can
     //       collide with the CP disconnect that the Bricklet uses to try to wake up the EV.
-    // ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15000_ms);
+    // ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15_s);
 }
 
 void ISO15118::check_ef_reset()
@@ -745,8 +745,8 @@ void ISO15118::check_ef_reset()
         evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
 
         // Give the EV 15 seconds to start charging before retrying
-        ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15000_ms);
-    }, 4000_ms);
+        ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15_s);
+    }, 4_s);
 }
 
 void ISO15118::ensure_state_machine_running()
@@ -793,7 +793,7 @@ void ISO15118::begin_iec_transition()
     iec_switch_task = task_scheduler.scheduleOnce([this]() {
         iec_switch_task = 0;
         switch_to_iec_temporary();
-    }, 2000_ms);
+    }, 2_s);
 }
 
 // TODO: Upgrade to per-phase power control based on protocol version and EV capabilities.

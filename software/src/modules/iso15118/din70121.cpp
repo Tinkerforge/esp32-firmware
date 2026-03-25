@@ -618,7 +618,7 @@ void DIN70121::handle_session_stop_req()
         iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
             logger.printfln("DIN70121: 5s modem-off timer fired, EV did not close TCP in time");
             iso15118.disable_plc_modem();
-        }, 5000_ms);
+        }, 5_s);
 
         // Do NOT call reset_active_socket() here. Leave the socket open so the
         // poll loop can detect POLLHUP when the EV closes the connection, which

@@ -449,7 +449,7 @@ void ISO2::handle_charge_parameter_discovery_req()
                 iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
                     logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
                     iso15118.disable_plc_modem();
-                }, 5000_ms);
+                }, 5_s);
                 return;
             }
 
@@ -853,7 +853,7 @@ void ISO2::handle_session_stop_req()
         iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
             logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
             iso15118.disable_plc_modem();
-        }, 5000_ms);
+        }, 5_s);
 
         // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the
         // poll loop can detect POLLHUP when the EV closes the connection, which

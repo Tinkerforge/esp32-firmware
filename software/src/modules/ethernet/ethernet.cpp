@@ -297,7 +297,7 @@ void Ethernet::setup()
                             state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                             state.get("connection_start")->updateUptime(now);
                         },
-                        1000_ms);
+                        1_s);
                 } else {
                     state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                     state.get("connection_start")->updateUptime(now);

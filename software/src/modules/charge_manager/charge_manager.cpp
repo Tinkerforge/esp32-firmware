@@ -349,7 +349,7 @@ void ChargeManager::start_manager_task()
         //TODO: should we call update_charger_state_config(client_id); here? This is currently missing but smells weird.
     });
 
-    millis_t cm_send_delay = 1000_ms / millis_t{charger_count};
+    millis_t cm_send_delay = 1_s / millis_t{charger_count};
 
     task_scheduler.scheduleUncancelable([this](){
         static int i = 0;
