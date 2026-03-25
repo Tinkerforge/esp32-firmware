@@ -6,10 +6,10 @@ let x = {
     "temperatures": {
         "status": {},
         "navbar": {
-            "temperatures": "Temperaturen"
+            "temperatures": "Außentemperatur"
         },
         "content": {
-            "temperatures": "Temperaturen",
+            "temperatures": "Außentemperatur",
             "enable_temperatures": "Temperaturvorhersage aktiviert",
             "enable_temperatures_help": <>
                 <p>Lädt Außentemperaturvorhersagen (Min, Max, Tagesmittel) für die konfigurierten GPS-Koordinaten (Breiten-/Längengrad) herunter. Die Daten werden alle 6 Stunden von einer Wetter-API abgerufen und liefern Vorhersagen für heute und morgen.</p>

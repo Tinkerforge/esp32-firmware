@@ -106,7 +106,7 @@ let x = {
             "temperature_heating_curve": "Temperature heating curve",
             "enable_heating_curve": "Heating curve",
             "enable_heating_curve_desc": "Adjust extended and blocking hours based on outdoor temperature",
-            "temperatures_needs_activation": <>To use the temperature heating curve, the <a href="#temperatures">temperatures</a> module must be enabled.</>,
+            "temperatures_needs_activation": <>To use the temperature heating curve, the <a href="#temperatures">Outside Temperature</a> module must be enabled.</>,
             "temperature_heating_curve_help": <>
                 <p>The temperature heating curve allows the number of hours for extended and blocking operation to be automatically adjusted based on the daily average outdoor temperature.</p>
                 <p>Two temperature endpoints are used: 20 °C (warm) and -10 °C (cold). The number of hours is linearly interpolated between these two endpoints based on the current daily average temperature.</p>

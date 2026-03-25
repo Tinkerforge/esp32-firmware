@@ -6,10 +6,10 @@ let x = {
     "temperatures": {
         "status": {},
         "navbar": {
-            "temperatures": "Temperatures"
+            "temperatures": "Outside Temperature"
         },
         "content": {
-            "temperatures": "Temperatures",
+            "temperatures": "Outside Temperature",
             "enable_temperatures": "Temperature forecast enabled",
             "enable_temperatures_help": <>
                 <p>Downloads outdoor temperature forecasts (min, max, daily average) for the configured GPS coordinates (latitude/longitude). The data is fetched from a weather API every 6 hours and provides forecasts for today and tomorrow.</p>

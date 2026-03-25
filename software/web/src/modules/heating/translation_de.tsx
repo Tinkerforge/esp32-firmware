@@ -107,7 +107,7 @@ let x = {
             "temperature_heating_curve": "Temperatur-Heizkurve",
             "enable_heating_curve": "Heizkurve",
             "enable_heating_curve_desc": "Erweiterte und blockierende Stunden anhand der Außentemperatur anpassen",
-            "temperatures_needs_activation": <>Um die Temperatur-Heizkurve nutzen zu können, muss das <a href="#temperatures">Temperaturen</a>-Modul aktiviert werden.</>,
+            "temperatures_needs_activation": <>Um die Temperatur-Heizkurve nutzen zu können, muss das <a href="#temperatures">Außentemperatur</a>-Modul aktiviert werden.</>,
             "temperature_heating_curve_help": <>
                 <p>Die Temperatur-Heizkurve ermöglicht es, die Anzahl der Stunden für den erweiterten und blockierenden Betrieb automatisch anhand der Tagesmitteltemperatur anzupassen.</p>
                 <p>Es werden zwei Temperaturpunkte verwendet: 20 °C (warm) und -10 °C (kalt). Die Stundenanzahl wird zwischen diesen beiden Endpunkten basierend auf der aktuellen Tagesmitteltemperatur linear interpoliert.</p>
