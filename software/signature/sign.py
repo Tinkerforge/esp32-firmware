@@ -161,7 +161,7 @@ def main():
 
         if preset['sodium_secret_key_protection'] == 'password':
             if args.sodium_secret_key_password == None:
-                notify_ctx = notify('Enter password for sodium secret key file', 'esp32-firmware', os.path.abspath(make_path('icon.png')))
+                notify_ctx = notify('esp32-firmware', 'Enter password for sodium secret key file', os.path.abspath(make_path('icon.png')))
                 print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
                 try:
