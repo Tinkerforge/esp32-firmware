@@ -187,7 +187,6 @@ export function EEBusNavbar() {
 }
 
 type EEBusConfig = API.getType["eebus/config"];
-type EEBusScan = API.getType["eebus/scan"];
 type EEBusAdd = API.getType["eebus/add"];
 type EEBusRemove = API.getType["eebus/remove"];
 type EEBusStateType = API.getType["eebus/state"];

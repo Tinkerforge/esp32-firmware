@@ -118,7 +118,6 @@ public:
     ConfigRoot remove_peer;
     ConfigRoot config;
     ConfigRoot state;
-    ConfigRoot scan_command;
 
     ConfigRoot eebus_usecase_state;
     Config charges_prototype;

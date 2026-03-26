@@ -383,8 +383,6 @@ void EEBus::pre_setup()
                                  }
                                  return "";
                              }};
-    scan_command = ConfigRoot(Config::Object({}));
-
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
@@ -657,7 +655,7 @@ void EEBus::register_urls()
 
     api.addCommand(
         "eebus/scan",
-        &scan_command,
+        Config::Null(),
         {},
         [this](Language /*language*/, String &errmsg) {
             if (!config.get("enable")->asBool()) {
