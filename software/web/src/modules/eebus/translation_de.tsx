@@ -31,7 +31,7 @@ let x = {
             "ski_muted": "Subject Key Identifier dieses Geräts",
             "ski_help": <>
                 <p>Der Subject Key Identifier (SKI) ist ein eindeutiger kryptographischer Bezeichner für dieses Gerät.</p>
-                <p>Wenn dieses Gerät mit z.B. einer Steuerbox kommunizieren soll, kann es sein dass der SKI bei der Einrichtung
+                <p>Wenn dieses Gerät mit z.B. einer Steuerbox kommunizieren soll, kann es sein, dass der SKI bei der Einrichtung
                 der Steuerbox benötigt wird.</p>
             </>,
             "no_cert": "Nicht verwendet",
