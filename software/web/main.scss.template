@@ -405,18 +405,34 @@ a:not(:hover) {
     transform: rotate(90deg);
 }
 
-.sub-page-status-transition {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.35s ease;
+// https://developer.chrome.com/docs/css-ui/animate-to-height-auto
+@supports (interpolate-size: allow-keywords) {
+    .sub-page-status-transition {
+        height: 0;
+        overflow-y: clip;
+        interpolate-size: allow-keywords;
+        transition: height 0.35s ease;
 
-    > div {
-        overflow: clip;
-        min-height: 0;
+        &.show {
+            height: auto;
+        }
     }
+}
 
-    &.show {
-        grid-template-rows: 1fr;
+@supports (not (interpolate-size: allow-keywords)) {
+    .sub-page-status-transition {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s ease;
+
+        > div {
+            overflow: clip;
+            min-height: 0;
+        }
+
+        &.show {
+            grid-template-rows: 1fr;
+        }
     }
 }
 

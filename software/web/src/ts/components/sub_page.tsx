@@ -107,8 +107,13 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
     if (hasStatus && hasConfig) {
         // When collapsed: Looks like config-only (page title + save/reset in header)
         // When expanded: PageHeader with title at top, status content slides in, then small ConfigForm with "Settings".
-        // Uses a CSS grid transition (grid-template-rows: 0fr -> 1fr) insead of bootstrap collapse. With the bootstrap
-        // collapse, the title will always jump around.
+        //
+        // Not using a Bootstrap Collapse here because due to the sticky-under-top class of the PageHeader (spcifically
+        // the top != 0 of that class) the Bootstrap Collapse animation makes the header jump. Instead use the new
+        // CSS option "interpolate-size: allow-keywords" (currently only available in Chrome) to do a CSS height transition.
+        // In all other browsers use a CSS grid transition (grid-template-rows: 0fr -> 1fr). But this has the problem
+        // that it breaks the Bootstrap Grid (row/col) system on resize. It seems not possbile to nest "display: grid"
+        // inside "display: flex" while keeping the Bootstrap Grid layout intact.
         content = (
             <>
                 <div class={`row sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
