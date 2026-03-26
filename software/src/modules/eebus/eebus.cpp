@@ -665,7 +665,6 @@ void EEBus::register_urls()
                 return "scan in progress";
             }
             if (ship.discovery_state == ShipDiscoveryState::Ready || ship.discovery_state == ShipDiscoveryState::ScanDone) {
-                ship.discovery_state = ShipDiscoveryState::Scanning;
                 state.get("discovery_state")->updateEnum(ShipDiscoveryState::Scanning);
 
                 task_scheduler.scheduleOnce(
