@@ -420,6 +420,10 @@ a:not(:hover) {
 }
 
 @supports (not (interpolate-size: allow-keywords)) {
+/*
+    // FIXME: this transition requires the use of display grid. this
+    //        results in an improper resizing behavior in combination
+    //        with display flex used by the Bootstrap row/col system
     .sub-page-status-transition {
         display: grid;
         grid-template-rows: 0fr;
@@ -432,6 +436,16 @@ a:not(:hover) {
 
         &.show {
             grid-template-rows: 1fr;
+        }
+    }
+*/
+    // FIXME: instead use no transition at all
+    .sub-page-status-transition {
+        height: 0;
+        overflow-y: clip;
+
+        &.show {
+            height: auto;
         }
     }
 }
