@@ -73,6 +73,7 @@ void HiddenProxy::start_proxy()
 
     tf_hal_set_net(&hal, nullptr);
     tf_net_create(net, nullptr, 0, nullptr);
+    tf_net_set_listen_addr6(net, nullptr, 0);
     tf_hal_set_net(&hal, net);
 }
 
