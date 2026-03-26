@@ -27,7 +27,7 @@ from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, b
 
 ESP_DEVICE_ID = 113
 
-from .provision_common.provision_common import *
+from provisioning.provision_common.provision_common import *
 
 def main():
     common_init('/dev/ttyUSB0')
