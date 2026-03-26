@@ -126,7 +126,7 @@ export function init() {
 
             switch (state?.connection_state) {
                 case WifiState.Connected:
-                    if (state.sta_rssi < -70) {
+                    if (state.sta_rssi < -79) {
                         return {
                             status: ModuleStatus.Warning,
                             text: () => __("wifi.status.weak_signal")(state.sta_rssi)
