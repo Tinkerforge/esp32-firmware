@@ -90,11 +90,18 @@ void Proxy::pre_setup()
     config = ConfigRoot{Config::Object({
          {"authentication_secret", Config::Str("", 0, 64)},
          {"listen_address", Config::Str("0.0.0.0", 7, 15)},
-         {"listen_port", Config::Uint16(4223)}
+         {"listen_port", Config::Uint16(4223)},
+         {"listen_address_v6", Config::Str("::", 2, 45)},
     }),  [this](Config &cfg, ConfigSource source) -> String {
         IPAddress listen_address;
-        if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr()))
+        if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr())) {
             return "Failed to parse \"listen_address\": Expected format is dotted decimal, i.e. 10.0.0.1";
+        }
+
+        IPAddress listen_address_v6;
+        if (!listen_address_v6.fromString(cfg.get("listen_address_v6")->asEphemeralCStr())) {
+            return "Failed to parse \"listen_address_v6\": Expected format is an IPv6 address, i.e. :: or fe80::1";
+        }
 
         if (source != ConfigSource::File) {
             task_scheduler.scheduleOnce([this]() {
@@ -148,9 +155,16 @@ void Proxy::apply_config()
 
     if (ret != TF_E_OK) {
         logger.printfln("Failed to initialize proxy: Listen address invalid?");
-    } else {
-        tf_hal_set_net(&hal, &net);
+        return;
     }
+
+    ret = tf_net_set_listen_addr6(&net, config.get("listen_address_v6")->asEphemeralCStr(), config.get("listen_port")->asUint());
+
+    if (ret != TF_E_OK) {
+        logger.printfln("Failed to initialize proxy IPv6: Listen address invalid?");
+    }
+
+    tf_hal_set_net(&hal, &net);
 }
 
 void Proxy::register_urls()
