@@ -19,7 +19,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, Fragment, Component, ComponentChildren } from "preact";
+import { h, Fragment, Component, ComponentChildren, VNode } from "preact";
 import { __, translate_unchecked, removeUnicodeHacks } from "../../ts/translation";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
@@ -35,8 +35,9 @@ import { FormRow } from "../../ts/components/form_row";
 import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
-import { Download } from 'react-feather';
+import { Download, Plus } from 'react-feather';
 import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./generated/sun_spec_model_specs";
+import { DiscoveryResultGroup, DiscoveryResultItem, DiscoveryResultItemProps } from "ts/components/discovery_result";
 
 const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
 const SCAN_LOG_INTERVAL = 250; // milliseconds
@@ -244,7 +245,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         await this.abort_scan();
     }
 
-    get_scan_result_item(result: DeviceScannerResult) {
+    get_scan_result_item(result: DeviceScannerResult): VNode<DiscoveryResultItemProps> {
         let preferred_model_id: number = null;
 
         if ([101, 102, 103, 201, 202, 203, 204].indexOf(result.model_id) >= 0 &&
@@ -252,26 +253,19 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             preferred_model_id = result.model_id + 10;
         }
 
-        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
+        //let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
+        let selectable = result.model_id > 103 && result.model_id < 713;
 
-        return <ListGroupItem
+        return <DiscoveryResultItem
                 key={result.model_id}
-                action={selectable}
-                type="button"
-                disabled={!selectable}
-                onClick={selectable ? () => {this.props.onResultSelected(result)} : undefined}>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="h5 text-start">{result.display_name}</span>
-                {selectable ? undefined :
-                    <span class="text-end text-danger">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
-                }
-            </div>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-start">{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</span>
-                <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {result.serial_number}</span>
-                <span class="text-end">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</span>
-            </div>
-        </ListGroupItem>;
+                title={<h5>{result.display_name}</h5>}
+                labelAdd={<Plus />}
+                error={selectable ? undefined : <span class="text-danger">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>}
+                onClick={() => this.props.onResultSelected(result)}>
+                <div>{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</div>
+                <div>{__("meters_sun_spec.content.config_serial_number")}: {result.serial_number}</div>
+                <div>{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</div>
+        </DiscoveryResultItem>;
     }
 
     async scan_continue() {
@@ -405,14 +399,9 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
             {this.state.results.length > 0 ?
                 <FormRow label={__("meters_sun_spec.content.scan_results")}>
-                    <ListGroup>
-                        {this.state.results
-                            .filter((result) => SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id])
-                            .map((result) => this.get_scan_result_item(result))}
-                        {this.state.results
-                            .filter((result) => !SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id])
-                            .map((result) => this.get_scan_result_item(result))}
-                    </ListGroup>
+                    <DiscoveryResultGroup>
+                        {this.state.results.map((result) => this.get_scan_result_item(result))}
+                    </DiscoveryResultGroup>
                 </FormRow>
                 : undefined}
         </>;

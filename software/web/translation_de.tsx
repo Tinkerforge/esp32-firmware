@@ -138,6 +138,9 @@ let x = {
             "curve_hours": "Stunden",
             "extended_operation": "Erweiterter Betrieb",
             "blocking_operation": "Blockierender Betrieb"
+        },
+        "discovery_result": {
+            "already_added": "Bereits hinzugefügt"
         }
     },
     "util": {

@@ -138,6 +138,9 @@ let x = {
             "curve_hours": "Hours",
             "extended_operation": "Extended operation",
             "blocking_operation": "Blocking operation"
+        },
+        "discovery_result": {
+            "already_added": "Already added"
         }
     },
     "util": {

@@ -28,7 +28,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
-import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
+import { Button, Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { Plus } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
@@ -36,6 +36,7 @@ import { Table } from "../../ts/components/table";
 import type { ChargeManagerStatus } from "./main";
 import { CMPhaseRotation } from "./generated/cm_phase_rotation.enum";
 import { InputFloat } from "../../ts/components/input_float";
+import { DiscoveryResultGroup, DiscoveryResultItem } from "../../ts/components/discovery_result";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];
@@ -121,13 +122,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                 copy[i].ip = oldC.ip;
         }
 
-        copy.sort((a, b) => {
-            if (a.error == 0 && b.error != 0)
-                return -1;
-            if (a.error != 0 && b.error == 0)
-                return 1;
-            return a.display_name.localeCompare(b.display_name);
-        });
+        copy.sort((a, b) => a.display_name.localeCompare(b.display_name));
 
         let filtered: ScanCharger[] = [];
 
@@ -402,7 +397,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             </FormRow>
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
-                    <Table
+                    <Table nestingDepth={1} // We are not nested, but this also reduces the modal's size to lg
                         invalid={this.state.chargersInvalid}
                         invalidFeedback={__("charge_manager.content.add_charger_invalid_feedback")}
                         columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host"), __("charge_manager.content.table_charger_rotation")]}
@@ -489,37 +484,21 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                     invalidFeedback={check_host(state.addCharger.host, -1)}/>
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_found")}>
-                                <ListGroup>{
-                                    state.scanResult.filter(s => !state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip))
-                                        .map(s => (
-                                             <ListGroupItem key={s.hostname}
-                                                        className={s.error != 0 ? "p-0 opacity-75" : "p-0"}
-                                                        action={s.error == 0}
-                                                        onClick={s.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})
-                                                        }}>
-                                                <div class="d-flex w-100 justify-content-between align-items-center">
-                                                    <div class="flex-grow-1 col p-2">
-                                                        <div class="row m-0 mb-2 w-100 justify-content-between">
-                                                            <span class="col p-0 h5 text-start mb-0">{s.display_name}</span>
-                                                            {s.error == 0 ? null :
-                                                                <span class="col-auto p-0 text-end text-danger">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
-                                                            }
-                                                        </div>
-                                                        <div class="d-flex justify-content-between">
-                                                            {util.remoteAccessMode ? <span>{s.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a>}
-                                                            {util.remoteAccessMode ? <span>{s.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a>}
-                                                        </div>
-                                                    </div>
-                                                    {s.error == 0 ?
-                                                        <div class="col-auto d-flex align-items-center justify-content-center px-3 bg-primary align-self-stretch rounded-end">
-                                                            <Plus size="24" color="white"/>
-                                                        </div>
-                                                        : null
-                                                    }
-                                                </div>
-                                            </ListGroupItem>))
-                                }</ListGroup>
+                                <DiscoveryResultGroup>{
+                                    state.scanResult
+                                        .map(s => (<DiscoveryResultItem
+                                                key={s.hostname}
+                                                title={<div class="h5">{s.display_name}</div>}
+                                                labelAdd={<Plus />}
+                                                error={s.error != 0 ?
+                                                            <span class="text-danger">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
+                                                        : state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip) ?
+                                                            __("component.discovery_result.already_added")
+                                                        : null}
+                                                onClick={() => this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})}>
+                                                    {util.remoteAccessMode ? <div>{s.hostname + ".local"} / {s.ip}</div> : <div><a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a> / <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a></div>}
+                                              </DiscoveryResultItem>))
+                                }</DiscoveryResultGroup>
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                 <InputSelect items={[

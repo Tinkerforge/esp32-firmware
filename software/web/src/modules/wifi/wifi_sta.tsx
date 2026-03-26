@@ -30,13 +30,14 @@ import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "reac
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
-import { Lock, Unlock } from "react-feather";
+import { Lock, ArrowRight, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { WifiState } from "./generated/wifi_state.enum";
 import { WifiDisconnectReason } from "./generated/wifi_disconnect_reason.enum";
 import { EapConfigID, EapConfigPEAPTTLS, EapConfigTLS } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
 import { ItemModal } from "../../ts/components/item_modal";
+import { DiscoveryResultItem } from "ts/components/discovery_result";
 
 type STAConfig = API.getType["wifi/sta_config"];
 
@@ -62,19 +63,60 @@ function disconnect_reason_to_string(reason: number): string {
     }
 }
 
-export function wifi_symbol(rssi: number, size: number = 24) {
+export function wifi_symbol(rssi: number, size: number = 24, lock_title?: string) {
     let opacity = 0.2;
+    let title = `RSSI: ${rssi}` + (lock_title === undefined ? "" : (" " + lock_title));
+    let lock = lock_title ? <>
+            <rect x="17" y="18" width="6" height="3.75" rx="0.4" ry="0.4" fill="currentColor" fill-opacity="1" stroke-width="1" style="stroke-miterlimit:2;stroke-dasharray:none" />
+            <path d="M 18.333333,17.559391 V 16.1994 a 1.6666666,1.6999896 0 0 1 3.333333,0 v 1.359991" stroke-width="1" style="stroke-dasharray:none" />
+        </>
+        : null;
 
     if (rssi >= -60)
-        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>RSSI: {rssi}</title><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
+        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <title>{title}</title>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                {lock}
+               </svg>;
     if (rssi >= -70)
-        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>RSSI: {rssi}</title><path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
+        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <title>{title}</title>
+                <path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                {lock}
+               </svg>;
     if (rssi >= -80)
-        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>RSSI: {rssi}</title><path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path><path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
+        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <title>{title}</title>
+                <path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                {lock}
+               </svg>;
     if (rssi > -100)
-        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>RSSI: {rssi}</title><path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path><path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path><path opacity={opacity} d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
+        return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <title>{title}</title>
+                <path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path opacity={opacity} d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                {lock}
+               </svg>;
 
-    return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>RSSI: {rssi}</title><path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path><path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path><path opacity={opacity} d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line opacity={opacity} x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
+    return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <title>{title}</title>
+                <path opacity={opacity} d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path opacity={opacity} d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path opacity={opacity} d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line opacity={opacity} x1="12" y1="20" x2="12.01" y2="20"></line>
+                {lock}
+               </svg>;
 }
 
 export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState> {
@@ -150,6 +192,32 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         }, 12000);
     }
 
+    wifi_enc_to_string(x: number) {
+        const lut = [
+            undefined, // = 0,         /**< Authenticate mode : open */
+            "WEP", //,              /**< Authenticate mode : WEP */
+            "WPA-PSK", //,          /**< Authenticate mode : WPA-PSK */
+            "WPA2-PSK", //,         /**< Authenticate mode : WPA2-PSK */
+            "WPA/WPA2-PSK", //,     /**< Authenticate mode : WPA_WPA2-PSK */
+            //"Enterprise", //,       /**< Authenticate mode : Wi-Fi EAP security, treated the same as WIFI_AUTH_WPA2_Enterprise */
+            "WPA2-EAP", // = WIFI_AUTH-EAP,  /**< Authenticate mode : WPA2-EAP security */
+            "WPA3-PSK", //,         /**< Authenticate mode : WPA3-PSK */
+            "WPA2/WPA3-PSK", //,    /**< Authenticate mode : WPA2_WPA3-PSK */
+            "WAPI-PSK", //,         /**< Authenticate mode : WAPI_PSK */
+            "OWE", //,              /**< Authenticate mode : OWE */
+            "WPA3-EAP-Suite-B-192", //,     /**< Authenticate mode : WPA3_ENT_SUITE_B_192_BIT */
+            "DUMMY-1", //,          /**< Placeholder: Previously used by WIFI_AUTH_WPA3_EXT_PSK */
+            "DUMMY-2", //,          /**< Placeholder: Previously used by WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE */
+            "DPP", //,              /**< Authenticate mode : DPP */
+            "WPA3-EAP", //,  /**< Authenticate mode : WPA3-EAP Only Mode */
+            "WPA2/WPA3-EAP", //, /**< Authenticate mode : WPA3-EAP Transition Mode */
+            "WPA-EAP", //,   /**< Authenticate mode : WPA-EAP security */
+        ];
+        if (x >= lut.length)
+            return "?";
+        return lut[x];
+    }
+
     get_scan_results() {
         if (this.state.scan_running) {
             return <div class="form-group text-center">
@@ -194,10 +262,15 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
             let passphrase_required = API.get("wifi/sta_config").ssid != ap.ssid && ap.encryption != 0;
 
-            return <ListGroupItem
-                        action
-                        type="submit"
-                        onClick={() => {
+            return <DiscoveryResultItem
+                key={ap.bssid}
+                type="submit"
+                labelAdd={<ArrowRight />}
+                title={ <div class="d-flex-ni align-items-center">
+                            {wifi_symbol(ap.rssi, 24, this.wifi_enc_to_string(ap.encryption))}
+                            <span class="ms-1" style="font-size: 1.2rem;">{display_name}</span>
+                        </div>}
+                onClick={() => {
                             this.setState({
                                 ssid: ap.ssid,
                                 bssid: this.string_to_bssid(ap.bssid),
@@ -207,16 +280,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             });
                             this.setDirty(true);
                         }}
-                        key={ap.bssid}>
-                        <div class="row align-items-center mb-2">
-                            <div class="col">{wifi_symbol(ap.rssi)}</div>
-                            <div class="col-auto text-wrap" style="font-size: 1.1rem">{display_name}</div>
-                        </div>
-                        <div class="row align-items-center">
-                            <div class="col">{ap.encryption == 0 ? <Unlock {...{class: "me-2"} as any}/> : <Lock {...{class: "me-2"} as any}/>}</div>
-                            <div class="col-auto">{ap.bssid}</div>
-                        </div>
-                </ListGroupItem>
+                >
+                {ap.bssid}
+            </DiscoveryResultItem>
         });
 
         return <div class="form-group">

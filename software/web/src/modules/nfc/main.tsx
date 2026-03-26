@@ -30,6 +30,8 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { DiscoveryResultItem, DiscoveryResultGroup } from "ts/components/discovery_result";
+import { Plus } from "react-feather";
 
 export function NFCNavbar() {
     return (
@@ -154,7 +156,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                         />
                     </FormRow>
                     <FormRow label={__("nfc.content.tags")}>
-                        <Table
+                        <Table nestingDepth={1} // We are not nested, but this also reduces the modal's size to lg
                             tableTill="md"
                             columnNames={[__("nfc.content.table_tag_id"), __("nfc.content.table_tag_type"), __("nfc.content.table_user_id"), __("nfc.content.table_last_seen")]}
                             rows={state.authorized_tags.map((tag, i) =>
@@ -225,16 +227,27 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                             }}
                             onAddGetChildren={() => [<>
                                 <FormRow label={__("nfc.content.add_tag_seen_tags")}>
-                                    {unauth_seen_tags.length > 0 ?
-                                        <ListGroup>{
-                                            unauth_seen_tags.map(t => <ListGroupItem key={t.tag_id} action type="button" onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
-                                                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <span class="text-start">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                                                    <span class="text-end">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
-                                                </div>
-                                                </ListGroupItem>)
-                                        }</ListGroup>
+                                    {seen_tags.length > 0 ?
+                                        <DiscoveryResultGroup>{
+                                            unauth_seen_tags.map(t => <DiscoveryResultItem
+                                                 key={t.tag_id}
+                                                 title={<h5>{t.tag_id}</h5>}
+                                                 labelAdd={<Plus />}
+                                                 onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
+                                                <div>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</div>
+                                                <div>{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</div>
+                                                </DiscoveryResultItem>).concat(
+                                            auth_seen_tags.map(t => <DiscoveryResultItem
+                                                 key={t.tag_id}
+                                                 title={<h5>{t.tag_id}</h5>}
+                                                 labelAdd={<Plus />}
+                                                 error={__("component.discovery_result.already_added")}
+                                                 onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
+                                                <div>{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</div>
+                                                <div>{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</div>
+                                                </DiscoveryResultItem>)
+                                            )
+                                        }</DiscoveryResultGroup>
                                         : <span>{__("nfc.content.add_tag_description")}</span>}
                                 </FormRow>
                                 <FormRow label={__("nfc.content.add_tag_tag_id")}>

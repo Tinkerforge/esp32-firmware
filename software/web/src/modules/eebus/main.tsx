@@ -40,6 +40,7 @@ import {Usecases} from "./generated/usecases.enum";
 import {OutputFloat} from "../../ts/components/output_float";
 import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
 import {IPConfiguration} from "../../ts/components/ip_configuration";
+import { DiscoveryResultGroup, DiscoveryResultItem } from "ts/components/discovery_result";
 
 const EEBUS_NO_VALUE = -2147483648;
 
@@ -881,7 +882,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}
                              help={__("eebus.content.peer_info.peers_desc")}>
-                        <Table
+                        <Table nestingDepth={1} // We are not nested, but this also reduces the modal's size to lg
                             columnNames={[
                                 __("eebus.content.peer_info.model_model"),
                                 __("eebus.content.peer_info.model_brand"),
@@ -1095,26 +1096,38 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
                                 return [<>
                                     <FormRow label={__("eebus.content.discovered_peers")}>
-                                        <ListGroup>
                                             {state.state.discovery_state === ShipDiscoveryState.Scanning && discoveredPeers.length === 0 ? (
-                                                <ListGroupItem className="text-muted">
-                                                    {__("eebus.content.searching_peers")}
-                                                </ListGroupItem>
+                                                <ListGroup>
+                                                    <ListGroupItem>
+                                                        {__("eebus.content.searching_peers")}
+                                                    </ListGroupItem>
+                                                </ListGroup>
                                             ) : discoveredPeers.length === 0 ? (
-                                                <ListGroupItem className="text-muted">
-                                                    {__("eebus.content.no_peers_found")}
-                                                </ListGroupItem>
+                                                 <ListGroup>
+                                                    <ListGroupItem>
+                                                        {__("eebus.content.no_peers_found")}
+                                                    </ListGroupItem>
+                                                </ListGroup>
                                             ) : (
-                                                discoveredPeers.map(peer => {
+                                                <DiscoveryResultGroup>
+                                                {discoveredPeers.map(peer => {
                                                     const isTrusted = peer.trusted;
+                                                    let title = __("eebus.content.unknown");
+                                                    if (peer.model_model && peer.model_brand)
+                                                        title = `${peer.model_brand} ${peer.model_model}`;
+                                                    else if (peer.model_model)
+                                                        title = peer.model_model;
+                                                    else if (peer.model_brand)
+                                                        title = peer.model_brand;
+
                                                     return (
-                                                        <ListGroupItem
+                                                        <DiscoveryResultItem
                                                             key={peer.ski}
-                                                            className="p-0"
-                                                            action={!isTrusted}
-                                                            disabled={isTrusted}
-                                                            style={isTrusted ? {opacity: 0.6, cursor: "default"} : {}}
-                                                            onClick={isTrusted ? undefined : () => {
+                                                            type="submit"
+                                                            title={<h5>{title}</h5>}
+                                                            labelAdd={<Plus />}
+                                                            error={isTrusted ? __("component.discovery_result.already_added") : undefined}
+                                                            onClick={() => {
                                                                 this.setState({
                                                                     add: {
                                                                         ski: peer.ski,
@@ -1128,42 +1141,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                 });
                                                             }}
                                                         >
-                                                            <div
-                                                                class="d-flex w-100 justify-content-between align-items-center">
-                                                                <div class="flex-grow-1 col p-2">
-                                                                    <div
-                                                                        class="row m-0 mb-2 w-100 justify-content-between">
-                                                                        <span class="col p-0 h5 text-start mb-0">
-                                                                            {peer.model_model || peer.model_brand || __("eebus.content.unknown")}
-                                                                        </span>
-                                                                        <span class="col-auto p-0 text-end text-muted">
-                                                                            {peer.model_brand}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div class="d-flex justify-content-between">
-                                                                        <span>{peer.dns_name || peer.ip || ""}</span>
-                                                                        <span class="text-muted"
-                                                                              style={{fontSize: "0.8em"}}>
-                                                                            SKI: {peer.ski.substring(0, 16)}...
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    class={"col-auto d-flex align-items-center justify-content-center px-3 align-self-stretch rounded-end " + (isTrusted ? "bg-success" : "bg-primary")}>
-                                                                    {isTrusted
-                                                                        ? <span style={{
-                                                                            color: "white",
-                                                                            fontSize: "0.8em"
-                                                                        }}>{__("eebus.content.already_added")}</span>
-                                                                        : <Plus size="24" color="white"/>
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                        </ListGroupItem>
+                                                            <div class="pb-1">{`${peer.dns_name || peer.ip || ""}:${peer.port}${peer.wss_path}`}</div>
+                                                            <div>SKI: {peer.ski.replace(/(.{1,10})/g, "$1\u00AD")}</div>
+                                                        </DiscoveryResultItem>
                                                     );
-                                                })
+                                                })}
+                                                </DiscoveryResultGroup>
                                             )}
-                                        </ListGroup>
                                     </FormRow>
                                     <hr/>
                                     <p class="text-muted">{__("eebus.content.add_peer_manual_desc")}</p>
