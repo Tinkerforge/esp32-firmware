@@ -23,10 +23,13 @@ let x = {
             "auth_secret": "Authentication secret",
             "auth_secret_muted": <>See <a href="https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html">Tutorial - Authentication</a></>,
             "auth_disabled": "Authentication disabled",
-            "listen_address": "Listen address",
+            "listen_address": "IPv4 listen address",
             "listen_address_muted": "",
             "listen_port": "Listen port",
-            "listen_port_muted": ""
+            "listen_port_muted": "",
+            "listen_address_v6": "IPv6 listen address",
+            "listen_address_v6_muted": "",
+            "listen_address_v6_invalid": "Invalid IPv6 address"
         },
         "script": {
             "no_bricklets": "No Bricklets connected.",

@@ -19,4 +19,5 @@ export interface config {
     authentication_secret: string;
     listen_address: string;
     listen_port: number;
+    listen_address_v6: string;
 }

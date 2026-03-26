@@ -116,6 +116,14 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                                        />
                     </FormRow>
 
+                    <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65535}
+                                     value={state.listen_port}
+                                     onValue={this.set("listen_port")}/>
+                    </FormRow>
+
                     <FormRow label={__("proxy.content.listen_address")} label_muted={__("proxy.content.listen_address_muted")}>
                         <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
                                  required
@@ -123,12 +131,12 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                                  onValue={this.set("listen_address")}/>
                     </FormRow>
 
-                    <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
-                        <InputNumber required
-                                     min={1}
-                                     max={65535}
-                                     value={state.listen_port}
-                                     onValue={this.set("listen_port")}/>
+                    <FormRow label={__("proxy.content.listen_address_v6")} label_muted={__("proxy.content.listen_address_v6_muted")}>
+                        <InputIP invalidFeedback={__("proxy.content.listen_address_v6_invalid")}
+                                 ipVersion="v6"
+                                 required
+                                 value={state.listen_address_v6}
+                                 onValue={this.set("listen_address_v6")}/>
                     </FormRow>
                 </SubPage.Config>
             </SubPage>

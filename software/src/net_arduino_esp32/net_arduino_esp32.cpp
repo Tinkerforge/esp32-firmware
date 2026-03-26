@@ -13,6 +13,7 @@
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <lwip/netdb.h>
+#include <lwip/ip6_addr.h>
 #include <mbedtls/md.h>
 #include <string.h>
 #include <esp_wifi.h>
@@ -63,12 +64,13 @@ static int set_tcp_options(int fd, const char **op) {
     return 0;
 }
 
-static int build_server_socket(const sockaddr_in *addr) {
+static int build_server_socket(const struct sockaddr *addr, socklen_t addr_len) {
     const char *op = "";
     int one = 1;
+    int family = addr->sa_family;
 
     op = "open socket";
-    int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int fd = socket(family, SOCK_STREAM, IPPROTO_TCP);
 
     if (fd < 0) {
         goto error;
@@ -84,9 +86,17 @@ static int build_server_socket(const sockaddr_in *addr) {
         goto close_and_error;
     }
 
+    if (family == AF_INET6) {
+        op = "enable IPV6_V6ONLY";
+
+        if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &one, sizeof(one)) < 0) {
+            goto close_and_error;
+        }
+    }
+
     op = "bind socket";
 
-    if (bind(fd, (const sockaddr *)addr, sizeof(sockaddr_in)) < 0) {
+    if (bind(fd, addr, addr_len) < 0) {
         goto close_and_error;
     }
 
@@ -108,7 +118,7 @@ error:
 }
 
 static int server_accept(int server_fd) {
-    struct sockaddr_in client_addr;
+    struct sockaddr_storage client_addr;
     socklen_t client_addr_size = sizeof(client_addr);
     const char *op = "accept";
     int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_size);
@@ -271,27 +281,62 @@ static void flush_send_buffers(TF_Net *net) {
     }
 }
 
+static void close_server_sockets(TF_Net *net) {
+    if (net->server_fd >= 0) {
+        close(net->server_fd);
+        net->server_fd = -1;
+    }
+    if (net->server_fd6 >= 0) {
+        close(net->server_fd6);
+        net->server_fd6 = -1;
+    }
+}
+
+static void reopen_server_sockets(TF_Net *net) {
+    if (net->server_fd == -1) {
+        net->server_fd = build_server_socket((const struct sockaddr *)&net->listen_addr, sizeof(net->listen_addr));
+    }
+    if (net->server_fd6 == -1 && net->listen_addr6.sin6_family == AF_INET6) {
+        net->server_fd6 = build_server_socket((const struct sockaddr *)&net->listen_addr6, sizeof(net->listen_addr6));
+    }
+}
+
 static int accept_connections(TF_Net *net) {
     TF_NetClient *clients = net->clients;
     size_t max_clients = sizeof(net->clients) / sizeof(net->clients[0]);
 
-    if (net->server_fd == -1) {
-        if (net->clients_used != max_clients) {
-            net->server_fd = build_server_socket(&net->listen_addr);
-        }
+    if (net->clients_used == max_clients) {
+        return 0;
+    }
 
+    if (net->server_fd == -1 && net->server_fd6 == -1) {
+        reopen_server_sockets(net);
         return 0;
     }
 
     static uint32_t client_id = 0;
-    int client_fd = server_accept(net->server_fd);
+    int client_fd = -2;
 
-    if (client_fd == -1) {
-        // TODO: this is fatal as no connections can be accepted anymore. We should close all connections here
-        // and then reopen the server socket
-        close(net->server_fd);
-        return -1;
-    } else if (client_fd == -2) {
+    // Try accepting from IPv4 socket first, then IPv6
+    if (net->server_fd >= 0) {
+        client_fd = server_accept(net->server_fd);
+
+        if (client_fd == -1) {
+            close(net->server_fd);
+            net->server_fd = -1;
+        }
+    }
+
+    if (client_fd == -2 && net->server_fd6 >= 0) {
+        client_fd = server_accept(net->server_fd6);
+
+        if (client_fd == -1) {
+            close(net->server_fd6);
+            net->server_fd6 = -1;
+        }
+    }
+
+    if (client_fd < 0) {
         return 0;
     }
 
@@ -313,8 +358,7 @@ static int accept_connections(TF_Net *net) {
 
     if (net->clients_used == max_clients) {
         // We already have the maximum amount of clients, don't accept more.
-        close(net->server_fd);
-        net->server_fd = -1;
+        close_server_sockets(net);
     }
 
     return 0;
@@ -525,6 +569,7 @@ int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const cha
     net->send_buf_timeout_us = 20000;
     net->recv_timeout_ms = 60000;
     net->auth_secret = auth_secret;
+    net->server_fd6 = -1;
 
     net->listen_addr.sin_family = AF_INET;
     net->listen_addr.sin_port = port == 0 ? htons(4223) : htons(port);
@@ -535,7 +580,7 @@ int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const cha
         return TF_E_INVALID_ADDRESS;
     }
 
-    net->server_fd = build_server_socket(&net->listen_addr);
+    net->server_fd = build_server_socket((const struct sockaddr *)&net->listen_addr, sizeof(net->listen_addr));
 
     if (auth_secret == nullptr)
         return TF_E_OK;
@@ -555,11 +600,30 @@ int tf_net_destroy(TF_Net *net) {
         close(net->server_fd);
     }
 
+    if (net->server_fd6 >= 0) {
+        close(net->server_fd6);
+    }
+
     for (int i = 0; i < net->clients_used; ++i) {
         remove_client(net, i);
     }
 
     return 0;
+}
+
+int tf_net_set_listen_addr6(TF_Net *net, const char* listen_addr6, uint16_t port) {
+    net->listen_addr6.sin6_family = AF_INET6;
+    net->listen_addr6.sin6_port = port == 0 ? htons(4223) : htons(port);
+
+    if (listen_addr6 == nullptr) {
+        memset(&net->listen_addr6.sin6_addr, 0, sizeof(net->listen_addr6.sin6_addr));
+    } else if (ip6addr_aton(listen_addr6, (ip6_addr_t *)&net->listen_addr6.sin6_addr) == 0) {
+        return TF_E_INVALID_ADDRESS;
+    }
+
+    net->server_fd6 = build_server_socket((const struct sockaddr *)&net->listen_addr6, sizeof(net->listen_addr6));
+
+    return TF_E_OK;
 }
 
 int tf_net_tick(TF_Net *net) {

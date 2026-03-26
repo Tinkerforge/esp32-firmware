@@ -66,6 +66,7 @@ typedef struct TF_Net {
     TF_NetClient clients[TF_NET_MAX_CLIENT_COUNT];
     uint8_t clients_used;
     int server_fd;
+    int server_fd6;
 
     TF_Request open_requests[TF_NET_MAX_OPEN_REQUEST_COUNT];
     uint8_t open_request_count;
@@ -74,20 +75,20 @@ typedef struct TF_Net {
     const char* auth_secret;
     uint32_t next_auth_nonce;
 
-    // We only support IPv4 for now. However some functions like
-    // ipaddr_aton expect to be able to write ip_addr_t's "type" member
-    // that is behind a union of an IPv4 and IPv6 address.
-    // Pad TF_Net to the size of sockaddr_storage to
-    // make sure ipaddr_aton does not write behind TF_Net.
+    // ipaddr_aton can write ip_addr_t's "type" member that is behind
+    // a union of an IPv4 and IPv6 address. Pad with sockaddr_storage
+    // to make sure ipaddr_aton does not write behind the struct.
     union {
         struct sockaddr_storage listen_addr_storage;
         struct sockaddr_in listen_addr;
     };
+    struct sockaddr_in6 listen_addr6;
 } TF_Net;
 
 #define TF_E_INVALID_ADDRESS -200
 
 int tf_net_create(TF_Net *net, const char* listen_addr, uint16_t port, const char* auth_secret);
+int tf_net_set_listen_addr6(TF_Net *net, const char* listen_addr6, uint16_t port);
 int tf_net_destroy(TF_Net *net);
 
 #endif
