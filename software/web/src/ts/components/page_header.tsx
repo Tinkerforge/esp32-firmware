@@ -24,7 +24,6 @@ export interface PageHeaderProps {
     title: ComponentChildren;
     titleColClass?: string;
     childrenColClass?: string;
-    rowClass?: string;
     small?: boolean;
     children?: ComponentChildren;
 }
