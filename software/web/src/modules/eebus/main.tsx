@@ -267,9 +267,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         </FormRow>
 
                         <CollapsedSection heading={__("eebus.content.usecase_details")}>
-                            {buildEEBusHelpText(state.usecases)}
-                            <p>{__("eebus.content.eebus_detail_info")}</p>
-
                             <Table
                                 columnNames={[""]}
                                 rows={(() => {
