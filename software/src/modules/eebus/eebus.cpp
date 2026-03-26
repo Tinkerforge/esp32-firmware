@@ -670,7 +670,6 @@ void EEBus::register_urls()
                 task_scheduler.scheduleOnce(
                     [this]() {
                         ship.discover_ship_peers();
-                        update_peers_config();
                         ship.connect_trusted_peers();
                     },
                     0_s);
