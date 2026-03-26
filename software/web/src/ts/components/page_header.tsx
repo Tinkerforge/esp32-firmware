@@ -31,8 +31,7 @@ export interface PageHeaderProps {
 export class PageHeader extends Component<PageHeaderProps, {}> {
     render() {
         let has_children = toChildArray(this.props.children).length > 0;
-        let row_class = "mb-3 pt-2" + (this.props.small ? " pt-sm-4" : " pt-sm-3");
-        let title_class = this.props.small ? "mt-1" : "";
+        let row_class = "mb-3 pt-2" + (this.props.small ? "" : " pt-sm-3");
 
         return (
             // this row/col combination is necessary here to create a div that is
@@ -42,8 +41,8 @@ export class PageHeader extends Component<PageHeaderProps, {}> {
                     <div class="row">
                         <div class={this.props.titleColClass ? this.props.titleColClass : "col"}>
                             {this.props.small
-                                ? <h2 class={title_class}>{this.props.title}</h2>
-                                : <h1 class={"page-header " + title_class}>{this.props.title}</h1>
+                                ? <h2 class={"page-header"}>{this.props.title}</h2>
+                                : <h1 class={"page-header"}>{this.props.title}</h1>
                             }
                         </div>
                         {has_children ?
