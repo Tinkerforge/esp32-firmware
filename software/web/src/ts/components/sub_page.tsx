@@ -111,8 +111,8 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
         // collapse, the title will always jump around.
         content = (
             <>
-                <div class={`sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
-                    <div>
+                <div class={`row sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
+                    <div class="col">
                         <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
                             {statusProps.header}
                         </PageHeader>
@@ -141,8 +141,8 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                 <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
                     {statusProps.header}
                 </PageHeader>
-                <div class={`sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
-                    <div>
+                <div class={`row sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
+                    <div class="col">
                         {statusChildren}
                     </div>
                 </div>
