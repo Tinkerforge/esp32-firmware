@@ -350,24 +350,27 @@ void Ship::check_mdns_results_cb(mdns_search_once_t *)
 void Ship::check_mdns_results()
 {
     mdns_result_t *results;
-    auto query_results = mdns_query_async_get_results(mdns_scan,0, &results, nullptr);
+    auto query_results = mdns_query_async_get_results(mdns_scan, 0, &results, nullptr);
+    mdns_query_async_delete(mdns_scan);
 
     if (!query_results) {
         eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
         update_discovery_state(ShipDiscoveryState::ScanDone);
         return;
     }
-    while (results) {
+    mdns_result_t *current = results;
+    while (current) {
         String ip_address = "";
         std::vector<String> ip_addresses{};
         char buf[INET6_ADDRSTRLEN];
-        while (results->addr) {
-            tf_ipaddr_ntoa(&results->addr->addr, buf, sizeof(buf));
+        mdns_ip_addr_t *addr = current->addr;
+        while (addr) {
+            tf_ipaddr_ntoa(&addr->addr, buf, sizeof(buf));
             ip_addresses.push_back(String(buf));
-            results->addr = results->addr->next;
+            addr = addr->next;
         }
         if (ip_addresses.empty()) {
-            results = results->next;
+            current = current->next;
             continue;
         }
         String txt_vers;
@@ -381,8 +384,8 @@ void Ship::check_mdns_results()
         String dns_name;
         uint16_t port;
 
-        for (int i = 0; i < results->txt_count; i++) {
-            mdns_txt_item_t *txt = &results->txt[i];
+        for (int i = 0; i < current->txt_count; i++) {
+            mdns_txt_item_t *txt = &current->txt[i];
             if (txt->key == NULL || txt->value == NULL) {
                 continue;
             }
@@ -415,12 +418,12 @@ void Ship::check_mdns_results()
             }
         }
         if (txt_model.length() < 1)
-            txt_model = results->instance_name;
-        dns_name = String(results->hostname) + ".local";
-        port = results->port;
+            txt_model = current->instance_name;
+        dns_name = String(current->hostname) + ".local";
+        port = current->port;
         if (txt_vers.isEmpty() || txt_id.isEmpty() || txt_wss_path.isEmpty() || txt_ski.isEmpty()) {
             eebus.trace_fmtln("Peer with IP %s missing mandatory TXT records, skipping", ip_addresses.front().c_str());
-            results = results->next;
+            current = current->next;
             continue;
         }
 
@@ -460,16 +463,17 @@ void Ship::check_mdns_results()
             peer->state = NodeState::Discovered;
         }
 
-        results = results->next;
+        current = current->next;
     }
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
     eebus.update_peers_state();
 }
-void Ship::update_discovery_state(ShipDiscoveryState state)
+void Ship::update_discovery_state(ShipDiscoveryState new_state)
 {
-    eebus.state.get("discovery_state")->updateEnum(state);
+    discovery_state = new_state;
+    eebus.state.get("discovery_state")->updateEnum(new_state);
 }
 
 void Ship::discover_ship_peers()
