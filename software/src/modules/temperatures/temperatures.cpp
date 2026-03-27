@@ -68,7 +68,7 @@ void Temperatures::pre_setup()
             tomorrow_max = INT16_MIN;
             tomorrow_avg = INT16_MAX;
 
-            if (boot_stage == BootStage::LOOP) {
+            if (source != ConfigSource::File) {
                 task_scheduler.scheduleOnce([this]() {
                     this->update();
                 });

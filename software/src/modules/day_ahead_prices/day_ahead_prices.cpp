@@ -101,7 +101,7 @@ void DayAheadPrices::pre_setup()
             calendar_last_generated_wday = -1;
             raw_prices_count = 0;
 
-            if (boot_stage == BootStage::LOOP) {
+            if (source != ConfigSource::File) {
                 task_scheduler.scheduleOnce([this]() {
                     this->update();
                 });
@@ -110,7 +110,7 @@ void DayAheadPrices::pre_setup()
             // Only calendar toggle changed: rebuild prices from raw data without full re-download
             calendar_last_generated_wday = -1;
 
-            if (boot_stage == BootStage::LOOP) {
+            if (source != ConfigSource::File) {
                 if (update.get("enable_calendar")->asBool()) {
                     // Calendar enabled: apply calendar overlay
                     task_scheduler.scheduleOnce([this]() {
@@ -174,7 +174,7 @@ void DayAheadPrices::pre_setup()
         // Reset cached weekday so update_calendar() regenerates prices
         calendar_last_generated_wday = -1;
 
-        if (boot_stage == BootStage::LOOP && config.get("enable_calendar")->asBool()) {
+        if (source != ConfigSource::File && config.get("enable_calendar")->asBool()) {
             task_scheduler.scheduleOnce([this]() {
                 this->update_calendar();
             });

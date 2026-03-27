@@ -355,7 +355,7 @@ void EEBus::pre_setup()
                             {"peers", Config::Array({config_peers_prototype}, &config_peers_prototype, 0, MAX_PEER_REMEMBERED, Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &update, ConfigSource source) -> String {
-                            if (boot_stage == BootStage::LOOP) {
+                            if (source != ConfigSource::File) {
                                 if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
                                     task_scheduler.scheduleOnce([this]() {
                                         this->toggle_module();
