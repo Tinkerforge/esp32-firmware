@@ -21,9 +21,9 @@
 
 #include <lwip/ip_addr.h>
 
-#include "module.h"
 #include "config.h"
 #include "generated/ethernet_state.enum.h"
+#include "module.h"
 
 class Ethernet final : public IModule
 {
