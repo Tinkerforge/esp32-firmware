@@ -75,5 +75,6 @@ private:
     uint64_t reconnect_task_id = 0;
     uint64_t revert_countdown_task_id = 0;
 
+    void apply_ipv6_config();
     bool ipv6_enable = false;
 };
