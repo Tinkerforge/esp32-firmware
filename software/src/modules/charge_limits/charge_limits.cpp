@@ -149,6 +149,34 @@ float ChargeLimits::get_energy_limit() {
     return target - start;
 }
 
+void ChargeLimits::apply_duration_override(uint32_t duration) {
+    was_triggered = false;
+    active_limits.get("duration")->updateUint(duration);
+
+    if (duration == 0)
+        state.get("target_timestamp_ms")->updateUint(0);
+    else
+        state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(duration));
+}
+
+void ChargeLimits::apply_energy_override(uint32_t energy_wh) {
+    was_triggered = false;
+    active_limits.get("energy_wh")->updateUint(energy_wh);
+
+    if (energy_wh == 0)
+        state.get("target_energy_kwh")->updateFloat(NAN);
+    else
+        state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + energy_wh / 1000.0f);
+}
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+void ChargeLimits::apply_soc_target_override(uint32_t soc_target) {
+    was_triggered = false;
+    active_limits.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+    state.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+}
+#endif
+
 void ChargeLimits::register_urls()
 {
     api.addPersistentConfig("charge_limits/default_limits", &config);
@@ -156,29 +184,16 @@ void ChargeLimits::register_urls()
     api.addState("charge_limits/active_limits", &active_limits);
 
     api.addCommand("charge_limits/override_duration", &override_duration, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        was_triggered = false;
-        active_limits.get("duration")->updateUint(override_duration.get("duration")->asUint());
-
-        if (override_duration.get("duration")->asUint() == 0)
-            state.get("target_timestamp_ms")->updateUint(0);
-        else
-            state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(override_duration.get("duration")->asUint()));
+        this->apply_duration_override(override_duration.get("duration")->asUint());
     }, true);
 
     api.addCommand("charge_limits/override_energy", &override_energy, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        was_triggered = false;
-        active_limits.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
-        if (override_energy.get("energy_wh")->asUint() == 0)
-            state.get("target_energy_kwh")->updateFloat(NAN);
-        else
-            state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0f);
+        this->apply_energy_override(override_energy.get("energy_wh")->asUint());
     }, true);
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
     api.addCommand("charge_limits/override_soc", &override_soc, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        was_triggered = false;
-        active_limits.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
-        state.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+        this->apply_soc_target_override(override_soc.get("soc_target_pct")->asUint());
     }, true);
 #endif
 

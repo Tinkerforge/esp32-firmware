@@ -48,6 +48,12 @@ public:
 
     float get_energy_limit();
 
+    void apply_duration_override(uint32_t duration);
+    void apply_energy_override(uint32_t energy_wh);
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    void apply_soc_target_override(uint32_t soc_target);
+#endif
+
 private:
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
     void setup_ev_meter_soc(uint32_t slot);
