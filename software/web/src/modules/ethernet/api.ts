@@ -5,13 +5,7 @@ export interface config {
     subnet: string;
     dns: string;
     dns2: string;
-    ipv6: {
-        ip: string;
-        gateway: string;
-        subnet: string;
-        dns: string;
-        dns2: string;
-    }
+    ipv6: string;
     enable_ipv6: boolean;
 }
 
@@ -29,4 +23,5 @@ export interface state {
     ip6_global: string;
     ip6_unique_local: string;
     ip6_site_local: string;
+    ip6_configured: string;
 }
