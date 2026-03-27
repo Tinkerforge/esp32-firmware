@@ -132,7 +132,7 @@ void ChargeLimits::pre_setup()
 
             int energy_wh = conf->get("energy_wh")->asInt();
             if (energy_wh >= 0) {
-                this->apply_energy_override(static_cast<uint32_t>(energy));
+                this->apply_energy_override(static_cast<uint32_t>(energy_wh));
             }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
