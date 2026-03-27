@@ -6,6 +6,8 @@
  * Commons Zero (CC0 1.0) License for more details.
  */
 
+#if !defined(TF_HAL_ESPIDF)
+
 #ifndef TF_HAL_ARDUINO_ESP32_BRICK_H
 #define TF_HAL_ARDUINO_ESP32_BRICK_H
 
@@ -25,5 +27,7 @@ struct TF_HAL {
 
 int tf_hal_create(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_destroy(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
+
+#endif
 
 #endif

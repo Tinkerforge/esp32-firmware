@@ -30,7 +30,11 @@
 #include "options.h"
 #include "tools.h"
 #include "tools/bricklets.h"
+#if TF_HAL_ESPIDF == 1
+#include "hal_espidf_esp32_ethernet_brick/hal_espidf_esp32_ethernet_brick.h"
+#else
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
+#endif
 #include "bindings/errors.h"
 
 #if TF_LOCAL_ENABLE != 0
