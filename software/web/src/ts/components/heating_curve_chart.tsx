@@ -46,44 +46,67 @@ export interface HeatingCurveChartProps {
 interface HeatingCurveChartState {
     dragging: EndpointId | null;
     hovered: EndpointId | null;
+    scaleFactor: number;
 }
 
 export class HeatingCurveChart extends Component<HeatingCurveChartProps, HeatingCurveChartState> {
     // Chart layout constants
-    static readonly MARGIN = { top: 20, right: 45, bottom: 40, left: 45 };
+    static readonly BASE_MARGIN = { top: 20, right: 45, bottom: 40, left: 45 };
     static readonly VIEWBOX_WIDTH = 500;
     static readonly VIEWBOX_HEIGHT = 260;
 
     svgRef = createRef<SVGSVGElement>();
+    resizeObserver: ResizeObserver | null = null;
 
     constructor() {
         super();
-        this.state = { dragging: null, hovered: null };
+        this.state = { dragging: null, hovered: null, scaleFactor: 1 };
+    }
+
+    override componentDidMount() {
+        this.resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const width = entry.contentRect.width;
+                if (width > 0) {
+                    this.setState({ scaleFactor: width / HeatingCurveChart.VIEWBOX_WIDTH });
+                }
+            }
+        });
+        if (this.svgRef.current) {
+            this.resizeObserver.observe(this.svgRef.current);
+        }
+    }
+
+    override componentWillUnmount() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
     }
 
     get plotWidth() {
-        return HeatingCurveChart.VIEWBOX_WIDTH - HeatingCurveChart.MARGIN.left - HeatingCurveChart.MARGIN.right;
+        return HeatingCurveChart.VIEWBOX_WIDTH - this.margin.left - this.margin.right;
     }
 
     get plotHeight() {
-        return HeatingCurveChart.VIEWBOX_HEIGHT - HeatingCurveChart.MARGIN.top - HeatingCurveChart.MARGIN.bottom;
+        return HeatingCurveChart.VIEWBOX_HEIGHT - this.margin.top - this.margin.bottom;
     }
 
     // Map temperature (20 to -10) to x pixel coordinate
     tempToX(temp: number): number {
         const fraction = (TEMP_WARM - temp) / (TEMP_WARM - TEMP_COLD);
-        return HeatingCurveChart.MARGIN.left + fraction * this.plotWidth;
+        return this.margin.left + fraction * this.plotWidth;
     }
 
     // Map hours to y pixel coordinate (0 at bottom, yMax at top)
     hoursToY(hours: number, yMax: number): number {
         const fraction = hours / yMax;
-        return HeatingCurveChart.MARGIN.top + this.plotHeight - fraction * this.plotHeight;
+        return this.margin.top + this.plotHeight - fraction * this.plotHeight;
     }
 
     // Inverse: map y pixel coordinate back to hours
     yToHours(y: number, yMax: number): number {
-        const fraction = (HeatingCurveChart.MARGIN.top + this.plotHeight - y) / this.plotHeight;
+        const fraction = (this.margin.top + this.plotHeight - y) / this.plotHeight;
         return fraction * yMax;
     }
 
@@ -115,6 +138,24 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
         if (dataMax <= 4) return Math.ceil(dataMax);
         if (dataMax <= 8) return Math.ceil(dataMax / 2) * 2;
         return Math.ceil(dataMax / 4) * 4;
+    }
+
+    fontSize(base: number): number {
+        return base / this.state.scaleFactor;
+    }
+
+    textOffset(base: number): number {
+        return base / this.state.scaleFactor;
+    }
+
+    get margin() {
+        const B = HeatingCurveChart.BASE_MARGIN;
+        return {
+            top: this.textOffset(B.top),
+            right: this.textOffset(B.right),
+            bottom: this.textOffset(B.bottom),
+            left: this.textOffset(B.left),
+        };
     }
 
     // Pointer event handlers for drag interaction
@@ -189,11 +230,11 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
     // relative to the circle when near the top edge.
     // Returns [adjustedExtLabelY, adjustedBlkLabelY].
     resolveEndpointLabelYs(extCircleY: number, blkCircleY: number, bothVisible: boolean): [number, number] {
-        const M = HeatingCurveChart.MARGIN;
-        const minGap = 14; // minimum vertical distance between label baselines
+        const M = this.margin;
+        const minGap = this.textOffset(14); // minimum vertical distance between label baselines
 
         // Default label offset: above the circle, or below if too close to top
-        const labelY = (cy: number) => cy + (cy < M.top + 20 ? 16 : -8);
+        const labelY = (cy: number) => cy + (cy < M.top + this.textOffset(20) ? this.textOffset(16) : -this.textOffset(8));
 
         let extLY = labelY(extCircleY);
         let blkLY = labelY(blkCircleY);
@@ -224,7 +265,7 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
         const blocking_hours_warm  = Math.max(0, this.props.blocking_hours_warm);
         const blocking_hours_cold  = Math.max(0, this.props.blocking_hours_cold);
         const { dragging, hovered } = this.state;
-        const M = HeatingCurveChart.MARGIN;
+        const M = this.margin;
         const VW = HeatingCurveChart.VIEWBOX_WIDTH;
         const VH = HeatingCurveChart.VIEWBOX_HEIGHT;
         const yMax = this.getYMax();
@@ -236,11 +277,12 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
             tempTicks.push(t);
         }
 
-        // Hour tick marks - choose step for ~4-6 ticks
+        // Up to ~8 ticks when SVG is big and ~4 ticks when SVG is small
         const hourTicks: number[] = [];
         let hourStep = 1;
         if (yMax > 8) hourStep = 2;
         if (yMax > 16) hourStep = 4;
+        if (this.state.scaleFactor < 1.0) hourStep *= 2;
         for (let hr = 0; hr <= yMax; hr += hourStep) {
             hourTicks.push(hr);
         }
@@ -275,9 +317,9 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
             currentBlkHours = this.interpolateHours(blocking_hours_warm, blocking_hours_cold, clampedTemp);
 
             // Resolve right-axis label positions to avoid overlap
-            const extRY = this.hoursToY(currentExtHours, yMax) + 4;
-            const blkRY = this.hoursToY(currentBlkHours, yMax) + 4;
-            const minGap = 14;
+            const extRY = this.hoursToY(currentExtHours, yMax) + this.textOffset(4);
+            const blkRY = this.hoursToY(currentBlkHours, yMax) + this.textOffset(4);
+            const minGap = this.textOffset(14);
             if (bothVisible && Math.abs(extRY - blkRY) < minGap) {
                 const mid = (extRY + blkRY) / 2;
                 const halfGap = minGap / 2;
@@ -337,25 +379,25 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                     {/* X-axis labels (temperature) */}
                     {tempTicks.map(t => {
                         const x = this.tempToX(t);
-                        return <text x={x} y={VH - M.bottom + 16} text-anchor="middle"
-                                     font-size="11" fill={textColor}>{t}°</text>;
+                        return <text x={x} y={VH - M.bottom + this.textOffset(16)} text-anchor="middle"
+                                     font-size={this.fontSize(13)} fill={textColor}>{t}°</text>;
                     })}
 
                     {/* X-axis title */}
-                    <text x={M.left + this.plotWidth / 2} y={VH - 2} text-anchor="middle"
-                          font-size="12" fill={textColor}>{__("component.heating_curve_chart.temperature_daily_avg")}</text>
+                    <text x={M.left + this.plotWidth / 2} y={VH - this.textOffset(6)} text-anchor="middle"
+                          font-size={this.fontSize(14)} fill={textColor}>{__("component.heating_curve_chart.temperature_daily_avg")}</text>
 
                     {/* Y-axis labels (hours) */}
                     {hourTicks.map(hr => {
                         const y = this.hoursToY(hr, yMax);
-                        return <text x={M.left - 6} y={y + 4} text-anchor="end"
-                                     font-size="11" fill={textColor}>{hr}h</text>;
+                        return <text x={M.left - this.textOffset(6)} y={y + this.textOffset(4)} text-anchor="end"
+                                     font-size={this.fontSize(13)} fill={textColor}>{hr}h</text>;
                     })}
 
                     {/* Y-axis title */}
-                    <text x={12} y={M.top + this.plotHeight / 2}
-                          text-anchor="middle" font-size="12" fill={textColor}
-                          transform={`rotate(-90, 12, ${M.top + this.plotHeight / 2})`}>
+                    <text x={this.textOffset(12)} y={M.top + this.plotHeight / 2}
+                          text-anchor="middle" font-size={this.fontSize(14)} fill={textColor}
+                          transform={`rotate(-90, ${this.textOffset(12)}, ${M.top + this.plotHeight / 2})`}>
                         {__("component.heating_curve_chart.curve_hours")}
                     </text>
 
@@ -403,12 +445,12 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                                 onPointerEnter={() => this.setState({ hovered: "ext_cold" })}
                                 onPointerLeave={() => { if (hovered === "ext_cold") this.setState({ hovered: null }); }}
                         />}
-                        <text x={extX1 - 6} y={extWarmLabelY}
-                              text-anchor="end" font-size="11" font-weight="bold" fill={extColor}>
+                        <text x={extX1 - this.textOffset(6)} y={extWarmLabelY}
+                              text-anchor="end" font-size={this.fontSize(13)} font-weight="bold" fill={extColor}>
                             {extended_hours_warm}h
                         </text>
-                        <text x={extX2 + 6} y={extColdLabelY}
-                              text-anchor="start" font-size="11" font-weight="bold" fill={extColor}>
+                        <text x={extX2 + this.textOffset(6)} y={extColdLabelY}
+                              text-anchor="start" font-size={this.fontSize(13)} font-weight="bold" fill={extColor}>
                             {extended_hours_cold}h
                         </text>
                     </>}
@@ -439,12 +481,12 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                                 onPointerEnter={() => this.setState({ hovered: "blk_cold" })}
                                 onPointerLeave={() => { if (hovered === "blk_cold") this.setState({ hovered: null }); }}
                         />}
-                        <text x={blkX1 - 6} y={blkWarmLabelY}
-                              text-anchor="end" font-size="11" font-weight="bold" fill={blkColor}>
+                        <text x={blkX1 - this.textOffset(6)} y={blkWarmLabelY}
+                              text-anchor="end" font-size={this.fontSize(13)} font-weight="bold" fill={blkColor}>
                             {blocking_hours_warm}h
                         </text>
-                        <text x={blkX2 + 6} y={blkColdLabelY}
-                              text-anchor="start" font-size="11" font-weight="bold" fill={blkColor}>
+                        <text x={blkX2 + this.textOffset(6)} y={blkColdLabelY}
+                              text-anchor="start" font-size={this.fontSize(13)} font-weight="bold" fill={blkColor}>
                             {blocking_hours_cold}h
                         </text>
                     </>}
@@ -456,8 +498,8 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                         <line x1={currentTempX} y1={this.hoursToY(currentExtHours, yMax)}
                               x2={VW - M.right} y2={this.hoursToY(currentExtHours, yMax)}
                               stroke={extColor} stroke-width="1" stroke-dasharray="3,3" />
-                        <text x={VW - M.right + 4} y={currentExtLabelY}
-                              text-anchor="start" font-size="11" font-weight="bold" fill={extColor}>
+                        <text x={VW - M.right + this.textOffset(4)} y={currentExtLabelY}
+                              text-anchor="start" font-size={this.fontSize(13)} font-weight="bold" fill={extColor}>
                             {util.toLocaleFixed(currentExtHours, 1)}h
                         </text>
                     </>}
@@ -467,16 +509,16 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                         <line x1={currentTempX} y1={this.hoursToY(currentBlkHours, yMax)}
                               x2={VW - M.right} y2={this.hoursToY(currentBlkHours, yMax)}
                               stroke={blkColor} stroke-width="1" stroke-dasharray="3,3" />
-                        <text x={VW - M.right + 4} y={currentBlkLabelY}
-                              text-anchor="start" font-size="11" font-weight="bold" fill={blkColor}>
+                        <text x={VW - M.right + this.textOffset(4)} y={currentBlkLabelY}
+                              text-anchor="start" font-size={this.fontSize(13)} font-weight="bold" fill={blkColor}>
                             {util.toLocaleFixed(currentBlkHours, 1)}h
                         </text>
                     </>}
 
                     {/* Current temperature label at top of dashed line */}
                     {currentTempX !== null &&
-                        <text x={currentTempX} y={M.top - 6} text-anchor="middle"
-                              font-size="10" fill={textColor}>
+                        <text x={currentTempX} y={M.top - this.textOffset(6)} text-anchor="middle"
+                              font-size={this.fontSize(12)} fill={textColor}>
                             {__("component.heating_curve_chart.current_temperature")} ({util.toLocaleFixed(current_temperature, 1)}°)
                         </text>
                     }
