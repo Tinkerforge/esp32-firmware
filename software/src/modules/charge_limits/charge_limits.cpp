@@ -127,24 +127,18 @@ void ChargeLimits::pre_setup()
 
             int duration = conf->get("duration")->asInt();
             if (duration >= 0) {
-                api.callCommand("charge_limits/override_duration", Config::ConfUpdateObject {{
-                    {"duration", static_cast<uint32_t>(duration)}
-                }});
+                this->apply_duration_override(static_cast<uint32_t>(duration));
             }
 
             int energy_wh = conf->get("energy_wh")->asInt();
             if (energy_wh >= 0) {
-                api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
-                    {"energy_wh", static_cast<uint32_t>(energy_wh)}
-                }});
+                this->apply_energy_override(static_cast<uint32_t>(energy));
             }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
             int soc_target_pct = conf->get("soc_target_pct")->asInt();
             if (soc_target_pct >= 0) {
-                api.callCommand("charge_limits/override_soc", Config::ConfUpdateObject{{
-                    {"soc_target_pct", static_cast<uint32_t>(soc_target_pct)}
-                }});
+                this->apply_soc_target_override(static_cast<uint32_t>(soc_target_pct));
             }
 #endif
         }
