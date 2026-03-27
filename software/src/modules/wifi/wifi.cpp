@@ -946,7 +946,6 @@ void Wifi::register_sta_event_handlers()
     WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             esp_ip6_addr_t ip6_addr = info.got_ip6.ip6_info.ip;
             esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip6_addr);
-            logger.printfln("Got IPv6 address of type %d", static_cast<int>(type));
             switch (type) {
                 case ESP_IP6_ADDR_IS_LINK_LOCAL:
                     task_scheduler.scheduleOnce([this]() {
