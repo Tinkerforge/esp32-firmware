@@ -256,7 +256,7 @@ bool update_from_client_packet(
         if (new_pss != target.phase_switch_supported)
             trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
         if (new_switching != target.currently_switching_phases)
-            trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
+            trace("RECV %d: currently_switching_phases %u -> %u", client_id, target.currently_switching_phases, new_switching);
         target.phases = new_phases;
         target.phase_switch_supported = new_pss;
         target.currently_switching_phases = new_switching;
