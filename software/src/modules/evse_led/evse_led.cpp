@@ -23,9 +23,12 @@
 
 void EvseLed::pre_setup()
 {
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"enable_api", Config::Bool(false)}
-    });
+    }), [this](Config &cfg, ConfigSource source) -> String {
+        this->enable_api = cfg.get("enable_api")->asBool();
+        return "";
+    }};
 
     led = Config::Object({
         {"indication", Config::Enum(Blink::Off)},
@@ -59,7 +62,6 @@ void EvseLed::pre_setup()
 void EvseLed::setup()
 {
     api.restorePersistentConfig("evse/led_configuration", &config);
-    enable_api = config.get("enable_api")->asBool();
 
     if (evse_common.get_evse_version() >= 30)
         api.addFeature("rgb_led");
