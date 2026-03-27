@@ -58,13 +58,29 @@ static uint32_t map_duration(uint32_t val)
 
 void ChargeLimits::pre_setup()
 {
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"duration",       Config::Uint(0, 0, 10)},
         {"energy_wh",      Config::Uint32(0)},
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
         {"soc_target_pct", Config::Uint(0, 0, 100)},
 #endif
-    });
+    }), [this](Config &cfg, ConfigSource source) -> String {
+        if (source == ConfigSource::File)
+            return "";
+
+        if (active_limits.get("duration")->asUint() == this->config.get("duration")->asUint())
+            this->apply_duration_override(cfg.get("duration")->asUint());
+
+        if (active_limits.get("energy_wh")->asUint() == this->config.get("energy_wh")->asUint())
+            this->apply_energy_override(cfg.get("energy_wh")->asUint());
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+        if (active_limits.get("soc_target_pct")->asUint() == this->config.get("soc_target_pct")->asUint())
+            this->apply_soc_target_override(cfg.get("soc_target_pct")->asUint());
+#endif
+
+        return "";
+    }};
 
     state = Config::Object({
         {"start_timestamp_ms", Config::Uint32(0)},
