@@ -62,7 +62,7 @@ void ChargeLimits::pre_setup()
         {"duration",       Config::Uint(0, 0, 10)},
         {"energy_wh",      Config::Uint32(0)},
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-        {"soc_target_pct", Config::Uint(0, 0, 100)},
+        {"soc_pct", Config::Uint(0, 0, 100)},
 #endif
     }), [this](Config &cfg, ConfigSource source) -> String {
         if (source == ConfigSource::File)
@@ -75,8 +75,8 @@ void ChargeLimits::pre_setup()
             this->apply_energy_override(cfg.get("energy_wh")->asUint());
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-        if (active_limits.get("soc_target_pct")->asUint() == this->config.get("soc_target_pct")->asUint())
-            this->apply_soc_target_override(cfg.get("soc_target_pct")->asUint());
+        if (active_limits.get("soc_pct")->asUint() == this->config.get("soc_pct")->asUint())
+            this->apply_soc_target_override(cfg.get("soc_pct")->asUint());
 #endif
 
         return "";
@@ -88,8 +88,7 @@ void ChargeLimits::pre_setup()
         {"target_timestamp_ms", Config::Uint32(0)},
         {"target_energy_kwh",  Config::Float(NAN)},
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-        {"soc_target_pct",     Config::Uint(0, 0, 100)},
-        {"current_soc_pct",    Config::Float(NAN)},
+        {"target_soc_pct",     Config::Uint(0, 0, 100)}
 #endif
     });
 
@@ -103,7 +102,7 @@ void ChargeLimits::pre_setup()
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
     override_soc = Config::Object({
-        {"soc_target_pct", Config::Uint(0, 0, 100)}
+        {"soc_pct", Config::Uint(0, 0, 100)}
     });
 #endif
 
@@ -117,7 +116,7 @@ void ChargeLimits::pre_setup()
             {"duration",       Config::Int(0, -1, 10)},
             {"energy_wh",      Config::Int(0, -1, std::numeric_limits<int32_t>::max())},
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-            {"soc_target_pct", Config::Int(0, -1, 100)},
+            {"soc_pct", Config::Int(0, -1, 100)},
 #endif
         }),
         [this](const Config *conf) {
@@ -136,9 +135,9 @@ void ChargeLimits::pre_setup()
             }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-            int soc_target_pct = conf->get("soc_target_pct")->asInt();
-            if (soc_target_pct >= 0) {
-                this->apply_soc_target_override(static_cast<uint32_t>(soc_target_pct));
+            int soc_pct = conf->get("soc_pct")->asInt();
+            if (soc_pct >= 0) {
+                this->apply_soc_target_override(static_cast<uint32_t>(soc_pct));
             }
 #endif
         }
@@ -185,8 +184,8 @@ void ChargeLimits::apply_soc_target_override(uint32_t soc_target) {
     // This is not the same pattern as the apply_duration/energy_override functions,
     // because the SoC target is an absolute value (i.e. "charge to 80%"), not a relative
     // one such as the duration ("charge for one hour") or the energy "charge 10 kWh").
-    active_limits.get("soc_target_pct")->updateUint(soc_target);
-    state.get("soc_target_pct")->updateUint(soc_target);
+    active_limits.get("soc_pct")->updateUint(soc_target);
+    state.get("target_soc_pct")->updateUint(soc_target);
 }
 #endif
 
@@ -206,7 +205,7 @@ void ChargeLimits::register_urls()
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
     api.addCommand("charge_limits/override_soc", &override_soc, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        this->apply_soc_target_override(override_soc.get("soc_target_pct")->asUint());
+        this->apply_soc_target_override(override_soc.get("soc_pct")->asUint());
     }, true);
 #endif
 
@@ -228,7 +227,7 @@ void ChargeLimits::register_urls()
         }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-        state.get("soc_target_pct")->updateUint(active_limits.get("soc_target_pct")->asUint());
+        state.get("target_soc_pct")->updateUint(active_limits.get("soc_pct")->asUint());
 #endif
     }, true);
 
@@ -248,7 +247,7 @@ void ChargeLimits::register_urls()
                 active_limits.get("duration"      )->updateUint(config.get("duration"      )->asUint());
                 active_limits.get("energy_wh"     )->updateUint(config.get("energy_wh"     )->asUint());
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-                active_limits.get("soc_target_pct")->updateUint(config.get("soc_target_pct")->asUint());
+                active_limits.get("soc_pct")->updateUint(config.get("soc_pct")->asUint());
 #endif
 
                 evse_common.set_charge_limits_slot(32000, true);
@@ -258,8 +257,7 @@ void ChargeLimits::register_urls()
                 state.get("target_timestamp_ms")->updateUint(map_duration(active_limits.get("duration")->asUint()));
                 state.get("target_energy_kwh")->updateFloat(NAN);
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-                state.get("soc_target_pct")->updateUint(0);
-                state.get("current_soc_pct")->updateFloat(NAN);
+                state.get("target_soc_pct")->updateUint(0);
 #endif
             }
         } else { // charging
@@ -300,16 +298,15 @@ void ChargeLimits::register_urls()
 
             // SoC target check
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
-            if (active_limits.get("soc_target_pct")->asUint() > 0 && ev_meter_has_soc) {
+            if (active_limits.get("soc_pct")->asUint() > 0 && ev_meter_has_soc) {
                 if (!was_charging) {
-                    state.get("soc_target_pct")->updateUint(active_limits.get("soc_target_pct")->asUint());
+                    state.get("target_soc_pct")->updateUint(active_limits.get("soc_pct")->asUint());
                 }
 
                 float soc = NAN;
                 meters.get_soc(ev_meter_slot, &soc);
-                state.get("current_soc_pct")->updateFloat(soc);
 
-                if (!isnan(soc) && soc >= static_cast<float>(active_limits.get("soc_target_pct")->asUint())) {
+                if (!isnan(soc) && soc >= static_cast<float>(active_limits.get("soc_pct")->asUint())) {
                     target_current = 0;
                 }
             }

@@ -332,8 +332,8 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                 ["0", __("charge_limits.content.unlimited")],
                                 ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
                             ]}
-                            value={s.soc_target_pct}
-                            onValue={(v) => this.setState({soc_target_pct: Number(v)})}/>
+                            value={s.soc_pct}
+                            onValue={(v) => this.setState({soc_pct: Number(v)})}/>
                         </FormRow>;
                     })()}
 

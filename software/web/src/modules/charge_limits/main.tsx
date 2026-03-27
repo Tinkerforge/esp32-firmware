@@ -225,15 +225,17 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
         let soc_row = <></>;
 
         if (options.PRODUCT_ID_IS_WARP4) {
-            let ev_has_soc = false;
+            let ev_soc = -1;
+            // TODO: cache this!
             for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
                 try {
                     const meter_config = API.get_unchecked(`meters/${i}/config`);
                     if (meter_config[1]?.location !== MeterLocation.EV)
                         continue;
                     const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
-                    if (Array.isArray(value_ids) && value_ids.indexOf(MeterValueID.StateOfCharge) >= 0) {
-                        ev_has_soc = true;
+                    let ev_soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge)
+                    if (ev_soc_idx >= 0) {
+                        ev_soc = API.get_unchecked(`meters/${i}/values`)[ev_soc_idx];
                         break;
                     }
                 } catch {
@@ -241,7 +243,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                 }
             }
 
-            if (ev_has_soc) {
+            if (ev_soc != -1) {
                 let soc_items: [string, string][] = [
                     ["0", __("charge_limits.content.unlimited")],
                     ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
@@ -249,20 +251,21 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
 
                 let soc_placeholder = __("charge_limits.content.unlimited");
 
-                if (config_in_use.soc_target_pct != 0) {
-                    soc_placeholder = config_in_use.soc_target_pct + " %";
-                    if (state.current_soc_pct != null) {
-                        soc_placeholder += " | " + __("charge_limits.content.soc_currently") + " " + util.toLocaleFixed(state.current_soc_pct, 0) + " %";
+                if (config_in_use.soc_pct != 0) {
+                    soc_placeholder = config_in_use.soc_pct + " %";
+                    console.log(ev_soc);
+                    if (ev_soc != null) { // ev_soc is NaN. NaN is serialized as null in JSON.
+                        soc_placeholder += " | " + __("charge_limits.content.soc_currently") + " " + util.toLocaleFixed(ev_soc, 0) + " %";
                     }
                 }
 
-                let soc_conf_idx = soc_items.findIndex(x => x[0] == config.soc_target_pct.toString());
+                let soc_conf_idx = soc_items.findIndex(x => x[0] == config.soc_pct.toString());
                 if (soc_conf_idx >= 0) {
                     soc_items[soc_conf_idx][1] += " " + __("charge_limits.content.configured");
                 }
 
-                if (config.soc_target_pct != config_in_use.soc_target_pct) {
-                    let soc_active_idx = soc_items.findIndex(x => x[0] == config_in_use.soc_target_pct.toString());
+                if (config.soc_pct != config_in_use.soc_pct) {
+                    let soc_active_idx = soc_items.findIndex(x => x[0] == config_in_use.soc_pct.toString());
                     if (soc_active_idx >= 0) {
                         soc_items[soc_active_idx][1] += " " + __("charge_limits.content.overridden");
                     }
@@ -273,7 +276,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                         placeholder={soc_placeholder}
                         value=""
                         onValue={(v) => {
-                            API.call("charge_limits/override_soc", {soc_target_pct: parseInt(v)}, () => __("charge_limits.script.override_failed"));
+                            API.call("charge_limits/override_soc", {soc_pct: parseInt(v)}, () => __("charge_limits.script.override_failed"));
                         }}/>
                 </FormRow>
             }
