@@ -28,6 +28,7 @@ interface FormSeparatorProps {
     help?: ComponentChildren;
     first?: boolean;
     modal?: boolean;
+    small?: boolean;
     children?: ComponentChildren;
 }
 
@@ -39,7 +40,7 @@ export class FormSeparator extends Component<FormSeparatorProps, FormSeparatorSt
     render() {
         return <>
             <div class={"row mb-3 border-bottom" + (this.props.heading && !this.props.first ? " pt-3 " : " pt-0 ") + (this.props.rowClass ? this.props.rowClass : "")}>
-                {this.props.heading && <div class="col-auto"><h3 class={"form-separator " + (this.props.headingClass ? this.props.headingClass : "")}>{this.props.heading}</h3></div>}
+                {this.props.heading && <div class="col-auto"><h3 class={(this.props.small ? "form-separator-sm" : "form-separator") + " " + (this.props.headingClass ? this.props.headingClass : "")}>{this.props.heading}</h3></div>}
                 {this.props.help && <span class="col-auto" style="padding-top: 5px;" onClick={() => this.setState({help_visible: !this.state.help_visible})}><HelpCircle {...{class: "help-circle" + (this.state.help_visible ? " help-circle-expanded" : ""), style: "cursor: pointer;"} as any}/></span>}
                 <div class="col" />
                 {this.props.children && <div class="col-auto">

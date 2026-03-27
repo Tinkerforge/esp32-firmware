@@ -35,7 +35,7 @@ interface CollapsedSectionState {
 export class CollapsedSection extends Component<CollapsedSectionProps, CollapsedSectionState> {
     render() {
         return <>
-            <FormSeparator heading={this.props.heading || __("component.collapsed_section.heading")} headingClass={this.props.modal ? "mt-2 form-label" : "mt-1"} rowClass={this.props.modal ? "gx-0" : undefined}>
+            <FormSeparator heading={this.props.heading || __("component.collapsed_section.heading")} headingClass={this.props.modal ? "mt-2" : "mt-1"} rowClass={this.props.modal ? "gx-0" : undefined} small={this.props.modal}>
                 <Button variant="primary" className="mb-2" onClick={() => this.setState({visible: !this.state.visible})}>
                     {this.state.visible ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
                 </Button>

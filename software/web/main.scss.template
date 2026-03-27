@@ -107,7 +107,7 @@ body {
 }
 
 .form-label {
-    font-size: 1.25rem !important;
+    font-size: 1.25rem;
     line-height: 1.2;
 }
 
@@ -599,6 +599,10 @@ a:not(:hover) {
 
 .form-separator {
     font-size: 1.75rem;
+}
+
+.form-separator-sm {
+    font-size: 1.25rem;
 }
 
 .status-meters-chart {
