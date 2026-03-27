@@ -64,7 +64,7 @@ def main():
 \begin{{tabularx}}{{0.475\textwidth}}{{l >{{\raggedleft\arraybackslash}}X}}
 \toprule
 Modell           & {[x[2:] for x in report["qr_code"].split(";") if x.startswith("T:")][0]} \\
-Firmware-Version & {report["firmware_version"]} \\
+Firmware-Version & {report.get("firmware_version", "N/A")} \\
 Seriennummer     & {report["serial"]} \\
 Prüfdatum        & {datetime.fromisoformat(report["start"]).astimezone().strftime("%d.%m.%Y %H:%M:%S")} \\
 \bottomrule
