@@ -185,8 +185,8 @@ void ChargeLimits::apply_soc_target_override(uint32_t soc_target) {
     // This is not the same pattern as the apply_duration/energy_override functions,
     // because the SoC target is an absolute value (i.e. "charge to 80%"), not a relative
     // one such as the duration ("charge for one hour") or the energy "charge 10 kWh").
-    active_limits.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
-    state.get("soc_target_pct")->updateUint(override_soc.get("soc_target_pct")->asUint());
+    active_limits.get("soc_target_pct")->updateUint(soc_target);
+    state.get("soc_target_pct")->updateUint(soc_target);
 }
 #endif
 
