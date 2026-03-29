@@ -192,11 +192,11 @@ TF_HALCommon *tf_hal_get_common(TF_HAL *hal) {
 }
 
 void tf_hal_log_message(const char *msg, size_t len) {
-    fwrite(msg, 1, len, stdout);
+    printf("%.*s", (int)len, msg);
 }
 
 void tf_hal_log_newline(void) {
-    fputc('\n', stdout);
+    printf("\n");
 }
 
 #if TF_IMPLEMENT_STRERROR != 0
