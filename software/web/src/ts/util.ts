@@ -323,6 +323,8 @@ function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: 
     continuation(undefined, eventTarget);
 }
 
+let last_features: any = null;
+
 // Copy of keep_as_first parameter of setupEventSource
 let k_a_f: boolean;
 const wsOnMessageCallback = (e: MessageEvent) => {
@@ -354,6 +356,21 @@ const wsOnMessageCallback = (e: MessageEvent) => {
                     window.location.reload();
                     return;
                 }
+            }
+
+            if (obj["topic"] == "info/features") {
+                if (last_features != null) {
+                    for (let x of last_features) {
+                        if ((obj["payload"] as string[]).indexOf(x) != -1)
+                            continue;
+                        // A feature was removed.
+                        // This is only allowed when the device restarts.
+                        // Reload the web interface because we assume that features are never removed.
+                        window.location.reload();
+                        return;
+                    }
+                }
+                last_features = obj["payload"];
             }
 
             topics.push(obj["topic"]);
