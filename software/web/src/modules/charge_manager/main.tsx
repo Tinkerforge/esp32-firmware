@@ -569,10 +569,10 @@ function CMStatusCharger(props: {
     return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
                 <div class="card-header">
                     <div class="row gx-2 align-items-center">
-                        <div class="col">
+                        { props.central_auth_enabled && <div class="col">
                             <h5 class="mb-0">{name_link}</h5>
                             {user_display_name ? <div class="text-muted" style="font-size: 0.875rem;">{__("charge_manager.script.currently_charging_user")}: {user_display_name}</div> : null}
-                        </div>
+                        </div> }
                         <div class="col-auto">
                             <InputSelect
                                 items={modes}
