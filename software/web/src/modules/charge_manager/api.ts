@@ -35,6 +35,12 @@ type ChargerState = {
     a: CASAuthState,
     /** user_id - ID of the currently authenticated/charging user */
     uid: number,
+    /** tag_id - Last NFC tag ID seen on this charger (colon-separated hex) */
+    ti: string,
+    /** tag_type - Last NFC tag type seen on this charger */
+    tt: number,
+    /** tag_last_seen - Milliseconds since tag was last seen */
+    ts: number,
 };
 
 interface ServCharger {

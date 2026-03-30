@@ -23,8 +23,7 @@ import { h, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
@@ -32,6 +31,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { DiscoveryResultItem, DiscoveryResultGroup } from "ts/components/discovery_result";
 import { Plus } from "react-feather";
+import { NFCSeenTag } from "../../ts/util";
 
 export function NFCNavbar() {
     return (
@@ -101,9 +101,8 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
 
         const MAX_AUTHORIZED_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
 
-        type NFCSeenTag = API.getType['nfc/seen_tags'][0];
-
-        let seen_tags = API.get('nfc/seen_tags');
+        let local_seen_tags = API.get('nfc/seen_tags');
+        let seen_tags = util.get_all_seen_tags();
         let unauth_seen_tags: NFCSeenTag[] = [];
 
         let auth_seen_tags: NFCSeenTag[] = [];
@@ -131,7 +130,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                 unauth_seen_tags.push(seen_tags[i]);
             }
 
-        const injectedTag = seen_tags[seen_tags.length - 1];
+        const injectedTag = local_seen_tags[local_seen_tags.length - 1];
         if (injectedTag && injectedTag.last_seen != 0) {
             const idx = auth_seen_tags.findIndex((t) => t.tag_id == injectedTag.tag_id && t.tag_type == injectedTag.tag_type);
             if (idx != -1 && auth_seen_tags[idx].last_seen > injectedTag.last_seen) {

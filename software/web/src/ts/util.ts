@@ -1163,3 +1163,40 @@ export function getChartColors() {
 export function isDarkMode(): boolean {
     return document.documentElement.getAttribute('data-bs-theme') === 'dark';
 }
+
+// Get NFC tags from managed chargers, merged with local seen tags.
+// Returns all seen tags (local + remote), deduplicated.
+export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
+export function get_all_seen_tags(): NFCSeenTag[] {
+    let all_tags: NFCSeenTag[] = API.get('nfc/seen_tags').map(t => {
+        const tag: NFCSeenTag = {...t, charger_name: null};
+        return tag;
+    });
+
+    if (API.hasModule("charge_manager") && API.get("charge_manager/config").enable_central_auth) {
+        let cm_state = API.get_unchecked("charge_manager/state");
+        if (cm_state && cm_state.chargers) {
+            for (let charger of cm_state.chargers) {
+                if (!charger.ti || charger.ti === "")
+                    continue;
+                // Check if tag already exists
+                const idx = all_tags.findIndex(t => t.tag_id === charger.ti && t.tag_type === charger.tt);
+                if (idx !== -1) {
+                    // If remote tag is newer, update last_seen
+                    if (all_tags[idx].last_seen > charger.ts) {
+                        all_tags[idx] = {
+                            charger_name: charger.n,
+                            tag_id: charger.ti,
+                            tag_type: charger.tt,
+                            last_seen: charger.ts
+                        };
+                    }
+                    continue;
+                }
+                all_tags.push({tag_id: charger.ti, tag_type: charger.tt, last_seen: charger.ts, charger_name: charger.n});
+            }
+        }
+    }
+
+    return all_tags;
+}
