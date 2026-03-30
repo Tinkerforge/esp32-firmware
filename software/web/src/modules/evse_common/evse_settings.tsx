@@ -63,8 +63,7 @@ type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
 export class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, EVSESettingsState> {
     constructor() {
         super("charge_limits/default_limits",
-              () => __("evse.script.save_failed"),
-              () => __("evse.script.reboot_content_changed"));
+              () => __("evse.script.save_failed"));
 
         util.addApiEventListener('evse/gpio_configuration', () => {
             this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
