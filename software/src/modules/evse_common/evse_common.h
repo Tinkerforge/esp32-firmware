@@ -75,7 +75,7 @@
 
 class IEvseBackend : public PhaseSwitcherBackend, public IDebugProtocolBackend
 {
-    friend class EvseCommon;
+    friend class EVSECommon;
 
 protected:
     IEvseBackend() {}
@@ -117,7 +117,7 @@ protected:
     virtual void update_all_data() = 0;
 };
 
-class EvseCommon final : public IModule
+class EVSECommon final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
                        , public IAutomationBackend
 #endif
@@ -133,7 +133,7 @@ private:
     micros_t last_external_update = 0_us;
 
 public:
-    EvseCommon();
+    EVSECommon();
 
     void pre_setup() override;
     void setup() override;

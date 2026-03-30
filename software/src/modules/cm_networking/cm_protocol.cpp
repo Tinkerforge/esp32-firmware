@@ -612,7 +612,9 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
             ConfigChargeMode supported_charge_modes[ARRAY_SIZE(command_pkt.v3.supported_charge_modes) * 8];
             size_t supported_charge_mode_length = 0;
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
             evse_common.set_central_user_management_enabled(CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_IS_SET(command_pkt.v1.command_flags));
+#endif
 
             bool ignore_allocation = false;
             if (command_pkt.header.version >= 3) {

@@ -854,12 +854,14 @@ export class ChargeTrackerStatus extends Component {
 
         let last_charges = API.get('charge_tracker/last_charges');
         let cc = API.get('charge_tracker/current_charge');
-        let evse_uptime = API.get('evse/low_level_state').uptime;
-        let energy_abs = API.get('meter/values').energy_abs;
         let users = API.get('users/config').users;
         let electricity_price = API.get('charge_tracker/config').electricity_price;
 
         let current_charge = <></>;
+
+//#if MODULE_EVSE_COMMON_AVAILABLE
+        let evse_uptime = API.get('evse/low_level_state').uptime;
+        let energy_abs = API.get('meter/values').energy_abs;
 
         if (cc.user_id != -1) {
             let charge_duration = evse_uptime - cc.evse_uptime_start
@@ -886,6 +888,7 @@ export class ChargeTrackerStatus extends Component {
                 </ListGroup>
             </FormRow>;
         }
+//#endif
 
         let last_charges_list = last_charges.length == 0 ? <></>
             : <FormRow label={__("charge_tracker.status.last_charges")}>
