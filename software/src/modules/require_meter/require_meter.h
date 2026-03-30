@@ -34,15 +34,19 @@ class RequireMeter final : public IModule
 {
 private:
     ConfigRoot config;
+    int64_t event_id = -1;
+    uint64_t task_id = 0;
+
+    void apply_config();
+    void on_meter_found();
 
 public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void register_events() override;
 
-    void start_task();
     bool allow_charging(float meter_value);
+
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data);
