@@ -108,6 +108,11 @@ private:
     void setup_inner_socket();
     int start_ping();
     int stop_ping();
+    int poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason);
+    void release_inner_socket();
+    int begin_charge_log_send(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, const char *user_uuid_str, Language language);
+    int end_charge_log_send(int tcp_sock);
+    int send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language);
 
     std::unique_ptr<WireGuard> management = nullptr;
     Connection remote_connections[MAX_USER_CONNECTIONS] = {};
@@ -119,6 +124,7 @@ private:
     bool management_request_failed = false;
     bool management_request_allowed = true;
     bool management_auth_failed = false;
+    bool charge_log_sending = false;
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
     uint64_t management_task_id = 0;

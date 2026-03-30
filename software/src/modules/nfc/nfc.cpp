@@ -23,7 +23,6 @@
 #include "generated/module_dependencies.h"
 #include "bindings/errors.h"
 #include "tools/hexdump.h"
-#include "generated/nfc_bricklet_firmware_bin.embedded.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_AUTHORIZED_TAGS 32
