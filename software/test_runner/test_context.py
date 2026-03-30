@@ -453,6 +453,7 @@ class TestContext:
         dt.is_warp()       # any WARP Charger
         dt.is_warp(3)      # only WARP3
         dt.is_warp([2, 3]) # WARP2 or WARP3
+        dt.is_eltako() # Eltako Wallbox
         """
         return DeviceType(self.api('info/name/type'))
 

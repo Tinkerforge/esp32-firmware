@@ -1,6 +1,7 @@
 class DeviceType:
     def __init__(self, type_string: str):
-        self._type = type_string
+        # Eltako's hostname prefix is wallbox. Translate to something sane.
+        self._type = type_string if type_string is not 'wallbox' else 'eltako'
 
     def is_warp(self, version: int | list[int] | None = None) -> bool:
         if version is None:
@@ -10,6 +11,9 @@ class DeviceType:
         if version == 1:
             return self._type == 'warp'
         return self._type == f'warp{version}'
+
+    def is_eltako(self) -> bool:
+        return self._type == 'eltako'
 
     def is_wem(self, version: int | list[int] | None = None) -> bool:
         if version is None:
