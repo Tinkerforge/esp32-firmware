@@ -61,6 +61,7 @@ class WARP3TestBox(TestBox):
     meter_relays: dict[Meter, tuple[bool, bool]] = field(default_factory=lambda: {
         'real': (False, False),
         'fake': (True, True),
+        'none': (True, True),
     })
 
     duty_cycle_ringbuf = []
