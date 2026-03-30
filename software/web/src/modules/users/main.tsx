@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import YaMD5 from "../../ts/yamd5";
@@ -29,7 +31,9 @@ import { InputText } from "../../ts/components/input_text";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { InputPassword } from "../../ts/components/input_password";
+//#if MODULE_EVSE_COMMON_AVAILABLE
 import { EVSE_SLOT_USER } from "../evse_common/api";
+//#endif
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -112,9 +116,11 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             },
         );
 
+//#if MODULE_EVSE_COMMON_AVAILABLE
         util.addApiEventListener('evse/slots', () => {
             this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
         });
+//#endif
     }
 
     isChangedUser(changed_user: User): boolean {
@@ -256,7 +262,9 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         await this.save_authentication_config(new_config.http_auth_enabled);
 
+//#if MODULE_EVSE_COMMON_AVAILABLE
         await API.save('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, () => __("evse.script.save_failed"), () => __("users.script.reboot_content_changed"));
+//#endif
     }
 
     setUser(i: number, val: Partial<User>) {

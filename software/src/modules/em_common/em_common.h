@@ -217,6 +217,8 @@ public:
         return backend->wem_get_data_storage(page, status, ret_data);
     }
 
+    ConfigRoot &get_low_level_state() {return low_level_state;}
+
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
 #endif

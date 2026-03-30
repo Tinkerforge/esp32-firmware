@@ -29,6 +29,7 @@
 
 #define USERNAME_FILE "/users/all_usernames"
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
 // are registered.
@@ -64,6 +65,14 @@ float get_energy()
     evse_common.get_charger_meter_energy(&energy);
     return energy;
 }
+#else
+void set_data_storage(uint8_t *buf) {}
+void get_data_storage(uint8_t *buf) {}
+void zero_user_slot_info() {}
+uint8_t get_charger_state() { return 0; }
+Config *get_user_slot() { return nullptr; }
+float get_energy() { return NAN; }
+#endif
 
 #define USER_SLOT_INFO_VERSION 1
 struct UserSlotInfo {
@@ -348,12 +357,13 @@ void Users::setup()
     if (config.get("next_user_id")->asUint() == 0)
         search_next_free_user();
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    evse_common.set_central_user_management_enabled(config.get("http_auth_enabled")->asBool());
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     bool central_auth_enabled = charge_manager.config.get("enable_central_auth")->asBool();
 #else
     bool central_auth_enabled = false;
 #endif
-
     if (!central_auth_enabled) {
         Config *user_slot = get_user_slot();
         bool charge_start_tracked = charge_tracker.currentlyCharging();
@@ -419,6 +429,7 @@ void Users::setup()
                 break;
         }
     }, 1_s, 1_s);
+#endif
 
     initialized = true;
 
@@ -535,7 +546,7 @@ bool Users::is_user_configured(uint8_t user_id)
     return false;
 }
 
-#if MODULE_EVSE_LED_AVAILABLE()
+#if MODULE_EVSE_LED_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
 static void check_waiting_for_start()
 {
     const Config *user_slot = (const Config *)api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
@@ -555,6 +566,7 @@ static void check_waiting_for_start()
 void Users::register_urls()
 {
     // No users (except anonymous) configured: Make sure the EVSE's user slot is disabled.
+#if MODULE_EVSE_COMMON_AVAILABLE()
     bool user_slot = false;
 
     if (api.hasFeature("evse"))
@@ -566,6 +578,7 @@ void Users::register_urls()
             {"enabled", false}
         }});
     }
+#endif
 
     api.addCommand("users/modify", &modify, {"digest_hash", "display_name", "username"}, [this](Language /*language*/, String &errmsg) {
         auto id = modify.get("id")->asUint();
@@ -692,7 +705,7 @@ void Users::register_urls()
         return request.send_bytes(200, buf.get(), read);
     });
 
-#if MODULE_EVSE_LED_AVAILABLE()
+#if MODULE_EVSE_LED_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
     task_scheduler.scheduleUncancelable([](){check_waiting_for_start();}, 1_s, 1_s);
 #endif
 }
@@ -747,9 +760,11 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
         return false;
 #endif
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
         return false;
+#endif
     // This is called whenever a user wants to trigger a charge action.
     // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
@@ -760,6 +775,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
         return false;
     }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
     uint8_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
     uint32_t tscs = evse_common.get_low_level_state().get("time_since_state_change")->asUint();
 
@@ -781,6 +797,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
         default: //Don't do anything in state A, D, and E/F
             break;
     }
+#endif
     return false;
 }
 
@@ -797,14 +814,22 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth
     if (charge_tracker.currentlyCharging())
         return false;
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
     uint32_t evse_uptime = evse_common.get_low_level_state().get("uptime")->asUint();
+#elif MODULE_EM_COMMON_AVAILABLE()
+    uint32_t evse_uptime = em_common.get_low_level_state().get("uptime")->asUint();
+#else
+    uint32_t evse_uptime = 0;
+#endif
     float meter_start = get_energy();
     uint32_t timestamp = rtc.timestamp_minutes();
 
     if (!charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info))
         return false;
     write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
+#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.set_user_current(current_limit);
+#endif
 
     return true;
 }
@@ -827,7 +852,13 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
 
         uint32_t charge_duration = 0;
         if (success) {
+#if MODULE_EVSE_COMMON_AVAILABLE()
             uint32_t now_seconds = evse_common.get_low_level_state().get("uptime")->asUint() / 1000;
+#elif MODULE_EM_COMMON_AVAILABLE()
+            uint32_t now_seconds = em_common.get_low_level_state().get("uptime")->asUint() / 1000;
+#else
+            uint32_t now_seconds = 0;
+#endif
             uint32_t start_seconds = info.evse_uptime_on_start / 1000;
             if (now_seconds < start_seconds) {
                 now_seconds += (0xFFFFFFFF / 1000);
@@ -842,7 +873,9 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
     }
 
     zero_user_slot_info();
+#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.set_user_current(0);
+#endif
 
     return true;
 }
