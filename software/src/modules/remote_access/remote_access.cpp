@@ -2354,28 +2354,6 @@ bool RemoteAccess::parse_uuid_string(const char *uuid_str, uint8_t *out)
     return out_idx == 16;
 }
 
-
-
-
-
-static bool parse_uuid_string(const char *uuid_str, uint8_t *out)
-{
-    if (strlen(uuid_str) != 36) return false;
-
-    const char *p = uuid_str;
-    if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
-
-    size_t out_idx = 0;
-    for (size_t i = 0; i < 36 && out_idx < 16; i++) {
-        if (p[i] == '-') continue;
-        if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
-        char hex[3] = {p[i], p[i + 1], '\0'};
-        out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
-        i++; // Skip the second hex digit
-    }
-    return out_idx == 16;
-}
-
 int RemoteAccess::poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason)
 {
     TickType_t start_tick = xTaskGetTickCount();
@@ -2443,7 +2421,7 @@ int RemoteAccess::begin_charge_log_send(
     const char *user_uuid_str,
     Language language)
 {
-    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+    if (!is_mgmt_connected()) {
         logger.printfln("Cannot send charge log: management connection not established");
         return -1;
     }
@@ -2503,9 +2481,12 @@ int RemoteAccess::begin_charge_log_send(
         const char *reason_str = "unknown";
         switch (static_cast<NackReason>(nack_reason)) {
             case NackReason::Busy: reason_str = "server busy"; break;
-            case NackReason::TooManyRequests: reason_str = "too many requests"; break;
+            case NackReason::ToManyRequests: reason_str = "too many requests"; break;
             case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
             case NackReason::Timeout: reason_str = "timeout"; break;
+            case NackReason::Unauthorized: reason_str = "unauthorized"; break;
+            case NackReason::InternalError: reason_str = "internal error"; break;
+            case NackReason::AlreadySent: reason_str = "already sent"; break;
             default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
         }
         logger.printfln("Charge log request was rejected: %s", reason_str);
@@ -2665,7 +2646,7 @@ int RemoteAccess::end_charge_log_send(int tcp_sock)
 
 int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language)
 {
-    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+    if (!is_mgmt_connected()) {
         logger.printfln("Cannot send charge log metadata: management connection not established");
         return -1;
     }
