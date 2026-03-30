@@ -322,7 +322,7 @@ class TestContext:
         start = time.monotonic()
         end = start + timeout
 
-        act = '___assert_fn not executed yet___'
+        act = '___assert_fn did not succeed yet___'
         while time.monotonic() <= end:
             try:
                 act = assert_fn()
@@ -330,7 +330,7 @@ class TestContext:
             except AssertionError:
                 time.sleep(poll_delay)
         else:
-            raise AssertionError(f"Timed out while waiting for {assert_fn=} (last value was {repr(act)}) to not fail\n" + self._get_callee())
+            raise AssertionError(f"Timed out while waiting for {assert_fn=} to not fail\n" + self._get_callee())
 
         return act
 
