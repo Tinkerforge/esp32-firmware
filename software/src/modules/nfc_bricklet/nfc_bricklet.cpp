@@ -20,9 +20,9 @@
 #include "nfc_bricklet.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "bindings/errors.h"
-#include "nfc_bricklet_firmware_bin.embedded.h"
+#include "generated/nfc_bricklet_firmware_bin.embedded.h"
 
 #include "gcc_warnings.h"
 
