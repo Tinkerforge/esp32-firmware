@@ -471,7 +471,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                                         : state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip) ?
                                                             __("component.discovery_result.already_added")
                                                         : null}
-                                                onClick={() => this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})}>
+                                                onClick={() => this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1, uid: 0}})}>
                                                     {util.remoteAccessMode ? <div>{s.hostname + ".local"} / {s.ip}</div> : <div><a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a> / <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a></div>}
                                               </DiscoveryResultItem>))
                                 }</DiscoveryResultGroup>

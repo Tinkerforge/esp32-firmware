@@ -353,11 +353,11 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInp
 
 #if MODULE_NFC_AVAILABLE()
         if (cache->has_feature_nfc) {
-            fillTagCache(ctx->tag);
+            fillTagCache(ctx->tag, ctx->tag_id_str);
             char buf[NFC_TAG_ID_LENGTH * 2]; // * 2: this is in hex without separator.
             val.u = 0;
             if (ctx->tag.unwrap().last_seen < 60000) { // Only show tag if it was seen in the last minute.
-                memcpy(buf, ctx->tag.unwrap().tag_id, NFC_TAG_ID_LENGTH * 2);
+                memcpy(buf, ctx->tag_id_str, NFC_TAG_ID_LENGTH * 2);
                 auto offset = (reg - 4020) * 4; // 4 hex digits per 16 bit register
                 for (int i = 0; i < 8; ++i) { // 8 hex digits per 32 bit tworegs value
                     // buf is only null-terminated if a tag id has less than 10 bytes.
