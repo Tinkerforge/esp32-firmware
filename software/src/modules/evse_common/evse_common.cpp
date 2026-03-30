@@ -33,7 +33,7 @@ extern uint32_t local_uid_num;
 
 static constexpr auto CHARGE_MODE_REQUEST_TIMEOUT = 10_s;
 
-EvseCommon::EvseCommon()
+EVSECommon::EVSECommon()
 {
 #if MODULE_EVSE_AVAILABLE()
     backend = &evse;
@@ -44,7 +44,7 @@ EvseCommon::EvseCommon()
 #endif
 }
 
-void EvseCommon::pre_setup()
+void EVSECommon::pre_setup()
 {
     button_state = Config::Object({
         {"button_press_time", Config::Uint32(0)},
@@ -201,7 +201,7 @@ void EvseCommon::pre_setup()
     });
 }
 
-bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
+bool EVSECommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
 {
     uint16_t old_current;
     bool old_enabled;
@@ -225,7 +225,7 @@ bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled
     return true;
 }
 
-bool EvseCommon::apply_defaults()
+bool EVSECommon::apply_defaults()
 {
     if (should_factory_reset_bricklets) {
         this->factory_reset();
@@ -318,7 +318,7 @@ bool EvseCommon::apply_defaults()
     return true;
 }
 
-void EvseCommon::setup()
+void EVSECommon::setup()
 {
     api.restorePersistentConfig("evse/meter_config", &meter_config);
     charger_meter_slot = meter_config.get("slot")->asUint();
@@ -364,7 +364,7 @@ void EvseCommon::setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EvseCommon::has_triggered(const Config *conf, void *data)
+bool EVSECommon::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
     uint32_t *states = (uint32_t *)data;
@@ -393,7 +393,7 @@ bool EvseCommon::has_triggered(const Config *conf, void *data)
     return false;
 }
 
-void EvseCommon::handle_external_current_wd_task()
+void EVSECommon::handle_external_current_wd_task()
 {
     bool need = automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd);
 
@@ -414,7 +414,7 @@ void EvseCommon::handle_external_current_wd_task()
     }
 }
 #endif
-void EvseCommon::setup_evse()
+void EVSECommon::setup_evse()
 {
     if (!backend->setup_device()) {
         return;
@@ -426,7 +426,7 @@ void EvseCommon::setup_evse()
     backend->set_initialized(true);
 }
 
-void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
+void EVSECommon::send_cm_client_update(bool urgent, bool request_reallocation) {
 #if MODULE_CM_NETWORKING_AVAILABLE()
     uint16_t supported_current = 32000;
     for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
@@ -464,7 +464,7 @@ void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
 }
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
-void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
+void EVSECommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
 {
     if (backend == nullptr)
         return;
@@ -498,7 +498,7 @@ void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
 }
 #endif
 
-void EvseCommon::register_urls()
+void EVSECommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback) {
@@ -925,7 +925,7 @@ void EvseCommon::register_urls()
     api.addState("evse/enumerate_value", &enumerate_value);
 }
 
-void EvseCommon::register_events()
+void EVSECommon::register_events()
 {
 #if MODULE_AUTOMATION_AVAILABLE()
     event.registerEvent("evse/state", {}, [this](const Config *cfg) {
@@ -974,39 +974,39 @@ void EvseCommon::register_events()
 #endif
 }
 
-void EvseCommon::set_managed_current(uint16_t current)
+void EVSECommon::set_managed_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current);
     last_current_update = now_us();
     shutdown_logged = false;
 }
 
-void EvseCommon::set_user_current(uint16_t current)
+void EVSECommon::set_user_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_USER, current);
 }
 
-void EvseCommon::set_modbus_current(uint16_t current)
+void EVSECommon::set_modbus_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP, current);
 }
 
-void EvseCommon::set_modbus_enabled(bool enabled)
+void EVSECommon::set_modbus_enabled(bool enabled)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0);
 }
 
-uint32_t EvseCommon::get_charger_meter()
+uint32_t EVSECommon::get_charger_meter()
 {
     return charger_meter_slot;
 }
 
-MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_t max_age)
+MeterValueAvailability EVSECommon::get_charger_meter_power(float *power, micros_t max_age)
 {
     return meters.get_power(this->get_charger_meter(), power, max_age);
 }
 
-MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micros_t max_age)
+MeterValueAvailability EVSECommon::get_charger_meter_energy(float *energy, micros_t max_age)
 {
     if (!this->use_imexsum)
         return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
@@ -1018,17 +1018,17 @@ MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micro
     return result;
 }
 
-bool EvseCommon::get_use_imexsum()
+bool EVSECommon::get_use_imexsum()
 {
     return use_imexsum;
 }
 
-void EvseCommon::set_require_meter_blocking(bool blocking)
+void EVSECommon::set_require_meter_blocking(bool blocking)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_REQUIRE_METER, blocking ? 0 : 32000);
 }
 
-void EvseCommon::set_require_meter_enabled(bool enabled)
+void EVSECommon::set_require_meter_enabled(bool enabled)
 {
     if (!initialized)
         return;
@@ -1037,7 +1037,7 @@ void EvseCommon::set_require_meter_enabled(bool enabled)
     backend->set_charging_slot_active(CHARGING_SLOT_REQUIRE_METER, enabled);
 }
 
-bool EvseCommon::get_require_meter_blocking()
+bool EVSECommon::get_require_meter_blocking()
 {
     uint16_t current = 0;
     bool enabled = get_require_meter_enabled();
@@ -1048,105 +1048,105 @@ bool EvseCommon::get_require_meter_blocking()
     return enabled && current == 0;
 }
 
-bool EvseCommon::get_require_meter_enabled()
+bool EVSECommon::get_require_meter_enabled()
 {
     return require_meter_enabled.get("enabled")->asBool();
 }
 
-void EvseCommon::set_charge_limits_slot(uint16_t current, bool enabled)
+void EVSECommon::set_charge_limits_slot(uint16_t current, bool enabled)
 {
     backend->set_charging_slot(CHARGING_SLOT_CHARGE_LIMITS, current, enabled, false);
 }
 
-void EvseCommon::set_ocpp_current(uint16_t current)
+void EVSECommon::set_ocpp_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_OCPP, current);
 }
 
-uint16_t EvseCommon::get_ocpp_current()
+uint16_t EVSECommon::get_ocpp_current()
 {
     return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
 }
 
-void EvseCommon::set_eebus_current(uint16_t current)
+void EVSECommon::set_eebus_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_EEBUS, current);
 }
 
-uint16_t EvseCommon::get_eebus_current()
+uint16_t EVSECommon::get_eebus_current()
 {
     return slots.get(CHARGING_SLOT_EEBUS)->get("max_current")->asUint();
 }
 
-void EvseCommon::set_p14a_enwg_current(uint16_t current)
+void EVSECommon::set_p14a_enwg_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_P14A_ENWG, current);
 }
 
-uint16_t EvseCommon::get_p14a_enwg_current()
+uint16_t EVSECommon::get_p14a_enwg_current()
 {
     return slots.get(CHARGING_SLOT_P14A_ENWG)->get("max_current")->asUint();
 }
 
-void EvseCommon::factory_reset()
+void EVSECommon::factory_reset()
 {
     backend->factory_reset();
 }
 
-void EvseCommon::reset()
+void EVSECommon::reset()
 {
     backend->reset();
 }
 
-void EvseCommon::set_data_storage(uint8_t page, const uint8_t *data)
+void EVSECommon::set_data_storage(uint8_t page, const uint8_t *data)
 {
     backend->set_data_storage(page, data);
 }
 
-void EvseCommon::get_data_storage(uint8_t page, uint8_t *data)
+void EVSECommon::get_data_storage(uint8_t page, uint8_t *data)
 {
     backend->get_data_storage(page, data);
 }
 
-void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v,  uint8_t *ret_status) {
+void EVSECommon::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v,  uint8_t *ret_status) {
     backend->set_indicator_led(indication, duration, color_h, color_s, color_v, ret_status);
 }
 
-bool EvseCommon::get_central_user_management_enabled()
+bool EVSECommon::get_central_user_management_enabled()
 {
     return central_user_management_enabled;
 }
 
-void EvseCommon::set_central_user_management_enabled(bool enabled) {
+void EVSECommon::set_central_user_management_enabled(bool enabled) {
     central_user_management_enabled = enabled;
 }
 
-ConfigRoot &EvseCommon::get_slots()
+ConfigRoot &EVSECommon::get_slots()
 {
     return slots;
 }
 
-ConfigRoot &EvseCommon::get_low_level_state()
+ConfigRoot &EVSECommon::get_low_level_state()
 {
     return low_level_state;
 }
 
-ConfigRoot &EvseCommon::get_state()
+ConfigRoot &EVSECommon::get_state()
 {
     return state;
 }
 
-bool EvseCommon::get_management_enabled()
+bool EVSECommon::get_management_enabled()
 {
     return management_enabled.get("enabled")->asBool();
 }
 
-uint32_t EvseCommon::get_evse_version()
+uint32_t EVSECommon::get_evse_version()
 {
     return hardware_configuration.get("evse_version")->asUint();
 }
 
-void EvseCommon::notify_new_auth() {
+void EVSECommon::notify_new_auth() {
     auto state = this->state.get("iec61851_state")->asUint8();
     if (state != 0 && state != 1)
         return;
