@@ -1830,6 +1830,13 @@ static int current_capacity(const StageContext &sc, const CurrentLimits *limits,
         *out_limit = CurrentCapacityLimit::SupportedByCharger;
     }
 
+    // Always respect the user's current limit, even when ignoring the vehicle's requested current.
+    if (state->user_current < requested_current) {
+        requested_current = state->user_current;
+        if (out_limit != nullptr)
+            *out_limit = CurrentCapacityLimit::UserLimit;
+    }
+
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
     auto capacity = std::max(requested_current - allocated_current, 0);
