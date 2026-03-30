@@ -192,6 +192,9 @@ void ChargeManager::pre_setup()
         {"dc", CurrentDecision::getUnion()},
         {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
         {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)
+        {"ti", Config::Str("", 0, 29)}, // "tag_id" - Last NFC tag ID seen on this charger (colon-separated hex)
+        {"tt", Config::Uint8(0)},       // "tag_type" - Last NFC tag type seen on this charger
+        {"ts", Config::Uint32(0)},      // "tag_last_seen" - Milliseconds since tag was last seen
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -547,6 +550,24 @@ static void update_authentication(
     }
 }
 
+static void update_nfc_tag_info(
+    uint8_t client_id,
+    cm_state_v5 *v5,
+    ChargerState *charger_state)
+{
+    auto &target = charger_state[client_id];
+
+    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0 || v5->nfc_tag_id_len == 0) {
+        target.last_nfc_tag_id_len = 0;
+        return;
+    }
+
+    target.last_nfc_tag_type = v5->nfc_tag_type;
+    target.last_nfc_tag_id_len = v5->nfc_tag_id_len;
+    memcpy(target.last_nfc_tag_id, v5->nfc_tag_id, sizeof(target.last_nfc_tag_id));
+    target.last_nfc_tag_last_seen_s = v5->nfc_last_seen_s;
+}
+
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
     if (client_id >= config->get("chargers")->count())
         return;
@@ -660,6 +681,7 @@ void ChargeManager::start_manager_task()
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
 
+            update_nfc_tag_info(client_id, v5, this->charger_state);
             update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
             update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
 
@@ -1599,6 +1621,27 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     }
     charger_cfg->get("a")->updateEnum(auth_state);
     charger_cfg->get("uid")->updateInt(charger.authenticated_user_id);
+
+    // Update last seen NFC tag info
+    if (charger.last_nfc_tag_id_len > 0) {
+        static const char *hex_lookup = "0123456789ABCDEF";
+        char tag_id_str[NFC_TAG_ID_STRING_LENGTH + 1];
+        size_t chars = charger.last_nfc_tag_id_len * 3;
+        for (size_t c = 0; c < chars; c += 3) {
+            uint8_t byte = charger.last_nfc_tag_id[c / 3];
+            tag_id_str[c]     = hex_lookup[byte >> 4];
+            tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
+            tag_id_str[c + 2] = ':';
+        }
+        tag_id_str[chars - 1] = '\0';
+        charger_cfg->get("ti")->updateString(tag_id_str);
+        charger_cfg->get("tt")->updateUint(charger.last_nfc_tag_type);
+        charger_cfg->get("ts")->updateUint(charger.last_nfc_tag_last_seen_s * 1000);
+    } else {
+        charger_cfg->get("ti")->updateString("");
+        charger_cfg->get("tt")->updateUint(0);
+        charger_cfg->get("ts")->updateUint(0);
+    }
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);

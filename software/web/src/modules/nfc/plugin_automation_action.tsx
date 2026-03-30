@@ -43,14 +43,17 @@ function get_nfc_inject_tag_table_children(action: NfcAutomationAction) {
 }
 
 function get_nfc_inject_tag_edit_children(action: NfcAutomationAction, on_action: (action: AutomationAction) => void) {
-    const tags = API.get("nfc/seen_tags");
+    const tags = util.get_all_seen_tags();
     const known_tags = API.get("nfc/config").authorized_tags;
     const seen_tags = tags.filter(t => t.tag_id != "" && !known_tags.find(tag => t.tag_id == tag.tag_id)).map(t => <ListGroupItem action type="button" onClick={() => {
         if (t.tag_id != "") {
             on_action(util.get_updated_union(action, {tag_id: t.tag_id, tag_type: t.tag_type}));
         }
         }}>
-            <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                <span class="text-end">{t.charger_name}</span>
+            </div>
             <div class="d-flex w-100 justify-content-between">
                 <span class="text-start">{translate_unchecked(`nfc.automation.type_${t.tag_type}`)}</span>
                 <span class="text-end">{__("nfc.automation.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.automation.last_seen_suffix")}</span>

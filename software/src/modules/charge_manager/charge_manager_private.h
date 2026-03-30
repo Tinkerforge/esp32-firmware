@@ -182,6 +182,12 @@ struct ChargerState {
 
     // Timestamp when a known NFC tag was last seen without a car connected
     micros_t known_tag_no_car_timestamp;
+
+    // Last NFC tag seen on this charger (from cm_state_v5)
+    uint8_t last_nfc_tag_type;
+    uint8_t last_nfc_tag_id_len;
+    uint8_t last_nfc_tag_id[10];
+    uint16_t last_nfc_tag_last_seen_s;
 };
 
 struct ChargerAllocationState {
