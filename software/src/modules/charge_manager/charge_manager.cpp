@@ -451,8 +451,9 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
     }
 
     auto nfc_timestamp = now_us() - seconds_t{v5->nfc_last_seen_s};
-    if (nfc_timestamp < last_plug_out)
+    if (nfc_timestamp < last_plug_out) {
         return NOT_AUTHORIZED;
+    }
 
     // Only accept a NFC tag if it was seen in the last 30 seconds and after the last time a car was unplugged.
     if(deadline_elapsed(nfc_timestamp + 30_s)) {
@@ -468,8 +469,9 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
     memcpy(tag.id_bytes, v5->nfc_tag_id, sizeof(v5->nfc_tag_id));
 
     int16_t user_id = nfc.get_user_id(tag);
-    if (user_id == -1)
+    if (user_id == -1) {
         return UNKNOWN_NFC_TAG;
+    }
 
     return user_id;
 #else
