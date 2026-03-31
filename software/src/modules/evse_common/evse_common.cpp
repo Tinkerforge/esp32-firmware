@@ -709,6 +709,20 @@ void EvseCommon::register_urls()
             apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
         else
             apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
+
+        if (!enabled) {
+            constexpr uint16_t h_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t s_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t v_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+
+            evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
+        }
     }, false);
 
     api.addState("evse/user_current", &user_current);
