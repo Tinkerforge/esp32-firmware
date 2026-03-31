@@ -31,8 +31,8 @@ import {InputSubnet} from "./input_subnet";
 
 export interface IPConfig {
     ip: string;
-    gateway: string;
-    subnet: string;
+    gateway?: string;
+    subnet?: string;
     dns?: string;
     dns2?: string;
 }
@@ -124,6 +124,11 @@ export class IPConfiguration extends Component<IPConfigurationProps, IPConfigura
         let dhcp = props.value.ip == "0.0.0.0";
         if (ipv6Mode) {
             dhcp = props.value.ip == "::";
+        }
+        if (!dhcp && props.value.ip !== undefined && props.value.ip !== "") {
+            this.ip_value = props.value.ip;
+        } else if (dhcp && this.ip_value !== "") {
+            this.ip_value = "";
         }
         let gateway_out_of_subnet = false;
         let ip_is_network_addr = false;

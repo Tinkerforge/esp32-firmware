@@ -34,7 +34,6 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { EthernetState } from "./generated/ethernet_state.enum";
-import {InputIP} from "../../ts/components/input_ip";
 
 export function EthernetNavbar() {
     return (
@@ -60,7 +59,8 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
     override async transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
-        cfg.ipv6 = cfg.ipv6 == "" ? "::" : cfg.ipv6;
+        cfg.ipv6.dns = cfg.ipv6.dns == "" ? "::" : cfg.ipv6.dns;
+        cfg.ipv6.dns2 = cfg.ipv6.dns2 == "" ? "::" : cfg.ipv6.dns2;
         return cfg;
     }
 
@@ -121,13 +121,15 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                     value={(() => {
                                         const addrs: string[] = [];
                                         if (eth_state?.ip6_global && eth_state.ip6_global !== "::")
-                                            addrs.push(`${eth_state.ip6_global} (global)`);
+                                            addrs.push(`${eth_state.ip6_global.toUpperCase()} (global)`);
                                         if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::")
-                                            addrs.push(`${eth_state.ip6_unique_local} (unique-local)`);
+                                            addrs.push(`${eth_state.ip6_unique_local.toUpperCase()} (unique-local)`);
                                         if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::")
-                                            addrs.push(`${eth_state.ip6_site_local} (site-local)`);
+                                            addrs.push(`${eth_state.ip6_site_local.toUpperCase()} (site-local)`);
                                         if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::")
-                                            addrs.push(`${eth_state.ip6_link_local} (link-local)`);
+                                            addrs.push(`${eth_state.ip6_link_local.toUpperCase()} (link-local)`);
+                                        if (eth_state?.ip6_configured && eth_state.ip6_configured !== "::")
+                                            addrs.push(`${eth_state.ip6_configured.toUpperCase()} (configured)`);
                                         return addrs.length > 0 ? addrs.join('\n') : __("ethernet.content.status_ip_none");
                                     })()}
                                 />
@@ -219,31 +221,26 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                             }
                             />
                     </FormRow>
-                    <FormRow label={"IPv6"}>
+                    <FormRow label={"IPv6"} help={__("ethernet.content.ipv6_help")}>
                         <Switch desc={__("ethernet.content.ipv6_switch")}
                                 checked={state.enable_ipv6}
                                 onClick={this.toggle('enable_ipv6')}/>
                         {state.enable_ipv6 &&
-                            <InputIP
-                                onValue={(v) => this.setState({ipv6: v})}
-                                invalidFeedback={this.ip6config_valid}
-                                ipVersion={"v6"}
-                                />
-                        /*<IPConfiguration
+                        <IPConfiguration
                             showAnyAddress
                             showDhcp
                             showDns
+                            hideGateway={true}
+                            hideSubnet={true}
                             ipv6={true}
                             onValue={(v) => this.setState({ipv6: {
                                 ip: v.ip,
-                                gateway: v.gateway,
-                                subnet: v.subnet,
                                 dns: v.dns || "::",
                                 dns2: v.dns2 || "::",
                             }})}
                             value={state.ipv6}
                             setValid={(v) => this.ip6config_valid = v}
-                        />*/}
+                        />}
                     </FormRow>
                 </SubPage.Config>
             </SubPage>
