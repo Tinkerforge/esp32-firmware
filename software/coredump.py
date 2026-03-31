@@ -297,6 +297,7 @@ if __name__ == '__main__':
                         f"-iex 'directory {repo_dir}' " +
                         f"-iex 'set substitute-path src/ {repo_dir}/software/src' " +
                         f"-iex 'set substitute-path /home/erik/ {os.path.expanduser('~')}' " +
+                        f"-iex 'set substitute-path /home/matthias/ {os.path.expanduser('~')}' " +
                         "-iex 'set style enabled on' " +
                         "-iex 'set print frame-info source-and-location' " +
                         coredump_py_gdb_cmds +
