@@ -5,7 +5,11 @@ export interface config {
     subnet: string;
     dns: string;
     dns2: string;
-    ipv6: string;
+    ipv6: {
+        ip: string;
+        dns: string;
+        dns2: string;
+    }
     enable_ipv6: boolean;
 }
 
