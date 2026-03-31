@@ -63,7 +63,12 @@ void Ethernet::pre_setup()
                                         {"subnet", Config::Str("0.0.0.0", 7, 15)},
                                         {"dns", Config::Str("0.0.0.0", 7, 15)},
                                         {"dns2", Config::Str("0.0.0.0", 7, 15)},
-                                        {"ipv6",Config::Str("::", 2, 45)},
+                                        {"ipv6",
+                                         Config::Object({
+                                             {"ip", Config::Str("::", 2, 45)},
+                                             {"dns", Config::Str("::", 2, 45)},
+                                             {"dns2", Config::Str("::", 2, 45)},
+                                         })},
                                         {"enable_ipv6", Config::Bool(false)}}),
                         [this](Config &update, ConfigSource source) -> String {
                             IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
@@ -119,7 +124,7 @@ void Ethernet::pre_setup()
 
                                 is_reenabled = is_reenabled &&
                                     update.get("enable_ipv6")->asBool() == config.get("enable_ipv6")->asBool() &&
-                                    update.get("ipv6")->asBool() == config.get("ipv6")->asBool();
+                                    update.get("ipv6")->get("ip")->asString() == config.get("ipv6")->get("ip")->asString();
                                 // clang-format on
 
                                 if (is_reenabled) {
@@ -339,6 +344,7 @@ void Ethernet::setup()
         [this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             esp_ip6_addr_t ip_addr = info.got_ip6.ip6_info.ip;
             esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip_addr);
+            // TODO: Check if the IP matches any of the existing addresses -> skip in this case
             switch (type) {
                 case ESP_IP6_ADDR_IS_LINK_LOCAL:
                     task_scheduler.scheduleOnce([this]() {
@@ -375,7 +381,7 @@ void Ethernet::setup()
                 default:
                     char ip_str[INET6_ADDRSTRLEN];
                     tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
-                    logger.printfln("Got unknown ip addr: %s of type: %d", ip_str, static_cast<int>(type));
+                    logger.printfln("IPv6 Address of unknown type: %s of type: %d", ip_str, static_cast<int>(type));
             }
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
@@ -536,62 +542,82 @@ void Ethernet::apply_ip_to_interface()
 }
 void Ethernet::apply_ipv6_config()
 {
-    bool want_ipv6 = config.get("enable_ipv6")->asBool();
+    task_scheduler.scheduleOnce([this]() {
+            bool want_ipv6 = config.get("enable_ipv6")->asBool();
 
-    if (want_ipv6 ) {
-        if (want_ipv6 != ipv6_enable) {
-            ETH.enableIPv6(true);
-        }
-        String configured_ip_str = config.get("ipv6")->get("ip")->asString();
-        String state_ip_str = state.get("ip6_configured")->asString();
-        // Case: Update IPV6 address as the configured and current one dont match
-        if (configured_ip_str != state_ip_str) {
-            esp_ip6_addr_t config_ip;
-            esp_ip6_addr_t state_ip;
-            esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
-            esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
-
-            // If the configured ip is unset -> remove the IP
-            if (configured_ip_str == "::") {
-                esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
-                if (err != ESP_OK) {
-                    logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                } else {
-                    state.get("ip6_configured")->updateString(configured_ip_str);
+            if (want_ipv6 ) {
+                if (want_ipv6 != ipv6_enable) {
+                    ETH.enableIPv6(true);
                 }
-            } else {
-                // A different IPV6 address was configured previously -> need to remove it before setting the new one
-                if (state_ip_str != "::") {
-                    esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
-                    if (err != ESP_OK) {
-                        logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                String configured_ip_str = config.get("ipv6")->get("ip")->asString();
+                String state_ip_str = state.get("ip6_configured")->asString();
+                // Case: Update IPV6 address as the configured and current one dont match
+                if (configured_ip_str != state_ip_str) {
+                    esp_ip6_addr_t config_ip;
+                    esp_ip6_addr_t state_ip;
+                    esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
+                    esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
+
+                    // If the configured ip is unset -> remove the IP
+                    if (configured_ip_str == "::") {
+                        esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
+                        if (err != ESP_OK) {
+                            logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                        } else {
+                            state.get("ip6_configured")->updateString(configured_ip_str);
+                        }
                     } else {
-                        state.get("ip6_configured")->updateString(configured_ip_str);
+                        // A different IPV6 address was configured previously -> need to remove it before setting the new one
+                        if (state_ip_str != "::") {
+                            esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
+                            if (err != ESP_OK) {
+                                logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                            } else {
+                                state.get("ip6_configured")->updateString(configured_ip_str);
+                            }
+                        }
+                        esp_err_t err = esp_netif_add_ip6_address(ETH.netif(), config_ip, false);
+                        if (err != ESP_OK) {
+                            logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                        } else {
+                            state.get("ip6_configured")->updateString(configured_ip_str);
+                        }
+
+                    }
+
+                }
+
+                String dns_str = config.get("ipv6")->get("dns")->asString();
+                if (dns_str != "::") {
+                    // IPv6 DNS ist set as Fallback so its the lowest Priority.
+                    esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_FALLBACK;
+                    // Check configured DNS
+                    esp_netif_dns_info_t get_dns_info;
+                    esp_netif_get_dns_info(ETH.netif(), dns_type, &get_dns_info);
+                    esp_ip6_addr_t dns_addr;
+                    esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
+                    esp_netif_dns_info_t dns_info;
+                    dns_info.ip.type = ESP_IPADDR_TYPE_V6;
+                    dns_info.ip.u_addr.ip6 = dns_addr;
+                    if (get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) {
+                        esp_netif_set_dns_info(ETH.netif(), dns_type, &dns_info);
                     }
                 }
-                esp_err_t err = esp_netif_add_ip6_address(ETH.netif(), config_ip, false);
-                if (err != ESP_OK) {
-                    logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                } else {
-                    state.get("ip6_configured")->updateString(configured_ip_str);
+
+
+            } else {
+                if (want_ipv6 != ipv6_enable) {
+                    ETH.enableIPv6(false);
                 }
-
+                state.get("ip6_link_local")->updateString("::");
+                state.get("ip6_global")->updateString("::");
+                state.get("ip6_unique_local")->updateString("::");
+                state.get("ip6_site_local")->updateString("::");
+                state.get("ip6_configured")->updateString("::");
+                // Cannot unset DNS so we just leave it in this case
             }
-
-        }
-
-
-
-    } else {
-        if (want_ipv6 != ipv6_enable) {
-            ETH.enableIPv6(false);
-        }
-        state.get("ip6_link_local")->updateString("::");
-        state.get("ip6_global")->updateString("::");
-        state.get("ip6_unique_local")->updateString("::");
-        state.get("ip6_site_local")->updateString("::");
-    }
-    ipv6_enable = want_ipv6;
+            ipv6_enable = want_ipv6;
+    });
 }
 
 void Ethernet::apply_config()
@@ -615,13 +641,8 @@ void Ethernet::apply_config()
         // Parse IPv6 settings from ipv6 sub-object.
         Config *ipv6_cfg = static_cast<Config *>(config.get("ipv6"));
         ip6addr_aton(ipv6_cfg->get("ip")->asUnsafeCStr(), &runtime_data->ip6);
-        ip6addr_aton(ipv6_cfg->get("gateway")->asUnsafeCStr(), &runtime_data->gateway6);
         ip6addr_aton(ipv6_cfg->get("dns")->asUnsafeCStr(), &runtime_data->dns6);
         ip6addr_aton(ipv6_cfg->get("dns2")->asUnsafeCStr(), &runtime_data->dns26);
-        // Subnet for IPv6 is stored as a prefix string like "::" or a mask; parse prefix length.
-        ip6_addr_t subnet6_tmp;
-        ip6addr_aton(ipv6_cfg->get("subnet")->asUnsafeCStr(), &subnet6_tmp);
-        runtime_data->subnet6_prefix_len = tf_ip6addr_mask2cidr(subnet6_tmp);
 
         // IPv6 specific
         apply_ipv6_config();
