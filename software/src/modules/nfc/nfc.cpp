@@ -242,23 +242,9 @@ void NFC::register_backend(INfcBackend *_backend)
 
     backend = _backend;
 
-    old_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*old_tags)));
-    new_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*new_tags)));
-
-#if MODULE_AUTOMATION_AVAILABLE()
-    automation.set_enabled(AutomationTriggerID::NFC, true);
-    automation.set_enabled(AutomationActionID::NFCInjectTag, true);
-#endif
-
     task_scheduler.scheduleUncancelable([this]() {
         this->backend->check_state();
     }, 5_min, 5_min);
-
-    task_scheduler.scheduleUncancelable([this]() {
-        this->update_seen_tags();
-    }, 300_ms);
-
-    api.addFeature("nfc");
 }
 
 int16_t NFC::get_user_id(const tag_t &tag)
@@ -329,7 +315,7 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
 void NFC::update_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-        if (!backend->get_tag_id(i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen)) {
+        if (!backend || !backend->get_tag_id(i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen)) {
             continue;
         }
     }
@@ -449,6 +435,20 @@ void NFC::setup()
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
         {"last_seen", Config::Uint32(0)}
     }));
+
+    old_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*old_tags)));
+    new_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*new_tags)));
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::NFC, true);
+    automation.set_enabled(AutomationActionID::NFCInjectTag, true);
+#endif
+
+    task_scheduler.scheduleUncancelable([this]() {
+        this->update_seen_tags();
+    }, 300_ms);
+
+    api.addFeature("nfc");
 
     initialized = true;
 }
