@@ -847,9 +847,6 @@ ConfigChargeMode ChargeManager::cm_to_config_cm(uint8_t mode) {
     return ConfigChargeMode::Fast;
 }
 
-static const char *get_charger_name_fn(uint8_t idx) {return charge_manager.get_charger_name(idx);}
-static void notify_charger_unresponsive_fn(uint8_t idx) {return cm_networking.notify_charger_unresponsive(idx);}
-
 void ChargeManager::setup()
 {
     api.restorePersistentConfig("charge_manager/config", &config);
