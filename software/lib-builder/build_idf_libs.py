@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S /bin/sh -c 'uv run --project "$(dirname "$0")" --script "$0" "$@"'
 
 import shutil
 import subprocess
