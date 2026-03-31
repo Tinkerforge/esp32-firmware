@@ -33,7 +33,8 @@ let x = {
             "reboot_with_lan_disabled": "Reboot with LAN disabled",
             "cannot_disable": "At least one network interface must remain enabled. Enable WiFi connection or WiFi access point first.",
             "cannot_disable_no_wifi": "LAN connection cannot be disabled because no other network interface is available.",
-            "ipv6_switch": "Enable IPv6"
+            "ipv6_switch": "Enable IPv6",
+            "ipv6_help": "Only Stateless Address Configuration is supported. The IPv6 DNS has a lower Priority than the IPv4 DNS."
         },
         "script": {
             "save_failed": "Failed to save connection settings."
