@@ -110,6 +110,9 @@ XTENSA_EXCEPTION_CAUSE_DICT = {
     XCHAL_EXCCAUSE_NUM + 7: ('CacheError', 'Cache disabled but cached memory region accessed'),
 }
 
+def esptool(*args):
+    subprocess.check_call(['uv', 'run', 'pio', 'pkg', 'exec', '-p', 'tool-esptoolpy', '--', 'esptool'] + [str(arg) for arg in args])
+
 def format_extra_data(extra_data):
     result = ""
     if 'crashed_task_handle' in extra_data:
@@ -193,7 +196,7 @@ def get_core_dump_from_debug_report(path):
 def download_core_dump(port):
     # The partition table is always at the same offset, so read it first,
     # get the core dump partition offset and size and then read the core dump itself.
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash 0x8000 0x1000 {}".format(port, core_dump_path))
+    esptool('--port', port, '--chip', 'esp32', '--baud', '921600', 'read-flash', '0x8000', '0x1000', core_dump_path)
 
     core_dump_offset = None
     core_dump_size = None
@@ -211,7 +214,7 @@ def download_core_dump(port):
     core_dump_offset += OFFSET_BEFORE_ELF_HEADER
     core_dump_size -= OFFSET_BEFORE_ELF_HEADER
 
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash {} {} {}".format(port, core_dump_offset, core_dump_size, core_dump_path))
+    esptool('--port', port, '--chip', 'esp32', '--baud', '921600', 'read-flash', core_dump_offset, core_dump_size, core_dump_path)
 
 if __name__ == '__main__':
     gdb = find_gdb()
