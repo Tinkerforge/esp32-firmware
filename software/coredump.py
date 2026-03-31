@@ -282,7 +282,7 @@ if __name__ == '__main__':
             if os.path.exists(path):
                 firmware_path = path
 
-        def run_gdb(repo_dir="../"):
+        def run_gdb(repo_dir="../", commit_id="<local>"):
             coredump_py_gdb_cmds = ""
             if os.path.exists("coredump_py_gdb_cmds"):
                 with open("coredump_py_gdb_cmds", "r", encoding="utf-8") as f:
@@ -304,7 +304,8 @@ if __name__ == '__main__':
                         "-ex 'echo     - Run \"thread apply all bt full\" to print traces of all threads.\n' " +
                         "-ex 'echo\n' " +
                         f"-ex 'echo Crashed firmware {tf_coredump_data['firmware_file_name']}\n' " +
-                        (f"-ex 'echo {extra_data}\n' " if extra_data is not None else "")+
+                        f"-ex 'echo Using source code at commit {commit_id}\n' " +
+                        (f"-ex 'echo {extra_data}\n' " if extra_data is not None else "") +
                         "-ex 'echo ================================================================================\n' " +
                         "-ex 'echo ============================= Registers at crash ===============================\n' " +
                         "-ex 'echo ================================================================================\n' " +
@@ -342,7 +343,7 @@ if __name__ == '__main__':
                                 except:
                                     continue
 
-                    run_gdb(d)
+                    run_gdb(d, commit_id)
         else:
             print(f"Firmware {elf_name} not found in any of these places:\n")
             for path in possible_firmware_paths:
