@@ -4,6 +4,7 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
 
+import datetime
 import sys
 import queue
 import threading
@@ -87,6 +88,14 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '20C': BrickletServoV2.DEVICE_IDENTIFIER,
     '20D': BrickletColorV2.DEVICE_IDENTIFIER,
 }
+
+orig_print = print
+
+def tprint(*args, **kwargs):
+    global orig_print
+    orig_print(datetime.datetime.now().isoformat(), *args, **kwargs)
+
+print = tprint
 
 class Stage3:
     def __init__(self,
