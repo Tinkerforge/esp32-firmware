@@ -5,7 +5,6 @@ import subprocess
 import sys
 import os
 import tinkerforge_util as tfutil
-
 import create_defconfig
 import merge_defconfig
 

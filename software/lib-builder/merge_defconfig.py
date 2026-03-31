@@ -1,6 +1,5 @@
 #!/usr/bin/env -S uv run --script
 
-import re
 import sys
 
 from create_defconfig import line_filter, parse_line
