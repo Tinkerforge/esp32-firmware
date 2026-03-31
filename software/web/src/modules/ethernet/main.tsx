@@ -115,6 +115,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                         if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::") count++;
                                         if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::") count++;
                                         if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::") count++;
+                                        if (eth_state?.ip6_configured && eth_state.ip6_configured !== "::") count++;
                                         return count > 0 ? count : 1;
                                     })()}
                                     resize="none"
