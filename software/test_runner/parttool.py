@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env -S uv run --script
 
 # Stripped down parttool.py from here: https://github.com/espressif/esp-idf/blob/v4.4.5/components/partition_table/parttool.py
 
@@ -139,8 +139,21 @@ class PartitionDefinition(object):
         return res
 
 class ParttoolTarget():
-    def __init__(self, partition_table_data):
-        self.partition_table = from_binary(partition_table_data)
+    def __init__(self, partition_table_path_or_data):
+        partition_table = None
+
+        if isinstance(partition_table_path_or_data, str):
+            with open(partition_table_path_or_data, 'rb') as f:
+                input_is_binary = (f.read(2) == PartitionDefinition.MAGIC_BYTES)
+                f.seek(0)
+                if not input_is_binary:
+                    raise Exception("Input is not a binary partition table!")
+
+                partition_table = from_binary(f.read())
+        else:
+            partition_table = from_binary(partition_table_path_or_data)
+
+        self.partition_table = partition_table
 
 def main():
     target = ParttoolTarget(sys.argv[1])

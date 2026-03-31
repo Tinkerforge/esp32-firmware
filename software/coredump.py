@@ -10,8 +10,8 @@ import os
 import subprocess
 import tempfile
 import shutil
-import parttool
 import tinkerforge_util as tfutil
+import test_runner.parttool as parttool
 
 def find_gdb():
     path = shutil.which("xtensa-esp32-elf-gdb")
