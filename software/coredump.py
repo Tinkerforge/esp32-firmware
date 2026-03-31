@@ -9,8 +9,8 @@ import os, sys
 import subprocess
 import tempfile
 import shutil
-
 import parttool
+import tinkerforge_util as tfutil
 
 def find_gdb():
     path = shutil.which("xtensa-esp32-elf-gdb")
@@ -212,19 +212,6 @@ def download_core_dump(port):
 
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash {} {} {}".format(port, core_dump_offset, core_dump_size, core_dump_path))
 
-# use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
-class ChangedDirectory(object):
-    def __init__(self, path):
-        self.path = path
-        self.previous_path = None
-
-    def __enter__(self):
-        self.previous_path = os.getcwd()
-        os.chdir(self.path)
-
-    def __exit__(self, type_, value, traceback):
-        os.chdir(self.previous_path)
-
 if __name__ == '__main__':
     gdb = find_gdb()
     if gdb is None:
@@ -344,7 +331,7 @@ if __name__ == '__main__':
             else:
                 with tempfile.TemporaryDirectory(prefix="coredump-git-") as d:
                     os.system(f"git clone --shared --no-checkout {script_path}/.. {d}")
-                    with ChangedDirectory(d):
+                    with tfutil.ChangedDirectory(d):
                         commit_id = args.commit_id if args.commit_id else tf_coredump_data['firmware_commit_id']
                         os.system(f"git checkout --quiet {commit_id}")
                         commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', commit_id]))
