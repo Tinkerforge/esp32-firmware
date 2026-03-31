@@ -5,7 +5,8 @@ import string
 import json
 import argparse
 import glob
-import os, sys
+import sys
+import os
 import subprocess
 import tempfile
 import shutil
@@ -333,7 +334,7 @@ if __name__ == '__main__':
                         commit_id = args.commit_id if args.commit_id else tf_coredump_data['firmware_commit_id']
                         os.system(f"git checkout --quiet {commit_id}")
                         commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', commit_id]))
-                        follow_symlinks = not os.utime in os.supports_follow_symlinks # Checks if it can be False, so "not" is correct.
+                        follow_symlinks = os.utime not in os.supports_follow_symlinks # Checks if it can be False, so "not" is correct.
                         for (dirpath, dirnames, filenames) in os.walk('software/src'):
                             for filename in filenames:
                                 try:
