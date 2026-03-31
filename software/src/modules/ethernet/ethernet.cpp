@@ -349,14 +349,14 @@ void Ethernet::setup()
                 case ESP_IP6_ADDR_IS_LINK_LOCAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress local = ETH.linkLocalIPv6();
-                        logger.printfln("Link-local IPv6 address: %s", local.toString(true).c_str());
+                        logger.printfln("Got link-local IPv6 address: %s", local.toString(true).c_str());
                         state.get("ip6_link_local")->updateString(local.toString());
                     });
                     break;
                 case ESP_IP6_ADDR_IS_GLOBAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress global = ETH.globalIPv6();
-                        logger.printfln("Global IPv6 address: %s", global.toString(true).c_str());
+                        logger.printfln("Got global IPv6 address: %s", global.toString(true).c_str());
                         state.get("ip6_global")->updateString(global.toString());
                     });
                     break;
@@ -364,7 +364,7 @@ void Ethernet::setup()
                     task_scheduler.scheduleOnce([this, ip_addr]() {
                         char ip_str[INET6_ADDRSTRLEN];
                         tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
-                        logger.printfln("Unique Local IPv6 address: %s", ip_str);
+                        logger.printfln("Got unique Local IPv6 address: %s", ip_str);
                         state.get("ip6_unique_local")->updateString(ip_str);
                     });
                     break;
@@ -372,7 +372,7 @@ void Ethernet::setup()
                     task_scheduler.scheduleOnce([this, ip_addr]() {
                         char ip_str[INET6_ADDRSTRLEN];
                         tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
-                        logger.printfln("Site Local IPv6 address: %s", ip_str);
+                        logger.printfln("Got site Local IPv6 address: %s", ip_str);
                         state.get("ip6_site_local")->updateString(ip_str);
                     });
                     break;
@@ -381,7 +381,9 @@ void Ethernet::setup()
                 default:
                     char ip_str[INET6_ADDRSTRLEN];
                     tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
-                    logger.printfln("IPv6 Address of unknown type: %s of type: %d", ip_str, static_cast<int>(type));
+                    if (String(ip_str) != state.get("ip6_configured")->asString()) {
+                        logger.printfln("Got IPv6 Address: %s", ip_str);
+                    }
             }
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
@@ -542,6 +544,7 @@ void Ethernet::apply_ip_to_interface()
 }
 void Ethernet::apply_ipv6_config()
 {
+    logger.printfln("apply_ipv6_config");
     task_scheduler.scheduleOnce([this]() {
             bool want_ipv6 = config.get("enable_ipv6")->asBool();
 
@@ -551,6 +554,7 @@ void Ethernet::apply_ipv6_config()
                 }
                 String configured_ip_str = config.get("ipv6")->get("ip")->asString();
                 String state_ip_str = state.get("ip6_configured")->asString();
+
                 // Case: Update IPV6 address as the configured and current one dont match
                 if (configured_ip_str != state_ip_str) {
                     esp_ip6_addr_t config_ip;
