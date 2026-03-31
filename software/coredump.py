@@ -254,12 +254,11 @@ if __name__ == '__main__':
     if args.port:
         download_core_dump(port)
 
-
     try:
         tf_coredump_json, extra_data = get_tf_coredump_data(core_dump_path)
         if not tf_coredump_json:
             print("Core dump in debug log has no TF coredump info.")
-            sys.exit (-1)
+            sys.exit(-1)
 
         tf_coredump_data = json.loads(tf_coredump_json)
         if extra_data is not None:
@@ -281,7 +280,6 @@ if __name__ == '__main__':
         for path in possible_firmware_paths:
             if os.path.exists(path):
                 firmware_path = path
-
 
         def run_gdb(repo_dir="../"):
             coredump_py_gdb_cmds = ""
@@ -344,8 +342,6 @@ if __name__ == '__main__':
                                     continue
 
                     run_gdb(d)
-
-
         else:
             print(f"Firmware {elf_name} not found in any of these places:\n")
             for path in possible_firmware_paths:
