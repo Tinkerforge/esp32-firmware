@@ -20,7 +20,7 @@ shutil.move(os.path.join(root, "configs", "defconfig.esp32"), os.path.join(root,
 try:
     shutil.copy(os.path.join(sys.argv[2]), os.path.join(root, "configs", "defconfig.esp32"))
     with tfutil.ChangedDirectory(os.path.join(root)):
-        subprocess.call(['bash', '-c', '. esp-idf/export.sh && ./build.sh -s -t esp32'], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+        subprocess.call(['bash', '--login', '-c', '. esp-idf/export.sh && ./build.sh -s -t esp32'], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, env={})
 
 finally:
     shutil.move(os.path.join(root, "configs", "defconfig.esp32vanilla"), os.path.join(root, "configs", "defconfig.esp32"))
