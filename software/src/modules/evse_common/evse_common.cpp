@@ -723,8 +723,8 @@ void EvseCommon::register_urls()
             };
 
             evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
-#endif
         }
+#endif
     }, false);
 
     api.addState("evse/user_current", &user_current);
