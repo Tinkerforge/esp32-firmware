@@ -129,4 +129,7 @@ private:
 
     uint64_t ap_revert_countdown_task_id  = 0;
     uint64_t sta_revert_countdown_task_id = 0;
+
+    bool ipv6_enable_sta = false;
+    void apply_ipv6_sta_config();
 };
