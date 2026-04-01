@@ -34,7 +34,10 @@ let x = {
             "cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung oder den WLAN-Access-Point.",
             "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist.",
             "ipv6_switch": "IPv6 aktivieren",
-            "ipv6_help": "Es wird nur die \"Stateless Address Configuration\" unterstützt. Ein IPv6 DNS Server hat eine niedrigere Priorität als IPv4 DNS Server."
+            "ipv6_help":<>
+                <p>Es wird nur die "Stateless Address Configuration" unterstützt.</p>
+                <p>Der IPv6 DNS Server hat eine niedrigere Priorität als die IPv4 DNS Server.</p>
+            </>
         },
         "script": {
             "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen."
