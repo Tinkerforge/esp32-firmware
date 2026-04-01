@@ -164,7 +164,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
         cfg.ipv6.dns = cfg.ipv6.dns == "" ? "::" : cfg.ipv6.dns;
-        cfg.ipv6.dns2 = cfg.ipv6.dns2 == "" ? "::" : cfg.ipv6.dns2;
         return cfg;
     }
 
@@ -701,13 +700,13 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                 showAnyAddress
                                 showDhcp
                                 showDns
-                                hideSubnet={true}
-                                hideGateway={true}
-                                ipv6={true}
+                                hideSubnet
+                                hideGateway
+                                hideDns2
+                                ipv6
                                 onValue={(v) => this.setState({ipv6: {
                                         ip: v.ip,
                                         dns: v.dns || "::",
-                                        dns2: v.dns2 || "::",
                                     }})}
                                 value={state.ipv6}
                                 setValid={(v) => this.ip6config_valid = v}
