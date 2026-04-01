@@ -189,7 +189,10 @@ let x = {
                         break;
                 }
                 return result;
-            }/*NF*/
+            }/*NF*/,
+
+            "txn_in_progress_modal_body": "An OCPP transaction is in progress! Disconnect vehicle to be able to save changed OCPP configuration.",
+            "txn_in_progress_modal_confirm": "OK"
         },
         "script": {
             "save_failed": "Failed to save the OCPP settings.",

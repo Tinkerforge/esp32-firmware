@@ -50,11 +50,12 @@ interface OcppState {
     configuration: API.getType['ocpp/configuration'];
 }
 
+const NO_TXN_ACTIVE = 0x7FFFFFFF;
+
 export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject<OcppStatus>}, OcppState> {
     constructor() {
         super('ocpp/config',
-              () => __("ocpp.script.save_failed"),
-              () => __("ocpp.script.reboot_content_changed"));
+              () => __("ocpp.script.save_failed"));
 
         util.addApiEventListener('ocpp/state', () => {
             this.setState({state: API.get('ocpp/state')});
@@ -80,6 +81,21 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
         if (evse != null && evse.enabled)
             return true;
         return super.getIsModified(topic);
+    }
+
+    override async isSaveAllowed(cfg: OcppConfig) {
+        if (this.state.state.txn_id == NO_TXN_ACTIVE)
+            return true;
+        const modal = util.async_modal_ref.current;
+        await modal.show({
+                title: () => __("ocpp.script.save_failed"),
+                body: () => __("ocpp.content.txn_in_progress_modal_body"),
+                no_text: () => "",
+                yes_text: () => __("ocpp.content.txn_in_progress_modal_confirm"),
+                no_variant: undefined,
+                yes_variant: "primary"
+            });
+        return false;
     }
 
     render(props: {}, state: OcppConfig & OcppState) {
@@ -191,7 +207,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                             <InputText value={__("ocpp.content.last_rejected_tag")(state.state.last_rejected_tag, state.state.last_rejected_tag_reason)} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_id")}>
-                            <InputText value={state.state.txn_id == 0x7FFFFFFF ?  __("ocpp.content.no_transaction_running") : state.state.txn_id} />
+                            <InputText value={state.state.txn_id == NO_TXN_ACTIVE ?  __("ocpp.content.no_transaction_running") : state.state.txn_id} />
                         </FormRow>
                         <FormRow label={__("ocpp.content.txn_start_time")}>
                             <InputText value={util.timestamp_sec_to_date(state.state.txn_start_time, __("ocpp.content.no_transaction_running"))} />

@@ -35,19 +35,23 @@ public:
 
     bool on_tag_seen(const char *tag_id);
 
-    std::unique_ptr<OcppChargePoint> cp;
-
     void (*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;
 
-    ConfigRoot config_in_use;
     ConfigRoot state;
+    ConfigRoot config;
     ConfigRoot configuration;
 
     size_t trace_buf_idx;
 private:
+    void apply_config();
+
     bool start_client();
 
-    ConfigRoot config;
     ConfigRoot change_configuration;
+
+    uint64_t task_id = 0;
+    bool client_started = false;
+
+    std::unique_ptr<OcppChargePoint> cp;
 };

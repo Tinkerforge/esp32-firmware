@@ -36,21 +36,31 @@ void Ocpp::pre_setup()
 {
     trace_buf_idx = logger.alloc_trace_buffer("ocpp", 1 << 17);
 
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"url", Config::Str("", 0, 128)},
         {"identity", Config::Str("", 0, 64)},
         {"enable_auth",Config::Bool(false)},
         {"pass", Config::Str("", 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)}
-    });
+    }), [this](Config &cfg, ConfigSource source) -> String {
+#ifndef OCPP_STATE_CALLBACKS
+#error "OCPP_STATE_CALLBACKS are required to detect a running transaction!"
+#endif
+        if (this->state.get("txn_id")->asInt32() != INT32_MAX)
+            return "OCPP config may not be updated while a transaction is in progress! Unplug the vehicle.";
+
+        if (source != ConfigSource::File)
+            task_scheduler.scheduleOnce([this](){ this->apply_config(); });
+        return "";
+    }};
 
     change_configuration = Config::Object({
         {"key", Config::Str("", 0, 64)},
         {"value", Config::Str("", 0, 500)}
     });
 
-#ifdef OCPP_STATE_CALLBACKS
+
     state = Config::Object({
         {"charge_point_state", Config::Uint8(0)},
         {"charge_point_status", Config::Uint8(0)},
@@ -65,7 +75,7 @@ void Ocpp::pre_setup()
         {"cable_timeout", Config::Uint32(0)},
         {"last_rejected_tag", Config::Str("", 0, 21)},
         {"last_rejected_tag_reason", Config::Uint8(0)},
-        {"txn_id", Config::Int32(0)},
+        {"txn_id", Config::Int32(INT32_MAX)},
         {"txn_start_time", Config::Int52(0)},
         {"current", Config::Uint32(0)},
         {"txn_with_invalid_id", Config::Bool(false)},
@@ -136,17 +146,45 @@ void Ocpp::pre_setup()
         {config_keys[(size_t)ConfigKey::AlignedDataSignReadings], Config::Str("", 0, BOOL_LEN)},
         {config_keys[(size_t)ConfigKey::AlignedDataSignUpdatedReadings], Config::Str("", 0, BOOL_LEN)}
     });
-#endif
 }
 
 bool Ocpp::start_client()
 {
-    if (!config_in_use.get("enable_auth")->asBool()) {
-        return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0, BasicAuthPassType::NONE);
+    if (!config.get("enable_auth")->asBool()) {
+        return cp->start(config.get("url")->asEphemeralCStr(), config.get("identity")->asEphemeralCStr(), nullptr, 0, BasicAuthPassType::NONE);
     }
 
-    const String &pass = config_in_use.get("pass")->asString();
-    return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length(), BasicAuthPassType::TRY_BOTH);
+    const String &pass = config.get("pass")->asString();
+    return cp->start(config.get("url")->asEphemeralCStr(), config.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length(), BasicAuthPassType::TRY_BOTH);
+}
+
+void Ocpp::apply_config() {
+    task_scheduler.cancel(task_id);
+    task_id = 0;
+
+    if (cp && client_started)
+        cp->stop();
+
+    if (cp)
+        cp = nullptr;
+
+    if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0) {
+        return;
+    }
+
+    cp = std::unique_ptr<OcppChargePoint>(new OcppChargePoint());
+
+    client_started = start_client();
+    if (!client_started) {
+        state.get("charge_point_state")->updateUint((uint32_t)OcppState::Faulted);
+        logger.printfln("Failed to start OCPP client. Check configuration!");
+        cp = nullptr;
+        return;
+    }
+
+    task_id = task_scheduler.scheduleWithFixedDelay([this](){
+        cp->tick();
+    }, 100_ms, 100_ms);
 }
 
 void Ocpp::setup()
@@ -156,33 +194,16 @@ void Ocpp::setup()
         config.get("identity")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
     }
 
-    if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
-        return;
-
-    config_in_use = config;
-
-    cp = std::unique_ptr<OcppChargePoint>(new OcppChargePoint());
-
-    task_scheduler.scheduleOnce([this](){
-        if (!start_client()) {
-            state.get("charge_point_state")->updateUint((uint32_t)OcppState::Faulted);
-            logger.printfln("Failed to start OCPP client. Check configuration!");
-            return;
-        }
-
-        task_scheduler.scheduleUncancelable([this](){
-            cp->tick();
-        }, 100_ms, 100_ms);
-    }, 5_s);
+    // Should we use on_network_connected here?
+    task_scheduler.scheduleOnce([this](){ this->apply_config(); }, 5_s);
 }
 
 void Ocpp::register_urls()
 {
     api.addPersistentConfig("ocpp/config", &config, {"pass"});
-#ifdef OCPP_STATE_CALLBACKS
     api.addState("ocpp/state", &state);
     api.addState("ocpp/configuration", &configuration);
-#endif
+
     api.addCommand("ocpp/reset", Config::Null(), {}, [](Language /*language*/, String &/*errmsg*/) {
         remove_directory("/ocpp");
     }, true);
@@ -218,5 +239,6 @@ bool Ocpp::on_tag_seen(const char *tag_id)
 void Ocpp::pre_reboot() {
     if (cp) {
         cp->stop();
+        cp = nullptr;
     }
 }

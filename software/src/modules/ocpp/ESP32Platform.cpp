@@ -96,6 +96,7 @@ static std::unique_ptr<String[]> auth_headers;
 static size_t auth_headers_count = 0;
 static size_t next_auth_header = 0;
 static std::unique_ptr<PlatformMeterCache> meter_cache;
+static std::unique_ptr<unsigned char[]> cert;
 
 void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials, size_t credentials_length)
 {
@@ -104,24 +105,18 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
     websocket_cfg.subprotocol = "ocpp1.6";
-    int8_t cert_id = ocpp.config_in_use.get("cert_id")->asInt();
+    int8_t cert_id = ocpp.config.get("cert_id")->asInt();
     if (cert_id == -1)
         websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     else {
         size_t cert_len = 0;
-        auto cert = certs.get_cert(cert_id, &cert_len);
+        cert = certs.get_cert(cert_id, &cert_len);
         if (cert == nullptr) {
             logger.printfln("OCPP platform: Configured TLS certificate does not exist!");
             return nullptr;
         }
 
-        // Release the cert buffer unique_ptr's ownership.
-        // This effectively leaks the buffer, but as per the
-        // esp_transport_ssl_set_cert_data documentation:
-        // "Note that, this function stores the pointer to data, rather than making a copy.
-        //  So this data must remain valid until after the connection is cleaned up"
-        // esp_transport_ssl_set_cert_data is called by esp_websocket_client_start.
-        websocket_cfg.cert_pem = (const char *)cert.release();
+        websocket_cfg.cert_pem = (const char *)cert.get();
     }
 
     websocket_cfg.disable_auto_reconnect = true;
@@ -221,6 +216,7 @@ void platform_destroy(void *ctx)
     auth_headers_count = 0;
     next_auth_header = 0;
     meter_cache = nullptr;
+    cert = nullptr;
 }
 
 bool platform_ws_connected(void *ctx)

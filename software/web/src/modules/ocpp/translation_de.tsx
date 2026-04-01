@@ -189,7 +189,10 @@ let x = {
                         break;
                 }
                 return result;
-            }/*NF*/
+            }/*NF*/,
+
+            "txn_in_progress_modal_body": "Eine OCPP-Transaktion ist aktiv! Fahrzeug trennen um veränderte OCPP-Einstellungen zu speichern.",
+            "txn_in_progress_modal_confirm": "OK"
         },
         "script": {
             "save_failed": "Speichern der OCPP-Einstellungen fehlgeschlagen.",
