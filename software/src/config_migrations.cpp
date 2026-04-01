@@ -1007,6 +1007,55 @@ static const ConfigMigration migrations[] = {
         }
     },
 #endif
+
+#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+    {
+        1, 5, 0,
+        // Changes
+        // - Removed authentication/config; replaced with users/config
+        [](){
+            DynamicJsonDocument json{4096};
+            DynamicJsonDocument users_json{1024};
+
+            users_json.to<JsonObject>();
+            auto users = users_json.createNestedArray("users");
+            auto user = users.createNestedObject();
+
+            user["id"] = 0;
+            user["roles"] = 0xFFFFFFFF;
+            user["current"] = 32000;
+            user["display_name"] = "Anonymous";
+            user["username"] = "anonymous";
+            user["digest_hash"] = "";
+
+            users_json["next_user_id"] = 1;
+            users_json["http_auth_enabled"] = false;
+
+            if (read_config_file("authentication/config", json)) {
+                bool enable = json["enable_auth"];
+                String username = json["username"];
+                String digest_hash = json["digest_hash"].as<String>();
+
+                users_json["http_auth_enabled"] = enable;
+
+                if (enable) {
+                    user = users.createNestedObject();
+                    user["id"] = users_json["next_user_id"];
+                    user["roles"] = 0xFFFFFFFF;
+                    user["current"] = 32000;
+                    user["display_name"] = username;
+                    user["username"] = username;
+                    user["digest_hash"] = digest_hash;
+
+                    users_json["next_user_id"] = users_json["next_user_id"].as<uint8_t>() + 1;
+                }
+                delete_config_file("authentication/config");
+            }
+
+            write_config_file("users/config", users_json);
+        }
+    },
+#endif
 };
 
 bool prepare_migrations()
