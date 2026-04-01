@@ -8,7 +8,6 @@ export interface config {
     ipv6: {
         ip: string;
         dns: string;
-        dns2: string;
     }
     enable_ipv6: boolean;
 }
