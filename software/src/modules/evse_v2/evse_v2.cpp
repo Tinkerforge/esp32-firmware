@@ -985,7 +985,8 @@ void EVSEV2::update_all_data()
                                    &phases_connected_,
                                    &enumerate_value,
                                    &enumerate_value_change_time,
-                                   &phase_switch_wait_time_);
+                                   &phase_switch_wait_time_,
+                                   nullptr /*plc_modem_enabled*/);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1340,13 +1341,6 @@ void EVSEV2::set_charging_protocol(uint8_t charging_protocol, uint16_t cp_duty_c
 void EVSEV2::set_plc_modem(bool enabled)
 {
     tf_evse_v2_set_plc_modem(&device, enabled);
-}
-
-bool EVSEV2::get_plc_modem()
-{
-    bool enabled = true;
-    tf_evse_v2_get_plc_modem(&device, &enabled);
-    return enabled;
 }
 
 static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)

@@ -120,7 +120,6 @@ public:
 
     void set_charging_protocol(uint8_t charging_protocol, uint16_t cp_duty_cycle);
     void set_plc_modem(bool enabled);
-    bool get_plc_modem();
 
     int set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]);
     int set_enumerate_value(uint8_t value);
