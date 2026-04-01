@@ -172,7 +172,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
                     ws_client->close_async();
                 }
             } else if (role == Role::Client) {
-                tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS));
+                tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
                 tf_websocket_client_destroy(ws_server);
             }
             // remove this ShipConnection from vector of ShipConnections in Ship
@@ -196,7 +196,7 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
             }
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server, payload, 2, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, payload, 2, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
     }
 }
 
@@ -229,7 +229,7 @@ void ShipConnection::send_current_outgoing_message()
             }
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server, reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
         //TODO: What are good timeouts here?
     }
 }
@@ -259,7 +259,7 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
             }
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server, buffer, length + 1, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, buffer, length + 1, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
     }
     free_any(buffer);
 }

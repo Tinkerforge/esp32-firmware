@@ -1,6 +1,9 @@
-// From https://github.com/espressif/esp-protocols/tree/master/components/esp_websocket_client Version 1.4.0
+// From https://github.com/espressif/esp-protocols/tree/master/components/tf_websocket_client Version 1.4.0
+// Patched with https://github.com/espressif/esp-protocols/pull/1040
+// and tf_websocket_client.diff.
+// Then replaced esp_websocket with tf_websocket.
 /*
- * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2015-2025 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -8,6 +11,9 @@
 #ifndef _TF_WEBSOCKET_CLIENT_H_
 #define _TF_WEBSOCKET_CLIENT_H_
 
+#define CONFIG_TF_WS_CLIENT_SEPARATE_TX_LOCK
+#define CONFIG_TF_WS_CLIENT_TX_LOCK_TIMEOUT_MS 1000
+#undef  CONFIG_TF_WS_CLIENT_ENABLE_DYNAMIC_BUFFER
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,11 +21,19 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_err.h"
 #include "esp_event.h"
+#include "esp_idf_version.h"
 #include <sys/socket.h>
 #include "esp_transport_ws.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+// Features supported in 6.0.0
+#define WS_TRANSPORT_HEADER_CALLBACK_SUPPORT    1
+#else
+#define WS_TRANSPORT_HEADER_CALLBACK_SUPPORT    0
 #endif
 
 typedef struct tf_websocket_client *tf_websocket_client_handle_t;
@@ -32,6 +46,9 @@ ESP_EVENT_DECLARE_BASE(WEBSOCKET_EVENTS);         // declaration of the task eve
 typedef enum {
     WEBSOCKET_EVENT_ANY = -1,
     WEBSOCKET_EVENT_ERROR = 0,      /*!< This event occurs when there are any errors during execution */
+#if WS_TRANSPORT_HEADER_CALLBACK_SUPPORT
+    WEBSOCKET_EVENT_HEADER_RECEIVED,/*!< This event occurs for each pre-upgrade HTTP header */
+#endif
     WEBSOCKET_EVENT_CONNECTED,      /*!< Once the Websocket has been connected to the server, no data exchange has been performed */
     WEBSOCKET_EVENT_DISCONNECTED,   /*!< The connection has been disconnected */
     WEBSOCKET_EVENT_DATA,           /*!< When receiving data from the server, possibly multiple portions of the packet */
@@ -50,7 +67,8 @@ typedef enum {
     WEBSOCKET_ERROR_TYPE_NONE = 0,
     WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT,
     WEBSOCKET_ERROR_TYPE_PONG_TIMEOUT,
-    WEBSOCKET_ERROR_TYPE_HANDSHAKE
+    WEBSOCKET_ERROR_TYPE_HANDSHAKE,
+    WEBSOCKET_ERROR_TYPE_SERVER_CLOSE
 } tf_websocket_error_type_t;
 
 /**
@@ -103,7 +121,10 @@ typedef struct {
     const char                  *password;                  /*!< Using for Http authentication */
     const char                  *path;                      /*!< HTTP Path, if not set, default is `/` */
     bool                        disable_auto_reconnect;     /*!< Disable the automatic reconnect function when disconnected */
+    bool                        enable_close_reconnect;     /*!< Enable reconnect after server close */
     void                        *user_context;              /*!< HTTP user data context */
+    bool                        task_core_id_set;           /*!< Set to true to use task_core_id. If false, the websocket task uses tskNO_AFFINITY(default) */
+    int                         task_core_id;               /*!< Core ID for the websocket task when task_core_id_set is true. Must be explicitly set by the user, otherwise a zero-initialized config, will pin the task to core 0. Use tskNO_AFFINITY for no pinning. */
     int                         task_prio;                  /*!< Websocket task priority */
     const char                 *task_name;                  /*!< Websocket task name */
     int                         task_stack;                 /*!< Websocket task stack */
@@ -225,6 +246,7 @@ esp_err_t tf_websocket_client_stop(tf_websocket_client_handle_t client);
  *
  *  Notes:
  *  - Cannot be called from the websocket event handler
+ *  - This function cannot be called if `tf_websocket_client_destroy_on_exit` was used for the same handle.
  *
  * @param[in]  client  The client
  *
@@ -237,6 +259,7 @@ esp_err_t tf_websocket_client_destroy(tf_websocket_client_handle_t client);
  *
  *  Notes:
  *  - After event loop finished, client handle would be dangling and should never be used
+ *  - This function is mutually exclusive with `tf_websocket_client_destroy`. Do not call `tf_websocket_client_destroy` manually if this API is used.
  *
  * @param[in]  client      The client
  *
@@ -256,7 +279,7 @@ esp_err_t tf_websocket_client_destroy_on_exit(tf_websocket_client_handle_t clien
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
 
 /**
  * @brief      Write binary data to the WebSocket connection and sends it without setting the FIN flag(data send with WS OPCODE=02, i.e. binary)
@@ -274,7 +297,7 @@ int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_bin_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_bin_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
 
 /**
  * @brief      Write textual data to the WebSocket connection (data send with WS OPCODE=01, i.e. text)
@@ -288,7 +311,7 @@ int tf_websocket_client_send_bin_partial(tf_websocket_client_handle_t client, co
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
 
 /**
  * @brief      Write textual data to the WebSocket connection and sends it without setting the FIN flag(data send with WS OPCODE=01, i.e. text)
@@ -306,7 +329,7 @@ int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const cha
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_text_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_text_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
 
 /**
  * @brief      Write textual data to the WebSocket connection and sends it as continuation frame (OPCODE=0x0)
@@ -325,7 +348,7 @@ int tf_websocket_client_send_text_partial(tf_websocket_client_handle_t client, c
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_cont_msg(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_cont_msg(tf_websocket_client_handle_t client, const char *data, int len, TickType_t timeout);
 
 /**
  * @brief      Sends FIN frame
@@ -337,7 +360,18 @@ int tf_websocket_client_send_cont_msg(tf_websocket_client_handle_t client, const
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t timeout);
+
+/**
+ * @brief      Send websocket ping without payload (with WS OPCODE=09, i.e. ping)
+ *
+ * @param[in]  client  The client
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - (-1) if any errors
+ */
+esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout);
 
 /**
  * @brief      Write opcode data to the WebSocket connection
@@ -357,7 +391,7 @@ int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t
  *     - Number of data was sent
  *     - (-1) if any errors
  */
-int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t timeout);
 
 /**
  * @brief      Close the WebSocket connection in a clean way
@@ -394,17 +428,6 @@ esp_err_t tf_websocket_client_close(tf_websocket_client_handle_t client, TickTyp
  * @return     esp_err_t
  */
 esp_err_t tf_websocket_client_close_with_code(tf_websocket_client_handle_t client, int code, const char *data, int len, TickType_t timeout);
-
-/**
- * @brief      Send websocket ping without payload (with WS OPCODE=09, i.e. ping)
- *
- * @param[in]  client  The client
- * @param[in]  timeout Write data timeout in RTOS ticks
- *
- * @return
- *     - (-1) if any errors
- */
-esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Check the WebSocket client connection state
@@ -472,6 +495,18 @@ esp_err_t tf_websocket_register_events(tf_websocket_client_handle_t client,
                                         tf_websocket_event_id_t event,
                                         esp_event_handler_t event_handler,
                                         void *event_handler_arg);
+
+/**
+ * @brief Unegister the Websocket Events
+ *
+ * @param client            The client handle
+ * @param event             The event id
+ * @param event_handler     The callback function
+ * @return esp_err_t
+ */
+esp_err_t tf_websocket_unregister_events(tf_websocket_client_handle_t client,
+                                          tf_websocket_event_id_t event,
+                                          esp_event_handler_t event_handler);
 
 #ifdef __cplusplus
 }

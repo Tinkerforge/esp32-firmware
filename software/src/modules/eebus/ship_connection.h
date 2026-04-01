@@ -48,8 +48,7 @@
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE SHIP_CONNECTION_MAX_JSON_SIZE
 
 // Client Timeouts. These are only needed for when we are and using websockets as a client
-#define SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS 100
-#define SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS 1000
+#define SHIP_CONNECTION_WS_TIMEOUT_MS 1000
 
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency

@@ -1,0 +1,64 @@
+diff -u idf_new/tf_websocket_client.c tf_new/tf_websocket_client.c
+--- idf_new/tf_websocket_client.c	2026-04-01 15:07:19.832197101 +0200
++++ tf_new/tf_websocket_client.c	2026-04-01 14:57:16.875586406 +0200
+@@ -1,3 +1,5 @@
++// From https://github.com/espressif/esp-protocols/tree/master/components/tf_websocket_client Version 1.4.0
++// Patched with https://github.com/espressif/esp-protocols/pull/1040
+ /*
+  * SPDX-FileCopyrightText: 2015-2025 Espressif Systems (Shanghai) CO LTD
+  *
+@@ -1137,6 +1139,7 @@
+ #endif
+     } else if (client->last_opcode == WS_TRANSPORT_OPCODES_PONG) {
+         client->wait_for_pong_resp = false;
++        tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_PONG, NULL, 0);
+     } else if (client->last_opcode == WS_TRANSPORT_OPCODES_CLOSE) {
+         ESP_LOGD(TAG, "Received close frame");
+         client->state = WEBSOCKET_STATE_CLOSING;
+@@ -1552,6 +1555,11 @@
+     return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout);
+ }
+
++int tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout)
++{
++    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout);
++}
++
+ int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t timeout)
+ {
+     return tf_websocket_client_send_with_exact_opcode(client, opcode | WS_TRANSPORT_OPCODES_FIN, data, len, timeout);
+diff -u idf_new/tf_websocket_client.h tf_new/tf_websocket_client.h
+--- idf_new/tf_websocket_client.h	2026-04-01 14:42:52.311909930 +0200
++++ tf_new/tf_websocket_client.h	2026-04-01 14:56:33.713852068 +0200
+@@ -1,3 +1,5 @@
++// From https://github.com/espressif/esp-protocols/tree/master/components/tf_websocket_client Version 1.6.0+
++// Patched with https://github.com/espressif/esp-protocols/pull/1040
+ /*
+  * SPDX-FileCopyrightText: 2015-2025 Espressif Systems (Shanghai) CO LTD
+  *
+@@ -49,6 +51,7 @@
+     WEBSOCKET_EVENT_BEFORE_CONNECT, /*!< The event occurs before connecting */
+     WEBSOCKET_EVENT_BEGIN,          /*!< The event occurs once after thread creation, before event loop */
+     WEBSOCKET_EVENT_FINISH,         /*!< The event occurs once after event loop, before thread destruction */
++    WEBSOCKET_EVENT_PONG,           /*!< When receiving a pong frame from the server */
+     WEBSOCKET_EVENT_MAX
+ } tf_websocket_event_id_t;
+
+@@ -355,6 +358,17 @@
+ int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t timeout);
+
+ /**
++ * @brief      Send websocket ping without payload (with WS OPCODE=09, i.e. ping)
++ *
++ * @param[in]  client  The client
++ * @param[in]  timeout Write data timeout in RTOS ticks
++ *
++ * @return
++ *     - (-1) if any errors
++ */
++esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout);
++
++/**
+  * @brief      Write opcode data to the WebSocket connection
+  *
+  * @param[in]  client  The client
