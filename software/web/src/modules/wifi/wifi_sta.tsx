@@ -157,12 +157,14 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     }
 
     override async isSaveAllowed(cfg: STAConfig) {
-        return this.ipconfig_valid && !this.last_interface;
+        return this.ipconfig_valid && this.ip6config_valid && !this.last_interface;
     }
 
     override async transformSave(cfg: STAConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
+        cfg.ipv6.dns = cfg.ipv6.dns == "" ? "::" : cfg.ipv6.dns;
+        cfg.ipv6.dns2 = cfg.ipv6.dns2 == "" ? "::" : cfg.ipv6.dns2;
         return cfg;
     }
 
@@ -473,7 +475,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             />
                         </FormRow>}
 
-                    {wifi_state.connection_state != WifiState.NotConfigured && state.enable_ip6 &&
+                    {wifi_state.connection_state != WifiState.NotConfigured && state.enable_ipv6 &&
                         <FormRow label={__("wifi.content.status_sta_ipv6")}>
                             <OutputTextarea
                                 rows={(() => {
@@ -482,19 +484,22 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                     if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::") count++;
                                     if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::") count++;
                                     if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::") count++;
+                                    if (wifi_state?.sta_ip6_configured && wifi_state.sta_ip6_configured !== "::") count++;
                                     return count > 0 ? count : 1;
                                 })()}
                                 resize="none"
                                 value={(() => {
                                     const addrs: string[] = [];
-                                    if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::") 
-                                        addrs.push(`${wifi_state.sta_ip6_global} (global)`);
-                                    if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::") 
-                                        addrs.push(`${wifi_state.sta_ip6_unique_local} (unique-local)`);
-                                    if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::") 
-                                        addrs.push(`${wifi_state.sta_ip6_site_local} (site-local)`);
-                                    if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::") 
-                                        addrs.push(`${wifi_state.sta_ip6_link_local} (link-local)`);
+                                    if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::")
+                                        addrs.push(`${wifi_state.sta_ip6_global.toUpperCase()} (global)`);
+                                    if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::")
+                                        addrs.push(`${wifi_state.sta_ip6_unique_local.toUpperCase()} (unique-local)`);
+                                    if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::")
+                                        addrs.push(`${wifi_state.sta_ip6_site_local.toUpperCase()} (site-local)`);
+                                    if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::")
+                                        addrs.push(`${wifi_state.sta_ip6_link_local.toUpperCase()} (link-local)`);
+                                    if (wifi_state?.sta_ip6_configured && wifi_state.sta_ip6_configured !== "::")
+                                        addrs.push(`${wifi_state.sta_ip6_configured.toUpperCase()} (configured)`);
                                     return addrs.length > 0 ? addrs.join('\n') : __("wifi.content.status_sta_ip_none");
                                 })()}
                             />
@@ -687,20 +692,20 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             }
                             />
                     </FormRow>
-                    <FormRow label={"IPv6"}>
-                        <Switch desc={__("ethernet.content.ipv6_switch")}
-                                checked={state.enable_ip6}
-                                onClick={this.toggle('enable_ip6')}/>
-                        {state.enable_ip6 &&
+                    <FormRow label={"IPv6"} help={__("wifi.content.ipv6_help")}>
+                        <Switch desc={__("wifi.content.ipv6_switch")}
+                                checked={state.enable_ipv6}
+                                onClick={this.toggle('enable_ipv6')}/>
+                        {state.enable_ipv6 &&
                             <IPConfiguration
                                 showAnyAddress
                                 showDhcp
                                 showDns
+                                hideSubnet={true}
+                                hideGateway={true}
                                 ipv6={true}
                                 onValue={(v) => this.setState({ipv6: {
                                         ip: v.ip,
-                                        gateway: v.gateway,
-                                        subnet: v.subnet,
                                         dns: v.dns || "::",
                                         dns2: v.dns2 || "::",
                                     }})}
