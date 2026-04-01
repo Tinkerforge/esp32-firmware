@@ -58,7 +58,6 @@ export interface sta_config {
     ipv6: {
         ip: string;
         dns: string;
-        dns2: string;
     }
 }
 

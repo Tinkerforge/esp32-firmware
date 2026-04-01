@@ -43,6 +43,7 @@ interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
     showDns?: boolean,
     hideSubnet?: boolean
     hideGateway?: boolean
+    hideDns2?: boolean
     value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
@@ -246,14 +247,19 @@ export class IPConfiguration extends Component<IPConfigurationProps, IPConfigura
                              onValue={(v) => this.onUpdate("dns", v)}
                              ipVersion={ipv6Mode ? "v6" : "v4"}/>
                 </FormRow>
-                <FormRow label={__("component.ip_configuration.dns2")}
-                         label_muted={__("component.ip_configuration.dns2_muted")}>
-                    <InputIP invalidFeedback={__("component.ip_configuration.dns2_invalid")}
-                             value={props.value.dns2}
-                             onValue={(v) => this.onUpdate("dns2", v)}
-                             ipVersion={ipv6Mode ? "v6" : "v4"}/>
-                </FormRow>
             </>)
+                if (!props.hideDns2) {
+                    inner = (<>
+                        {inner}
+                        <FormRow label={__("component.ip_configuration.dns2")}
+                                 label_muted={__("component.ip_configuration.dns2_muted")}>
+                            <InputIP invalidFeedback={__("component.ip_configuration.dns2_invalid")}
+                                     value={props.value.dns2}
+                                     onValue={(v) => this.onUpdate("dns2", v)}
+                                     ipVersion={ipv6Mode ? "v6" : "v4"}/>
+                        </FormRow>
+                    </>)
+                }
         }
 
         if (!props.showDhcp)
