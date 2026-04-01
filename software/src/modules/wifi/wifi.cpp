@@ -179,7 +179,6 @@ void Wifi::pre_setup()
          Config::Object({
              {"ip", Config::Str("::", 2, 45)},
              {"dns", Config::Str("::", 2, 45)},
-             {"dns2", Config::Str("::", 2, 45)},
             })},
         {"wpa_eap_config", Config::Union<EapConfigID>(
             *Config::Null(),
@@ -259,8 +258,7 @@ void Wifi::pre_setup()
                 (update.get("dns2")->asString()       == sta_config.get("dns2")->asString())         &&
                 (update.get("enable_ipv6")->asBool()  == sta_config.get("enable_ipv6")->asBool())    &&
                 (update.get("ipv6")->get("ip")->asString()   == sta_config.get("ipv6")->get("ip")->asString())   &&
-                (update.get("ipv6")->get("dns")->asString()  == sta_config.get("ipv6")->get("dns")->asString())  &&
-                (update.get("ipv6")->get("dns2")->asString() == sta_config.get("ipv6")->get("dns2")->asString());
+                (update.get("ipv6")->get("dns")->asString()  == sta_config.get("ipv6")->get("dns")->asString());
 
             if (is_reenabled) {
                 task_scheduler.scheduleOnce([this]() {
@@ -838,9 +836,9 @@ void Wifi::register_sta_event_handlers()
             task_scheduler.scheduleOnce([this, disconnect_reason](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
-                state.get("sta_ip6_link_local")->updateString("");
-                state.get("sta_ip6_global")->updateString("");
-                state.get("sta_bssid")->updateString("");
+                state.get("sta_ip6_link_local")->updateString("::");
+                state.get("sta_ip6_global")->updateString("::");
+                state.get("sta_bssid")->updateString("::");
                 state.get("sta_disconnect_reason")->updateEnum(disconnect_reason);
                 // TODO: add ipv6 here
             });
@@ -986,7 +984,7 @@ void Wifi::register_sta_event_handlers()
                 default:
                     char ip_str[INET6_ADDRSTRLEN];
                     tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip6_addr), ip_str, ARRAY_SIZE(ip_str));
-                    logger.printfln("Got unknown ip addr: %s of type: %d",ip_str,  static_cast<int>(type));
+                    logger.printfln("Got IPv6 address: %s of type: %d",ip_str,  static_cast<int>(type));
             }
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
@@ -1434,7 +1432,7 @@ void Wifi::apply_ipv6_sta_config()
                     esp_netif_dns_info_t dns_info;
                     dns_info.ip.type = ESP_IPADDR_TYPE_V6;
                     dns_info.ip.u_addr.ip6 = dns_addr;
-                    if (get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) {
+                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {                          esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
                         esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
                     }
                 }
