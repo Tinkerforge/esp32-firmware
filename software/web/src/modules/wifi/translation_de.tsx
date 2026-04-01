@@ -108,7 +108,9 @@ let x = {
             "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
                 return <a href="#certs">{is_key ? "Schlüssel" : "Zertifikat"} hinzufügen</a>
             } /*NF*/,
-            "optional": "optional"
+            "optional": "optional",
+            "ipv6_switch": "IPv6 aktivieren",
+            "ipv6_help": "Es wird nur die \"Stateless Address Configuration\" unterstützt. Ein IPv6 DNS Server hat eine niedrigere Priorität als IPv4 DNS Server."
         },
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",
