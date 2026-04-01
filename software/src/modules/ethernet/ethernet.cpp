@@ -67,7 +67,6 @@ void Ethernet::pre_setup()
                                          Config::Object({
                                              {"ip", Config::Str("::", 2, 45)},
                                              {"dns", Config::Str("::", 2, 45)},
-                                             {"dns2", Config::Str("::", 2, 45)},
                                          })},
                                         {"enable_ipv6", Config::Bool(false)}}),
                         [this](Config &update, ConfigSource source) -> String {
@@ -502,7 +501,6 @@ void Ethernet::apply_ip_to_interface()
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
     bool static_ipv4 = !ip4_addr_isany_val(runtime_data->ip4);
-    bool static_ipv6 = ipv6_enable && !ip6_addr_isany_val(runtime_data->ip6);
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
@@ -512,39 +510,9 @@ void Ethernet::apply_ip_to_interface()
         ETH.config();
     }
 
-    if (static_ipv6) {
-        // Add the static IPv6 global address via ESP-IDF API.
-        // ETH.config() is IPv4-only internally; it cannot apply IPv6 addresses.
-        esp_ip6_addr_t esp_addr;
-        memcpy(&esp_addr, &runtime_data->ip6, sizeof(esp_addr));
-        esp_err_t err = esp_netif_add_ip6_address(ETH.netif(), esp_addr, true);
-        if (err != ESP_OK) {
-            logger.printfln("Failed to add static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-        }
-
-        // Set IPv6 DNS servers if configured.
-        if (!ip6_addr_isany_val(runtime_data->dns6)) {
-            esp_netif_dns_info_t dns_info;
-            dns_info.ip.type = ESP_IPADDR_TYPE_V6;
-            memcpy(&dns_info.ip.u_addr.ip6, &runtime_data->dns6, sizeof(dns_info.ip.u_addr.ip6));
-            esp_netif_set_dns_info(ETH.netif(), ESP_NETIF_DNS_MAIN, &dns_info);
-        }
-
-        if (!ip6_addr_isany_val(runtime_data->dns26)) {
-            esp_netif_dns_info_t dns_info;
-            dns_info.ip.type = ESP_IPADDR_TYPE_V6;
-            memcpy(&dns_info.ip.u_addr.ip6, &runtime_data->dns26, sizeof(dns_info.ip.u_addr.ip6));
-            esp_netif_set_dns_info(ETH.netif(), ESP_NETIF_DNS_BACKUP, &dns_info);
-        }
-    }
-    // Enabling ipv6 after setting the static IP may seem counterintuitive but this way the link local address is added properly afterwards
-    if (ipv6_enable) {
-        ETH.enableIPv6(true);
-    }
 }
 void Ethernet::apply_ipv6_config()
 {
-    logger.printfln("apply_ipv6_config");
     task_scheduler.scheduleOnce([this]() {
             bool want_ipv6 = config.get("enable_ipv6")->asBool();
 
@@ -603,12 +571,10 @@ void Ethernet::apply_ipv6_config()
                     esp_netif_dns_info_t dns_info;
                     dns_info.ip.type = ESP_IPADDR_TYPE_V6;
                     dns_info.ip.u_addr.ip6 = dns_addr;
-                    if (get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) {
+                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {
                         esp_netif_set_dns_info(ETH.netif(), dns_type, &dns_info);
                     }
                 }
-
-
             } else {
                 if (want_ipv6 != ipv6_enable) {
                     ETH.enableIPv6(false);
@@ -641,12 +607,6 @@ void Ethernet::apply_config()
         ip4addr_aton(config.get("dns2")->asUnsafeCStr(), &runtime_data->dns24);
         ip4addr_aton(config.get("subnet")->asUnsafeCStr(), &subnet4_tmp);
         runtime_data->subnet4_cidr = tf_ip4addr_mask2cidr(subnet4_tmp);
-
-        // Parse IPv6 settings from ipv6 sub-object.
-        Config *ipv6_cfg = static_cast<Config *>(config.get("ipv6"));
-        ip6addr_aton(ipv6_cfg->get("ip")->asUnsafeCStr(), &runtime_data->ip6);
-        ip6addr_aton(ipv6_cfg->get("dns")->asUnsafeCStr(), &runtime_data->dns6);
-        ip6addr_aton(ipv6_cfg->get("dns2")->asUnsafeCStr(), &runtime_data->dns26);
 
         // IPv6 specific
         apply_ipv6_config();
