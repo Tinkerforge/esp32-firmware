@@ -584,6 +584,8 @@ def main(stage3, scanner):
         else:
             stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
 
+        stage3.verify_front_panel_ground_connected()
+
         print(datetime.datetime.now().isoformat(), "pre nfc tags")
 
         if scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0':

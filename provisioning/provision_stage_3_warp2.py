@@ -761,6 +761,48 @@ class Stage3:
             elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
+    def verify_front_panel_ground_connected(self):
+        tester_status = blackbox.bb_get_status()._asdict()
+
+        if not tester_status['success']:
+            fatal_error('Could not get electrical tester status')
+
+        if tester_status['response'] == 'ENABLE = 0':
+            tester_enable = blackbox.bb_enable()._asdict()
+
+            if not tester_enable['success']:
+                fatal_error('Could not enable electrical tester blackbox mode')
+
+        tester_reset = blackbox.bb_reset()._asdict()
+
+        if not tester_reset['success']:
+            fatal_error('Could not reset electrical tester')
+
+        self.connect_warp_power(['L1', 'L2', 'L3'])
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        print('Disconnecting front panel')
+
+        self.connect_front_panel(True)
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        print('Electrical test R low front panel')
+
+        rlow = blackbox.bb_measure_rlow()._asdict()
+
+        if not rlow['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
+
+        print('Connecting front panel')
+
+        self.connect_front_panel(False)
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        self.connect_warp_power(['L1'])
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        blackbox.bb_disable()
+
     # requires power_on
     def test_wallbox(self, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
