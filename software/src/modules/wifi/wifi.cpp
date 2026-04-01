@@ -42,6 +42,10 @@
 extern char local_uid_str[32];
 extern char passphrase[20];
 
+#if !MODULE_CERTS_AVAILABLE()
+#define MAX_CERT_ID -1
+#endif
+
 void Wifi::pre_setup()
 {
     ap_config = ConfigRoot{Config::Object({
@@ -575,6 +579,7 @@ void Wifi::apply_sta_config(bool defer_start)
             } else {
                 memset(eap, 0, offsetof(struct eap_runtime, identity_credentials));
 
+#if MODULE_CERTS_AVAILABLE()
                 const int32_t ca_cert_id     = eap_config->get("ca_cert_id"    )->asInt();
                 const int32_t client_cert_id = eap_config->get("client_cert_id")->asInt();
                 const int32_t client_key_id  = eap_config->get("client_key_id" )->asInt();
@@ -582,6 +587,7 @@ void Wifi::apply_sta_config(bool defer_start)
                 if (ca_cert_id     >= 0) eap->ca_cert     = certs.get_cert(static_cast<uint8_t>(ca_cert_id),     nullptr);
                 if (client_cert_id >= 0) eap->client_cert = certs.get_cert(static_cast<uint8_t>(client_cert_id), nullptr);
                 if (client_key_id  >= 0) eap->client_key  = certs.get_cert(static_cast<uint8_t>(client_key_id),  nullptr);
+#endif
 
                 eap->eap_config_id = static_cast<uint8_t>(eap_config_id);
 
