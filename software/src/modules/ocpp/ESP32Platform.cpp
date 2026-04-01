@@ -70,7 +70,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         });
         break;
     case WEBSOCKET_EVENT_PONG:
-        task_scheduler.await([](){pong_cb(pong_cb_userdata);});
+        task_scheduler.scheduleOnce([](){pong_cb(pong_cb_userdata);});
         break;
     }
 }
@@ -197,7 +197,7 @@ void platform_reconnect(void *ctx)
 
 void platform_destroy(void *ctx)
 {
-    tf_websocket_client_destroy(client);
+    tf_websocket_client_destroy_on_exit(client);
 }
 
 bool platform_ws_connected(void *ctx)
