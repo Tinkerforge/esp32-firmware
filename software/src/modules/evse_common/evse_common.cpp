@@ -710,6 +710,7 @@ void EvseCommon::register_urls()
         else
             apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
 
+#if MODULE_EVSE_V2_AVAILABLE()
         if (!enabled) {
             constexpr uint16_t h_0[] {
                 0, 0, 0, 0, 0, 0, 0, 0
@@ -722,6 +723,7 @@ void EvseCommon::register_urls()
             };
 
             evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
+#endif
         }
     }, false);
 
