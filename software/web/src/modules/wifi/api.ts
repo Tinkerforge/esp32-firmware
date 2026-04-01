@@ -54,11 +54,9 @@ export interface sta_config {
     dns: string;
     dns2: string;
     wpa_eap_config: EapConfigNone | EapConfigTLS | EapConfigPEAPTTLS;
-    enable_ip6: boolean;
+    enable_ipv6: boolean;
     ipv6: {
         ip: string;
-        gateway: string;
-        subnet: string;
         dns: string;
         dns2: string;
     }
@@ -92,6 +90,7 @@ export interface state {
     sta_ip6_global: string;
     sta_ip6_unique_local: string;
     sta_ip6_site_local: string;
+    sta_ip6_configured: string;
     ap_disable_countdown: number;
     sta_disable_countdown: number;
 }
