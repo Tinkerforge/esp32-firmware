@@ -110,7 +110,10 @@ let x = {
             } /*NF*/,
             "optional": "optional",
             "ipv6_switch": "Enable IPv6",
-            "ipv6_help": "Only Stateless Address Configuration is supported. The IPv6 DNS has a lower priority than the IPv4 DNS."
+            "ipv6_help": <>
+                <p>Only Stateless Address Configuration is supported.</p>
+                <p>The IPv6 DNS has a lower priority than the IPv4 DNS.</p>
+            </>
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",

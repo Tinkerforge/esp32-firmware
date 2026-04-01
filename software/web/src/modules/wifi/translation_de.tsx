@@ -110,7 +110,10 @@ let x = {
             } /*NF*/,
             "optional": "optional",
             "ipv6_switch": "IPv6 aktivieren",
-            "ipv6_help": "Es wird nur die \"Stateless Address Configuration\" unterstützt. Ein IPv6 DNS Server hat eine niedrigere Priorität als IPv4 DNS Server."
+            "ipv6_help": <>
+                <p>Es wird nur die "Stateless Address Configuration" unterstützt.</p>
+                <p>Der IPv6 DNS Server hat eine niedrigere Priorität als die IPv4 DNS Server.</p>
+            </>
         },
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",
