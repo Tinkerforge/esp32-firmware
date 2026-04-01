@@ -77,13 +77,30 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
+struct PlatformMeterCache {
+    std::unique_ptr<MeterValueID[]> value_ids = nullptr;
+    size_t value_ids_length = 0;
+    uint32_t charger_meter_slot = UINT32_MAX;
+    std::unique_ptr<uint32_t[]> idx_cache = nullptr;
+    uint32_t power_offered_l1_idx;
+    uint32_t power_offered_l2_idx;
+    uint32_t power_offered_l3_idx;
+    uint32_t current_offered_l1_idx;
+    uint32_t current_offered_l2_idx;
+    uint32_t current_offered_l3_idx;
+};
+
 static tf_websocket_client_handle_t client;
 static bool client_running = false;
 static std::unique_ptr<String[]> auth_headers;
 static size_t auth_headers_count = 0;
 static size_t next_auth_header = 0;
+static std::unique_ptr<PlatformMeterCache> meter_cache;
+
 void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials, size_t credentials_length)
 {
+    meter_cache = std::unique_ptr<PlatformMeterCache>(new PlatformMeterCache());
+
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
     websocket_cfg.subprotocol = "ocpp1.6";
@@ -128,17 +145,17 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
             String header = "Authorization: Basic ";
             auto &cred = credentials[i];
 
-            size_t user_len = strlen(cred.user);
+            size_t user_len = strlen(cred.user.get());
             size_t buf_len = user_len + cred.pass_length + 1; // +1 for ':'
             std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
-            memcpy(buf.get(), cred.user, user_len);
+            memcpy(buf.get(), cred.user.get(), user_len);
             buf[user_len] = ':';
-            memcpy(buf.get() + user_len + 1, cred.pass, cred.pass_length);
+            memcpy(buf.get() + user_len + 1, cred.pass.get(), cred.pass_length);
 
             size_t written = 0;
             mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
 
-            std::unique_ptr<char[]> base64_buf{new char[written + 1]()}; // +1 for '\0'
+            std::unique_ptr<char[]> base64_buf = heap_alloc_array<char>(written + 1);
             mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
             base64_buf[written] = '\0';
 
@@ -198,6 +215,12 @@ void platform_reconnect(void *ctx)
 void platform_destroy(void *ctx)
 {
     tf_websocket_client_destroy_on_exit(client);
+
+    client_running = false;
+    auth_headers = nullptr;
+    auth_headers_count = 0;
+    next_auth_header = 0;
+    meter_cache = nullptr;
 }
 
 bool platform_ws_connected(void *ctx)
@@ -360,20 +383,7 @@ bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand 
     return false;
 }
 
-struct PlatformMeterCache {
-    std::unique_ptr<MeterValueID[]> value_ids = nullptr;
-    size_t value_ids_length = 0;
-    uint32_t charger_meter_slot = UINT32_MAX;
-    std::unique_ptr<uint32_t[]> idx_cache = nullptr;
-    uint32_t power_offered_l1_idx;
-    uint32_t power_offered_l2_idx;
-    uint32_t power_offered_l3_idx;
-    uint32_t current_offered_l1_idx;
-    uint32_t current_offered_l2_idx;
-    uint32_t current_offered_l3_idx;
-};
-
-static bool platform_meter_available(int32_t connector_id, PlatformMeterCache *meter_cache) {
+static bool platform_meter_available(int32_t connector_id) {
     if (connector_id != 1)
         return false;
 
@@ -408,7 +418,7 @@ static constexpr MeterValueID CURRENT_OFFERED_L1 = (MeterValueID)((size_t)(Meter
 static constexpr MeterValueID CURRENT_OFFERED_L2 = (MeterValueID)((size_t)(MeterValueID::_max) + 5);
 static constexpr MeterValueID CURRENT_OFFERED_L3 = (MeterValueID)((size_t)(MeterValueID::_max) + 6);
 
-static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p, PlatformMeterCache *meter_cache) {
+static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p) {
     if (m == SampledValueMeasurand::POWER_OFFERED) {
         if (p == SampledValuePhase::L1)
             return POWER_OFFERED_L1;
@@ -442,12 +452,12 @@ static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMea
     return MeterValueID::NotSupported;
 }
 
-bool platform_supports_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p, PlatformMeterCache *meter_cache) {
-    return get_mvid_for_measurand(connector_id, m, p, meter_cache) != MeterValueID::NotSupported;
+bool platform_supports_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p) {
+    return get_mvid_for_measurand(connector_id, m, p) != MeterValueID::NotSupported;
 }
 
-static size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, PlatformMeterCache *meter_cache) {
-    if (!platform_meter_available(connector_id, meter_cache))
+static size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len) {
+    if (!platform_meter_available(connector_id))
         return 0;
 
     size_t result = 0;
@@ -457,7 +467,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
         auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
 
         if (phase != SampledValuePhase::NONE) {
-            if (platform_supports_measurand(connector_id, measurand, phase, meter_cache)) {
+            if (platform_supports_measurand(connector_id, measurand, phase)) {
                 ++result;
                 continue;
             }
@@ -467,7 +477,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
         // If this is the case, only use those.
         bool supports_phase_values = false;
         for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
-            if (platform_supports_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache)) {
+            if (platform_supports_measurand(connector_id, measurand, (SampledValuePhase)p)) {
                 ++result;
                 supports_phase_values = true;
             }
@@ -477,7 +487,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache)) {
+        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE)) {
             ++result;
         }
     }
@@ -512,7 +522,7 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
     SampledValueUnit::NONE, /*NONE*/
 };
 
-void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index, PlatformMeterCache *meter_cache) {
+void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index) {
     if (m == SampledValueMeasurand::POWER_OFFERED) {
         if (p == SampledValuePhase::L1)
             meter_cache->power_offered_l1_idx = index;
@@ -531,7 +541,7 @@ void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uin
     }
 }
 
-float get_custom_value(uint32_t index, PlatformMeterCache *meter_cache) {
+float get_custom_value(uint32_t index) {
     // WARP1 is either
     //  - Smart -> we don't know the number of phases connected
     //  - or Pro -> we've sold those only with the SDM72 (V1) that can only be used with three phases connected.
@@ -557,7 +567,7 @@ float get_custom_value(uint32_t index, PlatformMeterCache *meter_cache) {
     return 0.0f;
 }
 
-static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len, PlatformMeterCache *meter_cache) {
+static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len) {
     meter_cache->idx_cache = heap_alloc_array<uint32_t>(result_len);
 
     auto mvids = heap_alloc_array<MeterValueID>(result_len);
@@ -569,7 +579,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
         auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
 
         if (phase != SampledValuePhase::NONE) {
-            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase, meter_cache);
+            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
                     goto done;
@@ -577,7 +587,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, phase, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
                 if (mvid > MeterValueID::_max)
-                    add_custom_value_to_cache(measurand, phase, written, meter_cache);
+                    add_custom_value_to_cache(measurand, phase, written);
 
                 ++written;
                 continue;
@@ -588,7 +598,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
         // If this is the case, only use those.
         bool supports_phase_values = false;
         for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
-            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache);
+            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
                     goto done;
@@ -596,7 +606,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, (SampledValuePhase)p, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
                 if (mvid > MeterValueID::_max)
-                    add_custom_value_to_cache(measurand, (SampledValuePhase)p, written, meter_cache);
+                    add_custom_value_to_cache(measurand, (SampledValuePhase)p, written);
 
                 ++written;
 
@@ -608,7 +618,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache);
+        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE);
         if (mvid != MeterValueID::NotSupported) {
             if (written >= result_len)
                 goto done;
@@ -616,7 +626,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
             mvids[written] = mvid;
             result[written] = SupportedMeasurand{measurand, SampledValuePhase::NONE, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
             if (mvid > MeterValueID::_max)
-                add_custom_value_to_cache(measurand, phase, written, meter_cache);
+                add_custom_value_to_cache(measurand, phase, written);
 
             ++written;
         }
@@ -627,17 +637,14 @@ done:
     return written;
 }
 
-bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t measurand_count, SupportedMeasurand **out_supported_measurands, size_t *out_supported_measurand_count, void **out_platform_meter_cache) {
-    if (*out_platform_meter_cache == nullptr)
-        *out_platform_meter_cache = new PlatformMeterCache();
-
-    if (!platform_meter_available(connector_id, (PlatformMeterCache *)*out_platform_meter_cache))
+bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t measurand_count, std::unique_ptr<SupportedMeasurand[]> &out_supported_measurands, size_t *out_supported_measurand_count) {
+    if (!platform_meter_available(connector_id))
         return false;
 
-    *out_supported_measurand_count = platform_get_supported_measurand_count(connector_id, measurands, phases, measurand_count, (PlatformMeterCache *)*out_platform_meter_cache);
-    *out_supported_measurands = heap_alloc_array<SupportedMeasurand>(*out_supported_measurand_count).release();
+    *out_supported_measurand_count = platform_get_supported_measurand_count(connector_id, measurands, phases, measurand_count);
+    out_supported_measurands = heap_alloc_array<SupportedMeasurand>(*out_supported_measurand_count);
 
-    auto written = platform_prepare_meter_cache(connector_id, measurands, phases, measurand_count, *out_supported_measurands, *out_supported_measurand_count, (PlatformMeterCache *)*out_platform_meter_cache);
+    auto written = platform_prepare_meter_cache(connector_id, measurands, phases, measurand_count, out_supported_measurands.get(), *out_supported_measurand_count);
 
     if (*out_supported_measurand_count != written)
         printf("!!!! %zu != %zu und jetzt?", measurand_count, written);
@@ -646,13 +653,12 @@ bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measura
 }
 
 
-float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx, void *platform_meter_cache) {
-    PlatformMeterCache *meter_cache = (PlatformMeterCache *)platform_meter_cache;
+float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx) {
     if (meter_cache->idx_cache == nullptr)
         return 0.0f;
 
     if (meter_cache->idx_cache[measurand_idx] == UINT32_MAX)
-        return get_custom_value(measurand_idx, meter_cache);
+        return get_custom_value(measurand_idx);
 
     float result = 0.0f;
     meters.get_value_by_index(meter_cache->charger_meter_slot, meter_cache->idx_cache[measurand_idx], &result);
