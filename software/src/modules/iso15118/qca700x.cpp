@@ -47,8 +47,6 @@
 #define QCA700X_SPI_MOSI_PIN 15
 #define QCA700X_SPI_CLOCK_PIN 2
 
-extern TF_HAL hal;
-
 void QCA700x::spi_transceive(const uint8_t *write_buffer, uint8_t *read_buffer, const uint32_t length) {
     memcpy(read_buffer, write_buffer, length);
     vspi->transfer(read_buffer, length);
