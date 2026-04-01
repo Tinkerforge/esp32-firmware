@@ -57,10 +57,8 @@ private:
 
         // IPv6 config (from ipv6 sub-object). ip6 == :: means SLAAC/auto.
         ip6_addr_t ip6;
-        ip6_addr_t gateway6;
         ip6_addr_t dns6;
         ip6_addr_t dns26;
-        uint8_t subnet6_prefix_len;
 
         EthernetState connection_state;
         bool was_connected;

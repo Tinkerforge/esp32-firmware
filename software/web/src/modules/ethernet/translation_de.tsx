@@ -18,7 +18,7 @@ let x = {
             "mac": "MAC-Adresse",
             "mac_none": "LAN-Verbindung nicht aktiv",
             "status_ip": "IP-Adresse",
-            "status_ipv6": "IPv6-Adresse",
+            "status_ipv6": "IPv6-Adressen",
             "status_ip_none": "Keine IP-Adresse",
             "status_link": "Verbindung",
             "status_link_none": "Keine Verbindung",
