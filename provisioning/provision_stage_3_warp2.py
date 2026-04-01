@@ -870,10 +870,26 @@ class Stage3:
         if has_phase_switch:
             print('Testing phase switch')
 
-            self.switch_phases(1)
+            # To test the phase switch while a charge is running,
+            # we would have to emulate a "sane" vehicle
+            # or else the EVSE imposes a delay of 60 seconds
+            # before closing the contactor again.
+            # We only want to test that the EVSE can toggle
+            # the L1+N contactor and the L2+L3 contactor independently.
+            # Starting a single phase charge is sufficient to test this.
+
+            self.change_cp_pe_state('A')
+            time.sleep(RELAY_SETTLE_DURATION + 5) # TODO remove + 5 when expecting EVSE test mode
+            self.switch_phases_function(1)
+            time.sleep(0.5)
+            self.change_cp_pe_state('C')
             self.verify_voltages(p_type2=['L1'], p_meter=['L1', 'L2', 'L3'])
 
-            self.switch_phases(3)
+            self.change_cp_pe_state('A')
+            time.sleep(RELAY_SETTLE_DURATION + 5) # TODO remove + 5 when expecting EVSE test mode
+            self.switch_phases_function(3)
+            time.sleep(0.5)
+            self.change_cp_pe_state('C')
             self.verify_voltages(['L1', 'L2', 'L3'])
 
         self.connect_voltage_monitors(False)
