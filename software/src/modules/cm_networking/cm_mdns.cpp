@@ -180,27 +180,39 @@ void CMNetworking::register_events() {
 // Sometimes executed by lwIP
 void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip)
 {
-    if (ip->type != IPADDR_TYPE_V4) {
+    if (ip->type != IPADDR_TYPE_V4 && ip->type != IPADDR_TYPE_V6) {
         return;
     }
 
     // Always mark as resolved even if the address didn't change, in case an unresponsive charger was resolved to its previous address.
     device->resolve_state = ResolveState::Resolved;
 
-    in_addr_t in;
+    // Build the new address as sockaddr_in6 (IPv4 addresses are stored as IPv4-mapped IPv6).
+    struct sockaddr_in6 new_addr;
+    memset(&new_addr, 0, sizeof(new_addr));
+    new_addr.sin6_len    = sizeof(new_addr);
+    new_addr.sin6_family = AF_INET6;
+    new_addr.sin6_port   = htons(CHARGE_MANAGEMENT_PORT);
 
-    // using memcpy to guarantee alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
-    std::memcpy(&in, &ip->u_addr.ip4, sizeof(ip->u_addr.ip4));
+    if (ip->type == IPADDR_TYPE_V4) {
+        // Store as IPv4-mapped IPv6: ::ffff:x.x.x.x
+        new_addr.sin6_addr.s6_addr[10] = 0xff;
+        new_addr.sin6_addr.s6_addr[11] = 0xff;
+        memcpy(&new_addr.sin6_addr.s6_addr[12], &ip->u_addr.ip4.addr, 4);
+    } else {
+        memcpy(&new_addr.sin6_addr, &ip->u_addr.ip6.addr, sizeof(new_addr.sin6_addr));
+    }
 
-    if (device->addr.sin_addr.s_addr != in) {
-        device->addr.sin_addr.s_addr  = in;
+    const struct sockaddr_in6 *dev_addr6 = reinterpret_cast<const struct sockaddr_in6 *>(&device->addr);
+    if (memcmp(&dev_addr6->sin6_addr, &new_addr.sin6_addr, sizeof(new_addr.sin6_addr)) != 0) {
+        memcpy(&device->addr, &new_addr, sizeof(new_addr));
 
         const char *hname = device->hostname;
-        const ip4_addr_t ip4 = ip->u_addr.ip4; // Must copy the address because *ip is temporary.
+        ip_addr_t ip_copy = *ip; // Must copy the address because *ip is temporary.
 
-        task_scheduler.scheduleOnce([hname, ip4]() { // Can't access the logger from lwIP context.
-            char ip_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&ip4, ip_str, sizeof(ip_str));
+        task_scheduler.scheduleOnce([hname, ip_copy]() { // Can't access the logger from lwIP context.
+            char ip_str[INET6_ADDRSTRLEN];
+            tf_ipaddr_ntoa(&ip_copy, ip_str, sizeof(ip_str));
             logger.printfln("Resolved %s to %s", hname, ip_str);
         });
     }
@@ -280,7 +292,7 @@ void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_reques
     managed_device_data *device = manager_data->managed_devices + charger_idx;
 
     ip_addr_t ip;
-    err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_IPV4);
+    err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_DEFAULT);
 
     if (err == ERR_INPROGRESS) {
         return;
@@ -502,13 +514,29 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
 
         mdns_ip_addr_t *addr_entry = result_entry->addr;
         do {
-            if (addr_entry->addr.type == IPADDR_TYPE_V4) {
-                if (device->addr.sin_addr.s_addr != addr_entry->addr.u_addr.ip4.addr) {
-                    device->addr.sin_addr.s_addr  = addr_entry->addr.u_addr.ip4.addr;
+            if (addr_entry->addr.type == IPADDR_TYPE_V4 || addr_entry->addr.type == IPADDR_TYPE_V6) {
+                // Build new address as sockaddr_in6 (IPv4 stored as IPv4-mapped IPv6).
+                struct sockaddr_in6 new_addr;
+                memset(&new_addr, 0, sizeof(new_addr));
+                new_addr.sin6_len    = sizeof(new_addr);
+                new_addr.sin6_family = AF_INET6;
+                new_addr.sin6_port   = htons(CHARGE_MANAGEMENT_PORT);
+
+                if (addr_entry->addr.type == IPADDR_TYPE_V4) {
+                    new_addr.sin6_addr.s6_addr[10] = 0xff;
+                    new_addr.sin6_addr.s6_addr[11] = 0xff;
+                    memcpy(&new_addr.sin6_addr.s6_addr[12], &addr_entry->addr.u_addr.ip4.addr, 4);
+                } else {
+                    memcpy(&new_addr.sin6_addr, &addr_entry->addr.u_addr.ip6.addr, sizeof(new_addr.sin6_addr));
+                }
+
+                const struct sockaddr_in6 *dev_addr6 = reinterpret_cast<const struct sockaddr_in6 *>(&device->addr);
+                if (memcmp(&dev_addr6->sin6_addr, &new_addr.sin6_addr, sizeof(new_addr.sin6_addr)) != 0) {
+                    memcpy(&device->addr, &new_addr, sizeof(new_addr));
                     device->resolve_state = ResolveState::Resolved;
 
-                    char addr_str[INET_ADDRSTRLEN];
-                    tf_ip4addr_ntoa(&addr_entry->addr, addr_str, sizeof(addr_str));
+                    char addr_str[INET6_ADDRSTRLEN];
+                    tf_ipaddr_ntoa(&addr_entry->addr, addr_str, sizeof(addr_str));
                     logger.printfln("Resolved %s to %s (via mDNS scan)", device->hostname, addr_str);
                 }
 
@@ -523,10 +551,10 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
 void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer *json)
 {
     const char *hostname = entry->hostname == nullptr ? "[no_hostname]" : entry->hostname;
-    char addr_str[INET_ADDRSTRLEN];
+    char addr_str[INET6_ADDRSTRLEN];
 
-    if (entry->addr != nullptr && entry->addr->addr.type == IPADDR_TYPE_V4) {
-        tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
+    if (entry->addr != nullptr && (entry->addr->addr.type == IPADDR_TYPE_V4 || entry->addr->addr.type == IPADDR_TYPE_V6)) {
+        tf_ipaddr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
     } else {
         strncpy(addr_str, "[no_address]", std::size(addr_str));
     }

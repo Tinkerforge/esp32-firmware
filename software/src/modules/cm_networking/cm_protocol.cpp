@@ -43,17 +43,22 @@ static const char *get_charger_name(uint8_t idx)
 int CMNetworking::create_socket(uint16_t port, bool blocking)
 {
     int sock;
-    struct sockaddr_in dest_addr;
+    struct sockaddr_in6 dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
 
-    dest_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
+    dest_addr.sin6_family = AF_INET6;
+    dest_addr.sin6_port = htons(port);
+    dest_addr.sin6_addr = in6addr_any;
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (sock < 0) {
         logger.printfln("Unable to create socket for port %hu: %s (%d)", port, strerror(errno), errno);
         return -1;
     }
+
+    // accept both IPv4 and IPv6 peers on this socket.
+    int no = 0;
+    setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &no, sizeof(no));
 
     int err = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if (err < 0) {
@@ -175,7 +180,7 @@ struct ManagerTaskArgs {
 struct ManagerQueueItem {
     int len;
     struct cm_state_packet state_pkt;
-    struct sockaddr_in source_addr;
+    struct sockaddr_storage source_addr;
 };
 
 #define CM_MANAGER_TASK_STACK_SIZE 1536
@@ -230,20 +235,29 @@ void CMNetworking::register_manager(const char *const *const hosts,
         device->last_resolve_attempt = 0_us;
         device->device_index = i;
 
-        device->addr.sin_len    = sizeof(device->addr);
-        device->addr.sin_family = AF_INET; // IPv4 only
-        device->addr.sin_port   = htons(CHARGE_MANAGEMENT_PORT);
+        // Initialize address as sockaddr_in6 for dual-stack socket.
+        // IPv4 peers are represented as IPv4-mapped IPv6 addresses (::ffff:x.x.x.x).
+        memset(&device->addr, 0, sizeof(device->addr));
+        struct sockaddr_in6 *addr6 = reinterpret_cast<struct sockaddr_in6 *>(&device->addr);
+        addr6->sin6_len    = sizeof(struct sockaddr_in6);
+        addr6->sin6_family = AF_INET6;
+        addr6->sin6_port   = htons(CHARGE_MANAGEMENT_PORT);
 
-        ip4_addr_t ip4_addr;
-        if (ip4addr_aton(hostname, &ip4_addr)) {
-            // Hostname is actually an IPv4 address that never needs resolving.
-            device->addr.sin_addr.s_addr = ip4_addr.addr;
+        ip_addr_t parsed_addr;
+        if (ipaddr_aton(hostname, &parsed_addr)) {
+            // Hostname is actually an IP address literal that never needs resolving.
+            if (parsed_addr.type == IPADDR_TYPE_V4) {
+                // Store IPv4 as IPv4-mapped IPv6: ::ffff:x.x.x.x
+                addr6->sin6_addr.s6_addr[10] = 0xff;
+                addr6->sin6_addr.s6_addr[11] = 0xff;
+                memcpy(&addr6->sin6_addr.s6_addr[12], &parsed_addr.u_addr.ip4.addr, 4);
+            } else {
+                memcpy(&addr6->sin6_addr, &parsed_addr.u_addr.ip6.addr, sizeof(addr6->sin6_addr));
+            }
 
             device->host_address_type = HostAddressType::IP;
             device->resolve_state     = ResolveState::Resolved;
         } else {
-            device->addr.sin_addr.s_addr = 0;
-
             if (endswith(hostname, ".local")) {
                 device->host_address_type = HostAddressType::mDNS;
                 device->resolve_state     = ResolveState::NotResolved;
@@ -324,7 +338,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
             int len = item.len;
             struct cm_state_packet &state_pkt = item.state_pkt;
-            struct sockaddr_in &source_addr = item.source_addr;
+            struct sockaddr_storage &source_addr = item.source_addr;
 
             if (len < 0) {
                 if (len != -EAGAIN && len != -EWOULDBLOCK)
@@ -336,19 +350,33 @@ void CMNetworking::register_manager(const char *const *const hosts,
             for (int idx = 0; idx < this->manager_data->managed_device_count; ++idx) {
                 managed_device_data *device = manager_data->managed_devices + idx;
 
-                if (source_addr.sin_family      == device->addr.sin_family      &&
-                    source_addr.sin_addr.s_addr == device->addr.sin_addr.s_addr &&
-                    source_addr.sin_port        == device->addr.sin_port) {
-                        charger_idx = idx;
-                        break;
+                // Compare address family, address, and port for both IPv4 and IPv6.
+                if (source_addr.ss_family == device->addr.ss_family) {
+                    if (source_addr.ss_family == AF_INET6) {
+                        const struct sockaddr_in6 *src6 = reinterpret_cast<const struct sockaddr_in6 *>(&source_addr);
+                        const struct sockaddr_in6 *dev6 = reinterpret_cast<const struct sockaddr_in6 *>(&device->addr);
+                        if (memcmp(&src6->sin6_addr, &dev6->sin6_addr, sizeof(src6->sin6_addr)) == 0 &&
+                            src6->sin6_port == dev6->sin6_port) {
+                                charger_idx = idx;
+                                break;
+                        }
+                    } else if (source_addr.ss_family == AF_INET) {
+                        const struct sockaddr_in *src4 = reinterpret_cast<const struct sockaddr_in *>(&source_addr);
+                        const struct sockaddr_in *dev4 = reinterpret_cast<const struct sockaddr_in *>(&device->addr);
+                        if (src4->sin_addr.s_addr == dev4->sin_addr.s_addr &&
+                            src4->sin_port == dev4->sin_port) {
+                                charger_idx = idx;
+                                break;
+                        }
+                    }
                 }
             }
 
             // Don't log in the first 20 seconds after startup: We are probably still resolving hostnames.
             if (charger_idx == -1) {
                 if (deadline_elapsed(20_s)) {
-                    char source_str[INET_ADDRSTRLEN];
-                    tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+                    char source_str[INET6_ADDRSTRLEN];
+                    tf_ipaddr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                     logger.printfln("Received packet from unknown %s. Is the config complete?", source_str);
                 }
@@ -357,8 +385,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
             String validation_error = validate_state_packet_header(&state_pkt, len);
             if (!validation_error.isEmpty()) {
-                char source_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+                char source_str[INET6_ADDRSTRLEN];
+                tf_ipaddr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
                                 get_charger_name(charger_idx),
@@ -372,8 +400,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
             }
 
             if (seq_num_invalid(state_pkt.header.seq_num, last_seen_seq_num[charger_idx])) {
-                char source_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+                char source_str[INET6_ADDRSTRLEN];
+                tf_ipaddr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
                                 get_charger_name(charger_idx),
@@ -386,8 +414,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
             last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
 
             if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
-                char source_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+                char source_str[INET6_ADDRSTRLEN];
+                tf_ipaddr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("%s (%s) reports managed is not activated!",
                                 get_charger_name(charger_idx),
@@ -471,7 +499,10 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     em_phase_switcher.filter_command_packet(client_id, command_pkt);
 #endif
 
-    int err = sendto(manager_data->manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (sockaddr *)&manager_data->managed_devices[client_id].addr, sizeof(manager_data->managed_devices[client_id].addr));
+    // Use the actual address size based on address family.
+    const struct sockaddr_storage *addr = &manager_data->managed_devices[client_id].addr;
+    socklen_t addr_len = (addr->ss_family == AF_INET6) ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    int err = sendto(manager_data->manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (const sockaddr *)addr, addr_len);
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -527,8 +558,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
 
         String validation_error = validate_command_packet_header(&command_pkt, len);
         if (!validation_error.isEmpty()) {
-            char from_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&from_addr, from_str, sizeof(from_str));
+            char from_str[INET6_ADDRSTRLEN];
+            tf_ipaddr_ntoa(&from_addr, from_str, sizeof(from_str));
             logger.printfln("Received command packet from %s (%i bytes) failed validation: %s", from_str, len, validation_error.c_str());
             return;
         }
@@ -541,10 +572,10 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
         last_seen_seq_num = command_pkt.header.seq_num;
 
         if (memcmp(&this->manager_addr, &from_addr, from_addr.s2_len) != 0) {
-            char manager_str[INET_ADDRSTRLEN];
-            char from_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
-            tf_ip4addr_ntoa(&from_addr,          from_str,    sizeof(from_str   ));
+            char manager_str[INET6_ADDRSTRLEN];
+            char from_str[INET6_ADDRSTRLEN];
+            tf_ipaddr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
+            tf_ipaddr_ntoa(&from_addr,          from_str,    sizeof(from_str   ));
 
             if (deadline_elapsed(this->last_manager_addr_change + 1_min)) {
                 if (this->manager_addr.s2_len > 0) {
@@ -570,8 +601,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
         } else { // Manager address unchanged
             if (!this->manager_addr_valid && this->manager_addr.s2_len > 0) {
                 if (deadline_elapsed(this->last_manager_addr_change + 1_min)) {
-                    char manager_str[INET_ADDRSTRLEN];
-                    tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
+                    char manager_str[INET6_ADDRSTRLEN];
+                    tf_ipaddr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
 
                     logger.printfln("Accepting manager address %s", manager_str);
                     this->manager_addr_valid = true;
@@ -744,7 +775,9 @@ bool CMNetworking::send_state_packet(const cm_state_packet *state_pkt)
         return false;
     }
 
-    int err = sendto(client_sock, state_pkt, sizeof(decltype(*state_pkt)), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
+    // Use actual address size based on address family.
+    socklen_t addr_len = (manager_addr.ss_family == AF_INET6) ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    int err = sendto(client_sock, state_pkt, sizeof(decltype(*state_pkt)), 0, (const sockaddr *)&manager_addr, addr_len);
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             logger.printfln("Failed to send state: %s (%d)", strerror(errno), errno);
