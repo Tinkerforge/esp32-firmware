@@ -164,7 +164,7 @@ void Wireguard::connect_wireguard()
     const String   &psk        = config.get("preshared_key")->asString();
 
     logger.printfln("Connecting to WireGuard peer %s:%hu", wg_data->remote_host.c_str(), remote_port);
-
+    // TODO: RE: ipv6 support for wireguard: The Wireguard ESP32 library does NOT yet support ipv6. While it accepts IPAddress types, these types are cast into uin32_t internally which does not work with ipv6
     // Performs blocking hostname lookup. Hostname should be cached first.
     const bool success = wg_data->wg.begin(
         {config.get("internal_ip"           )->asUnsafeCStr()},
