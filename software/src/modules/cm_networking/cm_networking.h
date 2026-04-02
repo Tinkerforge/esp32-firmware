@@ -89,7 +89,7 @@ private:
 
     struct managed_device_data {
         micros_t last_resolve_attempt;
-        sockaddr_in addr;
+        sockaddr_storage addr;
         const char *hostname;
         uint8_t mdns_hostname_len; // Length of the hostname without the .local TLD.
         HostAddressType host_address_type;
