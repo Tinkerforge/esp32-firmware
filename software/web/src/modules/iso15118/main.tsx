@@ -493,31 +493,34 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
-                    <FormRow label={__("iso15118.content.autocharge")}>
+                    <FormRow label={__("iso15118.content.autocharge")} help={__("iso15118.content.autocharge_help")}>
                         <Switch desc={__("iso15118.content.autocharge_desc")}
                                 checked={state.autocharge}
                                 onClick={this.toggle('autocharge')}
                         />
                     </FormRow>
-                    <FormRow label={__("iso15118.content.read_soc")}>
+                    <FormRow label={__("iso15118.content.read_soc")} help={__("iso15118.content.read_soc_help")}>
                         <Switch desc={__("iso15118.content.read_soc_desc")}
-                                checked={state.read_soc}
+                                checked={API.hasFeature("meter") && state.read_soc}
                                 onClick={this.toggle('read_soc')}
+                                disabled={!API.hasFeature("meter")}
                         />
                     </FormRow>
-                    <FormRow label={__("iso15118.content.charge_via_iso15118")}>
+                    <FormRow label={__("iso15118.content.charge_via_iso15118")} help={__("iso15118.content.charge_via_iso15118_help")}>
                         <Switch desc={__("iso15118.content.charge_via_iso15118_desc")}
-                                checked={state.charge_via_iso15118}
+                                checked={false}
                                 onClick={this.toggle('charge_via_iso15118')}
+                                disabled={true}
                         />
                     </FormRow>
-                    <FormRow label={__("iso15118.content.min_charge_current")}>
+                    <FormRow label={__("iso15118.content.min_charge_current")} help={__("iso15118.content.min_charge_current_help")}>
                         <InputNumber
                             unit="mA"
                             value={state.min_charge_current}
                             onValue={this.set('min_charge_current')}
                             min={1000}
                             max={22000}
+                            disabled={true}
                         />
                     </FormRow>
                     <CollapsedSection heading={__("iso15118.content.advanced_settings")}>
