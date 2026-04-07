@@ -1021,7 +1021,6 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
-    WiFi.enableIPv6(true);
 
     if (runtime_sta->ip.type == 0) {
         WiFi.STA.config(static_cast<uint32_t>(0), static_cast<uint32_t>(0), static_cast<uint32_t>(0));
@@ -1381,7 +1380,7 @@ void Wifi::apply_ipv6_sta_config()
 
             if (want_ipv6 ) {
                 if (want_ipv6 != ipv6_enable_sta) {
-    WiFi.enableIPv6(sta_config.get("enable_ipv6")->asBool());
+                    WiFi.enableIPv6(sta_config.get("enable_ipv6")->asBool());
                 }
                 String configured_ip_str = sta_config.get("ipv6")->get("ip")->asString();
                 String state_ip_str = state.get("sta_ip6_configured")->asString();
