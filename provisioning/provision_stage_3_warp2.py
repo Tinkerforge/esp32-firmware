@@ -97,7 +97,7 @@ def tprint(*args, **kwargs):
     prefix = ''
 
     if len(args) > 0 and args[0].startswith('\r'):
-        args = args[0][1:] + args[1:]
+        args = (args[0][1:],) + args[1:]
         prefix = '\r'
 
     orig_print(prefix + datetime.datetime.now().isoformat(), *args, **kwargs)
