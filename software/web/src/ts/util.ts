@@ -1087,8 +1087,12 @@ export function is_native_median_app(): boolean {
     // Put fake_native_median_app = true in developer console to
     // get native app behavior in normal browser
 
-    // @ts-ignore
-    if (globalThis.fake_native_median_app !== 'undefined' && globalThis.fake_native_median_app) {
+    if (
+        // @ts-ignore
+        globalThis.fake_native_median_app !== "undefined" &&
+        // @ts-ignore
+        globalThis.fake_native_median_app
+    ) {
         return true;
     }
 
@@ -1190,27 +1194,40 @@ export function get_all_seen_tags(): NFCSeenTag[] {
         return tag;
     });
 
-    if (API.hasModule("charge_manager") && API.get("charge_manager/config").enable_central_auth) {
+    if (
+        API.hasModule("charge_manager") &&
+        API.get("charge_manager/config").enable_central_auth
+    ) {
         let cm_state = API.get_unchecked("charge_manager/state");
         if (cm_state && cm_state.chargers) {
-            for (let charger of cm_state.chargers) {
-                if (!charger.ti || charger.ti === "")
-                    continue;
-                // Check if tag already exists
-                const idx = all_tags.findIndex(t => t.tag_id === charger.ti && t.tag_type === charger.tt);
-                if (idx !== -1) {
-                    // If remote tag is newer, update last_seen
-                    if (all_tags[idx].last_seen > charger.ts) {
-                        all_tags[idx] = {
-                            charger_name: charger.n,
-                            tag_id: charger.ti,
-                            tag_type: charger.tt,
-                            last_seen: charger.ts
-                        };
+            for (const charger of cm_state.chargers) {
+                for (const auth_info of charger.ai) {
+                    if (!auth_info.ti || auth_info.ti === "") continue;
+                    // Check if tag already exists
+                    const idx = all_tags.findIndex(
+                        (t) =>
+                            t.tag_id === auth_info.ti &&
+                            t.tag_type === auth_info.tt,
+                    );
+                    if (idx !== -1) {
+                        // If remote tag is newer, update last_seen
+                        if (all_tags[idx].last_seen > auth_info.ts) {
+                            all_tags[idx] = {
+                                charger_name: charger.n,
+                                tag_id: auth_info.ti,
+                                tag_type: auth_info.tt,
+                                last_seen: auth_info.ts,
+                            };
+                        }
+                        continue;
                     }
-                    continue;
+                    all_tags.push({
+                        tag_id: auth_info.ti,
+                        tag_type: auth_info.tt,
+                        last_seen: auth_info.ts,
+                        charger_name: charger.n,
+                    });
                 }
-                all_tags.push({tag_id: charger.ti, tag_type: charger.tt, last_seen: charger.ts, charger_name: charger.n});
             }
         }
     }

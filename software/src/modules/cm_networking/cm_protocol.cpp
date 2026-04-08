@@ -30,6 +30,7 @@
 #include "tools/net.h"
 #include "modules/meters/meter_defs.h"
 #include "generated/client_error.enum.h"
+#include "generated/cm_auth_type.enum.h"
 
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
 
@@ -764,28 +765,45 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
 
-#if MODULE_NFC_AVAILABLE()
+#if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
     if (has_nfc) {
-        NFC::tag_info_t info;
-        if (nfc.get_last_tag_seen(&info, nullptr, nullptr)
-            && info.last_seen < 3'600'000) {
-            state_pkt.v5.auth_type = USERS_AUTH_TYPE_NFC;
-            // last_seen == 0 is interpreted as "no tag seen"
-            state_pkt.v5.nfc_last_seen_s = std::max(1ul, info.last_seen / 1000);
-            state_pkt.v5.nfc_tag_type = info.tag.type;
-            state_pkt.v5.nfc_tag_id_len = info.tag.id_length;
-            memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
-            memcpy(state_pkt.v5.nfc_tag_id, info.tag.id_bytes, info.tag.id_length);
-        } else {
-            state_pkt.v5.auth_type = USERS_AUTH_TYPE_NONE;
-            state_pkt.v5.nfc_last_seen_s = 0;
-            state_pkt.v5.nfc_tag_type = 0;
-            state_pkt.v5.nfc_tag_id_len = 0;
-            memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
+        static_assert(LAST_AUTH_LIST_LENGTH == ARRAY_SIZE(state_pkt.v5.auth_info),
+                      "LAST_AUTH_LIST_LENGTH must match cm_state_v5::auth_info array size");
+        const auto to_nibble = [](char c) -> uint8_t {
+            if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
+            c |= 0x20;
+            return static_cast<uint8_t>(c >= 'a' && c <= 'f' ? c - 'a' + 10 : 0);
+        };
+        for (size_t i = 0; i < LAST_AUTH_LIST_LENGTH; i++) {
+            const Config *entry = static_cast<const Config *>(charge_authentication.last_seen_authentications.get(i));
+            auto &ai = state_pkt.v5.auth_info[i];
+            memset(&ai, 0, sizeof(ai));
+
+            const CMAuthType auth_method = entry->get("type")->asEnum<CMAuthType>();
+            const uint32_t last_seen_ms = entry->get("last_seen")->asUint();
+
+            if (auth_method == CMAuthType::NFC && last_seen_ms > 0 && last_seen_ms < 3'600'000) {
+                ai.auth_method = USERS_AUTH_METHOD_NFC;
+                // last_seen == 0 is interpreted as "no tag seen"
+                ai.last_seen_s = static_cast<uint16_t>(last_seen_ms / 1000);
+                ai.tag_type = static_cast<uint8_t>(entry->get("additional_data")->asUint());
+
+                // Parse colon-separated hex string (e.g. "AA:BB:CC") back to bytes
+                const String &auth_str = entry->get("auth_string")->asString();
+                const char *str = auth_str.c_str();
+                const size_t str_len = auth_str.length();
+                uint8_t id_len = 0;
+                memset(ai.tag_id, 0, sizeof(ai.tag_id));
+                for (size_t b = 0; b * 3 < str_len && b < sizeof(ai.tag_id); b++) {
+                    ai.tag_id[b] = static_cast<uint8_t>((to_nibble(str[b * 3]) << 4) | to_nibble(str[b * 3 + 1]));
+                    id_len++;
+                }
+                ai.tag_id_len = id_len;
+            }
+            // else: auth_method == USERS_AUTH_METHOD_NONE (0), all other fields zeroed by memset above
         }
     }
 #endif
-
     return send_state_packet(&state_pkt);
 }
 

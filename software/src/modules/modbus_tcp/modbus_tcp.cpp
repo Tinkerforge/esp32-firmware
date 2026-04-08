@@ -1043,9 +1043,9 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
             } break;
 
         case 1500: REQUIRE(nfc); {
-                auto auth_type = cache->current_charge->get("authorization_type")->asUint();
+                auto auth_method = cache->current_charge->get("authorization_type")->asUint();
 
-                if (auth_type == 2 || auth_type == 3) {
+                if (auth_method == 2 || auth_method == 3) {
                     const auto &tag_id = cache->current_charge->get("authorization_info")->get("tag_id")->asString();
                     val.u  = export_tag_id_as_uint32(tag_id);
                 }
