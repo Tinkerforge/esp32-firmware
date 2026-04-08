@@ -761,7 +761,7 @@ class Stage3:
             elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
-    def verify_front_panel_ground_connected(self):
+    def blackbox_enable(self):
         tester_status = blackbox.bb_get_status()._asdict()
 
         if not tester_status['success']:
@@ -777,6 +777,10 @@ class Stage3:
 
         if not tester_reset['success']:
             fatal_error('Could not reset electrical tester')
+
+    # requires power_on
+    def measure_front_panel_rlow(self):
+        self.blackbox_enable()
 
         self.connect_warp_power(['L1', 'L2', 'L3'])
         time.sleep(RELAY_SETTLE_DURATION)
@@ -804,7 +808,7 @@ class Stage3:
         blackbox.bb_disable()
 
     # requires power_on
-    def test_wallbox(self, has_phase_switch, is_warp2):
+    def test_wallbox(self, rlow, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
@@ -814,21 +818,7 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
-        tester_status = blackbox.bb_get_status()._asdict()
-
-        if not tester_status['success']:
-            fatal_error('Could not get electrical tester status')
-
-        if tester_status['response'] == 'ENABLE = 0':
-            tester_enable = blackbox.bb_enable()._asdict()
-
-            if not tester_enable['success']:
-                fatal_error('Could not enable electrical tester blackbox mode')
-
-        tester_reset = blackbox.bb_reset()._asdict()
-
-        if not tester_reset['success']:
-            fatal_error('Could not reset electrical tester')
+        self.blackbox_enable()
 
         report = {}
 
@@ -1109,25 +1099,8 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 14: test R low front panel
-        print('Disconnecting front panel')
-
-        self.connect_front_panel(True)
-        time.sleep(RELAY_SETTLE_DURATION)
-
-        print('Electrical test R low front panel')
-
-        report['rlow'] = blackbox.bb_measure_rlow()._asdict()
-
-        if not report['rlow']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
-
-        print('Connecting front panel')
-
-        self.connect_front_panel(False)
-        time.sleep(RELAY_SETTLE_DURATION)
-
-        self.verify_evse_not_crashed()
+        # step 14: store result from earlier R low front panel test
+        report['rlow'] = rlow
 
         # clean up
         self.connect_warp_power(['L1'])

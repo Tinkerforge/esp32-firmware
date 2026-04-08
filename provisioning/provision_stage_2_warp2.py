@@ -585,7 +585,7 @@ def main(stage3, scanner):
         else:
             stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
 
-        stage3.verify_front_panel_ground_connected()
+        rlow = stage3.measure_front_panel_rlow()
 
         dprint("pre nfc tags")
 
@@ -768,6 +768,8 @@ def main(stage3, scanner):
         else:
             stage3.power_on('Basic')
 
+        rlow = stage3.measure_front_panel_rlow()
+
         result["uid"] = None
 
         ipcon = IPConnection()
@@ -817,7 +819,7 @@ def main(stage3, scanner):
             browser.get("http://{}/#evse".format(host))
 
         print("Performing the electrical tests")
-        result["electrical_tests"] = stage3.test_wallbox(has_phase_switch=generation >= 3, is_warp2=generation == 2)
+        result["electrical_tests"] = stage3.test_wallbox(rlow, has_phase_switch=generation >= 3, is_warp2=generation == 2)
     finally:
         if browser is not None:
             browser.quit()
