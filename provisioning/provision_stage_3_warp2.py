@@ -29,7 +29,7 @@ from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpea
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
 
 from provisioning.provision_common.inventory import Inventory
-from provisioning.provision_common.provision_common import FatalError, fatal_error, green, blue, my_input
+from provisioning.provision_common.provision_common import FatalError, fatal_error, green, blue, red, my_input
 
 import provisioning.blackbox as blackbox
 
@@ -772,25 +772,47 @@ class Stage3:
                 fatal_error(f'Energy meter: Unexpected voltage on {name}')
 
     def blackbox_enable(self):
-        tester_status = blackbox.bb_get_status()._asdict()
+        status = blackbox.bb_get_status()._asdict()
 
-        if not tester_status['success']:
+        if not status['success']:
             fatal_error('Could not get electrical tester status')
 
-        if tester_status['response'] == 'ENABLE = 0':
+        if status['response'] == 'ENABLE = 0':
             tester_enable = blackbox.bb_enable()._asdict()
 
             if not tester_enable['success']:
                 fatal_error('Could not enable electrical tester blackbox mode')
 
-        tester_reset = blackbox.bb_reset()._asdict()
+        reset = blackbox.bb_reset()._asdict()
 
-        if not tester_reset['success']:
+        if not reset['success']:
             fatal_error('Could not reset electrical tester')
+
+        device_info = blackbox.bb_get_device_info()._asdict()
+
+        if not device_info['valid']:
+            fatal_error('Could not get electrical tester device info')
+
+        return device_info
 
     # requires power_on
     def measure_front_panel_rlow(self):
-        self.blackbox_enable()
+        device_info = self.blackbox_enable()
+        day, month, year = (int(x) for x in device_info['calibration_date'].split('.'))
+        calibration_due_date_offset = (datetime.date(year, month, day) + datetime.timedelta(365 * 2) - datetime.now().date()).days
+
+        if calibration_due_date_offset < 0:
+            print(red('=================================================================='))
+            print('')
+            print(red('Electrical tester out of calibration since {calibration_due_date_offset} day(s)'))
+            print('')
+            print(red('=================================================================='))
+        elif calibration_due_date_offset < 60:
+            print(blue('=================================================================='))
+            print('')
+            print(blue('Electrical tester due for calibration in {calibration_due_date_offset} day(s)'))
+            print('')
+            print(blue('=================================================================='))
 
         self.connect_warp_power(['L1', 'L2', 'L3'])
         time.sleep(RELAY_SETTLE_DURATION)
@@ -830,11 +852,9 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
-        self.blackbox_enable()
-
         report = {}
 
-        report['device_info'] = blackbox.bb_get_device_info()._asdict()
+        report['device_info'] = self.blackbox_enable()
 
         if not report['device_info']['valid']:
             fatal_error('Could not get electrical tester device info')
