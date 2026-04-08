@@ -1287,16 +1287,20 @@ void ModbusTCP::start_server() {
 
     this->send_illegal_data_address = config.get("send_illegal_data_address")->asBool();
 
+    // TODO IPv6: change bind_address to nullptr (any) once start() accepts const ip_addr_t *.
+    //            Update callback signatures to (const ip_addr_t *peer_address, ...).
+    //            Use TFNetwork::ipaddr_ntoa() with TF_NETWORK_IPADDR_NTOA_BUFFER_LENGTH for logging.
+    ip_addr_t peer = IPADDR4_INIT(0);
     server.start(
-        0, config.get("port")->asUint16(),
-        [](uint32_t peer_address, uint16_t port) {
-            char peer_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
+        &peer, config.get("port")->asUint16(),
+        [](const ip_addr_t *peer_address, uint16_t port) {
+            char peer_str[INET6_ADDRSTRLEN];
+            tf_ipaddr_ntoa(peer_address, peer_str, sizeof(peer_str));
             logger.printfln("Client %s:%u connected", peer_str, port);
         },
-        [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
-            char peer_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
+        [](const ip_addr_t *peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
+            char peer_str[INET6_ADDRSTRLEN];
+            tf_ipaddr_ntoa(peer_address, peer_str, sizeof(peer_str));
             logger.printfln("Client %s:%u disconnected: %s (error %d)", peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
         [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
