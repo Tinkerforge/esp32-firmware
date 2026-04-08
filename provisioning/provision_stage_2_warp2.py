@@ -49,6 +49,7 @@ def tprint(*args, **kwargs):
     orig_print(datetime.datetime.now().isoformat(), *args, **kwargs)
 
 print = tprint
+dprint = tprint
 
 def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     global evse
@@ -408,11 +409,11 @@ class Scanner:
 
 
 def led_wrap():
-    print(datetime.datetime.now().isoformat(), "pre scanner")
+    dprint("pre scanner")
 
     scanner = Scanner()
 
-    print(datetime.datetime.now().isoformat(), "post scanner")
+    dprint("post scanner")
 
     stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed,
                     has_evse_error_function=has_evse_error,
@@ -439,7 +440,7 @@ def led_wrap():
         stage3.set_led_strip_color((0, 255, 0))
         stage3.beep_success()
 
-    print(datetime.datetime.now().isoformat(), "exit led_wrap")
+    dprint("exit led_wrap")
 
 blink_start = None
 blink_count = 0
@@ -548,7 +549,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
 def main(stage3, scanner):
     result = {"start": now()}
 
-    print(datetime.datetime.now().isoformat(), "main")
+    dprint("main")
 
     github_reachable = True
     try:
@@ -558,13 +559,13 @@ def main(stage3, scanner):
         print("github.com not reachable: Will not pull firmwares git.")
         github_reachable = False
 
-    print(datetime.datetime.now().isoformat(), "post github reachable")
+    dprint("post github reachable")
 
     if github_reachable:
         with ChangedDirectory(os.path.join("..", "..", "firmwares")):
             run(["git", "pull"])
 
-    print(datetime.datetime.now().isoformat(), "post git pull")
+    dprint("post git pull")
 
     result["serial"] = scanner.qr_serial
     result["qr_code"] = scanner.qr_charger_code
@@ -586,12 +587,12 @@ def main(stage3, scanner):
 
         stage3.verify_front_panel_ground_connected()
 
-        print(datetime.datetime.now().isoformat(), "pre nfc tags")
+        dprint("pre nfc tags")
 
         if scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0':
             seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
-        print(datetime.datetime.now().isoformat(), "post nfc tags")
+        dprint("post nfc tags")
 
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
@@ -600,7 +601,7 @@ def main(stage3, scanner):
         info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
 
-        print(datetime.datetime.now().isoformat(), "post version fetch")
+        dprint("post version fetch")
 
         if '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
@@ -649,7 +650,7 @@ def main(stage3, scanner):
             else:
                 print("Flashed firmware is up-to-date.")
 
-        print(datetime.datetime.now().isoformat(), "post firmware update")
+        dprint("post firmware update")
 
         result["firmware_version"] = info_version['firmware']
 
@@ -661,11 +662,11 @@ def main(stage3, scanner):
         except Exception as e:
             fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
-        print(datetime.datetime.now().isoformat(), "post ipcon connect")
+        dprint("post ipcon connect")
 
         seen_tags2 = run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
 
-        print(datetime.datetime.now().isoformat(), "post bricklet tests")
+        dprint("post bricklet tests")
 
         if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
             seen_tags = seen_tags2
@@ -697,7 +698,7 @@ def main(stage3, scanner):
             factory_reset(ssid)
             connect_to_ethernet(ssid, "hidden_proxy/enable")
 
-        print(datetime.datetime.now().isoformat(), "post user config factory reset")
+        dprint("post user config factory reset")
 
         if not do_configure_users:
             print("Users already configured")
@@ -729,7 +730,7 @@ def main(stage3, scanner):
                 except Exception as e:
                     fatal_error("Failed to configure user {}: {} {}!".format(i, e, e.read()))
 
-        print(datetime.datetime.now().isoformat(), "post user config")
+        dprint("post user config")
 
         print("Configuring tags")
         req = urllib.request.Request("http://{}/nfc/config_update".format(host),
@@ -760,7 +761,7 @@ def main(stage3, scanner):
             fatal_error("Failed to configure NFC tags! {} {}!".format(e, e.read()))
         result["nfc_tags_configured"] = True
 
-        print(datetime.datetime.now().isoformat(), "post nfc config")
+        dprint("post nfc config")
     else:
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
@@ -803,7 +804,7 @@ def main(stage3, scanner):
         print("EVSE test report found")
         result["evse_test_report_found"] = True
 
-    print(datetime.datetime.now().isoformat(), "post evse test report")
+    dprint("post evse test report")
 
     if scanner.qr_variant == "B":
         ssid = f'warp{scanner.qr_gen}-{result["evse_uid"]}'
