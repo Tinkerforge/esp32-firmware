@@ -72,6 +72,9 @@ colors = {"off":"\x1b[00m",
           "gray": "\x1b[90m",
           "blink": "\x1b[5m"}
 
+def blue(s):
+    return colors["blue"]+s+colors["off"]
+
 def red(s):
     return colors["red"]+s+colors["off"]
 

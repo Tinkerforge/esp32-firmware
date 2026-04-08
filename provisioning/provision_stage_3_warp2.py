@@ -29,7 +29,7 @@ from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpea
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
 
 from provisioning.provision_common.inventory import Inventory
-from provisioning.provision_common.provision_common import FatalError, fatal_error, green, my_input
+from provisioning.provision_common.provision_common import FatalError, fatal_error, green, blue, my_input
 
 import provisioning.blackbox as blackbox
 
@@ -852,8 +852,13 @@ class Stage3:
 
         # step 01: test IEC states
         def clear_contactor(counter, message):
-            if counter > 15:
+            max_counter = 15
+
+            if counter >= max_counter:
                 fatal_error('Giving up to clear contactor')
+
+            print(blue(message))
+            print(blue(f'Trying to clear contactor ({counter + 1}/{max_counter})'))
 
             self.change_cp_pe_state('B')
 
