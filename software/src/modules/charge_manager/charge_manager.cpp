@@ -416,11 +416,17 @@ static void update_charge_tracking(
             if (rtc.clock_synced(&_timeval))
                 charge_start = rtc.timestamp_minutes();
 
+            const cm_auth_info *auth = &v5->auth_info[0];
+            uint8_t auth_method = 0;
+            if (auth != nullptr) {
+                auth_method = auth->auth_method;
+            }
+
             charge_tracker.startCharge(charge_start,
                                        v1->energy_abs,
                                        target.authenticated_user_id,
                                        v1->evse_uptime,
-                                       v5 == nullptr ? USERS_AUTH_TYPE_LOST : v5->auth_type,
+                                       auth_method,
                                        Config::ConfVariant(),
                                        local_charger ? nullptr : uid_str);
         }
@@ -445,30 +451,25 @@ static void update_charge_tracking(
 // Check if the charger is authorized based on NFC tag information.
 // Returns the user_id of the authorized user (0 if not authorized)
 static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
-#if MODULE_NFC_AVAILABLE()
-    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0) {
+#if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
+    const cm_auth_info &info = v5->auth_info[0];
+    // If last_seen_s == 0, no tag was seen
+    if (info.last_seen_s == 0) {
         return NOT_AUTHORIZED;
     }
 
-    auto nfc_timestamp = now_us() - seconds_t{v5->nfc_last_seen_s};
-    if (nfc_timestamp < last_plug_out) {
+    auto auth_timestamp = now_us() - seconds_t{info.last_seen_s};
+    if (auth_timestamp < last_plug_out) {
         return NOT_AUTHORIZED;
     }
 
     // Only accept a NFC tag if it was seen in the last 30 seconds and after the last time a car was unplugged.
-    if(deadline_elapsed(nfc_timestamp + 30_s)) {
+    if(deadline_elapsed(auth_timestamp + 30_s)) {
         return NOT_AUTHORIZED;
     }
 
-    // Check if the NFC tag is authorized by comparing against local NFC config
-    NFC::tag_t tag;
-    tag.type = v5->nfc_tag_type;
-    tag.id_length = v5->nfc_tag_id_len;
 
-    static_assert(sizeof(tag.id_bytes) == sizeof(v5->nfc_tag_id), "Tag ID size mismatch");
-    memcpy(tag.id_bytes, v5->nfc_tag_id, sizeof(v5->nfc_tag_id));
-
-    int16_t user_id = nfc.get_user_id(tag);
+    int16_t user_id = charge_authentication.find_user(info);
     if (user_id == -1) {
         return UNKNOWN_NFC_TAG;
     }
@@ -504,14 +505,17 @@ static void update_authentication(
         target.user_current = get_user_current(target.authenticated_user_id);
         return;
     }
+    
+    // Show feedback for tags when tag is seen before a car is connected
+    const cm_auth_info *recent = &v5->auth_info[0];
 
     // Reset allocated energy if no car is connected
     if (v1->charger_state == 0) {
         target.authenticated_user_id = NOT_AUTHORIZED; // Reset authorization state when no car is connected
         target.user_current = 0;
 
-        // Show feedback for tags when tag is seen before a car is connected
-        if (v5 != nullptr && v5->nfc_last_seen_s < 2) {
+        // If last_seen_s == 0, no tag was seen
+        if (recent != nullptr && recent->last_seen_s != 0 && recent->last_seen_s < 2) {
             int16_t tag_auth = charger_authorized(v5, target.last_plug_out);
             if (tag_auth >= 0 && target.known_tag_no_car_timestamp == 0_us) {
                 target.known_tag_no_car_timestamp = now_us();
@@ -531,7 +535,8 @@ static void update_authentication(
 
         if (new_auth == UNKNOWN_NFC_TAG) {
             // We will always have a v5 here since we have seen the nfc info
-            if (v5->nfc_last_seen_s < 2 && deadline_elapsed_unknown_nfc)
+            // If last_seen_s == 0, no tag was seen
+            if (recent->last_seen_s != 0 && recent->last_seen_s < 2 && deadline_elapsed_unknown_nfc)
                 target.unknown_nfc_tag_timestamp = now_us();
 
             if (!deadline_elapsed_unknown_nfc) {
@@ -557,17 +562,24 @@ static void update_nfc_tag_info(
     cm_state_v5 *v5,
     ChargerState *charger_state)
 {
+    if (v5 == nullptr) {
+        return;
+    }
+    
     auto &target = charger_state[client_id];
 
-    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0 || v5->nfc_tag_id_len == 0) {
-        target.last_nfc_tag_id_len = 0;
+    const cm_auth_info &info = v5->auth_info[0];
+
+    // If last_seen_s == 0, no tag was seen
+    if (info.last_seen_s == 0 || info.tag_id_len == 0) {
+        target.last_tag_id_len = 0;
         return;
     }
 
-    target.last_nfc_tag_type = v5->nfc_tag_type;
-    target.last_nfc_tag_id_len = v5->nfc_tag_id_len;
-    memcpy(target.last_nfc_tag_id, v5->nfc_tag_id, sizeof(target.last_nfc_tag_id));
-    target.last_nfc_tag_last_seen_s = v5->nfc_last_seen_s;
+    target.last_tag_type = info.tag_type;
+    target.last_tag_id_len = info.tag_id_len;
+    memcpy(target.last_tag_id, info.tag_id, sizeof(target.last_tag_id));
+    target.last_tag_last_seen_s = info.last_seen_s;
 }
 
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
@@ -685,6 +697,7 @@ void ChargeManager::start_manager_task()
 
             update_nfc_tag_info(client_id, v5, this->charger_state);
             update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
+
             update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
 
             update_from_client_packet(
@@ -1622,20 +1635,20 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("uid")->updateInt(charger.authenticated_user_id);
 
     // Update last seen NFC tag info
-    if (charger.last_nfc_tag_id_len > 0) {
+    if (charger.last_tag_id_len > 0) {
         static const char *hex_lookup = "0123456789ABCDEF";
-        char tag_id_str[NFC_TAG_ID_STRING_LENGTH + 1];
-        size_t chars = charger.last_nfc_tag_id_len * 3;
+        char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
+        size_t chars = charger.last_tag_id_len * 3;
         for (size_t c = 0; c < chars; c += 3) {
-            uint8_t byte = charger.last_nfc_tag_id[c / 3];
+            uint8_t byte = charger.last_tag_id[c / 3];
             tag_id_str[c]     = hex_lookup[byte >> 4];
             tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
             tag_id_str[c + 2] = ':';
         }
         tag_id_str[chars - 1] = '\0';
         charger_cfg->get("ti")->updateString(tag_id_str);
-        charger_cfg->get("tt")->updateUint(charger.last_nfc_tag_type);
-        charger_cfg->get("ts")->updateUint(charger.last_nfc_tag_last_seen_s * 1000);
+        charger_cfg->get("tt")->updateUint(charger.last_tag_type);
+        charger_cfg->get("ts")->updateUint(charger.last_tag_last_seen_s * 1000);
     } else {
         charger_cfg->get("ti")->updateString("");
         charger_cfg->get("tt")->updateUint(0);

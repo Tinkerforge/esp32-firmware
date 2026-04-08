@@ -299,7 +299,7 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
         id_to_string(buf, &info->tag);
         auth_info.get("tag_id")->updateString(buf);
 
-        users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
+        users.trigger_charge_action(user_id, injected ? USERS_AUTH_METHOD_NFC_INJECTION : USERS_AUTH_METHOD_NFC, auth_info.value,
                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
 
     }

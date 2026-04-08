@@ -19,13 +19,14 @@
 
 #pragma once
 
+#include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
 
 #include "generated/client_error.enum.h"
 #include "generated/config_charge_mode.enum.h"
 #include "generated/cm_auth_feedback.enum.h"
-#include "generated/module_available.h"
+// #include "generated/module_available.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
@@ -273,30 +274,38 @@ static_assert(CM_STATE_V3_LENGTH == 4, "Unexpected CM_STATE_V3_LENGTH");
 
 struct cm_state_v4 {
     uint8_t requested_charge_mode;
-    uint8_t _padding[3]; // in use for cm_state_v5 auth_type and nfc_last_seen_s
+    uint8_t _padding[3]; // in use for cm_state_v5 auth_method and last_seen_s
 };
 
 #define CM_STATE_V4_LENGTH (sizeof(cm_state_v4))
 static_assert(CM_STATE_V4_LENGTH == 4, "Unexpected CM_STATE_V4_LENGTH");
-struct cm_state_v5 {
-    uint8_t _padding; // in use for cm_state_v4 requested_charge_mode
 
+#define CM_AUTH_INFO_TAG_ID_STRING_LEN (10 * 3 )
+
+struct cm_auth_info {
+    uint8_t _padding; // in use for cm_state_v4 requested_charge_mode
     /**
      * 0 = no authentication
      * 1 = NFC
      */
-    uint8_t auth_type;
-    uint16_t nfc_last_seen_s;
-    uint8_t nfc_tag_type;
-    uint8_t nfc_tag_id_len;
-    uint8_t nfc_tag_id[10];
+    uint8_t auth_method;
+    uint16_t last_seen_s;
+    uint8_t tag_type;
+    uint8_t tag_id_len;
+    uint8_t tag_id[10];
+};
+#define CM_AUTH_INFO_LENGTH (sizeof(cm_auth_info))
+static_assert(CM_AUTH_INFO_LENGTH == 16, "Unexpected CM_AUTH_INFO_LENGTH");
+
+struct cm_state_v5 {
+    cm_auth_info auth_info[3];
 };
 
 #define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
-static_assert(CM_STATE_V5_LENGTH == 16, "Unexpected CM_STATE_V5_LENGTH");
+static_assert(CM_STATE_V5_LENGTH == 48, "Unexpected CM_STATE_V5_LENGTH");
 
-// #if MODULE_NFC_AVAILABLE()
-//     static_assert(NFC_TAG_ID_STRING_LENGTH + 1 == sizeof(cm_state_v5::nfc_tag_id), "NFC_TAG_ID_STRING_LENGTH does not match cm_state_v5::nfc_tag_id size");
+// #if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
+//     static_assert(NFC_TAG_ID_STRING_LENGTH + 1 == sizeof(cm_state_v5::tag_id), "NFC_TAG_ID_STRING_LENGTH does not match cm_state_v5::tag_id size");
 // #endif
 
 struct cm_state_packet {
@@ -311,8 +320,8 @@ struct cm_state_packet {
 };
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 104, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 136, "Unexpected CM_STATE_PACKET_LENGTH");
 
 #include "generated/client_error.enum.h"
 
-#include "generated/module_available_end.h"
+// #include "generated/module_available_end.h"

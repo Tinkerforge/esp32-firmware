@@ -383,17 +383,17 @@ void Users::setup()
             bool success = read_user_slot_info(&info);
             if (success) {
                 if (!charge_start_tracked) {
-                    charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, USERS_AUTH_TYPE_LOST, Config::ConfVariant{});
+                    charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, USERS_AUTH_METHOD_LOST, Config::ConfVariant{});
                 } else {
                     // Don't track a start, but restore the current_charge API anyway.
                     charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
                     charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
                     charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
                     charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
-                    charge_tracker.current_charge.get("authorization_type")->updateUint(USERS_AUTH_TYPE_LOST);
+                    charge_tracker.current_charge.get("authorization_type")->updateUint(USERS_AUTH_METHOD_LOST);
                 }
             } else if (!charge_start_tracked)
-                this->start_charging(0, 32000, USERS_AUTH_TYPE_NONE, Config::ConfVariant{});
+                this->start_charging(0, 32000, USERS_AUTH_METHOD_NONE, Config::ConfVariant{});
         }
     }
 
@@ -423,7 +423,7 @@ void Users::setup()
             case CHARGER_STATE_READY_TO_CHARGE:
             case CHARGER_STATE_CHARGING:
                 if (!get_user_slot()->get("active")->asBool())
-                    this->start_charging(0, 32000, USERS_AUTH_TYPE_NONE, Config::ConfVariant{});
+                    this->start_charging(0, 32000, USERS_AUTH_METHOD_NONE, Config::ConfVariant{});
                 break;
             case CHARGER_STATE_ERROR:
                 break;
@@ -751,7 +751,7 @@ uint16_t Users::get_user_current(uint8_t user_id) {
 }
 
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
+bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
 
 // Disable this functionality if central auth is enabled.
@@ -782,16 +782,16 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
             if (charge_tracker.currentlyCharging()) {
-                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
+                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                     this->stop_charging(user_id, false);
                 return false;
             }
-            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_stop)))
-                return this->start_charging(user_id, current_limit, auth_type, auth_info);
+            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_stop)))
+                return this->start_charging(user_id, current_limit, auth_method, auth_info);
             return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
-            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
+            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                 this->stop_charging(user_id, false);
             return false;
         default: //Don't do anything in state A, D, and E/F
