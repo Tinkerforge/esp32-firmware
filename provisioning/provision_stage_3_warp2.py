@@ -866,7 +866,7 @@ class Stage3:
 
             self.change_cp_pe_state('C')
 
-            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION + 5)  # FIXME: remove the extra 5 seconds of sleep when EVSE gains test mode
 
             self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, counter + 1))
 
