@@ -785,7 +785,7 @@ class Stage3:
         self.connect_warp_power(['L1', 'L2', 'L3'])
         time.sleep(RELAY_SETTLE_DURATION)
 
-        print('Disconnecting front panel')
+        print('Connecting front panel')
 
         self.connect_front_panel(True)
         time.sleep(RELAY_SETTLE_DURATION)
@@ -797,7 +797,7 @@ class Stage3:
         if not rlow['passed']:
             fatal_error('Electrical test failed, see tester display for details')
 
-        print('Connecting front panel')
+        print('Disconnecting front panel')
 
         self.connect_front_panel(False)
         time.sleep(RELAY_SETTLE_DURATION)
