@@ -13,6 +13,7 @@ import traceback
 import tkinter as tk
 import typing
 import subprocess
+import functools
 
 from provisioning.tinkerforge.ip_connection import IPConnection
 from provisioning.tinkerforge.device_factory import create_device
@@ -734,7 +735,7 @@ class Stage3:
         self.change_cp_pe_state('C')
         time.sleep(PHASE_SWITCH_SETTLE_DURATION)
 
-    def verify_voltages(self, p_type2: list[typing.Literal['L1', 'L2', 'L3']], p_meter: list[typing.Literal['L1', 'L2', 'L3']] | None = None):
+    def verify_voltages(self, p_type2: list[typing.Literal['L1', 'L2', 'L3']], p_meter: list[typing.Literal['L1', 'L2', 'L3']] | None = None, missing_type2_voltage_cb = fatal_error):
         voltages = self.read_voltage_monitors()
         voltages_str = ', '.join([f'{x:.2f} V' for x in voltages])
         print(f'Reading voltages as {voltages_str}, expecting {", ".join(p_type2) if len(p_type2) > 0 else "none"}')
@@ -760,14 +761,15 @@ class Stage3:
             expect_on = name in p_type2
             expect_on_meter = name in p_meter
             if expect_on and voltages[i] < VOLTAGE_ON_THRESHOLD:
-                fatal_error(f'Missing voltage on {name}')
+                missing_type2_voltage_cb(f'Type-2: Missing voltage on {name}')
+                return
             elif not expect_on and voltages[i] > VOLTAGE_OFF_THRESHOLD:
-                fatal_error(f'Unexpected voltage on {name}')
+                fatal_error(f'Type-2: Unexpected voltage on {name}')
 
             if expect_on_meter and meter_voltages[i] < VOLTAGE_ON_THRESHOLD:
-                fatal_error(f'Energy meter measured missing voltage on {name}')
+                fatal_error(f'Energy meter: Missing voltage on {name}')
             elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
-                fatal_error(f'Energy meter measured unexpected voltage on {name}')
+                fatal_error(f'Energy meter: Unexpected voltage on {name}')
 
     def blackbox_enable(self):
         tester_status = blackbox.bb_get_status()._asdict()
@@ -849,6 +851,20 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION)
 
         # step 01: test IEC states
+        def clear_contactor(counter, message):
+            if counter > 15:
+                fatal_error('Giving up to clear contactor')
+
+            self.change_cp_pe_state('B')
+
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            self.change_cp_pe_state('C')
+
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, counter + 1))
+
         for state in ['A', 'B', 'C', 'B', 'C', 'B', 'C', 'D']:
             self.change_cp_pe_state(state)
 
@@ -873,7 +889,7 @@ class Stage3:
                 time.sleep(6) # EVSE opens the contactor if the car does not react to missing PWM after 6 seconds.
 
             if state == 'C':
-                self.verify_voltages(['L1', 'L2', 'L3'])
+                self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, 0))
             else:
                 self.verify_voltages(p_type2=[], p_meter=['L1', 'L2', 'L3'])
 
