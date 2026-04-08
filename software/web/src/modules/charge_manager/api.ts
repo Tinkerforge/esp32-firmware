@@ -41,6 +41,11 @@ type ChargerState = {
     tt: number,
     /** tag_last_seen - Milliseconds since tag was last seen */
     ts: number,
+    ai: {
+      ti: string,
+      tt: number,
+      ts: number,
+      }[]
 };
 
 interface ServCharger {

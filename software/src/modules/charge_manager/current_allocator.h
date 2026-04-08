@@ -27,8 +27,6 @@ struct cm_state_v1;
 struct cm_state_v2;
 struct cm_state_v3;
 
-int16_t charger_authorized(ChargerState &state, const CurrentAllocatorConfig *cfg);
-
 int allocate_current(
         const CurrentAllocatorConfig *cfg,
         CurrentLimits *limits,
