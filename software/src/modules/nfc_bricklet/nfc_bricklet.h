@@ -41,5 +41,7 @@ public:
 
     // INfcBackend implementation
     bool get_tag_id(uint8_t index, uint8_t *tag_type, uint8_t *tag_id, uint8_t *tag_id_length, uint32_t *last_seen) override;
-    void check_state() override;
+
+private:
+    void check_state();
 };

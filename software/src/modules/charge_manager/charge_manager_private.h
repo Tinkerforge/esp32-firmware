@@ -18,6 +18,8 @@
 #include "generated/three_phase_decision.union.h"
 #include "generated/current_decision.union.h"
 
+#include "modules/cm_networking/cm_networking_defs.h"
+
 constexpr micros_t RE_RESOLVE_TIMEOUT = 6_s; // Must be less than CHARGER_UNREACHABLE_TIMEOUT.
 constexpr micros_t CHARGER_UNREACHABLE_TIMEOUT = 32_s;
 
@@ -183,11 +185,8 @@ struct ChargerState {
     // Timestamp when a known NFC tag was last seen without a car connected
     micros_t known_tag_no_car_timestamp;
 
-    // Last NFC tag seen on this charger (from cm_state_v5)
-    uint8_t last_nfc_tag_type;
-    uint8_t last_nfc_tag_id_len;
-    uint8_t last_nfc_tag_id[10];
-    uint16_t last_nfc_tag_last_seen_s;
+    // Last NFC tags seen on this charger (from cm_state_v5)
+    cm_auth_info auth_info[3];
 };
 
 struct ChargerAllocationState {
