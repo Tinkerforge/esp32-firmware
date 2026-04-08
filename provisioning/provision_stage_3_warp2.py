@@ -807,6 +807,8 @@ class Stage3:
 
         blackbox.bb_disable()
 
+        return rlow
+
     # requires power_on
     def test_wallbox(self, rlow, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
