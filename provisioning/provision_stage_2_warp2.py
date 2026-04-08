@@ -434,13 +434,33 @@ def led_wrap():
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
+
+    result = {}
+
     try:
-        main(stage3, scanner)
+        main(stage3, scanner, result)
     except BaseException:
+        result['failure_traceback'] = traceback.format_exc()
+
         if power_off_on_error:
             stage3.power_off()
+
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
+
+        try:
+            if scanner.qr_variant != "B":
+                ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
+            else:
+                ssid = f'warp{scanner.qr_gen}-{result.get("evse_uid", "unknown")}'
+
+            report_path_json = "{}_{}_report_stage_2_failure.json".format(ssid, now().replace(":", "-"))
+
+            with open(report_path_json, "w") as f:
+                json.dump(result, f, indent=4)
+        except Exception as e:
+            print(red(f'Failed to write failure report: {e}'))
+
         raise
     else:
         stage3.power_off()
@@ -553,8 +573,8 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print("\r3 NFC tags seen." + " " * 20)
     return seen_tags
 
-def main(stage3, scanner):
-    result = {"start": now()}
+def main(stage3, scanner, result):
+    result["start"] = now()
 
     dprint("main")
 
