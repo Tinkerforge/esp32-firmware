@@ -804,13 +804,13 @@ class Stage3:
         if calibration_due_date_offset < 0:
             print(red('=================================================================='))
             print('')
-            print(red('Electrical tester out of calibration since {calibration_due_date_offset} day(s)'))
+            print(red(f'   Electrical tester out of calibration since {-calibration_due_date_offset} day(s)'))
             print('')
             print(red('=================================================================='))
         elif calibration_due_date_offset < 60:
             print(blue('=================================================================='))
             print('')
-            print(blue('Electrical tester due for calibration in {calibration_due_date_offset} day(s)'))
+            print(blue(f'   Electrical tester due for calibration in {calibration_due_date_offset} day(s)'))
             print('')
             print(blue('=================================================================='))
 
