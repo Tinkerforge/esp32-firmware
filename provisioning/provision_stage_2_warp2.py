@@ -494,7 +494,7 @@ def factory_reset(ssid):
             pass
         t = max(0, 1 - (time.monotonic() - start))
         time.sleep(t)
-        print(".", end="")
+        orig_print(".", end="")
     else:
         fatal_error("Failed to connect via ethernet!")
     print(" Connected.")
@@ -514,7 +514,7 @@ def connect_to_ethernet(ssid, url):
             pass
         t = max(0, 1 - (time.monotonic() - start))
         time.sleep(t)
-        print(".", end="")
+        orig_print(".", end="")
     else:
         fatal_error("Failed to connect via ethernet!")
     print(" Connected.")
@@ -843,7 +843,7 @@ def main(stage3, scanner):
                 pass
             t = max(0, 1 - (time.monotonic() - start))
             time.sleep(t)
-            print(".", end="")
+            orig_print(".", end="")
         else:
             fatal_error("Failed to connect via ethernet!")
         print(" Connected.")
