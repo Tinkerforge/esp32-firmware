@@ -799,7 +799,7 @@ class Stage3:
     def measure_front_panel_rlow(self):
         device_info = self.blackbox_enable()
         day, month, year = (int(x) for x in device_info['calibration_date'].split('.'))
-        calibration_due_date_offset = (datetime.date(year, month, day) + datetime.timedelta(365 * 2) - datetime.now().date()).days
+        calibration_due_date_offset = (datetime.date(year, month, day) + datetime.timedelta(365 * 2) - datetime.datetime.now().date()).days
 
         if calibration_due_date_offset < 0:
             print(red('=================================================================='))
