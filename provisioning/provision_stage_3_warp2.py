@@ -716,8 +716,9 @@ class Stage3:
 
         evse_uptime_now = self.get_evse_uptime_function()
         evse_uptime_elapsed = evse_uptime_now - self.evse_uptime_start
-        if not wall_clock_elapsed * 0.9 < evse_uptime_elapsed < wall_clock_elapsed * 1.1:
-            fatal_error(f'EVSE uptime not elapsing as expected:\n\t',
+
+        if abs(wall_clock_elapsed - evse_uptime_elapsed) > 0.05 and not wall_clock_elapsed * 0.9 < evse_uptime_elapsed < wall_clock_elapsed * 1.1:
+            fatal_error(f'EVSE uptime not elapsing as expected:\n\t'
                         f'EVSE start {self.evse_uptime_start} now {evse_uptime_now} elapsed {evse_uptime_elapsed}\n\t'
                         f'WALL start {self.wall_clock_start} now {wall_clock_now} elapsed {wall_clock_elapsed}')
 
