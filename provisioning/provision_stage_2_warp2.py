@@ -46,7 +46,14 @@ orig_print = print
 
 def tprint(*args, **kwargs):
     global orig_print
-    orig_print(datetime.datetime.now().isoformat(), *args, **kwargs)
+
+    prefix = ''
+
+    if len(args) > 0 and args[0].startswith('\r'):
+        args = args[0][1:] + args[1:]
+        prefix = '\r'
+
+    orig_print(prefix + datetime.datetime.now().isoformat(), *args, **kwargs)
 
 print = tprint
 dprint = tprint
@@ -497,7 +504,7 @@ def factory_reset(ssid):
         orig_print(".", end="")
     else:
         fatal_error("Failed to connect via ethernet!")
-    print(" Connected.")
+    orig_print(" Connected.")
     print("Factory reset triggered.. Waiting 10 seconds")
     time.sleep(10)
 
@@ -517,7 +524,7 @@ def connect_to_ethernet(ssid, url):
         orig_print(".", end="")
     else:
         fatal_error("Failed to connect via ethernet!")
-    print(" Connected.")
+    orig_print(" Connected.")
     return result, host
 
 def collect_nfc_tag_ids(stage3, getter, beep_notify):
@@ -539,7 +546,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
             else:
                 start_blink(0)
             last_len = len(seen_tags)
-        print(green("\rWaiting for NFC tags. {} seen".format(len(seen_tags))), end="")
+        print("\r" + green("Waiting for NFC tags. {} seen".format(len(seen_tags))), end="")
         blink_tick(stage3)
         time.sleep(0.1)
     stop_blink(stage3)
