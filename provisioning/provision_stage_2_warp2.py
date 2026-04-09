@@ -183,7 +183,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     d = {"P": "Pro", "S": "Smart", "B": "Basic"}
 
     if is_basic and scanner.qr_variant != "B":
-        fatal_error("Scanned QR code implies variant {}, but detected was Basic (i.e. an Master Brick was found)".format(d[scanner.qr_variant]))
+        fatal_error("Scanned QR code implies variant {}, but detected was Basic (i.e. a Master Brick was found)".format(d[scanner.qr_variant]))
 
     if is_smart and scanner.qr_variant != "S":
         fatal_error("Scanned QR code implies variant {}, but detected was Smart: An ESP32 Brick was found, but no energy meter. Is the meter not connected or the display not lighting up? Is the QR code correct?".format(d[scanner.qr_variant]))
