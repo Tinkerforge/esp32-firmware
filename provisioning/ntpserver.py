@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --active --script
 
 # https://github.com/janmojzis/ntpserver
 #20200301

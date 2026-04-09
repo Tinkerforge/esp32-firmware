@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --active --script
 
 import tinkerforge_util as tfutil
 

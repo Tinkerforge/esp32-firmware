@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --active --script
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox
