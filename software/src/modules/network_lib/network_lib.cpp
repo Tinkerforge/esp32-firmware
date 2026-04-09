@@ -33,18 +33,18 @@ void NetworkLib::setup()
         logger.vprintfln(fmt, args);
     };
 
-    TFNetwork::resolve = [this](const char *host, std::function<void(uint32_t address, int error_number)> &&callback) {
+    TFNetwork::resolve = [this](const char *host, std::function<void(ip_addr_t *address, int error_number)> &&callback) {
         dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
             if (data->err != ERR_OK) {
-                callback(0, err_to_errno(data->err));
+                callback(nullptr, err_to_errno(data->err));
             }
-            else if (data->addr_ptr == nullptr || data->addr_ptr->type != IPADDR_TYPE_V4) {
-                callback(0, -1); // no IPv4 address available for this host
+            else if (data->addr_ptr == nullptr) {
+                callback(nullptr, -1); // no address available for this host
             }
             else {
-                callback(data->addr_ptr->u_addr.ip4.addr, -1);
+                callback(data->addr_ptr, -1);
             }
-        }, LWIP_DNS_ADDRTYPE_IPV4);
+        }, LWIP_DNS_ADDRTYPE_DEFAULT);
     };
 
     TFNetwork::get_random_uint16 = []() {
