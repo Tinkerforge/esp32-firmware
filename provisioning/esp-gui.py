@@ -13,7 +13,7 @@ import tinkerforge_util as tfutil
 
 selected_firmware_type = ""
 
-Action = namedtuple("Action", "name pwd cmd show_filter_fn")
+Action = namedtuple("Action", "name pwd cmd filter_fn")
 
 actions = [
     Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                               lambda x: x != "warp3"),
@@ -97,22 +97,22 @@ def main():
 
     for a in actions:
         btn = QPushButton(a.name, window)
-        btn.setDisabled(True)
+        btn.setMinimumHeight(btn.sizeHint().height() * 2)
+        font = btn.font()
+        font.setPointSizeF(font.pointSizeF() * 1.5)
+        btn.setFont(font)
+        btn.setEnabled(False)
         btn.clicked.connect(functools.partial(run, a, btn))
         layout.addWidget(btn)
         btn_action[btn] = a
 
-    def currentIndexChanged(idx):
+    def current_index_changed(idx):
         global selected_firmware_type
         selected_firmware_type = combo_box.itemData(idx)
         for button in window.findChildren(QPushButton):
-            button.setDisabled(idx == 0)
-            if btn_action[button].show_filter_fn(selected_firmware_type):
-                button.show()
-            else:
-                button.hide()
+            button.setEnabled(idx != 0 and btn_action[button].filter_fn(selected_firmware_type))
 
-    combo_box.currentIndexChanged.connect(currentIndexChanged)
+    combo_box.currentIndexChanged.connect(current_index_changed)
 
     window.setLayout(layout)
     window.show()
