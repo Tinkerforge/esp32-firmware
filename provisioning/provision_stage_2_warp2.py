@@ -687,7 +687,7 @@ def main(stage3, scanner, result):
         ipcon = IPConnection()
         try:
             ipcon.connect(host, 4223)
-        except Exception as e:
+        except Exception:
             fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
         dprint("post ipcon connect")
@@ -702,8 +702,10 @@ def main(stage3, scanner, result):
         try:
             with urllib.request.urlopen("http://{}/users/config".format(host), timeout=5) as f:
                 user_config = json.loads(f.read())
+        except urllib.error.HTTPError as e:
+            fatal_error("Failed to get users config: {} {}".format(e, e.read()))
         except Exception as e:
-            fatal_error("Failed to get users config: {} {}!".format(e, e.read()))
+            fatal_error("Failed to get users config: {}".format(e))
 
         do_factory_reset = False
         do_configure_users = True
@@ -755,8 +757,10 @@ def main(stage3, scanner, result):
                 try:
                     with urllib.request.urlopen(req, timeout=6) as f:
                         print(f.read())
+                except urllib.error.HTTPError as e:
+                    fatal_error("Failed to configure user {}: {} {}".format(i, e, e.read()))
                 except Exception as e:
-                    fatal_error("Failed to configure user {}: {} {}!".format(i, e, e.read()))
+                    fatal_error("Failed to configure user {}: {}".format(i, e))
 
         dprint("post user config")
 
@@ -785,8 +789,10 @@ def main(stage3, scanner, result):
         try:
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
+        except urllib.error.HTTPError as e:
+            fatal_error("Failed to configure NFC tags: {} {}".format(e, e.read()))
         except Exception as e:
-            fatal_error("Failed to configure NFC tags! {} {}!".format(e, e.read()))
+            fatal_error("Failed to configure NFC tags: {}".format(e))
         result["nfc_tags_configured"] = True
 
         dprint("post nfc config")
