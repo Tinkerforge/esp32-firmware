@@ -96,6 +96,7 @@ def tprint(*args, **kwargs):
     global orig_print
 
     prefix = ''
+    args = tuple(str(x) for x in args)
 
     if len(args) > 0 and args[0].startswith('\r'):
         args = (args[0][1:],) + args[1:]
