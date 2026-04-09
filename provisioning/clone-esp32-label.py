@@ -7,6 +7,8 @@ tfutil.create_parent_module(__file__, 'provisioning')
 import re
 import subprocess
 import getpass
+from tinkerforge_util.colored import green
+
 from provisioning.provision_common.provision_common import *
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'

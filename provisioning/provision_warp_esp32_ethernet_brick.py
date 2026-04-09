@@ -20,6 +20,8 @@ import termios
 import fcntl
 import contextlib
 import queue
+from tinkerforge_util import colored
+from tinkerforge_util.colored import red, green
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
 from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
@@ -426,30 +428,23 @@ IQR_UID_BLACKLIST = [
     "RVG"
 ]
 
-def ansi_escape_to_html(s):
-    x = [
-        (colors["blue"],  '#0000FF'),
-        (colors["cyan"],  '#00FFFF'),
-        (colors["green"], '#00AA00'),
-        (colors["red"],   '#FF0000'),
-        (colors["gray"],  '#555555')
-    ]
 
-    result = (-1, '#FFFFFF')
+def terminal_to_html(s):
+    mapping = {
+        'red':   '#FF0000',
+        'green': '#00AA00',
+        'blue':  '#0000FF',
+        'cyan':  '#00FFFF',
+        'gray':  '#555555',
+    }
 
-    for l, r in x:
-        i = s.rfind(l)
-        if i > result[0]:
-            result = (i, r)
+    result = '#FFFFFF'
 
-    return (s.replace(colors["blue"],  '')\
-            .replace(colors["cyan"],  '')\
-            .replace(colors["green"], '')\
-            .replace(colors["red"],   '')\
-            .replace(colors["gray"],  '')\
-            .replace(colors["blink"], '')\
-            .replace(colors["off"], '')\
-            .replace("\n", "<br/>"), result[1])
+    for color in colored.finall(s):
+        if color in mapping:
+            result = mapping[color]
+
+    return colored.strip(s).replace('\n', '<br/>'), result
 
 reprint_enabled = False
 reprint_clicked = False
@@ -474,7 +469,7 @@ def update_logs(edits, restart_button, reprint_button):
     reprint_button.setEnabled(reprint_enabled)
 
     for k, v in edits.items():
-        new_log, back_color = ansi_escape_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue())
+        new_log, back_color = terminal_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue())
         v.setHtml(new_log)
         v.setStyleSheet(f"background-color: {back_color};")
         v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)

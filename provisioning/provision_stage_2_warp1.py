@@ -24,6 +24,7 @@ import time
 import urllib.request
 import csv
 import traceback
+from tinkerforge_util.colored import red, green
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
@@ -52,41 +53,6 @@ def esptool(args):
 
 def espefuse(args):
     return run(["python3", "./esptool/espefuse.py", *args])
-
-colors = {"off":"\x1b[00m",
-          "blue":   "\x1b[34m",
-          "cyan":   "\x1b[36m",
-          "green":  "\x1b[32m",
-          "red":    "\x1b[31m",
-          "gray": "\x1b[90m"}
-
-def red(s):
-    return colors["red"]+s+colors["off"]
-
-def green(s):
-    return colors["green"]+s+colors["off"]
-
-def gray(s):
-    return colors['gray']+s+colors["off"]
-
-def remove_color_codes(s):
-    for code in colors.values():
-        s = s.replace(code, "")
-    return s
-
-def ansi_format(fmt, s):
-    s = str(s)
-    prefix = ""
-    suffix = ""
-    for code in colors.values():
-        if s.startswith(code):
-            s = s.replace(code, "")
-            prefix += code
-        if s.endswith(code):
-            s = s.replace(code, "")
-            suffix += code
-    result = fmt.format(s)
-    return prefix + result + suffix
 
 # inherit from BaseException instead of Exception to avoid being handled by
 # try/except blocks that handle Exception instances. sys.exit() raises a

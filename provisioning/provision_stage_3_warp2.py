@@ -14,6 +14,7 @@ import tkinter as tk
 import typing
 import subprocess
 import functools
+from tinkerforge_util.colored import red, green, blue
 
 from provisioning.tinkerforge.ip_connection import IPConnection
 from provisioning.tinkerforge.device_factory import create_device
@@ -29,7 +30,7 @@ from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpea
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
 
 from provisioning.provision_common.inventory import Inventory
-from provisioning.provision_common.provision_common import FatalError, fatal_error, green, blue, red, my_input
+from provisioning.provision_common.provision_common import FatalError, fatal_error, my_input
 
 import provisioning.blackbox as blackbox
 

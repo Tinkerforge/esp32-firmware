@@ -24,6 +24,7 @@ import time
 import urllib.request
 import csv
 import traceback
+from tinkerforge_util.colored import red, green, blink
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By

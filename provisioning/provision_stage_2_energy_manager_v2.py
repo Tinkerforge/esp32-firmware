@@ -15,6 +15,7 @@ import urllib.request
 import traceback
 import subprocess
 import datetime
+from tinkerforge_util.colored import red, green
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
