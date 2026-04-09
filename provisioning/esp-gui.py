@@ -4,11 +4,11 @@ from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, Q
 
 from collections import namedtuple
 import functools
-import os
 import shlex
 import subprocess
 import queue
 import threading
+import tinkerforge_util as tfutil
 
 selected_firmware_type = ""
 
@@ -20,19 +20,6 @@ actions = [
     Action("ESP Print Label (Skip Test)", ".", "lxterminal -e python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x != "warp3"),
     Action("WARP ESP Flash and Test",     ".", "venv/bin/python3 -u provision_warp_esp32_ethernet_brick.py",                        lambda x: x == "warp3")
 ]
-
-# use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
-class ChangedDirectory(object):
-    def __init__(self, path):
-        self.path = path
-        self.previous_path = None
-
-    def __enter__(self):
-        self.previous_path = os.getcwd()
-        os.chdir(self.path)
-
-    def __exit__(self, type_, value, traceback):
-        os.chdir(self.previous_path)
 
 work_queue = queue.Queue()
 work_done_queue = queue.Queue()
@@ -46,7 +33,7 @@ def work(q: queue.Queue, done_q: queue.Queue):
 
         a, btn = todo
 
-        with ChangedDirectory(a.pwd):
+        with tfutil.ChangedDirectory(a.pwd):
             cmd = a.cmd if isinstance(a.cmd, list) else [a.cmd]
 
             for c in cmd:

@@ -33,19 +33,6 @@ rnd = secrets.SystemRandom()
 
 PORT = '/dev/ttyUSB0'
 
-# use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
-class ChangedDirectory:
-    def __init__(self, path):
-        self.path = path
-        self.previous_path = None
-
-    def __enter__(self):
-        self.previous_path = os.getcwd()
-        os.chdir(self.path)
-
-    def __exit__(self, type_, value, traceback):
-        os.chdir(self.previous_path)
-
 @contextmanager
 def temp_file():
     fd, name = tempfile.mkstemp()
@@ -698,7 +685,7 @@ def main():
     print("Checking if EVSE was tested...")
     if not exists_evse_test_report(result["evse_uid"]):
         print("No test report found. Checking for new test reports...")
-        with ChangedDirectory(os.path.join("..", "..", "wallbox")):
+        with tfutil.ChangedDirectory(os.path.join("..", "..", "wallbox")):
             run(["git", "pull"])
         if not exists_evse_test_report(result["evse_uid"]):
             fatal_error("No test report found for EVSE {}.".format(result["evse_uid"]))

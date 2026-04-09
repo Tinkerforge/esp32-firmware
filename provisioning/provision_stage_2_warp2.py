@@ -590,7 +590,7 @@ def main(stage3, scanner, result):
     dprint("post github reachable")
 
     if github_reachable:
-        with ChangedDirectory(os.path.join("..", "..", "firmwares")):
+        with tfutil.ChangedDirectory(os.path.join("..", "..", "firmwares")):
             run(["git", "pull"])
 
     dprint("post git pull")
@@ -834,7 +834,7 @@ def main(stage3, scanner, result):
         print("Checking if EVSE was tested...")
         if not exists_evse_test_report(result["evse_uid"]):
             print("No test report found for EVSE {}. Checking for new test reports...".format(result["evse_uid"]))
-            with ChangedDirectory(os.path.join("..", "..", "wallbox")):
+            with tfutil.ChangedDirectory(os.path.join("..", "..", "wallbox")):
                 run(["git", "pull"])
             if not exists_evse_test_report(result["evse_uid"]):
                 fatal_error("Still no test report found for EVSE {}.".format(result["evse_uid"]))

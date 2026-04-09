@@ -82,7 +82,7 @@ class EnergyManagerTester:
             github_reachable = False
 
         if github_reachable:
-            with ChangedDirectory(FIRMWARES_GIT_PATH):
+            with tfutil.ChangedDirectory(FIRMWARES_GIT_PATH):
                 run(["git", "pull"])
 
         wem_bricklet_directory = os.path.join(FIRMWARES_GIT_PATH, "bricklets", "warp_energy_manager")

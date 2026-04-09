@@ -85,7 +85,7 @@ class EnergyManagerV2Tester:
             github_reachable = False
 
         if github_reachable:
-            with ChangedDirectory(FIRMWARES_GIT_PATH):
+            with tfutil.ChangedDirectory(FIRMWARES_GIT_PATH):
                 run(["git", "pull"])
 
         wem_brick_directory = os.path.join(FIRMWARES_GIT_PATH, "bricks", self.brick_firmware_basename)
