@@ -605,6 +605,8 @@ def main(stage3, scanner, result):
     assert scanner.qr_gen in ("2", "3", "4")
     generation = int(scanner.qr_gen)
 
+    result["electrical_tests"] = {}
+
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
@@ -613,7 +615,7 @@ def main(stage3, scanner, result):
         else:
             stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
 
-        rlow = stage3.measure_front_panel_rlow()
+        stage3.measure_front_panel_rlow(result["electrical_tests"])
 
         dprint("pre nfc tags")
 
@@ -802,7 +804,7 @@ def main(stage3, scanner, result):
         else:
             stage3.power_on('Basic')
 
-        rlow = stage3.measure_front_panel_rlow()
+        stage3.measure_front_panel_rlow(result["electrical_tests"])
 
         result["uid"] = None
 
@@ -853,7 +855,7 @@ def main(stage3, scanner, result):
             browser.get("http://{}/#evse".format(host))
 
         print("Performing the electrical tests")
-        result["electrical_tests"] = stage3.test_wallbox(rlow, has_phase_switch=generation >= 3, is_warp2=generation == 2)
+        stage3.test_wallbox(result["electrical_tests"], has_phase_switch=generation >= 3, is_warp2=generation == 2)
     finally:
         if browser is not None:
             browser.quit()
@@ -882,7 +884,7 @@ def main(stage3, scanner, result):
             orig_print(".", end="")
         else:
             fatal_error("Failed to connect via ethernet!")
-        print(" Connected.")
+        orig_print(" Connected.")
         print("Tracked charges removed.")
     result["end"] = now()
 

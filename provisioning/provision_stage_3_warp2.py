@@ -797,9 +797,9 @@ class Stage3:
         return device_info
 
     # requires power_on
-    def measure_front_panel_rlow(self):
-        device_info = self.blackbox_enable()
-        day, month, year = (int(x) for x in device_info['calibration_date'].split('.'))
+    def measure_front_panel_rlow(self, report):
+        report['device_info'] = self.blackbox_enable()
+        day, month, year = (int(x) for x in report['device_info']['calibration_date'].split('.'))
         calibration_due_date_offset = (datetime.date(year, month, day) + datetime.timedelta(365 * 2) - datetime.datetime.now().date()).days
 
         if calibration_due_date_offset < 0:
@@ -825,10 +825,10 @@ class Stage3:
 
         print('Electrical test R low front panel')
 
-        rlow = blackbox.bb_measure_rlow()._asdict()
+        report['rlow'] = blackbox.bb_measure_rlow()._asdict()
 
-        if not rlow['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+        if not report['rlow']['passed']:
+            fatal_error(f'Electrical test failed: {report["rlow"]}')
 
         print('Disconnecting front panel')
 
@@ -840,10 +840,8 @@ class Stage3:
 
         blackbox.bb_disable()
 
-        return rlow
-
     # requires power_on
-    def test_wallbox(self, rlow, has_phase_switch, is_warp2):
+    def test_wallbox(self, report, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
@@ -853,12 +851,7 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
-        report = {}
-
-        report['device_info'] = self.blackbox_enable()
-
-        if not report['device_info']['valid']:
-            fatal_error('Could not get electrical tester device info')
+        self.blackbox_enable()
 
         self.evse_uptime_start = self.get_evse_uptime_function()
         self.wall_clock_start = time.time()
@@ -1017,7 +1010,7 @@ class Stage3:
         report['voltage_L1'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L1']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["voltage_L1"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1027,7 +1020,7 @@ class Stage3:
         report['zauto_L1'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L1']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["zauto_L1"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1040,7 +1033,7 @@ class Stage3:
         report['voltage_L2'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L2']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["voltage_L2"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1050,7 +1043,7 @@ class Stage3:
         report['zauto_L2'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L2']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["zauto_L2"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1063,7 +1056,7 @@ class Stage3:
         report['voltage_L3'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L3']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["voltage_L3"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1073,7 +1066,7 @@ class Stage3:
         report['zauto_L3'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L3']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["zauto_L3"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1086,7 +1079,7 @@ class Stage3:
         report['rcdi_positive'] = blackbox.bb_measure_rcdi('+')._asdict()
 
         if not report['rcdi_positive']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["rcdi_positive"]}')
 
         self.reset_dc_fault('C')
         self.verify_evse_not_crashed()
@@ -1097,7 +1090,7 @@ class Stage3:
         report['rcdi_negative'] = blackbox.bb_measure_rcdi('-')._asdict()
 
         if not report['rcdi_negative']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["rcdi_negative"]}')
 
         self.reset_dc_fault('A')
         self.verify_evse_not_crashed()
@@ -1108,7 +1101,7 @@ class Stage3:
         report['riso_L1'] = blackbox.bb_measure_riso('L1/PE', limit='250 kOhm' if is_warp2 else '1 MOhm')._asdict()
 
         if not report['riso_L1']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["riso_L1"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1121,7 +1114,7 @@ class Stage3:
         report['riso_L2'] = blackbox.bb_measure_riso('L2/PE')._asdict()
 
         if not report['riso_L2']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["riso_L2"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1134,7 +1127,7 @@ class Stage3:
         report['riso_L3'] = blackbox.bb_measure_riso('L3/PE')._asdict()
 
         if not report['riso_L3']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["riso_L3"]}')
 
         self.verify_evse_not_crashed()
 
@@ -1147,12 +1140,9 @@ class Stage3:
         report['riso_N'] = blackbox.bb_measure_riso('N/PE')._asdict()
 
         if not report['riso_N']['passed']:
-            fatal_error('Electrical test failed, see tester display for details')
+            fatal_error(f'Electrical test failed: {report["riso_N"]}')
 
         self.verify_evse_not_crashed()
-
-        # step 14: store result from earlier R low front panel test
-        report['rlow'] = rlow
 
         # clean up
         self.connect_warp_power(['L1'])
