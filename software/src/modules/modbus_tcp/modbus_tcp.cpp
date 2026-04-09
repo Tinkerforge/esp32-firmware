@@ -1287,12 +1287,11 @@ void ModbusTCP::start_server() {
 
     this->send_illegal_data_address = config.get("send_illegal_data_address")->asBool();
 
-    // TODO IPv6: change bind_address to nullptr (any) once start() accepts const ip_addr_t *.
-    //            Update callback signatures to (const ip_addr_t *peer_address, ...).
-    //            Use TFNetwork::ipaddr_ntoa() with TF_NETWORK_IPADDR_NTOA_BUFFER_LENGTH for logging.
-    ip_addr_t peer = IPADDR4_INIT(0);
+    // Bind to IPv6 any-address (::) with IPV6_V6ONLY=0 in the library, so the server
+    // accepts both IPv4 and IPv6 connections on a single dual-stack socket.
+    ip_addr_t bind_addr = IPADDR6_INIT(0, 0, 0, 0);
     server.start(
-        &peer, config.get("port")->asUint16(),
+        &bind_addr, config.get("port")->asUint16(),
         [](const ip_addr_t *peer_address, uint16_t port) {
             char peer_str[INET6_ADDRSTRLEN];
             tf_ipaddr_ntoa(peer_address, peer_str, sizeof(peer_str));
