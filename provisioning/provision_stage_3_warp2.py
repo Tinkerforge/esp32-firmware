@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 

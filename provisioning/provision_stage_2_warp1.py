@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 
@@ -49,10 +49,10 @@ def run(args):
     return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8")).decode("utf-8").split("\n")
 
 def esptool(args):
-    return run(["python3", "./esptool/esptool.py", *args])
+    return run(["uv", "run", "esptool", *args])
 
 def espefuse(args):
-    return run(["python3", "./esptool/espefuse.py", *args])
+    return run(["uv", "run", "espefuse", *args])
 
 # inherit from BaseException instead of Exception to avoid being handled by
 # try/except blocks that handle Exception instances. sys.exit() raises a
@@ -85,7 +85,7 @@ def get_new_uid():
     return int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/uid', timeout=15).read())
 
 def check_if_esp_is_sane_and_get_mac():
-    output = esptool(['--port', PORT, 'flash_id']) # flash_id to get the flash size
+    output = esptool(['--port', PORT, 'flash-id'])  # flash_id to get the flash size
     chip_type = None
     chip_revision = None
     flash_size = None
@@ -121,7 +121,7 @@ def check_if_esp_is_sane_and_get_mac():
     return mac
 
 def get_esp_mac():
-    esptool(['--port', PORT, 'read_mac'])
+    esptool(['--port', PORT, 'read-mac'])
 
 def get_espefuse_tasks():
     have_to_set_voltage_fuses = False
@@ -290,7 +290,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
     return uid, '-'.join(wifi_passphrase)
 
 def erase_flash():
-    output = '\n'.join(esptool(["--port", PORT, "erase_flash"]))
+    output = '\n'.join(esptool(["--port", PORT, "erase-flash"]))
 
     if "Chip erase completed successfully" not in output:
         fatal_error("Failed to erase flash.",
@@ -581,7 +581,7 @@ def main():
             fatal_error("/dev/ttyUSB0 does not exist. Is the USB cable plugged in?")
 
         set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks()
-        output = esptool(['--port', PORT, '--after', 'hard_reset', 'flash_id'])
+        output = esptool(['--port', PORT, '--after', 'hard-reset', 'flash-id'])
         if set_voltage_fuses:
             fatal_error("Voltage fuses not set!")
 
@@ -645,7 +645,7 @@ def main():
         ipcon.connect("localhost", 4223)
         run_bricklet_tests(ipcon, result, qr_variant, qr_power)
         print("Flashing EVSE")
-        run(["python3", "comcu_flasher.py", result["evse_uid"], evse_path])
+        run(["./comcu_flasher.py", result["evse_uid"], evse_path])
         result["evse_firmware"] = evse_path
 
     print("Checking if EVSE was tested...")

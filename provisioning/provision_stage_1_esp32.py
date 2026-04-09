@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 
@@ -50,7 +50,7 @@ def main():
     if set_voltage_fuses or set_block_3:
         fatal_error("Fuses are not set. Re-run stage 0!")
 
-    esptool(["--after", "hard_reset", "chip_id"])
+    esptool(["--after", "hard-reset", "chip-id"])
 
     result["uid"] = uid
 
@@ -110,7 +110,7 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type == "warp1" else "1"])
+        run(["print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type == "warp1" else "1"])
         label_prompt = "Stick one label on the ESP, put ESP in the ESD bag. Press n to retry printing the label. [y/n]"
 
         label_success = input(label_prompt)
@@ -120,7 +120,7 @@ def main():
     if firmware_type == "esp32":
         bag_label_success = "n"
         while bag_label_success != "y":
-            run(["python3", "../../flash-test/label/print-label.py", "-c", "1", "ESP32 Brick", str(ESP_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
+            run(["../../flash-test/label/print-label.py", "-c", "1", "ESP32 Brick", str(ESP_DEVICE_ID), datetime.datetime.now().strftime('%Y-%m-%d'), uid, fw_version])
             bag_label_prompt = "Stick bag label on bag. Press n to retry printing the label. [y/n]"
 
             bag_label_success = input(bag_label_prompt)

@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 
@@ -823,7 +823,7 @@ def main(stage3, scanner, result):
         evse_path = os.path.join(evse_directory, evse_path)
 
         print("Flashing EVSE")
-        run(["python3", "comcu_flasher.py", evse_enum.uid, evse_path])
+        run(["./comcu_flasher.py", evse_enum.uid, evse_path])
         result["evse_firmware"] = evse_path.split("/")[-1]
 
         run_bricklet_tests(ipcon, result, scanner, None, stage3)

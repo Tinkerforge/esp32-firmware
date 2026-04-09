@@ -60,10 +60,10 @@ def run(args):
     return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8", LANG="C", LANGUAGE="en")).decode("utf-8").split("\n")
 
 def esptool(args, override_port=None):
-    return run([sys.executable, "./venv/bin/esptool.py", "--port", PORT if override_port is None else override_port, *args])
+    return run(["uv", "run", "esptool", "--port", PORT if override_port is None else override_port, *args])
 
 def espefuse(args, override_port=None):
-    return run([sys.executable, "./venv/bin/espefuse.py", "--port", PORT if override_port is None else override_port, *args])
+    return run(["uv", "run", "espefuse", "--port", PORT if override_port is None else override_port, *args])
 
 # inherit from BaseException instead of Exception to avoid being handled by
 # try/except blocks that handle Exception instances. sys.exit() raises a
@@ -99,7 +99,7 @@ def get_new_uid():
     return int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/uid', timeout=15).read())
 
 def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision=3, override_port=None):
-    output = esptool(['flash_id'], override_port=override_port) # flash_id to get the flash size
+    output = esptool(['flash-id'], override_port=override_port)  # flash-id to get the flash size
     chip_type = None
     chip_revision = None
     flash_size = None
@@ -139,7 +139,7 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision
     return mac
 
 def get_esp_mac():
-    esptool(['read_mac'])
+    esptool(['read-mac'])
 
 def get_espefuse_tasks_with_two_int_format():
     have_to_set_voltage_fuses = False
@@ -443,7 +443,7 @@ def handle_block3_fuses_with_two_int_format(set_block_3, uid):
     return uid
 
 def erase_flash():
-    output = '\n'.join(esptool(["erase_flash"]))
+    output = '\n'.join(esptool(["erase-flash"]))
 
     if "Chip erase completed successfully" not in output:
         fatal_error("Failed to erase flash.",
@@ -454,7 +454,7 @@ def flash_firmware(path, reset=True):
     output = "\n".join(esptool(["--baud", "921600",
                                 "--before", "default_reset",
                                 "--after", "hard_reset" if reset else "no_reset",
-                                "write_flash",
+                                "write-flash",
                                 "--flash_mode", "dio",
                                 "--flash_freq", "40m",
                                 "--flash_size", "16MB",

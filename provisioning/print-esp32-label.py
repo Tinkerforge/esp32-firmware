@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import os
 import re
@@ -6,7 +6,7 @@ import sys
 import argparse
 import socket
 import time
-import tinkerforge_util as tfutil  # sudo apt install python3-tinkerforge-util
+import tinkerforge_util as tfutil
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 

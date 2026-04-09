@@ -1,0 +1,9 @@
+[project]
+name = "esp32-provisioning"
+dynamic = ["version"]
+requires-python = "==3.12.*"
+dependencies = [
+    "pyside6",
+    "esptool",
+    "tinkerforge_util",
+]

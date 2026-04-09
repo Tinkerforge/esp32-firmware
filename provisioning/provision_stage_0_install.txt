@@ -1,5 +1,3 @@
-python -m venv venv
-venv/bin/pip install esptool
 git clone https://github.com/Tinkerforge/cp210x-cfg
 cd cp210x-cfg
 make

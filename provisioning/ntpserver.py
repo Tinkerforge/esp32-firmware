@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+
 # https://github.com/janmojzis/ntpserver
 #20200301
 #Jan Mojzis

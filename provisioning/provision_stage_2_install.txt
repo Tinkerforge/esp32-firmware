@@ -1,4 +1,2 @@
-python -m venv venv
-venv/bin/pip install esptool
 copy or symlink evse_test_report folder here
 copy or symlink evse_v2_test_report folder here

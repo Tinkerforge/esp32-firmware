@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 
@@ -217,7 +217,7 @@ def get_esp_ssid(serial_port, result, ssid_prefix):
     if set_voltage_fuses or set_block_3:
         fatal_error("Fuses are not set. Re-run stage 0!")
 
-    esptool(["--after", "hard_reset", "run"], override_port=serial_port)
+    esptool(["--after", "hard-reset", "run"], override_port=serial_port)
 
     result["uid"] = uid
 

@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox
 
@@ -15,10 +16,10 @@ selected_firmware_type = ""
 Action = namedtuple("Action", "name pwd cmd show_filter_fn")
 
 actions = [
-    Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                                        lambda x: x != "warp3"),
-    Action("ESP Test",                    ".", "lxterminal -e python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x != "warp3"),
-    Action("ESP Print Label (Skip Test)", ".", "lxterminal -e python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x != "warp3"),
-    Action("WARP ESP Flash and Test",     ".", "venv/bin/python3 -u provision_warp_esp32_ethernet_brick.py",                        lambda x: x == "warp3")
+    Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                               lambda x: x != "warp3"),
+    Action("ESP Test",                    ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x != "warp3"),
+    Action("ESP Print Label (Skip Test)", ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x != "warp3"),
+    Action("WARP ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick.py",                                               lambda x: x == "warp3")
 ]
 
 work_queue = queue.Queue()

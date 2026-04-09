@@ -4,6 +4,6 @@ pushd ../../firmwares
 git pull
 popd
 
-parallel -j 9 -u python3 provision_stage_0_warp2.py ../../firmwares/bricks/esp32_ethernet/brick_esp32_ethernet_firmware_latest.bin '{}' esp32_ethernet ::: /dev/ttyUSB*
+parallel -j 9 -u ./provision_stage_0_warp2.py ../../firmwares/bricks/esp32_ethernet/brick_esp32_ethernet_firmware_latest.bin '{}' esp32_ethernet ::: /dev/ttyUSB*
 
 read -p "ESP Parallel-Flash is complete. Wait for Status LEDs to blink before unplugging Bricks!" x

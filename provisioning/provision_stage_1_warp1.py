@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S uv run --script
 
 import tinkerforge_util as tfutil
 
@@ -45,10 +45,10 @@ def run(args):
     return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8")).decode("utf-8").split("\n")
 
 def esptool(args):
-    return run(["python3", "./esptool/esptool.py", *args])
+    return run(["uv", "run", "esptool", *args])
 
 def espefuse(args):
-    return run(["python3", "./esptool/espefuse.py", *args])
+    return run(["uv", "run", "espefuse", *args])
 
 
 @contextmanager
@@ -73,7 +73,7 @@ def get_new_uid():
     return int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/uid', timeout=15).read())
 
 def check_if_esp_is_sane_and_get_mac():
-    output = esptool(['--port', PORT, 'flash_id']) # flash_id to get the flash size
+    output = esptool(['--port', PORT, 'flash-id'])  # flash_id to get the flash size
     chip_type = None
     chip_revision = None
     flash_size = None
@@ -112,7 +112,7 @@ def check_if_esp_is_sane_and_get_mac():
     return mac
 
 def get_esp_mac():
-    esptool(['--port', PORT, 'read_mac'])
+    esptool(['--port', PORT, 'read-mac'])
 
 def get_espefuse_tasks():
     have_to_set_voltage_fuses = False
@@ -298,7 +298,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
     return uid, '-'.join(wifi_passphrase)
 
 def erase_flash():
-    output = '\n'.join(esptool(["--port", PORT, "erase_flash"]))
+    output = '\n'.join(esptool(["--port", PORT, "erase-flash"]))
 
     if "Chip erase completed successfully" not in output:
         print("Failed to erase flash.")
@@ -308,14 +308,14 @@ def erase_flash():
 
 def flash_firmware(path, reset=True):
     output = "\n".join(esptool(["--port", PORT,
-                                    "--baud", "921600",
-                                    "--before", "default_reset",
-                                    "--after", "hard_reset" if reset else "no_reset",
-                                    "write_flash",
-                                    "--flash_mode", "dio",
-                                    "--flash_freq", "40m",
-                                    "--flash_size", "16MB",
-                                    "0x1000", path]))
+                                "--baud", "921600",
+                                "--before", "default_reset",
+                                "--after", "hard_reset" if reset else "no_reset",
+                                "write-flash",
+                                "--flash_mode", "dio",
+                                "--flash_freq", "40m",
+                                "--flash_size", "16MB",
+                                "0x1000", path]))
 
     if "Hash of data verified." not in output:
         print("Failed to flash firmware.")
@@ -383,7 +383,7 @@ def main():
     if set_voltage_fuses or set_block_3:
         print("Fuses are not set. Re-run stage 0!")
 
-    esptool(["--after", "hard_reset", "chip_id"])
+    esptool(["--after", "hard-reset", "chip-id"])
 
     result["uid"] = uid
 
@@ -477,7 +477,7 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
+        run(["./print-esp32-label.py", ssid, passphrase, "-c", "3"])
         label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
         while label_success not in ("y", "n"):
             label_success = input("Stick one label on the ESP, put ESP and the other two labels in the ESD bag. Press n to retry printing the labels. [y/n]")
