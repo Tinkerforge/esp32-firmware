@@ -6,4 +6,5 @@ dependencies = [
     "pyside6",
     "esptool",
     "tinkerforge_util",
+    "selenium",
 ]
