@@ -8,7 +8,9 @@ let x = {
             "not_connected": "Not connected",
             "connecting": "Connecting",
             "connected": "Connected",
-            "disabled_after_reboot": "Active until reboot"
+            "disabled_after_reboot": "Active until reboot",
+            "ipv6_connected": "IPv6 connected",
+            "ipv6_no_address": "IPv6 no address"
         },
         "navbar": {
             "ethernet": "LAN Connection"

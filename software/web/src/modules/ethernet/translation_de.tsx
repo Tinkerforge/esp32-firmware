@@ -8,7 +8,9 @@ let x = {
             "not_connected": "Getrennt",
             "connecting": "Verbinde",
             "connected": "Verbunden",
-            "disabled_after_reboot": "Aktiv bis Neustart"
+            "disabled_after_reboot": "Aktiv bis Neustart",
+            "ipv6_connected": "IPv6 verbunden",
+            "ipv6_no_address": "IPv6 keine Adresse"
         },
         "navbar": {
             "ethernet": "LAN-Verbindung"
