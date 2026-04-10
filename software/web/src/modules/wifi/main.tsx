@@ -32,6 +32,14 @@ import { Wifi } from "react-feather";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { WifiState } from "./generated/wifi_state.enum";
 
+function has_any_ipv6(state: API.getType["wifi/state"]): boolean {
+    return (state.sta_ip6_global && state.sta_ip6_global !== "::")
+        || (state.sta_ip6_unique_local && state.sta_ip6_unique_local !== "::")
+        || (state.sta_ip6_configured && state.sta_ip6_configured !== "::")
+        || (state.sta_ip6_site_local && state.sta_ip6_site_local !== "::")
+        || (state.sta_ip6_link_local && state.sta_ip6_link_local !== "::");
+}
+
 export function WifiSTANavbar() {
     return <NavbarItem name="wifi_sta" module="wifi" title={__("wifi.navbar.wifi_sta")} symbol={<Wifi />} />;
 }
@@ -130,6 +138,20 @@ export function init() {
                         return {
                             status: ModuleStatus.Warning,
                             text: () => __("wifi.status.weak_signal")(state.sta_rssi)
+                        };
+                    }
+                    if (config?.enable_ipv6) {
+                        if (has_any_ipv6(state)) {
+                            return {
+                                status: ModuleStatus.Ok,
+                                text: () => state.sta_ip + " | " + __("wifi.status.ipv6_connected"),
+                                icon: () => wifi_symbol(state.sta_rssi, 18)
+                            };
+                        }
+                        return {
+                            status: ModuleStatus.Warning,
+                            text: () => state.sta_ip + " | " + __("wifi.status.ipv6_no_address"),
+                            icon: () => wifi_symbol(state.sta_rssi, 18)
                         };
                     }
                     return {
