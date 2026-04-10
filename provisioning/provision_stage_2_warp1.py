@@ -445,7 +445,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power):
         result["energy_meter_reachable"] = True
 
 def exists_evse_test_report(evse_uid):
-    with open(os.path.join("evse_test_report", "full_test_log.csv"), newline='') as csvfile:
+    with open(os.path.join("..", "..", "test-reports", f"evse", "full_test_log.csv"), newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
             if row[0] == evse_uid:
@@ -651,7 +651,7 @@ def main():
     print("Checking if EVSE was tested...")
     if not exists_evse_test_report(result["evse_uid"]):
         print("No test report found. Checking for new test reports...")
-        with tfutil.ChangedDirectory(os.path.join("..", "..", "wallbox")):
+        with tfutil.ChangedDirectory(os.path.join("..", "..", "test-reports")):
             run(["git", "pull"])
         if not exists_evse_test_report(result["evse_uid"]):
             fatal_error("No test report found for EVSE {}.".format(result["evse_uid"]))
