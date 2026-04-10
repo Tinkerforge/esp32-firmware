@@ -390,7 +390,7 @@ class Scanner:
             self.qr_custom_front_panel = bool(int(m.group(6) if m.group(6) != None else '0'))
 
             if m.group(7) != None and m.group(7) != '0':
-                self.qr_custom_type2_cable = m.group(7).replace('M', 'Metron').replace('T', 'Tesla')
+                self.qr_custom_type2_cable = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ')
             else:
                 self.qr_custom_type2_cable = 'no'
 
@@ -456,11 +456,13 @@ def led_wrap():
 
         try:
             if scanner.qr_variant != "B":
-                ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
+                product = scanner.qr_hardware_type
+                ssid = f'{product}-{scanner.qr_esp_uid}'
             else:
-                ssid = f'warp{scanner.qr_gen}-{result.get("evse_uid", "unknown")}'
+                product = f'warp{scanner.qr_gen}'
+                ssid = f'{product}-{result.get("evse_uid", "unknown")}'
 
-            report_path_json = "{}_{}_report_stage_2_failure.json".format(ssid, now().replace(":", "-"))
+            report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2_failure.json".format(ssid, now().replace(":", "-")))
 
             with open(report_path_json, "w") as f:
                 json.dump(result, f, indent=4)
@@ -893,7 +895,12 @@ def main(stage3, scanner, result):
         print("Tracked charges removed.")
     result["end"] = now()
 
-    report_path_json = "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-"))
+    if scanner.qr_variant != "B":
+        product = scanner.qr_hardware_type
+    else:
+        product = f'warp{scanner.qr_gen}'
+
+    report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")))
     report_path_pdf = report_path_json.replace('.json', '.pdf')
 
     with open(report_path_json, "w") as f:
