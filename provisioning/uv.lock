@@ -151,7 +151,7 @@ dependencies = [
 requires-dist = [
     { name = "esptool" },
     { name = "pyside6" },
-    { name = "selenium" },
+    { name = "selenium", specifier = "==4.10.0" },
     { name = "tinkerforge-util" },
 ]
 
@@ -371,19 +371,17 @@ wheels = [
 
 [[package]]
 name = "selenium"
-version = "4.42.0"
+version = "4.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "trio" },
     { name = "trio-websocket" },
-    { name = "typing-extensions" },
     { name = "urllib3", extra = ["socks"] },
-    { name = "websocket-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/33/46/fb93d37749ecf13853739c31c70bd95704310a7defbc57e7101dc4ab2513/selenium-4.42.0.tar.gz", hash = "sha256:4c8ebd84ff96505db4277223648f12e2799e92e13169bc69633a6b24eb066c72", size = 956304, upload-time = "2026-04-09T08:31:20.268Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/d3/7fd6820e441550a4d0dae621c02f75339c6fafd98352f2727dd68e6e4cda/selenium-4.10.0.tar.gz", hash = "sha256:871bf800c4934f745b909c8dfc7d15c65cf45bd2e943abd54451c810ada395e3", size = 6465647, upload-time = "2023-06-07T16:17:08.728Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/47/9f094f1cffdb54b01da75b45cc29673869458a504b30002797c0c47ac985/selenium-4.42.0-py3-none-any.whl", hash = "sha256:bb29eababf54fa479c95d5fa3fba73889db5d532f3a76addc5b526bbff14fca7", size = 9559171, upload-time = "2026-04-09T08:31:17.38Z" },
+    { url = "https://files.pythonhosted.org/packages/19/e7/6c6468d913edb3645ed4d0c0c7b3bd7a2a41e78a03e0d52696408ca08189/selenium-4.10.0-py3-none-any.whl", hash = "sha256:40241b9d872f58959e9b34e258488bf11844cd86142fd68182bd41db9991fc5c", size = 6676948, upload-time = "2023-06-07T16:17:04.196Z" },
 ]
 
 [[package]]
@@ -480,15 +478,6 @@ wheels = [
 ]
 
 [[package]]
-name = "typing-extensions"
-version = "4.15.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
-]
-
-[[package]]
 name = "urllib3"
 version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
@@ -500,15 +489,6 @@ wheels = [
 [package.optional-dependencies]
 socks = [
     { name = "pysocks" },
-]
-
-[[package]]
-name = "websocket-client"
-version = "1.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/2c/41/aa4bf9664e4cda14c3b39865b12251e8e7d239f4cd0e3cc1b6c2ccde25c1/websocket_client-1.9.0.tar.gz", hash = "sha256:9e813624b6eb619999a97dc7958469217c3176312b3a16a4bd1bc7e08a46ec98", size = 70576, upload-time = "2025-10-07T21:16:36.495Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/34/db/b10e48aa8fff7407e67470363eac595018441cf32d5e1001567a7aeba5d2/websocket_client-1.9.0-py3-none-any.whl", hash = "sha256:af248a825037ef591efbf6ed20cc5faa03d3b47b9e5a2230a529eeee1c1fc3ef", size = 82616, upload-time = "2025-10-07T21:16:34.951Z" },
 ]
 
 [[package]]
