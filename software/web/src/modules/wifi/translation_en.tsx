@@ -14,7 +14,9 @@ let x = {
             "disabled": "Disabled",
             "enabled": "Enabled",
             "fallback_inactive": "Fallback inactive",
-            "fallback_active": "Fallback active"
+            "fallback_active": "Fallback active",
+            "ipv6_connected": "IPv6 connected",
+            "ipv6_no_address": "IPv6 no address"
         },
         "navbar": {
             "wifi_sta": "WiFi Connection",
