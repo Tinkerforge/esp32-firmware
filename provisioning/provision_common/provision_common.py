@@ -106,10 +106,10 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision
     crystal = None
     mac = None
 
-    chip_type_re = re.compile(r'Chip is (ESP32-[^\s]*) \(revision v?([^\)]*)\)')
-    flash_size_re = re.compile(r'Detected flash size: (\d*[KM]B)')
-    crystal_re = re.compile(r'Crystal is (\d*MHz)')
-    mac_re = re.compile(r'MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})')
+    chip_type_re = re.compile(r'Chip type:\s+(ESP32-[^\s]*) \(revision v?([^\)]*)\)')
+    flash_size_re = re.compile(r'Detected flash size:\s+(\d*[KM]B)')
+    crystal_re = re.compile(r'Crystal frequency:\s+(\d*MHz)')
+    mac_re = re.compile(r'MAC:\s+((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})')
 
     for line in output:
         chip_type_match = chip_type_re.match(line)
@@ -304,7 +304,7 @@ def handle_voltage_fuses(set_voltage_fuses):
         return
 
     print("Burning flash voltage eFuse to 3.3V")
-    espefuse(["set_flash_voltage", "3.3V", "--do-not-confirm"])
+    espefuse(["set-flash-voltage", "3.3V"])
 
 # Copied over from https://stagingwww.tinkerforge.com/uid implementation
 def sn_helper(next_uid_path):
@@ -402,7 +402,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
             f.write(binary)
 
         print("Burning UID and Wifi passphrase eFuses")
-        espefuse(["burn_block_data", "BLOCK3", name, "--do-not-confirm"])
+        espefuse(["burn-block-data", "BLOCK3", name])
 
     return uid, '-'.join(wifi_passphrase)
 
@@ -438,7 +438,7 @@ def handle_block3_fuses_with_two_int_format(set_block_3, uid):
             f.write(binary)
 
         print("Burning UID eFuses")
-        espefuse(["burn_block_data", "BLOCK3", name, "--do-not-confirm"])
+        espefuse(["burn-block-data", "BLOCK3", name])
 
     return uid
 

@@ -4,7 +4,7 @@ dynamic = ["version"]
 requires-python = "==3.12.*"
 dependencies = [
     "pyside6 == 6.8.0",  # versions > 6.8.0 are only available with a glibc target that is too high
-    "esptool",
+    "esptool == 5.2.0",  # pinned for stable command line output
     "tinkerforge_util",
     "selenium == 4.10.0",  # versions > 4.10.0 fail to detect the firefox binary correctly. tested up to version 4.43.0
 ]
