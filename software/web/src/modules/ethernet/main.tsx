@@ -35,6 +35,14 @@ import { StatusSection } from "../../ts/components/status_section";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { EthernetState } from "./generated/ethernet_state.enum";
 
+function has_any_ipv6(state: API.getType["ethernet/state"]): boolean {
+    return (state.ip6_global && state.ip6_global !== "::")
+        || (state.ip6_unique_local && state.ip6_unique_local !== "::")
+        || (state.ip6_configured && state.ip6_configured !== "::")
+        || (state.ip6_site_local && state.ip6_site_local !== "::")
+        || (state.ip6_link_local && state.ip6_link_local !== "::");
+}
+
 export function EthernetNavbar() {
     return (
         <NavbarItem name="ethernet" module="ethernet" title={__("ethernet.navbar.ethernet")} symbol={
@@ -300,6 +308,19 @@ export function init() {
 
             switch (state?.connection_state) {
                 case EthernetState.Connected:
+                    if (config?.enable_ipv6) {
+                        const ip_text = state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")";
+                        if (has_any_ipv6(state)) {
+                            return {
+                                status: ModuleStatus.Ok,
+                                text: () => ip_text + " | " + __("ethernet.status.ipv6_connected")
+                            };
+                        }
+                        return {
+                            status: ModuleStatus.Warning,
+                            text: () => ip_text + " | " + __("ethernet.status.ipv6_no_address"),
+                        };
+                    }
                     return {
                         status: ModuleStatus.Ok,
                         text: () => state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")"
