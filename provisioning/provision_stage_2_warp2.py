@@ -374,7 +374,7 @@ class Scanner:
             self.qr_custom_type2_cable = False
         else:
             # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
-            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1);)?;;*$'
+            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1|M\d+|T\d+);)?;;*$'
             self.qr_accessories_code = my_input("Scan the accessories QR code:")
             m = re.match(pattern, self.qr_accessories_code)
 
@@ -388,7 +388,11 @@ class Scanner:
             self.qr_supply_cable = float(m.group(4))
             self.qr_cee = bool(int(m.group(5)))
             self.qr_custom_front_panel = bool(int(m.group(6) if m.group(6) != None else '0'))
-            self.qr_custom_type2_cable = bool(int(m.group(7) if m.group(7) != None else '0'))
+
+            if m.group(7) != None and m.group(7) != '0':
+                self.qr_custom_type2_cable = m.group(7).replace('M', 'Metron').replace('T', 'Tesla')
+            else:
+                self.qr_custom_type2_cable = 'no'
 
             print("Accessories QR code data:")
             print("    Stand: {}".format(self.qr_stand))
