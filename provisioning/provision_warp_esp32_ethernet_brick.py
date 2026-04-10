@@ -554,7 +554,7 @@ def run_gui(q: queue.Queue):
         log_timer.timeout.connect(lambda: update_logs(edits, restart_button, reprint_button))
         log_timer.setInterval(100)
         log_timer.start()
-    except Exception as e:
+    except Exception:
         original_stdout.write(traceback.format_exc())
         original_stdout.flush()
 
@@ -792,7 +792,8 @@ def main():
                     print("Next brick", next_brick)
             else:
                 raise
-    original_stdout.write("before join")
+    original_stdout.write("before join\n")
+    original_stdout.flush()
     qt_thread.join()
 
     result = 42 if restart_clicked else 0
