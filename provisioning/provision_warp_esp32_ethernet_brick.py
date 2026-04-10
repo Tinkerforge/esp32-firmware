@@ -440,7 +440,7 @@ def terminal_to_html(s):
 
     result = '#FFFFFF'
 
-    for color in colored.finall(s):
+    for color in colored.findall(s):
         if color in mapping:
             result = mapping[color]
 
