@@ -48,18 +48,19 @@ let x = {
 
             "evse_user_description": "Charge release",
 
-            "evse_user_enable": <> Requires a user authorization (via <a href="#nfc">NFC tag</a>) to charge </>
-,
+            "evse_user_enable": <>
+                    Requires a user authorization (via NFC tag) to charge
+                </>,
             "evse_user_enable_invalid":
                 "At least one user is required for the charge release.",
+            "evse_user_enable_central_auth_warning": <>Disabled because <a href="#charge_manager_chargers"> central authorization </a> is enabled in the charge manager.
+                </>,
 
             "nfc_tags": "NFC Tags",
             "nfc_no_tags_assigned": "No NFC tags assigned",
-            "nfc_no_seen_tags":
-            "No NFC tags seen recently. Hold a tag to the charger to detect it.",
+            "nfc_no_seen_tags": "No NFC tags seen recently. Hold a tag to the charger to detect it.",
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
-                `Already assigned to user "${other_name}"`
-                /*NF*/
+                `Already assigned to user "${other_name}"` /*NF*/
         },
         "script": {
             "reboot_content_changed": "user settings",
