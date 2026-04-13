@@ -907,6 +907,13 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         // Only allow enabling the user slot if there are at least two users (anonymous counts as one)
         let user_slot_allowed = state.users.length > 1;
 
+        let central_auth_enabled = false;
+        //#if MODULE_CHARGE_MANAGER_AVAILABLE
+        central_auth_enabled = API.get(
+            "charge_manager/config",
+        ).enable_central_auth;
+        //#endif
+
         //#if MODULE_NFC_AVAILABLE
         let seen_tags = util.get_all_seen_tags();
         let nfc_config = API.get("nfc/config");
@@ -941,13 +948,30 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                         </div>
                     </FormRow>
 
-                    <FormRow label={__("users.content.evse_user_description")} help={API.hasFeature("nfc") ? __("users.content.evse_user_description_help") : undefined}>
-                        <Switch desc={__("users.content.evse_user_enable")}
-                                checked={user_slot_allowed && state.userSlotEnabled}
-                                disabled={!user_slot_allowed}
-                                className={!user_slot_allowed && state.userSlotEnabled ? "is-invalid" : ""}
-                                onClick={this.toggle("userSlotEnabled")}/>
-                        <div class="invalid-feedback">{__("users.content.evse_user_enable_invalid")}</div>
+                    <FormRow
+                        label={__("users.content.evse_user_description")}
+                        warning={__(
+                            "users.content.evse_user_enable_central_auth_warning",
+                        )}
+                        show_warning={central_auth_enabled}
+                        help={API.hasFeature("nfc") ? __("users.content.evse_user_description_help") : undefined}
+                    >
+                        <Switch
+                            desc={__("users.content.evse_user_enable")}
+                            checked={user_slot_allowed && state.userSlotEnabled}
+                            disabled={
+                                !user_slot_allowed || central_auth_enabled
+                            }
+                            className={
+                                !user_slot_allowed && state.userSlotEnabled
+                                    ? "is-invalid"
+                                    : ""
+                            }
+                            onClick={this.toggle("userSlotEnabled")}
+                        />
+                        <div class="invalid-feedback">
+                            {__("users.content.evse_user_enable_invalid")}
+                        </div>
                     </FormRow>
                     <FormRow label={__("users.content.unknown_username")}>
                         <InputPassword

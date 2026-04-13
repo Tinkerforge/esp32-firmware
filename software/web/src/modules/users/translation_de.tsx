@@ -49,17 +49,23 @@ let x = {
 
             "evse_user_description": "Ladefreigabe",
 
-            "evse_user_enable": <> Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per <a href="#nfc">NFC-Tag</a>) </>,
+            "evse_user_enable": <>
+                    Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer
+                    zum Laden (z.B. per NFC-Tag)
+                </>,
             "evse_user_enable_invalid":
                 "Für die Ladefreigabe ist mindestens ein Benutzer notwendig.",
+            "evse_user_enable_central_auth_warning": 
+                <>
+                    Deaktiviert, weil die <a href="#charge_manager_chargers"> zentrale Ladefreigabe </a> aktiviert ist.
+                </>,
 
             "nfc_tags": "NFC-Tags",
             "nfc_no_tags_assigned": "Keine NFC-Tags zugeordnet",
             "nfc_no_seen_tags":
                 "In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an die Wallbox, um es zu erkennen.",
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
-                `Bereits Benutzer "${other_name}" zugeordnet`
-                /*NF*/
+                `Bereits Benutzer "${other_name}" zugeordnet` /*NF*/
         },
         "script": {
             "reboot_content_changed": "Benutzereinstellungen",
