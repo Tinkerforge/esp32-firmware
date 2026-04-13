@@ -140,14 +140,7 @@ export function init() {
                             text: () => __("wifi.status.weak_signal")(state.sta_rssi)
                         };
                     }
-                    if (config?.enable_ipv6) {
-                        if (has_any_ipv6(state)) {
-                            return {
-                                status: ModuleStatus.Ok,
-                                text: () => state.sta_ip + " | " + __("wifi.status.ipv6_connected"),
-                                icon: () => wifi_symbol(state.sta_rssi, 18)
-                            };
-                        }
+                    if (config?.enable_ipv6 && !has_any_ipv6(state)) {
                         return {
                             status: ModuleStatus.Warning,
                             text: () => state.sta_ip + " | " + __("wifi.status.ipv6_no_address"),
