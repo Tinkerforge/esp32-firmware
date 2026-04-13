@@ -318,6 +318,8 @@ PP (I\textsubscript{{max}})                            & bestanden \\
 
     output_file = os.path.abspath(args.output_file)
 
+    os.makedirs(os.path.split(output_file)[0], exist_ok=True)
+
     with tempfile.TemporaryDirectory() as d:
         print(d)
 

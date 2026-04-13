@@ -382,10 +382,10 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     return ipcon, rgb_led_uid
 
 
-def print_label(ssid, passphrase, stage_1_test_report, relay_to_rgb_led):
+def print_label(firmware_prefix, ssid, passphrase, stage_1_test_report, relay_to_rgb_led):
     global restart_clicked
     global reprint_clicked
-    with open("{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-")), "w") as f:
+    with mkdir_open(os.path.join("..", "..", "test-reports", firmware_prefix, "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-"))), "w") as f:
         json.dump(stage_1_test_report, f, indent=4)
 
     removed_brick = None
@@ -788,7 +788,7 @@ def main():
                     iqr.set_selected_value(next_brick, False)
                     rgb_led = relay_to_rgb_led.pop(next_brick)
                     rgb_led.ipcon.disconnect()
-                    next_brick = print_label(relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], relay_to_rgb_led)
+                    next_brick = print_label(firmware_prefix, relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], relay_to_rgb_led)
                     print("Next brick", next_brick)
             else:
                 raise

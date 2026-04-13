@@ -29,6 +29,7 @@ from tinkerforge_util.colored import red, green
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.bricklet_evse import BrickletEVSE
+from provisioning.provision_common.provision_common import mkdir_open
 
 rnd = secrets.SystemRandom()
 
@@ -664,7 +665,7 @@ def main():
 
     result["end"] = now()
 
-    with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
+    with mkdir_open(os.path.join("..", "..", "test-reports", "warp", "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-"))), "w") as f:
         json.dump(result, f, indent=4)
 
     if qr_variant != "B":

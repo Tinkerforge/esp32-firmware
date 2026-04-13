@@ -554,3 +554,7 @@ def test_bricklet_ports(ipcon, esp_device_id, is_warp):
     stop_event.set()
     blink_thread.join()
     ipcon.disconnect()
+
+def mkdir_open(path, *args, **kwargs):
+    os.makedirs(os.path.split(path), exist_ok=True)
+    return open(path, *args, **kwargs)

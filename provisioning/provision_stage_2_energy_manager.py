@@ -377,7 +377,7 @@ class EnergyManagerTester:
         self.print_labels()
 
         self.result["end"] = now()
-        with open("{}_{}_report_stage_2.json".format(self.ssid, now().replace(":", "-")), "w") as f:
+        with mkdir_open(os.path.join("..", "..", "test-reports", "energy_manager", "{}_{}_report_stage_2.json".format(self.ssid, now().replace(":", "-"))), "w") as f:
             json.dump(self.result, f, indent=4)
     
         print('Done!')

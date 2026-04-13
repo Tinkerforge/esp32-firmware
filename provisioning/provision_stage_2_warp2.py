@@ -464,7 +464,7 @@ def led_wrap():
 
             report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2_failure.json".format(ssid, now().replace(":", "-")))
 
-            with open(report_path_json, "w") as f:
+            with mkdir_open(report_path_json, "w") as f:
                 json.dump(result, f, indent=4)
         except Exception as e:
             print(red(f'Failed to write failure report: {e}'))
@@ -903,7 +903,7 @@ def main(stage3, scanner, result):
     report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")))
     report_path_pdf = report_path_json.replace('.json', '.pdf')
 
-    with open(report_path_json, "w") as f:
+    with mkdir_open(report_path_json, "w") as f:
         json.dump(result, f, indent=4)
 
     if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:

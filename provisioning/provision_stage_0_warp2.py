@@ -115,7 +115,7 @@ def main():
 
     result["end"] = now()
 
-    with open("{}-{}_{}_report_stage_0.json".format(firmware_type, uid, now().replace(":", "-")), "w") as f:
+    with mkdir_open(os.path.join("..", "..", "test-reports", firmware_type, "{}-{}_{}_report_stage_0.json".format(firmware_type, uid, now().replace(":", "-"))), "w") as f:
         json.dump(result, f, indent=4)
 
     print('Done!')

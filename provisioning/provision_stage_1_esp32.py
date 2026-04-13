@@ -105,7 +105,7 @@ def main():
     result["tests_successful"] = True
     result["end"] = now()
 
-    with open("{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-")), "w") as f:
+    with mkdir_open(os.path.join("..", "..", "test-reports", "esp32", "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-"))), "w") as f:
         json.dump(result, f, indent=4)
 
     label_success = "n"
