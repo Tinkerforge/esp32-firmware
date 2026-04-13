@@ -150,6 +150,7 @@ interface NfcTagsSectionProps {
     seenTags: NFCSeenTag[];
     authorizedTags: API.getType["nfc/config"]["authorized_tags"];
     pendingTagChanges: NfcTagChange[];
+    users: User[];
     currentUserId: number;
     currentUsername: string;
     onRemoveTag: (index: number) => void;
@@ -161,6 +162,7 @@ function NfcTagsSection({
     seenTags,
     authorizedTags,
     pendingTagChanges,
+    users,
     currentUserId,
     currentUsername,
     onRemoveTag,
@@ -208,28 +210,53 @@ function NfcTagsSection({
                                     at.tag_id === t.tag_id &&
                                     at.tag_type === t.tag_type,
                             );
+                            let otherUserDisplayName: string | undefined;
+                            if (!isAssignedToThisUser) {
+                                const pendingOwner = pendingTagChanges.find(
+                                    (c) =>
+                                        (currentUserId > 0
+                                            ? c.user_id !== currentUserId
+                                            : c.username !== currentUsername) &&
+                                        c.tags.some(
+                                            (tag) =>
+                                                tag.tag_id === t.tag_id &&
+                                                tag.tag_type === t.tag_type,
+                                        ),
+                                );
+                                if (pendingOwner) {
+                                    const u = users.find((u) =>
+                                        pendingOwner.user_id > 0
+                                            ? u.id === pendingOwner.user_id
+                                            : u.username ===
+                                              pendingOwner.username,
+                                    );
+                                    otherUserDisplayName = u
+                                        ? u.display_name
+                                        : pendingOwner.username;
+                                } else {
+                                    const authorizedOwner = authorizedTags.find(
+                                        (at) =>
+                                            at.tag_id === t.tag_id &&
+                                            at.tag_type === t.tag_type &&
+                                            at.user_id !== 0 &&
+                                            (currentUserId <= 0 ||
+                                                at.user_id !== currentUserId),
+                                    );
+                                    if (authorizedOwner) {
+                                        const u = users.find(
+                                            (u) =>
+                                                u.id ===
+                                                authorizedOwner.user_id,
+                                        );
+                                        otherUserDisplayName = u
+                                            ? u.display_name
+                                            : undefined;
+                                    }
+                                }
+                            }
                             let isAssignedToOtherUser =
                                 !isAssignedToThisUser &&
-                                (authorizedTags.some(
-                                    (at) =>
-                                        at.tag_id === t.tag_id &&
-                                        at.tag_type === t.tag_type &&
-                                        at.user_id !== 0 &&
-                                        (currentUserId <= 0 ||
-                                            at.user_id !== currentUserId),
-                                ) ||
-                                    pendingTagChanges.some(
-                                        (c) =>
-                                            (currentUserId > 0
-                                                ? c.user_id !== currentUserId
-                                                : c.username !==
-                                                  currentUsername) &&
-                                            c.tags.some(
-                                                (tag) =>
-                                                    tag.tag_id === t.tag_id &&
-                                                    tag.tag_type === t.tag_type,
-                                            ),
-                                    ));
+                                otherUserDisplayName !== undefined;
                             return (
                                 <DiscoveryResultItem
                                     key={t.tag_id}
@@ -243,7 +270,7 @@ function NfcTagsSection({
                                             : isAssignedToOtherUser
                                               ? __(
                                                     "users.content.nfc_tag_already_assigned",
-                                                )
+                                                )(otherUserDisplayName!)
                                               : undefined
                                     }
                                     onClick={() =>
@@ -292,6 +319,7 @@ interface EditUserFormContentProps {
     seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
+    users: User[];
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -306,6 +334,7 @@ function EditUserFormContent({
     seenTags,
     nfcConfig,
     pendingTagChanges,
+    users,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -372,6 +401,7 @@ function EditUserFormContent({
                 seenTags={seenTags}
                 authorizedTags={nfcConfig.authorized_tags}
                 pendingTagChanges={pendingTagChanges}
+                users={users}
                 currentUserId={user.id}
                 currentUsername={user.username}
                 onRemoveTag={(j) =>
@@ -392,6 +422,7 @@ interface AddUserFormContentProps {
     seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
+    users: User[];
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -405,6 +436,7 @@ function AddUserFormContent({
     seenTags,
     nfcConfig,
     pendingTagChanges,
+    users,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -466,6 +498,7 @@ function AddUserFormContent({
                 seenTags={seenTags}
                 authorizedTags={nfcConfig.authorized_tags}
                 pendingTagChanges={pendingTagChanges}
+                users={users}
                 currentUserId={-1}
                 currentUsername={user.username}
                 onRemoveTag={(j) =>
@@ -1088,6 +1121,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             pendingTagChanges={
                                                 state.nfcTagChanges
                                             }
+                                            users={state.users}
                                             onNfcTagsChange={(tags) =>
                                                 this.setState({
                                                     editUserNfcTags: tags,
@@ -1210,6 +1244,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     seenTags={seen_tags}
                                     nfcConfig={nfc_config}
                                     pendingTagChanges={state.nfcTagChanges}
+                                    users={state.users}
                                     onNfcTagsChange={(tags) =>
                                         this.setState({
                                             addUserNfcTags: tags,
