@@ -191,10 +191,12 @@ void ChargeManager::pre_setup()
         {"d3", ThreePhaseDecision::getUnion()},
         {"dc", CurrentDecision::getUnion()},
         {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
-        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)
-        {"ti", Config::Str("", 0, 29)}, // "tag_id" - Last NFC tag ID seen on this charger (colon-separated hex)
-        {"tt", Config::Uint8(0)},       // "tag_type" - Last NFC tag type seen on this charger
-        {"ts", Config::Uint32(0)},      // "tag_last_seen" - Milliseconds since tag was last seen
+        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)n
+        {"ai", Config::Tuple(3, Config::Object({
+            {"ti", Config::Str("", 0, 29)}, // "tag_id" - Last NFC tag ID seen on this charger (colon-separated hex)
+            {"tt", Config::Uint8(0)},       // "tag_type" - Last NFC tag type seen on this charger
+            {"ts", Config::Uint32(0)},      // "tag_last_seen" - Milliseconds since tag was last see
+        }))},
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -568,18 +570,7 @@ static void update_nfc_tag_info(
     
     auto &target = charger_state[client_id];
 
-    const cm_auth_info &info = v5->auth_info[0];
-
-    // If last_seen_s == 0, no tag was seen
-    if (info.last_seen_s == 0 || info.tag_id_len == 0) {
-        target.last_tag_id_len = 0;
-        return;
-    }
-
-    target.last_tag_type = info.tag_type;
-    target.last_tag_id_len = info.tag_id_len;
-    memcpy(target.last_tag_id, info.tag_id, sizeof(target.last_tag_id));
-    target.last_tag_last_seen_s = info.last_seen_s;
+    memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
 }
 
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
@@ -1634,25 +1625,29 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("a")->updateEnum(auth_state);
     charger_cfg->get("uid")->updateInt(charger.authenticated_user_id);
 
-    // Update last seen NFC tag info
-    if (charger.last_tag_id_len > 0) {
-        static const char *hex_lookup = "0123456789ABCDEF";
-        char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
-        size_t chars = charger.last_tag_id_len * 3;
-        for (size_t c = 0; c < chars; c += 3) {
-            uint8_t byte = charger.last_tag_id[c / 3];
-            tag_id_str[c]     = hex_lookup[byte >> 4];
-            tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
-            tag_id_str[c + 2] = ':';
+    for (int i = 0; i < 3; i++) {
+        auto auth_info = charger_cfg->get("ai")->get(i);
+        // Update last seen NFC tag info
+        if (charger.auth_info[i].tag_id_len > 0) {
+            static const char *hex_lookup = "0123456789ABCDEF";
+            char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
+            size_t chars = charger.auth_info[i].tag_id_len * 3;
+            for (size_t c = 0; c < chars; c += 3) {
+                uint8_t byte = charger.auth_info[i].tag_id[c / 3];
+                tag_id_str[c]     = hex_lookup[byte >> 4];
+                tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
+                tag_id_str[c + 2] = ':';
+            }
+            tag_id_str[chars - 1] = '\0';
+
+            auth_info->get("ti")->updateString(tag_id_str);
+            auth_info->get("tt")->updateUint(charger.auth_info[i].tag_type);
+            auth_info->get("ts")->updateUint(charger.auth_info[i].last_seen_s * 1000);
+        } else {
+            auth_info->get("ti")->updateString("");
+            auth_info->get("tt")->updateUint(0);
+            auth_info->get("ts")->updateUint(0);
         }
-        tag_id_str[chars - 1] = '\0';
-        charger_cfg->get("ti")->updateString(tag_id_str);
-        charger_cfg->get("tt")->updateUint(charger.last_tag_type);
-        charger_cfg->get("ts")->updateUint(charger.last_tag_last_seen_s * 1000);
-    } else {
-        charger_cfg->get("ti")->updateString("");
-        charger_cfg->get("tt")->updateUint(0);
-        charger_cfg->get("ts")->updateUint(0);
     }
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
