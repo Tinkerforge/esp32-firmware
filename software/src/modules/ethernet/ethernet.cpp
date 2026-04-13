@@ -348,14 +348,14 @@ void Ethernet::setup()
                 case ESP_IP6_ADDR_IS_LINK_LOCAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress local = ETH.linkLocalIPv6();
-                        logger.printfln("Got link-local IPv6 address: %s", local.toString(true).c_str());
+                        logger.printfln("Got link-local IPv6 address: %s", local.toString(false).c_str());
                         state.get("ip6_link_local")->updateString(local.toString());
                     });
                     break;
                 case ESP_IP6_ADDR_IS_GLOBAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress global = ETH.globalIPv6();
-                        logger.printfln("Got global IPv6 address: %s", global.toString(true).c_str());
+                        logger.printfln("Got global IPv6 address: %s", global.toString(false).c_str());
                         state.get("ip6_global")->updateString(global.toString());
                     });
                     break;
