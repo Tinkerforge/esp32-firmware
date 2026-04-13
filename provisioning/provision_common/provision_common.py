@@ -445,7 +445,7 @@ def handle_block3_fuses_with_two_int_format(set_block_3, uid):
 def erase_flash():
     output = '\n'.join(esptool(["erase-flash"]))
 
-    if "Chip erase completed successfully" not in output:
+    if "Flash memory erased successfully" not in output:
         fatal_error("Failed to erase flash.",
                     "esptool output was",
                     output)

@@ -292,7 +292,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
 def erase_flash():
     output = '\n'.join(esptool(["--port", PORT, "erase-flash"]))
 
-    if "Chip erase completed successfully" not in output:
+    if "Flash memory erased successfully" not in output:
         fatal_error("Failed to erase flash.",
                     "esptool output was",
                     output)
