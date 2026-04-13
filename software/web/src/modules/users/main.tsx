@@ -149,7 +149,9 @@ interface NfcTagsSectionProps {
     assignedTags: NfcTagRef[];
     seenTags: NFCSeenTag[];
     authorizedTags: API.getType["nfc/config"]["authorized_tags"];
+    pendingTagChanges: NfcTagChange[];
     currentUserId: number;
+    currentUsername: string;
     onRemoveTag: (index: number) => void;
     onAddTag: (tag: NfcTagRef) => void;
 }
@@ -158,7 +160,9 @@ function NfcTagsSection({
     assignedTags,
     seenTags,
     authorizedTags,
+    pendingTagChanges,
     currentUserId,
+    currentUsername,
     onRemoveTag,
     onAddTag,
 }: NfcTagsSectionProps) {
@@ -206,14 +210,26 @@ function NfcTagsSection({
                             );
                             let isAssignedToOtherUser =
                                 !isAssignedToThisUser &&
-                                authorizedTags.some(
+                                (authorizedTags.some(
                                     (at) =>
                                         at.tag_id === t.tag_id &&
                                         at.tag_type === t.tag_type &&
                                         at.user_id !== 0 &&
                                         (currentUserId <= 0 ||
                                             at.user_id !== currentUserId),
-                                );
+                                ) ||
+                                    pendingTagChanges.some(
+                                        (c) =>
+                                            (currentUserId > 0
+                                                ? c.user_id !== currentUserId
+                                                : c.username !==
+                                                  currentUsername) &&
+                                            c.tags.some(
+                                                (tag) =>
+                                                    tag.tag_id === t.tag_id &&
+                                                    tag.tag_type === t.tag_type,
+                                            ),
+                                    ));
                             return (
                                 <DiscoveryResultItem
                                     key={t.tag_id}
@@ -275,6 +291,7 @@ interface EditUserFormContentProps {
     nfcTags: NfcTagRef[];
     seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
+    pendingTagChanges: NfcTagChange[];
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -288,6 +305,7 @@ function EditUserFormContent({
     nfcTags,
     seenTags,
     nfcConfig,
+    pendingTagChanges,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -353,7 +371,9 @@ function EditUserFormContent({
                 assignedTags={nfcTags}
                 seenTags={seenTags}
                 authorizedTags={nfcConfig.authorized_tags}
+                pendingTagChanges={pendingTagChanges}
                 currentUserId={user.id}
+                currentUsername={user.username}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -371,6 +391,7 @@ interface AddUserFormContentProps {
     nfcTags: NfcTagRef[];
     seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
+    pendingTagChanges: NfcTagChange[];
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -383,6 +404,7 @@ function AddUserFormContent({
     nfcTags,
     seenTags,
     nfcConfig,
+    pendingTagChanges,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -443,7 +465,9 @@ function AddUserFormContent({
                 assignedTags={nfcTags}
                 seenTags={seenTags}
                 authorizedTags={nfcConfig.authorized_tags}
+                pendingTagChanges={pendingTagChanges}
                 currentUserId={-1}
+                currentUsername={user.username}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -464,7 +488,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 userSlotEnabled: false,
                 addUser: {
                     id: -1,
-                    roles: 0xFFFF,
+                    roles: 0xffff,
                     username: "",
                     display_name: "",
                     current: 32000,
@@ -474,7 +498,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 },
                 editUser: {
                     id: -1,
-                    roles: 0xFFFF,
+                    roles: 0xffff,
                     username: "",
                     display_name: "",
                     current: 32000,
@@ -1061,6 +1085,9 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             nfcTags={state.editUserNfcTags}
                                             seenTags={seen_tags}
                                             nfcConfig={nfc_config}
+                                            pendingTagChanges={
+                                                state.nfcTagChanges
+                                            }
                                             onNfcTagsChange={(tags) =>
                                                 this.setState({
                                                     editUserNfcTags: tags,
@@ -1182,6 +1209,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     nfcTags={state.addUserNfcTags}
                                     seenTags={seen_tags}
                                     nfcConfig={nfc_config}
+                                    pendingTagChanges={state.nfcTagChanges}
                                     onNfcTagsChange={(tags) =>
                                         this.setState({
                                             addUserNfcTags: tags,
