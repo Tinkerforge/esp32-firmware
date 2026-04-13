@@ -23,8 +23,11 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import YaMD5 from "../../ts/yamd5";
 import { h, Fragment } from "preact";
-import { __ } from "../../ts/translation";
-import { ConfigComponent, ConfigComponentState } from "../../ts/components/config_component";
+import { translate_unchecked, __ } from "../../ts/translation";
+import {
+    ConfigComponent,
+    ConfigComponentState,
+} from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
@@ -37,19 +40,52 @@ import { EVSE_SLOT_USER } from "../evse_common/api";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Slash, Check, Users as UsersSymbol } from "react-feather";
+import { Slash, Check, Plus, X, Users as UsersSymbol } from "react-feather";
+//#if MODULE_NFC_AVAILABLE
+import { NFCSeenTag } from "../../ts/util";
+import {
+    DiscoveryResultItem,
+    DiscoveryResultGroup,
+} from "../../ts/components/discovery_result";
+//#endif
 
 export function UsersNavbar() {
-    return <NavbarItem name="users" module="users" title={__("users.navbar.users")} symbol={<UsersSymbol />} />;
+    return (
+        <NavbarItem
+            name="users"
+            module="users"
+            title={__("users.navbar.users")}
+            symbol={<UsersSymbol />}
+        />
+    );
 }
 
-type User = (API.getType['users/config']['users'][0]) & {password: string, is_invalid: number};
-type UsersConfig = Omit<API.getType['users/config'], 'users'> & {users: User[]};
+type User = API.getType["users/config"]["users"][0] & {
+    password: string;
+    is_invalid: number;
+};
+type UsersConfig = Omit<API.getType["users/config"], "users"> & {
+    users: User[];
+};
+
+interface NfcTagRef {
+    tag_type: number;
+    tag_id: string;
+}
+
+interface NfcTagChange {
+    user_id: number;
+    username: string;
+    tags: NfcTagRef[];
+}
 
 interface UsersState {
     userSlotEnabled: boolean;
     addUser: User;
     editUser: User;
+    addUserNfcTags: NfcTagRef[];
+    editUserNfcTags: NfcTagRef[];
+    nfcTagChanges: NfcTagChange[];
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -62,36 +98,367 @@ function retry_once<T>(fn: () => Promise<T>, topic: string) {
 }
 
 function remove_user(id: number) {
-    return retry_once(() => API.call("users/remove", {"id": id}, () => __("users.script.save_failed")), "users_remove_failed");
+    return retry_once(
+        () =>
+            API.call("users/remove", { id: id }, () =>
+                __("users.script.save_failed"),
+            ),
+        "users_remove_failed",
+    );
 }
 
 function modify_user(user: User) {
-    let {password, is_invalid, ...u} = user;
-    return retry_once(() => API.call("users/modify", u, () => __("users.script.save_failed")), "users_modify_failed");
+    let { password, is_invalid, ...u } = user;
+    return retry_once(
+        () => API.call("users/modify", u, () => __("users.script.save_failed")),
+        "users_modify_failed",
+    );
 }
 
 function modify_unknown_user(name: string) {
-    return retry_once(() => API.call("users/modify",
-                                    {"id": 0,
-                                     "display_name": name,
-                                     "username": null,
-                                     "current": null,
-                                     "digest_hash": null,
-                                     "roles": null},
-                                     () => __("users.script.save_failed")),
-                                     "users_modify_failed");
+    return retry_once(
+        () =>
+            API.call(
+                "users/modify",
+                {
+                    id: 0,
+                    display_name: name,
+                    username: null,
+                    current: null,
+                    digest_hash: null,
+                    roles: null,
+                },
+                () => __("users.script.save_failed"),
+            ),
+        "users_modify_failed",
+    );
 }
 
 function add_user(user: User) {
-    let {password, is_invalid, ...u} = user;
-    return retry_once(() => API.call("users/add", u, () => __("users.script.save_failed")), "users_add_failed");
+    let { password, is_invalid, ...u } = user;
+    return retry_once(
+        () => API.call("users/add", u, () => __("users.script.save_failed")),
+        "users_add_failed",
+    );
 }
 
-export class Users extends ConfigComponent<'users/config', {}, UsersState> {
+//#if MODULE_NFC_AVAILABLE
+interface NfcTagsSectionProps {
+    assignedTags: NfcTagRef[];
+    seenTags: NFCSeenTag[];
+    authorizedTags: API.getType["nfc/config"]["authorized_tags"];
+    currentUserId: number;
+    onRemoveTag: (index: number) => void;
+    onAddTag: (tag: NfcTagRef) => void;
+}
+
+function NfcTagsSection({
+    assignedTags,
+    seenTags,
+    authorizedTags,
+    currentUserId,
+    onRemoveTag,
+    onAddTag,
+}: NfcTagsSectionProps) {
+    return (
+        <FormRow label={__("users.content.nfc_tags")}>
+            {assignedTags.length > 0 ? (
+                <div class="mb-2">
+                    {assignedTags.map((tag, j) => (
+                        <div
+                            class="d-flex justify-content-between align-items-center border rounded p-2 mb-1"
+                            key={tag.tag_id}
+                        >
+                            <div>
+                                <span>{tag.tag_id}</span>{" "}
+                                <small class="text-muted">
+                                    {translate_unchecked(
+                                        `nfc.content.type_${tag.tag_type}`,
+                                    )}
+                                </small>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-danger d-flex align-middle"
+                                onClick={() => onRemoveTag(j)}
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div class="text-muted mb-2">
+                    {__("users.content.nfc_no_tags_assigned")}
+                </div>
+            )}
+            {seenTags.filter((t) => t.tag_id !== "").length > 0 ? (
+                <DiscoveryResultGroup>
+                    {seenTags
+                        .filter((t) => t.tag_id !== "")
+                        .map((t) => {
+                            let isAssignedToThisUser = assignedTags.some(
+                                (at) =>
+                                    at.tag_id === t.tag_id &&
+                                    at.tag_type === t.tag_type,
+                            );
+                            let isAssignedToOtherUser =
+                                !isAssignedToThisUser &&
+                                authorizedTags.some(
+                                    (at) =>
+                                        at.tag_id === t.tag_id &&
+                                        at.tag_type === t.tag_type &&
+                                        at.user_id !== 0 &&
+                                        (currentUserId <= 0 ||
+                                            at.user_id !== currentUserId),
+                                );
+                            return (
+                                <DiscoveryResultItem
+                                    key={t.tag_id}
+                                    title={<h5>{t.tag_id}</h5>}
+                                    labelAdd={<Plus />}
+                                    error={
+                                        isAssignedToThisUser
+                                            ? __(
+                                                  "component.discovery_result.already_added",
+                                              )
+                                            : isAssignedToOtherUser
+                                              ? __(
+                                                    "users.content.nfc_tag_already_assigned",
+                                                )
+                                              : undefined
+                                    }
+                                    onClick={() =>
+                                        onAddTag({
+                                            tag_type: t.tag_type,
+                                            tag_id: t.tag_id,
+                                        })
+                                    }
+                                >
+                                    <div>
+                                        {translate_unchecked(
+                                            `nfc.content.type_${t.tag_type}`,
+                                        )}
+                                    </div>
+                                    <div>
+                                        {translate_unchecked(
+                                            "nfc.content.last_seen",
+                                        ) +
+                                            util.format_timespan_ms(
+                                                t.last_seen,
+                                            ) +
+                                            translate_unchecked(
+                                                "nfc.content.last_seen_suffix",
+                                            )}
+                                    </div>
+                                </DiscoveryResultItem>
+                            );
+                        })}
+                </DiscoveryResultGroup>
+            ) : (
+                <div class="text-muted">
+                    {__("users.content.nfc_no_seen_tags")}
+                </div>
+            )}
+        </FormRow>
+    );
+}
+//#endif
+
+interface EditUserFormContentProps {
+    user: User;
+    errorMessage: string | undefined;
+    requirePassword: boolean;
+    //#if MODULE_NFC_AVAILABLE
+    nfcTags: NfcTagRef[];
+    seenTags: NFCSeenTag[];
+    nfcConfig: API.getType["nfc/config"];
+    onNfcTagsChange: (tags: NfcTagRef[]) => void;
+    //#endif
+    onUserChange: (changes: Partial<User>) => void;
+}
+
+function EditUserFormContent({
+    user,
+    errorMessage,
+    requirePassword,
+    //#if MODULE_NFC_AVAILABLE
+    nfcTags,
+    seenTags,
+    nfcConfig,
+    onNfcTagsChange,
+    //#endif
+    onUserChange,
+}: EditUserFormContentProps) {
+    return (
+        <>
+            <FormRow
+                label={__("users.content.edit_user_username")}
+                label_muted={__("users.content.edit_user_username_desc")}
+            >
+                <InputText
+                    value={user.username}
+                    onValue={(v) => onUserChange({ username: v })}
+                    minLength={1}
+                    maxLength={32}
+                    required
+                    class={
+                        user.is_invalid !== undefined && user.is_invalid !== 0
+                            ? "is-invalid"
+                            : ""
+                    }
+                    invalidFeedback={errorMessage}
+                />
+            </FormRow>
+            <FormRow
+                label={__("users.content.edit_user_display_name")}
+                label_muted={__("users.content.edit_user_display_name_desc")}
+            >
+                <InputText
+                    value={user.display_name}
+                    onValue={(v) => onUserChange({ display_name: v })}
+                    minLength={1}
+                    maxLength={32}
+                    required
+                />
+            </FormRow>
+            <FormRow label={__("users.content.edit_user_current")}>
+                <InputFloat
+                    unit="A"
+                    value={user.current}
+                    onValue={(v) => onUserChange({ current: v })}
+                    digits={3}
+                    min={6000}
+                    max={32000}
+                />
+            </FormRow>
+            <FormRow label={__("users.content.edit_user_password")}>
+                <InputPassword
+                    required={requirePassword}
+                    value={
+                        user.password === undefined
+                            ? user.digest_hash
+                            : user.password
+                    }
+                    onValue={(v) => onUserChange({ password: v })}
+                    clearPlaceholder={__("users.script.login_disabled")}
+                    clearSymbol={<Slash />}
+                    allowAPIClear
+                />
+            </FormRow>
+            {/*#if MODULE_NFC_AVAILABLE*/}
+            <NfcTagsSection
+                assignedTags={nfcTags}
+                seenTags={seenTags}
+                authorizedTags={nfcConfig.authorized_tags}
+                currentUserId={user.id}
+                onRemoveTag={(j) =>
+                    onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
+                }
+                onAddTag={(tag) => onNfcTagsChange(nfcTags.concat(tag))}
+            />
+            {/*#endif*/}
+        </>
+    );
+}
+
+interface AddUserFormContentProps {
+    user: User;
+    errorMessage: string | undefined;
+    //#if MODULE_NFC_AVAILABLE
+    nfcTags: NfcTagRef[];
+    seenTags: NFCSeenTag[];
+    nfcConfig: API.getType["nfc/config"];
+    onNfcTagsChange: (tags: NfcTagRef[]) => void;
+    //#endif
+    onUserChange: (changes: Partial<User>) => void;
+}
+
+function AddUserFormContent({
+    user,
+    errorMessage,
+    //#if MODULE_NFC_AVAILABLE
+    nfcTags,
+    seenTags,
+    nfcConfig,
+    onNfcTagsChange,
+    //#endif
+    onUserChange,
+}: AddUserFormContentProps) {
+    return (
+        <>
+            <FormRow
+                label={__("users.content.add_user_username")}
+                label_muted={__("users.content.add_user_username_desc")}
+            >
+                <InputText
+                    value={user.username}
+                    onValue={(v) => onUserChange({ username: v })}
+                    required
+                    minLength={1}
+                    maxLength={32}
+                    class={
+                        user.is_invalid !== undefined && user.is_invalid !== 0
+                            ? "is-invalid"
+                            : ""
+                    }
+                    invalidFeedback={errorMessage}
+                />
+            </FormRow>
+            <FormRow
+                label={__("users.content.add_user_display_name")}
+                label_muted={__("users.content.add_user_display_name_desc")}
+            >
+                <InputText
+                    value={user.display_name}
+                    onValue={(v) => onUserChange({ display_name: v })}
+                    required
+                    minLength={1}
+                    maxLength={32}
+                />
+            </FormRow>
+            <FormRow label={__("users.content.add_user_current")}>
+                <InputFloat
+                    unit="A"
+                    value={user.current}
+                    onValue={(v) => onUserChange({ current: v })}
+                    digits={3}
+                    min={6000}
+                    max={32000}
+                />
+            </FormRow>
+            <FormRow label={__("users.content.add_user_password")}>
+                <InputPassword
+                    maxLength={64}
+                    value={user.password}
+                    onValue={(v) => onUserChange({ password: v })}
+                    hideClear
+                    placeholder={__("users.content.add_user_password_desc")}
+                />
+            </FormRow>
+            {/*#if MODULE_NFC_AVAILABLE*/}
+            <NfcTagsSection
+                assignedTags={nfcTags}
+                seenTags={seenTags}
+                authorizedTags={nfcConfig.authorized_tags}
+                currentUserId={-1}
+                onRemoveTag={(j) =>
+                    onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
+                }
+                onAddTag={(tag) => onNfcTagsChange(nfcTags.concat(tag))}
+            />
+            {/*#endif*/}
+        </>
+    );
+}
+
+export class Users extends ConfigComponent<"users/config", {}, UsersState> {
     constructor() {
-        super('users/config',
-              () => __("users.script.save_failed"),
-              () => __("users.script.reboot_content_changed"), {
+        super(
+            "users/config",
+            () => __("users.script.save_failed"),
+            () => __("users.script.reboot_content_changed"),
+            {
                 userSlotEnabled: false,
                 addUser: {
                     id: -1,
@@ -113,21 +480,35 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     password: "",
                     is_invalid: 0,
                 },
+                addUserNfcTags: [],
+                editUserNfcTags: [],
+                nfcTagChanges: [],
             },
         );
 
-//#if MODULE_EVSE_COMMON_AVAILABLE
-        util.addApiEventListener('evse/slots', () => {
-            this.setState({userSlotEnabled: API.get('evse/slots')[EVSE_SLOT_USER].active});
+        //#if MODULE_EVSE_COMMON_AVAILABLE
+        util.addApiEventListener("evse/slots", () => {
+            this.setState({
+                userSlotEnabled: API.get("evse/slots")[EVSE_SLOT_USER].active,
+            });
         });
-//#endif
+        //#endif
+
+        //#if MODULE_NFC_AVAILABLE
+        util.addApiEventListener("nfc/seen_tags", () => {
+            this.forceUpdate();
+        });
+        //#endif
     }
 
     isChangedUser(changed_user: User): boolean {
         let users = API.get("users/config").users;
 
         for (let user of users) {
-            if (user.username == changed_user.username && user.id == changed_user.id)
+            if (
+                user.username == changed_user.username &&
+                user.id == changed_user.id
+            )
                 return false;
         }
 
@@ -143,25 +524,35 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             new_users[i].is_invalid = 0;
 
             for (let a = 0; a < cfg.users.length; a++) {
-                if (this.isChangedUser(cfg.users[i]) &&  cfg.users[i].username == cfg.users[a].username && a != i) {
+                if (
+                    this.isChangedUser(cfg.users[i]) &&
+                    cfg.users[i].username == cfg.users[a].username &&
+                    a != i
+                ) {
                     new_users[i].is_invalid = 1;
-                    this.setState({users: new_users});
+                    this.setState({ users: new_users });
                     save_allowed = false;
                     break;
-                }
-                else if (this.isChangedUser(cfg.users[i]) && cfg.next_user_id == 0) {
+                } else if (
+                    this.isChangedUser(cfg.users[i]) &&
+                    cfg.next_user_id == 0
+                ) {
                     new_users[i].is_invalid = 3;
-                    this.setState({users: new_users});
+                    this.setState({ users: new_users });
                     save_allowed = false;
                     break;
                 }
             }
 
             for (let user of all_usernames[0]) {
-                if (this.isChangedUser(cfg.users[i]) && cfg.users[i].username == user &&
-                        (cfg.users[i].is_invalid == undefined || cfg.users[i].is_invalid == 0)) {
+                if (
+                    this.isChangedUser(cfg.users[i]) &&
+                    cfg.users[i].username == user &&
+                    (cfg.users[i].is_invalid == undefined ||
+                        cfg.users[i].is_invalid == 0)
+                ) {
                     new_users[i].is_invalid = 2;
-                    this.setState({users: new_users});
+                    this.setState({ users: new_users });
                     save_allowed = false;
                     break;
                 }
@@ -172,39 +563,52 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     async save_authentication_config(enabled: boolean) {
-        await API.call_unchecked('users/http_auth_update', {
-            "enabled": enabled
-        },
-        () => __("users.script.save_failed"));
+        await API.call_unchecked(
+            "users/http_auth_update",
+            {
+                enabled: enabled,
+            },
+            () => __("users.script.save_failed"),
+        );
     }
 
     user_has_password(u: User) {
-        return (u.digest_hash == null &&    // user is known and has password set, which is censored
-                u.password !== "") ||       // password will not be removed, an empty string as password would mean to remove the password
-               (u.digest_hash == "" &&      // user is new and/or has currently no password set
+        return (
+            (u.digest_hash == null && // user is known and has password set, which is censored
+                u.password !== "") || // password will not be removed, an empty string as password would mean to remove the password
+            (u.digest_hash == "" && // user is new and/or has currently no password set
                 u.password !== undefined &&
-                u.password !== null &&      // password will be changed/set
-                u.password !== "")          // password will not be removed, an empty string as password would mean to remove the password
+                u.password !== null && // password will be changed/set
+                u.password !== "")
+        ); // password will not be removed, an empty string as password would mean to remove the password
     }
 
     get_password_replacement(u: User) {
         if (!this.user_has_password(u)) {
-            return '';
+            return "";
         }
 
         if (u.password !== undefined && u.password !== null) {
-            return '\u2022'.repeat(u.password.length);
+            return "\u2022".repeat(u.password.length);
         }
 
-        return <span class="text-muted">{__("component.input_password.unchanged")}</span>;
+        return (
+            <span class="text-muted">
+                {__("component.input_password.unchanged")}
+            </span>
+        );
     }
 
     http_auth_allowed() {
-        return (this.state as Readonly<UsersState & UsersConfig & ConfigComponentState>).users.some(u => this.user_has_password(u))
+        return (
+            this.state as Readonly<
+                UsersState & UsersConfig & ConfigComponentState
+            >
+        ).users.some((u) => this.user_has_password(u));
     }
 
     override async sendSave(topic: "users/config", new_config: UsersConfig) {
-        let old_config = API.get('users/config');
+        let old_config = API.get("users/config");
         new_config.http_auth_enabled &&= this.http_auth_allowed();
         if (old_config.http_auth_enabled && !new_config.http_auth_enabled) {
             // If we want to disable authentication, do this first,
@@ -213,17 +617,41 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             await this.save_authentication_config(new_config.http_auth_enabled);
         }
 
-        if (new_config.users[0].display_name == __("charge_tracker.script.unknown_user"))
-            new_config.users[0].display_name = "Anonymous"
+        if (
+            new_config.users[0].display_name ==
+            __("charge_tracker.script.unknown_user")
+        )
+            new_config.users[0].display_name = "Anonymous";
 
         if (new_config.users[0].display_name === "")
             await modify_unknown_user("Anonymous");
-        else if (new_config.users[0].display_name != old_config.users[0].display_name)
+        else if (
+            new_config.users[0].display_name != old_config.users[0].display_name
+        )
             await modify_unknown_user(new_config.users[0].display_name);
 
-        let ids_to_remove = old_config.users.slice(1).filter(uOld => !new_config.users.slice(1).some(uNew => uOld.id == uNew.id)).map(uOld => uOld.id);
-        let users_to_modify = new_config.users.slice(1).filter(uNew => old_config.users.slice(1).some(uOld => uNew.id == uOld.id));
-        let users_to_add = new_config.users.slice(1).filter(uNew => !old_config.users.slice(1).some(uOld => uNew.id == uOld.id));
+        let ids_to_remove = old_config.users
+            .slice(1)
+            .filter(
+                (uOld) =>
+                    !new_config.users
+                        .slice(1)
+                        .some((uNew) => uOld.id == uNew.id),
+            )
+            .map((uOld) => uOld.id);
+        let users_to_modify = new_config.users
+            .slice(1)
+            .filter((uNew) =>
+                old_config.users.slice(1).some((uOld) => uNew.id == uOld.id),
+            );
+        let users_to_add = new_config.users
+            .slice(1)
+            .filter(
+                (uNew) =>
+                    !old_config.users
+                        .slice(1)
+                        .some((uOld) => uNew.id == uOld.id),
+            );
 
         for (let i of ids_to_remove) {
             await remove_user(i);
@@ -231,30 +659,32 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         for (let u of users_to_modify) {
             // Don't hash if u.password is falsy, i.e. null, undefined or the empty string
-            u.digest_hash = u.password ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
+            u.digest_hash = u.password
+                ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password)
+                : u.password;
             // Always send digest_hash, but as null if we don't want to change it.
             // digest_hash can be undefined if this user was not modified.
-            if (u.digest_hash === undefined)
-                u.digest_hash = null;
+            if (u.digest_hash === undefined) u.digest_hash = null;
             await modify_user(u);
         }
 
-        let next_user_id = API.get('users/config').next_user_id;
+        let next_user_id = API.get("users/config").next_user_id;
 
-        outer_loop:
-        for (let u of users_to_add) {
+        outer_loop: for (let u of users_to_add) {
             // Don't hash if u.password is falsy, i.e. null, or the empty string.
             // u.password can't be undefined (as is handled above when modifying users),
             // because adding a user sets password to "" if nothing was entered.
-            u.digest_hash = u.password ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
+            u.digest_hash = u.password
+                ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password)
+                : u.password;
             u.id = next_user_id;
             await add_user(u);
             for (let i = 0; i < 20; ++i) {
-                if (API.get('users/config').next_user_id != next_user_id) {
-                    next_user_id = API.get('users/config').next_user_id;
+                if (API.get("users/config").next_user_id != next_user_id) {
+                    next_user_id = API.get("users/config").next_user_id;
                     continue outer_loop;
                 }
-                await util.wait(100)
+                await util.wait(100);
             }
             // fallback: just assume the next id is free
             next_user_id = Math.max(1, (next_user_id + 1) % 256);
@@ -262,27 +692,101 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         await this.save_authentication_config(new_config.http_auth_enabled);
 
-//#if MODULE_EVSE_COMMON_AVAILABLE
-        await API.save('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, () => __("evse.script.save_failed"), () => __("users.script.reboot_content_changed"));
-//#endif
+        //#if MODULE_EVSE_COMMON_AVAILABLE
+        await API.save(
+            "evse/user_enabled",
+            { enabled: this.state.userSlotEnabled },
+            () => __("evse.script.save_failed"),
+            () => __("users.script.reboot_content_changed"),
+        );
+        //#endif
+
+        //#if MODULE_NFC_AVAILABLE
+        if (
+            (this.state.nfcTagChanges && this.state.nfcTagChanges.length > 0) ||
+            ids_to_remove.length > 0
+        ) {
+            let nfc_config = API.get("nfc/config");
+            let authorized_tags = nfc_config.authorized_tags.slice();
+
+            // Remove NFC tags for deleted users
+            for (const id of ids_to_remove) {
+                authorized_tags = authorized_tags.filter(
+                    (t) => t.user_id !== id,
+                );
+            }
+
+            // Apply pending NFC tag changes
+            for (const change of this.state.nfcTagChanges) {
+                let userId = change.user_id;
+                const remove_idx = ids_to_remove.find((v) => v === userId)
+                // Skip changes for users that are being deleted
+                if (
+                    remove_idx !== undefined
+                    && remove_idx !== -1
+                ) {
+                      continue;
+                }
+
+                // For new users, find the real ID by username
+                if (userId <= 0) {
+                    let currentUsers = API.get("users/config").users;
+                    let found = currentUsers.find(
+                        (u) => u.username === change.username,
+                    );
+                    if (found) {
+                        userId = found.id;
+                    } else {
+                      console.log("B");
+                        continue;
+                    }
+                }
+
+                // Remove old tags for this user
+                authorized_tags = authorized_tags.filter(
+                    (t) => t.user_id !== userId,
+                );
+
+                // Add new tags
+            for (const tag of change.tags) {
+                    authorized_tags.push({
+                        user_id: userId,
+                        tag_type: tag.tag_type,
+                        tag_id: tag.tag_id,
+                    });
+                }
+            }
+
+            await API.save(
+                "nfc/config",
+                { ...nfc_config, authorized_tags: authorized_tags },
+                () => __("users.script.save_failed"),
+            );
+            this.setState({ nfcTagChanges: [] });
+        }
+        //#endif
     }
 
     setUser(i: number, val: Partial<User>) {
         // We have to copy the users array here to make sure the change detection in sendSave works.
         let users = this.state.users.slice(0);
 
-        users[i] = {...users[i], ...val};
-        this.setState({users: users});
+        users[i] = { ...users[i], ...val };
+        this.setState({ users: users });
     }
 
+ (web/users: add UI to allow adding NFC-tags when adding or editing a user)
     async checkUsername(user: User, ignore_i: number): Promise<number> {
         for (let i = 0; i < this.state.users.length; ++i) {
-            if (i != ignore_i && this.state.users[i].username.trim() == user.username.trim()) {
+            if (
+                i != ignore_i &&
+                this.state.users[i].username.trim() == user.username.trim()
+            ) {
                 return 1;
             }
         }
 
-        if (API.get('users/config').next_user_id == 0) {
+        if (API.get("users/config").next_user_id == 0) {
             return 3;
         }
 
@@ -313,40 +817,62 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     }
 
     require_password(user: User): boolean {
-        let lst = API.get("users/config").users.filter(u => u.id == user.id);
-        if (lst.length != 1)
-            return false;
+        let lst = API.get("users/config").users.filter((u) => u.id == user.id);
+        if (lst.length != 1) return false;
 
         let configured = lst[0];
-        if (configured.digest_hash === "")
-            return false;
+        if (configured.digest_hash === "") return false;
 
         return user.username != configured.username;
     }
 
-    override render(props: {}, state: UsersConfig & UsersState & ConfigComponentState) {
-        if (!util.render_allowed())
-            return <SubPage name="users" />;
+    override render(
+        props: {},
+        state: UsersConfig & UsersState & ConfigComponentState,
+    ) {
+        if (!util.render_allowed()) return <SubPage name="users" />;
 
-        const MAX_ACTIVE_USERS = API.hasModule("esp32_ethernet_brick") ? 33 : 17;
+        const MAX_ACTIVE_USERS = API.hasModule("esp32_ethernet_brick")
+            ? 33
+            : 17;
 
         let auth_allowed = this.http_auth_allowed();
 
         // Only allow enabling the user slot if there are at least two users (anonymous counts as one)
         let user_slot_allowed = state.users.length > 1;
 
+        //#if MODULE_NFC_AVAILABLE
+        let seen_tags = util.get_all_seen_tags();
+        let nfc_config = API.get("nfc/config");
+        //#endif
+
         return (
             <SubPage name="users">
-                <ConfigForm id="users_config_form" title={__("users.content.users")} isDirty={this.isDirty()} onSave={this.save}
-                    onDirtyChange={this.setDirty}>
+
+                <ConfigForm
+                    id="users_config_form"
+                    title={__("users.content.users")}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onDirtyChange={this.setDirty}
+                >
                     <FormRow label={__("users.content.enable_authentication")}>
-                        <Switch desc={__("users.content.enable_authentication_desc")}
-                                checked={auth_allowed && state.http_auth_enabled}
-                                onClick={this.toggle("http_auth_enabled")}
-                                disabled={!auth_allowed}
-                                className={!auth_allowed && state.http_auth_enabled ? "is-invalid" : ""}
+                        <Switch
+                            desc={__(
+                                "users.content.enable_authentication_desc",
+                            )}
+                            checked={auth_allowed && state.http_auth_enabled}
+                            onClick={this.toggle("http_auth_enabled")}
+                            disabled={!auth_allowed}
+                            className={
+                                !auth_allowed && state.http_auth_enabled
+                                    ? "is-invalid"
+                                    : ""
+                            }
                         />
-                        <div class="invalid-feedback">{__("users.content.enable_authentication_invalid")}</div>
+                        <div class="invalid-feedback">
+                            {__("users.content.enable_authentication_invalid")}
+                        </div>
                     </FormRow>
 
                     <FormRow label={__("users.content.evse_user_description")} help={API.hasFeature("nfc") ? __("users.content.evse_user_description_help") : undefined}>
@@ -359,139 +885,299 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                     </FormRow>
 
                     <FormRow label={__("users.content.unknown_username")}>
-                        <InputPassword maxLength={32}
-                                       value={state.users[0].display_name == "Anonymous" ? __("charge_tracker.script.unknown_user") : state.users[0].display_name}
-                                       onValue={(v) => this.setUser(0, {display_name: v})}
-                                       showAlways
-                                       />
+                        <InputPassword
+                            maxLength={32}
+                            value={
+                                state.users[0].display_name == "Anonymous"
+                                    ? __("charge_tracker.script.unknown_user")
+                                    : state.users[0].display_name
+                            }
+                            onValue={(v) =>
+                                this.setUser(0, { display_name: v })
+                            }
+                            showAlways
+                        />
                     </FormRow>
 
                     <FormRow label={__("users.content.authorized_users")}>
-
-                        <Table columnNames={[__("users.content.table_username"), __("users.content.table_display_name"), __("users.content.table_current"), __("users.content.table_password")]}
-                            rows={state.users.slice(1).map((user, i) =>
-                                { return {
+                        <Table
+                            columnNames={[
+                                __("users.content.table_username"),
+                                __("users.content.table_display_name"),
+                                __("users.content.table_current"),
+                                __("users.content.table_password"),
+                            ]}
+                            rows={state.users.slice(1).map((user, i) => {
+                                return {
                                     columnValues: [
                                         user.username,
                                         user.display_name,
-                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
-                                        this.user_has_password(user) ? <Check/> : ''
+                                        util.toLocaleFixed(
+                                            user.current / 1000,
+                                            3,
+                                        ) + " A",
+                                        this.user_has_password(user) ? (
+                                            <Check />
+                                        ) : (
+                                            ""
+                                        ),
                                     ],
                                     fieldValues: [
                                         user.username,
                                         user.display_name,
-                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
-                                        this.user_has_password(user) ? this.get_password_replacement(user) : <span class="text-muted">{__("users.script.login_disabled")}</span>
+                                        util.toLocaleFixed(
+                                            user.current / 1000,
+                                            3,
+                                        ) + " A",
+                                        this.user_has_password(user) ? (
+                                            this.get_password_replacement(user)
+                                        ) : (
+                                            <span class="text-muted">
+                                                {__(
+                                                    "users.script.login_disabled",
+                                                )}
+                                            </span>
+                                        ),
                                     ],
-                                    editTitle: __("users.content.edit_user_title"),
-                                    onEditShow: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
-                                    onEditGetChildren: () => [<>
-                                        <FormRow label={__("users.content.edit_user_username")} label_muted={__("users.content.edit_user_username_desc")}>
-                                            <InputText
-                                                value={state.editUser.username}
-                                                onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
-                                                minLength={1}
-                                                maxLength={32}
-                                                required
-                                                class={state.editUser.is_invalid != undefined && state.editUser.is_invalid != 0 ? "is-invalid" : ""}
-                                                invalidFeedback={this.errorMessage(state.editUser)} />
-                                        </FormRow>
-                                        <FormRow label={__("users.content.edit_user_display_name")} label_muted={__("users.content.edit_user_display_name_desc")}>
-                                            <InputText
-                                                value={state.editUser.display_name}
-                                                onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
-                                                minLength={1}
-                                                maxLength={32}
-                                                required />
-                                        </FormRow>
-                                        <FormRow label={__("users.content.edit_user_current")}>
-                                            <InputFloat
-                                                unit="A"
-                                                value={state.editUser.current}
-                                                onValue={(v) => this.setState({editUser: {...state.editUser, current: v}})}
-                                                digits={3}
-                                                min={6000}
-                                                max={32000} />
-                                        </FormRow>
-                                        <FormRow label={__("users.content.edit_user_password")}>
-                                            <InputPassword
-                                                required={this.require_password(state.editUser)}
-                                                value={state.editUser.password === undefined ? state.editUser.digest_hash : state.editUser.password}
-                                                onValue={(v) => this.setState({editUser: {...state.editUser, password: v}})}
-                                                clearPlaceholder={__("users.script.login_disabled")}
-                                                clearSymbol={<Slash/>}
-                                                allowAPIClear />
-                                        </FormRow>
-                                    </>],
-                                    onEditCheck: async () => {
-                                        let is_invalid = await this.checkUsername(state.editUser, i + 1);
-
-                                        return new Promise<boolean>((resolve) => {
-                                            this.setState({editUser: {...state.editUser, is_invalid: is_invalid}}, () => resolve(is_invalid == undefined || is_invalid == 0));
+                                    editTitle: __(
+                                        "users.content.edit_user_title",
+                                    ),
+                                    onEditShow: async () => {
+                                        let nfcTags: NfcTagRef[] = [];
+                                        //#if MODULE_NFC_AVAILABLE
+                                        let pendingChange =
+                                            state.nfcTagChanges.find(
+                                                (c) =>
+                                                    (user.id > 0 &&
+                                                        c.user_id ===
+                                                            user.id) ||
+                                                    (user.id <= 0 &&
+                                                        c.username ===
+                                                            user.username),
+                                            );
+                                        if (pendingChange) {
+                                            nfcTags =
+                                                pendingChange.tags.slice();
+                                        } else if (user.id > 0) {
+                                            nfcTags = nfc_config.authorized_tags
+                                                .filter(
+                                                    (t) =>
+                                                        t.user_id === user.id,
+                                                )
+                                                .map((t) => ({
+                                                    tag_type: t.tag_type,
+                                                    tag_id: t.tag_id,
+                                                }));
+                                        }
+                                        //#endif
+                                        this.setState({
+                                            editUser: {
+                                                id: user.id,
+                                                roles: user.roles,
+                                                username: user.username,
+                                                display_name: user.display_name,
+                                                current: user.current,
+                                                digest_hash: user.digest_hash,
+                                                password: user.password,
+                                                is_invalid: user.is_invalid,
+                                            },
+                                            editUserNfcTags: nfcTags,
                                         });
+                                    },
+                                    onEditGetChildren: () => [
+                                        <EditUserFormContent
+                                            user={state.editUser}
+                                            errorMessage={this.errorMessage(
+                                                state.editUser,
+                                            )}
+                                            requirePassword={this.require_password(
+                                                state.editUser,
+                                            )}
+                                            //#if MODULE_NFC_AVAILABLE
+                                            nfcTags={state.editUserNfcTags}
+                                            seenTags={seen_tags}
+                                            nfcConfig={nfc_config}
+                                            onNfcTagsChange={(tags) =>
+                                                this.setState({
+                                                    editUserNfcTags: tags,
+                                                })
+                                            }
+                                            //#endif
+                                            onUserChange={(changes) =>
+                                                this.setState({
+                                                    editUser: {
+                                                        ...state.editUser,
+                                                        ...changes,
+                                                    },
+                                                })
+                                            }
+                                        />,
+                                    ],
+                                    onEditCheck: async () => {
+                                        let is_invalid =
+                                            await this.checkUsername(
+                                                state.editUser,
+                                                i + 1,
+                                            );
+
+                                        return new Promise<boolean>(
+                                            (resolve) => {
+                                                this.setState(
+                                                    {
+                                                        editUser: {
+                                                            ...state.editUser,
+                                                            is_invalid:
+                                                                is_invalid,
+                                                        },
+                                                    },
+                                                    () =>
+                                                        resolve(
+                                                            is_invalid ==
+                                                                undefined ||
+                                                                is_invalid == 0,
+                                                        ),
+                                                );
+                                            },
+                                        );
                                     },
                                     onEditSubmit: async () => {
                                         this.setUser(i + 1, state.editUser);
+                                        //#if MODULE_NFC_AVAILABLE
+                                        let nfcTagChanges =
+                                            state.nfcTagChanges.filter((c) => {
+                                                if (state.editUser.id > 0)
+                                                    return (
+                                                        c.user_id !==
+                                                        state.editUser.id
+                                                    );
+                                                return (
+                                                    c.username !==
+                                                    state.editUser.username
+                                                );
+                                            });
+                                        nfcTagChanges.push({
+                                            user_id: state.editUser.id,
+                                            username: state.editUser.username,
+                                            tags: state.editUserNfcTags.slice(),
+                                        });
+                                        this.setState({
+                                            nfcTagChanges: nfcTagChanges,
+                                        });
+                                        //#endif
                                         this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
-                                        this.setState({users: state.users.filter((v, idx) => idx != i + 1)});
+                                        this.setState({
+                                            users: state.users.filter(
+                                                (v, idx) => idx != i + 1,
+                                            ),
+                                        });
                                         this.setDirty(true);
                                         return true;
-                                    }}
-                                })
+                                    },
+                                };
+                            })}
+                            addEnabled={
+                                API.get("users/config").next_user_id != 0 &&
+                                state.users.length < MAX_ACTIVE_USERS
                             }
-                            addEnabled={API.get('users/config').next_user_id != 0 && state.users.length < MAX_ACTIVE_USERS}
                             addTitle={__("users.content.add_user_title")}
                             // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
-                            addMessage={API.get('users/config').next_user_id == 0 ? __("users.content.add_user_user_ids_exhausted") : __("users.content.add_user_message")(state.users.length - 1, MAX_ACTIVE_USERS - 1)}
-                            onAddShow={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
-                            onAddGetChildren={() => [<>
-                                <FormRow label={__("users.content.add_user_username")} label_muted={__("users.content.add_user_username_desc")}>
-                                    <InputText
-                                        value={state.addUser.username}
-                                        onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
-                                        required
-                                        minLength={1}
-                                        maxLength={32}
-                                        class={state.addUser.is_invalid != undefined && state.addUser.is_invalid != 0 ? "is-invalid" : ""}
-                                        invalidFeedback={this.errorMessage(state.addUser)} />
-                                </FormRow>
-                                <FormRow label={__("users.content.add_user_display_name")} label_muted={__("users.content.add_user_display_name_desc")}>
-                                    <InputText
-                                        value={state.addUser.display_name}
-                                        onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
-                                        required
-                                        minLength={1}
-                                        maxLength={32} />
-                                </FormRow>
-                                <FormRow label={__("users.content.add_user_current")}>
-                                    <InputFloat
-                                        unit="A"
-                                        value={state.addUser.current}
-                                        onValue={(v) => this.setState({addUser: {...state.addUser, current: v}})}
-                                        digits={3}
-                                        min={6000}
-                                        max={32000} />
-                                </FormRow>
-                                <FormRow label={__("users.content.add_user_password")}>
-                                    <InputPassword
-                                        maxLength={64}
-                                        value={state.addUser.password}
-                                        onValue={(v) => this.setState({addUser: {...state.addUser, password: v}})}
-                                        hideClear
-                                        placeholder={__("users.content.add_user_password_desc")} />
-                                </FormRow>
-                            </>]}
+                            addMessage={
+                                API.get("users/config").next_user_id == 0
+                                    ? __(
+                                          "users.content.add_user_user_ids_exhausted",
+                                      )
+                                    : __("users.content.add_user_message")(
+                                          state.users.length - 1,
+                                          MAX_ACTIVE_USERS - 1,
+                                      )
+                            }
+                            onAddShow={async () =>
+                                this.setState({
+                                    addUser: {
+                                        id: -1,
+                                        roles: 0xffff,
+                                        username: "",
+                                        display_name: "",
+                                        current: 32000,
+                                        digest_hash: "",
+                                        password: "",
+                                        is_invalid: 0,
+                                    },
+                                    addUserNfcTags: [],
+                                })
+                            }
+                            onAddGetChildren={() => [
+                                <AddUserFormContent
+                                    user={state.addUser}
+                                    errorMessage={this.errorMessage(
+                                        state.addUser,
+                                    )}
+                                    //#if MODULE_NFC_AVAILABLE
+                                    nfcTags={state.addUserNfcTags}
+                                    seenTags={seen_tags}
+                                    nfcConfig={nfc_config}
+                                    onNfcTagsChange={(tags) =>
+                                        this.setState({
+                                            addUserNfcTags: tags,
+                                        })
+                                    }
+                                    //#endif
+                                    onUserChange={(changes) =>
+                                        this.setState({
+                                            addUser: {
+                                                ...state.addUser,
+                                                ...changes,
+                                            },
+                                        })
+                                    }
+                                />,
+                            ]}
                             onAddCheck={async () => {
-                                let is_invalid = await this.checkUsername(state.addUser, undefined);
+                                let is_invalid = await this.checkUsername(
+                                    state.addUser,
+                                    undefined,
+                                );
 
                                 return new Promise<boolean>((resolve) => {
-                                    this.setState({addUser: {...state.addUser, is_invalid: is_invalid}}, () => resolve(is_invalid == undefined || is_invalid == 0));
+                                    this.setState(
+                                        {
+                                            addUser: {
+                                                ...state.addUser,
+                                                is_invalid: is_invalid,
+                                            },
+                                        },
+                                        () =>
+                                            resolve(
+                                                is_invalid == undefined ||
+                                                    is_invalid == 0,
+                                            ),
+                                    );
                                 });
                             }}
                             onAddSubmit={async () => {
-                                this.setState({users: state.users.concat({...state.addUser, id: -1, roles: 0xFFFF})});
+                                this.setState({
+                                    users: state.users.concat({
+                                        ...state.addUser,
+                                        id: -1,
+                                        roles: 0xffff,
+                                    }),
+                                });
+                                //#if MODULE_NFC_AVAILABLE
+                                if (state.addUserNfcTags.length > 0) {
+                                    let nfcTagChanges =
+                                        state.nfcTagChanges.slice();
+                                    nfcTagChanges.push({
+                                        user_id: -1,
+                                        username: state.addUser.username,
+                                        tags: state.addUserNfcTags.slice(),
+                                    });
+                                    this.setState({
+                                        nfcTagChanges: nfcTagChanges,
+                                    });
+                                }
+                                //#endif
                                 this.setDirty(true);
                             }}
                         />
@@ -503,9 +1189,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 }
 
 export function getAllUsernames() {
-    return util.download('/users/all_usernames', true)
-        .then(blob => blob.arrayBuffer())
-        .then(buffer => {
+    return util
+        .download("/users/all_usernames", true)
+        .then((blob) => blob.arrayBuffer())
+        .then((buffer) => {
             let usernames: string[] = [];
             let display_names: string[] = [];
 
@@ -529,8 +1216,6 @@ export function getAllUsernames() {
         });
 }
 
-export function pre_init() {
-}
+export function pre_init() {}
 
-export function init() {
-}
+export function init() {}

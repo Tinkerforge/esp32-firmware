@@ -2,8 +2,7 @@
 import { h } from "preact";
 let x = {
     "users": {
-        "status": {
-        },
+        "status": {},
         "navbar": {
             "users": "User Management"
         },
@@ -11,8 +10,10 @@ let x = {
             "users": "User Management",
 
             "enable_authentication": "Login enabled",
-            "enable_authentication_desc": "A successful login as one of the configured users is required to open the Web interface or call the HTTP API",
-            "enable_authentication_invalid": "To enable the login at least one user with a configured password is required.",
+            "enable_authentication_desc":
+                "A successful login as one of the configured users is required to open the Web interface or call the HTTP API",
+            "enable_authentication_invalid":
+                "To enable the login at least one user with a configured password is required.",
 
             "authorized_users": "Authorized users",
 
@@ -31,21 +32,32 @@ let x = {
             "add_user_current": "Maximum charge current",
             "add_user_password": "Password",
             "add_user_password_desc": "Login disabled",
-            "add_user_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
-            "add_user_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
+            "add_user_message": /*SFN*/ (have: number, max: number) =>
+                `${have} of ${max} users configured` /*NF*/,
+            "add_user_user_ids_exhausted":
+                "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
 
             "edit_user_title": "Edit user",
             "edit_user_username": "Username",
             "edit_user_username_desc": "to log in to the web interface",
             "edit_user_display_name": "Display name",
-            "edit_user_display_name_desc": "shown in web interface and charge log",
+            "edit_user_display_name_desc":
+                "shown in web interface and charge log",
             "edit_user_current": "Maximum charge current",
             "edit_user_password": "Password",
 
             "evse_user_description": "Charge release",
 
-            "evse_user_enable": <>Requires a user authorization (via <a href="#nfc">NFC tag</a>) to charge</>,
-            "evse_user_enable_invalid": "At least one user is required for the charge release."
+            "evse_user_enable": <> Requires a user authorization (via <a href="#nfc">NFC tag</a>) to charge </>
+,
+            "evse_user_enable_invalid":
+                "At least one user is required for the charge release.",
+
+            "nfc_tags": "NFC Tags",
+            "nfc_no_tags_assigned": "No NFC tags assigned",
+            "nfc_no_seen_tags":
+                "No NFC tags seen recently. Hold a tag to the charger to detect it.",
+            "nfc_tag_already_assigned": "Assigned to another user"
         },
         "script": {
             "reboot_content_changed": "user settings",
