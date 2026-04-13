@@ -57,8 +57,9 @@ let x = {
             "nfc_no_tags_assigned": "Keine NFC-Tags zugeordnet",
             "nfc_no_seen_tags":
                 "In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an die Wallbox, um es zu erkennen.",
-            "nfc_tag_already_assigned":
-                "Bereits einem anderen Benutzer zugeordnet"
+            "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
+                `Bereits Benutzer "${other_name}" zugeordnet`
+                /*NF*/
         },
         "script": {
             "reboot_content_changed": "Benutzereinstellungen",
