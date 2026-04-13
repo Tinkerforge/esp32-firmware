@@ -47,6 +47,7 @@ import {
     DiscoveryResultItem,
     DiscoveryResultGroup,
 } from "../../ts/components/discovery_result";
+import { InputSelect } from "../../ts/components/input_select";
 //#endif
 
 export function UsersNavbar() {
@@ -86,6 +87,7 @@ interface UsersState {
     addUserNfcTags: NfcTagRef[];
     editUserNfcTags: NfcTagRef[];
     nfcTagChanges: NfcTagChange[];
+    nfcDeadtime: number;
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -483,6 +485,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 addUserNfcTags: [],
                 editUserNfcTags: [],
                 nfcTagChanges: [],
+                nfcDeadtime: 0,
             },
         );
 
@@ -497,6 +500,12 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#if MODULE_NFC_AVAILABLE
         util.addApiEventListener("nfc/seen_tags", () => {
             this.forceUpdate();
+        });
+
+        util.addApiEventListener("nfc/config", () => {
+            this.setState({
+                nfcDeadtime: API.get("nfc/config").deadtime_post_start,
+            });
         });
         //#endif
     }
@@ -704,7 +713,8 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#if MODULE_NFC_AVAILABLE
         if (
             (this.state.nfcTagChanges && this.state.nfcTagChanges.length > 0) ||
-            ids_to_remove.length > 0
+            ids_to_remove.length > 0 ||
+            this.state.nfcDeadtime !== API.get("nfc/config").deadtime_post_start
         ) {
             let nfc_config = API.get("nfc/config");
             let authorized_tags = nfc_config.authorized_tags.slice();
@@ -719,13 +729,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             // Apply pending NFC tag changes
             for (const change of this.state.nfcTagChanges) {
                 let userId = change.user_id;
-                const remove_idx = ids_to_remove.find((v) => v === userId)
+                const remove_idx = ids_to_remove.find((v) => v === userId);
                 // Skip changes for users that are being deleted
-                if (
-                    remove_idx !== undefined
-                    && remove_idx !== -1
-                ) {
-                      continue;
+                if (remove_idx !== undefined && remove_idx !== -1) {
+                    continue;
                 }
 
                 // For new users, find the real ID by username
@@ -737,7 +744,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     if (found) {
                         userId = found.id;
                     } else {
-                      console.log("B");
                         continue;
                     }
                 }
@@ -748,7 +754,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 );
 
                 // Add new tags
-            for (const tag of change.tags) {
+                for (const tag of change.tags) {
                     authorized_tags.push({
                         user_id: userId,
                         tag_type: tag.tag_type,
@@ -759,7 +765,11 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
 
             await API.save(
                 "nfc/config",
-                { ...nfc_config, authorized_tags: authorized_tags },
+                {
+                    ...nfc_config,
+                    authorized_tags: authorized_tags,
+                    deadtime_post_start: this.state.nfcDeadtime,
+                },
                 () => __("users.script.save_failed"),
             );
             this.setState({ nfcTagChanges: [] });
@@ -775,7 +785,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         this.setState({ users: users });
     }
 
- (web/users: add UI to allow adding NFC-tags when adding or editing a user)
     async checkUsername(user: User, ignore_i: number): Promise<number> {
         for (let i = 0; i < this.state.users.length; ++i) {
             if (
@@ -883,7 +892,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 onClick={this.toggle("userSlotEnabled")}/>
                         <div class="invalid-feedback">{__("users.content.evse_user_enable_invalid")}</div>
                     </FormRow>
-
                     <FormRow label={__("users.content.unknown_username")}>
                         <InputPassword
                             maxLength={32}
@@ -898,7 +906,28 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             showAlways
                         />
                     </FormRow>
-
+                    {/*#if MODULE_NFC_AVAILABLE*/}
+                    <FormRow
+                        label={__("nfc.content.deadtime")}
+                        label_muted={__("nfc.content.deadtime_muted")}
+                    >
+                        <InputSelect
+                            items={[
+                                ["0", __("nfc.content.deadtime_min")],
+                                ["3", __("nfc.content.deadtime_3")],
+                                ["10", __("nfc.content.deadtime_10")],
+                                ["30", __("nfc.content.deadtime_30")],
+                                ["60", __("nfc.content.deadtime_60")],
+                                ["4294967295", __("nfc.content.deadtime_max")],
+                            ]}
+                            value={state.nfcDeadtime}
+                            onValue={(v) => {
+                                this.setState({ nfcDeadtime: parseInt(v) });
+                                this.setDirty(true);
+                            }}
+                        />
+                    </FormRow>
+                    {/*#endif*/}
                     <FormRow label={__("users.content.authorized_users")}>
                         <Table
                             columnNames={[
