@@ -308,14 +308,8 @@ export function init() {
 
             switch (state?.connection_state) {
                 case EthernetState.Connected:
-                    if (config?.enable_ipv6) {
-                        const ip_text = state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")";
-                        if (has_any_ipv6(state)) {
-                            return {
-                                status: ModuleStatus.Ok,
-                                text: () => ip_text + " | " + __("ethernet.status.ipv6_connected")
-                            };
-                        }
+                    const ip_text = state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")";
+                    if (config?.enable_ipv6 && !has_any_ipv6(state)) {
                         return {
                             status: ModuleStatus.Warning,
                             text: () => ip_text + " | " + __("ethernet.status.ipv6_no_address"),
@@ -323,7 +317,7 @@ export function init() {
                     }
                     return {
                         status: ModuleStatus.Ok,
-                        text: () => state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")"
+                        text: () => ip_text
                     };
                 case EthernetState.Connecting:
                     return {
