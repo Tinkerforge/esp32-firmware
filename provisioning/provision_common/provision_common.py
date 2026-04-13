@@ -556,5 +556,5 @@ def test_bricklet_ports(ipcon, esp_device_id, is_warp):
     ipcon.disconnect()
 
 def mkdir_open(path, *args, **kwargs):
-    os.makedirs(os.path.split(path), exist_ok=True)
+    os.makedirs(os.path.split(path)[0], exist_ok=True)
     return open(path, *args, **kwargs)
