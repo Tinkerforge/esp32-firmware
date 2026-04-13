@@ -56,8 +56,10 @@ let x = {
             "nfc_tags": "NFC Tags",
             "nfc_no_tags_assigned": "No NFC tags assigned",
             "nfc_no_seen_tags":
-                "No NFC tags seen recently. Hold a tag to the charger to detect it.",
-            "nfc_tag_already_assigned": "Assigned to another user"
+            "No NFC tags seen recently. Hold a tag to the charger to detect it.",
+            "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
+                `Already assigned to user "${other_name}"`
+                /*NF*/
         },
         "script": {
             "reboot_content_changed": "user settings",
