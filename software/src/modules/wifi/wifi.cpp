@@ -958,14 +958,14 @@ void Wifi::register_sta_event_handlers()
                 case ESP_IP6_ADDR_IS_LINK_LOCAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress local = WiFi.linkLocalIPv6();
-                        logger.printfln("Link-local IPv6 address: %s", local.toString(true).c_str());
+                        logger.printfln("Link-local IPv6 address: %s", local.toString(false).c_str());
                         state.get("sta_ip6_link_local")->updateString(local.toString());
                     });
                     break;
                 case ESP_IP6_ADDR_IS_GLOBAL:
                     task_scheduler.scheduleOnce([this]() {
                         IPAddress global = WiFi.globalIPv6();
-                        logger.printfln("Global IPv6 address: %s", global.toString(true).c_str());
+                        logger.printfln("Global IPv6 address: %s", global.toString(false).c_str());
                         state.get("sta_ip6_global")->updateString(global.toString());
                     });
                     break;
