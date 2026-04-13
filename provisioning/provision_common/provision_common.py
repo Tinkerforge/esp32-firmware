@@ -304,7 +304,7 @@ def handle_voltage_fuses(set_voltage_fuses):
         return
 
     print("Burning flash voltage eFuse to 3.3V")
-    espefuse(["set-flash-voltage", "3.3V"])
+    espefuse(["--do-not-confirm", "set-flash-voltage", "3.3V"])
 
 # Copied over from https://stagingwww.tinkerforge.com/uid implementation
 def sn_helper(next_uid_path):
@@ -402,7 +402,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
             f.write(binary)
 
         print("Burning UID and Wifi passphrase eFuses")
-        espefuse(["burn-block-data", "BLOCK3", name])
+        espefuse(["--do-not-confirm", "burn-block-data", "BLOCK3", name])
 
     return uid, '-'.join(wifi_passphrase)
 
@@ -438,7 +438,7 @@ def handle_block3_fuses_with_two_int_format(set_block_3, uid):
             f.write(binary)
 
         print("Burning UID eFuses")
-        espefuse(["burn-block-data", "BLOCK3", name])
+        espefuse(["--do-not-confirm", "burn-block-data", "BLOCK3", name])
 
     return uid
 

@@ -220,7 +220,7 @@ def handle_voltage_fuses(set_voltage_fuses):
         return
 
     print("Burning flash voltage eFuse to 3.3V")
-    espefuse(["--port", PORT, "set-flash-voltage", "3.3V"])
+    espefuse(["--port", PORT, "--do-not-confirm", "set-flash-voltage", "3.3V"])
 
 def handle_block3_fuses(set_block_3, uid, passphrase):
     if not set_block_3:
@@ -285,7 +285,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
             f.write(binary)
 
         print("Burning UID and Wifi passphrase eFuses")
-        espefuse(["--port", PORT, "burn-block-data", "BLOCK3", name])
+        espefuse(["--port", PORT, "--do-not-confirm", "burn-block-data", "BLOCK3", name])
 
     return uid, '-'.join(wifi_passphrase)
 
