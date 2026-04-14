@@ -38,6 +38,8 @@ tests = [
     "numpy", # heating/plan
     "requests", # web_server/connectivity
     "amqtt", # mqtt/reconfigure
+    "ocpp", # ocpp/*
+    "websockets", # ocpp/*
 ]
 
 [tool.pio-hooks]
