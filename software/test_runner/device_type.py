@@ -1,7 +1,7 @@
 class DeviceType:
     def __init__(self, type_string: str):
         # Eltako's hostname prefix is wallbox. Translate to something sane.
-        self._type = type_string if type_string is not 'wallbox' else 'eltako'
+        self._type = type_string if type_string != 'wallbox' else 'eltako'
 
     def is_warp(self, version: int | list[int] | None = None) -> bool:
         if version is None:
