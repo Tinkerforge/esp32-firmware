@@ -87,7 +87,7 @@ class WEMTestBox(TestBox):
             print(e)
             return False
 
-    def is_contactor_closed(self):
+    def is_contactor_closed(self, contactor: int = 0):
         try:
             return not self.D.get_value()[1]
         except Exception as e:

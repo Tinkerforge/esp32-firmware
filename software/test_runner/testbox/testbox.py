@@ -46,7 +46,7 @@ class TestBox(Protocol):
     def connect_meter(self, m: Meter) -> None: self.__not_implemented()
     def get_meter_connected(self) -> str: self.__not_implemented()
 
-    def is_contactor_closed(self, contactor: int) -> bool: self.__not_implemented()
+    def is_contactor_closed(self, contactor: int = 0) -> bool: self.__not_implemented()
 
     def set_input_3(self, i: Input) -> None: self.__not_implemented()
     def get_input_3(self) -> Input: self.__not_implemented()

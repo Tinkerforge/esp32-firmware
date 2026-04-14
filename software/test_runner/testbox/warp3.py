@@ -141,7 +141,7 @@ class WARP3TestBox(TestBox):
             if r == v:
                 return k
 
-    def is_contactor_closed(self, contactor: int):
+    def is_contactor_closed(self, contactor: int = 0):
         if contactor < 0 or contactor > 1:
             raise Exception(f"Unknown contactor {contactor}")
 

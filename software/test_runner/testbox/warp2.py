@@ -167,7 +167,7 @@ class WARP2TestBox(TestBox):
             print(e)
             return False
 
-    def is_contactor_closed(self):
+    def is_contactor_closed(self, contactor: int = 0):
         try:
             if isinstance(self.G, BrickletIndustrialDualACIn):
                 return self.G.get_value()[0]
