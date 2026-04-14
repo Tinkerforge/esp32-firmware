@@ -2,7 +2,7 @@ from pathlib import Path
 from collections.abc import Callable
 import traceback
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import argparse
 import fnmatch
 import json
@@ -68,6 +68,8 @@ class TestContext:
     _brickd_host: str | None
 
     _testbox: TestBox | None = None
+
+    _to_restore: dict[str, JSON] = field(default_factory=dict)
 
     def init_testbox(self):
         if self._brickd_host is None:
@@ -457,6 +459,13 @@ class TestContext:
         """
         return DeviceType(self.api('info/name/type'))
 
+    def restore_before_suite_teardown(self, api: str):
+        self._to_restore[api] = self.api(api)
+
+    def _restore(self):
+        for api, payload in self._to_restore.items():
+            self.api(api, payload)
+
     # @dataclass
     # class Cap:
     #     val: typing.Any
@@ -511,15 +520,16 @@ class TestContext:
 
 
 def _run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
-    if fn is None:
-        return True
-
     tc._wait_for_start()
 
     tc._notify_test_start(name)
 
     try:
-        fn(tc)
+        if name.endswith("/suite_teardown"):
+            tc._restore()
+
+        if fn is not None:
+            fn(tc)
         tc._notify_test_success()
         return True
     except TestContext.SkipTestError as e:
