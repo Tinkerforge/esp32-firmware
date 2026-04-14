@@ -209,7 +209,7 @@ void platform_reconnect(void *ctx)
 
 void platform_destroy(void *ctx)
 {
-    tf_websocket_client_destroy_on_exit(client);
+    tf_websocket_client_destroy(client);
 
     client_running = false;
     auth_headers = nullptr;
