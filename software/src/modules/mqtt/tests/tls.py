@@ -113,12 +113,12 @@ def suite_setup(tc: TestContext) -> None:
         f.write(_key_pem)
 
     # Start TLS broker
-    _tls_port = find_free_port(8883)
+    _tls_port = tc.find_free_port(8883)
     _tls_broker = TestMQTTBroker(_tls_port, certfile=cert_path, keyfile=key_path)
     _tls_broker.start()
 
     # Start plain TCP broker (for switch tests)
-    _plain_port = find_free_port(_tls_port + 1)
+    _plain_port = tc.find_free_port(_tls_port + 1)
     _plain_broker = TestMQTTBroker(_plain_port)
     _plain_broker.start()
 

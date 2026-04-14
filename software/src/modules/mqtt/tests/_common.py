@@ -5,7 +5,6 @@ and assertion helpers used by both the reconfigure and TLS test suites.
 """
 
 import asyncio
-import socket
 import threading
 import time
 
@@ -28,18 +27,6 @@ TRIGGER_HTTP = 18
 ACTION_MQTT = 2
 ACTION_PRINT = 1
 HTTP_GET_POST_PUT = 4
-
-
-def find_free_port(start: int = 1883) -> int:
-    """Return *start* if it is available, otherwise increment until a free port is found."""
-    for port in range(start, start + 100):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(("0.0.0.0", port))
-                return port
-        except OSError:
-            continue
-    raise RuntimeError(f"No free TCP port found in range {start}..{start + 99}")
 
 
 class TestMQTTBroker: # uses tls when certfile/keyfile are provided

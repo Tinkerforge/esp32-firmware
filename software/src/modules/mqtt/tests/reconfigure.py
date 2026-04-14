@@ -65,7 +65,7 @@ def suite_setup(tc: TestContext) -> None:
     _original_automation_config = tc.api("automation/config")
 
     _broker_host = tc.get_local_ip()
-    _broker_port = find_free_port()
+    _broker_port = tc.find_free_port(1883)
 
     _broker = TestMQTTBroker(_broker_port)
     _broker.start()
