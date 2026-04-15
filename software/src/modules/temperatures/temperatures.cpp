@@ -37,8 +37,8 @@ void Temperatures::pre_setup()
         {"enable", Config::Bool(false)},
         {"source", Config::Enum(TemperatureSource::WeatherService)},
         {"api_url", Config::Str(OPTIONS_TEMPERATURES_API_URL(), 0, 64)},
-        {"lat", Config::Int(0, -900000, 900000)}, // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
-        {"long", Config::Int(0, -1800000, 1800000)}, // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
+        {"lat", Config::Int(0, -900000, 900000)}, // Latitude in 1/10000 degrees (e.g., 518846 = 51.8846°)
+        {"long", Config::Int(0, -1800000, 1800000)}, // Longitude in 1/10000 degrees (e.g., 86251 = 8.6251°)
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &api_url = update.get("api_url")->asString();
@@ -532,7 +532,7 @@ String Temperatures::get_api_url_with_path()
     sw.puts("v1/temperatures/");
 
     // Convert lat/lon from 1/10000 degrees to decimal string
-    // e.g., 519035 -> 51.9035
+    // e.g., 518846 -> 51.8846
     const int32_t lat = config.get("lat")->asInt();
     const int32_t lon = config.get("long")->asInt();
 

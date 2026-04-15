@@ -41,8 +41,8 @@ def suite_setup(tc: TestContext):
     config['source'] = 0 # WeatherService (pull)
     config['api_url'] = _server.url
     config['cert_id'] = _CERT_ID
-    config['lat'] = 519035 # 51.9035
-    config['long'] = 86720 # 8.6720
+    config['lat'] = 518846 # 51.8846
+    config['long'] = 86251 # 8.6251
     tc.api('temperatures/config_update', config)
 
 

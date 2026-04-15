@@ -19,8 +19,8 @@ def suite_setup(tc: TestContext):
     plane_cfg = tc.api('solar_forecast/planes/0/config')
     plane_cfg['enable'] = True
     plane_cfg['name'] = 'TestPlane0'
-    plane_cfg['lat'] = 519035 # 51.9035
-    plane_cfg['long'] = 86720 # 8.6720
+    plane_cfg['lat'] = 518846 # 51.8846
+    plane_cfg['long'] = 86251 # 8.6251
     plane_cfg['dec'] = 30
     plane_cfg['az'] = 0
     plane_cfg['wp'] = 5000 # 5 kWp
@@ -51,8 +51,8 @@ def test_push_auto_enables_plane(tc: TestContext):
     plane_cfg = tc.api('solar_forecast/planes/1/config')
     plane_cfg['enable'] = False
     plane_cfg['name'] = 'TestPlane1'
-    plane_cfg['lat'] = 519035
-    plane_cfg['long'] = 86720
+    plane_cfg['lat'] = 518846
+    plane_cfg['long'] = 86251
     plane_cfg['dec'] = 25
     plane_cfg['az'] = -10
     plane_cfg['wp'] = 3000
