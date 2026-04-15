@@ -658,6 +658,7 @@ specs = [
         ],
     },
     {
+        # FIXME: need to implement the same 32/64 bit energy register split as done for the grid meter
         'name': 'Goodwe Inverter Meter',
         'virtual_meter': ('Goodwe Inverter', 'Meter'),
         'default_location': 'Other',
@@ -668,30 +669,35 @@ specs = [
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 36005,  # FIXME: use 36019 as S32BE for ARM version > 09
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'S Phase Active Power [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 36006,  # FIXME: use 36021 as S32BE for ARM version > 09
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'T Phase Active Power [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 36007,  # FIXME: use 36023 as S32BE for ARM version > 09
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Total Active Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 36008,  # FIXME: use 36025 as S32BE for ARM version > 09
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Total Reactive Power [W]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 36009,  # FIXME: use 36033 as S32BE for ARM version > 09
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'R Phase Power Factor [0.001]',
