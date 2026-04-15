@@ -39,7 +39,10 @@ import { InputSelect } from "../../ts/components/input_select";
 import { ItemModal } from "../../ts/components/item_modal";
 import { DiscoveryResultItem } from "ts/components/discovery_result";
 
-export const WIFI_RSSI_BAD_THRESHOLD = -79;
+export function is_wifi_reception_bad(rssi: number) {
+     /*-127 is "no RSSI known yet"*/
+    return rssi != -127 && rssi < -79;
+}
 
 type STAConfig = API.getType["wifi/sta_config"];
 
@@ -445,7 +448,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
                 <SubPage.Status>
-                    {wifi_state.connection_state == WifiState.Connected && wifi_state.sta_rssi < WIFI_RSSI_BAD_THRESHOLD &&
+                    {wifi_state.connection_state == WifiState.Connected && is_wifi_reception_bad(wifi_state.sta_rssi) &&
                         <Alert variant="warning">
                             {__("wifi.content.status_sta_rssi_weak")}
                         </Alert>

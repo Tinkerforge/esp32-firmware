@@ -23,7 +23,7 @@ import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 export { WifiAP } from "./wifi_ap";
 export { WifiSTA } from "./wifi_sta";
-import { wifi_symbol, WIFI_RSSI_BAD_THRESHOLD } from "./wifi_sta";
+import { wifi_symbol, is_wifi_reception_bad } from "./wifi_sta";
 import { FormRow } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -126,7 +126,7 @@ export function init() {
 
             switch (state?.connection_state) {
                 case WifiState.Connected:
-                    if (state.sta_rssi < WIFI_RSSI_BAD_THRESHOLD) {
+                    if (is_wifi_reception_bad(state.sta_rssi)) {
                         return {
                             status: ModuleStatus.Warning,
                             text: () => __("wifi.status.weak_signal")(state.sta_rssi)
