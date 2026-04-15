@@ -53,6 +53,29 @@ const loadcontrolStateMap: { [key: number]: string } = {
     [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
 };
 
+/** Convert a NodeState enum value to a localized display string. */
+function nodeStateToString(state: number): string {
+    switch (state) {
+        case NodeState.Disconnected:     return __("eebus.content.peer_info.state_disconnected");
+        case NodeState.Discovered:       return __("eebus.content.peer_info.state_discovered");
+        case NodeState.Connected:        return __("eebus.content.peer_info.state_connected");
+        case NodeState.EEBUSActive:      return __("eebus.content.peer_info.state_eebus_connected");
+        case NodeState.EEBUSDegraded:    return __("eebus.content.peer_info.state_degraded");
+        case NodeState.LoadedFromConfig: return __("eebus.content.peer_info.state_loaded_from_config");
+        case NodeState.AwaitingApproval: return __("eebus.content.peer_info.state_awaiting_approval");
+        case NodeState.Connecting:       return __("eebus.content.peer_info.state_connecting");
+        default:                         return __("eebus.content.unknown");
+    }
+}
+
+/** Get a human-readable display name for a peer, falling back to "Unknown Device". */
+function peerDisplayName(peer: {model_model: string; model_brand: string; ip: string; dns_name: string}): string {
+    if (peer.model_model) return peer.model_model;
+    if (peer.dns_name)    return peer.dns_name;
+    if (peer.ip)          return peer.ip;
+    return __("eebus.content.peer_info.unknown_device");
+}
+
 function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
     const [expanded, setExpanded] = useState(false);
     const ipLines = (ip || "").split(";").map(s => s.trim()).filter(Boolean);
@@ -886,20 +909,15 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 __("eebus.content.peer_info.state")]}
                             rows={
                                 state.state.peers
-                                    .filter(peer => (peer.trusted || peer.state == NodeState.AwaitingApproval) && ((peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1)))
+                                    .filter(peer => peer.trusted || peer.state == NodeState.AwaitingApproval)
                                     .map((peer) => {
                                         return {
                                             columnValues: [
-                                                peer.model_model || peer.ip,
+                                                peerDisplayName(peer),
                                                 peer.model_brand,
-                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") :
-                                                    peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") :
-                                                        peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") :
-                                                            peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") :
-                                                                peer.state == NodeState.AwaitingApproval ? __("eebus.content.peer_info.state_awaiting_approval") :
-                                                                    __("eebus.content.peer_info.state_eebus_connected")],
+                                                nodeStateToString(peer.state)],
                                             fieldValues: [
-                                                peer.model_model || peer.ip,
+                                                peerDisplayName(peer),
                                                 peer.model_brand,
                                                 peer.state
                                             ],
@@ -1005,15 +1023,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.state")}>
                                                         <InputText
-                                                            value={
-                                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") :
-                                                                    peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") :
-                                                                        peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") :
-                                                                            peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") :
-                                                                                peer.state == NodeState.EEBUSActive ? __("eebus.content.peer_info.state_eebus_connected") :
-                                                                                    peer.state == NodeState.AwaitingApproval ? __("eebus.content.peer_info.state_awaiting_approval") :
-                                                                                        __("eebus.content.unknown")
-                                                            }
+                                                            value={nodeStateToString(peer.state)}
                                                             disabled
                                                         />
                                                     </FormRow>
