@@ -1161,24 +1161,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             invalidFeedback={state.addPeerSkiError}
                                         />
                                     </FormRow>
-                                    {/* TODO: once ipv6 changes are merged, expand the IPConfig element to support multiple IPs separated by ;. Or use input_ip instead?
-                                    <IPConfiguration
-                                        showAnyAddress={false}
-                                        hideGateway={true}
-                                        hideSubnet={true}
-                                        value={{ip: state.add.ip, gateway:"", subnet: ""}}
-                                        onValue={(v) => this.setState({add: {...state.add, ip: v.ip}, addPeerIpError: ""})}
-                                        setValid={(v) => this.ipconfig_valid = v}
-
-                                    />*/}
                                     <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                         <InputText
                                             value={state.add.ip}
-                                            minlength={7}
-                                            maxLength={150}
+                                            maxLength={46}
                                             onValue={(v) => this.setState({add: {...state.add, ip: v}})}
-                                            required
-
                                         />
                                     </FormRow>
                                     <FormRow label={__("eebus.content.peer_info.device_port")}>
@@ -1205,8 +1192,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     return;
                                 }
 
-                                // Validate IP using IPConfiguration component's validation
-                                if (!this.ipconfig_valid) {
+                                // Validate IP using IPConfiguration component's validation (only if IP is provided)
+                                if (state.add.ip.trim().length > 0 && !this.ipconfig_valid) {
                                     this.setState({addPeerIpError: __("eebus.script.ip_invalid")});
                                     return;
                                 }
