@@ -29,7 +29,7 @@ let x = {
             "status_sta_ip": "IP address",
             "status_sta_ip_none": "No IP address",
             "status_sta_rssi": "Signal strength",
-            "status_sta_rssi_weak": "Weak signal strength! Consider using a repeater or Ethernet.",
+            "status_sta_rssi_weak": "Weak signal strength! Consider using a WiFi repeater or Ethernet.",
             "status_sta_disconnect_reason": "Disconnect reason",
             "status_sta_disconnect_reason_no_ap": "Access point not found. Is the reception too poor or the SSID incorrect?",
             "status_sta_disconnect_reason_auth": "Authentication failed. Is the passphrase correct?",

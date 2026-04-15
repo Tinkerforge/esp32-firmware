@@ -29,7 +29,7 @@ let x = {
             "status_sta_ip": "IP-Adresse",
             "status_sta_ip_none": "Keine IP-Adresse",
             "status_sta_rssi": "Signalstärke",
-            "status_sta_rssi_weak": "Schwache Signalstärke! Erwäge einen Repeater oder Ethernet zu verwenden.",
+            "status_sta_rssi_weak": "Schwache Signalstärke! Erwäge einen WLAN-Repeater oder Ethernet zu verwenden.",
             "status_sta_disconnect_reason": "Trennungsgrund",
             "status_sta_disconnect_reason_no_ap": "Access-Point nicht gefunden. Ist der Empfang zu schlecht oder die SSID falsch?",
             "status_sta_disconnect_reason_auth": "Authentifizierung fehlgeschlagen. Ist die Passphrase korrekt?",
