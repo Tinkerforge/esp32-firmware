@@ -81,34 +81,30 @@ export interface management_enabled {
     enabled: boolean;
 }
 
+export interface central_user_management_enabled {
+    enabled: boolean;
+}
+
 export interface user_enabled {
     enabled: boolean;
 }
 
 export interface external_defaults {
-    current: number,
-    clear_on_disconnect: boolean
+    current: number;
+    clear_on_disconnect: boolean;
 }
 
 export interface automation_current {
     current: number;
 }
 
-export interface start_charging {
+export interface start_charging {}
 
-}
+export interface stop_charging {}
 
-export interface stop_charging {
+export interface reflash {}
 
-}
-
-export interface reflash {
-
-}
-
-export interface reset {
-
-}
+export interface reset {}
 
 export interface boost_mode {
     enabled: boolean;
@@ -190,7 +186,7 @@ export interface debug_switch_to_one_phase {}
 export interface debug_switch_to_three_phases {}
 
 export interface meter_config {
-    slot: number
+    slot: number;
 }
 
 export interface charge_mode {

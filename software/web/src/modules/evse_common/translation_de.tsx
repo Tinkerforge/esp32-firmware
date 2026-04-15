@@ -113,6 +113,7 @@ let x = {
             "auto_start_description": "Manuelle Ladefreigabe",
             "auto_start_description_help": <><p>Wenn die manuelle Ladefreigabe aktiviert wird, wird ein Ladevorgang niemals automatisch begonnen. Jeder Ladevorgang muss über das Webinterface, die API oder (je nach Tastereinstellung) den Taster gestartet werden. Die manuelle Ladefreigabe blockiert zusätzlich zu eventuell anderen aktiven Ladestromgrenzen. Das heißt, dass sie nicht aktiviert werden muss, wenn Ladevorgänge beispielsweise mit der Benutzerfreigabe per NFC-Tag, oder der Steuerung per OCPP kontrolliert werden.</p></>,
             "auto_start_enable": "Erzwingt, dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
+            "auto_start_enable_central_auth": "Deaktiviert, weil die zentrale Benutzerautorisierung im Lastmanager aktiviert ist.",
 
             "boost_mode_desc": "Boost-Modus",
             "boost_mode_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge interpretiert einen __("from_the_device") vorgeschriebenen Ladestrom zu niedrig. Der Boost-Modus versucht, diesen Effekt auszugleichen, indem ein leicht höherer Ladestrom kommuniziert wird.</p></>,
