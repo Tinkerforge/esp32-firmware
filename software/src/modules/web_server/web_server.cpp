@@ -194,6 +194,7 @@ void WebServer::post_setup()
 
                 port_handler->port = extra_port->port;
                 port_handler->supports_user_authentication = extra_port->supports_user_authentication;
+                port_handler->request_client_cert = extra_port->request_client_cert;
 
                 listen_port_handlers[ssl_configs_used] = port_handler;
 
@@ -323,6 +324,12 @@ int WebServer::custom_tls_handshake_callback(mbedtls_ssl_context *ssl)
     if (port_handler->own_cert == nullptr || port_handler->own_cert_key == nullptr) {
         logger.printfln("No certificate or key for TLS connection on port %hu", port_handler->port);
         return MBEDTLS_ERR_SSL_BAD_CONFIG;
+    }
+
+    // If this port requests client certificates, enable mTLS with VERIFY_OPTIONAL.
+    // The presented certificate can be retrieved later via mbedtls_ssl_get_peer_cert().
+    if (port_handler->request_client_cert) {
+        mbedtls_ssl_set_hs_authmode(ssl, MBEDTLS_SSL_VERIFY_OPTIONAL);
     }
 
     return mbedtls_ssl_set_hs_own_cert(ssl, port_handler->own_cert, port_handler->own_cert_key);

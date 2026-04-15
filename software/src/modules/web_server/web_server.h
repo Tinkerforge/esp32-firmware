@@ -174,6 +174,7 @@ enum class WebServerSortOrder {
 struct WebServerExtraPortData {
     uint16_t port;
     bool supports_user_authentication;
+    bool request_client_cert; // If true, the TLS handshake will request a client certificate (mTLS with VERIFY_OPTIONAL)
     TransportMode transport_mode;
     cert_load_info cert_info;
     WebServerExtraPortData *next;
@@ -210,6 +211,7 @@ private:
         uint16_t port;
         uint8_t supports_user_authentication : 1;
         uint8_t listen_index_0_ra_only : 1;
+        uint8_t request_client_cert : 1; // Request client certificate during TLS handshake (mTLS)
         bool supports_http_api;
         WebServerHandler *handlers;
         WebServerHandler *wildcard_handlers;
