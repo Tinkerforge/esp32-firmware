@@ -113,6 +113,7 @@ let x = {
             "auto_start_description": "Manual charge release",
             "auto_start_description_help": <><p>If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.</p></>,
             "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",
+            "auto_start_enable_central_auth": "Disabled because central user authorization is enabled on the charge manager.",
 
             "boost_mode_desc": "Boost Mode",
             "boost_mode_desc_help": <><p>Some vehicles' charging electronics may interpret the prescribed current __("from_the_device") as too low. Boost mode compensates for this by communicating a slightly higher charging current.</p></>,
