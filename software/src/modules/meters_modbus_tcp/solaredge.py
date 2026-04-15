@@ -113,4 +113,42 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Solaredge Inverter PV',
+        'virtual_meter': ('Solaredge Inverter', 'PV'),
+        'default_location': 'PV',
+        'register_type': 'HoldingRegister',
+        'f32_negative_max_as_nan': True,
+        'values': [
+            {
+                'name': 'Battery 1 Instantaneous Power [W]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 0xE174,
+                'value_type': 'F32LE',
+            },
+            {
+                'name': 'Battery 2 Instantaneous Power [W]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 0xE274,
+                'value_type': 'F32LE',
+            },
+            {
+                'name': 'DC Power [W]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 40100,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'DC Power_SF',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 40101,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'PV Power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
 ]

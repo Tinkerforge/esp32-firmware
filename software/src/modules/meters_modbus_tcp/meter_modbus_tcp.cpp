@@ -1921,6 +1921,42 @@ void MeterModbusTCP::parse_next()
             value = nan_safe_avg(solaredge_inverter.battery_1_state_of_charge, value);
         }
     }
+    else if (is_solaredge_inverter_pv_meter()) {
+        if (register_start_address == SolaredgeInverterPVAddress::Battery1InstantaneousPower) {
+            solaredge_inverter.battery_1_power = value;
+        }
+        else if (register_start_address == SolaredgeInverterPVAddress::Battery2InstantaneousPower) {
+            solaredge_inverter.battery_2_power = value;
+        }
+        else if (register_start_address == SolaredgeInverterPVAddress::DCPower) {
+            solaredge_inverter.dc_power = value;
+        }
+        else if (register_start_address == SolaredgeInverterPVAddress::DCPower_SF) {
+            solaredge_inverter.dc_power_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+
+            float dc_power_scale_factor = get_sun_spec_scale_factor(solaredge_inverter.dc_power_sf);
+            float dc_power = solaredge_inverter.dc_power * dc_power_scale_factor * -1.0f;
+            float battery_power = nan_safe_sum(solaredge_inverter.battery_1_power, solaredge_inverter.battery_2_power);
+
+            if (isnan(battery_power)) {
+                battery_power = 0.0f;
+            }
+
+            // inverter import (+), battery charge (+):    P_PV = P_bat - P_inv
+            // inverter import (+), battery discharge (-): P_PV = 0 [should be impossible]
+            // inverter export (-), battery charge (+):    P_PV = abs(P_inv) + P_bat
+            // inverter export (-), battery discharge (-): P_PV = abs(P_inv) - abs(P_bat)
+            //
+            // this formula covers all cases:              P_PV = max(P_bat - P_inv, 0)
+            //
+            // the maximum with 0 is there to avoid negative PV power in case of
+            // inaccurate measurements or the import/discharge actually happending
+
+            float pv_power = std::max(battery_power - dc_power, 0.0f);
+
+            meters.update_value(slot, table->index[read_index + 1], pv_power);
+        }
+    }
     else if (is_huawei_emma_load_meter()) {
         if (register_start_address == HuaweiEMMALoadAddress::LoadPower) {
             meters.update_value(slot, table->index[read_index + 1], value);

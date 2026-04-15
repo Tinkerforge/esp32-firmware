@@ -367,6 +367,9 @@ private:
             float battery_1_export_energy;
             float battery_1_import_energy;
             float battery_1_state_of_charge;
+            float battery_2_power;
+            float dc_power;
+            int16_t dc_power_sf;
         } solaredge_inverter;
 
         // SAX Power Home basic mode
