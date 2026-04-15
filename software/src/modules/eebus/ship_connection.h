@@ -35,6 +35,8 @@
 #include "tools/malloc.h"
 #include "tools/tf_websocket_client.h"
 
+#include "esp_transport.h"
+
 // Values and Timeouts as defined by SHIP specification
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
 #define SHIP_CONNECTION_SME_INIT_TIMEOUT 60_s
@@ -117,6 +119,7 @@ public:
 
     WebSocketsClient *ws_client = nullptr;
     tf_websocket_client_handle_t ws_server = nullptr;
+    esp_transport_handle_t ext_transport = nullptr; ///< Owned external transport, destroyed on close
     Role role;
     std::shared_ptr<ShipNode> peer_node;
     unique_ptr_any<SpineConnection> spine;

@@ -26,10 +26,13 @@
 #include "event_log_prefix.h"
 
 #include "cert_generator.h"
+#include "eebus_tls_transport.h"
 #include "generated/module_dependencies.h"
 #include "tools.h"
 #include "tools/hexdump.h"
 #include "tools/net.h"
+
+#include "esp_transport_ws.h"
 
 static constexpr uint16_t SHIP_PORT = 4712;
 
@@ -358,25 +361,45 @@ void Ship::connect_trusted_peers()
         const String &ip = node->ip_address.front();
         const String &wss_path = node->txt_wss_path.isEmpty() ? String("/ship/") : node->txt_wss_path;
 
+        // --- Create custom TLS transport with VERIFY_NONE ---
+        // EEBUS uses self-signed certificates, so server cert verification is
+        // skipped. Peer identity is verified via the SKI during the SHIP
+        // handshake instead. We provide our own certificate for mTLS so the
+        // peer server can identify us by our SKI.
+        const char *client_cert_pem = nullptr;
+        size_t client_cert_len = 0;
+        const char *client_key_pem = nullptr;
+        size_t client_key_len = 0;
+        cert.get_data(reinterpret_cast<const uint8_t **>(&client_cert_pem), &client_cert_len,
+                      reinterpret_cast<const uint8_t **>(&client_key_pem), &client_key_len);
+
+        esp_transport_handle_t ssl_transport = eebus_tls_transport_init(
+            client_cert_pem, client_cert_len,
+            client_key_pem, client_key_len);
+
+        if (ssl_transport == nullptr) {
+            eebus.trace_fmtln("Failed to create TLS transport for peer %s", node->node_name().c_str());
+            continue;
+        }
+
+        // Wrap the custom TLS transport with the WebSocket transport layer
+        esp_transport_handle_t ws_transport = esp_transport_ws_init(ssl_transport);
+        if (ws_transport == nullptr) {
+            eebus.trace_fmtln("Failed to create WS transport for peer %s", node->node_name().c_str());
+            esp_transport_destroy(ssl_transport);
+            continue;
+        }
+        esp_transport_ws_set_subprotocol(ws_transport, "ship"); // SHIP 10.2
+        esp_transport_ws_set_path(ws_transport, wss_path.c_str());
+
         tf_websocket_client_config_t websocket_cfg = {};
         websocket_cfg.host = ip.c_str();
         websocket_cfg.port = node->port;
         websocket_cfg.path = wss_path.c_str();
-
-        // EEBUS uses self-signed certificates, so we cannot verify the server cert against a CA chain.
-        // Instead we skip server cert verification and identify the peer via its SKI during the SHIP handshake.
         websocket_cfg.transport = WEBSOCKET_TRANSPORT_OVER_SSL;
-        websocket_cfg.skip_cert_common_name_check = true;
-        websocket_cfg.cert_pem = nullptr;
-        websocket_cfg.crt_bundle_attach = nullptr;
-        websocket_cfg.use_global_ca_store = false;
-
-        // Provide our own certificate and key for mutual TLS authentication.
-        // The peer server will use our certificate to identify us via our SKI.
-        cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len, reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key), &websocket_cfg.client_key_len);
-
-        websocket_cfg.disable_auto_reconnect = true;
         websocket_cfg.subprotocol = "ship"; // SHIP 10.2
+        websocket_cfg.disable_auto_reconnect = true;
+        websocket_cfg.ext_transport = ws_transport;
 
         eebus.trace_fmtln("Connecting to trusted peer %s at %s:%d%s", node->node_name().c_str(), ip.c_str(), node->port, wss_path.c_str());
 
