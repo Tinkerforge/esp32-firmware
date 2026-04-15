@@ -51,6 +51,7 @@ interface EVSESettingsState {
     require_meter_enabled: API.getType['require_meter/config'];
     led_configuration: API.getType['evse/led_configuration'];
     phase_switch_wait_time: API.getType['evse/phase_switch_wait_time'];
+    central_user_management_enabled: API.getType["evse/central_user_management_enabled"];
     evse_uptime: number
     is_evse_v2: boolean
     is_evse_v3: boolean
@@ -120,6 +121,14 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         util.addApiEventListener("evse/phase_switch_wait_time", () => {
             this.setState({phase_switch_wait_time: API.get("evse/phase_switch_wait_time")});
+        });
+
+        util.addApiEventListener("evse/central_user_management_enabled", () => {
+            this.setState({
+                central_user_management_enabled: API.get(
+                    "evse/central_user_management_enabled",
+                ),
+            });
         });
     }
 
@@ -206,7 +215,9 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             auto_start_charging,
             require_meter_enabled,
             led_configuration,
-            phase_switch_wait_time} = s;
+            phase_switch_wait_time,
+            central_user_management_enabled,
+        } = s;
 
         const has_meter = API.hasFeature("meter");
         let disable_three_phase_entry = false;
@@ -265,9 +276,26 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         return <SubPage name="evse_settings">
                 <ConfigForm id="evse_settings_config_form" title={__("evse.content.evse_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("evse.content.auto_start_description")} help={__("evse.content.auto_start_description_help")}>
-                        <Switch desc={__("evse.content.auto_start_enable")}
-                                checked={!auto_start_charging.auto_start_charging}
-                                onClick={async () => this.setState({auto_start_charging: {...auto_start_charging, auto_start_charging: !auto_start_charging.auto_start_charging}})}/>
+                        <Switch
+                            desc={
+                                central_user_management_enabled.enabled
+                                    ? __(
+                                          "evse.content.auto_start_enable_central_auth",
+                                      )
+                                    : __("evse.content.auto_start_enable")
+                            }
+                            checked={!auto_start_charging.auto_start_charging}
+                            disabled={central_user_management_enabled.enabled}
+                            onClick={async () =>
+                                this.setState({
+                                    auto_start_charging: {
+                                        ...auto_start_charging,
+                                        auto_start_charging:
+                                            !auto_start_charging.auto_start_charging,
+                                    },
+                                })
+                            }
+                        />
                     </FormRow>
 
                     <FormRow label={__("evse.content.enable_led_api")}>
