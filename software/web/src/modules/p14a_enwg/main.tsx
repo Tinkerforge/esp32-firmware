@@ -292,19 +292,4 @@ export function init() {
             };
         }
     });
-
-    util.addApiEventListener("p14a_enwg/state", () => {
-        const config = API.get("p14a_enwg/config");
-        const state = API.get("p14a_enwg/state");
-
-        if (config.enable && state.active) {
-            util.add_status_alert(
-                "p14a_enwg",
-                "warning",
-                () => __("p14a_enwg.content.p14a_enwg"),
-                () => __("p14a_enwg.status.alert_active")(state.limit_w));
-        } else {
-            util.remove_status_alert("p14a_enwg");
-        }
-    });
 }
