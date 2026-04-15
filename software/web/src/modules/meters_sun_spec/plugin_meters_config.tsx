@@ -253,8 +253,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             preferred_model_id = result.model_id + 10;
         }
 
-        //let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
-        let selectable = result.model_id > 103 && result.model_id < 713;
+        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
 
         return <DiscoveryResultItem
                 key={result.model_id}
