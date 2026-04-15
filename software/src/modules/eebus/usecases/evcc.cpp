@@ -167,7 +167,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
 // Scenario 1 (2.3.1, 3.4.1) & Scenario 8 (2.3.8, 3.4.8): EV connected/disconnected state
 void EvccUsecase::ev_connected_state(bool connected)
 {
-    logger.printfln("EV connected: %d, previous: %d", connected, ev_connected);
+    eebus.trace_fmtln("EV connected: %d, previous: %d", connected, ev_connected);
     bool changed = (ev_connected != connected);
     entity_active = ev_connected = connected;
     if (changed) {
