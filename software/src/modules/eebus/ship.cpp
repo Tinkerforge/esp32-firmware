@@ -18,10 +18,11 @@
  */
 #include "ship.h"
 
-#include <esp_crt_bundle.h>
 #include <esp_http_server.h>
-
+#include <esp_tls.h>
+#include <mbedtls/ssl.h>
 #include "build.h"
+#include "esp_httpd_priv.h"
 #include "event_log_prefix.h"
 
 #include "cert_generator.h"
@@ -318,39 +319,76 @@ void Ship::connect_trusted_peers()
 {
 #ifdef EEBUS_SHIP_AUTOCONNECT
 
-    size_t peer_count = eebus.config.get("peers")->count();
-    eebus.trace_fmtln("connect_trusted_peers start, %d peers configured", peer_count);
-    int trusted_peer_count = 0;
-    for (size_t i = 0; i < peer_count; i++) {
-        auto peer = eebus.config.get("peers")->get(i);
-        if (peer->get("trusted")->asBool() && peer->get("state")->asEnum<NodeState>() == NodeState::Discovered) {
-            trusted_peer_count++;
-            tf_websocket_client_config_t websocket_cfg = {};
-            CoolString peer_ski = peer->get("ski")->asString();
-            CoolString ip = peer->get("ip")->asString();
-            websocket_cfg.host = ip.c_str();
-            websocket_cfg.port = peer->get("port")->asUint();
-            websocket_cfg.path = peer->get("wss_path")->asString().c_str();
-
-            websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
-            websocket_cfg.use_global_ca_store = true;
-            websocket_cfg.transport = WEBSOCKET_TRANSPORT_OVER_SSL;
-            websocket_cfg.cert_pem = nullptr;
-
-            // The pointer is stored and not the data so the data needs to be valid for the duration of the connection.
-            cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len, reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key), &websocket_cfg.client_key_len);
-
-            websocket_cfg.disable_auto_reconnect = true;
-
-            websocket_cfg.subprotocol = "ship"; // SHIP 10.2
-            websocket_cfg.skip_cert_common_name_check = true;
-            websocket_cfg.cert_common_name = NULL;
-
-            // An error still occurs here because something is wrong with the cert
-            ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, node)));
-        }
+    if (!cert.is_loaded()) {
+        eebus.trace_fmtln("connect_trusted_peers: Certificate not loaded, skipping");
+        return;
     }
-    logger.printfln("SHIP: %d trusted peers configured", trusted_peer_count);
+
+    auto peers = peer_handler.get_peers();
+    eebus.trace_fmtln("connect_trusted_peers start, %zu peers known", peers.size());
+    int trusted_peer_count = 0;
+
+    for (auto &node : peers) {
+        if (!node->trusted) {
+            continue;
+        }
+        if (node->state != NodeState::Discovered && node->state != NodeState::LoadedFromConfig) {
+            continue;
+        }
+        if (node->ip_address.empty() || node->port == 0) {
+            eebus.trace_fmtln("Skipping peer %s: no IP or port", node->node_name().c_str());
+            continue;
+        }
+
+        // Check if we already have an active connection to this peer
+        bool already_connected = false;
+        for (const auto &conn : ship_connections) {
+            if (conn->peer_node == node && !conn->closing_scheduled) {
+                already_connected = true;
+                break;
+            }
+        }
+        if (already_connected) {
+            continue;
+        }
+
+        trusted_peer_count++;
+
+        // Use the first (most recently used) IP address
+        const String &ip = node->ip_address.front();
+        const String &wss_path = node->txt_wss_path.isEmpty() ? String("/ship/") : node->txt_wss_path;
+
+        tf_websocket_client_config_t websocket_cfg = {};
+        websocket_cfg.host = ip.c_str();
+        websocket_cfg.port = node->port;
+        websocket_cfg.path = wss_path.c_str();
+
+        // EEBUS uses self-signed certificates, so we cannot verify the server cert against a CA chain.
+        // Instead we skip server cert verification and identify the peer via its SKI during the SHIP handshake.
+        websocket_cfg.transport = WEBSOCKET_TRANSPORT_OVER_SSL;
+        websocket_cfg.skip_cert_common_name_check = true;
+        websocket_cfg.cert_pem = nullptr;
+        websocket_cfg.crt_bundle_attach = nullptr;
+        websocket_cfg.use_global_ca_store = false;
+
+        // Provide our own certificate and key for mutual TLS authentication.
+        // The peer server will use our certificate to identify us via our SKI.
+        cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len, reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key), &websocket_cfg.client_key_len);
+
+        websocket_cfg.disable_auto_reconnect = true;
+        websocket_cfg.subprotocol = "ship"; // SHIP 10.2
+
+        eebus.trace_fmtln("Connecting to trusted peer %s at %s:%d%s", node->node_name().c_str(), ip.c_str(), node->port, wss_path.c_str());
+
+        node->state = NodeState::Connecting;
+        eebus.update_peers_state();
+
+        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, node)));
+    }
+
+    if (trusted_peer_count > 0) {
+        logger.printfln("SHIP: Connecting to %d trusted peer(s)", trusted_peer_count);
+    }
 #endif
 }
 
