@@ -531,7 +531,7 @@ void Wifi::apply_sta_config(bool defer_start)
 
         new_runtime->last_connected = 0_us;
         new_runtime->connect_tries    = 0;
-        new_runtime->was_connected    = false;
+        new_runtime->was_connected    = runtime_sta != nullptr && runtime_sta->was_connected;
 
         auto eap_union = const_cast<const ConfigRoot *>(&sta_config)->get("wpa_eap_config");
         const EapConfigID eap_config_id = eap_union->getTag<EapConfigID>();
