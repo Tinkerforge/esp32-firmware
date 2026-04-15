@@ -61,7 +61,7 @@ function StatusEntryItem({ entry }: { entry: StatusEntry }) {
                   style="width: 8px; height: 8px; flex-shrink: 0;"></span>
             <span class="flex-grow-1">{entry.label}</span>
             {entry.icon && (
-                <span class="d-flex align-items-center text-secondary" style="flex-shrink: 0;">{entry.icon}</span>
+                <span class="d-flex align-items-center" style="flex-shrink: 0;">{entry.icon}</span>
             )}
             {entry.detail && (
                 <span class="small text-secondary">{entry.detail}</span>
