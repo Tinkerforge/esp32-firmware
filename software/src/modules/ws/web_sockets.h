@@ -68,6 +68,9 @@ public:
     void onBinaryDataReceived_HTTPThread(std::function<void(WebSocketsClient *, httpd_ws_frame_t *ws_pkt)> &&fn);
     void onTextDataReceived_HTTPThread(std::function<void(WebSocketsClient *, httpd_ws_frame_t *ws_pkt)> &&fn);
 
+    /// Returns the httpd handle. Only valid after start() has been called.
+    httpd_handle_t get_httpd_handle() const { return httpd; }
+
     void notify_unclean_close(struct sock_db *session);
 
 private:
