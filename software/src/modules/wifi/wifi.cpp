@@ -252,7 +252,7 @@ void Wifi::pre_setup()
             } else {
                 task_scheduler.scheduleOnce([this]() {
                     this->apply_sta_config();
-                });
+                }, 1_s);
             }
         }
 
