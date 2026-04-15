@@ -47,6 +47,8 @@ let x = {
             "no_peers_found": "Keine Geräte gefunden. Stellen Sie sicher, dass die Geräte im selben Netzwerk sind.",
             "add_peer_manual_desc": "Oder Gerätedetails manuell eingeben:",
             "already_added": "Hinzugefügt",
+            "is_required": "Erforderlich",
+            "is_optional": "Optional",
             "peer_info": {
                 "peers_desc": "Damit eine EEBUS Verbindung hergestellt werden kann, muss ein EEBUS Gerät zuerst hinzugefügt werden. Verbindungen von anderen Geräten werden abgelehnt.",
                 "peers": "EEBUS-Gerät",

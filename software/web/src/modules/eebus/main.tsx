@@ -948,7 +948,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         />
                                                     </FormRow>
                                                     <FormRow
-                                                        label={"IP " + __("eebus.content.peer_info.device_ip") + "*"}>
+                                                        label={"IP " + __("eebus.content.peer_info.device_ip")}>
                                                         <InputText
                                                             value={state.add.ip}
                                                             onValue={(v) => this.setState({
@@ -960,7 +960,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                             disabled
                                                         />
                                                     </FormRow>
-                                                    <FormRow label={__("eebus.content.peer_info.device_port") + "*"}>
+                                                    <FormRow label={__("eebus.content.peer_info.device_port")}>
                                                         <InputText
                                                             value={state.add.port}
                                                             onValue={(v) => this.setState({
@@ -973,7 +973,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         />
                                                     </FormRow>
                                                     <FormRow
-                                                        label={__("eebus.content.peer_info.dns_name") + "*"}>
+                                                        label={__("eebus.content.peer_info.dns_name")}>
                                                         <InputText
                                                             value={state.add.dns_name}
                                                             onValue={(v) => this.setState({
@@ -985,7 +985,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                             disabled
                                                         />
                                                     </FormRow>
-                                                    <FormRow label={__("eebus.content.peer_info.wss_path") + "*"}>
+                                                    <FormRow label={__("eebus.content.peer_info.wss_path")}>
                                                         <InputText
                                                             value={state.add.wss_path}
                                                             onValue={(v) => this.setState({
@@ -1158,7 +1158,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     </FormRow>
                                     <hr/>
                                     <p class="text-muted">{__("eebus.content.add_peer_manual_desc")}</p>
-                                    <FormRow label={__("eebus.content.ski")}>
+                                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.is_required")} small>
                                         <InputText
                                             value={state.add.ski}
                                             onValue={(v) => this.setState({
@@ -1171,14 +1171,14 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             invalidFeedback={state.addPeerSkiError}
                                         />
                                     </FormRow>
-                                    <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                    <FormRow label={__("eebus.content.peer_info.device_ip")} label_muted={__("eebus.content.is_optional")}>
                                         <InputText
                                             value={state.add.ip}
                                             maxLength={46}
                                             onValue={(v) => this.setState({add: {...state.add, ip: v}})}
                                         />
                                     </FormRow>
-                                    <FormRow label={__("eebus.content.peer_info.device_port")}>
+                                    <FormRow label={__("eebus.content.peer_info.device_port")}  label_muted={__("eebus.content.is_optional")}>
                                         <InputText
                                             value={state.add.port}
                                             onValue={(v) => {
@@ -1187,7 +1187,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             }}
                                         />
                                     </FormRow>
-                                    <FormRow label={__("eebus.content.peer_info.wss_path")}>
+                                    <FormRow label={__("eebus.content.peer_info.wss_path")}  label_muted={__("eebus.content.is_optional")}>
                                         <InputText
                                             value={state.add.wss_path}
                                             onValue={(v) => this.setState({add: {...state.add, wss_path: v}})}
