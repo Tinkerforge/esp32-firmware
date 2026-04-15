@@ -79,6 +79,57 @@ static String extract_subject_key_id_hex(const Cert &crt)
     return String{ship_ski, ship_ski_len};
 }
 
+/// Extract the SKI (Subject Key Identifier) from the TLS client certificate presented during the handshake.
+/// Returns an empty string if no client certificate was presented or the SKI could not be extracted.
+/// @param httpd The httpd handle (httpd_handle_t, actually struct httpd_data*)
+/// @param sockfd The socket file descriptor of the client connection
+[[gnu::noinline]]
+static String extract_peer_ski_from_tls(httpd_handle_t httpd, int sockfd)
+{
+    struct httpd_data *hd = static_cast<struct httpd_data *>(httpd);
+    struct sock_db *session = httpd_sess_get(hd, sockfd);
+    if (session == nullptr || session->transport_ctx == nullptr) {
+        return String{};
+    }
+
+    // The transport_ctx for HTTPS sessions is httpd_ssl_transport_ctx_t*,
+    // a struct defined in esp_https_server that wraps esp_tls_t*.
+    // Its first member is esp_tls_t *tls. We replicate the struct layout here
+    // since the definition is not in a public header.
+    struct httpd_ssl_transport_ctx {
+        esp_tls_t *tls;
+        void *global_ctx;
+    };
+
+    auto *transport = static_cast<httpd_ssl_transport_ctx *>(session->transport_ctx);
+    if (transport->tls == nullptr) {
+        return String{};
+    }
+
+    void *ssl_ctx_void = esp_tls_get_ssl_context(transport->tls);
+    if (ssl_ctx_void == nullptr) {
+        return String{};
+    }
+
+    mbedtls_ssl_context *ssl = static_cast<mbedtls_ssl_context *>(ssl_ctx_void);
+    const mbedtls_x509_crt *peer_cert = mbedtls_ssl_get_peer_cert(ssl);
+    if (peer_cert == nullptr) {
+        eebus.trace_fmtln("No client certificate presented during TLS handshake");
+        return String{};
+    }
+
+    // Extract the Subject Key Identifier from the peer certificate
+    char ski_hex[41];
+    size_t ski_len = hexdump(peer_cert->subject_key_id.p, peer_cert->subject_key_id.len, ski_hex, std::size(ski_hex), HexdumpCase::Lower);
+
+    if (ski_len != 40) {
+        eebus.trace_fmtln("Peer certificate SKI has unexpected length: %zu", ski_len);
+        return String{};
+    }
+
+    return String{ski_hex, ski_len};
+}
+
 void Ship::pre_setup()
 {
     web_sockets.pre_setup();
@@ -93,6 +144,7 @@ void Ship::setup()
     *extra_ship_port = {
         .port = SHIP_PORT,
         .supports_user_authentication = false, // SHIP devices won't have local user credentials.
+        .request_client_cert = true,           // Request client certificate for peer SKI identification.
         .transport_mode = TransportMode::Secure,
         .cert_info =
             {
@@ -176,19 +228,41 @@ void Ship::setup_wss()
         }
 
         const String peer_ip = tf_peer_address_of_sockfd(ws_client->getFd()).toString();
-        CoolString peer_ski = "unknown";
 
-        std::shared_ptr<ShipNode> node = peer_handler.get_peer_by_ip(peer_ip);
-        if (node != nullptr) {
-            peer_ski = node.get()->txt_ski;
-            peer_handler.update_ip_by_ski(peer_ski, peer_ip, true); // Force the Ip to the front as its actually being used
+        // Try to extract the peer's SKI from the TLS client certificate.
+        String tls_ski = extract_peer_ski_from_tls(web_sockets.get_httpd_handle(), ws_client->getFd());
+
+        // Try to find the peer by SKI first, then fall back to IP
+        std::shared_ptr<ShipNode> node;
+        if (!tls_ski.isEmpty()) {
+            node = peer_handler.get_peer_by_ski(tls_ski);
+            if (node != nullptr) {
+                // Peer found by SKI. Update its IP to the current one.
+                peer_handler.update_ip_by_ski(tls_ski, peer_ip, true);
+                eebus.trace_fmtln("Incoming SHIP connection from %s identified by TLS cert SKI %s", peer_ip.c_str(), tls_ski.c_str());
+            } else {
+                // SKI not known yet - create a new peer with this SKI
+                eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", peer_ip.c_str(), tls_ski.c_str());
+                auto *peer = peer_handler.get_or_create_by_ski(tls_ski);
+                if (!peer->contains_ip(peer_ip)) {
+                    peer->ip_address.insert(peer->ip_address.begin(), peer_ip);
+                }
+                node = peer_handler.get_peer_by_ski(tls_ski);
+            }
         } else {
-            eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s", peer_ip.c_str());
-            peer_handler.update_ip_by_ip(peer_ip, peer_ip);
+            // No TLS client cert available - fall back to IP-based identification
             node = peer_handler.get_peer_by_ip(peer_ip);
+            if (node != nullptr) {
+                peer_handler.update_ip_by_ski(node->txt_ski, peer_ip, true);
+            } else {
+                eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s (no TLS client cert)", peer_ip.c_str());
+                peer_handler.update_ip_by_ip(peer_ip, peer_ip);
+                node = peer_handler.get_peer_by_ip(peer_ip);
+            }
         }
+
         peer_handler.update_state_by_ip(peer_ip, NodeState::Connected);
-        eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", peer_ip.c_str(), peer_ski.c_str());
+        eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", peer_ip.c_str(), node->txt_ski.c_str());
         ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, node)));
         logger.printfln("New SHIP Client connected from %s", node->node_name().c_str());
 
