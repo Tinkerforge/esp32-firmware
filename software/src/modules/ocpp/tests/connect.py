@@ -10,9 +10,7 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 
-import asyncio
 from datetime import datetime, timezone
-import websockets
 
 from software.src.modules.ocpp.tests._common import *
 
