@@ -238,6 +238,7 @@ private:
     ConfigRoot require_meter_enabled_update;
     ConfigRoot automation_current;
     ConfigRoot automation_current_update;
+    ConfigRoot central_user_management_enabled_state;
 #if MODULE_CM_NETWORKING_AVAILABLE()
     ConfigRoot charge_mode;
     ConfigRoot supported_charge_modes;

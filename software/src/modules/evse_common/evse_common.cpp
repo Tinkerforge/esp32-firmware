@@ -88,6 +88,10 @@ void EVSECommon::pre_setup()
     management_enabled = enabled_cfg;
     management_enabled_update = management_enabled;
 
+    central_user_management_enabled_state = Config::Object({
+        {"enabled", Config::Bool(false)}
+    });
+
     user_current = current_cfg;
 
     user_enabled = enabled_cfg;
@@ -743,6 +747,7 @@ void EVSECommon::register_urls()
     }, false);
 
     api.addState("evse/management_enabled", &management_enabled);
+    api.addState("evse/central_user_management_enabled", &central_user_management_enabled_state);
     api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = management_enabled_update.get("enabled")->asBool();
 
@@ -1103,6 +1108,7 @@ bool EVSECommon::get_central_user_management_enabled()
 
 void EVSECommon::set_central_user_management_enabled(bool enabled) {
     central_user_management_enabled = enabled;
+    central_user_management_enabled_state.get("enabled")->updateBool(enabled);
 }
 
 ConfigRoot &EVSECommon::get_slots()
