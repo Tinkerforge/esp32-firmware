@@ -22,12 +22,6 @@ specs = [
         'f32_negative_max_as_nan': True,
         'values': [
             {
-                'name': 'Battery 1 Status',
-                'value_id': 'VALUE_ID_META',
-                'start_address': 0xE186,
-                'value_type': 'U32LE',
-            },
-            {
                 'name': 'Battery 1 Average Temperature [°C]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 0xE16C,
@@ -71,12 +65,6 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 0xE184,
                 'value_type': 'F32LE',
-            },
-            {
-                'name': 'Battery 2 Status',
-                'value_id': 'VALUE_ID_META',
-                'start_address': 0xE286,
-                'value_type': 'U32LE',
             },
             {
                 'name': 'Battery 2 Average Temperature [°C]',
