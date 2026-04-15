@@ -365,7 +365,7 @@ void EEBus::pre_setup()
 
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}, {"persistent", Config::Bool(true)}}), [this](Config &add_peer, ConfigSource source) -> String {
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}, {"persistent", Config::Bool(true)}}), [this](Config &add_peer, ConfigSource source) -> String {
                               if (add_peer.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
                               }
@@ -603,8 +603,14 @@ void EEBus::register_urls()
             auto *peer = ship.peer_handler.get_or_create_by_ski(ski);
             peer->persistent = add_peer.get("persistent")->asBool();
 
-            ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
-            peer->port = static_cast<uint16_t>(add_peer.get("port")->asUint());
+            String ip = add_peer.get("ip")->asString();
+            if (!ip.isEmpty()) {
+                ship.peer_handler.update_ip_by_ski(ski, ip);
+            }
+            uint16_t port = static_cast<uint16_t>(add_peer.get("port")->asUint());
+            if (port != 0) {
+                peer->port = port;
+            }
             peer->trusted = add_peer.get("trusted")->asBool();
             peer->dns_name = add_peer.get("dns_name")->asString();
             peer->txt_wss_path = add_peer.get("wss_path")->asString();
