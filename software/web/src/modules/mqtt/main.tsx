@@ -129,10 +129,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                         <InputText value={saved_config.enable_mqtt ? broker_str : __("mqtt.status.disabled")} />
                     </FormRow>
 
-                    <FormRow label={__("mqtt.status.topic_prefix")}>
-                        <InputText value={saved_config.global_topic_prefix || __("mqtt.status.no_topic_prefix")} />
-                    </FormRow>
-
                     {saved_config.enable_mqtt && connection_duration.length > 0 &&
                         <FormRow label={is_connected ? __("mqtt.status.connected_since") : __("mqtt.status.disconnected_since")}>
                             <InputText value={connection_duration} />
