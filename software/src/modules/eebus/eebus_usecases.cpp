@@ -49,7 +49,6 @@ EEBusUseCases::EEBusUseCases()
     // EVSE Actors
     usecase_list.push_back(&evse_heartbeat);
     evse_heartbeat.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(evse_heartbeat.get_usecase_type());
 #ifdef EEBUS_ENABLE_EVCS_USECASE
     usecase_list.push_back(&charging_summary);
     charging_summary.set_entity_address(EVSEEntity::entity_address);
@@ -84,7 +83,6 @@ EEBusUseCases::EEBusUseCases()
     // EV actors
     usecase_list.push_back(&ev_heartbeat);
     ev_heartbeat.set_entity_address(EVEntity::entity_address);
-    supported_usecases.push_back(ev_heartbeat.get_usecase_type());
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
