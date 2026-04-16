@@ -61,7 +61,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             httpd_ws_frame frame = {};
             frame.payload = (uint8_t *)data->data_ptr;
             frame.len = data->payload_len;
-            frame.fragmented = false;
+            frame.fragmented = !data->fin;
+            frame.final = data->fin;
 
             conn->frame_received(&frame);
 
@@ -99,6 +100,13 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_node->node_name().c_str());
 
     tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
+    // NOTE: Do NOT call tf_websocket_client_start() here.
+    // The caller must first add this ShipConnection to ship_connections,
+    // then call start_client() so that websocket_event_handler can find us.
+}
+
+void ShipConnection::start_client()
+{
     esp_err_t err = tf_websocket_client_start(ws_server);
     if (err == ESP_OK) {
         state_machine_next_step();

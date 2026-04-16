@@ -144,6 +144,10 @@ public:
 
     ~ShipConnection();
 
+    /// Start the WebSocket client task. Must be called AFTER this ShipConnection
+    /// has been added to ship_connections so that event callbacks can find it.
+    void start_client();
+
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
     const ShipConnection &operator=(const ShipConnection &other) = delete;

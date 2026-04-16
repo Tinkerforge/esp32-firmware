@@ -407,6 +407,7 @@ void Ship::connect_trusted_peers()
         eebus.update_peers_state();
 
         ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, node)));
+        ship_connections.back()->start_client();
     }
 
     if (trusted_peer_count > 0) {
