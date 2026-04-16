@@ -398,6 +398,7 @@ void EEBus::pre_setup()
         {"commands_sent", Config::Uint16(0)},
         //      {"usecases_supported", Config::Str("", 0, 128)}, // Comma separated list of supported usecases
         {"usecases_supported", Config::Array({usecase_list}, &usecase_list, 0, 20, Config::type_id<Config::ConfObject>())},
+#ifdef EEBUS_ENABLE_EVCS_USECASE
         {"charging_summary",
          Config::Array(
              {// Read/Write
@@ -407,6 +408,7 @@ void EEBus::pre_setup()
              0,
              8,
              Config::type_id<Config::ConfObject>())},
+#endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
         {"power_consumption_limitation",
          Config::Object({
