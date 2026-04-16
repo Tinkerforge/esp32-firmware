@@ -103,7 +103,8 @@ let x = {
             "table_rule_fast_chg_not_active": "Nicht aktiv",
             "table_rule_fast_chg_active": "Aktiv",
 
-            "add_rule_title": "Regel hinzufügen",
+            "add_rule_title_charge": "Laderegel hinzufügen",
+            "add_rule_title_discharge": "Entladeregel hinzufügen",
             "add_rule_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Regeln konfiguriert`/*NF*/,
             "add_rule_desc": "Beschreibung",
             "add_rule_time": "Zeitraum",
@@ -117,7 +118,8 @@ let x = {
             "add_rule_fast_chg": "Fahrzeug-Schnellladung",
             "add_rule_action": "Aktion",
 
-            "edit_rule_title": "Regel bearbeiten",
+            "edit_rule_title_charge": "Laderegel bearbeiten",
+            "edit_rule_title_discharge": "Entladeregel bearbeiten",
             "edit_rule_desc": "Beschreibung",
             "edit_rule_time": "Zeitraum",
             "edit_rule_time_start": "von",
@@ -153,6 +155,11 @@ let x = {
 
             "rule_action_block": "Blockieren",
             "rule_action_force": "Erzwingen",
+
+            "rule_action_block_charge": "Laden blockieren",
+            "rule_action_force_charge": "Laden erzwingen (blockiert Entladen)",
+            "rule_action_block_discharge": "Entladen blockieren",
+            "rule_action_force_discharge": "Entladen erzwingen (blockiert Laden)",
 
             "invalid_feedback_all_ignored": "Es können nicht alle Bedingungen gleichzeitig ignoriert werden."
         },

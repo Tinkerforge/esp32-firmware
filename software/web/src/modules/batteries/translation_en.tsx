@@ -103,7 +103,8 @@ let x = {
             "table_rule_fast_chg_not_active": "Not active",
             "table_rule_fast_chg_active": "Active",
 
-            "add_rule_title": "Add rule",
+            "add_rule_title_charge": "Add charge rule",
+            "add_rule_title_discharge": "Add discharge rule",
             "add_rule_message": /*SFN*/(have: number, max: number) => `${have} of ${max} rules configured`/*NF*/,
             "add_rule_desc": "Description",
             "add_rule_time": "Time period",
@@ -117,7 +118,8 @@ let x = {
             "add_rule_fast_chg": "Vehicle fast charge",
             "add_rule_action": "Action",
 
-            "edit_rule_title": "Edit rule",
+            "edit_rule_title_charge": "Edit charge rule",
+            "edit_rule_title_discharge": "Edit discharge rule",
             "edit_rule_desc": "Description",
             "edit_rule_time": "Time period",
             "edit_rule_time_start": "from",
@@ -153,6 +155,11 @@ let x = {
 
             "rule_action_block": "Block",
             "rule_action_force": "Force",
+
+            "rule_action_block_charge": "Block charge",
+            "rule_action_force_charge": "Force charge (blocks discharge)",
+            "rule_action_block_discharge": "Block discharge",
+            "rule_action_force_discharge": "Force discharge (blocks charge)",
 
             "invalid_feedback_all_ignored": "Cannot ignore all conditions at the same time."
         },
