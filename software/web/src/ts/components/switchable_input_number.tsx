@@ -52,21 +52,21 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
 
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback) {
-        invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
+        invalidFeedback = props.invalidFeedback;
     } else if (invalid) {
         if (props.required && isNaN(value)) {
-            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.required")}</div>;
+            invalidFeedback = __("component.input_number.required");
         } else if ("min" in props && !("max" in props)) {
-            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "")}</div>;
+            invalidFeedback = __("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "");
         } else if (!("min" in props) && "max" in props) {
-            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.max_only")(props.max.toString(), props.unit ? props.unit : "")}</div>;
+            invalidFeedback = __("component.input_number.max_only")(props.max.toString(), props.unit ? props.unit : "");
         } else if ("min" in props && "max" in props) {
-            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_max")(props.min.toString(), props.max.toString(), props.unit ? props.unit : "")}</div>;
+            invalidFeedback = __("component.input_number.min_max")(props.min.toString(), props.max.toString(), props.unit ? props.unit : "");
         }
     }
 
     return (
-        <div class="input-group flex-nowrap rounded">
+        <div class="input-group has-validation rounded">
             <div class="d-none d-sm-block input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
                 <input type="checkbox" class="form-check-input" id={label_desktop_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
                 <label class="form-check-label" for={label_desktop_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
@@ -92,7 +92,6 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 disabled={!props.checked || props.disabled}
             />
             {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
-            {invalidFeedback}
             <Button variant="primary"
                     disabled={!props.checked || props.value == props.min || props.disabled}
                     className="px-1"
@@ -132,6 +131,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                     }}>
                 <Plus/>
             </Button>
+            <div class="invalid-feedback">{invalidFeedback}</div>
         </div>
     );
 }
