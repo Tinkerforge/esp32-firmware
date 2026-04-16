@@ -1189,7 +1189,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                         </FormRow> : undefined}
 
 {/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
-                    <FormRow label={__("batteries.content.status_charge")}>
+                    <FormRow label={__("batteries.content.status_charge")} label_muted={API.get("battery_control/rules_charge")[active_charge_rule]?.desc}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
@@ -1201,7 +1201,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("batteries.content.status_discharge")}>
+                    <FormRow label={__("batteries.content.status_discharge")} label_muted={API.get("battery_control/rules_discharge")[active_discharge_rule]?.desc}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
