@@ -175,22 +175,30 @@ function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild
         },
     };
 
-    // Get the list of supported use cases, excluding NMC (internal) and HEARTBEAT (internal)
-    const supportedUsecases = (usecases?.usecases_supported || []).filter(
-        uc => uc !== Usecases.NMC && uc !== Usecases.HEARTBEAT
-    );
+    // Map use case enum values to the corresponding optional API property names
+    const usecaseApiKeyMap: { [key: number]: keyof NonNullable<typeof usecases> } = {
+        [Usecases.LPC]: "power_consumption_limitation",
+        [Usecases.LPP]: "power_production_limitation",
+        [Usecases.EVCC]: "ev_commissioning_and_configuration",
+        [Usecases.EVCEM]: "ev_charging_electricity_measurement",
+        [Usecases.EVSECC]: "evse_commissioning_and_configuration",
+        [Usecases.EVCS]: "charging_summary",
+        [Usecases.MPC]: "monitoring_of_power_consumption",
+        [Usecases.CEVC]: "coordinated_ev_charging",
+        [Usecases.MGCP]: "monitoring_of_grid_connection_point",
+        [Usecases.OPEV]: "overload_protection_by_ev_charging_current_curtailment",
+    };
 
-    // Build the list items only for enabled use cases
-    const usecaseItems = supportedUsecases.map(uc => {
+    // Build the list items only for use cases present in the API response
+    const usecaseItems = Object.keys(usecaseDescMap).map(Number).map(uc => {
+        const apiKey = usecaseApiKeyMap[uc];
+        if (!apiKey || usecases?.[apiKey] == null) return null;
         const info = usecaseDescMap[uc];
-        if (info) {
-            return (
-                <li key={uc}>
-                    <b>{info.name}</b>: {info.desc}
-                </li>
-            );
-        }
-        return null;
+        return (
+            <li key={uc}>
+                <b>{info.name}</b>: {info.desc}
+            </li>
+        );
     }).filter(item => item !== null);
 
     return (
@@ -296,7 +304,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     let rows: TableRow[] = [];
 
                                     // Limitation of Power Consumption
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPC) > -1) {
+                                    if (state.usecases.power_consumption_limitation != null) {
                                         const lpc = state.usecases.power_consumption_limitation;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -375,7 +383,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Limitation of Power Production
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPP) > -1) {
+                                    if (state.usecases.power_production_limitation != null) {
                                         const lpp = state.usecases.power_production_limitation;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -454,7 +462,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Commissioning and Configuration
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCC) > -1) {
+                                    if (state.usecases.ev_commissioning_and_configuration != null) {
                                         const evcc = state.usecases.ev_commissioning_and_configuration;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -531,7 +539,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Charging Electricity Measurement
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCEM) > -1) {
+                                    if (state.usecases.ev_charging_electricity_measurement != null) {
                                         const evcc = state.usecases.ev_commissioning_and_configuration;
                                         const evcem = state.usecases.ev_charging_electricity_measurement;
                                         rows.push({
@@ -585,7 +593,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EVSE Commissioning and Configuration
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVSECC) > -1) {
+                                    if (state.usecases.evse_commissioning_and_configuration != null) {
                                         const evsecc = state.usecases.evse_commissioning_and_configuration;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -614,7 +622,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Charging Summary
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCS) > -1) {
+                                    if (state.usecases.charging_summary != null) {
                                         const summary = state.usecases.charging_summary;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -643,7 +651,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Monitoring of Power Consumption
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MPC) > -1) {
+                                    if (state.usecases.monitoring_of_power_consumption != null) {
                                         const mpc = state.usecases.monitoring_of_power_consumption;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -716,7 +724,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Coordinated EV Charging
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.CEVC) > -1) {
+                                    if (state.usecases.coordinated_ev_charging != null) {
                                         const cevc = state.usecases.coordinated_ev_charging;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -773,7 +781,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Monitoring of Grid Connection Point (MGCP)
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MGCP) > -1) {
+                                    if (state.usecases.monitoring_of_grid_connection_point != null) {
                                         const mgcp = state.usecases.monitoring_of_grid_connection_point;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -844,7 +852,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Overload Protection by EV Charging Current Curtailment (OPEV)
-                                    if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.OPEV) > -1) {
+                                    if (state.usecases.overload_protection_by_ev_charging_current_curtailment != null) {
                                         const opev = state.usecases.overload_protection_by_ev_charging_current_curtailment;
                                         rows.push({
                                             hideRemoveButton: true,
@@ -1277,7 +1285,7 @@ export function init() {
             }
 
 
-            if (usecases?.usecases_supported?.indexOf(Usecases.LPC) > -1 &&
+            if (usecases?.power_consumption_limitation != null &&
                 usecases?.power_consumption_limitation?.usecase_state === LoadcontrolState.Failsafe) {
                 return {
                     status: ModuleStatus.Error,
