@@ -685,6 +685,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
             override_duration: MIN_OVERRIDE_DURATION,
             override_remaining: null,
             blocking: false,
+            enabled: false
         };
 
         util.addApiEventListener("heating/config", () => {

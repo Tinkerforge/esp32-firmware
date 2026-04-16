@@ -30,6 +30,7 @@ export interface state {
     sgr_extended: boolean;
     p14enwg: boolean;
     next_update: number;
+    enabled: boolean;
 }
 
 export interface plan {

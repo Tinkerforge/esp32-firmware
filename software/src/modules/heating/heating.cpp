@@ -123,7 +123,8 @@ void Heating::pre_setup()
         {"sgr_blocking", Config::Bool(false)},
         {"sgr_extended", Config::Bool(false)},
         {"p14enwg", Config::Bool(false)},
-        {"next_update", Config::Uint32(0)} // Unix timestamp in minutes, 0 = next update not yet known
+        {"next_update", Config::Uint32(0)}, // Unix timestamp in minutes, 0 = next update not yet known
+        {"enabled", Config::Bool(false)}
     });
 }
 
@@ -613,7 +614,10 @@ void Heating::update()
     localtime_r(&now, &current_time);
     const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
 
-    if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
+    const bool disabled = !yield_forecast && !extended && !blocking && !pv_excess_control;
+    this->state.get("enabled")->updateBool(!disabled);
+
+    if(disabled) {
         logger.tracefln(this->trace_buffer_index, "No control active.");
     } else {
         if (minutes_since_midnight >= 24*60) {
