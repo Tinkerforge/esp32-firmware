@@ -1,8 +1,10 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { BatteryMode } from "modules/batteries/generated/battery_mode.enum";
 let x = {
     "batteries": {
         "status": {
+            "batteries": "Battery Control"
         },
         "navbar": {
             "batteries": "Battery Control"
@@ -23,6 +25,25 @@ let x = {
             "battery_mode_charge_from_grid": "Force charge, block discharge",
             "battery_mode_discharge_to_load": "Block charge, discharge normally",
             "battery_mode_discharge_to_grid": "Block charge, force discharge",
+
+            "battery_status_blocked": "Blocked",
+            "battery_status_normal": "Normal",
+            "battery_status_charge_blocked": "Charge blocked",
+            "battery_status_charge_forced": "Charge forced",
+            "battery_status_discharge_blocked": "Discharge blocked",
+            "battery_status_discharge_forced": "Discharge forced",
+            "battery_status_unknown": "Unbekannt",
+            "battery_status_by_index": /*SFN*/(mode: BatteryMode) => {
+                return [
+                    __("batteries.content.battery_status_unknown"),
+                    __("batteries.content.battery_status_blocked"),
+                    __("batteries.content.battery_status_normal"),
+                    __("batteries.content.battery_status_discharge_blocked"),
+                    __("batteries.content.battery_status_charge_forced"),
+                    __("batteries.content.battery_status_charge_blocked"),
+                    __("batteries.content.battery_status_discharge_forced"),
+                ][mode + 1];
+            }/*NF*/,
 
             "status_charge": "Charging",
             "status_discharge": "Discharging",

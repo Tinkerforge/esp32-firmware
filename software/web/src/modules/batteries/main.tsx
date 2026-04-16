@@ -54,6 +54,7 @@ import { Table } from "../../ts/components/table";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { Battery } from "react-feather";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function BatteriesNavbar() {
     return <NavbarItem name="batteries" module="batteries" title={__("batteries.navbar.batteries")} symbol={<Battery />} />;
@@ -1498,4 +1499,22 @@ export function pre_init() {
 
 export function init() {
     plugins_init();
+
+    register_status_provider("batteries", {
+        name: () => __("batteries.status.batteries"),
+        href: "#batteries",
+        get_status: () => {
+            const config = API.get("batteries/config");
+            const state = API.get("battery_control/state");
+
+            if (!config.enabled) {
+                return {status: ModuleStatus.Disabled};
+            }
+
+            return {
+                status: ModuleStatus.Ok,
+                text: () => __("batteries.content.battery_status_by_index")(state.mode)
+            };
+        }
+    });
 }
