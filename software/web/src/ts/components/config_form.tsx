@@ -71,7 +71,7 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
 
     resetButton = () => this.props.onReset ?
         <div class="col">
-            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger w-100 text-nowrap" disabled={!this.props.isModified}>
+            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger w-100 text-nowrap" disabled>
                 {__("component.config_form.reset")}
                 <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
             </button>
