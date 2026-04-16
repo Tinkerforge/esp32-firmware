@@ -725,16 +725,10 @@ export function init() {
             const state = API.get("charge_manager/state");
             const config = API.get("charge_manager/config");
 
-            if (!config?.enable_charge_manager) {
+            // The web interface prevents enabling the charge manager without configuring
+            // at least one charger (on the energy manager) or localhost (on a charger)
+            if (!config.enable_charge_manager || config.chargers.length == 0) {
                 return {status: ModuleStatus.Disabled};
-            }
-
-            const charger_count = config.chargers?.length ?? 0;
-            if (charger_count === 0) {
-                return {
-                    status: ModuleStatus.Warning,
-                    text: () => __("charge_manager.status.not_configured")
-                };
             }
 
             // Check for errors in any charger
