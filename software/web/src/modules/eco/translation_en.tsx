@@ -4,7 +4,7 @@ import { toLocaleFixed } from "../../ts/util";
 let x = {
     "eco": {
         "status": {
-            "charge_plan": "Charge plan",
+            "charge_plan": "Eco charge plan",
             "daily": "Daily",
             "departure": "Departure",
             "amount": "Duration",
@@ -49,7 +49,7 @@ let x = {
                 <p>Therefore, energy is not bought–even if it would be cheap to do so–if it is known that enough PV excess will be available.</p>
             </>,
 
-            "eco_chart_title": "Charge plan"
+            "eco_chart_title": "Eco charge plan"
         },
         "script": {
             "save_failed": "Failed to save the eco settings",

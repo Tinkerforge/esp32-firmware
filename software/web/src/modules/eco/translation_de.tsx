@@ -4,7 +4,7 @@ import { toLocaleFixed } from "../../ts/util";
 let x = {
     "eco": {
         "status": {
-            "charge_plan": "Ladeplan",
+            "charge_plan": "Eco-Ladeplan",
             "daily": "Täglich",
             "departure": "Abfahrt",
             "amount": "Ladedauer",
@@ -48,7 +48,7 @@ let x = {
                 <p>Es wird also kein Strom eingekauft, auch nicht, wenn er sehr günstig wäre, wenn bekannt ist, dass genug PV-Überschuss verfügbar sein wird.</p>
             </>,
 
-            "eco_chart_title": "Ladeplan"
+            "eco_chart_title": "Eco-Ladeplan"
         },
         "script": {
             "save_failed": "Speichern der Eco-Einstellungen fehlgeschlagen",
