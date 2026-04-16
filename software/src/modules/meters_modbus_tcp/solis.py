@@ -9,6 +9,10 @@ table_prototypes = [
     ('Solis Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Solis Hybrid Inverter', 'max_register_count = 50;'),
+]
+
 default_device_addresses = [
     ('Solis Hybrid Inverter', 1),
 ]

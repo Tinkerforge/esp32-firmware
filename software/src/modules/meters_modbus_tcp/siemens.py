@@ -372,7 +372,7 @@ specs = [
         ],
     },
     {
-        'name': 'Siemens PAC3120 And PAC3220',
+        'name': 'Siemens PAC3120',
         'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -733,6 +733,10 @@ specs = [
                 'scale_factor': 0.001,
             },
         ],
+    },
+    {
+        'name': 'Siemens PAC3220',
+        'alias': 'Siemens PAC3120',
     },
     {
         'name': 'Siemens PAC3200',

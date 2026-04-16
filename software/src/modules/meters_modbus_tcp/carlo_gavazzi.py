@@ -69,6 +69,93 @@ table_prototypes = [
     ('Carlo Gavazzi EM580', ['device_address']),
 ]
 
+table_lookup_extras = [
+    ('Carlo Gavazzi EM24 DIN', 'max_register_count = 11;'),
+    ('Carlo Gavazzi EM100', '''
+        carlo_gavazzi_em100.phase = ephemeral_table_config->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = 50;
+
+        switch (carlo_gavazzi_em100.phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln_meter("No Carlo Gavazzi EM100 Phase selected");
+            break;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Carlo Gavazzi EM100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em100.phase));
+            break;
+        }'''
+    ),
+    ('Carlo Gavazzi ET100', '''
+        carlo_gavazzi_et100.phase = ephemeral_table_config->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = 50;
+
+        switch (carlo_gavazzi_et100.phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln_meter("No Carlo Gavazzi ET100 Phase selected");
+            break;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Carlo Gavazzi ET100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_et100.phase));
+            break;
+        }'''
+    ),
+    ('Carlo Gavazzi EM210', 'max_register_count = 61;'),
+    ('Carlo Gavazzi EM270', 'max_register_count = 18;'),
+    ('Carlo Gavazzi EM280', 'max_register_count = 18;'),
+    ('Carlo Gavazzi EM300', 'max_register_count = 50;'),
+    ('Carlo Gavazzi ET300', 'max_register_count = 50;'),
+    ('Carlo Gavazzi EM510', '''
+        carlo_gavazzi_em510.phase = ephemeral_table_config->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+
+        switch (carlo_gavazzi_em510.phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln_meter("No Carlo Gavazzi EM510 Phase selected");
+            break;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em510_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em510_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em510_at_l3_table;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Carlo Gavazzi EM510 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em510.phase));
+            break;
+        }'''
+    )
+]
+
 default_device_addresses = [
     ('Carlo Gavazzi EM24 DIN', 1),
     ('Carlo Gavazzi EM24 E1', 1),
@@ -2063,7 +2150,7 @@ specs = [
         'values': make_em510_single_phase_values('L3')
     },
     {
-        'name': 'Carlo Gavazzi EM530 And EM540',
+        'name': 'Carlo Gavazzi EM530',
         'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -2383,6 +2470,10 @@ specs = [
                 'scale_factor': 0.01,
             },
         ],
+    },
+    {
+        'name': 'Carlo Gavazzi EM540',
+        'alias': 'Carlo Gavazzi EM530',
     },
     {
         'name': 'Carlo Gavazzi EM580',

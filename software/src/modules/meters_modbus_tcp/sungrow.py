@@ -14,6 +14,11 @@ table_prototypes = [
     ('Sungrow String Inverter', ['device_address', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Sungrow Hybrid Inverter', 'sungrow_hybrid_inverter.output_type = -1;'),
+    ('Sungrow String Inverter', 'sungrow_string_inverter.output_type = -1;'),
+]
+
 default_device_addresses = [
     ('Sungrow Hybrid Inverter', 1),
     ('Sungrow String Inverter', 1),

@@ -1,6 +1,8 @@
 import sys
 import collections
+from copy import deepcopy
 import tinkerforge_util as tfutil
+
 import sungrow
 import solarmax
 import victron_energy
@@ -67,6 +69,7 @@ table_prototypes = []
 table_typedefs = []
 table_typenames = []
 table_news = []
+table_lookup_cases = []
 default_device_addresses = []
 specs = []
 virtual_meters = collections.OrderedDict()
@@ -81,10 +84,24 @@ for module in modules:
         for lang in display_name[1]:
             translation_tables.setdefault(lang, []).append(f'"table_{table_id.under}": "{display_name[1][lang]}"')
 
+    table_lookup_extras = {}
+
+    for table_lookup_extra in getattr(module, 'table_lookup_extras', []):
+        extra = '        ' + table_lookup_extra[1].strip()
+
+        if extra.endswith('}'):
+            extra += '\n'
+
+        table_lookup_extras[table_lookup_extra[0]] = extra
+
     for table_prototype in module.table_prototypes:
         table_id = util.FlavoredName(table_prototype[0]).get()
 
         table_ids.append(table_id)
+
+        has_virtual_meter = False
+        has_custom_lookup = False
+        table_lookup_cases.append(f'    case MeterModbusTCPTableID::{table_id.camel}:')
 
         if table_prototype[1] == None:
             table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
@@ -93,18 +110,37 @@ for module in modules:
 
             for member in table_prototype[1]:
                 if member == 'virtual_meter':
+                    has_virtual_meter = True
+
                     table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
+                    table_lookup_cases.append(f'        {table_id.under}.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<{table_id.camel}VirtualMeter>();')
                 elif member == 'device_address':
                     table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
+                    table_lookup_cases.append('        device_address = ephemeral_table_config->get("device_address")->asUint8();')
                 elif member == 'device_address_no_default':
                     table_prototypes.append('        {"device_address", Config::Uint8(0)},')
+                    table_lookup_cases.append('        device_address = ephemeral_table_config->get("device_address")->asUint8();')
                 elif isinstance(member, tuple):
+                    has_custom_lookup = True
+
                     table_prototypes.append(f'        {{"{member[0]}", {member[1]}}},')
                 else:
                     print(f'Error: Table prototype {table_id.space} has unknown member {member}')
                     sys.exit(1)
 
             table_prototypes.append('    })});')
+
+        try:
+            table_lookup_cases.append(table_lookup_extras[table_id.space])
+        except KeyError:
+            pass
+
+        if has_virtual_meter:
+            table_lookup_cases.append(f'        table = get_{table_id.under}_table(slot, {table_id.under}.virtual_meter);')
+        elif not has_custom_lookup:
+            table_lookup_cases.append(f'        table = &{table_id.under}_table;')
+
+        table_lookup_cases.append('        break;\n')
 
         table_typedefs.append(f'type TableConfig{table_id.camel} = [\n'
                               f'    MeterModbusTCPTableID.{table_id.camel},\n    {{')
@@ -151,6 +187,19 @@ specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(
 specs_h.append('}')
 
 for spec in specs:
+    alias = spec.get('alias')
+
+    if alias != None:
+        for other_spec in specs:
+            if other_spec['name'] == alias:
+                name = spec['name']
+                spec = deepcopy(other_spec)
+                spec['name'] = name
+                break
+        else:
+            print(f'Error: {spec["name"]} is an alias for unknown {alias}')
+            sys.exit(1)
+
     for variant_spec in spec.get('variants', [None]):
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
 
@@ -464,3 +513,5 @@ for lang in translation_tables:
     tfutil.specialize_template(f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx', {
         '{{{tables}}}': ',\n            '.join(translation_tables[lang]),
     })
+
+util.write_generated_file('generated/meter_modbus_tcp_table_lookup_cases.inc', '\n'.join(table_lookup_cases))

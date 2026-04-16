@@ -9,6 +9,10 @@ table_prototypes = [
     ('Eastron SDM630 TCP', ['device_address']),
 ]
 
+table_lookup_extras = [
+    ('Eastron SDM630 TCP', 'max_register_count = 50;'),
+]
+
 default_device_addresses = [
     ('Eastron SDM630 TCP', 1),
 ]

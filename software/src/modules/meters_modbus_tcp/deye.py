@@ -9,6 +9,10 @@ table_prototypes = [
     ('Deye Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Deye Hybrid Inverter', 'deye_hybrid_inverter.device_type = -1;'),
+]
+
 default_device_addresses = [
     ('Deye Hybrid Inverter', 1),
 ]

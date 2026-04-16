@@ -19,6 +19,11 @@ table_prototypes = [
     ('Fronius Verto Plus', ['device_address', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Fronius GEN24 Plus', 'fronius_gen24_plus.input_id_or_model_id = -1;'),
+    ('Fronius Verto Plus', 'fronius_verto_plus.input_id_or_model_id = -1;'),
+]
+
 default_device_addresses = [
     ('Fronius GEN24 Plus', 1),
     ('Fronius Verto Plus', 1),

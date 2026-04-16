@@ -24,6 +24,14 @@ table_prototypes = [
     ('Huawei Smart Logger 3000', ['device_address_no_default', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Huawei SUN2000', '''
+        huawei_sun2000.energy_storage_product_model = -1;
+        huawei_sun2000.number_of_pv_strings = -1;'''
+    ),
+    ('Huawei SUN2000 Smart Dongle', 'huawei_sun2000_smart_dongle.energy_storage_product_model = -1;'),
+]
+
 default_device_addresses = [
     ('Huawei SUN2000', 1),
     ('Huawei SUN2000 Smart Dongle', 1),

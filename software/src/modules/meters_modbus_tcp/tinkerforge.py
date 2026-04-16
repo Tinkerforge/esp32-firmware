@@ -12,6 +12,10 @@ table_prototypes = [
     ('Tinkerforge WARP Charger', None),
 ]
 
+table_lookup_extras = [
+    ('Tinkerforge WARP Charger', 'device_address = 1;'),
+]
+
 default_device_addresses = [
     ('Tinkerforge WARP Charger', 1),
 ]

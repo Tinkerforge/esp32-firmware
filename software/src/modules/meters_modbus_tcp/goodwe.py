@@ -9,6 +9,14 @@ table_prototypes = [
     ('Goodwe Inverter', ['device_address', 'virtual_meter']),
 ]
 
+table_lookup_extras = [
+    ('Goodwe Inverter', '''
+        goodwe_inverter.grid_detect_state = goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Grid ? GoodweGridDetectState::Reading : GoodweGridDetectState::Idle;
+        goodwe_inverter.battery_1_mode = -1;
+        goodwe_inverter.battery_2_mode = -1;'''
+    ),
+]
+
 default_device_addresses = [
     ('Goodwe Inverter', 247),
 ]
