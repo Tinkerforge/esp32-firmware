@@ -283,10 +283,7 @@ export function init() {
             const state = API.get("ntp/state");
 
             if (!config.enable) {
-                return {
-                    status: ModuleStatus.Disabled,
-                    text: () => __("time.status.disabled")
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             if (!state.synced) {
