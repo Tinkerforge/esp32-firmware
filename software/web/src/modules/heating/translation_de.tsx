@@ -3,7 +3,9 @@ import { h } from "preact";
 import { __ } from "../../ts/translation";
 let x = {
     "heating": {
-        "status": {},
+        "status": {
+            "heating": "Heizung"
+        },
         "navbar": {
             "heating": "Heizung"
         },
@@ -73,6 +75,7 @@ let x = {
                 <p>Bei Aktivierung wird die Heizung für die teuersten x Stunden am Tag in den blockierenden Betrieb gebracht.</p>
                 <p>Beispiel-Konfiguration: Blockierender Betrieb bei den teuersten 5 Stunden. Die Heizung wird für die 5 teuersten Stunden am Tag blockiert. Ausnahme: Wenn die PV-Überschuss-Steuerung aktiviert ist und der eingestellte Schwellwert überschritten wird, wird der blockierende Betrieb aufgehoben und der erweiterte Betrieb für die Heizung aktiviert.</p>
             </>,
+            "normal_operation": "Normaler Betrieb",
             "or": "oder",
             "but_only_if": "aber nur wenn",
             "kwh_per_day": "kWh/Tag",

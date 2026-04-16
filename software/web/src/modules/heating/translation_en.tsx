@@ -3,7 +3,9 @@ import { h } from "preact";
 import { __ } from "../../ts/translation";
 let x = {
     "heating": {
-        "status": {},
+        "status": {
+            "heating": "Heating"
+        },
         "navbar": {
             "heating": "Heating"
         },
@@ -73,6 +75,7 @@ let x = {
                 <p>If the dynamic price control is enabled, the heating is additionally put into blocking operation for the most expensive x hours per day.</p>
                 <p>Example configuration: Blocking operation for the most expensive 5 hours. The heating is blocked for the 5 most expensive hours per day. Exception: If the PV excess control is enabled and the set threshold is exceeded, the blocking operation is lifted and the extended operation for the heating is enabled.</p>
             </>,
+            "normal_operation": "Normal operation",
             "or": "or",
             "but_only_if": "but only if",
             "kwh_per_day": "kWh/day",

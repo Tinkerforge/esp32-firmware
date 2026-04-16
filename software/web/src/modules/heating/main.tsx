@@ -45,6 +45,7 @@ import { Alert, Button, Collapse } from "react-bootstrap";
 import { ControlPeriod } from "./generated/control_period.enum";
 import { sgr_blocking_override, state } from "./api";
 import { HeatingCurveChart } from "../../ts/components/heating_curve_chart";
+import { register_status_provider, ModuleStatus } from "ts/status_registry";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;
@@ -804,4 +805,20 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("heating", {
+        name: () => __("heating.status.heating"),
+        href: "#heating",
+        get_status: () => {
+            const state = API.get("heating/state");
+
+            if (!state.enabled) {
+                return {status: ModuleStatus.Disabled};
+            }
+
+            return {
+                status: ModuleStatus.Ok,
+                text: () => state.sgr_extended ? __("heating.content.extended_operation") : (state.sgr_blocking ? __("heating.content.blocking_operation") : __("heating.content.normal_operation"))
+            };
+        }
+    });
 }
