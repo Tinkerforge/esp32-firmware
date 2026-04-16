@@ -1,7 +1,7 @@
 None = -1
 Block = 0
 Normal
-Charge From Excess
-Charge From Grid
-Discharge To Load
-Discharge To Grid
+Block Discharge
+Force Charge
+Block Charge
+Force Discharge

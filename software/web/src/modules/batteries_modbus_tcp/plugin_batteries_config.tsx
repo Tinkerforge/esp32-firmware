@@ -900,19 +900,28 @@ export function pre_init() {
                 let battery_mode_names = [
                     __("batteries.content.battery_mode_block"),
                     __("batteries.content.battery_mode_normal"),
-                    __("batteries.content.battery_mode_charge_from_excess"),
-                    __("batteries.content.battery_mode_charge_from_grid"),
-                    __("batteries.content.battery_mode_discharge_to_load"),
-                    __("batteries.content.battery_mode_discharge_to_grid"),
+                    __("batteries.content.battery_mode_block_discharge"),
+                    __("batteries.content.battery_mode_force_charge"),
+                    __("batteries.content.battery_mode_block_charge"),
+                    __("batteries.content.battery_mode_force_discharge"),
+                ];
+
+                let battery_mode_long_names = [
+                    __("batteries.content.battery_mode_long_block"),
+                    __("batteries.content.battery_mode_long_normal"),
+                    __("batteries.content.battery_mode_long_block_discharge"),
+                    __("batteries.content.battery_mode_long_force_charge"),
+                    __("batteries.content.battery_mode_long_block_charge"),
+                    __("batteries.content.battery_mode_long_force_discharge"),
                 ];
 
                 let battery_mode_order = [
                     BatteryMode.Normal,
-                    BatteryMode.ChargeFromExcess,
-                    BatteryMode.DischargeToLoad,
                     BatteryMode.Block,
-                    BatteryMode.DischargeToGrid,
-                    BatteryMode.ChargeFromGrid,
+                    BatteryMode.BlockCharge,
+                    BatteryMode.BlockDischarge,
+                    BatteryMode.ForceCharge,
+                    BatteryMode.ForceDischarge,
                 ];
 
                 let battery_mode_items = battery_mode_order.map(mode => [mode, battery_mode_names[mode]]);
@@ -1370,7 +1379,7 @@ export function pre_init() {
                         let mode = battery_mode_order[i];
 
                         edit_children.push(
-                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode])} modal>
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode], battery_mode_long_names[mode])} modal>
                                 <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                     <RegisterEditor
                                         register_address_mode={config[1].table[1].register_address_mode}

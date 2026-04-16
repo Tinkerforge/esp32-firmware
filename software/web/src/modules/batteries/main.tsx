@@ -1138,19 +1138,19 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                 status_charge = 0;
                 status_discharge = 0;
                 break;
-            case BatteryMode.ChargeFromExcess:
+            case BatteryMode.BlockDischarge:
                 status_charge = 0;
                 status_discharge = 1;
                 break;
-            case BatteryMode.ChargeFromGrid:
+            case BatteryMode.ForceCharge:
                 status_charge = 2;
                 status_discharge = 1;
                 break;
-            case BatteryMode.DischargeToLoad:
+            case BatteryMode.BlockCharge:
                 status_charge = 1;
                 status_discharge = 0;
                 break;
-            case BatteryMode.DischargeToGrid:
+            case BatteryMode.ForceDischarge:
                 status_charge = 1;
                 status_discharge = 2;
                 break;
@@ -1168,10 +1168,10 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         let battery_mode_names = [
             __("batteries.content.battery_mode_block"),
             __("batteries.content.battery_mode_normal"),
-            __("batteries.content.battery_mode_charge_from_excess"),
-            __("batteries.content.battery_mode_charge_from_grid"),
-            __("batteries.content.battery_mode_discharge_to_load"),
-            __("batteries.content.battery_mode_discharge_to_grid"),
+            __("batteries.content.battery_mode_block_discharge"),
+            __("batteries.content.battery_mode_force_charge"),
+            __("batteries.content.battery_mode_block_charge"),
+            __("batteries.content.battery_mode_force_discharge"),
         ];
 
         return (

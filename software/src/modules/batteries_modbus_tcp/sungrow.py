@@ -43,7 +43,6 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Block',
-        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -90,7 +89,6 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Normal',
-        'actions': ('Normal', 'Normal'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -136,8 +134,7 @@ specs = [
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Block'),
+        'mode': 'Block Discharge',
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -183,8 +180,7 @@ specs = [
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'mode': 'Charge From Grid',
-        'actions': ('Force', 'Block'),
+        'mode': 'Force Charge',
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -230,8 +226,7 @@ specs = [
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'mode': 'Discharge To Load',
-        'actions': ('Block', 'Normal'),
+        'mode': 'Block Charge',
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -277,8 +272,7 @@ specs = [
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'mode': 'Discharge To Grid',
-        'actions': ('Block', 'Force'),
+        'mode': 'Force Discharge',
         'register_blocks': [
             {
                 'description': 'EMS mode selection',

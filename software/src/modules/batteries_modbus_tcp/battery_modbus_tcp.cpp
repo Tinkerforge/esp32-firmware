@@ -39,14 +39,14 @@
 static const char *get_battery_mode_display_name(BatteryMode value, Language language = Language::English)
 {
     switch (value) {
-    case BatteryMode::None:             return language == Language::English ? "none"                                : "nichts";
-    case BatteryMode::Block:            return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
-    case BatteryMode::Normal:           return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
-    case BatteryMode::ChargeFromExcess: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
-    case BatteryMode::ChargeFromGrid:   return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
-    case BatteryMode::DischargeToLoad:  return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
-    case BatteryMode::DischargeToGrid:  return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
-    default:                            return language == Language::English ? "unknown"                             : "unbekannt";
+    case BatteryMode::None:           return language == Language::English ? "none"                                : "nichts";
+    case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
+    case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
+    case BatteryMode::BlockDischarge: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
+    case BatteryMode::ForceCharge:    return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
+    case BatteryMode::BlockCharge:    return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
+    case BatteryMode::ForceDischarge: return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
+    default:                          return language == Language::English ? "unknown"                             : "unbekannt";
     }
 }
 

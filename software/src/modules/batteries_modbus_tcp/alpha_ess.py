@@ -35,10 +35,9 @@ specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',
         'mode': 'Block',
-        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block charge and discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -55,7 +54,6 @@ specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',
         'mode': 'Normal',
-        'actions': ('Normal', 'Normal'),
         'register_blocks': [
             {
                 'description': 'Dispatch',
@@ -69,11 +67,10 @@ specs = [
     },
     {
         'group': 'Alpha ESS Hybrid Inverter',
-        'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Block'),
+        'mode': 'Block Discharge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -89,11 +86,10 @@ specs = [
     },
     {
         'group': 'Alpha ESS Hybrid Inverter',
-        'mode': 'Charge From Grid',
-        'actions': ('Force', 'Block'),
+        'mode': 'Force Charge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # force charge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -109,11 +105,10 @@ specs = [
     },
     {
         'group': 'Alpha ESS Hybrid Inverter',
-        'mode': 'Discharge To Load',
-        'actions': ('Block', 'Normal'),
+        'mode': 'Block Charge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block charge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -129,11 +124,10 @@ specs = [
     },
     {
         'group': 'Alpha ESS Hybrid Inverter',
-        'mode': 'Discharge To Grid',
-        'actions': ('Block', 'Force'),
+        'mode': 'Force Discharge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # force discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [

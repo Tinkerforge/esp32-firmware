@@ -62,7 +62,6 @@ specs = [
     {
         'group': 'SAX Power Home Basic Mode',
         'mode': 'Block',
-        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -85,7 +84,6 @@ specs = [
     {
         'group': 'SAX Power Home Basic Mode',
         'mode': 'Normal',
-        'actions': ('Normal', 'Normal'),
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -107,8 +105,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Block'),
+        'mode': 'Block Discharge',
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -130,8 +127,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Charge From Grid',
-        'actions': ('Force', 'Block'),  # FIXME: force degraded to normal
+        'mode': 'Force Charge',  # FIXME: force degraded to normal
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -153,8 +149,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Discharge To Load',
-        'actions': ('Block', 'Normal'),
+        'mode': 'Block Charge',
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -176,8 +171,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Discharge To Grid',
-        'actions': ('Block', 'Force'),  # FIXME: force degraded to normal
+        'mode': 'Force Discharge',  # FIXME: force degraded to normal
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',

@@ -743,7 +743,7 @@ void BatteryControl::evaluate_all_rules()
 
         // Forced charging overrides everything.
         if (charge_action == RuleAction::Force) {
-            new_mode = BatteryMode::ChargeFromGrid;
+            new_mode = BatteryMode::ForceCharge;
             discharge_action = static_cast<RuleAction>(std::numeric_limits<std::underlying_type<RuleAction>::type>::max());
             break;
         }
@@ -752,7 +752,7 @@ void BatteryControl::evaluate_all_rules()
 
         // Forced discharge overrides normal mode.
         if (discharge_action == RuleAction::Force) {
-            new_mode = BatteryMode::DischargeToGrid;
+            new_mode = BatteryMode::ForceDischarge;
             break;
         }
 
@@ -761,11 +761,11 @@ void BatteryControl::evaluate_all_rules()
             if (discharge_action == RuleAction::Normal) {
                 new_mode = BatteryMode::Normal;
             } else { // block discharge
-                new_mode = BatteryMode::ChargeFromExcess;
+                new_mode = BatteryMode::BlockDischarge;
             }
         } else { // block charge
             if (discharge_action == RuleAction::Normal) {
-                new_mode = BatteryMode::DischargeToLoad;
+                new_mode = BatteryMode::BlockCharge;
             } else { // block discharge
                 new_mode = BatteryMode::Block;
             }

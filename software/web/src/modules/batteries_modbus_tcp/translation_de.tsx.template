@@ -44,7 +44,7 @@ let x = {
             "max_normal_discharge_power": "Maximale normale Entladeleistung",
             "force_charge_rate": "Erzwungene Laderate",
             "force_discharge_rate": "Erzwungene Entladerate",
-            "register_title": /*SFN*/(mode: string) => "Speichermodus: " + mode/*NF*/,
+            "register_title": /*SFN*/(mode: string, mode_long: string) => "Speichermodus: " + mode + " (" + mode_long + ")"/*NF*/,
             "register_address_mode": "Adressmodus",
             "register_address_mode_address": "Registeradresse (beginnt bei 0)",
             "register_address_mode_number": "Registernummer (beginnt bei 1)",
