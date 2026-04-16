@@ -732,8 +732,8 @@ export function init() {
             }
 
             // Check for errors in any charger
-            const has_error = state?.chargers?.some(c => c.s === CASState.Error);
-            if (has_error || state?.state === 2) {
+            const has_error = state.chargers.some(c => c.s === CASState.Error);
+            if (has_error || state.state === 2) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("charge_manager.status.error")
