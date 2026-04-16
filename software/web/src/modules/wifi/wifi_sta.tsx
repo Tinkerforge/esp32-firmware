@@ -498,7 +498,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             />
                         </FormRow>}
 
-                    {wifi_state.connection_state == WifiState.NotConnected && wifi_state.sta_disconnect_reason != WifiDisconnectReason.None &&
+                    {wifi_state.connection_state == WifiState.NotConnected && wifi_state.sta_disconnect_reason != WifiDisconnectReason.None && wifi_state.sta_disconnect_reason != WifiDisconnectReason.ByRequest &&
                         <Alert variant="danger">
                             {disconnect_reason_to_string(wifi_state.sta_disconnect_reason)}
                         </Alert>

@@ -780,6 +780,9 @@ static WifiDisconnectReason reason_code_to_enum(uint8_t reason_code)
         case WIFI_REASON_HANDSHAKE_TIMEOUT:
         case WIFI_REASON_BEACON_TIMEOUT:
             return WifiDisconnectReason::PoorReception;
+        case WIFI_REASON_ASSOC_LEAVE:
+        case WIFI_REASON_STA_LEAVING:
+            return WifiDisconnectReason::ByRequest;
         default:
             return WifiDisconnectReason::GenericError;
     }
