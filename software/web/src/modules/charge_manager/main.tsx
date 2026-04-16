@@ -740,16 +740,7 @@ export function init() {
                 };
             }
 
-            // Count charging chargers
-            const charging_count = state?.chargers?.filter(c => c.s === CASState.Charging).length ?? 0;
-            const text = charging_count > 0
-                ? `${charging_count}/${charger_count}`
-                : `${charger_count}`;
-
-            return {
-                status: ModuleStatus.Ok,
-                text: () => text
-            };
+           return { status: ModuleStatus.Ok };
         }
     });
 }
