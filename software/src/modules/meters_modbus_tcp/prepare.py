@@ -258,7 +258,6 @@ for spec in specs:
                 value_addresses.append(f'    {address_name} = {start_address},')
 
             value_specs.append('    {\n'
-                              f'        "{value["name"]}",\n'
                               f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
                               f'        {start_address},\n'
                               f'        ModbusValueType::{value.get("value_type", "None")},\n'

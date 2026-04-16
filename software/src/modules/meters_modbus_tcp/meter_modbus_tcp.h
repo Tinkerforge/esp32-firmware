@@ -48,7 +48,6 @@ class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
     struct ValueSpec {
-        const char *name;
         ModbusRegisterType register_type;
         size_t start_address;
         ModbusValueType value_type;
