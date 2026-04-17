@@ -228,15 +228,6 @@ void Temperatures::update()
         return;
     }
 
-    // Check if lat/lon are configured (non-zero)
-    if (config.get("lat")->asInt() == 0 && config.get("long")->asInt() == 0) {
-        logger.printfln("Latitude and longitude not configured");
-        download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
-        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
-        retry_update(RETRY_INTERVAL);
-        return;
-    }
-
     if(json_buffer == nullptr) {
         json_buffer = (char *)calloc_psram_or_dram(TEMPERATURES_MAX_JSON_LENGTH, sizeof(char));
     } else {
