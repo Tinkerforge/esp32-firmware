@@ -111,7 +111,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
 
         return (
             <SubPage name="mqtt" title={__("mqtt.content.mqtt")}>
-                <SubPage.Status>
+                <SubPage.Status collapsed={!saved_config.enable_mqtt}>
                     <FormRow label={__("mqtt.status.connection")}>
                         <IndicatorGroup
                             style="width: 100%"
