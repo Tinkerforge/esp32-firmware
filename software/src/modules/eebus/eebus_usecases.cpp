@@ -51,7 +51,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_EVCS_USECASE
     usecase_list.push_back(&charging_summary);
     charging_summary.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(charging_summary.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
     usecase_list.push_back(&limitation_of_power_consumption);
@@ -64,7 +63,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_LPP_USECASE
     usecase_list.push_back(&limitation_of_power_production);
     limitation_of_power_production.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(limitation_of_power_production.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     usecase_list.push_back(&evse_commissioning_and_configuration);
@@ -73,7 +71,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_MGCP_USECASE
     usecase_list.push_back(&monitoring_of_grid_connection_point);
     monitoring_of_grid_connection_point.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(monitoring_of_grid_connection_point.get_usecase_type());
 #endif
 
     // EV actors
@@ -86,7 +83,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_CEVC_USECASE
     usecase_list.push_back(&coordinate_ev_charging);
     coordinate_ev_charging.set_entity_address({1, 1});
-    supported_usecases.push_back(coordinate_ev_charging.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
     usecase_list.push_back(&ev_charging_electricity_measurement);
@@ -95,7 +91,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     usecase_list.push_back(&overload_protection_by_ev_charging_current_curtailment);
     overload_protection_by_ev_charging_current_curtailment.set_entity_address(EVEntity::entity_address);
-    supported_usecases.push_back(overload_protection_by_ev_charging_current_curtailment.get_usecase_type());
 #endif
 
     // Map out the features used and assign feature addresses
