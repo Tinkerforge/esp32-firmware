@@ -92,7 +92,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
         return (
             <SubPage name="wireguard" title={__("wireguard.content.wireguard")}>
-                <SubPage.Status>
+                <SubPage.Status collapsed={!saved_config.enable}>
                     <FormRow label={__("wireguard.status.connection")}>
                         <IndicatorGroup
                             style="width: 100%"
