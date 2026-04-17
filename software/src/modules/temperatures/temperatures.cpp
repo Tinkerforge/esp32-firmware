@@ -82,6 +82,13 @@ void Temperatures::pre_setup()
         {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
+        {"current",    Config::Int16(INT16_MAX)},
+        {"today_min",  Config::Int16(INT16_MAX)},
+        {"today_max",  Config::Int16(INT16_MAX)},
+        {"today_avg",  Config::Int16(INT16_MAX)},
+        {"tomorrow_min", Config::Int16(INT16_MAX)},
+        {"tomorrow_max", Config::Int16(INT16_MAX)},
+        {"tomorrow_avg", Config::Int16(INT16_MAX)},
     });
 
     temperatures = Config::Object({
@@ -506,6 +513,13 @@ void Temperatures::compute_day_stats()
 
     compute_slice(today_start_idx, tomorrow_start_idx, today_min, today_max, today_avg);
     compute_slice(tomorrow_start_idx, day_after_idx, tomorrow_min, tomorrow_max, tomorrow_avg);
+
+    this->state.get("today_min")->updateInt(today_min);
+    this->state.get("today_max")->updateInt(today_max);
+    this->state.get("today_avg")->updateInt(today_avg);
+    this->state.get("tomorrow_min")->updateInt(tomorrow_min);
+    this->state.get("tomorrow_max")->updateInt(tomorrow_max);
+    this->state.get("tomorrow_avg")->updateInt(tomorrow_avg);
 }
 
 // Create API path that includes currently configured latitude and longitude
@@ -606,7 +620,9 @@ int16_t Temperatures::get_current()
     const int32_t t1 = temps_arr->get(hour_index + 1)->asInt();
     const uint32_t seconds_into_hour = seconds_since_start - hour_index * 3600;
 
-    return static_cast<int16_t>(t0 + (t1 - t0) * static_cast<int32_t>(seconds_into_hour) / 3600);
+    const int16_t result = static_cast<int16_t>(t0 + (t1 - t0) * static_cast<int32_t>(seconds_into_hour) / 3600);
+    this->state.get("current")->updateInt(result);
+    return result;
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
