@@ -1270,11 +1270,6 @@ export function init() {
                 return {status: ModuleStatus.Disabled};
             }
 
-            // Count connected and discovered peers
-            const connectedCount = state.peers.filter(p =>
-                p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
-            ).length ?? 0;
-            const discoveredCount = state.peers.length ?? 0;
 
             // Check for specific error conditions and return appropriate message
             if (state.peers.some(p => p.state === NodeState.EEBUSDegraded)) {
@@ -1308,6 +1303,11 @@ export function init() {
                 };
             }
 
+            // Count connected and discovered peers
+            const connectedCount = state.peers.filter(p =>
+                p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
+            ).length ?? 0;
+            const discoveredCount = state.peers.length ?? 0;
 
             if (state.peers.some(p => p.state === NodeState.EEBUSActive)) {
                 return {
