@@ -558,7 +558,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                    value={this.bssid_to_string(state.bssid)}
                                    onValue={(v) => this.setState({bssid: this.string_to_bssid(v)})}
                                    invalidFeedback={__("wifi.content.sta_bssid_invalid")}
-                                   style="font-family:monospace"
+                                   class="font-monospace"
                                    />
                     </FormRow>
 

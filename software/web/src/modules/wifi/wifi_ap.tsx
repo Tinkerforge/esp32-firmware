@@ -99,7 +99,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     <FormRow label={__("wifi.content.ap_bssid")}>
                         <InputText
                             value={wifi_state.ap_bssid.length == 0 ? __("wifi.content.ap_bssid_none") : wifi_state.ap_bssid}
-                            style={wifi_state.ap_bssid.length == 0 ? undefined : "font-family:monospace"}
+                            class={wifi_state.ap_bssid.length == 0 ? undefined : "font-monospace"}
                         />
                     </FormRow>
                 </SubPage.Status>

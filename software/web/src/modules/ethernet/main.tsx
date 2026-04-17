@@ -115,7 +115,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                     <FormRow label={__("ethernet.content.mac")}>
                         <InputText
                             value={eth_state.mac.length == 0 ? __("ethernet.content.mac_none") : eth_state.mac}
-                            style={eth_state.mac.length == 0 ? undefined : "font-family:monospace"}
+                            class={eth_state.mac.length == 0 ? undefined : "font-monospace"}
                         />
                     </FormRow>
                 </SubPage.Status>
