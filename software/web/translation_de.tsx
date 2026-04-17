@@ -85,7 +85,7 @@ let x = {
             "uploading": "wird hochgeladen..."
         },
         "input_host": {
-            "invalid_feedback": "Hostname oder IP-Address ist ungültig"
+            "invalid_feedback": "Hostname oder IP-Adresse ist ungültig"
         },
         "item_modal": {
             "error_button": "Schließen",
