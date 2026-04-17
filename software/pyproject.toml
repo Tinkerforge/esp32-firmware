@@ -42,6 +42,10 @@ tests = [
     "websockets", # ocpp/*
 ]
 
+iso15118 = [
+    "scapy"
+]
+
 [tool.pio-hooks]
 requires-node = "24.14.0"
 requires-npm = "11.12.0"
