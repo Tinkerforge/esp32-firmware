@@ -156,20 +156,13 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
             return <SubPage name="temperatures" />;
         }
 
-        const is_configured = (state.lat !== 0) || (state.long !== 0);
         const is_weather_service = state.source == TemperatureSource.WeatherService;
 
         const temps = state.temperatures;
 
         return (
             <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
-                {state.config_enable &&
-                    <SubPage.Status>
-                        {is_weather_service && !is_configured ? (
-                            <FormRow>
-                                <InputText value={__("temperatures.content.not_configured")} />
-                            </FormRow>
-                        ) : (
+                    <SubPage.Status collapsed={!state.config_enable}>
                             <>
                                 <FormRow label={__("temperatures.content.temperature_forecast")}>
                                     <div class="card">
@@ -276,8 +269,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                     />
                                 </FormRow>}
                             </>
-                        )}
-                    </SubPage.Status>}
+                    </SubPage.Status>
                 <SubPage.Config id="temperatures_config_form"
                             isModified={false}
                             isDirty={this.isDirty()}
@@ -306,7 +298,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                     {is_weather_service &&
                     <FormRow label={__("temperatures.content.latitude")} label_muted={__("temperatures.content.latitude_muted")}>
                         <InputFloat
-                            required
+                            required={state.enable}
                             unit="°"
                             value={state.lat}
                             onValue={(v) => this.setState({lat: v})}
@@ -318,7 +310,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                     {is_weather_service &&
                     <FormRow label={__("temperatures.content.longitude")} label_muted={__("temperatures.content.longitude_muted")}>
                         <InputFloat
-                            required
+                            required={state.enable}
                             unit="°"
                             value={state.long}
                             onValue={(v) => this.setState({long: v})}

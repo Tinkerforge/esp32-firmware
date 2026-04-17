@@ -58,8 +58,9 @@ let x = {
                     "morgige Höchsttemperatur",
                 ];
                 const type_name = type_names[type] ?? "unbekannt";
-                const comp = comparison == 0 ? "größer" : "kleiner";
-                return (<>Wenn die {type_name} <b>{comp}</b> als <b>{toLocaleFixed(value / 10, 1)} °C</b> ist,{" "}</>)
+                const comp_prefix = comparison == 0 ? "über" : "unter";
+                const comp_suffix = comparison == 0 ? "steigt" : "fällt";
+                return (<>Wenn die {type_name} <b>{comp_prefix} {toLocaleFixed(value / 10, 1)} °C {comp_suffix}</b>,{" "}</>)
             }/*NF*/,
             "temperature_type": "Temperaturwert",
             "type_current": "Aktuelle Außentemperatur",
