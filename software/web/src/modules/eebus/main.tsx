@@ -1266,18 +1266,18 @@ export function init() {
             const state = API.get("eebus/state");
             const usecases = API.get("eebus/usecases");
 
-            if (!config?.enable) {
+            if (!config.enable) {
                 return {status: ModuleStatus.Disabled};
             }
 
             // Count connected and discovered peers
-            const connectedCount = state?.peers?.filter(p =>
+            const connectedCount = state.peers.filter(p =>
                 p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
             ).length ?? 0;
-            const discoveredCount = state?.peers?.length ?? 0;
+            const discoveredCount = state.peers.length ?? 0;
 
             // Check for specific error conditions and return appropriate message
-            if (state?.peers?.some(p => p.state === NodeState.EEBUSDegraded)) {
+            if (state.peers.some(p => p.state === NodeState.EEBUSDegraded)) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.peer_degraded")
@@ -1285,23 +1285,23 @@ export function init() {
             }
 
 
-            if (usecases?.lpc != null &&
-                usecases?.lpc?.usecase_state === LoadcontrolState.Failsafe) {
+            if (usecases.lpc != null &&
+                usecases.lpc?.usecase_state === LoadcontrolState.Failsafe) {
                 return {
                     status: ModuleStatus.Warning,
                     text: () => __("eebus.status.lpc_failsafe")
                 };
             }
 
-            if (usecases?.evsecc?.evse_failure) {
+            if (usecases.evsecc?.evse_failure) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.evse_failure")
                 };
             }
 
-            if (usecases?.cevc?.energy_broker_connected &&
-                !usecases?.cevc?.energy_broker_heartbeat_ok) {
+            if (usecases.cevc?.energy_broker_connected &&
+                !usecases.cevc?.energy_broker_heartbeat_ok) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.heartbeat_timeout")
@@ -1309,7 +1309,7 @@ export function init() {
             }
 
 
-            if (state?.peers?.some(p => p.state === NodeState.EEBUSActive)) {
+            if (state.peers.some(p => p.state === NodeState.EEBUSActive)) {
                 return {
                     status: ModuleStatus.Ok,
                     text: () => `${connectedCount}/${discoveredCount} ` + __("eebus.content.peer_info.state_eebus_connected")
