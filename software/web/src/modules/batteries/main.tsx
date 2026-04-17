@@ -1177,7 +1177,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
         return (
             <SubPage name="batteries" title={__("batteries.content.batteries")} colClasses="col-xl-10">
-                <SubPage.Status>
+                <SubPage.Status collapsed={!API.get("batteries/config").enabled}>
                     <Alert variant="warning"> {__("batteries.content.experimental")}</Alert>
 
                     {active_test_modes.length > 0 ?
@@ -1252,6 +1252,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 {/*#endif*/}
                 </SubPage.Status>
                 <SubPage.Config id="batteries_config_form" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <Alert variant="warning" hidden={API.get("batteries/config").enabled}> {__("batteries.content.experimental")}</Alert>
                     <div class="form-group">
                         <FormRow label={__("batteries.content.enable_battery_control")}>
                             <Switch
