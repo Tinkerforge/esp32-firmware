@@ -140,6 +140,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     </FormRow>
 
                     <IPConfiguration
+                        required={state.enable}
                         showAnyAddress={false}
                         onValue={(v) => this.setState({internal_ip: v.ip, internal_subnet: v.subnet, internal_gateway: v.gateway})}
                         value={{ip: state.internal_ip, subnet: state.internal_subnet, gateway: state.internal_gateway}}
@@ -170,20 +171,20 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                         />
 
                     <FormRow label={__("wireguard.content.remote_host")}>
-                        <InputHost required
+                        <InputHost required={state.enable}
                                    value={state.remote_host}
                                    onValue={this.set("remote_host")}/>
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.port")}>
-                        <InputNumber required
+                        <InputNumber required={state.enable}
                                      min={1}
                                      max={65535}
                                      value={state.remote_port}
                                      onValue={this.set("remote_port")}/>
                     </FormRow>
                     <FormRow label={__("wireguard.content.local_port")}>
-                        <InputNumber required
+                        <InputNumber required={state.enable}
                                      min={1}
                                      max={65535}
                                      value={state.local_port}
@@ -199,7 +200,8 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.private_key")}>
-                        <InputPassword maxLength={44}
+                        <InputPassword required={state.enable}
+                                       maxLength={44}
                                        value={state.private_key}
                                        onValue={(val) => {
                                             let publicKey = "";
@@ -219,7 +221,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
                     <FormRow label={__("wireguard.content.wireguard_public_key")}>
                         <div class="input-group mb-2">
-                            <input type="text" class="form-control" readonly value={this.state.publicKey} />
+                            <input type="text" class="form-control" readonly value={this.state.publicKey} required={state.enable}/>
                             <Button className="px-2 py-1" onClick={() => {
                                 util.copyToClipboard(this.state.publicKey);
                                 this.setState({publicKeyCopied: true});
@@ -231,7 +233,8 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.remote_public_key")}>
-                        <InputPassword maxLength={44}
+                        <InputPassword required={state.enable}
+                                       maxLength={44}
                                        value={state.remote_public_key}
                                        onValue={this.set("remote_public_key")}
                                        />
@@ -249,13 +252,13 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
                     <FormRow label={__("wireguard.content.allowed_ip")}>
                         <InputIP invalidFeedback={__("wireguard.content.allowed_ip_invalid")}
-                            required
+                            required={state.enable}
                             value={state.allowed_ip}
                             onValue={this.set("allowed_ip")}/>
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.allowed_subnet")}>
-                        <InputSubnet required
+                        <InputSubnet required={state.enable}
                             minPrefixLength={0}
                             maxPrefixLength={32}
                             value={state.allowed_subnet}
@@ -265,7 +268,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.mtu")} label_muted={__("wireguard.content.mtu_muted")}>
-                        <InputNumber required
+                        <InputNumber required={state.enable}
                                      min={576}
                                      max={1440}
                                      value={state.mtu}

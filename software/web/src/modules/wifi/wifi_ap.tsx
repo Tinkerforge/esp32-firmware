@@ -209,6 +209,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                         showAnyAddress
                         showDhcp={false}
                         showDns={false}
+                        required={state.enable_ap}
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}

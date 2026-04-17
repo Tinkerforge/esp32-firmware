@@ -645,6 +645,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         showAnyAddress
                         showDhcp
                         showDns
+                        required={state.enable_sta}
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}

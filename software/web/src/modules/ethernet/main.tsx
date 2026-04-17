@@ -168,6 +168,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                         showAnyAddress
                         showDhcp
                         showDns
+                        required={state.enable_ethernet}
                         onValue={(v) => this.setState(v)}
                         value={state}
                         setValid={(v) => this.ipconfig_valid = v}

@@ -134,7 +134,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
             <FormRow label={props.ip_label ? props.ip_label : __("component.ip_configuration.static_ip")}>
                 <InputIP invalidFeedback={ip_invalid_feedback}
                          moreClasses={ip_is_network_addr || ip_is_broadcast_addr ? ["is-invalid"] : [""]}
-                         required={!props.showDhcp || !dhcp}
+                         required={props.required && (!props.showDhcp || !dhcp)}
                          value={!props.showAnyAddress && props.value.ip == "0.0.0.0" ? "" : props.value.ip}
                          onValue={(v) => this.onUpdate("ip", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
             </FormRow>
@@ -146,7 +146,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                     <InputIP
                         invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
                         moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}
-                        required={!props.showDhcp || !dhcp}
+                        required={props.required && (!props.showDhcp || !dhcp)}
                         value={!props.showAnyAddress && props.value.gateway == "0.0.0.0" ? "" : props.value.gateway}
                         onValue={(v) => this.onUpdate("gateway", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
                 </FormRow>
@@ -157,7 +157,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                 {inner}
                 <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
                     <InputSubnet className={captured_subnet_name != "" ? "is-invalid" : ""}
-                            required={!props.showDhcp || !dhcp}
+                            required={props.required && (!props.showDhcp || !dhcp)}
                             value={props.value.subnet}
                             onValue={(v) => this.onUpdate("subnet", v)}
                             minPrefixLength={props.min_subnet_prefix}
