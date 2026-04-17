@@ -447,7 +447,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
-                <SubPage.Status>
+                <SubPage.Status collapsed={wifi_state.connection_state == WifiState.NotConfigured}>
                     {wifi_state.connection_state == WifiState.Connected && is_wifi_reception_bad(wifi_state.sta_rssi) &&
                         <Alert variant="warning">
                             {__("wifi.content.status_sta_rssi_weak")}
@@ -467,36 +467,33 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             ]}/>
                     </FormRow>
 
-                    {wifi_state.connection_state != WifiState.NotConfigured &&
-                        <FormRow label={__("wifi.content.status_sta_ip")}>
-                            <InputText
-                                value={wifi_state.sta_ip != "0.0.0.0"
-                                    ? wifi_state.sta_ip + " (/" + util.countBits(util.parseIP(wifi_state.sta_subnet)) + ")"
-                                    : __("wifi.content.status_sta_ip_none")}
-                            />
-                        </FormRow>}
+                    <FormRow label={__("wifi.content.status_sta_ip")}>
+                        <InputText
+                            value={wifi_state.sta_ip != "0.0.0.0"
+                                ? wifi_state.sta_ip + " (/" + util.countBits(util.parseIP(wifi_state.sta_subnet)) + ")"
+                                : __("wifi.content.status_sta_ip_none")}
+                        />
+                    </FormRow>
 
-                    {wifi_state.connection_state == WifiState.Connected &&
-                        <FormRow label={<>{__("wifi.content.status_sta_rssi")}<span class="ms-2">{wifi_symbol(wifi_state.sta_rssi)}</span></>}>
-                            <InputText
-                                value={wifi_state.sta_rssi + " dBm"}
-                            />
-                        </FormRow>}
+                    <FormRow label={<>{__("wifi.content.status_sta_rssi")}<span class="ms-2">{wifi_symbol(wifi_state.sta_rssi)}</span></>}>
+                        <InputText
+                            value={wifi_state.sta_rssi + " dBm"}
+                        />
+                    </FormRow>
 
                     <FormRow label={__("wifi.content.sta_mac")}>
                         <InputText
                             value={wifi_state.sta_mac}
-                            style="font-family:monospace"
+                            class="font-monospace"
                         />
                     </FormRow>
 
-                    {wifi_state.connection_state == WifiState.Connected &&
-                        <FormRow label={__("wifi.content.sta_connected_bssid")}>
-                            <InputText
-                                value={wifi_state.sta_bssid}
-                                style="font-family:monospace"
-                            />
-                        </FormRow>}
+                    <FormRow label={__("wifi.content.sta_connected_bssid")}>
+                        <InputText
+                            value={wifi_state.sta_bssid}
+                            class="font-monospace"
+                        />
+                    </FormRow>
 
                     {wifi_state.connection_state == WifiState.NotConnected && wifi_state.sta_disconnect_reason != WifiDisconnectReason.None && wifi_state.sta_disconnect_reason != WifiDisconnectReason.ByRequest &&
                         <Alert variant="danger">

@@ -80,7 +80,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
         return (
             <SubPage name="ethernet" title={__("ethernet.content.ethernet")}>
-                <SubPage.Status>
+                <SubPage.Status collapsed={eth_state.connection_state == EthernetState.NotConfigured}>
                     <FormRow label={__("ethernet.status.ethernet_connection")}>
                         <IndicatorGroup
                             style="width: 100%"
@@ -94,25 +94,23 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                             ]}/>
                     </FormRow>
 
-                    {eth_state.connection_state != EthernetState.NotConfigured && <>
-                        <FormRow label={__("ethernet.content.status_ip")}>
-                            <InputText
-                                value={eth_state.ip != "0.0.0.0"
-                                    ? eth_state.ip + " (/" + util.countBits(util.parseIP(eth_state.subnet)) + ")"
-                                    : __("ethernet.content.status_ip_none")}
-                            />
-                        </FormRow>
+                    <FormRow label={__("ethernet.content.status_ip")}>
+                        <InputText
+                            value={eth_state.ip != "0.0.0.0"
+                                ? eth_state.ip + " (/" + util.countBits(util.parseIP(eth_state.subnet)) + ")"
+                                : __("ethernet.content.status_ip_none")}
+                        />
+                    </FormRow>
 
-                        <FormRow label={__("ethernet.content.status_link")}>
-                            <InputText
-                                value={eth_state.link_speed > 0
-                                    ? eth_state.link_speed + " Mbps, " + (eth_state.full_duplex
-                                        ? __("ethernet.content.full_duplex")
-                                        : __("ethernet.content.half_duplex"))
-                                    : __("ethernet.content.status_link_none")}
-                            />
-                        </FormRow>
-                    </>}
+                    <FormRow label={__("ethernet.content.status_link")}>
+                        <InputText
+                            value={eth_state.link_speed > 0
+                                ? eth_state.link_speed + " Mbps, " + (eth_state.full_duplex
+                                    ? __("ethernet.content.full_duplex")
+                                    : __("ethernet.content.half_duplex"))
+                                : __("ethernet.content.status_link_none")}
+                        />
+                    </FormRow>
 
                     <FormRow label={__("ethernet.content.mac")}>
                         <InputText
