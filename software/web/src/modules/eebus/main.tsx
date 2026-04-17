@@ -1303,22 +1303,16 @@ export function init() {
             }
 
             // Count connected and discovered peers
-            const connectedCount = state.peers.filter(p =>
-                p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
-            ).length ?? 0;
-            const discoveredCount = state.peers.length ?? 0;
+            const connectedCount = state.peers.filter(p => p.state === NodeState.EEBUSActive).length;
 
-            if (state.peers.some(p => p.state === NodeState.EEBUSActive)) {
+            if (connectedCount > 0) {
                 return {
                     status: ModuleStatus.Ok,
-                    text: () => `${connectedCount}/${discoveredCount} ` + __("eebus.content.peer_info.state_eebus_connected")
+                    text: () => `${connectedCount} ` + __("eebus.status.n_devices_connected")
                 };
             }
 
-            return {
-                status: ModuleStatus.Ok,
-                text: () => `${connectedCount}/${discoveredCount}`
-            };
+            return { status: ModuleStatus.Ok };
         }
     });
 }

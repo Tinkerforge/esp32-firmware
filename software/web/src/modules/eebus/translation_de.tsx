@@ -99,7 +99,8 @@ let x = {
             "lpc_failsafe": "LPC Failsafe",
             "evse_failure": "EVSE Fehler",
             "heartbeat_timeout": "Heartbeat Timeout",
-            "discovery_failed": "Suche Fehlgeschlagen"
+            "discovery_failed": "Suche Fehlgeschlagen",
+            "n_devices_connected": "verbunden"
         },
         "script": {
             "save_failed": "Speichern der EEBUS-Einstellungen fehlgeschlagen.",
