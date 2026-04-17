@@ -58,8 +58,8 @@ export interface state {
 export interface usecases {
     commands_received: number;
     commands_sent: number;
-    charging_summary?: ChargeProcesses[];
-    power_consumption_limitation?: {
+    evcs?: ChargeProcesses[];
+    lpc?: {
         usecase_state: number;
         limit_active: boolean;
         current_limit: number;
@@ -68,7 +68,7 @@ export interface usecases {
         constraints_power_maximum: number;
         outstanding_duration_s: number;
     };
-    power_production_limitation?: {
+    lpp?: {
         usecase_state: number;
         limit_active: boolean;
         current_limit: number;
@@ -77,7 +77,7 @@ export interface usecases {
         constraints_power_maximum: number;
         outstanding_duration_s: number;
     };
-    ev_commissioning_and_configuration?: {
+    evcc?: {
         ev_connected: boolean;
         communication_standard: string;
         asymmetric_charging_supported: boolean;
@@ -87,11 +87,11 @@ export interface usecases {
         standby_power: number;
         standby_mode: number;
     };
-    evse_commissioning_and_configuration?: {
+    evsecc?: {
         evse_failure: boolean;
         evse_failure_description: string;
     }
-    ev_charging_electricity_measurement?: {
+    evcem?: {
         active: boolean;
         amps_phase_1: number;
         amps_phase_2: number;
@@ -102,7 +102,7 @@ export interface usecases {
         charged_wh: number;
         charged_valuesource_measured: boolean;
     };
-    monitoring_of_power_consumption?: {
+    mpc?: {
         active: boolean;
         total_power_w: number;
         power_phase_1_w: number;
@@ -121,7 +121,7 @@ export interface usecases {
         voltage_phase_3_1_v: number;
         frequency_mhz: number;
     };
-    coordinated_ev_charging?: {
+    cevc?: {
         has_charging_plan: boolean;
         charging_plan_start_time: number;
         target_power_w: number;
@@ -129,7 +129,7 @@ export interface usecases {
         energy_broker_connected: boolean;
         energy_broker_heartbeat_ok: boolean;
     };
-    monitoring_of_grid_connection_point?: {
+    mgcp?: {
         active: boolean;
         pv_curtailment_limit_factor_percent: number;
         total_power_w: number;
@@ -143,7 +143,7 @@ export interface usecases {
         voltage_phase_3_v: number;
         frequency_mhz: number;
     };
-    overload_protection_by_ev_charging_current_curtailment?: {
+    opev?: {
         limit_active: boolean;
         limit_phase_1_milliamps: number;
         limit_phase_2_milliamps: number;

@@ -177,16 +177,16 @@ function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild
 
     // Map use case enum values to the corresponding optional API property names
     const usecaseApiKeyMap: { [key: number]: keyof NonNullable<typeof usecases> } = {
-        [Usecases.LPC]: "power_consumption_limitation",
-        [Usecases.LPP]: "power_production_limitation",
-        [Usecases.EVCC]: "ev_commissioning_and_configuration",
-        [Usecases.EVCEM]: "ev_charging_electricity_measurement",
-        [Usecases.EVSECC]: "evse_commissioning_and_configuration",
-        [Usecases.EVCS]: "charging_summary",
-        [Usecases.MPC]: "monitoring_of_power_consumption",
-        [Usecases.CEVC]: "coordinated_ev_charging",
-        [Usecases.MGCP]: "monitoring_of_grid_connection_point",
-        [Usecases.OPEV]: "overload_protection_by_ev_charging_current_curtailment",
+        [Usecases.LPC]: "lpc",
+        [Usecases.LPP]: "lpp",
+        [Usecases.EVCC]: "evcc",
+        [Usecases.EVCEM]: "evcem",
+        [Usecases.EVSECC]: "evsecc",
+        [Usecases.EVCS]: "evcs",
+        [Usecases.MPC]: "mpc",
+        [Usecases.CEVC]: "cevc",
+        [Usecases.MGCP]: "mgcp",
+        [Usecases.OPEV]: "opev",
     };
 
     // Build the list items only for use cases present in the API response
@@ -304,8 +304,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     let rows: TableRow[] = [];
 
                                     // Limitation of Power Consumption
-                                    if (state.usecases.power_consumption_limitation != null) {
-                                        const lpc = state.usecases.power_consumption_limitation;
+                                    if (state.usecases.lpc != null) {
+                                        const lpc = state.usecases.lpc;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["LPC (Limitation of Power Consumption)"],
@@ -383,8 +383,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Limitation of Power Production
-                                    if (state.usecases.power_production_limitation != null) {
-                                        const lpp = state.usecases.power_production_limitation;
+                                    if (state.usecases.lpp != null) {
+                                        const lpp = state.usecases.lpp;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["LPP (Limitation of Power Production)"],
@@ -462,8 +462,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Commissioning and Configuration
-                                    if (state.usecases.ev_commissioning_and_configuration != null) {
-                                        const evcc = state.usecases.ev_commissioning_and_configuration;
+                                    if (state.usecases.evcc != null) {
+                                        const evcc = state.usecases.evcc;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["EVCC (EV Commissioning and Configuration)"],
@@ -539,9 +539,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Charging Electricity Measurement
-                                    if (state.usecases.ev_charging_electricity_measurement != null) {
-                                        const evcc = state.usecases.ev_commissioning_and_configuration;
-                                        const evcem = state.usecases.ev_charging_electricity_measurement;
+                                    if (state.usecases.evcem != null) {
+                                        const evcc = state.usecases.evcc;
+                                        const evcem = state.usecases.evcem;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["EVCEM (EV Charging Electricity Measurement)"],
@@ -593,8 +593,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EVSE Commissioning and Configuration
-                                    if (state.usecases.evse_commissioning_and_configuration != null) {
-                                        const evsecc = state.usecases.evse_commissioning_and_configuration;
+                                    if (state.usecases.evsecc != null) {
+                                        const evsecc = state.usecases.evsecc;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["EVSECC (EVSE Commissioning and Configuration)"],
@@ -622,8 +622,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // EV Charging Summary
-                                    if (state.usecases.charging_summary != null) {
-                                        const summary = state.usecases.charging_summary;
+                                    if (state.usecases.evcs != null) {
+                                        const summary = state.usecases.evcs;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["EVCS (EV Charging Summary)"],
@@ -651,8 +651,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Monitoring of Power Consumption
-                                    if (state.usecases.monitoring_of_power_consumption != null) {
-                                        const mpc = state.usecases.monitoring_of_power_consumption;
+                                    if (state.usecases.mpc != null) {
+                                        const mpc = state.usecases.mpc;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["MPC (Monitoring of Power Consumption)"],
@@ -724,8 +724,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Coordinated EV Charging
-                                    if (state.usecases.coordinated_ev_charging != null) {
-                                        const cevc = state.usecases.coordinated_ev_charging;
+                                    if (state.usecases.cevc != null) {
+                                        const cevc = state.usecases.cevc;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["CEVC (Coordinated EV Charging)"],
@@ -781,8 +781,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Monitoring of Grid Connection Point (MGCP)
-                                    if (state.usecases.monitoring_of_grid_connection_point != null) {
-                                        const mgcp = state.usecases.monitoring_of_grid_connection_point;
+                                    if (state.usecases.mgcp != null) {
+                                        const mgcp = state.usecases.mgcp;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["MGCP (Monitoring of Grid Connection Point)"],
@@ -852,8 +852,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
 
                                     // Overload Protection by EV Charging Current Curtailment (OPEV)
-                                    if (state.usecases.overload_protection_by_ev_charging_current_curtailment != null) {
-                                        const opev = state.usecases.overload_protection_by_ev_charging_current_curtailment;
+                                    if (state.usecases.opev != null) {
+                                        const opev = state.usecases.opev;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["OPEV (Overload Protection)"],
@@ -1285,23 +1285,23 @@ export function init() {
             }
 
 
-            if (usecases?.power_consumption_limitation != null &&
-                usecases?.power_consumption_limitation?.usecase_state === LoadcontrolState.Failsafe) {
+            if (usecases?.lpc != null &&
+                usecases?.lpc?.usecase_state === LoadcontrolState.Failsafe) {
                 return {
-                    status: ModuleStatus.Error,
+                    status: ModuleStatus.Warning,
                     text: () => __("eebus.status.lpc_failsafe")
                 };
             }
 
-            if (usecases?.evse_commissioning_and_configuration?.evse_failure) {
+            if (usecases?.evsecc?.evse_failure) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.evse_failure")
                 };
             }
 
-            if (usecases?.coordinated_ev_charging?.energy_broker_connected &&
-                !usecases?.coordinated_ev_charging?.energy_broker_heartbeat_ok) {
+            if (usecases?.cevc?.energy_broker_connected &&
+                !usecases?.cevc?.energy_broker_heartbeat_ok) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.heartbeat_timeout")
