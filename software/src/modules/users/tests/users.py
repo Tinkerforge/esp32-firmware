@@ -368,6 +368,38 @@ def test_http_auth_enable_without_password_rejected(tc: TestContext) -> None:
     tc.assert_false(cfg2["http_auth_enabled"])
 
 
+def test_http_auth_enable_with_password_succeeds(tc: TestContext) -> None:
+    cfg = tc.api("users/config")
+    next_id = cfg["next_user_id"]
+
+    tc.api("users/add", {
+        "id": next_id,
+        "roles": 0xFFFF,
+        "current": 32000,
+        "display_name": "Auth User",
+        "username": "authuser",
+        "digest_hash": "0123456789abcdef0123456789abcdef",
+    })
+
+    try:
+        tc.api("users/http_auth_update", {"enabled": True})
+
+        def _check_enabled() -> None:
+            cfg2 = tc.api("users/config")
+            tc.assert_true(cfg2["http_auth_enabled"])
+
+        tc.wait_for(_check_enabled)
+    finally:
+        tc.api("users/http_auth_update", {"enabled": False})
+
+    def _check_disabled() -> None:
+        cfg2 = tc.api("users/config")
+        tc.assert_false(cfg2["http_auth_enabled"])
+
+    tc.wait_for(_check_disabled)
+
+
+
 def test_http_auth_disable(tc: TestContext) -> None:
     tc.api("users/http_auth_update", {"enabled": False})
 
