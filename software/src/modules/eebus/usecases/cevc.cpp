@@ -761,7 +761,7 @@ void CevcUsecase::notify_subscribers_incentives() const
 
 void CevcUsecase::update_api_state() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("coordinated_ev_charging");
+    auto api_entry = eebus.eebus_usecase_state.get("cevc");
     api_entry->get("has_charging_plan")->updateBool(has_charging_plan());
     api_entry->get("charging_plan_start_time")->updateUint(charging_plan_start_time);
     api_entry->get("target_power_w")->updateInt(get_target_power_w());

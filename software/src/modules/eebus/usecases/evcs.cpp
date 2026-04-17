@@ -374,7 +374,7 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
 
 void EvcsUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("charging_summary");
+    auto api_entry = eebus.eebus_usecase_state.get("evcs");
     api_entry->removeAll();
     int i = 0;
     for (BillEntry bill_entry : bill_entries) {

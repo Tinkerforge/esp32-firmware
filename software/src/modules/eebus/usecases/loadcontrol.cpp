@@ -560,7 +560,7 @@ void LoadPowerLimitUsecase::get_electrical_connection_characteristic(ElectricalC
 const LoadPowerLimitConfig LpcUsecase::lpc_config = {
     .usecase_type = Usecases::LPC,
     .usecase_name = "limitationOfPowerConsumption",
-    .api_key = "power_consumption_limitation",
+    .api_key = "lpc",
     .energy_direction = EnergyDirectionEnumType::consume,
     .characteristic_type = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax,
     .failsafe_key_name = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit,
@@ -588,7 +588,7 @@ LpcUsecase::LpcUsecase() : LoadPowerLimitUsecase(lpc_config)
 const LoadPowerLimitConfig LppUsecase::lpp_config = {
     .usecase_type = Usecases::LPP,
     .usecase_name = "limitationOfPowerProduction",
-    .api_key = "power_production_limitation",
+    .api_key = "lpp",
     .energy_direction = EnergyDirectionEnumType::produce,
     .characteristic_type = ElectricalConnectionCharacteristicTypeEnumType::powerProductionMax,
     .failsafe_key_name = DeviceConfigurationKeyNameEnumType::failsafeProductionActivePowerLimit,

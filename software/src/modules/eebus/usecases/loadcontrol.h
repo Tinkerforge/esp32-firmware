@@ -33,7 +33,7 @@
 struct LoadPowerLimitConfig {
     Usecases usecase_type;                                              ///< LPC or LPP
     const char *usecase_name;                                           ///< "limitationOfPowerConsumption" or "limitationOfPowerProduction"
-    const char *api_key;                                                ///< "power_consumption_limitation" or "power_production_limitation"
+    const char *api_key;                                                ///< "lpc" or "lpp"
     EnergyDirectionEnumType energy_direction;                           ///< consume or produce
     ElectricalConnectionCharacteristicTypeEnumType characteristic_type; ///< powerConsumptionMax or powerProductionMax
     DeviceConfigurationKeyNameEnumType failsafe_key_name;               ///< failsafeConsumptionActivePowerLimit or failsafeProductionActivePowerLimit

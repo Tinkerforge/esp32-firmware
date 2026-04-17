@@ -291,7 +291,7 @@ void OpevUsecase::update_min_max_limits(int min_limit_milliamps, int max_limit_m
 
 void OpevUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("overload_protection_by_ev_charging_current_curtailment");
+    auto api_entry = eebus.eebus_usecase_state.get("opev");
     api_entry->get("limit_active")->updateBool(limit_active);
     api_entry->get("limit_phase_1_milliamps")->updateInt(limit_per_phase_milliamps[0]);
     api_entry->get("limit_phase_2_milliamps")->updateInt(limit_per_phase_milliamps[1]);

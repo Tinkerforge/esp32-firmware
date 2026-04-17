@@ -280,7 +280,7 @@ void EvccUsecase::update_operating_state(bool standby)
 
 void EvccUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("ev_commissioning_and_configuration");
+    auto api_entry = eebus.eebus_usecase_state.get("evcc");
     api_entry->get("ev_connected")->updateBool(ev_connected);
 
     api_entry->get("communication_standard")->updateString(communication_standard);

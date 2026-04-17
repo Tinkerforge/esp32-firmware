@@ -582,7 +582,7 @@ void MgcpUsecase::try_activate()
 
 void MgcpUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("monitoring_of_grid_connection_point");
+    auto api_entry = eebus.eebus_usecase_state.get("mgcp");
     api_entry->get("active")->updateBool(entity_active);
     api_entry->get("pv_curtailment_limit_factor_percent")->updateFloat(pv_curtailment_limit_factor_percent);
     api_entry->get("total_power_w")->updateInt(total_power_w);

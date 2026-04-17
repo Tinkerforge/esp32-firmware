@@ -399,7 +399,7 @@ void EEBus::pre_setup()
         //      {"usecases_supported", Config::Str("", 0, 128)}, // Comma separated list of supported usecases
         {"usecases_supported", Config::Array({usecase_list}, &usecase_list, 0, 20, Config::type_id<Config::ConfObject>())},
 #ifdef EEBUS_ENABLE_EVCS_USECASE
-        {"charging_summary",
+        {"evcs",
          Config::Array(
              {// Read/Write
               // Usecase EV Charging summary
@@ -410,7 +410,7 @@ void EEBus::pre_setup()
              Config::type_id<Config::ConfObject>())},
 #endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
-        {"power_consumption_limitation",
+        {"lpc",
          Config::Object({
              // Usecase Limitation of power consumption
              {"usecase_state", Config::Enum(LPCState::Init)},
@@ -423,7 +423,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_LPP_USECASE
-        {"power_production_limitation",
+        {"lpp",
          Config::Object({
              // Usecase Limitation of power production
              {"usecase_state", Config::Enum(LPPState::Init)},
@@ -436,7 +436,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_EVCC_USECASE
-        {"ev_commissioning_and_configuration",
+        {"evcc",
          Config::Object({{"ev_connected", Config::Bool(false)},
                          {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
                          {"asymmetric_charging_supported", Config::Bool(false)},
@@ -447,14 +447,14 @@ void EEBus::pre_setup()
                          {"standby_mode", Config::Bool(false)}})},
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
-        {"evse_commissioning_and_configuration",
+        {"evsecc",
          Config::Object({
              {"evse_failure", Config::Bool(false)},
              {"evse_failure_description", Config::Str("", 0, 64)},
          })},
 #endif
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-        {"ev_charging_electricity_measurement",
+        {"evcem",
          Config::Object({
              {"active", Config::Bool(false)},
              // This might have to be changed to ints if bi-directional charging will be supported
@@ -469,7 +469,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_MPC_USECASE
-        {"monitoring_of_power_consumption",
+        {"mpc",
          Config::Object({
              {"active", Config::Bool(false)},
              // Usecase Monitoring of power consumption
@@ -492,7 +492,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
-        {"coordinated_ev_charging",
+        {"cevc",
          Config::Object({
              {"has_charging_plan", Config::Bool(false)},
              {"charging_plan_start_time", Config::Uint32(0)},
@@ -503,7 +503,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_MGCP_USECASE
-        {"monitoring_of_grid_connection_point",
+        {"mgcp",
          Config::Object({
              {"active", Config::Bool(false)},
              // Scenario 1: PV curtailment limit factor
@@ -527,7 +527,7 @@ void EEBus::pre_setup()
          })},
 #endif
 #ifdef EEBUS_ENABLE_OPEV_USECASE
-        {"overload_protection_by_ev_charging_current_curtailment",
+        {"opev",
          Config::Object({
              // Usecase Overload Protection by EV Charging Current Curtailment
              {"limit_active", Config::Bool(false)},

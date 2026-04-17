@@ -411,7 +411,7 @@ void EvcemUsecase::updateSupportedScenarios()
 
 void EvcemUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("ev_charging_electricity_measurement");
+    auto api_entry = eebus.eebus_usecase_state.get("evcem");
     api_entry->get("active")->updateBool(entity_active);
     api_entry->get("amps_phase_1")->updateUint(milliamps_draw_phase[0]);
     api_entry->get("amps_phase_2")->updateUint(milliamps_draw_phase[1]);

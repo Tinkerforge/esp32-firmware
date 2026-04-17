@@ -124,7 +124,7 @@ void EvseccUsecase::get_device_classification_manufacturer(DeviceClassificationM
 
 void EvseccUsecase::update_api() const
 {
-    auto api_entry = eebus.eebus_usecase_state.get("evse_commissioning_and_configuration");
+    auto api_entry = eebus.eebus_usecase_state.get("evsecc");
     api_entry->get("evse_failure")->updateBool(operating_state != DeviceDiagnosisOperatingStateEnumType::normalOperation);
     api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }

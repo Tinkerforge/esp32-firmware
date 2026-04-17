@@ -450,7 +450,7 @@ void MpcUsecase::get_measurement_list_data(MeasurementListDataType *data) const
 void MpcUsecase::update_api() const
 {
     // Update API state for monitoring
-    auto api_entry = eebus.eebus_usecase_state.get("monitoring_of_power_consumption");
+    auto api_entry = eebus.eebus_usecase_state.get("mpc");
     api_entry->get("active")->updateBool(entity_active);
     api_entry->get("total_power_w")->updateInt(total_power_w);
     api_entry->get("power_phase_1_w")->updateInt(power_phase_w[0]);
