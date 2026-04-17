@@ -33,6 +33,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { TemperatureSource } from "./generated/temperature_source.enum";
+import { ModuleStatus, register_status_provider } from "ts/status_registry";
 
 const INT16_MAX = 32767;
 const INT16_MIN = -32768;
@@ -336,4 +337,28 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("temperatures", {
+        name: () => __("temperatures.status.temperatures"),
+        href: "#temperatures",
+        get_status: () => {
+            const config = API.get("temperatures/config");
+            const state = API.get("temperatures/state");
+
+            if (!config.enable) {
+                return {status: ModuleStatus.Disabled};
+            }
+
+            if (state.current == INT16_MAX) {
+                return {
+                    status: ModuleStatus.Warning,
+                    text: () => __("temperatures.content.no_data")
+                };
+            }
+
+            return {
+                status: ModuleStatus.Ok,
+                text: () => format_temperature(state.current)
+            };
+        }
+    });
 }
