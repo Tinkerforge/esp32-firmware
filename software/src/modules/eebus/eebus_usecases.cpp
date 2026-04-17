@@ -44,7 +44,6 @@ EEBusUseCases::EEBusUseCases()
     usecase_list.push_back(&node_management);
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
-    std::vector<Usecases> supported_usecases{};
 
     // EVSE Actors
     usecase_list.push_back(&evse_heartbeat);
@@ -57,12 +56,10 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_LPC_USECASE
     usecase_list.push_back(&limitation_of_power_consumption);
     limitation_of_power_consumption.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(limitation_of_power_consumption.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_MPC_USECASE
     usecase_list.push_back(&monitoring_of_power_consumption);
     monitoring_of_power_consumption.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(monitoring_of_power_consumption.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_LPP_USECASE
     usecase_list.push_back(&limitation_of_power_production);
@@ -72,7 +69,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     usecase_list.push_back(&evse_commissioning_and_configuration);
     evse_commissioning_and_configuration.set_entity_address(EVSEEntity::entity_address);
-    supported_usecases.push_back(evse_commissioning_and_configuration.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_MGCP_USECASE
     usecase_list.push_back(&monitoring_of_grid_connection_point);
@@ -85,8 +81,7 @@ EEBusUseCases::EEBusUseCases()
     ev_heartbeat.set_entity_address(EVEntity::entity_address);
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     usecase_list.push_back(&ev_commissioning_and_configuration);
-    ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
-    supported_usecases.push_back(ev_commissioning_and_configuration.get_usecase_type());
+    ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address);
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
     usecase_list.push_back(&coordinate_ev_charging);
@@ -96,7 +91,6 @@ EEBusUseCases::EEBusUseCases()
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
     usecase_list.push_back(&ev_charging_electricity_measurement);
     ev_charging_electricity_measurement.set_entity_address(EVEntity::entity_address);
-    supported_usecases.push_back(ev_charging_electricity_measurement.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     usecase_list.push_back(&overload_protection_by_ev_charging_current_curtailment);
@@ -131,18 +125,6 @@ EEBusUseCases::EEBusUseCases()
             }
         }
     }
-    task_scheduler.scheduleOnce(
-        [this, supported_usecases]() {
-            // String usecase_names = "";
-            eebus.eebus_usecase_state.get("usecases_supported")->removeAll();
-            for (const Usecases uc : supported_usecases) {
-                //  usecase_names += String(get_usecases_name(uc)) + ",";
-                auto entry = eebus.eebus_usecase_state.get("usecases_supported")->add();
-                entry->updateEnum(uc);
-            }
-        },
-        1_s);
-    // eebus.eebus_usecase_state.get("usecases_supported")->updateString(usecase_names);
     initialized = true; // set to true, otherwise subscriptions will not work
 }
 
