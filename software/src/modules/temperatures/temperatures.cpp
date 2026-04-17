@@ -185,10 +185,13 @@ void Temperatures::register_urls()
     // Recompute day stats at midnight so today/tomorrow boundaries shift correctly
     task_scheduler.scheduleWallClock([this]() {
         this->compute_day_stats();
+    }, 60_min, 0_ms, false);
+
+    task_scheduler.scheduleWallClock([this]() {
 #if MODULE_AUTOMATION_AVAILABLE()
         this->trigger_automation();
 #endif
-    }, 60_min, 0_ms, false);
+    }, 1_min, 0_ms, false);
 }
 
 void Temperatures::retry_update(millis_t delay)
