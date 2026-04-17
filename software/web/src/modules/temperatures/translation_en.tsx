@@ -4,7 +4,9 @@ import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 let x = {
     "temperatures": {
-        "status": {},
+        "status": {
+            "temperatures": "Außentemperatur"
+        },
         "navbar": {
             "temperatures": "Outside Temperature"
         },

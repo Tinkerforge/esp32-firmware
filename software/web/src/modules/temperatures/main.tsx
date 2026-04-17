@@ -37,54 +37,6 @@ import { TemperatureSource } from "./generated/temperature_source.enum";
 const INT16_MAX = 32767;
 const INT16_MIN = -32768;
 
-// Compute min/avg/max for a slice of the hourly array.
-// Returns {min, avg, max} in raw °C*10 units, or sentinel values if the slice is empty.
-function compute_slice_stats(hourly: number[], start: number, end: number): {min: number, avg: number, max: number} {
-    if (start < 0) start = 0;
-    if (end > hourly.length) end = hourly.length;
-    if (start >= end) {
-        return {min: INT16_MAX, avg: INT16_MAX, max: INT16_MIN};
-    }
-
-    let min_val = INT16_MAX;
-    let max_val = INT16_MIN;
-    let sum = 0;
-    for (let i = start; i < end; i++) {
-        const v = hourly[i];
-        if (v < min_val) min_val = v;
-        if (v > max_val) max_val = v;
-        sum += v;
-    }
-    return {min: min_val, avg: Math.round(sum / (end - start)), max: max_val};
-}
-
-// Compute today/tomorrow stats from the flat hourly array + first_date.
-// first_date is the UTC timestamp of local midnight (as aligned by timezone=auto).
-// We determine the today/tomorrow boundary by finding local midnight of today
-// in the browser's timezone, then computing the array index offset.
-function compute_day_stats(first_date: number, hourly: number[]): {today: {min: number, avg: number, max: number}, tomorrow: {min: number, avg: number, max: number}} {
-    const sentinel = {min: INT16_MAX, avg: INT16_MAX, max: INT16_MIN};
-    if (!first_date || !hourly || hourly.length < 47) {
-        return {today: sentinel, tomorrow: sentinel};
-    }
-
-    // Find local midnight of today in the browser's timezone
-    const now = new Date();
-    const today_midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
-    const tomorrow_midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() / 1000;
-    const day_after_midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2).getTime() / 1000;
-
-    // Convert to array indices: each element is 1 hour apart starting at first_date
-    const today_start_idx = Math.floor((today_midnight - first_date) / 3600);
-    const tomorrow_start_idx = Math.floor((tomorrow_midnight - first_date) / 3600);
-    const day_after_idx = Math.floor((day_after_midnight - first_date) / 3600);
-
-    return {
-        today: compute_slice_stats(hourly, today_start_idx, tomorrow_start_idx),
-        tomorrow: compute_slice_stats(hourly, tomorrow_start_idx, day_after_idx),
-    };
-}
-
 export function TemperaturesNavbar() {
     return <NavbarItem name="temperatures" module="temperatures" title={__("temperatures.navbar.temperatures")} symbol={
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="var(--bs-body-bg)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -103,35 +55,6 @@ function format_temperature(raw: number): string {
         return __("temperatures.content.no_data");
     }
     return util.toLocaleFixed(raw / 10, 1) + " °C";
-}
-
-// Interpolate the current temperature from the hourly array (like firmware get_current()).
-// first_date_seconds is the UTC timestamp in seconds of the first array element.
-// Returns the interpolated value in raw °C*10, or INT16_MAX if unavailable.
-function get_current_temperature(first_date_seconds: number, temperatures: number[]): number {
-    if (!first_date_seconds || !temperatures || temperatures.length < 47) {
-        return INT16_MAX;
-    }
-
-    const now_utc = Math.floor(Date.now() / 1000);
-
-    if (now_utc < first_date_seconds) {
-        return temperatures[0];
-    }
-
-    const seconds_since_start = now_utc - first_date_seconds;
-    const hour_index = Math.floor(seconds_since_start / 3600);
-
-    if (hour_index >= temperatures.length - 1) {
-        return temperatures[temperatures.length - 1];
-    }
-
-    // Interpolate between hour_index and hour_index + 1
-    const t0 = temperatures[hour_index];
-    const t1 = temperatures[hour_index + 1];
-    const seconds_into_hour = seconds_since_start - hour_index * 3600;
-
-    return Math.round(t0 + (t1 - t0) * seconds_into_hour / 3600);
 }
 
 type TemperaturesConfig = API.getType["temperatures/config"];
@@ -236,7 +159,6 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
         const is_weather_service = state.source == TemperatureSource.WeatherService;
 
         const temps = state.temperatures;
-        const day_stats = temps ? compute_day_stats(temps.first_date * 60, temps.temperatures) : null;
 
         return (
             <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
@@ -282,7 +204,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                 </FormRow>
                                 <FormRow label={__("temperatures.content.current_temperature")} label_muted={new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}>
                                     <InputText
-                                        value={temps ? format_temperature(get_current_temperature(temps.first_date * 60, temps.temperatures)) : __("temperatures.content.no_data")}
+                                        value={temps ? format_temperature(state.state.current) : __("temperatures.content.no_data")}
                                     />
                                 </FormRow>
                                 <FormRow label={__("temperatures.content.today")} label_muted={temps?.first_date ? new Date(temps.first_date * 60 * 1000).toLocaleDateString() : ""}>
@@ -291,7 +213,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.today.min) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.today_min) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
@@ -299,7 +221,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.avg_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.today.avg) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.today_avg) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
@@ -307,7 +229,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.today.max) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.today_max) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
@@ -319,7 +241,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.tomorrow.min) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.tomorrow_min) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
@@ -327,7 +249,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.avg_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.tomorrow.avg) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.tomorrow_avg) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
@@ -335,7 +257,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
                                                 <InputText
-                                                    value={day_stats ? format_temperature(day_stats.tomorrow.max) : __("temperatures.content.no_data")}
+                                                    value={temps ? format_temperature(state.state.tomorrow_max) : __("temperatures.content.no_data")}
                                                 />
                                             </div>
                                         </div>
