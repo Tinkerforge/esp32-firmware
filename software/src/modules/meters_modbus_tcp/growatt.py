@@ -150,7 +150,7 @@ specs = [
         ],
     },
     {
-        'name': 'Growatt Hybrid Inverter Grid',  # FIXME: untested
+        'name': 'Growatt Hybrid Inverter Grid',
         'virtual_meter': ('Growatt Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'InputRegister',
@@ -198,7 +198,7 @@ specs = [
         ],
     },
     {
-        'name': 'Growatt Hybrid Inverter Battery',  # FIXME: untested
+        'name': 'Growatt Hybrid Inverter Battery',
         'virtual_meter': ('Growatt Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'InputRegister',
@@ -226,7 +226,7 @@ specs = [
             },
             {
                 'name': 'Ibat: Battery current [0.1 A]',
-                'value_id': 'CurrentDCChaDisDiff',  # FIXME: sign?
+                'value_id': 'VALUE_ID_META',
                 'start_address': 3170,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
@@ -257,6 +257,11 @@ specs = [
                 'start_address': 3180,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery current signed [0.1 A]',
+                'value_id': 'CurrentDCChaDisDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
                 'name': 'Battery power signed [0.1 W]',

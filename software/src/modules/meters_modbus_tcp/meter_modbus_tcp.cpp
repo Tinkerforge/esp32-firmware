@@ -2716,16 +2716,26 @@ void MeterModbusTCP::parse_next()
         }
     }
     else if (is_growatt_hybrid_inverter_battery_meter()) {
-        if (register_start_address == GrowattHybridInverterBatteryAddress::PdischrDischargePower) {
-            growatt_hybrid_inverter.batter_discharge_power = value;
+        if (register_start_address == GrowattHybridInverterBatteryAddress::IbatBatteryCurrent) {
+            growatt_hybrid_inverter.battery_current = value;
+        }
+        else if (register_start_address == GrowattHybridInverterBatteryAddress::PdischrDischargePower) {
+            growatt_hybrid_inverter.battery_discharge_power = value;
         }
         else if (register_start_address == GrowattHybridInverterBatteryAddress::PchrChargePower) {
-            growatt_hybrid_inverter.batter_charge_power = value;
+            growatt_hybrid_inverter.battery_charge_power = value;
 
-            float batter_power = growatt_hybrid_inverter.batter_charge_power
-                               - growatt_hybrid_inverter.batter_discharge_power;
+            float battery_power = growatt_hybrid_inverter.battery_charge_power
+                                - growatt_hybrid_inverter.battery_discharge_power;
 
-            meters.update_value(slot, table->index[read_index + 1], batter_power);
+            float battery_current = growatt_hybrid_inverter.battery_current;
+
+            if (battery_power < 0.0f) {
+                battery_current = zero_safe_negation(fabs(battery_current));
+            }
+
+            meters.update_value(slot, table->index[read_index + 1], battery_current);
+            meters.update_value(slot, table->index[read_index + 2], battery_power);
         }
     }
     else if (is_growatt_hybrid_inverter_load_meter()) {

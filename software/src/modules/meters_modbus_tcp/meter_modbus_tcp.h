@@ -525,8 +525,9 @@ private:
             GrowattHybridInverterVirtualMeter virtual_meter;
             float grid_forward_power;
             float grid_reverse_power;
-            float batter_discharge_power;
-            float batter_charge_power;
+            float battery_current;
+            float battery_discharge_power;
+            float battery_charge_power;
             float pv1_voltage;
             float pv1_current;
             float pv2_voltage;
