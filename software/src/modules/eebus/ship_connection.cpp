@@ -93,8 +93,6 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
 
-    // Take ownership of the external transport (if any) so we can destroy it on close.
-    ext_transport = ws_config.ext_transport;
 
     ws_server = tf_websocket_client_init(&ws_config);
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_node->node_name().c_str());
