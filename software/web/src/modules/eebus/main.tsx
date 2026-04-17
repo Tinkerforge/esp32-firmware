@@ -1280,8 +1280,7 @@ export function init() {
             }
 
 
-            if (usecases.lpc != null &&
-                usecases.lpc?.usecase_state === LoadcontrolState.Failsafe) {
+            if (usecases.lpc?.usecase_state === LoadcontrolState.Failsafe) {
                 return {
                     status: ModuleStatus.Warning,
                     text: () => __("eebus.status.lpc_failsafe")
@@ -1296,7 +1295,7 @@ export function init() {
             }
 
             if (usecases.cevc?.energy_broker_connected &&
-                !usecases.cevc?.energy_broker_heartbeat_ok) {
+                !usecases.cevc.energy_broker_heartbeat_ok) {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.heartbeat_timeout")
