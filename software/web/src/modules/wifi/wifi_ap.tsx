@@ -74,7 +74,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
         return (
             <SubPage name="wifi_ap" title={__("wifi.content.ap_settings")}>
-                <SubPage.Status>
+                <SubPage.Status collapsed={!saved_config.enable_ap}>
                     <FormRow label={__("wifi.content.ap_state")}>
                         <IndicatorGroup
                             style="width: 100%"

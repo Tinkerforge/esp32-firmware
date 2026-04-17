@@ -486,6 +486,9 @@ void Wifi::apply_ap_config(bool defer_start)
             state.get("ap_disable_countdown")->updateUint(remaining - 1);
         }, 1_s);
     }
+
+    // Update state immediately to reduce UI latency changing AP config
+    state.get("ap_state")->updateUint(get_ap_state());
 }
 
 void Wifi::apply_sta_config(bool defer_start)
