@@ -39,8 +39,6 @@ EEBus::EEBus()
 }
 EEBus::~EEBus() = default;
 
-extern char local_uid_str[32];
-
 /**
  * Helper to sanitize float values for integer conversion.
  * Returns INT32_MIN for NaN, otherwise scales and converts to int.
@@ -869,9 +867,6 @@ void EEBus::toggle_module()
         usecases = nullptr;
         data_handler = nullptr;
         ship.disable_ship();
-        if (initialized) {
-            logger.printfln("Module disabled");
-        }
     }
 }
 
