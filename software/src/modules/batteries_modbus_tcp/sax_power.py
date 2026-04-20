@@ -127,7 +127,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Force Charge',  # FIXME: force degraded to normal
+        'mode': 'Force Charge',  # FIXME: it's not possible to force charge, so charge normally and block discharge
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
@@ -171,7 +171,7 @@ specs = [
     },
     {
         'group': 'SAX Power Home Basic Mode',
-        'mode': 'Force Discharge',  # FIXME: force degraded to normal
+        'mode': 'Force Discharge',  # FIXME: it's not possible to force discharge, so block charge and discharge normally
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
