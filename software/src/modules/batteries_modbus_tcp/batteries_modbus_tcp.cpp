@@ -153,8 +153,6 @@ void BatteriesModbusTCP::register_urls()
             return;
         }
 
-        test_printfln(language == Language::English ? "Starting test" : "Starte Test");
-
         test = new Test;
         test->language = language;
         test->slot = test_config.get("slot")->asUint();
@@ -170,7 +168,7 @@ void BatteriesModbusTCP::register_urls()
 
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
-            test_printfln("No table");
+            errmsg = test->language == Language::English ? "No table" : "Keine Tabelle";
             return;
 
         case BatteryModbusTCPTableID::Custom:
@@ -181,7 +179,7 @@ void BatteriesModbusTCP::register_urls()
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
 
             if (test->table == nullptr) {
-                test_printfln(test->language == Language::English ? "Invalid custom table" : "Ungültige benutzerdefinerte Tabelle");
+                errmsg = test->language == Language::English ? "Invalid custom table" : "Ungültige benutzerdefinerte Tabelle";
                 return;
             }
 
@@ -190,11 +188,23 @@ void BatteriesModbusTCP::register_urls()
 #include "generated/batteries_modbus_tcp_test.inc"
 
         default:
-            test_printfln(test->language == Language::English ? "Unknown table: %u" : "Unbekannte Tabelle: %u", static_cast<uint8_t>(table_id));
+            errmsg = test->language == Language::English ? "Unknown table" : "Unbekannte Tabelle";
             return;
         }
 
-        test->state = TestState::Connect;
+        test_printfln(language == Language::English
+                      ? "Starting test for mode \"%s\""
+                      : "Starte Test für Modus \"%s\"",
+                      BatteryModbusTCP::get_battery_mode_display_name(test->mode, test->language));
+
+        if (test->table->register_blocks_count > 0) {
+            test->state = TestState::Connect;
+        }
+        else {
+            test_printfln(language == Language::English
+                          ? "Table is empty, nothing to do"
+                          : "Tabelle ist leer, nichts zu tun");
+        }
     }, true);
 
     api.addState("batteries_modbus_tcp/test_state", &test_state);

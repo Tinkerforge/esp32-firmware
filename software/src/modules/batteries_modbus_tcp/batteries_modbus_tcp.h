@@ -94,7 +94,7 @@ private:
         uint16_t repeat_interval; // seconds
         BatteryModbusTCP::TableSpec *table;
         BatteryModbusTCP::TableWriter *writer;
-        TestState state = TestState::Connect;
+        TestState state;
         char printfln_buffer[512] = "";
         micros_t printfln_last_flush = 0_us;
         size_t printfln_buffer_used = 0;
