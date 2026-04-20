@@ -219,13 +219,13 @@ static void init_mavg_filter(PowerManager::mavg_filter *filter, size_t values_co
 
 static std::pair<char *, size_t> build_trace_header(bool with_pv, bool with_phases) {
     StringBuilder sb{};
-    sb.setCapacity(167 + 190);
+    sb.setCapacity(173 + 196);
     sb.puts("PM");
 
     if (with_pv) {
-        sb.putcn(' ', 18);
+        sb.putcn(' ', 22);
         sb.puts("PV");
-        sb.putcn(' ', 19);
+        sb.putcn(' ', 22);
     }
 
     if (with_phases) {
@@ -240,7 +240,7 @@ static std::pair<char *, size_t> build_trace_header(bool with_pv, bool with_phas
     sb.putc('\n');
 
     if (with_pv) {
-        sb.puts("mtr(W) avl(W)    raw    max    min spread");
+        sb.puts("mtr(W) bat(W) avl(W)    raw    max    min spread");
     }
 
     if (with_phases) {
@@ -395,6 +395,10 @@ void PowerManager::setup()
         } else {
             have_battery = true;
         }
+    }
+
+    if (!have_battery) {
+        power_at_battery_raw_w = 0;
     }
 
     float unused_meter_currents[INDEX_CACHE_CURRENT_COUNT];
@@ -944,15 +948,10 @@ void PowerManager::update_energy()
         cm_limits->max_pv_expiration_ts = current_pv_minmax_ma.max_expiration_ts;
 
 #if ENABLE_PM_TRACE
-        // Casting NaN to integer is undefined behaviour.
-        if (isnan(power_at_meter_raw_w)) {
-            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "   N/A ");
-        } else {
-            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li ", static_cast<int32_t>(power_at_meter_raw_w));
-        }
-
-        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li",
-            power_available_w, pv_raw_ma, current_pv_minmax_ma.max, current_pv_minmax_ma.min, pv_long_min_ma);
+        // Raw power values are guaranteed not to be NaN here.
+        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li %6li %6li",
+            static_cast<int32_t>(power_at_meter_raw_w), static_cast<int32_t>(power_at_battery_raw_w), power_available_w,
+            pv_raw_ma, current_pv_minmax_ma.max, current_pv_minmax_ma.min, pv_long_min_ma);
 #endif
     }
 
