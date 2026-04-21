@@ -214,8 +214,10 @@ function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild
     );
 }
 
+const EEBusLogo = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 6.35 6.35"><defs><clipPath id="a" clipPathUnits="userSpaceOnUse"><path d="M-45.28-91.6H88.44V30.23H-45.28Z"/></clipPath></defs><path d="M0 0c14.1 0 26.35-6.83 32.36-16.77a35.23 35.23 0 0 1-64.72 0C-26.34-6.83-14.1 0 0 0" clip-path="url(#a)" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.91262641;stroke-dasharray:none" transform="matrix(.09 0 0 -.09 3.18 .4)"/><path d="M3.18 5.94A3.4 3.4 0 0 1 .26 4.43a3.18 3.18 0 0 0 5.84 0 3.4 3.4 0 0 1-2.92 1.51" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352777"/><path d="M3.96 1.72q-.34.21-.4.68L3.3 3.97l-.03.25q.02.61.75.62h1.26l.07-.47H3.98a.3.3 0 0 1-.16-.09.3.3 0 0 1-.06-.17v-.03l.03-.2.07-.44h1.66l.08-.47H3.94l.08-.56c.04-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.34 0-.48.02-.66.13M1.21 1.72q-.34.21-.41.68L.55 3.97l-.02.25q.02.61.74.62h1.27l.07-.47H1.22a.3.3 0 0 1-.15-.09.3.3 0 0 1-.07-.17v-.03l.03-.2.07-.44h1.67l.07-.47H1.18l.09-.56c.03-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.35 0-.48.02-.66.13" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352778"/></svg>
+
 export function EEBusNavbar() {
-    return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
+    return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={EEBusLogo}/>;
 }
 
 type EEBusConfig = API.getType["eebus/config"];
