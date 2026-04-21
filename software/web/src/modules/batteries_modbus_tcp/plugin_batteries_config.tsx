@@ -933,19 +933,13 @@ export function pre_init() {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(
                             <FormRow>
-                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_unsupported_warning")}</Alert>
-                            </FormRow>,
-                            <FormRow>
-                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>
+                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_hybrid_inverter_warning")}</Alert>
                             </FormRow>);
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
                         edit_children.push(
                             <FormRow>
-                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_register_warning")}</Alert>
-                            </FormRow>,
-                            <FormRow>
-                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_force_warning")}</Alert>
+                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_warning")}</Alert>
                             </FormRow>);
                     }
 
