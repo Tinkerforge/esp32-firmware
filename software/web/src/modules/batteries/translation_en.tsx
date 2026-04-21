@@ -97,7 +97,7 @@ let x = {
             "table_rule_price": "Energy price",
             "table_rule_forecast": "PV-forecast",
             "table_rule_schedule": "Tariff schedule",
-            "table_rule_fast_chg": "Fast charge",
+            "table_rule_fast_chg": "Eco/Fast charge",
             "table_rule_action": "Action",
 
             "table_rule_fast_chg_not_active": "Not active",
@@ -115,7 +115,7 @@ let x = {
             "add_rule_price_muted" : "market price",
             "add_rule_forecast": "Solar forecast",
             "add_rule_schedule": "Dynamic tariff schedule",
-            "add_rule_fast_chg": "Vehicle fast charge",
+            "add_rule_fast_chg": "Vehicle eco/fast charge",
             "add_rule_action": "Action",
 
             "edit_rule_title_charge": "Edit charge rule",
@@ -129,7 +129,7 @@ let x = {
             "edit_rule_price_muted" : "market price",
             "edit_rule_forecast": "Solar forecast",
             "edit_rule_schedule": "Dynamic tariff schedule",
-            "edit_rule_fast_chg": "Vehicle fast charge",
+            "edit_rule_fast_chg": "Vehicle eco/fast charge",
             "edit_rule_action": "Action",
 
             "condition_ignore": "Is ignored",
@@ -150,8 +150,8 @@ let x = {
             "condition_schedule_moderate": "Moderately-priced hours (neither cheap nor expensive)",
             "condition_schedule_moderate_compact": "Moderately-priced",
 
-            "condition_fast_chg_inactive": "No fast charge active",
-            "condition_fast_chg_active": "Fast charge active",
+            "condition_fast_chg_inactive": "No eco/fast charge active",
+            "condition_fast_chg_active": "Eco/Fast charge active",
 
             "rule_action_block": "Block",
             "rule_action_force": "Force",

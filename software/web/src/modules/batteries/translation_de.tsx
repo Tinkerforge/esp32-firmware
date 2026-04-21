@@ -97,7 +97,7 @@ let x = {
             "table_rule_price": "Strompreis",
             "table_rule_forecast": "PV-Ertrag",
             "table_rule_schedule": "Strompreisplan",
-            "table_rule_fast_chg": "Schnellladung",
+            "table_rule_fast_chg": "Eco-/Schnellladung",
             "table_rule_action": "Aktion",
 
             "table_rule_fast_chg_not_active": "Nicht aktiv",
@@ -115,7 +115,7 @@ let x = {
             "add_rule_price_muted": "Börsenpreis",
             "add_rule_forecast": "PV-Ertragsprognose",
             "add_rule_schedule": "Dynamischer Strompreisplan",
-            "add_rule_fast_chg": "Fahrzeug-Schnellladung",
+            "add_rule_fast_chg": "Fahrzeug-Eco-/Schnellladung",
             "add_rule_action": "Aktion",
 
             "edit_rule_title_charge": "Laderegel bearbeiten",
@@ -129,7 +129,7 @@ let x = {
             "edit_rule_price_muted": "Börsenpreis",
             "edit_rule_forecast": "PV-Ertragsprognose",
             "edit_rule_schedule": "Dynamischer Strompreisplan",
-            "edit_rule_fast_chg": "Fahrzeug-Schnellladung",
+            "edit_rule_fast_chg": "Fahrzeug-Eco-/Schnellladung",
             "edit_rule_action": "Aktion",
 
             "condition_ignore": "Wird ignoriert",
@@ -150,8 +150,8 @@ let x = {
             "condition_schedule_moderate": "Preislich moderate Stunden (weder günstig noch teuer)",
             "condition_schedule_moderate_compact": "Moderat",
 
-            "condition_fast_chg_inactive": "Keine Schnellladung aktiv",
-            "condition_fast_chg_active": "Schnellladung aktiv",
+            "condition_fast_chg_inactive": "Keine Eco-/Schnellladung aktiv",
+            "condition_fast_chg_active": "Eco-/Schnellladung aktiv",
 
             "rule_action_block": "Blockieren",
             "rule_action_force": "Erzwingen",
