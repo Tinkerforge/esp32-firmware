@@ -129,11 +129,13 @@ static String extract_peer_ski_from_tls(httpd_handle_t httpd, int sockfd)
     return String{ski_hex, ski_len};
 }
 
+#ifdef EEBUS_SHIP_AUTOCONNECT
 static esp_err_t eebus_client_crt_bundle_attach(void *conf) {
     mbedtls_ssl_config *ssl_conf = (mbedtls_ssl_config *)conf;
     mbedtls_ssl_conf_authmode(ssl_conf, MBEDTLS_SSL_VERIFY_NONE);
     return ESP_OK;  // Don't chain to real bundle — we don't need CA certs
 }
+#endif
 
 void Ship::pre_setup()
 {
