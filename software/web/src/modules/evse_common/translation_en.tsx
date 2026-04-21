@@ -48,7 +48,7 @@ let x = {
             "allowed_charging_current": "Allowed charging current",
             "error_state": "Error state",
             "error_state_help": <>
-                <ul class="mb-0">
+                <ul>
                     <li><p><strong>Switch error:</strong> The wallbox was not installed correctly. The charge controller's switch setting remains at its factory default.{options.WARP_DOC_BASE_URL.length > 0 ? <span> See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Charging current configuration</a>.</span> : undefined}</p></li>
                     <li><p><strong>DC error:</strong> A DC fault current has been detected. The error can be reset either via the wallbox's website or by briefly disconnecting the wallbox's power supply.</p> </li>
                     <li><p><strong>Contactor/PE error:</strong> One of the contactors is not switching correctly (see contactor check/status), phase L1 is de-energized, or an earth fault is present.</p></li>
@@ -218,7 +218,7 @@ let x = {
 
                     return <>
                         {header}
-                        <ul class="mb-0">
+                        <ul>
                             {supported_charge_modes.map((m, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {__("cm_networking.status.mode_by_index")(m)}</li>)}
                         </ul>
                     </>}/*NF*/,

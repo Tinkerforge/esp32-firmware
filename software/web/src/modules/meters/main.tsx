@@ -1485,7 +1485,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                         {meters_without_location.length > 0 ?
                             <Alert variant="warning" className={!any_power_sum ? "mb-0" : ""}>
                                 {__("meters.status.meters_without_location")(meters_without_location)}
-                                <ul class="mb-0">
+                                <ul>
                                     {meters_without_location.map((meter_name) => <li>{meter_name}</li>)}
                                 </ul>
                             </Alert> : undefined

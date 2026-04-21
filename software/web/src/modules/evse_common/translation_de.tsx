@@ -48,7 +48,7 @@ let x = {
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
             "error_state_help": <>
-                <ul class="mb-0">
+                <ul>
                     <li><p><strong>Schalterfehler:</strong> Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand.{options.WARP_DOC_BASE_URL.length > 0 ? <span> Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Einstellen des Ladestroms</a>.</span> : undefined}</p></li>
                     <li><p><strong>DC-Fehler:</strong> Ein DC-Fehlerstrom wurde erkannt. Der Fehler kann entweder über die Webseite der Wallbox oder über ein kurzzeitiges Trennen der Stromversorgung der Wallbox zurückgesetzt werden.</p></li>
                     <li><p><strong>Schützfehler/PE-Fehler:</strong> Eines der Schütze schaltet nicht korrekt (Siehe Schützprüfung/-zustand), Phase L1 ist stromlos oder Erdungsfehler.</p></li>
@@ -218,7 +218,7 @@ let x = {
 
                 return <>
                     {header}
-                    <ul class="mb-0">
+                    <ul>
                         {supported_charge_modes.map((m, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {__("cm_networking.status.mode_by_index")(m)}</li>)}
                     </ul>
                 </>}/*NF*/,

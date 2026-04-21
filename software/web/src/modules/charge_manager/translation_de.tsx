@@ -27,7 +27,7 @@ let x = {
             "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
                 <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>Lastmanagement</a> : <span>Lastmanagement</span>} zwischen den Wallboxen.</p>
-                <ul class="mb-0">
+                <ul>
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. {__("This_device")} ist vollständig eigenständig.</li>
                     {has_managed_mode ?
                         <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen Lastmanager kontrolliert. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>

@@ -50,8 +50,8 @@ let x = {
             "extra_costs_help": <>
                 <p><strong>Optional: For control, only the net day-ahead spot market price is used; extra costs are only displayed.</strong></p>
                 <p>The day-ahead spot price is only a part of the electricity costs. Additional fixed taxes, grid fees and surcharges apply.</p>
-                One of the following variants of configuring the extra cost settings is recommended:
-                <ul class="mb-0">
+                <p>One of the following variants of configuring the extra cost settings is recommended:</p>
+                <ul>
                     <li>Don't configure extra costs: The net spot market price is displayed.</li>
                     <li>Leave VAT at 0, enter the <strong>net</strong> price for grid fees, utility surcharges and basic fee: The <strong>net</strong> electricity price including all fees etc. is displayed.</li>
                     <li>Configure VAT to for example 19%, enter the <strong>gross</strong> price for grid fees, utility surcharges and basic fee: The <strong>gross</strong> electricity price including fees etc. is displayed.</li>

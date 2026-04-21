@@ -27,7 +27,7 @@ let x = {
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
                 <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> : <span>charge management</span>} among the chargers.</p>
-                <ul class="mb-0">
+                <ul>
                     <li><strong>Disabled:</strong> No charge management is performed. {__("This_device")} operates completely independently.</li>
                     {has_managed_mode ?
                         <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another charge manager. No further settings are required.</li>

@@ -50,8 +50,8 @@ let x = {
             "extra_costs_help": <>
                 <p><strong>Optional: Zusatzkosten werden nur für die Darstellung des Preises verwendet, nicht für die Regelung!</strong></p>
                 <p>Die dynamischen Börsenstrompreise sind nur ein Teil der Stromkosten. Es fallen zusätzliche fixe Steuern, Netzentgelte und Aufschläge des spezifischen Stromtarifs an.</p>
-                Eine der folgenden drei Einstellungen der Zusatzkosten wird empfohlen:
-                <ul class="mb-0">
+                <p>Eine der folgenden drei Einstellungen der Zusatzkosten wird empfohlen:</p>
+                <ul>
                     <li>Zusatzkosten nicht konfigurieren: Es wird der Netto-Börsenpreis angezeigt.</li>
                     <li>Mehrwertsteuer auf 0% konfigurieren, bei den anderen Kosten jeweils den Nettopreis eintragen: Es wird der Netto-Strompreis inkl. Gebühren angezeigt.</li>
                     <li>Mehrwertsteuer auf z.B. 19% eintragen, bei den anderen Kosten jeweils den Bruttopreis eintragen: Es wird der Brutto-Strompreis inkl. Gebühren angezeigt.</li>

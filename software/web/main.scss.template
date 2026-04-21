@@ -786,10 +786,10 @@ table ul {
     color: #e9ecef;
 }
 
-.form-row-help p:last-child {
+.form-row-help :last-child,
+.alert :last-child {
     margin-bottom: 0;
 }
-
 
 // Reconstruct Bootstrap 4's btn-outline-secondary hover behavior
 .help-circle {
