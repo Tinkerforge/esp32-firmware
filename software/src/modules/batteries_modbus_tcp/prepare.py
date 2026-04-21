@@ -9,6 +9,7 @@ import sma
 import solis
 import sax_power
 import growatt
+import kostal
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -24,6 +25,7 @@ modules = [
     solis,
     sax_power,
     growatt,
+    kostal,
 ]
 
 display_names = {}
@@ -551,6 +553,7 @@ util.write_generated_file('generated/battery_modbus_tcp_specs.h', h)
 
 cpp  = '// WARNING: This file is generated.\n\n'
 cpp += '#include "battery_modbus_tcp_specs.h"\n\n'
+cpp += '#include <bit>\n\n'
 cpp += '#include "tools.h"\n'
 cpp += '#include "tools/malloc.h"\n\n'
 cpp += '#include "gcc_warnings.h"\n\n'

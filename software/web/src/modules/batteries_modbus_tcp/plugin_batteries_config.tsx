@@ -940,8 +940,28 @@ export function pre_init() {
                         edit_children.push(
                             <FormRow>
                                 <Alert variant="warning" className="mb-0">
-                                    {__("batteries_modbus_tcp.content.sax_power_home_basic_mode_register_warning")}
+                                    {__("batteries_modbus_tcp.content.sax_power_home_basic_mode_warning")}
                                     {__("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning")}
+                                </Alert>
+                            </FormRow>);
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian) {
+                        edit_children.push(
+                            <FormRow>
+                                <Alert variant="warning" className="mb-0">
+                                    {__("batteries_modbus_tcp.content.kostal_plenticore_warning")}
+                                    {__("batteries_modbus_tcp.content.kostal_plenticore_g2_degradation_warning")}
+                                </Alert>
+                            </FormRow>);
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3BigEndian
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3LittleEndian) {
+                        edit_children.push(
+                            <FormRow>
+                                <Alert variant="warning" className="mb-0">
+                                    {__("batteries_modbus_tcp.content.kostal_plenticore_g3_firmware_warning")}
+                                    {__("batteries_modbus_tcp.content.kostal_plenticore_warning")}
                                 </Alert>
                             </FormRow>);
                     }
@@ -1317,6 +1337,39 @@ export function pre_init() {
                             force_discharge_rate: config[1].table[1].force_discharge_rate,
                         };
                     }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3BigEndian
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3LittleEndian) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].force_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].force_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
+                        };
+                    }
 
                     edit_children.push(
                         <TestRunner
@@ -1406,6 +1459,10 @@ export function pre_init() {
 
                 if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
                     return __("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning");
+                }
+                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
+                      || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian){
+                    return __("batteries_modbus_tcp.content.kostal_plenticore_g2_degradation_warning");
                 }
 
                 return undefined;
