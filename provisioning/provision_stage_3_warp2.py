@@ -924,7 +924,7 @@ class Stage3:
 
         # step 01: test phase separation
         self.change_cp_pe_state('C')
-        time.sleep(EVSE_SETTLE_DURATION)
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
         if not self.check_iec_state('C'):
             fatal_error('Wallbox not in IEC state C')
@@ -956,7 +956,7 @@ class Stage3:
             self.switch_phases_function(1)
             time.sleep(0.5)
             self.change_cp_pe_state('C')
-            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
             self.verify_voltages(p_type2=['L1'], p_meter=['L1', 'L2', 'L3'])
 
             self.change_cp_pe_state('A')
@@ -964,7 +964,7 @@ class Stage3:
             self.switch_phases_function(3)
             time.sleep(0.5)
             self.change_cp_pe_state('C')
-            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
             self.verify_voltages(['L1', 'L2', 'L3'])
 
         self.connect_voltage_monitors(False)
