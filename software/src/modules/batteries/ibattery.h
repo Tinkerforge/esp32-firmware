@@ -40,7 +40,5 @@ public:
     virtual void register_urls(const String &base_url) {}
     virtual void register_events()                     {}
     virtual void pre_reboot()                          {}
-
-    virtual bool supports_mode(BatteryMode mode) const {return false;} // FIXME: extend this to "no", "partial", "fully"
     virtual void set_mode(BatteryMode mode)            {}
 };

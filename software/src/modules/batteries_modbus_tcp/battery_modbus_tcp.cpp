@@ -553,16 +553,6 @@ void BatteryModbusTCP::pre_reboot()
     stop_connection();
 }
 
-[[gnu::const]]
-bool BatteryModbusTCP::supports_mode(BatteryMode mode) const
-{
-    if (mode == BatteryMode::None) {
-        return false;
-    }
-
-    return tables[static_cast<size_t>(mode)] != nullptr;
-}
-
 void BatteryModbusTCP::set_mode(BatteryMode mode)
 {
     if (requested_mode == mode) {

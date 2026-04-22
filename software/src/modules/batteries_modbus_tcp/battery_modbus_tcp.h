@@ -86,7 +86,6 @@ public:
     void register_events() override;
     void pre_reboot() override;
 
-    bool supports_mode(BatteryMode mode) const override;
     void set_mode(BatteryMode mode) override;
 
     void set_paused(bool paused);
