@@ -2070,9 +2070,9 @@ allowed_missing = set([
     "allocable",
     "timespan",
     "secp256r1",
-    "allocable"
+    "allocable",
     "publisher",
     "extension",
     "departure",
-    "contactor"
+    "contactor",
 ])
