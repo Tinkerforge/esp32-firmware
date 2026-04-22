@@ -224,7 +224,7 @@ let x = {
                 </>}/*NF*/,
 
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
-            "ev_wakeup_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge wechselt in einen Energiesparmodus, falls ein Ladevorgang nicht innerhalb einer gewissen Zeit gestartet wird. Der Fahrzeug-Weckruf versucht, solche Ladeelektroniken automatisch zu wecken, falls das Fahrzeug nicht innerhalb von 30 Sekunden reagiert, wenn Strom zur Verfugung steht. Umgesetzt wird dies durch eine kurzzeitige Trennung des Control-Pilot- bzw. CP-Signals.</p></>,
+            "ev_wakeup_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge wechselt in einen Energiesparmodus, falls ein Ladevorgang nicht innerhalb einer gewissen Zeit gestartet wird. Der Fahrzeug-Weckruf versucht, solche Ladeelektroniken automatisch zu wecken, falls das Fahrzeug nicht innerhalb von 30 Sekunden reagiert, wenn Strom zur Verfügung steht. Umgesetzt wird dies durch eine kurzzeitige Trennung des Control-Pilot- bzw. CP-Signals.</p></>,
             "ev_wakeup": "Versucht die Ladeelektronik des Fahrzeugs aus einem Energiesparmodus zu wecken, indem ein Abziehen und Anstecken des Ladekabels vorgetäuscht wird.",
 
             "phase_auto_switch_desc": "Automatischer Phasenwechsel",

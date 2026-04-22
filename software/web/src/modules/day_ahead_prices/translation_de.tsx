@@ -28,7 +28,7 @@ let x = {
             "region": "Region",
             "germany": "Deutschland",
             "austria": "Österreich",
-            "luxembourg": "Luxenburg",
+            "luxembourg": "Luxemburg",
             "resolution": "Auflösung",
             "resolution_muted": "abhängig vom Stromanbieter",
             "minutes15": "15 Minuten",
