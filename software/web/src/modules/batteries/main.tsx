@@ -46,7 +46,7 @@ import { RuleCondition } from "../battery_control/generated/rule_condition.enum"
 import { ScheduleRuleCondition } from "../battery_control/generated/schedule_rule_condition.enum";
 //#endif
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
-import { get_price_from_index } from "../day_ahead_prices/main";
+import { get_price_from_index, is_day_ahead_prices_enabled } from "../day_ahead_prices/main";
 //#endif
 import { plugins_pre_init, plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -1216,7 +1216,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                     </FormRow>
 
 {/*#if MODULE_DAY_AHEAD_PRICES_AVAILABLE*/}
-                    <FormRow label={__("batteries.content.schedule_graph")} label_muted={__("batteries.content.schedule_graph_muted")}>
+                    <FormRow label={__("batteries.content.schedule_graph")} label_muted={__("batteries.content.schedule_graph_muted")} hidden={!is_day_ahead_prices_enabled()}>
                         <div class="card">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
