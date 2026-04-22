@@ -60,7 +60,7 @@ if not args.serial_only:
         if os.path.exists(args.firmware):
             if ".elf" in args.firmware:
                 firmware = args.firmware.replace(".elf", "_merged.bin")
-            if "_merged.bin" in args.firmware:
+            if ".bin" in args.firmware:
                 firmware = args.firmware
         else:
             firmware = get_latest_fw(args.firmware)
