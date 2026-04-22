@@ -179,7 +179,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                     this.setState({source: [P14aEnwgSource.API, {}]});
                                 }
                             }}
-                            disabled={disabled}
                         />
                     </FormRow>
 
@@ -193,7 +192,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                         )}
                                         value={input_cfg.input_index}
                                         onValue={(v) => update_input({input_index: parseInt(v)})}
-                                        disabled={disabled}
                                     />
                                 </FormRow>
                             : undefined}
@@ -204,7 +202,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                     min={1}
                                     max={99}
                                     unit={__("p14a_enwg.content.device_count_unit")(deviceCountFromLimit(input_cfg.limit_w), input_cfg.limit_w)}
-                                    disabled={disabled}
                                 />
                             </FormRow>
                             <FormRow label={__("p14a_enwg.content.active_on")}>
@@ -215,7 +212,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                     ]}
                                     value={input_cfg.limit_on_close ? "1" : "0"}
                                     onValue={(v) => update_input({limit_on_close: v === "1"})}
-                                    disabled={disabled}
                                 />
                             </FormRow>
                         </>
@@ -226,7 +222,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                             <Switch desc={__("p14a_enwg.content.this_charger_desc")}
                                 checked={state.limit_charger}
                                 onClick={this.toggle('limit_charger')}
-                                disabled={disabled}
                             />
                         </FormRow>
                     : undefined}
@@ -235,7 +230,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                         <Switch desc={__("p14a_enwg.content.managed_chargers_desc")}
                             checked={state.limit_charge_manager}
                             onClick={this.toggle('limit_charge_manager')}
-                            disabled={disabled}
                         />
                     </FormRow>
 
@@ -245,7 +239,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                 <Switch desc={__("p14a_enwg.content.heating_desc")}
                                     checked={state.limit_heating}
                                     onClick={this.toggle('limit_heating')}
-                                    disabled={disabled}
                                 />
                             </FormRow>
                             <FormRow label={__("p14a_enwg.content.heating_max_power")} label_muted={__("p14a_enwg.content.heating_max_power_muted")}>
