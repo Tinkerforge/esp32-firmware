@@ -312,7 +312,7 @@
 - Add eco mode / charge plans
 - Add MQTT read only mode
 - Remote Access: Add registration via authorization token
-- Add support for more Modbus TCP devices: hybrid inverters: GoodWe, Solax, Hailei, Fox ESS H3; energy meters: Siemens PAC, Carlo Gavazzi; battery stoage: Fronius GEN24 Plus
+- Add support for more Modbus TCP devices: hybrid inverters: GoodWe, Solax, Hailei, Fox ESS H3; energy meters: Siemens PAC, Carlo Gavazzi; battery storage: Fronius GEN24 Plus
 - Add support for RCT Power hybrid inverters
 - Add system language setting
 - Add "PV excess" and "dynamic load management" presets to API meter
@@ -332,7 +332,7 @@
 - Modbus TCP: Add Shelly Pro (3)EM frequency values
 - Modbus TCP: Fix Deye load energy current and power sign
 - SunSpec: Fix SolarEdge inverter power sign
-- SunSpec: Add quirk for Kostal endian-swapped floats
+- SunSpec: Add quirk for KOSTAL endian-swapped floats
 - SunSpec: Add work-around for SolarEdge meter model mixup
 - Fix Caps Lock detection of password inputs
 - Fix multiple remote access bugs
@@ -361,7 +361,7 @@
 
 2025-02-25: 2.3.3 (d34a5007)
 - Add web interface hint about missing meter location
-- SunSpec: Remove quirk for Kostal endian-swapped floats, it creates more problems than it fixes
+- SunSpec: Remove quirk for KOSTAL endian-swapped floats, it creates more problems than it fixes
 
 2025-02-26: 2.3.4 (acbfc184)
 - SunSpec: Fix partial reading of model data
@@ -378,7 +378,7 @@
 - Charge Manager: Make sure chargers in one of the "Min" modes are always activated if possible
 - Charge Manager: Don't stop all chargers if some are not reachable
 - Remote Access: Changed format of authorization token to be more fault tolerant
-- SunSpec: Add autodetection for quirk for Kostal endian-swapped floats
+- SunSpec: Add autodetection for quirk for KOSTAL endian-swapped floats
 - SunSpec: Improve device search for SMA devices
 - Modbus TCP: Add support for Eastron SDM630 TCP meter
 - Modbus TCP: Add support for WARP Charger as meter

@@ -641,7 +641,7 @@
 - Add support for NFC type 5 tags (through NFC Bricklet firmware 2.1.0)
 - Add system language setting (currently used to translate MQTT auto discovery topics)
 - Add support for RCT Power hybrid inverters
-- Add support for more Modbus TCP devices: hybrid inverters: Solax, Hailei, Fox ESS H3; energy meters: Siemens PAC, Carlo Gavazzi; battery stoage: Fronius GEN24 Plus
+- Add support for more Modbus TCP devices: hybrid inverters: Solax, Hailei, Fox ESS H3; energy meters: Siemens PAC, Carlo Gavazzi; battery storage: Fronius GEN24 Plus
 - Support single- and two-phase dynamic load management
 - Rework Modbus TCP server
 - Add NFC Tag Injection to WARP register set
@@ -693,7 +693,7 @@
 - Modbus TCP: Add Shelly Pro (3)EM frequency values
 - Modbus TCP: Fix Deye load energy current and power sign
 - SunSpec: Fix SolarEdge inverter power sign
-- SunSpec: Add quirk for Kostal endian-swapped floats
+- SunSpec: Add quirk for KOSTAL endian-swapped floats
 - SunSpec: Add work-around for SolarEdge meter model mixup
 - Fix Caps Lock detection of password inputs
 - Fix multiple remote access bugs
@@ -721,7 +721,7 @@
 - Close WS and OCPP network connections before reboot
 
 2025-02-25: 2.7.3 (d34a5007)
-- SunSpec: Remove quirk for Kostal endian-swapped floats, it creates more problems than it fixes
+- SunSpec: Remove quirk for KOSTAL endian-swapped floats, it creates more problems than it fixes
 - Charge Tracker: Fix language selection for PDF export
 - Charge Tracker: Fix encoding of non-CP-1252 characters for PDF export
 
@@ -744,7 +744,7 @@
 - Charge Manager: Make sure chargers in one of the "Min" modes are always activated if possible
 - Charge Manager: Don't stop all chargers if some are not reachable
 - Remote Access: Changed format of authorization token to be more fault tolerant
-- SunSpec: Add autodetection for quirk for Kostal endian-swapped floats
+- SunSpec: Add autodetection for quirk for KOSTAL endian-swapped floats
 - SunSpec: Improve device search for SMA devices
 - Modbus TCP: Add support for Eastron SDM630 TCP meter
 - Modbus TCP: Add support for WARP Charger as meter
