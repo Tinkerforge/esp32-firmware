@@ -1169,7 +1169,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     </FormRow>
                                     <hr/>
                                     <p class="text-muted">{__("eebus.content.add_peer_manual_desc")}</p>
-                                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.is_required")} small>
+                                    <FormRow label={__("eebus.content.ski")}>
                                         <InputText
                                             value={state.add.ski}
                                             onValue={(v) => this.setState({

@@ -49,7 +49,6 @@ let x = {
             "no_peers_found": "No devices found. Ensure devices are on the same network.",
             "add_peer_manual_desc": "Or enter device details manually:",
             "already_added": "Added",
-            "is_required": "required",
             "is_optional": "optional",
             "peer_info": {
                 "peers_desc": "In order to establish an EEBUS connection, an EEBUS device must first be added. Connections from other devices will be rejected.",
