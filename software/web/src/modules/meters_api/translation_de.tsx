@@ -19,7 +19,7 @@ let x = {
             "meter_type_dlm_only": "Dynamisches Lastmanagement",
             "meter_type_pv_dlm_only": "PV-Überschussladen + Dynamisches Lastmanagement",
             "override_modal_title": "Stromzählerwerte überschreiben",
-            "override_modal_body": "Die Stromzählerwerte werden überschrieben. Sind Sie sicher?",
+            "override_modal_body": "Die Stromzählerwerte werden überschrieben. Fortfahren?",
             "override_modal_confirm": "Überschreiben",
             "override_modal_cancel": "Abbrechen",
             "location_matching": "Übereinstimmend",

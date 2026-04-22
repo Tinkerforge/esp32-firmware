@@ -185,7 +185,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Stromzählertyp",
-            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll.</p><p>Um die Leistung auf 4200 W gemäß §14a EnWG zu begrenzen, verwenden Sie die <a href="#p14a_enwg">§14a-EnWG-Konfigurationsseite</a>.</p></>,
+            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll.</p><p>Um die Leistung auf 4200 W gemäß §14a EnWG zu begrenzen, sollte die <a href="#p14a_enwg">§14a-EnWG-Konfigurationsseite</a> verwendet werden.</p></>,
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten, wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten, wenn geschlossen",

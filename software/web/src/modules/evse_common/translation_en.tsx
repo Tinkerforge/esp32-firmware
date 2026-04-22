@@ -185,7 +185,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled.</p><p>To limit power to 4200 W according to §14a EnWG, use the <a href="#p14a_enwg">§14a EnWG configuration page</a>.</p></>,
+            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Configure how to handle changes to the shutdown input here.</p><p>To limit power to 4200 W according to §14a EnWG, use the <a href="#p14a_enwg">§14a EnWG configuration page</a>.</p></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",

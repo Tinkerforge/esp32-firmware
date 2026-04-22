@@ -96,7 +96,7 @@ let x = {
 
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
             "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",
-            "multi_broadcast_modal_body_end": "Sind sie sicher, dass sie die Einstellungen übernehmen wollen?",
+            "multi_broadcast_modal_body_end": "Fortfahren?",
             "multi_broadcast_modal_save": "Übernehmen",
             "multi_broadcast_modal_cancel": "Abbrechen",
 

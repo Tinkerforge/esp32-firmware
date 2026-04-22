@@ -11,7 +11,7 @@ let x = {
             "connected_to_clients": /*SFN*/ (clients: number) => `${clients} Client${clients == 1 ? "" : "s"} verbunden` /*NF*/,
             "disconnected": "Getrennt",
             "ntp_not_synced": "Zeitsynchronisation deaktiviert",
-            "ntp_not_synced_text": "Der Fernzugriff benötigt die Zeitsynchronisation für die ordnungsgemäße Funktion. Aktivieren Sie die Zeitsynchronisation in den Systemzeit-Einstellungen."
+            "ntp_not_synced_text": "Der Fernzugriff benötigt die Zeitsynchronisation für die ordnungsgemäße Funktion. Bitte die Zeitsynchronisation in den Systemzeit-Einstellungen aktivieren."
         },
         "navbar": {
             "remote_access": "Fernzugriff"

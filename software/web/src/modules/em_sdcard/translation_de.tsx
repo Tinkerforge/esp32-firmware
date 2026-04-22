@@ -20,7 +20,7 @@ let x = {
 
             "format_sdcard": "SD-Karte formatieren",
             "format_sdcard_desc": "Karte einrichten und alle Daten darauf löschen",
-            "format_sdcard_modal_text": <>Formatiere die SD-Karte, damit sie für den Energy Manager nutzbar ist. <b>Alle derzeit auf der SD-Karte gespeicherten Daten sind dann verloren.</b> Bist du sicher?</>,
+            "format_sdcard_modal_text": <>Formatiere die SD-Karte, damit sie für den Energy Manager nutzbar ist. <b>Alle derzeit auf der SD-Karte gespeicherten Daten sind dann verloren.</b> Fortfahren?</>,
             "abort_format": "Abbrechen",
             "confirm_format": "Formatieren",
             "formatting": "Formatiere...",

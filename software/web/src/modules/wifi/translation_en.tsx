@@ -71,7 +71,7 @@ let x = {
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>
-                <p><strong>We strongly advise to never switch it completely off, since you wont be able to access the device once the default network is unavailable.</strong></p>
+                <p><strong>We strongly advise to never switch it completely off, since it is impossible to access the device once the default network is unavailable.</strong></p>
             </>,
             "ap_enabled": "Enabled",
             "ap_fallback_only": "As fallback only",
@@ -85,7 +85,7 @@ let x = {
             "ap_channel_auto_select": "Selected automatically",
 
             "confirm_title": "Disable WiFi Access Point?",
-            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>See manual for details.</a> : undefined}</>,
+            "confirm_content": <>Shall the WiFi Access Point be disabled? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>See manual for details.</a> : undefined}</>,
             "confirm_abort": "Abort",
             "confirm_confirm": "Disable",
 
