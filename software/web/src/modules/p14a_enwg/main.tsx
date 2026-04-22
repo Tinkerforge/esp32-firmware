@@ -163,7 +163,9 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                         />
                     </FormRow>
 
-                    <FormRow label={__("p14a_enwg.content.source")}>
+                    <FormRow label={__("p14a_enwg.content.source")}
+                             error={__("p14a_enwg.content.eebus_needs_activation")}
+                             show_error={source_tag == P14aEnwgSource.EEBus && !API.get("eebus/config").enable}>
                         <InputSelect
                             items={source_items}
                             value={source_tag}

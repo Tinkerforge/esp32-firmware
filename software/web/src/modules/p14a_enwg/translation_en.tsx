@@ -25,6 +25,7 @@ let x = {
             "source_input": /*SFN*/(device_name: string) => device_name + " input"/*NF*/,
             "source_eebus": "EEBUS",
             "source_api": "API",
+            "eebus_needs_activation": <>To be able to use EEBUS as signal source, <a href="#eebus">EEBUS</a> must be enabled.</>,
             "input": "Input",
             "limit": "Device count",
             "limit_muted": "Number of controllable consumer devices",
