@@ -324,7 +324,8 @@ def get_meter_voltages():
 
 def reset_evse():
     global evse
-    return retry_wrapper(lambda: evse.reset(), "reset EVSE")
+    retry_wrapper(lambda: evse.reset(), "reset EVSE")
+    retry_wrapper(lambda: evse.set_test_mode(True, 0xdeadbeef), "enable EVSE test mode")
 
 class Scanner:
     def __init__(self):

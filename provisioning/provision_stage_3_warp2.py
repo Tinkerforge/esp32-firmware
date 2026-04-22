@@ -701,10 +701,6 @@ class Stage3:
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
-        print('Waiting for 30 second state E/F deadtime')
-
-        time.sleep(30)
-
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
 
@@ -881,7 +877,7 @@ class Stage3:
 
             self.change_cp_pe_state('C')
 
-            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION + 5)  # FIXME: remove the extra 5 seconds of sleep when EVSE gains test mode
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
             self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, counter + 1))
 
@@ -924,10 +920,6 @@ class Stage3:
         if not self.check_iec_state('A'):
             fatal_error('Wallbox not in IEC state A')
 
-        print('Waiting for 30 second state D deadtime')
-
-        time.sleep(30)
-
         self.verify_evse_not_crashed()
 
         # step 01: test phase separation
@@ -960,7 +952,7 @@ class Stage3:
             # Starting a single phase charge is sufficient to test this.
 
             self.change_cp_pe_state('A')
-            time.sleep(RELAY_SETTLE_DURATION + 5) # TODO remove + 5 when expecting EVSE test mode
+            time.sleep(RELAY_SETTLE_DURATION)
             self.switch_phases_function(1)
             time.sleep(0.5)
             self.change_cp_pe_state('C')
@@ -968,7 +960,7 @@ class Stage3:
             self.verify_voltages(p_type2=['L1'], p_meter=['L1', 'L2', 'L3'])
 
             self.change_cp_pe_state('A')
-            time.sleep(RELAY_SETTLE_DURATION + 5) # TODO remove + 5 when expecting EVSE test mode
+            time.sleep(RELAY_SETTLE_DURATION)
             self.switch_phases_function(3)
             time.sleep(0.5)
             self.change_cp_pe_state('C')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2026-02-25.      #
+# This file was automatically generated on 2026-04-22.      #
 #                                                           #
 # Python Bindings Version 2.1.32                            #
 #                                                           #
@@ -33,7 +33,7 @@ GetGPIOConfiguration = namedtuple('GPIOConfiguration', ['shutdown_input_configur
 GetIndicatorLED = namedtuple('IndicatorLED', ['indication', 'duration', 'color_h', 'color_s', 'color_v'])
 GetButtonState = namedtuple('ButtonState', ['button_press_time', 'button_release_time', 'button_pressed'])
 GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'dc_fault_current_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'energy_meter_type', 'power', 'current', 'phases_active', 'phases_connected', 'error_count'])
-GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled', 'phases_connected', 'enumerate_value', 'enumerate_value_change_time', 'phase_switch_wait_time'])
+GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled', 'phases_connected', 'enumerate_value', 'enumerate_value_change_time', 'phase_switch_wait_time', 'plc_modem_enabled'])
 GetPhaseControl = namedtuple('PhaseControl', ['phases_current', 'phases_requested', 'phases_state', 'phases_info'])
 GetChargingProtocol = namedtuple('ChargingProtocol', ['charging_protocol', 'cp_duty_cycle'])
 GetEichrechtUserAssignment = namedtuple('EichrechtUserAssignment', ['identification_status', 'identification_flags', 'identification_type', 'identification_data'])
@@ -123,6 +123,10 @@ class BrickletEVSEV2(Device):
     FUNCTION_GET_ENUMERATE_VALUE = 64
     FUNCTION_SET_PHASE_SWITCH_WAIT_TIME = 65
     FUNCTION_GET_PHASE_SWITCH_WAIT_TIME = 66
+    FUNCTION_SET_PLC_MODEM = 67
+    FUNCTION_GET_PLC_MODEM = 68
+    FUNCTION_SET_TEST_MODE = 69
+    FUNCTION_GET_TEST_MODE = 70
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -420,6 +424,10 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_ENUMERATE_VALUE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_PHASE_SWITCH_WAIT_TIME] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASE_SWITCH_WAIT_TIME] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_PLC_MODEM] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_PLC_MODEM] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_TEST_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_TEST_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -742,7 +750,7 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 46, 'B B B h H H B B B I I ! ! ! ! h B B B B ! B B I B'))
+        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 47, 'B B B h H H B B B I I ! ! ! ! h B B B B ! B B I B !'))
 
     def factory_reset(self, password):
         r"""
@@ -1043,6 +1051,43 @@ class BrickletEVSEV2(Device):
         self.check_validity()
 
         return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASE_SWITCH_WAIT_TIME, (), '', 9, 'B')
+
+    def set_plc_modem(self, plc_modem_enabled):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        plc_modem_enabled = bool(plc_modem_enabled)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_PLC_MODEM, (plc_modem_enabled,), '!', 0, '')
+
+    def get_plc_modem(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PLC_MODEM, (), '', 9, '!')
+
+    def set_test_mode(self, test_mode_enabled, password):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        test_mode_enabled = bool(test_mode_enabled)
+        password = int(password)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_TEST_MODE, (test_mode_enabled, password), '! I', 0, '')
+
+    def get_test_mode(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_TEST_MODE, (), '', 9, '!')
 
     def get_spitfp_error_count(self):
         r"""
