@@ -1778,7 +1778,6 @@ en_hyph = [
     "in-ter-face",
     "sup-port-ed",
     "Con-tac-tor",
-    "con-tac-tor",
     "in-stalled",
     "cor-rect-ly",
     "switch-ing",
@@ -2074,5 +2073,6 @@ allowed_missing = set([
     "allocable"
     "publisher",
     "extension",
-    "departure"
+    "departure",
+    "contactor"
 ])
