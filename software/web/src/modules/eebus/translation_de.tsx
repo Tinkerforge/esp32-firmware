@@ -3,18 +3,18 @@ import { h } from "preact";
 let x = {
     "eebus": {
         "content": {
-            "enable_eebus": "EEBUS aktivieren",
+            "enable_eebus": "EEBUS aktiviert",
             "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
-            "eebus_detail_info": "Hier werden die Werte welche von den Usecases über EEBUS bereitgestellt oder geschrieben werden können angezeigt. Die angezeigten Werte spiegeln die jeweils neuesten EEBUS‑Kommunikationsdaten wieder. Werte welche von EEBUS Steuergeräten geschrieben werden können, sind als als solche markiert. Alle anderen Werte sind für EEBUS Geräte nur lesbar.",
+            "eebus_detail_info": "Hier werden die Werte welche von den Use Cases über EEBUS bereitgestellt oder geschrieben werden können angezeigt. Die angezeigten Werte spiegeln die jeweils neuesten EEBUS‑Kommunikationsdaten wieder. Werte welche von EEBUS Steuergeräten geschrieben werden können, sind als als solche markiert. Alle anderen Werte sind für EEBUS Geräte nur lesbar.",
             "enable_eebus_help_intro": <>
                 <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die Kommunikation
                 zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen (HEMS).</p>
             </>,
             "enable_eebus_help_usecases_intro": <>
-                <p>Vom Standard werden Usecases definiert welche zur Abbildung verschiedener Funktionen von Geräten und Systemen genutzt werden können.</p>
+                <p>Vom Standard werden Use Cases definiert, die zur Abbildung verschiedener Funktionen von Geräten und Systemen genutzt werden können.</p>
                 <p>Folgende Use Cases werden unterstützt:</p>
             </>,
-            "usecase_lpc_desc": "Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern (z.b. Wallboxen, Klimageräte) zu begrenzen.",
+            "usecase_lpc_desc": <>Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur <strong>Netzsteuerung gemäß §14a EnWG</strong> verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern (z.b. Wallboxen, Klimageräte) zu begrenzen.</>,
             "usecase_lpp_desc": "Begrenzung der Leistungsabgabe. Ermöglicht dem Netzbetreiber die Begrenzung der Netzeinspeisung.",
             "usecase_mpc_desc": "Überwachung des Stromverbrauchs. Überwacht die Leistungsaufnahme oder -abgabe eines Geräts.",
             "usecase_mgcp_desc": "Netzanschlusspunkt-Überwachung. Überwacht den Leistungsfluss am Netzanschlusspunkt einschließlich Einspeisung und Bezug.",
@@ -24,7 +24,7 @@ let x = {
             "usecase_evsecc_desc": "Wallbox-Status. Meldet den Betriebszustand der Ladestation und eventuelle Fehlerzustände.",
             "usecase_evcs_desc": "Ladeübersicht. Stellt Zusammenfassungen abgeschlossener Ladevorgänge mit Energiemenge und Kosten bereit.",
             "usecase_opev_desc": "Überlastschutz. Ermöglicht die Begrenzung des Ladestroms.",
-            "usecase_value_writable": "Schreibbar",
+            "usecase_value_writable": "schreibbar",
             "cert": "Zertifikat",
             "key": "Key",
             "ski": "SKI",
@@ -47,10 +47,10 @@ let x = {
             "no_peers_found": "Keine Geräte gefunden. Stellen Sie sicher, dass die Geräte im selben Netzwerk sind.",
             "add_peer_manual_desc": "Oder Gerätedetails manuell eingeben:",
             "already_added": "Hinzugefügt",
-            "is_optional": "Optional",
+            "is_optional": "optional",
             "peer_info": {
                 "peers_desc": "Damit eine EEBUS Verbindung hergestellt werden kann, muss ein EEBUS Gerät zuerst hinzugefügt werden. Verbindungen von anderen Geräten werden abgelehnt.",
-                "peers": "EEBUS-Gerät",
+                "peers": "EEBUS-Geräte",
                 "dns_name": "DNS Adresse",
                 "device_ip": "Adressen",
                 "device_port": "Port",
@@ -61,7 +61,7 @@ let x = {
                 "trusted_no": "Nein",
                 "trusted_yes": "Ja",
                 "edit_peer_title": "Bearbeiten",
-                "wss_path": "WSS Pfad",
+                "wss_path": "WSS-Pfad",
                 "state": "Status",
                 "state_connected": "SHIP Aktiv",
                 "state_eebus_connected": "EEBUS Aktiv",
