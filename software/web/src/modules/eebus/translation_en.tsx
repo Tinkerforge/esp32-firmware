@@ -91,6 +91,7 @@ let x = {
             "received": "Received",
             "sent": "Sent",
             "usecase_inactive": "This use case is inactive because not all required meter data has been received yet.",
+            "usecase_inactive_no_vehicle": "This use case is inactive because no vehicle is connected.",
             "usecases": "Use Cases"
         },
         "navbar": {

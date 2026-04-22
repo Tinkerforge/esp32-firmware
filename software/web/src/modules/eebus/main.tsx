@@ -132,7 +132,7 @@ function PhaseRow(props: {
  */
 function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild {
     // Mapping of use case enum values to their descriptions (as ComponentChild)
-    const usecaseDescMap: { [key: number]: { name: string, desc: string } } = {
+    const usecaseDescMap: { [key: number]: { name: string, desc: ComponentChild } } = {
         [Usecases.LPC]: {
             name: "LPC (Limitation of Power Consumption)",
             desc: __("eebus.content.usecase_lpc_desc")
@@ -542,14 +542,15 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
                                     // EV Charging Electricity Measurement
                                     if (state.usecases.evcem != null) {
-                                        const evcc = state.usecases.evcc;
+                                        // EVCC is required for EVCEM
+                                        const evcc = state.usecases.evcc!;
                                         const evcem = state.usecases.evcem;
                                         rows.push({
                                             hideRemoveButton: true,
                                             columnValues: ["EVCEM (EV Charging Electricity Measurement)"],
                                             extraValue: <>
                                                 {!evcem.active && <div class="alert alert-secondary mb-2 py-1 px-2" role="alert">
-                                                    <small>{__("eebus.content.usecase_inactive")}</small>
+                                                    <small>{evcc.ev_connected ? __("eebus.content.usecase_inactive") : __("eebus.content.usecase_inactive_no_vehicle")}</small>
                                                 </div>}
                                                 <div style={!evcem.active ? "opacity: 0.4; pointer-events: none;" : ""}>
                                                 <FormRow label="EV Connected" small>
