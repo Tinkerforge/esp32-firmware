@@ -30,8 +30,8 @@ import { FormRow } from "../../ts/components/form_row";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "./generated/automation_trigger_id.enum";
 import { AutomationActionID } from "./generated/automation_action_id.enum";
-import { Task, AutomationTriggerComponents, AutomationActionComponents } from "./types";
-import { plugins_pre_init, plugins_init } from "./plugins";
+import { Task, AutomationTriggerPlugin, AutomationActionPlugin } from "./types";
+import { trigger_plugins_pre_init, trigger_plugins_init, action_plugins_pre_init, action_plugins_init } from "./plugins";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Tool } from "react-feather";
@@ -53,8 +53,8 @@ type AutomationState = {
     last_run: number[]
 };
 
-let automation_trigger_components: AutomationTriggerComponents = {};
-let automation_action_components: AutomationActionComponents = {};
+let trigger_plugins: {[trigger_id: number]: AutomationTriggerPlugin} = {};
+let action_plugins: {[action_id: number]: AutomationActionPlugin} = {};
 
 export class Automation extends ConfigComponent<"automation/config", {}, AutomationState> {
     constructor() {
@@ -86,17 +86,17 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
 
     createSelectors() {
         let trigger: [string, string][] = [];
-        for (let i in automation_trigger_components) {
+        for (let i in trigger_plugins) {
             if (this.state.registered_triggers.indexOf(parseInt(i)) < 0) {
                 continue;
             }
 
-            let trigger_component = automation_trigger_components[i];
-            let name = trigger_component.translation_name();
+            let trigger_plugin = trigger_plugins[i];
+            let name = trigger_plugin.name();
 
             if (this.state.enabled_triggers.indexOf(parseInt(i)) < 0) {
                 name += " [";
-                name += trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled");
+                name += trigger_plugin.get_disabled_reason ? trigger_plugin.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled");
                 name += "]";
             }
 
@@ -104,17 +104,17 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         }
 
         let action: [string, string][] = [];
-        for (let i in automation_action_components) {
+        for (let i in action_plugins) {
             if (this.state.registered_actions.indexOf(parseInt(i)) < 0) {
                 continue;
             }
 
-            let action_component = automation_action_components[i];
-            let name = action_component.translation_name();
+            let action_plugin = action_plugins[i];
+            let name = action_plugin.name();
 
             if (this.state.enabled_actions.indexOf(parseInt(i)) < 0) {
                 name += " [";
-                name += action_component.get_disabled_reason ? action_component.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled");
+                name += action_plugin.get_disabled_reason ? action_plugin.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled");
                 name += "]";
             }
 
@@ -130,7 +130,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     onValue={(v) => {
                         this.setState({
                             displayed_trigger: parseInt(v),
-                            edit_task: {...this.state.edit_task, trigger: automation_trigger_components[parseInt(v)].new_config()}
+                            edit_task: {...this.state.edit_task, trigger: trigger_plugins[parseInt(v)].new_config()}
                         });
                     }}
                     value={this.state.displayed_trigger.toString()}
@@ -139,7 +139,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         ];
 
         if (this.state.displayed_trigger != AutomationTriggerID.None) {
-            const trigger_config = automation_trigger_components[this.state.displayed_trigger].get_edit_children(this.state.edit_task.trigger, (trigger) => {
+            const trigger_config = trigger_plugins[this.state.displayed_trigger].get_edit_children(this.state.edit_task.trigger, (trigger) => {
                 this.setState({edit_task: {...this.state.edit_task, trigger: trigger}});
             });
             triggerSelector = triggerSelector.concat(<div key={`trigger_config_${this.state.displayed_trigger}`}>{trigger_config}</div>);
@@ -156,7 +156,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     onValue={(v) => {
                         this.setState({
                             displayed_action: parseInt(v),
-                            edit_task: {...this.state.edit_task, action: automation_action_components[parseInt(v)].new_config()}
+                            edit_task: {...this.state.edit_task, action: action_plugins[parseInt(v)].new_config()}
                         });
                     }}
                     value={this.state.displayed_action.toString()}
@@ -165,37 +165,37 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         ];
 
         if (this.state.displayed_action != AutomationActionID.None) {
-            const action_config = automation_action_components[this.state.displayed_action].get_edit_children(this.state.edit_task.action, (action) => {
+            const action_config = action_plugins[this.state.displayed_action].get_edit_children(this.state.edit_task.action, (action) => {
                 this.setState({edit_task: {...this.state.edit_task, action: action}});
             });
             actionSelector = actionSelector.concat(<div key={`action_config_${this.state.displayed_action}`}>{action_config}</div>);
         }
 
         const preview = [];
-        const trigger_component = automation_trigger_components[this.state.displayed_trigger];
-        if (trigger_component) {
+        const trigger_plugin = trigger_plugins[this.state.displayed_trigger];
+        if (trigger_plugin) {
             if (this.state.enabled_triggers.indexOf(this.state.displayed_trigger) < 0) {
-                let reason = trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled");
+                let reason = trigger_plugin.get_disabled_reason ? trigger_plugin.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled");
                 preview.push(<span class="text-danger" key={`trigger_disabled_reason_${this.state.displayed_trigger}`}>[{reason}]</span>);
                 preview.push(" ");
             }
 
-            preview.push(<span key={`trigger_preview_${this.state.displayed_trigger}`}>{trigger_component.get_table_children(this.state.edit_task.trigger)}</span>);
+            preview.push(<span key={`trigger_preview_${this.state.displayed_trigger}`}>{trigger_plugin.get_table_children(this.state.edit_task.trigger)}</span>);
         }
 
-        const action_component = automation_action_components[this.state.displayed_action];
-        if (action_component) {
+        const action_plugin = action_plugins[this.state.displayed_action];
+        if (action_plugin) {
             if (preview.length > 0) {
                 preview.push(<br key="preview_trigger_action_separator"/>);
             }
 
             if (this.state.enabled_actions.indexOf(this.state.displayed_action) < 0) {
-                let reason = action_component.get_disabled_reason ? action_component.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled");
+                let reason = action_plugin.get_disabled_reason ? action_plugin.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled");
                 preview.push(<span class="text-danger" key={`action_disabled_reason_${this.state.displayed_action}`}>[{reason}]</span>);
                 preview.push(" ");
             }
 
-            preview.push(<span key={`action_preview_${this.state.displayed_trigger}`}>{action_component.get_table_children(this.state.edit_task.action)}</span>);
+            preview.push(<span key={`action_preview_${this.state.displayed_trigger}`}>{action_plugin.get_table_children(this.state.edit_task.action)}</span>);
         }
 
         let delaySelector: ComponentChild[] = [
@@ -238,23 +238,23 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             let action_id: number = task.action[0];
             let last_run: number = this.state.last_run[idx];
 
-            const trigger_component = automation_trigger_components[trigger_id];
-            const action_component = automation_action_components[action_id];
+            const trigger_plugin = trigger_plugins[trigger_id];
+            const action_plugin = action_plugins[action_id];
 
             const task_copy: Task = {
-                trigger: trigger_component.clone_config(task.trigger),
-                action: action_component.clone_config(task.action),
+                trigger: trigger_plugin.clone_config(task.trigger),
+                action: action_plugin.clone_config(task.action),
                 delay: task.delay,
             };
 
-            const trigger_children = trigger_component.get_table_children(task.trigger);
-            const action_children = action_component.get_table_children(task.action);
+            const trigger_children = trigger_plugin.get_table_children(task.trigger);
+            const action_children = action_plugin.get_table_children(task.action);
 
             const trigger_disabled = this.state.enabled_triggers.indexOf(trigger_id) < 0
-                                     ? (<span class="text-danger">[{trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(task.trigger) : __("automation.content.trigger_disabled")}]</span>)
+                                     ? (<span class="text-danger">[{trigger_plugin.get_disabled_reason ? trigger_plugin.get_disabled_reason(task.trigger) : __("automation.content.trigger_disabled")}]</span>)
                                      : undefined;
             const action_disabled = this.state.enabled_actions.indexOf(action_id) < 0
-                                    ? (<span class="text-danger">[{action_component.get_disabled_reason ? action_component.get_disabled_reason(task.action) : __("automation.content.action_disabled")}]</span>)
+                                    ? (<span class="text-danger">[{action_plugin.get_disabled_reason ? action_plugin.get_disabled_reason(task.action) : __("automation.content.action_disabled")}]</span>)
                                     : undefined;
 
             let last_run_timestamp;
@@ -354,31 +354,11 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
 }
 
 export function pre_init() {
-    let result = plugins_pre_init();
-
-    for (let item of result) {
-        if (item.trigger_components) {
-            for (let i in item.trigger_components) {
-                if (automation_trigger_components[i]) {
-                    console.log('Automation: Overwriting trigger ID ' + i);
-                }
-
-                automation_trigger_components[i] = item.trigger_components[i];
-            }
-        }
-
-        if (item.action_components) {
-            for (let i in item.action_components) {
-                if (automation_action_components[i]) {
-                    console.log('Automation: Overwriting action ID ' + i);
-                }
-
-                automation_action_components[i] = item.action_components[i];
-            }
-        }
-    }
+    trigger_plugins = trigger_plugins_pre_init();
+    action_plugins = action_plugins_pre_init();
 }
 
 export function init() {
-    plugins_init();
+    trigger_plugins_init();
+    action_plugins_init();
 }

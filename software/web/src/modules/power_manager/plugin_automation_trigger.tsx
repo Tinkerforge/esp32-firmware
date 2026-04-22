@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import * as util from "../../ts/util";
@@ -98,23 +98,21 @@ function new_pm_grid_power_draw_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.PMPowerAvailable]: {
-                translation_name: () => __("power_manager.automation.power_available"),
-                new_config: new_pm_power_available_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_pm_power_available_table_children,
-                get_edit_children: get_pm_power_available_edit_children,
-            },
-            [AutomationTriggerID.PMGridPowerDraw]: {
-                translation_name: () => __("power_manager.automation.grid_power_draw"),
-                new_config: new_pm_grid_power_draw_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_pm_grid_power_draw_table_children,
-                get_edit_children: get_pm_grid_power_draw_edit_children,
-            },
+        [AutomationTriggerID.PMPowerAvailable]: {
+            name: () => __("power_manager.automation.power_available"),
+            new_config: new_pm_power_available_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_pm_power_available_table_children,
+            get_edit_children: get_pm_power_available_edit_children,
+        },
+        [AutomationTriggerID.PMGridPowerDraw]: {
+            name: () => __("power_manager.automation.grid_power_draw"),
+            new_config: new_pm_grid_power_draw_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_pm_grid_power_draw_table_children,
+            get_edit_children: get_pm_grid_power_draw_edit_children,
         },
     };
 }

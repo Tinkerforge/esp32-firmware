@@ -18,11 +18,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
@@ -107,16 +107,14 @@ function new_mqtt_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.MQTT]: {
-                translation_name: () => __("mqtt.automation.automation_trigger_mqtt"),
-                new_config: new_mqtt_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_mqtt_edit_children,
-                get_table_children: get_mqtt_table_children,
-            },
+        [AutomationTriggerID.MQTT]: {
+            name: () => __("mqtt.automation.automation_trigger_mqtt"),
+            new_config: new_mqtt_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_mqtt_edit_children,
+            get_table_children: get_mqtt_table_children,
         },
     };
 }

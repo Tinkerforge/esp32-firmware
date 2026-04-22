@@ -26,8 +26,8 @@ export type Task = AutomationConfig["tasks"][0];
 export type AutomationTrigger = Task["trigger"];
 export type AutomationAction = Task["action"];
 
-export interface AutomationTriggerComponent {
-    translation_name: () => string,
+export interface AutomationTriggerPlugin {
+    name: () => string,
     new_config: () => AutomationTrigger,
     clone_config: (trigger: AutomationTrigger) => AutomationTrigger,
     get_edit_children: (trigger: AutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) => ComponentChildren,
@@ -35,16 +35,11 @@ export interface AutomationTriggerComponent {
     get_disabled_reason?: (trigger: AutomationTrigger) => string,
 }
 
-export interface AutomationActionComponent {
-    translation_name: () => string,
+export interface AutomationActionPlugin {
+    name: () => string,
     new_config: () => AutomationAction,
     clone_config: (action: AutomationAction) => AutomationAction,
     get_edit_children: (action: AutomationAction, on_action: (action: AutomationAction) => void) => ComponentChildren,
     get_table_children: (action: AutomationAction) => ComponentChildren,
     get_disabled_reason?: (action: AutomationAction) => string,
 }
-
-export type AutomationTriggerComponents = {[key: number]: AutomationTriggerComponent};
-export type AutomationActionComponents = {[key: number]: AutomationActionComponent};
-
-export type PreInitResult = {trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents};

@@ -48,7 +48,7 @@ import { ScheduleRuleCondition } from "../battery_control/generated/schedule_rul
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index, is_day_ahead_prices_enabled } from "../day_ahead_prices/main";
 //#endif
-import { plugins_pre_init, plugins_init } from "./plugins";
+import { config_plugins_pre_init, config_plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
 import { UplotLoader } from "../../ts/components/uplot_loader";
@@ -1486,21 +1486,11 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 }
 
 export function pre_init() {
-    let result = plugins_pre_init();
-
-    for (let plugins of result) {
-        for (let battery_class in plugins) {
-            if (config_plugins[battery_class]) {
-                console.log('Batteries: Overwriting battery class ' + battery_class);
-            }
-
-            config_plugins[battery_class] = plugins[battery_class];
-        }
-    }
+    config_plugins = config_plugins_pre_init();
 }
 
 export function init() {
-    plugins_init();
+    config_plugins_init();
 
     register_status_provider("batteries", {
         name: () => __("batteries.status.batteries"),

@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
@@ -193,23 +193,21 @@ function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (tri
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.Cron]: {
-                translation_name: () => __("automation.automation.cron"),
-                new_config: new_cron_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_cron_edit_children,
-                get_table_children: get_cron_table_children,
-            },
-            [AutomationTriggerID.HTTP]: {
-                translation_name: () => __("automation.automation.http"),
-                new_config: new_http_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_http_edit_children,
-                get_table_children: get_http_table_children,
-            },
+        [AutomationTriggerID.Cron]: {
+            name: () => __("automation.automation.cron"),
+            new_config: new_cron_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_cron_edit_children,
+            get_table_children: get_cron_table_children,
+        },
+        [AutomationTriggerID.HTTP]: {
+            name: () => __("automation.automation.http"),
+            new_config: new_http_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_http_edit_children,
+            get_table_children: get_http_table_children,
         },
     };
 }

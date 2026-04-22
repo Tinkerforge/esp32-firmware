@@ -21,7 +21,7 @@ interface Task {
 }
 
 type AutomationTrigger =
-    [AutomationTriggerID.None, null]{{{triggers}}};
+    [AutomationTriggerID.None, null]{{{trigger_types}}};
 
 type AutomationAction =
-    [AutomationActionID.None, null]{{{actions}}};
+    [AutomationActionID.None, null]{{{action_types}}};

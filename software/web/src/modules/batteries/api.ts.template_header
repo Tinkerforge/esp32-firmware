@@ -6,4 +6,4 @@ export interface config {
 }
 
 type BatteryConfig =
-    [BatteryClassID.None, null]{{{configs}}};
+    [BatteryClassID.None, null]{{{config_types}}};

@@ -21,7 +21,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
@@ -114,23 +114,21 @@ function get_external_current_wd_edit_children(_: EVSEExternalCurrentWdAutomatio
     return []
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.ChargerState]: {
-                translation_name: () => __("evse.automation.state_change"),
-                new_config: new_iec_change_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_iec_change_edit_children,
-                get_table_children: get_iec_change_table_children,
-            },
-            [AutomationTriggerID.EVSEExternalCurrentWd]: {
-                translation_name: () => __("evse.automation.external_current_wd"),
-                new_config: new_external_current_wd_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_external_current_wd_edit_children,
-                get_table_children: get_external_current_wd_table_children,
-            },
+        [AutomationTriggerID.ChargerState]: {
+            name: () => __("evse.automation.state_change"),
+            new_config: new_iec_change_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_iec_change_edit_children,
+            get_table_children: get_iec_change_table_children,
+        },
+        [AutomationTriggerID.EVSEExternalCurrentWd]: {
+            name: () => __("evse.automation.external_current_wd"),
+            new_config: new_external_current_wd_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_external_current_wd_edit_children,
+            get_table_children: get_external_current_wd_table_children,
         },
     };
 }

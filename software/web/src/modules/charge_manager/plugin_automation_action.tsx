@@ -22,7 +22,7 @@ import { h } from "preact";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api"
@@ -107,23 +107,21 @@ function new_pm_charge_mode_switch_config(): AutomationAction {
 }
 //#endregion
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.SetManagerCurrent]: {
-                translation_name: () => __("charge_manager.automation.set_charge_manager"),
-                new_config: new_set_manager_current_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_set_manager_current_edit_children,
-                get_table_children: get_set_manager_current_table_children,
-            },
-            [AutomationActionID.PMChargeModeSwitch]: {
-                translation_name: () => __("charge_manager.automation.charge_mode_switch"),
-                new_config: new_pm_charge_mode_switch_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_table_children: get_pm_charge_mode_switch_table_children,
-                get_edit_children: get_pm_charge_mode_switch_edit_children,
-            },
+        [AutomationActionID.SetManagerCurrent]: {
+            name: () => __("charge_manager.automation.set_charge_manager"),
+            new_config: new_set_manager_current_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_set_manager_current_edit_children,
+            get_table_children: get_set_manager_current_table_children,
+        },
+        [AutomationActionID.PMChargeModeSwitch]: {
+            name: () => __("charge_manager.automation.charge_mode_switch"),
+            new_config: new_pm_charge_mode_switch_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_table_children: get_pm_charge_mode_switch_table_children,
+            get_edit_children: get_pm_charge_mode_switch_edit_children,
         },
     };
 }

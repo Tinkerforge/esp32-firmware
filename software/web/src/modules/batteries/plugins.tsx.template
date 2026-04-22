@@ -1,15 +1,29 @@
+import { BatteryClassID } from "./generated/battery_class_id.enum";
 import { BatteryConfigPlugin } from "./types";
-
 {{{imports}}}
 
-export function plugins_pre_init() {
-    let result: Array<{[battery_class: number]: BatteryConfigPlugin}> = [];
+type BatteryConfigPlugins = {[battery_class: number]: BatteryConfigPlugin};
 
-    {{{pre_inits}}}
+export function config_plugins_pre_init() {
+    let result: BatteryConfigPlugins = {};
+
+    for (let m of {{{config_modules}}}) {
+        let plugins: BatteryConfigPlugins = m.pre_init();
+
+        for (let battery_class in plugins) {
+            if (result[battery_class]) {
+                console.log('Batteries: Overwriting config plugin for battery class ' + battery_class);
+            }
+
+            result[battery_class] = plugins[battery_class];
+        }
+    }
 
     return result;
 }
 
-export function plugins_init() {
-    {{{inits}}}
+export function config_plugins_init() {
+    for (let m of {{{config_modules}}}) {
+        m.init();
+    }
 }

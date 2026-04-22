@@ -2,7 +2,7 @@ import { MeterClassID } from "./generated/meter_class_id.enum";
 {{{imports}}}
 
 type MeterConfig =
-    [MeterClassID.None, null]{{{configs}}};
+    [MeterClassID.None, null]{{{config_types}}};
 
 //APIPath:meters/
 export interface live {

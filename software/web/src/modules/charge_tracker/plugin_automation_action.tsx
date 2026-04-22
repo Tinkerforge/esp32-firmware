@@ -20,7 +20,7 @@
 
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 
 export type ChargeTrackerResetAutomationAction = [
@@ -43,17 +43,15 @@ function new_charge_tracker_reset_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            // [AutomationActionID.ChargeTrackerReset]: {
-            //     translation_name: () => __("charge_tracker.automation.charge_tracker_reset"),
-            //     get_table_children: get_charge_tracker_reset_table_children,
-            //     get_edit_children: get_charge_tracker_reset_edit_chidren,
-            //     new_config: new_charge_tracker_reset_config,
-            //     clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction
-            // },
-        },
+        // [AutomationActionID.ChargeTrackerReset]: {
+        //     name: () => __("charge_tracker.automation.charge_tracker_reset"),
+        //     get_table_children: get_charge_tracker_reset_table_children,
+        //     get_edit_children: get_charge_tracker_reset_edit_chidren,
+        //     new_config: new_charge_tracker_reset_config,
+        //     clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction
+        // },
     };
 }
 

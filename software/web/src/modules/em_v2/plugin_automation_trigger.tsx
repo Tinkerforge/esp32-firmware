@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -172,30 +172,28 @@ function new_em_sg_ready_switch_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.EMInput]: {
-                translation_name: () => __("em_v2.automation.input_switches"),
-                new_config: new_em_input_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_em_input_table_children,
-                get_edit_children: get_em_input_edit_children,
-            },
-            [AutomationTriggerID.EMRelaySwitch]: {
-                translation_name: () => __("em_v2.automation.relay_switches"),
-                new_config: new_em_relay_switch_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_em_relay_switch_table_children,
-                get_edit_children: get_em_relay_switch_edit_children,
-            },
-            [AutomationTriggerID.EMSGReadySwitch]: {
-                translation_name: () => __("em_v2.automation.sgready_switches"),
-                new_config: new_em_sg_ready_switch_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_em_sg_ready_switch_table_children,
-                get_edit_children: get_em_sg_ready_switch_edit_children,
-            },
+        [AutomationTriggerID.EMInput]: {
+            name: () => __("em_v2.automation.input_switches"),
+            new_config: new_em_input_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_em_input_table_children,
+            get_edit_children: get_em_input_edit_children,
+        },
+        [AutomationTriggerID.EMRelaySwitch]: {
+            name: () => __("em_v2.automation.relay_switches"),
+            new_config: new_em_relay_switch_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_em_relay_switch_table_children,
+            get_edit_children: get_em_relay_switch_edit_children,
+        },
+        [AutomationTriggerID.EMSGReadySwitch]: {
+            name: () => __("em_v2.automation.sgready_switches"),
+            new_config: new_em_sg_ready_switch_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_em_sg_ready_switch_table_children,
+            get_edit_children: get_em_sg_ready_switch_edit_children,
         },
     };
 }

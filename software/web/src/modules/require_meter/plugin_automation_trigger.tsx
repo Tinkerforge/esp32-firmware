@@ -21,7 +21,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 
 export type RequireMeterAutomationTrigger = [
     AutomationTriggerID.RequireMeter,
@@ -43,16 +43,14 @@ function new_require_meter_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.RequireMeter]: {
-                translation_name: () => __("require_meter.automation.require_meter"),
-                new_config: new_require_meter_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_require_meter_table_children,
-                get_edit_children: get_require_meter_edit_children,
-            },
+        [AutomationTriggerID.RequireMeter]: {
+            name: () => __("require_meter.automation.require_meter"),
+            new_config: new_require_meter_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_require_meter_table_children,
+            get_edit_children: get_require_meter_edit_children,
         },
     };
 }

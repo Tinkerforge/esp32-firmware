@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
@@ -34,8 +34,6 @@ export type PMPhaseSwitchAutomationAction = [
         phases_wanted: number;
     },
 ];
-
-
 
 export type PMLimitMaxCurrentAutomationAction = [
     AutomationActionID.PMLimitMaxCurrent,
@@ -170,32 +168,30 @@ function new_pm_block_charge_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.PMPhaseSwitch]: {
-                translation_name: () => __("power_manager.automation.set_phases"),
-                new_config: new_pm_phase_switch_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_table_children: get_pm_phase_switch_table_children,
-                get_edit_children: get_pm_phase_switch_edit_children,
-            },
-            [AutomationActionID.PMLimitMaxCurrent]: {
-                translation_name: () => __("power_manager.automation.limit_max_current"),
-                new_config: new_pm_limit_max_current_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_pm_limit_max_current_edit_children,
-                get_table_children: get_pm_limit_max_current_table_children,
-            },
-            [AutomationActionID.PMBlockCharge]: {
-                translation_name: () => __("power_manager.automation.block_charge"),
-                new_config: new_pm_block_charge_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_pm_block_charge_edit_children,
-                get_table_children: get_pm_block_charge_table_children,
-            },
-        }
-    }
+        [AutomationActionID.PMPhaseSwitch]: {
+            name: () => __("power_manager.automation.set_phases"),
+            new_config: new_pm_phase_switch_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_table_children: get_pm_phase_switch_table_children,
+            get_edit_children: get_pm_phase_switch_edit_children,
+        },
+        [AutomationActionID.PMLimitMaxCurrent]: {
+            name: () => __("power_manager.automation.limit_max_current"),
+            new_config: new_pm_limit_max_current_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_pm_limit_max_current_edit_children,
+            get_table_children: get_pm_limit_max_current_table_children,
+        },
+        [AutomationActionID.PMBlockCharge]: {
+            name: () => __("power_manager.automation.block_charge"),
+            new_config: new_pm_block_charge_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_pm_block_charge_edit_children,
+            get_table_children: get_pm_block_charge_table_children,
+        },
+    };
 }
 
 export function init() {

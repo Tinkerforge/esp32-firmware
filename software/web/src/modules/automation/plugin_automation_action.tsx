@@ -18,11 +18,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
-import { useState } from "preact/hooks";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
@@ -62,16 +61,14 @@ function new_print_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.Print]: {
-                translation_name: () => __("automation.automation.print_action"),
-                new_config: new_print_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_print_edit_children,
-                get_table_children: get_print_table_children,
-            },
+        [AutomationActionID.Print]: {
+            name: () => __("automation.automation.print_action"),
+            new_config: new_print_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_print_edit_children,
+            get_table_children: get_print_table_children,
         },
     };
 }

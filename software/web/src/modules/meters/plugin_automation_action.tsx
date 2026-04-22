@@ -22,7 +22,7 @@ import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
@@ -72,16 +72,14 @@ function new_meter_reset_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.MeterReset]: {
-                translation_name: () => __("meters.automation.meter_reset"),
-                new_config: new_meter_reset_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_meter_reset_edit_children,
-                get_table_children: get_meter_reset_table_children,
-            },
+        [AutomationActionID.MeterReset]: {
+            name: () => __("meters.automation.meter_reset"),
+            new_config: new_meter_reset_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_meter_reset_edit_children,
+            get_table_children: get_meter_reset_table_children,
         },
     };
 }

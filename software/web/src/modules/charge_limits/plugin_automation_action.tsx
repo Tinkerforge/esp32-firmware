@@ -23,7 +23,7 @@ import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
@@ -182,16 +182,14 @@ function new_charge_limits_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.ChargeLimits]: {
-                translation_name: () => __("charge_limits.automation.charge_limits"),
-                new_config: new_charge_limits_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_charge_limits_edit_children,
-                get_table_children: get_charge_limits_table_children,
-            },
+        [AutomationActionID.ChargeLimits]: {
+            name: () => __("charge_limits.automation.charge_limits"),
+            new_config: new_charge_limits_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_charge_limits_edit_children,
+            get_table_children: get_charge_limits_table_children,
         },
     };
 }

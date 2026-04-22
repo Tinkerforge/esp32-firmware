@@ -18,11 +18,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { AutomationAction } from "../automation/types";
+import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
@@ -129,16 +129,14 @@ function new_nfc_inject_tag_config(): AutomationAction {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.NFCInjectTag]: {
-                translation_name: () => __("nfc.automation.nfc"),
-                new_config: new_nfc_inject_tag_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_nfc_inject_tag_edit_children,
-                get_table_children: get_nfc_inject_tag_table_children,
-            },
+        [AutomationActionID.NFCInjectTag]: {
+            name: () => __("nfc.automation.nfc"),
+            new_config: new_nfc_inject_tag_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_nfc_inject_tag_edit_children,
+            get_table_children: get_nfc_inject_tag_table_children,
         },
     };
 }

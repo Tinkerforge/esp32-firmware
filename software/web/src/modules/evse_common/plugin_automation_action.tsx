@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputNumber } from "../../ts/components/input_number";
@@ -29,7 +29,6 @@ import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { Collapse } from "react-bootstrap";
-import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 
 export type EvseAutomationAction = [
     AutomationActionID.SetCurrent,
@@ -251,30 +250,28 @@ function new_pm_charge_mode_switch_config(): AutomationAction {
 }
 //#endregion
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.SetCurrent]: {
-                translation_name: () => __("evse.automation.action_allowed_charging_current"),
-                new_config: new_set_current_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_set_current_edit_children,
-                get_table_children: get_set_current_table_children,
-            },
-            [AutomationActionID.LED]: {
-                translation_name: () => __("evse.automation.led_indication"),
-                new_config: new_led_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_led_edit_children,
-                get_table_children: get_led_table_children,
-            },
-            [AutomationActionID.EVSEChargeMode]: {
-                translation_name: () => __("evse.automation.charge_mode_switch"),
-                new_config: new_pm_charge_mode_switch_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_table_children: get_pm_charge_mode_switch_table_children,
-                get_edit_children: get_pm_charge_mode_switch_edit_children,
-            },
+        [AutomationActionID.SetCurrent]: {
+            name: () => __("evse.automation.action_allowed_charging_current"),
+            new_config: new_set_current_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_set_current_edit_children,
+            get_table_children: get_set_current_table_children,
+        },
+        [AutomationActionID.LED]: {
+            name: () => __("evse.automation.led_indication"),
+            new_config: new_led_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_edit_children: get_led_edit_children,
+            get_table_children: get_led_table_children,
+        },
+        [AutomationActionID.EVSEChargeMode]: {
+            name: () => __("evse.automation.charge_mode_switch"),
+            new_config: new_pm_charge_mode_switch_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_table_children: get_pm_charge_mode_switch_table_children,
+            get_edit_children: get_pm_charge_mode_switch_edit_children,
         },
     };
 }

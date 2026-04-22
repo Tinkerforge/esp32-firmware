@@ -27,7 +27,6 @@ import { h, createRef, Fragment, Component, RefObject, ComponentChild } from "pr
 import { Button, ButtonGroup, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
@@ -38,7 +37,7 @@ import { MeterClassID } from "./generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
-import { plugins_pre_init, plugins_init } from "./plugins";
+import { config_plugins_pre_init, config_plugins_init } from "./plugins";
 import { InputDate } from "../../ts/components/input_date";
 import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
@@ -1559,17 +1558,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
 }
 
 export function pre_init() {
-    let result = plugins_pre_init();
-
-    for (let plugins of result) {
-        for (let meter_class in plugins) {
-            if (config_plugins[meter_class]) {
-                console.log('Meters: Overwriting meter class ' + meter_class);
-            }
-
-            config_plugins[meter_class] = plugins[meter_class];
-        }
-    }
+    config_plugins = config_plugins_pre_init();
 }
 
 interface MetersAlertState {
@@ -1580,7 +1569,7 @@ const ACCEPTABLE_VOLTAGE_L_N_MIN = 207.0; // V
 const ACCEPTABLE_VOLTAGE_L_N_MAX = 253.0; // V
 
 export function init() {
-    plugins_init();
+    config_plugins_init();
 
     util.addApiEventListener_unchecked('evse/meter_config', () => {
         const config = API.get_unchecked('evse/meter_config');

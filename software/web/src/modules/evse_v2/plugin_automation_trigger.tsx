@@ -21,7 +21,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
@@ -120,30 +120,28 @@ function new_evse_gp_input_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.EVSEButton]: {
-                translation_name: () => __("evse.automation.automation_trigger_button"),
-                new_config: new_evse_button_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], null] as AutomationTrigger,
-                get_edit_children: get_evse_button_edit_children,
-                get_table_children: get_evse_button_table_children,
-            },
-            [AutomationTriggerID.EVSEShutdownInput]: {
-                translation_name: () => __("evse.automation.automation_trigger_shutdown_input"),
-                new_config: new_evse_shutdown_input_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_evse_shutdown_edit_children,
-                get_table_children: get_evse_shutdown_table_children,
-            },
-            [AutomationTriggerID.EVSEGPInput]: {
-                translation_name: () => __("evse.automation.automation_trigger_gp_input"),
-                new_config: new_evse_gp_input_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_evse_gp_input_edit_children,
-                get_table_children: get_evse_gp_input_table_children,
-            },
+        [AutomationTriggerID.EVSEButton]: {
+            name: () => __("evse.automation.automation_trigger_button"),
+            new_config: new_evse_button_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], null] as AutomationTrigger,
+            get_edit_children: get_evse_button_edit_children,
+            get_table_children: get_evse_button_table_children,
+        },
+        [AutomationTriggerID.EVSEShutdownInput]: {
+            name: () => __("evse.automation.automation_trigger_shutdown_input"),
+            new_config: new_evse_shutdown_input_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_evse_shutdown_edit_children,
+            get_table_children: get_evse_shutdown_table_children,
+        },
+        [AutomationTriggerID.EVSEGPInput]: {
+            name: () => __("evse.automation.automation_trigger_gp_input"),
+            new_config: new_evse_gp_input_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_evse_gp_input_edit_children,
+            get_table_children: get_evse_gp_input_table_children,
         },
     };
 }

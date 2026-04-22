@@ -19,7 +19,7 @@
  */
 
 import { __ } from "../../ts/translation";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { ComponentChildren } from "preact";
 
@@ -43,16 +43,14 @@ function new_charge_limits_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.ChargeLimits]: {
-                translation_name: () => __("charge_limits.automation.charge_limits_expiration"),
-                new_config: new_charge_limits_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_charge_limits_edit_children,
-                get_table_children: get_charge_limits_table_children,
-            },
+        [AutomationTriggerID.ChargeLimits]: {
+            name: () => __("charge_limits.automation.charge_limits_expiration"),
+            new_config: new_charge_limits_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_charge_limits_edit_children,
+            get_table_children: get_charge_limits_table_children,
         },
     };
 }

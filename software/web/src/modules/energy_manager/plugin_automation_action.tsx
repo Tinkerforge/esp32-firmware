@@ -22,7 +22,7 @@ import * as API  from "../../ts/api";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
-import { AutomationAction, PreInitResult } from "../automation/types";
+import { AutomationAction } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -104,18 +104,16 @@ function new_em_relay_config(): AutomationAction {
     }
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        action_components: {
-            [AutomationActionID.EMRelaySwitch]: {
-                translation_name: () => __("energy_manager.automation.switch_relay"),
-                new_config: new_em_relay_config,
-                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_table_children: get_em_relay_table_children,
-                get_edit_children: get_em_relay_edit_children,
-            },
-        }
-    }
+        [AutomationActionID.EMRelaySwitch]: {
+            name: () => __("energy_manager.automation.switch_relay"),
+            new_config: new_em_relay_config,
+            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            get_table_children: get_em_relay_table_children,
+            get_edit_children: get_em_relay_edit_children,
+        },
+    };
 }
 
 export function init() {

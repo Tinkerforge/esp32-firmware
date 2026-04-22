@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, ComponentChildren } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -97,16 +97,14 @@ function new_day_ahead_prices_now_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.DayAheadPriceNow]: {
-                translation_name: () => __("day_ahead_prices.automation.current_electricity_price"),
-                new_config: new_day_ahead_prices_now_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_day_ahead_prices_now_table_children,
-                get_edit_children: get_day_ahead_prices_now_edit_children,
-            },
+        [AutomationTriggerID.DayAheadPriceNow]: {
+            name: () => __("day_ahead_prices.automation.current_electricity_price"),
+            new_config: new_day_ahead_prices_now_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_day_ahead_prices_now_table_children,
+            get_edit_children: get_day_ahead_prices_now_edit_children,
         },
     };
 }

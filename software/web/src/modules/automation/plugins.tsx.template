@@ -1,15 +1,53 @@
-import { AutomationTriggerComponents, AutomationActionComponents } from "./types";
-
+import { AutomationTriggerPlugin, AutomationActionPlugin } from "./types";
 {{{imports}}}
 
-export function plugins_pre_init() {
-    let result = new Array<{trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents}>();
+type AutomationTriggerPlugins = {[trigger_id: number]: AutomationTriggerPlugin};
+type AutomationActionPlugins = {[action_id: number]: AutomationActionPlugin};
 
-    {{{pre_inits}}}
+export function trigger_plugins_pre_init() {
+    let result: AutomationTriggerPlugins = {};
+
+    for (let m of {{{trigger_modules}}}) {
+        let plugins: AutomationTriggerPlugins = m.pre_init();
+
+        for (let trigger_id in plugins) {
+            if (result[trigger_id]) {
+                console.log('Automation: Overwriting trigger plugin for trigger ID ' + trigger_id);
+            }
+
+            result[trigger_id] = plugins[trigger_id];
+        }
+    }
 
     return result;
 }
 
-export function plugins_init() {
-    {{{inits}}}
+export function trigger_plugins_init() {
+    for (let m of {{{trigger_modules}}}) {
+        m.init();
+    }
+}
+
+export function action_plugins_pre_init() {
+    let result: AutomationActionPlugins = {};
+
+    for (let m of {{{action_modules}}}) {
+        let plugins: AutomationActionPlugins = m.pre_init();
+
+        for (let action_id in plugins) {
+            if (result[action_id]) {
+                console.log('Automation: Overwriting action plugin for action ID ' + action_id);
+            }
+
+            result[action_id] = plugins[action_id];
+        }
+    }
+
+    return result;
+}
+
+export function action_plugins_init() {
+    for (let m of {{{action_modules}}}) {
+        m.init();
+    }
 }

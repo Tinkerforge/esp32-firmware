@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -116,16 +116,14 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
     ]
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.NFC]: {
-                translation_name: () => __("nfc.automation.automation_trigger_nfc"),
-                new_config: new_nfc_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_edit_children: get_nfc_edit_children,
-                get_table_children: get_nfc_table_children,
-            },
+        [AutomationTriggerID.NFC]: {
+            name: () => __("nfc.automation.automation_trigger_nfc"),
+            new_config: new_nfc_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_edit_children: get_nfc_edit_children,
+            get_table_children: get_nfc_table_children,
         },
     };
 }

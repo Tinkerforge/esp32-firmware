@@ -1,15 +1,29 @@
+import { MeterClassID } from "./generated/meter_class_id.enum";
 import { MeterConfigPlugin } from "./types";
-
 {{{imports}}}
 
-export function plugins_pre_init() {
-    let result: Array<{[meter_class: number]: MeterConfigPlugin}> = [];
+type MeterConfigPlugins = {[meter_class: number]: MeterConfigPlugin};
 
-    {{{pre_inits}}}
+export function config_plugins_pre_init() {
+    let result: MeterConfigPlugins = {};
+
+    for (let m of {{{config_modules}}}) {
+        let plugins: MeterConfigPlugins = m.pre_init();
+
+        for (let meter_class in plugins) {
+            if (result[meter_class]) {
+                console.log('Meters: Overwriting config plugin for meter class ' + meter_class);
+            }
+
+            result[meter_class] = plugins[meter_class];
+        }
+    }
 
     return result;
 }
 
-export function plugins_init() {
-    {{{inits}}}
+export function config_plugins_init() {
+    for (let m of {{{config_modules}}}) {
+        m.init();
+    }
 }
