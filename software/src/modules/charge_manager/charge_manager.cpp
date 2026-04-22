@@ -453,6 +453,10 @@ static void update_charge_tracking(
 // Check if the charger is authorized based on NFC tag information.
 // Returns the user_id of the authorized user (0 if not authorized)
 static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
+    if (v5 == nullptr) {
+        return NOT_AUTHORIZED;
+    }
+    
 #if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
     const cm_auth_info &info = v5->auth_info[0];
     // If last_seen_s == 0, no tag was seen
