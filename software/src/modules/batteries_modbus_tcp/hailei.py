@@ -37,7 +37,7 @@ specs = [
         'mode': 'Block',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block charge and discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -70,7 +70,7 @@ specs = [
         'mode': 'Block Discharge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -89,7 +89,7 @@ specs = [
         'mode': 'Force Charge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # force charge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -108,7 +108,7 @@ specs = [
         'mode': 'Block Charge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # block charge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
@@ -127,7 +127,7 @@ specs = [
         'mode': 'Force Discharge',
         'register_blocks': [
             {
-                'description': 'Dispatch',  # force discharge
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
