@@ -258,7 +258,7 @@
 - Disable heating module when SG Ready output is controlled by automation rules
 - Improve translations
 
-2026-04-22: 1.5.0 (<unknown>)
+2026-04-22: 1.5.0 (27eee312)
 - Add EEBUS support
 - Add outside temperature module
 - Heating: Add temperature curve

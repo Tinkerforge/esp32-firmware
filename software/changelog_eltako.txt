@@ -112,7 +112,7 @@
 - Fix Carlo Gavazzi EM270 and EM280 virtual meter config
 - Improve translations
 
-2026-04-22: 2.10.0 (<unknown>)
+2026-04-22: 2.10.0 (27eee312)
 - Add configuration changes without reboot for most modules
 - Add HTTPS support to web interface and HTTP API
 - Add TLS 1.3 support

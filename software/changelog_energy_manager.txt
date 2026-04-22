@@ -569,7 +569,7 @@
 - Fix configuration of relay automation actions in web interface
 - Improve translations
 
-2026-04-22: 2.6.0 (<unknown>)
+2026-04-22: 2.6.0 (27eee312)
 - Add EEBUS support
 - Add configuration changes without reboot for most modules
 - Add HTTPS support to web interface and HTTP API
