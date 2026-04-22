@@ -928,11 +928,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 peerDisplayName(peer),
                                                 peer.model_brand,
                                                 nodeStateToString(peer.state)],
-                                            fieldValues: [
-                                                peerDisplayName(peer),
-                                                peer.model_brand,
-                                                peer.state
-                                            ],
                                             editTitle: __("eebus.content.peer_info.edit_peer_title"),
                                             onEditShow: async () => this.setState({
                                                 add: {
