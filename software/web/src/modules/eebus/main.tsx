@@ -566,7 +566,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         evcem.amps_phase_1,
                                                         evcem.amps_phase_2,
                                                         evcem.amps_phase_3
-                                                    ]} unit="A"/>
+                                                    ]} unit="mA"/>
                                                     <PhaseRow label="Power" label_muted="L1, L2, L3" values={[
                                                         evcem.power_phase_1,
                                                         evcem.power_phase_2,
