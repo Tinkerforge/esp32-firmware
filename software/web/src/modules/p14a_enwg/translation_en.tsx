@@ -17,7 +17,7 @@ let x = {
             "enable_p14a_enwg": "§14a EnWG enabled",
             "enable_p14a_enwg_desc": "Enable §14a EnWG control",
             "enable_p14a_enwg_help": <>
-                <p>§14a of the German Energy Industry Act (EnWG) allows grid operators to temporarily reduce the power consumption of controllable consumer devices (heat pumps, wallboxes, battery storage, air conditioning) to prevent local grid overload. The devices are never fully shut off. A minimum of 4200 W always remains available.</p>
+                <p>§14a of the German Energy Industry Act (EnWG) allows grid operators to temporarily reduce the power consumption of controllable consumer devices (heat pumps, EV chargers, battery storage, air conditioning) to prevent local grid overload. The devices are never fully shut off. A minimum of 4200 W always remains available.</p>
                 <p>This regulation is primarily relevant for the German market.</p>
             </>,
             "source": "Signal source",
