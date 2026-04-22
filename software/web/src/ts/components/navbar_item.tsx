@@ -70,8 +70,8 @@ export class NavbarItem extends Component<NavbarItemProps, NavbarItemState> {
 
         return (
             <Nav.Item as="li">
-                <Nav.Link className="row mx-n1 d-flex-ni align-items-center" role="button" eventKey={this.props.name} href={this.props.no_href ? undefined : "#" + this.props.name} hidden={hidden}>
-                    <span class="col-auto px-1">{this.props.symbol}</span><span class="col px-1">{this.props.title}</span>
+                <Nav.Link className="row gx-2 d-flex-ni align-items-center" role="button" eventKey={this.props.name} href={this.props.no_href ? undefined : "#" + this.props.name} hidden={hidden}>
+                    <span class="col-auto">{this.props.symbol}</span><span class="col">{this.props.title}</span>
                 </Nav.Link>
             </Nav.Item>
         );

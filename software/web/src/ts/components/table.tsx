@@ -146,14 +146,14 @@ export class Table extends Component<TableProps, TableState> {
                                 {row.columnValues.map((value, k) => (
                                     <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                         {row.extraValue && k == 0 ?
-                                            <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="me-2" size="sm"
+                                            <span class="row gx-2 align-items-center"><span class="col-auto"><Button size="sm"
                                                 onClick={() => {
                                                     let showRowExtra = state.showRowExtra.concat();
                                                     showRowExtra[i] = !showRowExtra[i];
                                                     this.setState({showRowExtra: showRowExtra});
                                                 }}>
                                                 <ChevronRight {...{class: state.showRowExtra[i] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                                </Button></span><span class="col px-1">{value}</span></span> : value}
+                                                </Button></span><span class="col">{value}</span></span> : value}
                                     </td>
                                 ))}
                                 <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>

@@ -49,8 +49,8 @@ export class NavbarGroup extends Component<NavbarGroupProps, NavbarGroupState> {
     render() {
         return (
             <Nav.Item as="li">
-                <Nav.Link as="div" className="row mx-n1 d-flex-ni align-items-center" role="button" hidden={this.props.hidden === undefined ? true : this.props.hidden} onClick={() => {this.setState({open: !this.state.open});}}>
-                    <span class="col-auto px-1">{this.props.symbol}</span><span class="col px-1">{this.props.title}</span><ChevronRight {...{class: "col-auto ps-1 pe-0 unrotated-chevron " + (this.state.open ? "rotated-chevron" : "")} as any} />
+                <Nav.Link as="div" className="row gx-2 d-flex-ni align-items-center" role="button" hidden={this.props.hidden === undefined ? true : this.props.hidden} onClick={() => {this.setState({open: !this.state.open});}}>
+                    <span class="col-auto">{this.props.symbol}</span><span class="col">{this.props.title}</span><ChevronRight {...{class: "col-auto ps-1 pe-0 unrotated-chevron " + (this.state.open ? "rotated-chevron" : "")} as any} />
                 </Nav.Link>
                 <Collapse in={this.state.open}>
                     <div class="nav-nested">
