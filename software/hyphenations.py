@@ -2075,4 +2075,5 @@ allowed_missing = set([
     "extension",
     "departure",
     "contactor",
+    "connected"
 ])
