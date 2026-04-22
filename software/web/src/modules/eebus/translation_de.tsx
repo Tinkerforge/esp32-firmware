@@ -42,7 +42,7 @@ let x = {
             "search_failed": "Suche fehlgeschlagen",
             "add_peers": "Gerät Hinzufügen",
             "add_peer_title": "EEBUS-Gerät hinzufügen",
-            "add_peer_message": "Ein neues EEBUS-Gerät zur Verbindung hinzufügen.",
+            "add_peer_message": /*SFN*/(have: number, max: number) => `${have} von ${max} EEBUS-Geräten konfiguriert`/*NF*/,
             "discovered_peers": "Gefundene Geräte",
             "no_peers_found": "Keine Geräte gefunden. Stellen Sie sicher, dass die Geräte im selben Netzwerk sind.",
             "add_peer_manual_desc": "Oder Gerätedetails manuell eingeben:",

@@ -43,6 +43,7 @@ import {IPConfiguration} from "../../ts/components/ip_configuration";
 import { DiscoveryResultGroup, DiscoveryResultItem } from "ts/components/discovery_result";
 
 const EEBUS_NO_VALUE = -2147483648;
+const MAX_PEER_REMEMBERED = 4
 
 const loadcontrolStateMap: { [key: number]: string } = {
     [LoadcontrolState.Startup]: "Startup",
@@ -1082,9 +1083,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         }
                                     })
                             }
-                            addEnabled={state.enable}
+                            addEnabled={state.enable && state.state.peers.length < MAX_PEER_REMEMBERED}
                             addTitle={__("eebus.content.add_peer_title")}
-                            addMessage={__("eebus.content.add_peer_message")}
+                            addMessage={__("eebus.content.add_peer_message")(state.state.peers.length, MAX_PEER_REMEMBERED)}
                             onAddShow={async () => {
                                 this.setState({
                                     add: {

@@ -44,7 +44,7 @@ let x = {
             "search_failed": "Search failed",
             "add_peers": "Add Device",
             "add_peer_title": "Add EEBUS Device",
-            "add_peer_message": "Add a new EEBUS peer device to connect to.",
+            "add_peer_message": /*SFN*/(have: number, max: number) => `${have} of ${max} EEBUS devices configured`/*NF*/,
             "discovered_peers": "Discovered Devices",
             "no_peers_found": "No devices found. Ensure devices are on the same network.",
             "add_peer_manual_desc": "Or enter device details manually:",
