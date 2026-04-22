@@ -763,8 +763,6 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
     state_pkt.v3.phases |= currently_switching_phases << CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS;
 
-    state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
-
 #if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
     if (has_nfc) {
         static_assert(LAST_AUTH_LIST_LENGTH == ARRAY_SIZE(state_pkt.v5.auth_info),
@@ -804,6 +802,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         }
     }
 #endif
+
+    state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
+
     return send_state_packet(&state_pkt);
 }
 
