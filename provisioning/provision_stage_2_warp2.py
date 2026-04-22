@@ -325,7 +325,11 @@ def get_meter_voltages():
 def reset_evse():
     global evse
     retry_wrapper(lambda: evse.reset(), "reset EVSE")
-    retry_wrapper(lambda: evse.set_test_mode(True, 0xdeadbeef), "enable EVSE test mode")
+    time.sleep(0.5)
+    for i in range(3):
+        retry_wrapper(lambda: evse.set_test_mode(True, 0xdeadbeef), "enable EVSE test mode")
+        if retry_wrapper(lambda: evse.get_test_mode(), "read back EVSE test mode"):
+            break
 
 class Scanner:
     def __init__(self):
