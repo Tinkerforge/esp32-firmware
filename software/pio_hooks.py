@@ -457,7 +457,7 @@ def check_translation(translation, parent_key=None):
         if isinstance(value, dict):
             check_translation(value, parent_key=parent_key + [key])
 
-HYPHENATE_THRESHOLD = 9
+HYPHENATE_THRESHOLD = 8
 
 missing_hyphenations = {}
 
