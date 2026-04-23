@@ -228,8 +228,8 @@ export class Table extends Component<TableProps, TableState> {
                         <div class={"card-header d-flex justify-content-between align-items-center p-2" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">
                                 {row.extraValue ?
-                                    <span class="row mx-n1 align-items-center">
-                                        <span class="col-auto px-1"><Button className="me-2" size="sm"
+                                    <span class="row gx-2 align-items-center">
+                                        <span class="col-auto"><Button size="sm"
                                             onClick={() => {
                                                 let showRowExtra = state.showRowExtra.concat();
                                                 showRowExtra[i] = !showRowExtra[i];
@@ -238,7 +238,7 @@ export class Table extends Component<TableProps, TableState> {
                                             <ChevronRight {...{class: state.showRowExtra[i] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
                                             </Button>
                                         </span>
-                                        <span class="col px-1">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</span>
+                                        <span class="col">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</span>
                                     </span>
                                     : util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}
                             </h5>
