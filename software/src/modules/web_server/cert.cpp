@@ -88,14 +88,18 @@ static void log_cert_subject(const mbedtls_x509_crt *crt, const char *origin_cer
     }
 
     const char *cn = strstr(subject, "CN=");
+    int cn_len;
 
     if (cn == nullptr) {
         cn = subject;
+        cn_len = static_cast<int>(strlen(cn));
     } else {
         cn += 3; // Skip CN=
+        const char *comma_at = strchrnul(cn, ',');
+        cn_len = comma_at - cn;
     }
 
-    logger.printfln("Loaded %s certificate for %s", origin_cert_type, cn);
+    logger.printfln("Loaded %s certificate for %.*s", origin_cert_type, cn_len, cn);
 }
 
 [[gnu::noinline]]
