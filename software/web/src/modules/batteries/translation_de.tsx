@@ -33,22 +33,22 @@ let x = {
             "battery_mode_long_block_charge": "Laden blockieren, normal Entladen",
             "battery_mode_long_force_discharge": "Laden blockieren, Entladen erzwingen",
 
-            "battery_status_blocked": "Blockiert",
-            "battery_status_normal": "Normal",
-            "battery_status_discharge_blocked": "Entladen blockiert",
-            "battery_status_charge_forced": "Laden erzwungen",
-            "battery_status_charge_blocked": "Laden blockiert",
-            "battery_status_discharge_forced": "Entladen erzwungen",
-            "battery_status_unknown": "Unbekannt",
-            "battery_status_by_index": /*SFN*/(mode: BatteryMode) => {
+            "battery_state_unknown": "Unbekannt",
+            "battery_state_blocked": "Blockiert",
+            "battery_state_normal": "Normal",
+            "battery_state_discharge_blocked": "Entladen blockiert",
+            "battery_state_charge_forced": "Laden erzwungen",
+            "battery_state_charge_blocked": "Laden blockiert",
+            "battery_state_discharge_forced": "Entladen erzwungen",
+            "battery_state_by_mode": /*SFN*/(mode: BatteryMode) => {
                 return [
-                    __("batteries.content.battery_status_unknown"),
-                    __("batteries.content.battery_status_blocked"),
-                    __("batteries.content.battery_status_normal"),
-                    __("batteries.content.battery_status_discharge_blocked"),
-                    __("batteries.content.battery_status_charge_forced"),
-                    __("batteries.content.battery_status_charge_blocked"),
-                    __("batteries.content.battery_status_discharge_forced"),
+                    __("batteries.content.battery_state_unknown"),
+                    __("batteries.content.battery_state_blocked"),
+                    __("batteries.content.battery_state_normal"),
+                    __("batteries.content.battery_state_discharge_blocked"),
+                    __("batteries.content.battery_state_charge_forced"),
+                    __("batteries.content.battery_state_charge_blocked"),
+                    __("batteries.content.battery_state_discharge_forced"),
                 ][mode + 1];
             }/*NF*/,
 
@@ -71,6 +71,7 @@ let x = {
 
             "table_battery_display_name": "Anzeigename",
             "table_battery_class": "Klasse",
+            "table_battery_state": "Zustand",
 
             "add_battery_title": "Batteriespeicher hinzufügen",
             "add_battery_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Batteriespeichern konfiguriert`/*NF*/,

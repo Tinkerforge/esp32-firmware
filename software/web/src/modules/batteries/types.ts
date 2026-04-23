@@ -18,7 +18,7 @@
  */
 
 import * as API from "../../ts/api";
-import { ComponentChildren } from "preact";
+import { ComponentChildren, ComponentChild } from "preact";
 
 export type BatteryConfig = API.getType["batteries/0/config"];
 
@@ -32,4 +32,5 @@ export type BatteryConfigPlugin = {
     report_test_mode?: (callback: (battery_slot: number, mode: number) => void) => void
     get_edit_children: (battery_slot: number, config: BatteryConfig, on_config: (config: BatteryConfig) => void) => ComponentChildren
     hide?: () => Promise<void>
+    get_degradation_warning: (config: BatteryConfig) => ComponentChild
 };

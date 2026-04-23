@@ -72,6 +72,7 @@ private:
     Config config_prototype;
     Config table_custom_register_block_prototype;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> table_prototypes;
+    Config state_prototype;
     //Config errors_prototype;
 
     ConfigRoot test_config;

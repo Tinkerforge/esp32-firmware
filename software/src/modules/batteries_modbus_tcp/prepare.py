@@ -161,6 +161,7 @@ specs_h.append('}')
 for spec in specs:
     group = util.FlavoredName(spec['group']).get()
     mode = util.FlavoredName(spec['mode']).get()
+    effective_mode = util.FlavoredName(spec.get('effective_mode', spec['mode'])).get()
 
     register_block_descs = []
     total_buffer_length = 0
@@ -294,6 +295,7 @@ for spec in specs:
             total_buffer_offset += buffer_length
 
         specs_cpp.append('    BatteryModbusTCP::TableSpec *table = static_cast<BatteryModbusTCP::TableSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::TableSpec)));\n\n'
+                        f'    table->effective_mode = BatteryMode::{effective_mode.camel};\n'
                         f'    table->register_blocks = register_blocks;\n'
                         f'    table->register_blocks_count = {len(spec['register_blocks'])};\n\n'
                          '    return table;\n'
@@ -369,7 +371,8 @@ for spec in specs:
         if len(register_block_specs) > 0:
             specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {group.under}_{mode.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
 
-        specs_cpp.append(f'static const BatteryModbusTCP::TableSpec {group.under}_{mode.under}_table = {{\r')
+        specs_cpp.append(f'static const BatteryModbusTCP::TableSpec {group.under}_{mode.under}_table = {{\n'
+                         f'    BatteryMode::{effective_mode.camel},\r')
 
         if len(register_block_specs) > 0:
             specs_cpp.append(f'    const_cast<BatteryModbusTCP::RegisterBlockSpec *>({group.under}_{mode.under}_register_blocks),\n'

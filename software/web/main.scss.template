@@ -814,6 +814,28 @@ table ul {
     }
 }
 
+.alter-triangle {
+    color: var(--bs-secondary);
+    clip-path: path("M8,4 l-7.5,12 s-5,6,4,7 h15 s8,1,4,-7 l-7.5,-12 s-4,-8,-8,0 Z");
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+
+    &:hover {
+        color: #fff;
+        background-color: var(--bs-secondary);
+    }
+}
+
+.alter-triangle-expanded {
+    color: #fff;
+    background-color: var(--bs-dark);
+    clip-path: path("M8,4 l-7.5,12 s-5,6,4,7 h15 s8,1,4,-7 l-7.5,-12 s-4,-8,-8,0 Z");
+
+    &:hover {
+        color: #fff;
+        background-color: var(--bs-dark);
+    }
+}
+
 input.borderless-form-control:disabled, input.form-control:disabled {
     color: #6c757d;
 }

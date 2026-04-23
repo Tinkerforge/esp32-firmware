@@ -563,6 +563,18 @@ void BatteryModbusTCP::set_mode(BatteryMode mode)
     finished = false;
 
     update_active_mode();
+
+    BatteryMode effective_mode = BatteryMode::None;
+
+    if (requested_mode != BatteryMode::None) {
+        TableSpec *table = tables[static_cast<size_t>(requested_mode)];
+
+        if (table != nullptr) {
+            effective_mode = table->effective_mode;
+        }
+    }
+
+    state->get("effective_mode")->updateEnum(effective_mode);
 }
 
 void BatteryModbusTCP::set_paused(bool paused_)

@@ -1,2 +1,6 @@
 //APIPath:batteries/{{{battery_id}}}/
 export type config___{{{battery_id}}} = BatteryConfig;
+
+export interface state___{{{battery_id}}} {
+    effective_mode: number,
+}

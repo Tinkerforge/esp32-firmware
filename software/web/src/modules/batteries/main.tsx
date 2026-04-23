@@ -53,7 +53,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
-import { Battery } from "react-feather";
+import { Battery, AlertTriangle } from "react-feather";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function BatteriesNavbar() {
@@ -61,6 +61,8 @@ export function BatteriesNavbar() {
 }
 
 let config_plugins: {[battery_class: number]: BatteryConfigPlugin} = {};
+
+type BatteryState = Readonly<API.getType['batteries/0/state']>;
 
 function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfig}, battery_slot: number) {
     let battery_name = __("batteries.script.battery")(util.hasValue(battery_slot) ? battery_slot : '?');
@@ -70,6 +72,32 @@ function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfi
     }
 
     return battery_name;
+}
+
+function get_battery_state_name(battery_configs: {[battery_slot: number]: BatteryConfig}, battery_states: {[battery_slot: number]: BatteryState}, battery_slot: number, battery_control_mode: BatteryMode, warning: ComponentChild, set_warning_cb: (warning: ComponentChild) => void) {
+    let effective_mode = BatteryMode.None;
+
+    if (util.hasValue(battery_slot) && util.hasValue(battery_states) && util.hasValue(battery_states[battery_slot]) && util.hasValue(battery_states[battery_slot].effective_mode)) {
+        effective_mode = battery_states[battery_slot].effective_mode;
+    }
+
+    let warning_icon = undefined;
+
+    if (effective_mode != battery_control_mode) {
+        let new_warning = config_plugins[battery_configs[battery_slot][0]].get_degradation_warning(battery_configs[battery_slot]);
+
+        if (warning && warning != new_warning) {
+            // if warning is expanded then update it
+            set_warning_cb(new_warning);
+        }
+
+        warning_icon = <div class="col"><span onClick={() => set_warning_cb(warning ? undefined : new_warning)}><AlertTriangle {...{class: "alter-triangle" + (warning ? " alter-triangle-expanded" : ""), style: "cursor: pointer;"} as any} /></span></div>;
+    }
+    else if (warning) {
+        set_warning_cb(undefined);
+    }
+
+    return <div class="row gx-2 align-items-center"><div class="col-auto">{__("batteries.content.battery_state_by_mode")(effective_mode)}</div>{warning_icon}</div>;
 }
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
@@ -792,6 +820,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
 interface BatteriesState {
     configs: {[battery_slot: number]: BatteryConfig};
+    states: {[battery_slot: number]: BatteryState};
     add_battery_slot: number;
     add_battery_config: BatteryConfig;
     edit_battery_slot: number;
@@ -802,6 +831,7 @@ interface BatteriesState {
     rules_discharge: RuleConfig[];
 //#endif
     test_modes: {[battery_slot: number]: BatteryMode};
+    warnings: {[battery_slot: number]: ComponentChild};
 }
 
 export class Batteries extends ConfigComponent<'batteries/config', {}, BatteriesState> {
@@ -823,6 +853,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                   rules_discharge: null,
 //#endif
                   test_modes: {},
+                  warnings: {},
               });
 
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
@@ -837,6 +868,19 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                         }
                     }));
                 }
+            });
+        }
+
+        for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
+            util.addApiEventListener_unchecked(`batteries/${battery_slot}/state`, () => {
+                let state = API.get_unchecked(`batteries/${battery_slot}/state`);
+
+                this.setState((prevState) => ({
+                    states: {
+                        ...prevState.states,
+                        [battery_slot]: state
+                    }
+                }));
             });
         }
 
@@ -1125,12 +1169,13 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
         const battery_control_state = API.get("battery_control/state");
+        let battery_control_mode = battery_control_state.mode;
         let active_charge_rule = battery_control_state.active_charge_rule;
         let active_discharge_rule = battery_control_state.active_discharge_rule;
         let status_charge: number;
         let status_discharge: number;
 
-        switch (battery_control_state.mode) {
+        switch (battery_control_mode) {
             case BatteryMode.Block:
                 status_charge = 1;
                 status_discharge = 1;
@@ -1160,6 +1205,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                 status_discharge = -1;
         }
 //#else
+        let battery_control_mode = BatteryMode.None;
         let active_charge_rule: number = null;
         let active_discharge_rule: number = null;
 //#endif
@@ -1262,7 +1308,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                         </FormRow>
 
                         <Table
-                            columnNames={[__("batteries.content.table_battery_display_name"), __("batteries.content.table_battery_class")]}
+                            columnNames={[__("batteries.content.table_battery_display_name"), __("batteries.content.table_battery_class"), __("batteries.content.table_battery_state")]}
                             rows={active_battery_slots.map((battery_slot_str) => {
                                 let battery_slot = parseInt(battery_slot_str);
                                 let config = this.state.configs[battery_slot];
@@ -1270,8 +1316,15 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                 return {
                                     columnValues: [
                                         get_battery_name(this.state.configs, battery_slot),
-                                        config_plugins[config[0]].name()
+                                        config_plugins[config[0]].name(),
+                                        get_battery_state_name(this.state.configs, this.state.states, battery_slot, battery_control_mode, this.state.warnings[battery_slot],
+                                                               (warning: ComponentChild) => {console.log("warning", warning); this.setState({warnings: {...this.state.warnings, [battery_slot]: warning}})}),
                                     ],
+                                    extraValue: this.state.warnings[battery_slot],
+                                    extraKey: `extra-${battery_slot}`,
+                                    extraMode: "static",
+                                    extraWrapper: (value) => <Alert variant="warning" className="mb-0 mt-2 p-2">{value}</Alert>,
+                                    extraFieldWrapper: (value) => <Alert variant="warning" className="mb-2 p-2">{value}</Alert>,
                                     editTitle: __("batteries.content.edit_battery_title"),
                                     onEditShow: async () => {
                                         let config_plugin = config_plugins[config[0]];
@@ -1505,7 +1558,7 @@ export function init() {
 
             return {
                 status: ModuleStatus.Ok,
-                text: () => __("batteries.content.battery_status_by_index")(state.mode)
+                text: () => __("batteries.content.battery_state_by_mode")(state.mode)
             };
         }
     });

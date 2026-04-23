@@ -87,6 +87,10 @@ void BatteriesModbusTCP::pre_setup()
         )},
     });
 
+    state_prototype = Config::Object({
+        {"effective_mode", Config::Enum(BatteryMode::None)},
+    });
+
     /*errors_prototype = Config::Object({
         {"timeout", Config::Uint32(0)},
     });*/
@@ -447,7 +451,7 @@ const Config *BatteriesModbusTCP::get_config_prototype()
 
 const Config *BatteriesModbusTCP::get_state_prototype()
 {
-    return Config::Null();
+    return &state_prototype;
 }
 
 const Config *BatteriesModbusTCP::get_errors_prototype()

@@ -42,6 +42,7 @@ public:
     };
 
     struct TableSpec {
+        BatteryMode effective_mode;
         RegisterBlockSpec *register_blocks;
         size_t register_blocks_count;
     };

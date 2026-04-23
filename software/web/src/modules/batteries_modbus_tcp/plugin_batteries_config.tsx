@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
-import { h, Fragment, Component, ComponentChildren } from "preact";
+import { h, Fragment, Component, ComponentChild, ComponentChildren } from "preact";
 import { Button, Dropdown, Alert } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/generated/battery_class_id.enum";
@@ -939,7 +939,10 @@ export function pre_init() {
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
                         edit_children.push(
                             <FormRow>
-                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_warning")}</Alert>
+                                <Alert variant="warning" className="mb-0">
+                                    {__("batteries_modbus_tcp.content.sax_power_home_basic_mode_register_warning")}
+                                    {__("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning")}
+                                </Alert>
                             </FormRow>);
                     }
 
@@ -1395,6 +1398,17 @@ export function pre_init() {
                 }
 
                 return edit_children;
+            },
+            get_degradation_warning: (config: BatteryConfig): ComponentChild => {
+                if (!util.hasValue(config[1].table)) {
+                    return undefined;
+                }
+
+                if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
+                    return __("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning");
+                }
+
+                return undefined;
             },
         },
     };

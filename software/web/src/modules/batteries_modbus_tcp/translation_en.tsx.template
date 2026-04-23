@@ -24,8 +24,8 @@ let x = {
             {{{tables}}},
             "sma_hybrid_inverter_warning": <><p>These SMA inverter series are not supported: Sunny Boy Smart Energy, Sunny Tripower Storage and Sunny Island.</p>
                                              <p>SMA's own <a href="https://manuals.sma.de/HM-20/en-US/8644254859.html">forecast-based charging</a> might interfere with the battery control. Please ensure that forecast-based charging is disabled in the SMA Sunny Portal.</p></>,
-            "sax_power_home_basic_mode_warning": <><p>Please ensure that the Modbus/TCP registers 40044/40045 (43/44) of the SAX Power Home battery storage are enabled.</p>
-                                                   <p>Due to limited controllability of the SAX Power Home battery storage, it is not possible to force charge and force discharge. Instead charge and discharge are left at normal in this cases.</p></>,
+            "sax_power_home_basic_mode_register_warning": <><p>Please ensure that the Modbus/TCP registers 40044/40045 (43/44) of the SAX Power Home battery storage are enabled.</p></>,
+            "sax_power_home_basic_mode_degradation_warning": <><p>Due to limited controllability of the SAX Power Home battery storage, it is not possible to force charge and force discharge. Instead charge and discharge are left at normal in this cases.</p></>,
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "repeat_interval": "Repeat interval",

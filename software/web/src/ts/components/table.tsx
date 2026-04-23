@@ -31,6 +31,9 @@ export interface TableRow {
     extraFieldName?: string;
     extraValue?: ComponentChild;
     extraKey?: string;
+    extraMode?: "dynamic"|"static";  // dynamic: show toogle button (default), static: always show
+    extraWrapper?: (value: ComponentChild) => ComponentChild;
+    extraFieldWrapper?: (value: ComponentChild) => ComponentChild;
     fieldNames?: string[];
     fieldValues?: ComponentChild[];
     fieldWithBox?: boolean[];
@@ -145,7 +148,7 @@ export class Table extends Component<TableProps, TableState> {
                                 <td class="p-0" style={(row.indicator !== undefined ? `min-width: 5px; background-color: var(--bs-${row.indicator});` : "") + (row.extraValue ? " border-bottom: none;" : "")}></td>
                                 {row.columnValues.map((value, k) => (
                                     <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
-                                        {row.extraValue && k == 0 ?
+                                        {row.extraValue && row.extraMode != "static" && k == 0 ?
                                             <span class="row gx-2 align-items-center"><span class="col-auto"><Button size="sm"
                                                 onClick={() => {
                                                     let showRowExtra = state.showRowExtra.concat();
@@ -156,7 +159,7 @@ export class Table extends Component<TableProps, TableState> {
                                                 </Button></span><span class="col">{value}</span></span> : value}
                                     </td>
                                 ))}
-                                <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
+                                <td class={row.extraValue ? "pb-0" : ""} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                     <Button variant="primary"
                                             size="sm"
                                             className="me-2"
@@ -187,9 +190,11 @@ export class Table extends Component<TableProps, TableState> {
                                 <tr key={row.extraKey} class="table-extra-value">
                                     <td class="p-0"></td>
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
-                                        <Collapse in={state.showRowExtra[i]}>
+                                        <Collapse in={state.showRowExtra[i] || row.extraMode == "static"}>
                                             <div>
-                                                <Card style="margin-top: 0.5rem;"><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>
+                                                {row.extraWrapper
+                                                    ? row.extraWrapper(row.extraValue)
+                                                    :  <Card className="mt-2"><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>}
                                             </div>
                                         </Collapse>
                                     </td>
@@ -222,12 +227,12 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none table-card-mode`}>
                     {props.rows.map((row, i) => {
                         let card_fields = this.get_card_fields(row);
-                        let needs_body = card_fields.length > 0 || (row.extraValue && state.showRowExtra[i]);
+                        let needs_body = card_fields.length > 0 || (row.extraValue && (state.showRowExtra[i] || row.extraMode == "static"));
 
                         return <><Card className="mb-2">
                         <div class={"card-header d-flex justify-content-between align-items-center p-2" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">
-                                {row.extraValue ?
+                                {row.extraValue && row.extraMode != "static" ?
                                     <span class="row gx-2 align-items-center">
                                         <span class="col-auto"><Button size="sm"
                                             onClick={() => {
@@ -271,16 +276,20 @@ export class Table extends Component<TableProps, TableState> {
                             </div>
                         </div>
                         {needs_body ?
-                            <Card.Body className="p-2 pb-0">
+                            <Card.Body className="p-2 pb-0" style="font-size: 1rem;">
                                 {card_fields}
                                 {row.extraValue ?
-                                    <Collapse in={state.showRowExtra[i]}>
+                                    <Collapse in={state.showRowExtra[i] || row.extraMode == "static"}>
                                         <div>
                                             {row.extraFieldName ?
                                                 <FormRow label={row.extraFieldName}>
-                                                    <Card><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>
+                                                    <>{row.extraFieldWrapper
+                                                        ? row.extraFieldWrapper(row.extraValue)
+                                                        : <Card><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>}</>
                                                 </FormRow>
-                                                : <Card><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>}
+                                                : <>{row.extraFieldWrapper
+                                                    ? row.extraFieldWrapper(row.extraValue)
+                                                    : <Card className="mb-2"><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>}</>}
                                         </div>
                                     </Collapse>
                                     : undefined}
