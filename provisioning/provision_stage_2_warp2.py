@@ -42,8 +42,12 @@ from provisioning.provision_stage_3_warp2 import Stage3
 evse = None
 power_off_on_error = True
 generation = None
+sys_print = print
 
-orig_print = print
+def orig_print(*args, **kwargs):
+    sys_print(*args, **kwargs)
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 def tprint(*args, **kwargs):
     global orig_print

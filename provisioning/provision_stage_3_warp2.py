@@ -91,7 +91,12 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '20D': BrickletColorV2.DEVICE_IDENTIFIER,
 }
 
-orig_print = print
+sys_print = print
+
+def orig_print(*args, **kwargs):
+    sys_print(*args, **kwargs)
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 def tprint(*args, **kwargs):
     global orig_print
