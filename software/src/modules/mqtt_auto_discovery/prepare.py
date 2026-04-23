@@ -32,6 +32,7 @@ class Feature(Enum):
     EVSE = "evse"
     METER = "meter"
     METER_PHASES = "meter_phases"
+    P14A_ENWG = "p14a_enwg"
 
 @dataclass
 class Entity:
@@ -188,6 +189,14 @@ Entity(False, Component.BINARY_SENSOR, Feature.EVSE, "online", "evse/low_level_s
     {"value_template": "{{value_json.uptime>0}}",
      "payload_on": "True",
      "payload_off": "False"}),
+
+Entity(False, Component.BINARY_SENSOR, Feature.P14A_ENWG, "limited", "p14a_enwg/state", "Limitiert nach §14a ENWG", "Limited according to §14a EnWG", "", "", "",
+       {"device_class": "running"},
+       {"value_template": "{{value_json.active}}",
+        "payload_on": "True",
+        "payload_off": "False"}),
+
+
 ]
 
 topics = [topic_template.format(
