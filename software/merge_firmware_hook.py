@@ -106,7 +106,7 @@ if len(signature_preset) > 0:
                             signature_preset,
                             env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
                             f'build{os.sep}{firmware_basename}_merged.bin'
-                        ]))
+                        ], env=os.environ | {'PYTHONUNBUFFERED': '1'}))
 
 else:
     add_post_action_bin(f'Copying $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin',
