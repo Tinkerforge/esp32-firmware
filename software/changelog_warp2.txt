@@ -1054,5 +1054,5 @@
 - Don't spuriously report contactor error when closing (through EVSE 2.0 Bricklet firmware 2.2.20)
 - Use charge mode color for charging animation (through EVSE 2.0 Bricklet firmware 2.2.21)
 
-2026-04-23: 2.10.1 (<unknown>)
+2026-04-23: 2.10.1 (9c0329bc)
 - Fix OCPP authorization
