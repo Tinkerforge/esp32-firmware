@@ -345,9 +345,16 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         ktc.push_back(k);
     }
 
-    addCommand(path + "_update", config, ktc, [path, config](Language /*language*/, String &/*errmsg*/) {
-        API::writeConfig(path, config);
-    }, false);
+    // A capture list of more than one int will be heap-allocated.
+    // Doing it this way (instead of capturing path and config directly)
+    // saves ~ 80 bytes of DRAM per registration.
+    auto state_reg_idx = this->states.size();
+    CommandCallback cb = [state_reg_idx](Language /*language*/, String &/*errmsg*/) {
+        auto reg = api.states[state_reg_idx];
+        API::writeConfig(reg.path, reg.config);
+    };
+
+    addCommand(path + "_update", config, ktc, std::move(cb), false);
 
     return true;
 }

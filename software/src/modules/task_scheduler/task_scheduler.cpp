@@ -224,10 +224,10 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn, 
     // Check once per second if clock is synced,
     // cancel task if it is and then call
     // the user supplied function
-    return this->scheduleWithFixedDelay([fn, this]() {
+    return this->scheduleWithFixedDelay([fn]() {
         struct timeval tv_now;
         if (rtc.clock_synced(&tv_now)) {
-            this->cancel(this->currentTask->task_id);
+            task_scheduler.cancel(task_scheduler.currentTaskId());
             fn();
         }
     }, 0_ms, 1_s, src_location);
