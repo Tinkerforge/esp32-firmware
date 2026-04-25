@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
+import {ConfigMap, api_cache, Modules} from './api_defs';
 import * as util from "./util";
 import { __ } from "./translation";
 import { RevertDeepSignal } from 'deepsignal';
@@ -76,27 +76,6 @@ export function get<T extends keyof ConfigMap>(topic: T) : Readonly<ConfigMap[T]
     // This should be unnecessary, but putting a tuple in a DeepSignal seems to drop
     // the tuple's type information. Typescript then thinks the tuple is an array.
     return api_cache[topic] as any;
-}
-
-export function is_modified<T extends keyof ConfigMap>(topic: T): boolean {
-    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
-    if (modified == null)
-        return false;
-    return modified.modified > 1;
-}
-
-export function is_modified_unchecked(topic: string): boolean {
-    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
-    if (modified === undefined || modified == null)
-        return false;
-    return modified.modified > 1;
-}
-
-export function is_dirty<T extends keyof ConfigMap>(topic: T): boolean {
-    let modified = api_cache[(topic + "_modified") as ConfigModifiedKey] as ConfigModified;
-    if (modified == null)
-        return false;
-    return (modified.modified & 1) == 1;
 }
 
 export function get_unchecked<T extends string>(topic: T): (T extends keyof ConfigMap ? Readonly<ConfigMap[T]> : any) {

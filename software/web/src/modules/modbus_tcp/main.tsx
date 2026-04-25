@@ -71,20 +71,13 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: "modbus_tcp/config"): boolean {
-        let evse = API.get_unchecked("evse/modbus_tcp_enabled");
-        if (evse != null && evse.enabled)
-            return true;
-        return super.getIsModified(topic);
-    }
-
     render(props: {}, state: ModbusTCPConfig & config) {
         if (!util.render_allowed())
             return <SubPage name="modbus_tcp" />;
 
         return (
             <SubPage name="modbus_tcp">
-                <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("modbus_tcp.content.enable")}>
                         <InputSelect items={[
                             ["0", __("modbus_tcp.content.disabled")],

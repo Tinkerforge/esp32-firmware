@@ -487,7 +487,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </SubPage.Status>
                 <SubPage.Config
                     id="day_ahead_prices_config_form"
-                    isModified={false}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

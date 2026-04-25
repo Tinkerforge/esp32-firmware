@@ -51,7 +51,7 @@ export class Co2Ampel extends ConfigComponent<"co2ampel/config"> {
 
         return (
             <SubPage name="co2ampel">
-                <ConfigForm id="co2ampel_config_form" title={__("co2ampel.content.co2ampel")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="co2ampel_config_form" title={__("co2ampel.content.co2ampel" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("co2ampel.content.temperature_offset")} label_muted={__("co2ampel.content.temperature_offset_muted")}>
                         <InputFloat
                             unit="°C"

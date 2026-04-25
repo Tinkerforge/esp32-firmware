@@ -103,10 +103,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         API.reset("rtc/config");
     }
 
-    override getIsModified(topic: "ntp/config"): boolean {
-        return API.is_modified(topic) || API.is_modified("rtc/config");
-    }
-
     render(props: {}, state: Readonly<TimeConfig>) {
         if (!util.render_allowed())
             return <SubPage name="time" />;
@@ -146,7 +142,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
                 <SubPage.Config
                     id="time_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

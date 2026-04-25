@@ -82,7 +82,6 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
             <SubPage name="eco">
                 <ConfigForm id="eco_config_form"
                             title={__("eco.content.eco")}
-                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}

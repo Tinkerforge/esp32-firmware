@@ -276,12 +276,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         this.setState(new_state, this.save);
     }
 
-    override getIsModified(topic: "users/config"): boolean {
-        if (this.state.users.length > 1 || this.state.users[0].display_name != "Anonymous")
-            return true;
-        return false;
-    }
-
     async checkUsername(user: User, ignore_i: number): Promise<number> {
         for (let i = 0; i < this.state.users.length; ++i) {
             if (i != ignore_i && this.state.users[i].username.trim() == user.username.trim()) {
@@ -344,7 +338,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         return (
             <SubPage name="users">
-                <ConfigForm id="users_config_form" title={__("users.content.users")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save}
+                <ConfigForm id="users_config_form" title={__("users.content.users")} isDirty={this.isDirty()} onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
                     <FormRow label={__("users.content.enable_authentication")}>

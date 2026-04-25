@@ -271,7 +271,6 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             </>
                     </SubPage.Status>
                 <SubPage.Config id="temperatures_config_form"
-                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}

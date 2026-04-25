@@ -223,7 +223,6 @@ private:
 #endif
 
     Config features_prototype;
-    Config modified_prototype;
 
     struct RegistrationCollector {
         std::vector<StateRegistration> states;

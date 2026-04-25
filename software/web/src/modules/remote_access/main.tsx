@@ -601,10 +601,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"));
     }
 
-    override getIsModified(topic: "remote_access/config"): boolean {
-        return API.get(topic).enable;
-    }
-
     override async sendReset(topic: "remote_access/config") {
 //#if MODULE_CHARGE_TRACKER_AVAILABLE
         // Remove all PDF send configurations from charge tracker since all remote access users will be removed
@@ -703,7 +699,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             <SubPage name="remote_access">
                 <ConfigForm id="remote_access_config_form"
                             title={__("remote_access.content.remote_access")}
-                            isModified={this.isModified()}
                             isDirty={this.isDirty()}
                             onReset={this.reset}
                             onSave={this.save}

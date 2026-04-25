@@ -417,7 +417,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
                 <SubPage.Config
                     id="heating_config_form"
-                    isModified={false}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

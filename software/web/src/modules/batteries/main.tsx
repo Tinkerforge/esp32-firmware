@@ -969,30 +969,6 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: 'batteries/config'): boolean {
-        for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
-            if (API.is_modified_unchecked(`batteries/${battery_slot}/config`)) {
-                return true;
-            }
-        }
-
-//#if MODULE_BATTERY_CONTROL_AVAILABLE
-        if (API.is_modified('battery_control/config')) {
-            return true;
-        }
-
-        if (API.is_modified('battery_control/rules_charge')) {
-            return true;
-        }
-
-        if (API.is_modified('battery_control/rules_discharge')) {
-            return true;
-        }
-//#endif
-
-        return super.getIsModified(topic);
-    }
-
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
     date_with_day_offset(date: Date, day_offset: number) {
@@ -1297,7 +1273,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 {/*#endif*/}
 {/*#endif*/}
                 </SubPage.Status>
-                <SubPage.Config id="batteries_config_form" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <SubPage.Config id="batteries_config_form" isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <Alert variant="warning" hidden={API.get("batteries/config").enabled}> {__("batteries.content.experimental")}</Alert>
                     <div class="form-group">
                         <FormRow label={__("batteries.content.enable_battery_control")}>

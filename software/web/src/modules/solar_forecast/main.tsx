@@ -163,15 +163,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: "solar_forecast/config"): boolean {
-        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; plane_index++) {
-            if (API.is_modified_unchecked(`solar_forecast/planes/${plane_index}/config`))
-                return true;
-        }
-
-        return super.getIsModified(topic);
-    }
-
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
         const is_forecast_service = this.state.source == ForecastSource.ForecastService;
@@ -466,7 +457,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     </SubPage.Status>
                 <SubPage.Config
                     id="plane_configs_config_form"
-                    isModified={false}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

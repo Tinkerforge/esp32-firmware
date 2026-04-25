@@ -283,7 +283,6 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
             <SubPage name="network">
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
-                            isModified={this.isModified()}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}

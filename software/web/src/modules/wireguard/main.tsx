@@ -121,7 +121,6 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
                 <SubPage.Config
                     id="wireguard_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

@@ -45,7 +45,6 @@ function SubPageStatus(props: SubPageStatusProps): VNode {
 interface SubPageConfigProps {
     children: ComponentChildren;
     id: string;
-    isModified: boolean;
     isDirty: boolean;
     onSave: () => Promise<void>;
     onReset: () => Promise<void>;
@@ -127,7 +126,6 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                 <ConfigForm
                     id={configProps.id}
                     title={isCollapsed ? props.title : __("component.sub_page.settings")}
-                    isModified={configProps.isModified}
                     isDirty={configProps.isDirty}
                     onSave={configProps.onSave}
                     onReset={configProps.onReset}
@@ -162,7 +160,6 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                 <ConfigForm
                     id={configProps.id}
                     title={props.title}
-                    isModified={configProps.isModified}
                     isDirty={configProps.isDirty}
                     onSave={configProps.onSave}
                     onReset={configProps.onReset}

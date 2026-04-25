@@ -122,7 +122,6 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
                 <SubPage.Config
                     id="ethernet_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

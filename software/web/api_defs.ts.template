@@ -14,10 +14,6 @@ export interface Version {
     config_type: string;
 }
 
-export interface ConfigModified {
-    modified: number
-}
-
 export interface KeepAlive {
     uptime: number
 }
@@ -33,13 +29,11 @@ export interface ConfigMap {
     'reboot': {}
 }
 
-export type ConfigModifiedKey = `${keyof ConfigMap}_modified`;
-
 // It is safe to use null here:
 // All api cache accesses only happen after the websocket connection is established.
 // The first message contains a complete dump of the ESP's state.
 // All cache values are then initialized.
-export let api_cache: DeepSignal<{[key in (keyof ConfigMap | ConfigModifiedKey)]: key extends keyof ConfigMap ? ConfigMap[key] : ConfigModified}> = deepSignal({
+export let api_cache: DeepSignal<{[key in keyof ConfigMap]: ConfigMap[key]}> = deepSignal({
     {{{api_cache_entries}}}
     'info/modules': null as any,
     'info/features': null as any,
@@ -48,12 +42,4 @@ export let api_cache: DeepSignal<{[key in (keyof ConfigMap | ConfigModifiedKey)]
     'debug_protocol/header': null as any,
     'debug_protocol/line': null as any,
     'reboot': null as any,
-
-    'info/modules_modified': null as any,
-    'info/features_modified': null as any,
-    'info/version_modified': null as any,
-    'info/keep_alive_modified': null as any,
-    'debug_protocol/header_modified': null as any,
-    'debug_protocol/line_modified': null as any,
-    'reboot_modified': null as any
 });

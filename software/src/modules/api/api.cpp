@@ -54,13 +54,6 @@ void API::pre_setup()
         {"config_type", Config::Str("", 0, 32)},
     });
 
-    modified_prototype = Config::Object({
-        // 0 - Config not modified since boot, config has default values (i.e. does not exist in flash)
-        // 1 - Config modified since boot,     config has default values (i.e. does not exist in flash)
-        // 2 - Config not modified since boot, config is changed from defaults (i.e. exists in flash)
-        // 3 - Config modified since boot,     config is changed from defaults (i.e. exists in flash)
-        {"modified", Config::Uint8(0)}
-    });
 }
 
 void API::setup()
@@ -338,24 +331,6 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         return false;
     }
 
-    // It is okay to leak this: Configs cannot be deregistered.
-    // The [path]_modified config has to live forever
-    ConfigRoot *conf_modified = perm_new<ConfigRoot>(RAM::DRAM, modified_prototype);
-
-    {
-        // If the config is written to flash, we assume that it is not the default configuration.
-        // This does not have to be the case, however then we allow resetting the config once
-        // before reporting that it how has the default values. This is good enough (tm).
-        String filename = API::getLittleFSConfigPath(path);
-
-        if (LittleFS.exists(filename)) {
-            conf_modified->get("modified")->updateUint(2);
-        }
-
-        String conf_modified_path = path + "_modified";
-        addState(conf_modified_path, conf_modified);
-    }
-
     addState(path, config, keys_to_censor, keys_to_censor_in_debug_report);
 
     std::vector<const char *> ktc;
@@ -367,14 +342,12 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         ktc.push_back(k);
     }
 
-    addCommand(path + "_update", config, ktc, [path, config, conf_modified](Language /*language*/, String &/*errmsg*/) {
+    addCommand(path + "_update", config, ktc, [path, config](Language /*language*/, String &/*errmsg*/) {
         API::writeConfig(path, config);
-        conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified](Language /*language*/, String &/*errmsg*/) {
+    addCommand(path + "_reset", Config::Null(), {}, [path](Language /*language*/, String &/*errmsg*/) {
         API::removeConfig(path);
-        conf_modified->get("modified")->updateUint(1);
     }, true);
 
     return true;

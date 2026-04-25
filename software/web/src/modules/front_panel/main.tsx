@@ -214,7 +214,6 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
             <SubPage name="front_panel">
                 <ConfigForm id="front_panel_config_form"
                             title={__("front_panel.content.front_panel")}
-                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}

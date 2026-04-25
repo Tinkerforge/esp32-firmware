@@ -151,7 +151,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                     </SubPage.Status>
 
                 <SubPage.Config id="p14a_enwg_config_form"
-                                isModified={false}
                                 isDirty={this.isDirty()}
                                 onSave={this.save}
                                 onReset={this.reset}

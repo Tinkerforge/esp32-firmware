@@ -531,7 +531,7 @@ function CMStatusCharger(props: {
     }
 
     let charger_config = props.charger_config;
-    const name_link = (API.is_dirty("charge_manager/config") || !charger_config || util.remoteAccessMode) ? c.n :
+    const name_link = (!charger_config || util.remoteAccessMode) ? c.n :
                         <a target="_blank" rel="noopener noreferrer" href={(charger_config.host == '127.0.0.1' || charger_config.host == 'localhost') ? '/' : "http://" + charger_config.host}>{c.n}</a>
 
     let [desc, details] = alloc_decision_to_text(c)

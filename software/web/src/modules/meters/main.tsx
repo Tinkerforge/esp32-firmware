@@ -590,15 +590,6 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         }
     }
 
-    override getIsModified(topic: null): boolean {
-        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
-            if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
-                return true;
-        }
-
-        return false;
-    }
-
     render() {
         if (!util.render_allowed())
             return <SubPage name="meters" />;
@@ -697,7 +688,6 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
                 <SubPage.Config
                     id="meters_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

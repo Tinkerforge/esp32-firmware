@@ -141,7 +141,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
 
         return (
             <SubPage name="nfc">
-                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("nfc.content.deadtime")} label_muted={__("nfc.content.deadtime_muted")}>
                         <InputSelect items={[
                                 ["0", __("nfc.content.deadtime_min")],

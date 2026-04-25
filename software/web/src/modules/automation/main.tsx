@@ -314,7 +314,6 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
              <ConfigForm
                 id="automation-config-form"
                 title={__("automation.content.automation")}
-                isModified={this.isModified()}
                 isDirty={this.isDirty()}
                 onSave={this.save}
                 onReset={this.reset}

@@ -504,7 +504,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
                 <SubPage.Config
                     id="wifi_sta_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

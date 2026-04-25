@@ -32,7 +32,6 @@ interface ConfigFormProps {
     children: ComponentChildren;
     id: string;
     title: ComponentChildren;
-    isModified: boolean;
     isDirty: boolean;
     onSave: () => Promise<void>;
     onReset: () => Promise<void>;

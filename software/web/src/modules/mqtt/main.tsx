@@ -75,12 +75,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: "mqtt/config"): boolean {
-        if (API.hasModule('mqtt_auto_discovery') && API.is_modified('mqtt/auto_discovery_config'))
-            return true;
-        return super.getIsModified(topic);
-    }
-
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {
         if (!util.render_allowed())
             return <SubPage name="mqtt" />;
@@ -138,7 +132,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
 
                 <SubPage.Config
                     id="mqtt_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

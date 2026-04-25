@@ -488,7 +488,6 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
 
                 <SubPage.Config
                     id="iso15118_config_form"
-                    isModified={this.isModified()}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

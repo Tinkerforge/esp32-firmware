@@ -62,13 +62,6 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
                     this.setState(API.get(topic) as Partial<API.getType[Config] & S & ConfigComponentState>);
                 }
             });
-
-            util.addApiEventListener((topic + "_modified") as Config, () => {
-                // Make sure that clicking the reset button
-                // (which changes _modified because it removes the config saved in the ESPs flash)
-                // re-renders the component to disable the reset button.
-                this.forceUpdate();
-            });
         }
     }
 
@@ -101,10 +94,6 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
         await this.sendReset(this.topic);
     };
 
-    isModified = () => {
-        return this.getIsModified(this.topic);
-    };
-
     isDirty = () => {
         return this.state.internal_isDirty;
     };
@@ -133,15 +122,6 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
         if (topic !== null) {
             await API.save(topic, cfg, this.error_string, this.reboot_string);
         }
-    }
-
-    // Also override this if you override sendSave
-    getIsModified(topic: Config): boolean {
-        if (topic !== null) {
-            return API.is_modified(topic);
-        }
-
-        return false;
     }
 
     // Override this to implement custom reset logic

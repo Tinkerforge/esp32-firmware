@@ -98,13 +98,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: "charge_manager/config"): boolean {
-        let evse_enabled = API.get_unchecked("evse/management_enabled");
-        if (evse_enabled != null && evse_enabled.enabled)
-            return true;
-        return super.getIsModified(topic);
-    }
-
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {
         if (!util.render_allowed())
             return <SubPage name="charge_manager_settings" />;
@@ -231,7 +224,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
         return (
             <SubPage name="charge_manager_settings">
-                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager_settings" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     {!API.get("charge_manager/config").enable_charge_manager && <Alert variant="warning">{__("charge_manager.content.managed_disabled")}</Alert>}
 
                     {minimum_current}
