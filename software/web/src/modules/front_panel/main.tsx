@@ -109,62 +109,8 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
     constructor() {
         super('front_panel/config',
               () => __("front_panel.script.save_failed"));
-/*
-        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
-            util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {
-                let config = API.get_unchecked(`front_panel/tiles/${tile_index}/config`);
-
-                this.setState((prevState) => ({
-                    tile_configs: {
-                        ...prevState.tile_configs,
-                        [tile_index]: config
-                    }
-                }));
-
-                if (!this.isDirty()) {
-                    this.setState((prevState) => ({
-                        tile_configs: {
-                            ...prevState.tile_configs,
-                            [tile_index]: config
-                        }
-                    }));
-                }
-            });
-        }
-*/
     }
 
-    /*override async sendSave(topic: "front_panel/config", config: FrontPanelConfig) {
-        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
-            await API.save_unchecked(
-                `front_panel/tiles/${tile_index}/config`,
-                this.state.tile_configs[tile_index],
-                __("front_panel.script.save_failed"),
-                tile_index == FRONT_PANEL_TILES - 1 ? this.reboot_string : undefined);
-        }
-
-        await super.sendSave(topic, config);
-    }*/
-
-/*
-    override async sendReset(topic: "front_panel/config") {
-        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
-            await API.reset_unchecked(`front_panel/tiles/${tile_index}/config`, this.error_string, this.reboot_string);
-        }
-
-        await super.sendReset(topic);
-    }
-*/
-/*
-    override getIsModified(topic: "front_panel/config"): boolean {
-        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
-            if (API.is_modified_unchecked(`front_panel/tiles/${tile_index}/config`))
-                return true;
-        }
-
-        return super.getIsModified(topic);
-    }
-*/
     get_tile_config(tile_index: number, tile_items: [string, string][]) {
         return <div class="input-group mt-3">
                 <span class="input-group-text">{__("front_panel.content.setting")}</span>
