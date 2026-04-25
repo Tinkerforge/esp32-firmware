@@ -70,7 +70,7 @@ def suite_teardown(tc: TestContext):
     cfg(tc, _old_config)
 
 def test_default(tc: TestContext):
-    tc.api('require_meter/config_reset', None)
+    tc.api('config/reset', 'require_meter/config')
     tc.get_testbox().connect_meter('none')
     tc.api('evse/reset', None)
     tc.reboot()

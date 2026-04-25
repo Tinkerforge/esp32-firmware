@@ -106,13 +106,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
         await super.sendSave(topic, config);
     }
 
-    override async sendReset(topic: "p14a_enwg/config") {
-        if (this.state.is_charger) {
-            await API.save_unchecked('evse/p14a_enwg_enabled', {enabled: false}, () => __("p14a_enwg.script.save_failed"));
-        }
-        await super.sendReset(topic);
-    }
-
     render(props: {}, state: P14aEnwgState & P14aEnwgConfig) {
         if (!util.render_allowed())
             return <SubPage name="p14a_enwg" />;
@@ -153,7 +146,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                 <SubPage.Config id="p14a_enwg_config_form"
                                 isDirty={this.isDirty()}
                                 onSave={this.save}
-                                onReset={this.reset}
                                 onDirtyChange={this.setDirty}>
                     <FormRow label={__("p14a_enwg.content.enable_p14a_enwg")} help={__("p14a_enwg.content.enable_p14a_enwg_help")}>
                         <Switch desc={__("p14a_enwg.content.enable_p14a_enwg_desc")}

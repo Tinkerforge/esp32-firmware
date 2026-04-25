@@ -54,6 +54,9 @@ void API::pre_setup()
         {"config_type", Config::Str("", 0, 32)},
     });
 
+    reset = Config::Object({
+        {"path", Config::Str("", 0, 255)}
+    });
 }
 
 void API::setup()
@@ -345,10 +348,6 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
     addCommand(path + "_update", config, ktc, [path, config](Language /*language*/, String &/*errmsg*/) {
         API::writeConfig(path, config);
     }, false);
-
-    addCommand(path + "_reset", Config::Null(), {}, [path](Language /*language*/, String &/*errmsg*/) {
-        API::removeConfig(path);
-    }, true);
 
     return true;
 }
@@ -878,6 +877,10 @@ void API::register_urls()
 
     this->addState("info/features", &features);
     this->addState("info/version", &version);
+
+    this->addCommand("config/reset", &reset, {}, [this](Language /*language*/, String &error){
+        API::removeConfig(reset.get("path")->asString());
+    }, true);
 }
 
 void API::register_events() {

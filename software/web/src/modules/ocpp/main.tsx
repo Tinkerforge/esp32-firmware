@@ -71,11 +71,6 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
         await super.sendSave(topic, cfg);
     }
 
-    override async sendReset(topic: "ocpp/config") {
-        await API.save_unchecked('evse/ocpp_enabled', {enabled: false}, () => __("evse.script.save_failed"));
-        await super.sendReset(topic);
-    }
-
     override async isSaveAllowed(cfg: OcppConfig) {
         if (this.state.state.txn_id == NO_TXN_ACTIVE)
             return true;
@@ -101,7 +96,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
 
         return (
             <SubPage name="ocpp">
-                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="ocpp_config_form" title={__("ocpp.content.ocpp" )} isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
                     <FormRow label={__("ocpp.content.enable_ocpp")}>
                         <Switch desc={__("ocpp.content.enable_ocpp_desc")}
                                 checked={state.enable}

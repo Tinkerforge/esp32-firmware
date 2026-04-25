@@ -584,12 +584,6 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         }
     }
 
-    override async sendReset(topic: null) {
-        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
-            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, meter_slot == options.METERS_MAX_SLOTS - 1 ? this.reboot_string : undefined);
-        }
-    }
-
     render() {
         if (!util.render_allowed())
             return <SubPage name="meters" />;
@@ -690,7 +684,6 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                     id="meters_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
                     <div class="form-group">
                         <Table

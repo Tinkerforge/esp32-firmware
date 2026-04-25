@@ -316,7 +316,6 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 title={__("automation.content.automation")}
                 isDirty={this.isDirty()}
                 onSave={this.save}
-                onReset={this.reset}
                 onDirtyChange={this.setDirty}
                 >
                 <Table tableTill="md"

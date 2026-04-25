@@ -350,24 +350,6 @@ void RemoteAccess::register_urls()
         },
         false);
 
-    api.addCommand(
-        "remote_access/config_reset",
-        Config::Null(),
-        {},
-        [this](Language /*language*/, String &/*errmsg*/) {
-            API::removeConfig("remote_access/config");
-
-            for (uint8_t user_id = 0; user_id < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; user_id++) {
-                for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-                    remove_key(user_id, i);
-                }
-            }
-
-            config.get("enable")->updateBool(false);
-            task_scheduler.scheduleOnce([this]() { this->apply_config(); });
-        },
-        true);
-
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         this->management_request_allowed = false;
         size_t content_len = 0;

@@ -506,7 +506,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     id="wifi_sta_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     {disabled_but_active &&

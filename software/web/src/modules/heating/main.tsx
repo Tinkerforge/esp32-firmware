@@ -419,7 +419,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     id="heating_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     {state.heating_state.automation_override && <Alert variant="warning">{__("heating.content.heating_disabled")}</Alert>}

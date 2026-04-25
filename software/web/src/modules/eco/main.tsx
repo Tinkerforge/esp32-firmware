@@ -84,7 +84,6 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             title={__("eco.content.eco")}
                             isDirty={this.isDirty()}
                             onSave={this.save}
-                            onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("eco.content.charge_plan_enable")}
                              help={__("eco.content.charge_plan_enable_help")}

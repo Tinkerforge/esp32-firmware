@@ -273,7 +273,6 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                 <SubPage.Config id="temperatures_config_form"
                             isDirty={this.isDirty()}
                             onSave={this.save}
-                            onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("temperatures.content.enable_temperatures")} help={__("temperatures.content.enable_temperatures_help")}>
                         <Switch desc={is_weather_service ? __("temperatures.content.temperatures_desc") : __("temperatures.content.temperatures_push_desc")}

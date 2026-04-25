@@ -98,11 +98,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         API.save("rtc/config", this.state);
     }
 
-    override async sendReset(topic: "ntp/config") {
-        super.sendReset(topic);
-        API.reset("rtc/config");
-    }
-
     render(props: {}, state: Readonly<TimeConfig>) {
         if (!util.render_allowed())
             return <SubPage name="time" />;
@@ -144,7 +139,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                     id="time_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("time.content.live_date")}>

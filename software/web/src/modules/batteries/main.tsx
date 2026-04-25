@@ -955,20 +955,6 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         await super.sendSave(topic, new_config);
     }
 
-    override async sendReset(topic: 'batteries/config') {
-        for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
-            await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string);
-        }
-
-//#if MODULE_BATTERY_CONTROL_AVAILABLE
-        await API.reset('battery_control/config');
-        await API.reset('battery_control/rules_charge',    this.error_string);
-        await API.reset('battery_control/rules_discharge', this.error_string);
-//#endif
-
-        await super.sendReset(topic);
-    }
-
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
     date_with_day_offset(date: Date, day_offset: number) {
@@ -1273,7 +1259,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 {/*#endif*/}
 {/*#endif*/}
                 </SubPage.Status>
-                <SubPage.Config id="batteries_config_form" isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <SubPage.Config id="batteries_config_form" isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
                     <Alert variant="warning" hidden={API.get("batteries/config").enabled}> {__("batteries.content.experimental")}</Alert>
                     <div class="form-group">
                         <FormRow label={__("batteries.content.enable_battery_control")}>

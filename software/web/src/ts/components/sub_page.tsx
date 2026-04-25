@@ -47,7 +47,6 @@ interface SubPageConfigProps {
     id: string;
     isDirty: boolean;
     onSave: () => Promise<void>;
-    onReset: () => Promise<void>;
     onDirtyChange: (dirty: boolean) => void;
 }
 
@@ -128,7 +127,6 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                     title={isCollapsed ? props.title : __("component.sub_page.settings")}
                     isDirty={configProps.isDirty}
                     onSave={configProps.onSave}
-                    onReset={configProps.onReset}
                     onDirtyChange={configProps.onDirtyChange}
                     small={!isCollapsed}
                 >
@@ -162,7 +160,6 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                     title={props.title}
                     isDirty={configProps.isDirty}
                     onSave={configProps.onSave}
-                    onReset={configProps.onReset}
                     onDirtyChange={configProps.onDirtyChange}
                 >
                     {configChildren}

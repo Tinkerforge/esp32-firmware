@@ -139,18 +139,6 @@ export function save_unchecked<T extends string>(topic: T, payload: (T extends k
     return Promise.resolve();
 }
 
-export function reset<T extends keyof ConfigMap>(topic: T, error_string?: () => string, reboot_string?: () => string) {
-    console.log("reset", topic, error_string, reboot_string);
-    return call((topic + "_reset") as any, null, error_string, reboot_string);
-}
-
-export function reset_unchecked<T extends string>(topic: T, error_string?: () => string, reboot_string?: () => string) {
-    console.log("reset_unchecked", topic, error_string, reboot_string);
-    if (topic in api_cache)
-        return call((topic + "_reset") as any, null, error_string, reboot_string);
-    return Promise.resolve();
-}
-
 export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
     return call_unchecked(topic, payload, error_string, reboot_string, timeout_ms);
 }

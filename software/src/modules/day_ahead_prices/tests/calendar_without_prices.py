@@ -25,7 +25,7 @@ def suite_setup(tc: TestContext):
 # Firmwares pre c13bf1a3 did crash when enabling calendar in config
 # but not writing to dap/calendar api.
 def test_calendar_enabled_without_prices(tc: TestContext):
-    tc.api('day_ahead_prices/calendar_reset', None)
+    tc.api('config/reset', "day_ahead_prices/calendar")
 
     config = tc.api('day_ahead_prices/config')
     config['enable'] = True

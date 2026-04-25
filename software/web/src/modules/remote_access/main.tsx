@@ -601,28 +601,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"));
     }
 
-    override async sendReset(topic: "remote_access/config") {
-//#if MODULE_CHARGE_TRACKER_AVAILABLE
-        // Remove all PDF send configurations from charge tracker since all remote access users will be removed
-        const chargeTrackerConfig = {...API.get("charge_tracker/config")};
-        if (chargeTrackerConfig.remote_upload_configs.length > 0) {
-            chargeTrackerConfig.remote_upload_configs = [];
-            API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
-        }
-//#endif
-
-        for (const user of this.state.users) {
-            API.call("remote_access/remove_user", {
-                id: user.id
-            }, () => __("remote_access.script.save_failed"));
-        }
-
-        // If a user is removed and then the config is resetted, clear the users to be removed.
-        this.setState({removeUsers: []});
-
-        API.reset("remote_access/config", () => __("remote_access.script.save_failed"));
-    }
-
     checkUserExisting(email?: string, userId?: string) {
         if (email === undefined) {
             email = this.state.addUser.email;
@@ -700,7 +678,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 <ConfigForm id="remote_access_config_form"
                             title={__("remote_access.content.remote_access")}
                             isDirty={this.isDirty()}
-                            onReset={this.reset}
                             onSave={this.save}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("remote_access.content.enable")}>

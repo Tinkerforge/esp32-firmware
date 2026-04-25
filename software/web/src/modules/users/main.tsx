@@ -267,15 +267,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         this.setState({users: users});
     }
 
-    override async sendReset(topic: "users/config") {
-        let new_users = this.state.users.slice(0);
-        new_users = [new_users[0]];
-        new_users[0].display_name = "";
-        let new_state = {...this.state, users: [new_users[0]], userSlotEnabled: false, http_auth_enabled: false};
-
-        this.setState(new_state, this.save);
-    }
-
     async checkUsername(user: User, ignore_i: number): Promise<number> {
         for (let i = 0; i < this.state.users.length; ++i) {
             if (i != ignore_i && this.state.users[i].username.trim() == user.username.trim()) {
@@ -339,7 +330,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         return (
             <SubPage name="users">
                 <ConfigForm id="users_config_form" title={__("users.content.users")} isDirty={this.isDirty()} onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
                     <FormRow label={__("users.content.enable_authentication")}>
                         <Switch desc={__("users.content.enable_authentication_desc")}

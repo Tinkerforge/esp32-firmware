@@ -285,7 +285,6 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
                             title={__("network.content.network")}
                             isDirty={this.isDirty()}
                             onSave={this.save}
-                            onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("network.content.hostname")}>
                         <InputTextPatterned maxLength={32}

@@ -54,7 +54,7 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
         }
 
         return <SubPage name="modbus_meter_simulator">
-            <ConfigForm id="modbus_meter_simulator_config_form" title={__("modbus_meter_simulator.content.page_header" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+            <ConfigForm id="modbus_meter_simulator_config_form" title={__("modbus_meter_simulator.content.page_header" )} isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
 
                 <FormRow label={__("modbus_meter_simulator.content.meter_type")} label_muted={__("modbus_meter_simulator.content.meter_type_muted")}>
                     <InputSelect

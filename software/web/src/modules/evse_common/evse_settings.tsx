@@ -145,28 +145,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         super.sendSave(topic, cfg);
     }
 
-    //TODO: Substitute hardcoded values after evse-reset-api is available.
-
-    override async sendReset(topic: "charge_limits/default_limits") {
-        await API.save('evse/auto_start_charging', {"auto_start_charging": true}, () => __("evse.script.save_failed"));
-        await API.save('evse/boost_mode', {"enabled": false}, () => __("evse.script.save_failed"));
-        await API.reset('require_meter/config', () => __("evse.script.save_failed"));
-        await API.reset('evse/led_configuration', () => __("evse.script.save_failed"));
-
-        if (this.state.is_evse_v2) {
-            await API.save('evse/button_configuration', {"button": 2}, () => __("evse.script.save_failed"));
-            await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, () => __("evse.script.gpio_configuration_failed"));
-            await API.save('evse/ev_wakeup', {"enabled": true}, () => __("evse.script.save_failed"));
-            await API.save('evse/phase_auto_switch', {"enabled": true}, () => __("evse.script.save_failed"));
-            await API.save('evse/phases_connected', {"phases": 3}, () => __("evse.script.save_failed"));
-        }
-        if (this.state.is_evse_v3) {
-            await API.save('evse/phase_switch_wait_time', {"time": 0}, () => __("evse.script.save_failed"));
-        }
-
-        super.sendReset(topic);
-    }
-
     render(props: {}, s: EVSESettingsState & ChargeLimitsConfig) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return <SubPage name="evse_settings" />;
@@ -239,7 +217,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     </FormRow>;
 
         return <SubPage name="evse_settings">
-                <ConfigForm id="evse_settings_config_form" title={__("evse.content.evse_settings" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="evse_settings_config_form" title={__("evse.content.evse_settings" )} isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
                     <FormRow label={__("evse.content.auto_start_description")} help={__("evse.content.auto_start_description_help")}>
                         <Switch desc={__("evse.content.auto_start_enable")}
                                 checked={!auto_start_charging.auto_start_charging}

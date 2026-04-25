@@ -123,7 +123,6 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     id="wireguard_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("wireguard.content.enable_wireguard")}>

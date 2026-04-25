@@ -124,7 +124,6 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                     id="ethernet_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     {disabled_but_active &&

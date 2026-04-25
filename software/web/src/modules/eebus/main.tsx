@@ -270,12 +270,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         await super.sendSave(topic, cfg);
     }
 
-    override async sendReset(topic: "eebus/config") {
-        this.setState({config_enable: false}); // avoid round trip time
-        await API.save_unchecked('evse/eebus_enabled', {enabled: false}, () => __("eebus.script.save_failed"));
-        await super.sendReset(topic);
-    }
-
     render(props: {}, state: EEBusState & EEBusConfig) {
         if (!util.render_allowed())
             return <SubPage name="eebus"/>;
@@ -898,7 +892,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     </SubPage.Status>
 
                 <SubPage.Config id="eebus_config_form" isDirty={this.isDirty()}
-                                onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                                onSave={this.save} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")} help={buildEEBusHelpText(state.usecases)}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}

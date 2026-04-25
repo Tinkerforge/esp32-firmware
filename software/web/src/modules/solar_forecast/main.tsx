@@ -155,14 +155,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         await super.sendSave(topic, config);
     }
 
-    override async sendReset(topic: "solar_forecast/config") {
-        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; plane_index++) {
-            await API.reset_unchecked(`solar_forecast/planes/${plane_index}/config`, this.error_string, this.reboot_string);
-        }
-
-        await super.sendReset(topic);
-    }
-
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
         const is_forecast_service = this.state.source == ForecastSource.ForecastService;
@@ -459,7 +451,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     id="plane_configs_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
                     <FormRow label={__("solar_forecast.content.enable_solar_forecast")}>
                         <Switch desc={__("solar_forecast.content.solar_forecast_desc")}

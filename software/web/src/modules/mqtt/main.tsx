@@ -68,13 +68,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
         await super.sendSave(topic, cfg);
     }
 
-    override async sendReset(topic: "mqtt/config") {
-        if (API.hasModule('mqtt_auto_discovery'))
-            await API.reset('mqtt/auto_discovery_config', this.error_string, this.reboot_string);
-
-        await super.sendReset(topic);
-    }
-
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {
         if (!util.render_allowed())
             return <SubPage name="mqtt" />;
@@ -134,7 +127,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                     id="mqtt_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("mqtt.content.enable_mqtt")}>

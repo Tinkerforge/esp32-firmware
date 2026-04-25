@@ -117,13 +117,6 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
         await super.sendSave(topic, config);
     }
 
-    override async sendReset(topic: "system/i18n_config") {
-        // Reset theme_config
-        await API.reset("system/theme_config", this.error_string, this.reboot_string);
-        // Reset i18n_config
-        await super.sendReset(topic);
-    }
-
     render(props: {}, state: SystemI18nConfig & SystemState) {
         if (!util.render_allowed())
             return <SubPage name="system" />;
@@ -147,7 +140,6 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                             title={__("system.content.system")}
                             isDirty={this.isDirty()}
                             onSave={this.save}
-                            onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("system.content.system_language")} help={__("system.content.system_language_help")} show_warning={browser_language != web_interface_language} warning={__("system.content.system_language_warning")(browser_locale, browser_language_name, web_interface_language, web_interface_language_name)}>
                         <div class="row">

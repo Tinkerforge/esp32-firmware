@@ -490,7 +490,6 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     id="iso15118_config_form"
                     isDirty={this.isDirty()}
                     onSave={this.save}
-                    onReset={this.reset}
                     onDirtyChange={this.setDirty}>
                     <FormRow label={__("iso15118.content.autocharge")} help={__("iso15118.content.autocharge_help")}>
                         <Switch desc={__("iso15118.content.autocharge_desc")}

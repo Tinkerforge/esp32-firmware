@@ -235,27 +235,6 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         await super.sendSave(topic, new_cfg);
     }
 
-    override async sendReset(topic: "charge_manager/config"){
-        const modal = util.async_modal_ref.current;
-        if (!await modal.show({
-                title: () => __("reset.reset_modal"),
-                body: () => __("charge_manager.content.charge_manager_chargers_reset_modal_text"),
-                no_text:() =>  __("reset.reset_modal_abort"),
-                yes_text: () => __("reset.reset_modal_confirm"),
-                no_variant: "secondary",
-                yes_variant: "danger"
-            }))
-            return;
-
-        if (API.hasModule("evse_common"))
-            await API.save_unchecked('evse/management_enabled', {"enabled": false}, () => translate_unchecked("charge_manager.script.save_failed"));
-
-        await API.reset_unchecked('em_phase_switcher/charger_config', () => __("charge_manager.script.save_failed"));
-        await API.reset_unchecked('energy_manager/config',            () => __("charge_manager.script.save_failed"));
-
-        await super.sendReset(topic);
-    }
-
     insertLocalHost() {
         if (this.state.chargers.some(v => v.host == "127.0.0.1"))
             return;
@@ -589,7 +568,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         return (
             <SubPage name="charge_manager_chargers">
-                <ConfigForm id="chargers_config_form" title={__("charge_manager.content.charge_manager_chargers" )} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="chargers_config_form" title={__("charge_manager.content.charge_manager_chargers" )} isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
                     {charge_manager_mode}
 
                     <Collapse in={show_charger_settings}>
