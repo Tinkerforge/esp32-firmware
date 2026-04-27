@@ -191,7 +191,7 @@ void ChargeManager::pre_setup()
         {"d3", ThreePhaseDecision::getUnion()},
         {"dc", CurrentDecision::getUnion()},
         {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
-        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)n
+        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)
         {"ai", Config::Tuple(3, Config::Object({
             {"ti", Config::Str("", 0, 29)}, // "tag_id" - Last NFC tag ID seen on this charger (colon-separated hex)
             {"tt", Config::Uint8(0)},       // "tag_type" - Last NFC tag type seen on this charger
