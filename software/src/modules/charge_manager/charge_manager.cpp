@@ -456,7 +456,7 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
     if (v5 == nullptr) {
         return NOT_AUTHORIZED;
     }
-    
+
 #if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
     const cm_auth_info &info = v5->auth_info[0];
     // If last_seen_s == 0, no tag was seen
@@ -511,7 +511,7 @@ static void update_authentication(
         target.user_current = get_user_current(target.authenticated_user_id);
         return;
     }
-    
+
     // Show feedback for tags when tag is seen before a car is connected
     const cm_auth_info *recent = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
 
