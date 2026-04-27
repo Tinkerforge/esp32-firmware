@@ -41,7 +41,6 @@ import { CollapsedSection } from "../../ts/components/collapsed_section";
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 
 interface ChargeManagerState {
-    showExpert: boolean
     dynamicLoadConfig: API.getType['power_manager/dynamic_load_config']
 }
 
@@ -52,7 +51,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         super('charge_manager/config',
               () => __("charge_manager.script.save_failed"),
               () => __("charge_manager.script.reboot_content_changed"), {
-                  showExpert: false
               });
 
         util.addApiEventListener('power_manager/dynamic_load_config', (ev) => {
@@ -210,21 +208,13 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
                     {minimum_current}
 
-                    <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
-                        <Button className="w-100" onClick={() => this.setState({showExpert: !state.showExpert})}>
-                            {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
-                        </Button>
-                    </FormRow>
-
-                    <Collapse in={state.showExpert}>
-                        <div>
-                            {verbose}
-                            {watchdog}
-                            {default_available_current}
-                            {requested_current_threshold}
-                            {requested_current_margin}
-                        </div>
-                    </Collapse>
+                    <CollapsedSection heading={__("charge_manager.content.advanced_settings")}>
+                        {verbose}
+                        {watchdog}
+                        {default_available_current}
+                        {requested_current_threshold}
+                        {requested_current_margin}
+                    </CollapsedSection>
 
                     {API.hasModule("power_manager") ?
                         <>

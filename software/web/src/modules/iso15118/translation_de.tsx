@@ -16,7 +16,7 @@ let x = {
             "charge_via_iso15118_help": <><p>Diese Funktion ist noch nicht verfügbar. Sie wird mit einem zukünftigen Firmware-Update freigeschaltet, sobald die ISO 15118-20 Zertifizierung abgeschlossen ist.</p><p>Mit ISO 15118-20 kann die Wallbox das Fahrzeug identifizieren, den Ladestand kontinuierlich auslesen und den Ladevorgang direkt über das ISO 15118-20 Protokoll steuern.</p></>,
             "min_charge_current": "Minimaler Ladestrom",
             "min_charge_current_help": <><p>Der standardmäßige minimale Ladestrom, der Fahrzeugen beim Laden über ISO 15118-20 angeboten wird. Dieser Wert gilt für alle Fahrzeuge, sofern er nicht durch eine fahrzeugspezifische Konfiguration überschrieben wird.</p><p>Manche Fahrzeuge können bei niedrigen Strömen effizient laden, während andere dabei Energie verschwenden oder nur sehr langsam laden. Falls ein Fahrzeug bei niedriger Leistung ineffizient lädt, sollte dieser Wert erhöht werden.</p></>,
-            "advanced_settings": "Erweiterte Einstellungen",
+            "advanced_settings": "Experteneinstellungen",
             "pib_download": "PIB herunterladen",
             "pib_download_desc": "Parameter Information Block herunterladen",
             "pib_upload": "PIB hochladen",

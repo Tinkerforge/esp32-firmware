@@ -60,8 +60,7 @@ let x = {
             "requested_current_threshold": "Start-up phase length",
             "requested_current_threshold_muted": "Chargers with an energy meter that measures phase currents will be limited to the maximum phase current plus the configured margin after the start-up phase is elapsed. This enables more efficient current distribution to multiple chargers.",
 
-            "configuration_mode": "Expert settings",
-            "configuration_mode_muted": "",
+            "advanced_settings": "Advanced settings",
 
             "table_charger_name": "Display name",
             "table_charger_host": "Host",

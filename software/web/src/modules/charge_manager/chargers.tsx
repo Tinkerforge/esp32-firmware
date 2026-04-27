@@ -46,7 +46,6 @@ interface ChargersState {
     addCharger: ChargerConfig
     editCharger: ChargerConfig
     managementEnabled: boolean
-    showExpert: boolean
     scanResult: Readonly<ScanCharger[]>
     chargersInvalid: boolean
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
@@ -75,7 +74,6 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                   addCharger: {host: "", name: "", rot: -1},
                   editCharger: {host: "", name: "", rot: -1},
                   managementEnabled: false,
-                  showExpert: false,
                   scanResult: [],
                   chargersInvalid: false,
               });

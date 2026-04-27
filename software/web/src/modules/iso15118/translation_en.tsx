@@ -16,7 +16,7 @@ let x = {
             "charge_via_iso15118_help": <><p>This feature is not yet available. It will be enabled with a future firmware update once ISO 15118-20 certification is complete.</p><p>With ISO 15118-20, the charger will be able to identify the vehicle, continuously read the battery level, and manage charging directly over the ISO 15118-20 protocol.</p></>,
             "min_charge_current": "Minimum Charge Current",
             "min_charge_current_help": <><p>The default minimum charging current that will be offered to vehicles during ISO 15118-20 charging. This value applies to all vehicles unless overridden by a vehicle-specific configuration.</p><p>Some vehicles can charge efficiently at low currents, while others may waste energy or charge very slowly. If a vehicle charges inefficiently at low power, increase this value.</p></>,
-            "advanced_settings": "Advanced Settings",
+            "advanced_settings": "Advanced settings",
             "pib_download": "Download PIB",
             "pib_download_desc": "Download Parameter Information Block",
             "pib_upload": "Upload PIB",

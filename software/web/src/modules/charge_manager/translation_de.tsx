@@ -60,8 +60,7 @@ let x = {
             "requested_current_threshold": "Länge der Startphase",
             "requested_current_threshold_muted": "Wallboxen mit einem Stromzähler, der Phasenströme misst, werden nach Ablauf der Startphase auf den größten Phasenstrom plus den konfigurierten Spielraum limitiert. Damit kann der verfügbare Strom effizienter auf mehrere Wallboxen verteilt werden.",
 
-            "configuration_mode": "Experteneinstellungen",
-            "configuration_mode_muted": "",
+            "advanced_settings": "Experteneinstellungen",
 
             "table_charger_name": "Anzeigename",
             "table_charger_host": "Host",
