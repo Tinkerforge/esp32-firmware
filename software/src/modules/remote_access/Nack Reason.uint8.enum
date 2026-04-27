@@ -1,5 +1,5 @@
 Busy = 0
-To Many Requests = 1
+Too Many Requests = 1
 Ongoing Request = 2
 Timeout = 3
 Unauthorized = 4

@@ -2463,7 +2463,7 @@ int RemoteAccess::begin_charge_log_send(
         const char *reason_str = "unknown";
         switch (static_cast<NackReason>(nack_reason)) {
             case NackReason::Busy: reason_str = "server busy"; break;
-            case NackReason::ToManyRequests: reason_str = "too many requests"; break;
+            case NackReason::TooManyRequests: reason_str = "too many requests"; break;
             case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
             case NackReason::Timeout: reason_str = "timeout"; break;
             case NackReason::Unauthorized: reason_str = "unauthorized"; break;
