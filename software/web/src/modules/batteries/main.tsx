@@ -1070,7 +1070,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             }
 
             // Duplicate final values to avoid cutting off the last bar.
-            data.values[0].push(sample_time);
+            data.values[0].push(sample_time - 1);
             data.values[1].push(sample_percent);
 
             this.draw_cheap_expensive_bars(data, graph_start_time / 60, yesterday_20h, today_20h,    this.state.battery_control_config.cheap_tariff_quarters, this.state.battery_control_config.expensive_tariff_quarters);
