@@ -46,7 +46,7 @@ void ChargeAuthentication::setup()
 
 void ChargeAuthentication::register_urls()
 {
-    api.addState("charge_authentication/last_seen_authentications", &last_seen_authentications, {}, {"type"});
+    api.addState("charge_authentication/last_seen_authentications", &last_seen_authentications, {}, {"auth_string"});
     
     task_scheduler.scheduleUncancelable([this] {
         // Collect indices of valid (seen) NFC tags
