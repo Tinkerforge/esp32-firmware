@@ -20,14 +20,13 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, RefObject } from "preact";
-import { translate_unchecked, __ } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { Alert, Button, Collapse } from "react-bootstrap";
+import { Alert, Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
-import { OutputFloat } from "../../ts/components/output_float";
 import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
