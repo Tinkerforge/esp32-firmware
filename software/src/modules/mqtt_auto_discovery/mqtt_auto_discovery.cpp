@@ -22,15 +22,15 @@
 
 #include "mqtt_auto_discovery.h"
 
-#include <string.h>
-#include <mqtt_client.h>
 #include <TFJson.h>
+#include <mqtt_client.h>
+#include <string.h>
 
+#include "build.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "build.h"
-#include "options.h"
 #include "language.h"
+#include "options.h"
 
 // Inject RAW, preformatted Json into the serializer. Must be valid JSON otherwise things might break
 static void json_write_raw(TFJsonSerializer &json, const char *raw, size_t len)
@@ -238,12 +238,10 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                         break;
                 }
 
-                if (mqtt_discovery_topic_infos[topic_num].availability_path[0] != 0) {
-                    json.addMemberObject("availability");
-                    json.addMemberStringF("topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].availability_path);
-                    json.addMemberString("payload_available", mqtt_discovery_topic_infos[topic_num].availability_yes);
-                    json.addMemberString("payload_not_available", mqtt_discovery_topic_infos[topic_num].availability_no);
-                    json.endObject();
+                if (strlen(mqtt_discovery_topic_infos[topic_num].availability_topic) > 0) {
+                    json.addMemberBoolean("enabled_by_default", false); // Entities which may or may not be available are added as disabled
+                    json.addMemberStringF("availability_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].availability_topic);
+                    json_write_raw(json, mqtt_discovery_topic_infos[topic_num].availability_info, strlen(mqtt_discovery_topic_infos[topic_num].availability_info));
                 }
 
                 // Inject pre-formatted static_info as raw JSON object members
@@ -260,8 +258,6 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 String json_str = buf;
                 json_str.trim();
-
-
                 mqtt.publish(mqtt_discovery_topics[topic_num].full_path, json_str, true);
                 free(buf);
 
