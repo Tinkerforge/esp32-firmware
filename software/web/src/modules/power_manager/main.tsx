@@ -217,6 +217,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         const cm_requirements_warning = em_phase_switcher_charger_config?.proxy_mode ? __("power_manager.content.em_proxy_warning") : __("power_manager.content.cm_requirements_warning");
 
         let is_em = API.hasModule("em_common");
+        let is_em_v1 = API.hasModule("em_v1");
 
         // On a charger, the power manager is enabled iff excess charging is enabled.
         let enabled = is_em ? s.enabled : s.excess_charging_enable;
@@ -302,7 +303,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                         />
                     </FormRow>
 
-                    <Collapse in={s.excess_charging_enable || !is_em}>
+                    <Collapse in={s.excess_charging_enable || !is_em_v1}>
                         <div>
                             <FormRow label={__("power_manager.content.meter_slot_grid_power")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
