@@ -38,7 +38,7 @@ import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
 
 export function ISO15118Navbar() {
-    return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;
+    return <NavbarItem name="iso15118" module="iso15118" title="ISO 15118" symbol={<Activity />} />;
 }
 
 type ISO15118Config = API.getType["iso15118/config"];
