@@ -17,7 +17,7 @@ let x = {
         "content": {
             "eco": "Eco-Modus",
             "charge_plan_enable": "Ladeplanung aktiviert",
-            "charge_plan_enable_desc": "Optimiert Ladevorgänge ökonomisch und ökologisch anhand der gewünschten Abfahrtszeit, dynamischer Strompreise und PV-Ertragsprognose. Ladepläne werden in jedem der \"Eco\"-Lademodi verwendet.",
+            "charge_plan_enable_desc": "Wenn die Ladeplanung aktiviert ist, wird auf der Status-Seite ein konfigurierbarer Ladeplan angezeigt.",
             "park_time": "Maximale Standzeit",
             "charge_below": "Immer laden, wenn Preis unter",
             "block_above": "Nie laden, wenn Preis über",
@@ -28,7 +28,7 @@ let x = {
             "inactive": "Inaktiv",
             "solar_forecast_needs_activation": <>Um den erwarteten PV-Überschuss in den Ladeplan einbeziehen zu können, muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</>,
             "day_ahead_prices_needs_activation": <>Um den Ladeplan berechnen zu können, müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</>,
-            "charge_plan_enable_help": "Wenn die Ladeplanung aktiviert ist, wird auf der Status-Seite ein konfigurierbarer Ladeplan angezeigt.",
+            "charge_plan_enable_help": <>Optimiert Ladevorgänge ökonomisch und ökologisch anhand der gewünschten Abfahrtszeit, <a href="#day_ahead_prices">dynamischer Strompreise</a> und <a href="#solar_forecast">PV-Ertragsprognose</a>. Ladepläne werden in jedem der "Eco"-Lademodi verwendet.</>,
             "park_time_help": <>
                 <p>Gibt an, für wie viele Stunden <strong>nach Anstecken eines Fahrzeugs</strong> ein Ladeplan erstellt wird.</p>
                 <p>Beispiel: Es ist 08:00, der Ladeplan ist konfiguriert auf 'Nutze die günstigsten <strong>4 Stunden</strong> bis <strong>Heute um 20:00 Uhr</strong>' und die maximale <strong>Standzeit</strong> ist auf <strong>8 Stunden</strong> eingestellt. Der Ladevorgang wird dann für die <strong>günstigsten 4 Stunden</strong>, aber <strong>bevor die maximale Standzeit abläuft</strong>, geplant, also z.B. bis 16:00, wenn das Auto um 08:00 eingesteckt wird, aber bis 18:00 wenn das Auto um 10:00 eingesteckt wird.</p>

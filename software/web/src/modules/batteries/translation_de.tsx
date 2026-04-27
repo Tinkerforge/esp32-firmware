@@ -70,6 +70,7 @@ let x = {
             "net_price_ct_per_kwh": "Nettopreis [ct/kWh]",
 
             "enable_battery_control": "Batteriesteuerung aktiviert",
+            "enable_battery_control_desc": "Lade- und Entladeregeln werden ausgewertet und konfiguriert Batteriespeicher entsprechend gesteuert.",
 
             "table_battery_display_name": "Anzeigename",
             "table_battery_class": "Klasse",

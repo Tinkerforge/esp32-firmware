@@ -15,7 +15,7 @@ let x = {
         "content": {
             "p14a_enwg": "§14a EnWG",
             "enable_p14a_enwg": "§14a EnWG aktiviert",
-            "enable_p14a_enwg_desc": "§14a-EnWG-Steuerung aktivieren",
+            "enable_p14a_enwg_desc": "§14a-EnWG-Steuersignale werden empfangen und verarbeitet.",
             "enable_p14a_enwg_help": <>
                 <p>§14a des Energiewirtschaftsgesetzes (EnWG) ermöglicht es Netzbetreibern, den Strombezug steuerbarer Verbrauchseinrichtungen (Wärmepumpen, Wallboxen, Batteriespeicher, Klimaanlagen) temporär zu reduzieren, um eine Überlastung des lokalen Netzes zu vermeiden. Die Geräte werden dabei nie vollständig abgeschaltet. Eine Mindestleistung von 4200 W bleibt stets verfügbar.</p>
             </>,

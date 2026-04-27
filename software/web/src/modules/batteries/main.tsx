@@ -1264,6 +1264,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                     <div class="form-group">
                         <FormRow label={__("batteries.content.enable_battery_control")}>
                             <Switch
+                                desc={__("batteries.content.enable_battery_control_desc")}
                                 checked={this.state.enabled}
                                 onClick={this.toggle("enabled")}
                             />

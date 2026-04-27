@@ -11,6 +11,7 @@ let x = {
         "content": {
             "day_ahead_prices": "Dynamic Tariff",
             "enable_day_ahead_prices": "Spot market electricity prices enabled",
+            "enable_day_ahead_prices_desc": "Receives the day-ahead spot market prices from the configured source and makes them internally availalbe to other functions.",
             "no_data": "No data available",
             "loading": "Loading data...",
             "time": "Time of day",
@@ -19,7 +20,6 @@ let x = {
             "calendar_price": "Calendar price",
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
-            "day_ahead_prices_desc": <>Enable day-ahead spot market prices.</>,
             "source": "Source",
             "source_spot_market_desc": /*FFN*/(api_url: string) => <>The data is provided by <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> and fetched from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "source_spot_market": "Automatic via spot market",

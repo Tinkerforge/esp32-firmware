@@ -17,7 +17,7 @@ let x = {
         "content": {
             "eco": "Eco Mode",
             "charge_plan_enable": "Charge planning enabled",
-            "charge_plan_enable_desc": "Optimizes charges economically and ecologically. The desired departure time, dynamic tariff pricing and solar forecast are taken into account. Charge plans are used in all \"Eco\" charge modes.",
+            "charge_plan_enable_desc": "When the charge plan is enabled, a configurable charge plan is shown on the status page.",
             "park_time": "Maximum parking time",
             "charge_below": "Always charge when cost below",
             "block_above": "Never charge when cost above",
@@ -29,7 +29,7 @@ let x = {
             "inactive": "Inactive",
             "solar_forecast_needs_activation": <>To be able to include the expected PV excess into the charge plan, the <a href="#solar_forecast">solar forecast</a> must be enabled.</>,
             "day_ahead_prices_needs_activation": <>To be able to calculate the charge plan, <a href="#day_ahead_prices">dynamic tariff</a> must be enabled.</>,
-            "charge_plan_enable_help": "When the charge plan is enabled, a configurable charge plan is shown on the status page.",
+            "charge_plan_enable_help": <>Optimizes charges economically and ecologically. The desired departure time, <a href="#day_ahead_prices">dynamic tariff pricing</a> and <a href="#solar_forecast">solar forecast</a> are taken into account. Charge plans are used in all "Eco" charge modes.</>,
             "park_time_help": <>
                 <p>Specifies for how long in the future a charge plan will be created <strong>starting at the moment a vehicle is plugged in</strong>.</p>
                 <p>Example: It is 08:00, the charge plan is configured to 'Use the cheapest <b>4 hours</b> until <b>Today at 20:00</b>' and the maximum <b>parking time</b> is set to <b>8 hours</b>. The charge plan will ensure that the <b>cheapest 4 hours</b> are used <b>before the maximum parking time expires</b> (for example until 16:00 if the vehicle is plugged in at 08:00, but until 18:00 if the vehicle is plugged in at 10:00).</p>

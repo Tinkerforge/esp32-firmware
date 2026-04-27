@@ -70,6 +70,7 @@ let x = {
             "net_price_ct_per_kwh": "Net price [ct/kWh]",
 
             "enable_battery_control": "Battery control enabled",
+            "enable_battery_control_desc": "Charge and discharge rules are evaluated and configured battery storages are controlled accordingly.",
 
             "table_battery_display_name": "Display name",
             "table_battery_class": "Class",

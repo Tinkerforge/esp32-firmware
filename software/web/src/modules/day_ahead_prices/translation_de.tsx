@@ -11,6 +11,7 @@ let x = {
         "content": {
             "day_ahead_prices": "Dynamischer Strompreis",
             "enable_day_ahead_prices": "Börsenstrompreis aktiviert",
+            "enable_day_ahead_prices_desc": "Bezieht die Day-Ahead-Börsenstrompreise von der konfigurierten Quelle und stellt diese intern für andere Funktionen bereit.",
             "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",
             "time": "Uhrzeit",
@@ -19,7 +20,6 @@ let x = {
             "calendar_price": "Kalenderpreis",
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",
-            "day_ahead_prices_desc": <>Day-Ahead-Börsenstrompreise aktivieren.</>,
             "source": "Quelle",
             "source_spot_market_desc": /*FFN*/(api_url: string) => <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt und über <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> bezogen.</> /*NF*/,
             "source_spot_market": "Automatisch über Strombörse",

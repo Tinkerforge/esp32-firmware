@@ -453,7 +453,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     onSave={this.save}
                     onDirtyChange={this.setDirty}>
                     <FormRow label={__("solar_forecast.content.enable_solar_forecast")}>
-                        <Switch desc={__("solar_forecast.content.solar_forecast_desc")}
+                        <Switch desc={__("solar_forecast.content.enable_solar_forecast_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
