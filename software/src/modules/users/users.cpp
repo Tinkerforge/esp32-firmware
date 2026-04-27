@@ -33,45 +33,45 @@
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
 // are registered.
-void set_data_storage(uint8_t *buf)
+static void set_data_storage(uint8_t *buf)
 {
     evse_common.set_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 }
 
-void get_data_storage(uint8_t *buf)
+static void get_data_storage(uint8_t *buf)
 {
     evse_common.get_data_storage(DATA_STORE_PAGE_CHARGE_TRACKER, buf);
 }
 
-void zero_user_slot_info()
+static void zero_user_slot_info()
 {
     uint8_t buf[63] = {0};
     set_data_storage(buf);
 }
 
-uint8_t get_charger_state()
+static uint8_t get_charger_state()
 {
     return evse_common.get_state().get("charger_state")->asUint();
 }
 
-Config *get_user_slot()
+static Config *get_user_slot()
 {
     return (Config *)evse_common.get_slots().get(CHARGING_SLOT_USER);
 }
 
-float get_energy()
+static float get_energy()
 {
     float energy = NAN;
     evse_common.get_charger_meter_energy(&energy);
     return energy;
 }
 #else
-void set_data_storage(uint8_t *buf) {}
-void get_data_storage(uint8_t *buf) {}
-void zero_user_slot_info() {}
-uint8_t get_charger_state() { return 0; }
-Config *get_user_slot() { return nullptr; }
-float get_energy() { return NAN; }
+static void set_data_storage(uint8_t *buf) {}
+static void get_data_storage(uint8_t *buf) {}
+static void zero_user_slot_info() {}
+static uint8_t get_charger_state() { return 0; }
+static Config *get_user_slot() { return nullptr; }
+static float get_energy() { return NAN; }
 #endif
 
 #define USER_SLOT_INFO_VERSION 1
@@ -84,7 +84,7 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-uint16_t calc_checksum(const UserSlotInfo &info)
+static uint16_t calc_checksum(const UserSlotInfo &info)
 {
     uint32_t float_buf = 0;
     memcpy(&float_buf, &info.meter_start, sizeof(float_buf));
@@ -104,7 +104,7 @@ uint16_t calc_checksum(const UserSlotInfo &info)
     return checksum;
 }
 
-void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start)
+static void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start)
 {
     UserSlotInfo info;
     info.checksum = 0;
@@ -121,7 +121,7 @@ void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timest
     set_data_storage(buf);
 }
 
-bool read_user_slot_info(UserSlotInfo *result)
+static bool read_user_slot_info(UserSlotInfo *result)
 {
     uint8_t buf[63] = {0};
     get_data_storage(buf);
@@ -329,7 +329,7 @@ void Users::pre_setup()
     }};
 }
 
-void create_username_file()
+static void create_username_file()
 {
     logger.printfln("Recreating users file");
     File f = LittleFS.open(USERNAME_FILE, "w", true);
