@@ -50,7 +50,7 @@ def setup(tc: TestContext) -> None:
             tc.api("users/remove", {"id": user["id"]})
 
 
-# ---------- Read config ----------
+# ---------- Check for missing keys (breaking changes) ----------
 
 def test_config_has_anonymous_user(tc: TestContext) -> None:
     cfg = tc.api("users/config")
@@ -189,7 +189,6 @@ def test_modify_user_display_name(tc: TestContext) -> None:
         tc.assert_eq(32000, user["current"])
 
     tc.wait_for(_check)
-
 
 def test_modify_user_current(tc: TestContext) -> None:
     cfg = tc.api("users/config")
