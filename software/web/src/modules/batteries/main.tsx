@@ -1247,7 +1247,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                         x_padding_factor={0}
                                         x_include_date
                                         y_unit="ct/kWh"
-                                        y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
+                                        y_label={__("batteries.content.net_price_ct_per_kwh")}
                                         y_digits={3}
                                         only_show_visible
                                         padding={[30, 15, null, 5]}

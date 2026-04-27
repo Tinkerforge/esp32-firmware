@@ -67,6 +67,8 @@ let x = {
             "schedule_graph": "Schedule",
             "schedule_graph_muted": "intervals from 20:00 to 20:00",
 
+            "net_price_ct_per_kwh": "Net price [ct/kWh]",
+
             "enable_battery_control": "Battery control enabled",
 
             "table_battery_display_name": "Display name",

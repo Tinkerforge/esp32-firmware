@@ -67,6 +67,8 @@ let x = {
             "schedule_graph": "Zeitplan",
             "schedule_graph_muted": "jeweils von 20:00 bis 20:00",
 
+            "net_price_ct_per_kwh": "Nettopreis [ct/kWh]",
+
             "enable_battery_control": "Batteriesteuerung aktiviert",
 
             "table_battery_display_name": "Anzeigename",
