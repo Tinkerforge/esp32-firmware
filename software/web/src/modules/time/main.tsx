@@ -156,7 +156,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                     </FormRow>
 
                     <FormRow label={__("time.content.timezone")}>
-                        <div class="input-group">
+                        <div class="input-group mb-2">
                             <InputSelect
                                 style={third != null ? "width: 33%" : "width: 50%"}
                                 required
@@ -184,7 +184,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                                     }
                                 /> : undefined}
                         </div>
-                        <br/>
                         <Button variant="primary" className="w-100" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
                     </FormRow>
 
