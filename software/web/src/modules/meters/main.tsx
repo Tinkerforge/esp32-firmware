@@ -626,7 +626,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     ["live", __("meters.content.live")],
                                 ]}/>} headerChildrenColClass="col-12 col-sm-auto align-content-end">
 
-                    <div class="pb-3">
+                    <div class="mb-3">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_live_ref}
                                             show={false}

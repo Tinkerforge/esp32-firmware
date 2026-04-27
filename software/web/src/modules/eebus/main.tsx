@@ -288,7 +288,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         </FormRow>
 
                         <CollapsedSection heading={__("eebus.content.usecase_details")}>
-                            <Table
+                            <div class="mb-3"><Table
                                 columnNames={[""]}
                                 rows={(() => {
                                     let rows: TableRow[] = [];
@@ -887,7 +887,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
                                     return rows;
                                 })()}
-                            />
+                            /></div>
                         </CollapsedSection>
                     </SubPage.Status>
 
