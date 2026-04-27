@@ -22,7 +22,7 @@ import { useId, useContext } from "preact/hooks";
 import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
-export interface InputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
+export interface InputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>;
     items: ([string, [number | string, string][]]|[number | string, string])[];
     onValue?: (value: string) => void;
