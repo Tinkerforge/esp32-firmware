@@ -2396,7 +2396,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                 const char *reason_str = "unknown";
                 switch (nack_reason) {
                     case NackReason::Busy: reason_str = "server busy"; break;
-                    case NackReason::ToManyRequests: reason_str = "too many requests"; break;
+                    case NackReason::TooManyRequests: reason_str = "too many requests"; break;
                     case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
                     case NackReason::Timeout: reason_str = "timeout"; break;
                     default: break;
