@@ -10,7 +10,7 @@ let x = {
             "not_connected": "Getrennt",
             "connecting": "Verbinde",
             "connected": "Verbunden",
-            "weak_signal": /*SFN*/(rssi: number) => "Schwaches Signal (" + rssi + " dB)"/*NF*/,
+            "weak_signal": /*SFN*/(rssi: number) => "Schwaches Signal (" + rssi + " dBm)"/*NF*/,
             "wifi_ap": "WLAN-Access-Point",
             "disabled": "Deaktiviert",
             "enabled": "Aktiviert",
