@@ -32,6 +32,39 @@
 
 extern char local_uid_str[32];
 
+static void reset_state(Config *state) {
+    state->get("charge_point_state")->updateUint(0);
+    state->get("charge_point_status")->updateUint(0);
+    state->get("next_profile_eval")->updateInt52(0);
+    state->get("connector_state")->updateUint(0);
+    state->get("connector_status")->updateUint(0);
+    state->get("tag_id")->updateString("");
+    state->get("parent_tag_id")->updateString("");
+    state->get("tag_expiry_date")->updateInt(0);
+    state->get("tag_timeout")->updateUint(0);
+    state->get("cable_timeout")->updateUint(0);
+    state->get("last_rejected_tag")->updateString("");
+    state->get("last_rejected_tag_reason")->updateUint(0);
+    state->get("txn_id")->updateInt(INT32_MAX);
+    state->get("txn_start_time")->updateInt52(0);
+    state->get("current")->updateUint(0);
+    state->get("txn_with_invalid_id")->updateBool(false);
+    state->get("unavailable_requested")->updateBool(false);
+    state->get("message_in_flight_type")->updateUint(0);
+    state->get("message_in_flight_id_high")->updateUint(0);
+    state->get("message_in_flight_id_low")->updateUint(0);
+    state->get("message_in_flight_len")->updateUint(0);
+    state->get("message_timeout")->updateUint(0);
+    state->get("txn_msg_retry_timeout")->updateUint(0);
+    state->get("message_queue_depth")->updateUint(0);
+    state->get("status_queue_depth")->updateUint(0);
+    state->get("txn_msg_queue_depth")->updateUint(0);
+    state->get("connected")->updateBool(false);
+    state->get("connected_change_time")->updateInt52(0);
+    state->get("last_ping_sent")->updateUint(0);
+    state->get("pong_timeout")->updateUint(0);
+}
+
 void Ocpp::pre_setup()
 {
     trace_buf_idx = logger.alloc_trace_buffer("ocpp", 1 << 17);
@@ -162,8 +195,10 @@ void Ocpp::apply_config() {
     task_scheduler.cancel(task_id);
     task_id = 0;
 
-    if (cp && client_started)
+    if (cp && client_started) {
         cp->stop();
+        reset_state(&state);
+    }
 
     if (cp)
         cp = nullptr;
