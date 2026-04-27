@@ -70,20 +70,11 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     override render(props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
-                <PageHeader title={props.title} titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm" small={props.small}>
-                    <div class="row g-2">
-                        <div class="col">
-                            <button key="reset" onClick={() => {}} class="btn btn-danger w-100 text-nowrap" disabled>
-                                {__("component.config_form.reset")}
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button key="save" type="submit" form={props.id} class="btn btn-primary w-100 text-nowrap" disabled={state.saveInProgress || !props.isDirty}>
-                                {__("component.config_form.save")}
-                                <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
-                            </button>
-                        </div>
-                    </div>
+                <PageHeader title={props.title} childrenColClass="col-12 col-sm-auto align-content-end" small={props.small}>
+                    <button key="save" type="submit" form={props.id} class="btn btn-primary text-nowrap w-xs-only-100" style="width: 10rem" disabled={state.saveInProgress || !props.isDirty}>
+                        {__("component.config_form.save")}
+                        <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                    </button>
                 </PageHeader>
 
                 <form id={props.id}

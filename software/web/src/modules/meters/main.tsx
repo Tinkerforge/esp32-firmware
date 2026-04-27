@@ -595,7 +595,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
             <SubPage name="meters" colClasses="col-xl-10" title={__("meters.content.meters")}>
                 {show_plot ?
                 <SubPage.Status header={
-                            <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                            <InputSelect value={this.state.chart_selected} className="w-xs-only-100" style="width: 10rem" onValue={(v) => {
                                 let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
 
                                 this.setState({chart_selected: chart_selected}, () => {
@@ -624,7 +624,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     ["history_6", __("meters.content.history_6")],
                                     ["history_3", __("meters.content.history_3")],
                                     ["live", __("meters.content.live")],
-                                ]}/>} headerTitleColClass="col-12 col-sm" headerChildrenColClass="col-12 col-sm-auto">
+                                ]}/>} headerChildrenColClass="col-12 col-sm-auto align-content-end">
 
                     <div class="pb-3">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}

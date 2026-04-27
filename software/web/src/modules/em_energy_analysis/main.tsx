@@ -2513,7 +2513,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         return (
             <SubPage name="em_energy_analysis" colClasses="col-xl-10">
-                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm-auto">
+                <PageHeader title={__("em_energy_analysis.content.em_energy_analysis")} childrenColClass="col-12 col-sm-auto align-content-end">
                     {this.state.data_type == '5min'
                     ? <InputDate date={this.state.current_5min_date} onDate={(date) => this.set_current_5min_date(date)} buttons="day" style="width: 10.5rem">{data_select}</InputDate>
                     : <InputMonth date={this.state.current_daily_date} onDate={(date) => this.set_current_daily_date(date)} buttons="month" style="width: 10.5rem">{data_select}</InputMonth>}

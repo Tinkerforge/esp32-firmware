@@ -474,6 +474,12 @@ a:not(:hover) {
     }
 }
 
+@include media-breakpoint-only(xs) {
+    .w-xs-only-100 {
+        width: 100% !important;
+    }
+}
+
 .progress-bar-no-transition {
     transition: none !important;
 }
