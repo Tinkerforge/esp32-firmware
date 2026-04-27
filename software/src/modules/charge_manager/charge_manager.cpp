@@ -418,7 +418,7 @@ static void update_charge_tracking(
             if (rtc.clock_synced(&_timeval))
                 charge_start = rtc.timestamp_minutes();
 
-            const cm_auth_info *auth = &v5->auth_info[0];
+            const cm_auth_info *auth = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
             uint8_t auth_method = 0;
             if (auth != nullptr) {
                 auth_method = auth->auth_method;
@@ -513,7 +513,7 @@ static void update_authentication(
     }
     
     // Show feedback for tags when tag is seen before a car is connected
-    const cm_auth_info *recent = &v5->auth_info[0];
+    const cm_auth_info *recent = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
 
     // Reset allocated energy if no car is connected
     if (v1->charger_state == 0) {
@@ -565,14 +565,16 @@ static void update_authentication(
 
 static void update_nfc_tag_info(
     uint8_t client_id,
+    cm_state_v1 *v1,
     cm_state_v5 *v5,
     ChargerState *charger_state)
 {
-    if (v5 == nullptr) {
+    auto &target = charger_state[client_id];
+
+    if (v5 == nullptr || !CM_FEATURE_FLAGS_NFC_IS_SET(v1->feature_flags)) {
+        memset(target.auth_info, 0, sizeof(target.auth_info));
         return;
     }
-    
-    auto &target = charger_state[client_id];
 
     memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
 }
@@ -690,7 +692,7 @@ void ChargeManager::start_manager_task()
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
 
-            update_nfc_tag_info(client_id, v5, this->charger_state);
+            update_nfc_tag_info(client_id, v1, v5, this->charger_state);
             update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
 
             update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
