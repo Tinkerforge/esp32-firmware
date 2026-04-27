@@ -954,7 +954,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             "users.content.evse_user_enable_central_auth_warning",
                         )}
                         show_warning={central_auth_enabled}
-                        help={API.hasFeature("nfc") ? __("users.content.evse_user_description_help") : undefined}
                     >
                         <Switch
                             desc={__("users.content.evse_user_enable")}
