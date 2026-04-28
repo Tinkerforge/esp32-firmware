@@ -17,16 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "charge_authentication.h"
+#include "charge_authorization.h"
 #include "generated/module_dependencies.h"
 #include "modules/cm_networking/generated/cm_auth_type.enum.h"
 
-void ChargeAuthentication::pre_setup()
+void ChargeAuthorization::pre_setup()
 {
     last_seen_authentications = Config::Tuple({});
 }
 
-void ChargeAuthentication::setup()
+void ChargeAuthorization::setup()
 {
     last_seen_authentications.replace(LAST_AUTH_LIST_LENGTH, Config::Object({
         {"type",      Config::Enum(CMAuthType::None)},
@@ -44,9 +44,9 @@ void ChargeAuthentication::setup()
     initialized = true;
 }
 
-void ChargeAuthentication::register_urls()
+void ChargeAuthorization::register_urls()
 {
-    api.addState("charge_authentication/last_seen_authentications", &last_seen_authentications, {}, {"auth_string"});
+    api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"auth_string"});
     
     task_scheduler.scheduleUncancelable([this] {
         // Collect indices of valid (seen) NFC tags
@@ -93,9 +93,9 @@ void ChargeAuthentication::register_urls()
     }, 1_s);
 }
 
-int16_t ChargeAuthentication::find_user(const cm_auth_info &info)
+int16_t ChargeAuthorization::find_user(const cm_auth_info &info)
 {
-    if (info.auth_method != USERS_AUTH_METHOD_NFC)
+    if (info.auth_method != CMAuthType::NFC)
         return -1;
 
     NFC::tag_t tag;

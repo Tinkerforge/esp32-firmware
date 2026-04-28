@@ -750,6 +750,7 @@ uint16_t Users::get_user_current(uint8_t user_id) {
     return 0;
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 // Only returns true if the triggered action was a charge start.
 bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
@@ -760,13 +761,9 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::
         return false;
 #endif
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
         return false;
-#endif
-    // This is called whenever a user wants to trigger a charge action.
-    // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
     uint16_t current_limit = this->get_user_current(user_id);
 
@@ -775,7 +772,6 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::
         return false;
     }
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
     uint8_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
     uint32_t tscs = evse_common.get_low_level_state().get("time_since_state_change")->asUint();
 
@@ -797,9 +793,9 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::
         default: //Don't do anything in state A, D, and E/F
             break;
     }
-#endif
     return false;
 }
+#endif
 
 void Users::remove_username_file()
 {
@@ -807,6 +803,7 @@ void Users::remove_username_file()
         LittleFS.remove(USERNAME_FILE);
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)
 {
     last_charge_action_triggered = now_us();
@@ -879,3 +876,4 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
 
     return true;
 }
+#endif

@@ -26,7 +26,7 @@
 
 #define LAST_AUTH_LIST_LENGTH 3
 
-class ChargeAuthentication final : public IModule {
+class ChargeAuthorization final : public IModule {
 public:
     void pre_setup() override;
     void setup() override;
