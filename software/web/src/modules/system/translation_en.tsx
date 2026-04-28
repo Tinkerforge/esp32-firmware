@@ -61,7 +61,6 @@ let x = {
             "abort_reset": "Abort",
             "confirm_factory_reset": "Reset to factory defaults",
             "reboot": "Reboot",
-            "reboot_desc": null,
 
             "system_language": "System language",
             "system_language_help": "Sets the system language to the specified language. If \"Auto-detect browser language\" is disabled, the browser's language settings are ignored and the specified system language is also used for the web interface.",

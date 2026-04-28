@@ -61,7 +61,6 @@ let x = {
             "abort_reset": "Abbrechen",
             "confirm_factory_reset": "Zurücksetzen auf Werkszustand",
             "reboot": "Neu starten",
-            "reboot_desc": null,
 
             "system_language": "Systemsprache",
             "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browser-Sprache automatisch erkennen\" deaktiviert ist, dann werden die Spracheinstellungen des Browsers ignoriert und das Webinterface nutzt auch die angegebene Systemsprache.",

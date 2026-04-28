@@ -768,14 +768,7 @@ void platform_reset(bool hard)
         At receipt of a hard reset the Charge Point SHALL restart (all) the hardware, it is not required to gracefully stop
         ongoing transaction.
         */
-        evse_common.reset();
-#if MODULE_METERS_RS485_BRICKLET_AVAILABLE()
-        meters_rs485_bricklet.reset();
-#endif
-#if MODULE_NFC_AVAILABLE()
-        nfc.reset();
-#endif
-        rtc.reset();
+        reboot_all_bricklets();
     }
 
     /*

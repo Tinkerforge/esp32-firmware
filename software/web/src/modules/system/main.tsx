@@ -177,8 +177,8 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                         />
                     </FormRow>
 
-                    <FormRow label={__("system.content.reboot")} label_muted={__("system.content.reboot_desc")}>
-                        <Button variant="primary" className="w-100" onClick={util.reboot}>{__("system.content.reboot")}</Button>
+                    <FormRow label={__("system.content.reboot")}>
+                        <Button variant="primary" className="w-100" onClick={() => {API.call("bricklet_reboot", null, () => ""); util.reboot()}}>{__("system.content.reboot")}</Button>
                     </FormRow>
 
                     {show_config_reset ?

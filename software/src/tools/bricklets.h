@@ -50,3 +50,5 @@ private:
     void *device;
     TF_TFP_CallbackHandler cb_handler;
 };
+
+void reboot_all_bricklets();

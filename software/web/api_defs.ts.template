@@ -27,6 +27,7 @@ export interface ConfigMap {
     'debug_protocol/header': string
     'debug_protocol/line': string
     'reboot': {}
+    'bricklet_reboot': {}
 }
 
 // It is safe to use null here:
@@ -42,4 +43,5 @@ export let api_cache: DeepSignal<{[key in keyof ConfigMap]: ConfigMap[key]}> = d
     'debug_protocol/header': null as any,
     'debug_protocol/line': null as any,
     'reboot': null as any,
+    'bricklet_reboot': null as any,
 });

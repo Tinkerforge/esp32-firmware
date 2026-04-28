@@ -32,6 +32,7 @@
 #include "tools/freertos.h"
 #include "tools/fs.h"
 #include "tools/memory.h"
+#include "tools/bricklets.h"
 
 #include "gcc_warnings.h"
 
@@ -177,6 +178,10 @@ static void register_default_urls() {
 
     api.addCommand("reboot", Config::Null(), {}, [](Language /*language*/, String &/*errmsg*/) {
         trigger_reboot("API", 1_s);
+    }, true);
+
+    api.addCommand("bricklet_reboot", Config::Null(), {}, [](Language /*language*/, String &/*errmsg*/) {
+        reboot_all_bricklets();
     }, true);
 
     api.addState("info/modules", &modules);

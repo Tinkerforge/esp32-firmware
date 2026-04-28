@@ -9,7 +9,6 @@ let x = {
     "system": {
         "content": {
             "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The WARP Energy Manager will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
-            "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "removes all configuration",
             "config_reset_desc": ""

@@ -21,6 +21,7 @@
 
 #include "bindings/bricklet_unknown.h"
 #include "bindings/errors.h"
+#include "bindings/base58.h"
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 
@@ -256,4 +257,30 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     }
 
     return 0;
+}
+
+void reboot_all_bricklets() {
+    uint16_t i = 0;
+    char uid_str[7];
+
+    while (tf_hal_get_device_info(&hal, i, uid_str, nullptr, nullptr) == TF_E_OK) {
+        ++i;
+
+        uint32_t uid_num;
+        if (tf_base58_decode(uid_str, &uid_num) != TF_E_OK)
+            continue;
+
+        auto *tfp = tf_hal_get_tfp(&hal, &uid_num, nullptr, nullptr, false);
+        if (tfp == nullptr)
+            continue;
+
+        TFPSwap swap(tfp);
+        TF_Unknown unknown;
+
+        if (tf_unknown_create(&unknown, tfp) != TF_E_OK)
+            continue;
+
+        tf_unknown_reset(&unknown);
+        tf_unknown_destroy(&unknown);
+    }
 }
