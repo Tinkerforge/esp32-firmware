@@ -30,6 +30,7 @@
 #include "generated/csv_flavor.enum.h"
 #include "generated/generation_state.enum.h"
 #include "generated/charge_log_send_error.enum.h"
+#include "../cm_networking/generated/cm_auth_type.enum.h"
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 #include "../remote_access/remote_access_packets.h"
@@ -80,7 +81,7 @@ public:
     uint32_t first_charge_record;
     uint32_t last_charge_record;
 
-    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
+    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     void removeOldRecords();
     bool setupRecords(const char *directory = nullptr);
@@ -267,5 +268,13 @@ struct ExportCharge {
         return this_timestamp > other_timestamp;
     }
 };
+
+struct display_name_entry {
+    uint32_t length;
+    uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
+};
+
+size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language);
+String chargeRecordFilename(uint32_t i, const char *directory);
 
 #include "generated/module_available_end.h"

@@ -42,7 +42,7 @@
 #include "generated/current_decision.union.h"
 #include "modules/cm_networking/generated/client_error.enum.h"
 #include "modules/cm_networking/cm_networking_defs.h"
-#include "generated/cas_auth_state.enum.h"
+#include <TFJson.h>
 
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
 
@@ -185,18 +185,18 @@ void ChargeManager::pre_setup()
         {"sp", Config::Uint(0, 0, 3)},  // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
         {"lu", Config::Uptime()},       // "last_update" - The last time we received a CM packet from this charger
         {"n",  Config::Str("", 0, 32)}, // "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
-        {"u",  Config::Uint32(0)},      // "uid" - The ESP's UID
+        {"uid",  Config::Uint32(0)},      // "uid" - The ESP's UID
         {"d0", ZeroPhaseDecision::getUnion()},
         {"d1", OnePhaseDecision::getUnion()},
         {"d3", ThreePhaseDecision::getUnion()},
         {"dc", CurrentDecision::getUnion()},
-        {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
-        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)
-        {"ai", Config::Tuple(3, Config::Object({
-            {"ti", Config::Str("", 0, 29)}, // "tag_id" - Last NFC tag ID seen on this charger (colon-separated hex)
-            {"tt", Config::Uint8(0)},       // "tag_type" - Last NFC tag type seen on this charger
-            {"ts", Config::Uint32(0)},      // "tag_last_seen" - Milliseconds since tag was last see
-        }))},
+        /*
+         * u == -2 unknown NFC-TagF
+         * u == -1 unauthorized
+         * u == 0 authorization disabled
+         * u >= 1 user authorized
+         */
+        {"u", Config::Int16(0)},
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -419,7 +419,7 @@ static void update_charge_tracking(
                 charge_start = rtc.timestamp_minutes();
 
             const cm_auth_info *auth = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
-            uint8_t auth_method = 0;
+            CMAuthType auth_method = CMAuthType::None;
             if (auth != nullptr) {
                 auth_method = auth->auth_method;
             }
@@ -620,7 +620,7 @@ bool ChargeManager::send_client_packet(uint8_t i) {
         auto &charger = this->charger_state[i];
         if (charger.charger_state != 0) {
             switch (charger.authenticated_user_id) {
-                case -2:
+                case UNKNOWN_NFC_TAG:
                     auth_feedback = CMAuthFeedback::Nack;
                     break;
                 case -1:
@@ -1485,6 +1485,54 @@ void ChargeManager::register_urls()
 
         return request.send_bytes(200, buf.get(), read);
     });
+
+    server.on_HTTPThread("/charge_manager/auth_info", HTTP_GET, [this](WebServerRequest request) {
+        constexpr size_t BUF_SIZE = 16384;
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
+        if (buf == nullptr) {
+            return request.send_plain(507);
+        }
+
+        TFJsonSerializer json{buf.get(), BUF_SIZE};
+        json.addArray();
+
+        for (size_t idx = 0; idx < this->charger_count; ++idx) {
+            json.addArray();
+            for (int i = 0; i < 3; ++i) {
+                const auto &info = this->charger_state[idx].auth_info[i];
+                json.addObject();
+
+                if (info.tag_id_len > 0) {
+                    static const char *hex_lookup = "0123456789ABCDEF";
+                    char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
+                    size_t chars = info.tag_id_len * 3;
+                    for (size_t c = 0; c < chars; c += 3) {
+                        uint8_t byte = info.tag_id[c / 3];
+                        tag_id_str[c]     = hex_lookup[byte >> 4];
+                        tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
+                        tag_id_str[c + 2] = ':';
+                    }
+                    tag_id_str[chars - 1] = '\0';
+
+                    json.addMemberString("ti", tag_id_str);
+                    json.addMemberNumber("tt", info.tag_type);
+                    json.addMemberNumber("ts", static_cast<uint32_t>(info.last_seen_s * 1000));
+                } else {
+                    json.addMemberString("ti", "");
+                    json.addMemberNumber("tt", static_cast<uint8_t>(0));
+                    json.addMemberNumber("ts", static_cast<uint32_t>(0));
+                }
+
+                json.endObject();
+            }
+            json.endArray();
+        }
+
+        json.endArray();
+        json.end();
+
+        return request.send_json(200, json);
+    });
 #endif
 
     if (static_cm && config.get("enable_watchdog")->asBool()) {
@@ -1621,40 +1669,9 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("sc")->updateUint(charger.supported_current);
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
     charger_cfg->get("lu")->updateUptime(charger.last_update);
-    charger_cfg->get("u")->updateUint(charger.uid);
+    charger_cfg->get("uid")->updateUint(charger.uid);
 
-    // Update authorization state based on charger state
-    CASAuthState auth_state = CASAuthState::None;
-    if (charger.charger_state != 0) { // If a car is connected
-        auth_state = charger.authenticated_user_id != NOT_AUTHORIZED ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
-    }
-    charger_cfg->get("a")->updateEnum(auth_state);
-    charger_cfg->get("uid")->updateInt(charger.authenticated_user_id);
-
-    for (int i = 0; i < 3; i++) {
-        auto auth_info = charger_cfg->get("ai")->get(i);
-        // Update last seen NFC tag info
-        if (charger.auth_info[i].tag_id_len > 0) {
-            static const char *hex_lookup = "0123456789ABCDEF";
-            char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
-            size_t chars = charger.auth_info[i].tag_id_len * 3;
-            for (size_t c = 0; c < chars; c += 3) {
-                uint8_t byte = charger.auth_info[i].tag_id[c / 3];
-                tag_id_str[c]     = hex_lookup[byte >> 4];
-                tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
-                tag_id_str[c + 2] = ':';
-            }
-            tag_id_str[chars - 1] = '\0';
-
-            auth_info->get("ti")->updateString(tag_id_str);
-            auth_info->get("tt")->updateUint(charger.auth_info[i].tag_type);
-            auth_info->get("ts")->updateUint(charger.auth_info[i].last_seen_s * 1000);
-        } else {
-            auth_info->get("ti")->updateString("");
-            auth_info->get("tt")->updateUint(0);
-            auth_info->get("ts")->updateUint(0);
-        }
-    }
+    charger_cfg->get("u")->updateInt(charger.authenticated_user_id);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);

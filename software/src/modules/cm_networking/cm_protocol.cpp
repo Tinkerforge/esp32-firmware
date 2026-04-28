@@ -32,8 +32,6 @@
 #include "generated/client_error.enum.h"
 #include "generated/cm_auth_type.enum.h"
 
-#include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
-
 static const char *get_charger_name(uint8_t idx)
 {
 #if MODULE_CHARGE_MANAGER_AVAILABLE()

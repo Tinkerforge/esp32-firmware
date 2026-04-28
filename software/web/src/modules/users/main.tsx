@@ -48,6 +48,8 @@ import {
     DiscoveryResultGroup,
 } from "../../ts/components/discovery_result";
 import { InputSelect } from "../../ts/components/input_select";
+import { useEffect, useRef } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 //#endif
 
 export function UsersNavbar() {
@@ -88,6 +90,7 @@ interface UsersState {
     editUserNfcTags: NfcTagRef[];
     nfcTagChanges: NfcTagChange[];
     nfcDeadtime: number;
+    allSeenTags: NFCSeenTag[];
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -316,7 +319,6 @@ interface EditUserFormContentProps {
     requirePassword: boolean;
     //#if MODULE_NFC_AVAILABLE
     nfcTags: NfcTagRef[];
-    seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
@@ -331,7 +333,6 @@ function EditUserFormContent({
     requirePassword,
     //#if MODULE_NFC_AVAILABLE
     nfcTags,
-    seenTags,
     nfcConfig,
     pendingTagChanges,
     users,
@@ -339,6 +340,13 @@ function EditUserFormContent({
     //#endif
     onUserChange,
 }: EditUserFormContentProps) {
+    const seenTags = useSignal<NFCSeenTag[]>([]);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        util.get_all_seen_tags().then(tags => seenTags.value = tags);
+      }, 500);
+      return () => clearInterval(interval);
+    });
     return (
         <>
             <FormRow
@@ -398,7 +406,7 @@ function EditUserFormContent({
             {/*#if MODULE_NFC_AVAILABLE*/}
             <NfcTagsSection
                 assignedTags={nfcTags}
-                seenTags={seenTags}
+                seenTags={seenTags.value}
                 authorizedTags={nfcConfig.authorized_tags}
                 pendingTagChanges={pendingTagChanges}
                 users={users}
@@ -419,7 +427,6 @@ interface AddUserFormContentProps {
     errorMessage: string | undefined;
     //#if MODULE_NFC_AVAILABLE
     nfcTags: NfcTagRef[];
-    seenTags: NFCSeenTag[];
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
@@ -433,7 +440,6 @@ function AddUserFormContent({
     errorMessage,
     //#if MODULE_NFC_AVAILABLE
     nfcTags,
-    seenTags,
     nfcConfig,
     pendingTagChanges,
     users,
@@ -441,6 +447,13 @@ function AddUserFormContent({
     //#endif
     onUserChange,
 }: AddUserFormContentProps) {
+    const seenTags = useSignal<NFCSeenTag[]>([]);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        util.get_all_seen_tags().then(tags => seenTags.value = tags);
+      }, 500);
+      return () => clearInterval(interval);
+    });
     return (
         <>
             <FormRow
@@ -495,7 +508,7 @@ function AddUserFormContent({
             {/*#if MODULE_NFC_AVAILABLE*/}
             <NfcTagsSection
                 assignedTags={nfcTags}
-                seenTags={seenTags}
+                seenTags={seenTags.value}
                 authorizedTags={nfcConfig.authorized_tags}
                 pendingTagChanges={pendingTagChanges}
                 users={users}
@@ -543,6 +556,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 editUserNfcTags: [],
                 nfcTagChanges: [],
                 nfcDeadtime: 0,
+                allSeenTags: [],
             },
         );
 
@@ -556,8 +570,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
 
         //#if MODULE_NFC_AVAILABLE
         util.addApiEventListener("nfc/seen_tags", () => {
-            this.forceUpdate();
+            this.refreshSeenTags();
         });
+
+        this.refreshSeenTags();
 
         util.addApiEventListener("nfc/config", () => {
             this.setState({
@@ -566,6 +582,12 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         });
         //#endif
     }
+
+    refreshSeenTags = () => {
+        util.get_all_seen_tags().then((tags) =>
+            this.setState({ allSeenTags: tags }),
+        );
+    };
 
     isChangedUser(changed_user: User): boolean {
         let users = API.get("users/config").users;
@@ -915,13 +937,12 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#endif
 
         //#if MODULE_NFC_AVAILABLE
-        let seen_tags = util.get_all_seen_tags();
+        let seen_tags = state.allSeenTags;
         let nfc_config = API.get("nfc/config");
         //#endif
 
         return (
             <SubPage name="users">
-
                 <ConfigForm
                     id="users_config_form"
                     title={__("users.content.users")}
@@ -1104,7 +1125,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             )}
                                             //#if MODULE_NFC_AVAILABLE
                                             nfcTags={state.editUserNfcTags}
-                                            seenTags={seen_tags}
                                             nfcConfig={nfc_config}
                                             pendingTagChanges={
                                                 state.nfcTagChanges
@@ -1229,7 +1249,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     )}
                                     //#if MODULE_NFC_AVAILABLE
                                     nfcTags={state.addUserNfcTags}
-                                    seenTags={seen_tags}
                                     nfcConfig={nfc_config}
                                     pendingTagChanges={state.nfcTagChanges}
                                     users={state.users}

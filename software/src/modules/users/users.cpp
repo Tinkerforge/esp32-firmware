@@ -65,13 +65,6 @@ static float get_energy()
     evse_common.get_charger_meter_energy(&energy);
     return energy;
 }
-#else
-static void set_data_storage(uint8_t *buf) {}
-static void get_data_storage(uint8_t *buf) {}
-static void zero_user_slot_info() {}
-static uint8_t get_charger_state() { return 0; }
-static Config *get_user_slot() { return nullptr; }
-static float get_energy() { return NAN; }
 #endif
 
 #define USER_SLOT_INFO_VERSION 1
@@ -84,6 +77,7 @@ struct UserSlotInfo {
     float meter_start;
 };
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 static uint16_t calc_checksum(const UserSlotInfo &info)
 {
     uint32_t float_buf = 0;
@@ -137,6 +131,7 @@ static bool read_user_slot_info(UserSlotInfo *result)
 
     return result->version == USER_SLOT_INFO_VERSION;
 }
+#endif
 
 void Users::pre_setup()
 {

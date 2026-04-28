@@ -228,7 +228,7 @@ void ChargeTracker::pre_setup()
         {"meter_start", Config::Float(0)},
         {"evse_uptime_start", Config::Uint32(0)},
         {"timestamp_minutes", Config::Uint32(0)},
-        {"authorization_type", Config::Uint8(0)},
+        {"authorization_type", Config::Enum<CMAuthType>(CMAuthType::None)},
         {"authorization_info", Config{Config::ConfVariant()}}
     });
 
@@ -330,7 +330,7 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
     return true;
 }
 
-bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_method, Config::ConfVariant auth_info, const char *directory) {
+bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory) {
 #if MODULE_REQUIRE_METER_AVAILABLE()
     if (!require_meter.allow_charging(meter_start) && directory == nullptr) {
         return false;
@@ -392,7 +392,7 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("meter_start")->updateFloat(meter_start);
     current_charge.get("evse_uptime_start")->updateUint(evse_uptime);
     current_charge.get("timestamp_minutes")->updateUint(timestamp_minutes);
-    current_charge.get("authorization_type")->updateUint(auth_method);
+    current_charge.get("authorization_type")->updateEnum(auth_method);
     current_charge.get("authorization_info")->value = auth_info;
     current_charge.get("authorization_info")->value.updated = 0xFF;
     return true;
