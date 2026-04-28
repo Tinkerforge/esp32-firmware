@@ -14,6 +14,8 @@ struct MqttDiscoveryTopicInfo {
     const char * const name_en;
     const char * const availability_topic;
     const char * const availability_info;
+    const char * const json_attributes_topic;
+    const char * const json_attributes_info;
     const char * const static_infos[2];
     const MqttDiscoveryType type;
 };

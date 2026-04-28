@@ -244,6 +244,11 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                     json_write_raw(json, mqtt_discovery_topic_infos[topic_num].availability_info, strlen(mqtt_discovery_topic_infos[topic_num].availability_info));
                 }
 
+                if (strlen(mqtt_discovery_topic_infos[topic_num].json_attributes_topic) > 0) {
+                    json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].json_attributes_topic);
+                    json_write_raw(json, mqtt_discovery_topic_infos[topic_num].json_attributes_info, strlen(mqtt_discovery_topic_infos[topic_num].json_attributes_info));
+                }
+
                 // Inject pre-formatted static_info as raw JSON object members
                 json_write_raw(json, static_info, strlen(static_info));
 
@@ -266,7 +271,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
         if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
             topic_num = 0;
-            delay = 15_min;
+            delay = 1_min;
         }
     }
 
