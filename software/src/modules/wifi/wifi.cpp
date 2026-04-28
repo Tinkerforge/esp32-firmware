@@ -56,7 +56,7 @@ void Wifi::pre_setup()
         {"passphrase", Config::Str("", 8, 64)}, // Blank passphrase will be replaced with default passphrase in setup. | FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
         {"channel", Config::Uint(0, 0, 13)},
         {"ip", Config::Str("10.0.0.1", 7, 15)},
-        {"gateway", Config::Str("10.0.0.1", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("255.255.255.0", 7, 15)}
     }), [this](Config &update, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr;
