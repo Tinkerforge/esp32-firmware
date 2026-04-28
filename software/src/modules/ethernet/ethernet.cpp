@@ -190,7 +190,6 @@ void Ethernet::setup()
             hostname.concat(local_uid_str);
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
-            ETH.setRoutePrio(110); // Prefer Ethernet over WiFi, which has priority 100.
 
             // Manually add a MAC filter to accept IGMP packets because lwIP is bugged and doesn't do it.
             const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
@@ -277,7 +276,18 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::Connected;
 
             const String ip_string{ip_str};
-            task_scheduler.scheduleOnce([this, now, ip_string, subnet, was_already_connected, ip_changed]() {
+            const auto gateway = ip_info.gw.addr;
+
+            esp_netif_tcpip_exec([](void *param) {
+                ETH.setRoutePrio(reinterpret_cast<int>(param)); // Prefer Ethernet over WiFi, which has priority 100, if a gateway is configured.
+                return 0;
+            }, reinterpret_cast<void *>(gateway == 0 ? 50 : 110));
+
+            task_scheduler.scheduleOnce([this, now, ip_string, subnet, was_already_connected, ip_changed, gateway]() {
+
+
+
+
                 char subnet_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
