@@ -457,7 +457,7 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
         return NOT_AUTHORIZED;
     }
 
-#if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
+#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
     const cm_auth_info &info = v5->auth_info[0];
     // If last_seen_s == 0, no tag was seen
     if (info.last_seen_s == 0) {
@@ -475,7 +475,7 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
     }
 
 
-    int16_t user_id = charge_authentication.find_user(info);
+    int16_t user_id = charge_authorization.find_user(info);
     if (user_id == -1) {
         return UNKNOWN_NFC_TAG;
     }

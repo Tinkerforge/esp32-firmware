@@ -276,6 +276,14 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
+#if MODULE_AUTOMATION_AVAILABLE()
+        automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
+#endif
+    #if MODULE_EVSE_COMMON_AVAILABLE()
+        evse_common.notify_new_auth();
+#endif
+    
+#if MODULE_EVSE_COMMON_AVAILABLE()
     int16_t user_id = get_user_id(info->tag);
 
     bool blink_handled = false;
@@ -303,12 +311,6 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
 
     }
-
-#if MODULE_AUTOMATION_AVAILABLE()
-    automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
-#endif
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    evse_common.notify_new_auth();
 #endif
 }
 

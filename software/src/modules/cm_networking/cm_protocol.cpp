@@ -763,42 +763,41 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
     state_pkt.v3.phases |= currently_switching_phases << CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS;
 
-#if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
-    if (has_nfc) {
-        static_assert(LAST_AUTH_LIST_LENGTH == ARRAY_SIZE(state_pkt.v5.auth_info),
-                      "LAST_AUTH_LIST_LENGTH must match cm_state_v5::auth_info array size");
-        const auto to_nibble = [](char c) -> uint8_t {
-            if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
-            c |= 0x20;
-            return static_cast<uint8_t>(c >= 'a' && c <= 'f' ? c - 'a' + 10 : 0);
-        };
-        for (size_t i = 0; i < LAST_AUTH_LIST_LENGTH; i++) {
-            const Config *entry = static_cast<const Config *>(charge_authentication.last_seen_authentications.get(i));
-            auto &ai = state_pkt.v5.auth_info[i];
-            memset(&ai, 0, sizeof(ai));
+#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
+    static_assert(LAST_AUTH_LIST_LENGTH == ARRAY_SIZE(state_pkt.v5.auth_info),
+                    "LAST_AUTH_LIST_LENGTH must match cm_state_v5::auth_info array size");
 
-            const CMAuthType auth_method = entry->get("type")->asEnum<CMAuthType>();
-            const uint32_t last_seen_ms = entry->get("last_seen")->asUint();
+    const auto to_nibble = [](char c) -> uint8_t {
+        if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
+        c |= 0x20;
+        return static_cast<uint8_t>(c >= 'a' && c <= 'f' ? c - 'a' + 10 : 0);
+    };
 
-            if (auth_method == CMAuthType::NFC && last_seen_ms > 0 && last_seen_ms < 3'600'000) {
-                ai.auth_method = USERS_AUTH_METHOD_NFC;
-                // last_seen == 0 is interpreted as "no tag seen"
-                ai.last_seen_s = static_cast<uint16_t>(last_seen_ms / 1000);
-                ai.tag_type = static_cast<uint8_t>(entry->get("additional_data")->asUint());
+    for (size_t i = 0; i < LAST_AUTH_LIST_LENGTH; i++) {
+        const Config *entry = static_cast<const Config *>(charge_authorization.last_seen_authentications.get(i));
+        auto &ai = state_pkt.v5.auth_info[i];
+        memset(&ai, 0, sizeof(ai));
 
-                // Parse colon-separated hex string (e.g. "AA:BB:CC") back to bytes
-                const String &auth_str = entry->get("auth_string")->asString();
-                const char *str = auth_str.c_str();
-                const size_t str_len = auth_str.length();
-                uint8_t id_len = 0;
-                memset(ai.tag_id, 0, sizeof(ai.tag_id));
-                for (size_t b = 0; b * 3 < str_len && b < sizeof(ai.tag_id); b++) {
-                    ai.tag_id[b] = static_cast<uint8_t>((to_nibble(str[b * 3]) << 4) | to_nibble(str[b * 3 + 1]));
-                    id_len++;
-                }
-                ai.tag_id_len = id_len;
+        const CMAuthType auth_method = entry->get("type")->asEnum<CMAuthType>();
+        const uint32_t last_seen_ms = entry->get("last_seen")->asUint();
+
+        // last_seen == 0 is interpreted as "no tag seen"
+        if (last_seen_ms > 0 && last_seen_ms < 3'600'000) {
+            ai.auth_method = auth_method;
+            ai.last_seen_s = static_cast<uint16_t>(last_seen_ms / 1000);
+            ai.tag_type = static_cast<uint8_t>(entry->get("additional_data")->asUint());
+
+            // Parse colon-separated hex string (e.g. "AA:BB:CC") back to bytes
+            const String &auth_str = entry->get("auth_string")->asString();
+            const char *str = auth_str.c_str();
+            const size_t str_len = auth_str.length();
+            uint8_t id_len = 0;
+            memset(ai.tag_id, 0, sizeof(ai.tag_id));
+            for (size_t b = 0; b * 3 < str_len && b < sizeof(ai.tag_id); b++) {
+                ai.tag_id[b] = static_cast<uint8_t>((to_nibble(str[b * 3]) << 4) | to_nibble(str[b * 3 + 1]));
+                id_len++;
             }
-            // else: auth_method == USERS_AUTH_METHOD_NONE (0), all other fields zeroed by memset above
+            ai.tag_id_len = id_len;
         }
     }
 #endif
