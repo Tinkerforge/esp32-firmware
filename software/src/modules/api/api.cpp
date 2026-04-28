@@ -864,6 +864,23 @@ void API::register_urls()
                 json.endArray();
             });
 
+            task_scheduler.await([&json](){
+                json.addMemberArray("modified");
+                File dir = LittleFS.open("/config");
+                if (!dir)
+                    return;
+
+                for_filename_in("/config",
+                    [&json](const char *filename, size_t len, bool is_dir) {
+                        if (!is_dir)
+                            json.addString(filename, len);
+                        return true;
+                    }
+                );
+
+                json.endArray();
+            });
+
             // Don't end the root object: APIs will be added below
             // json.endObject();
             size_t to_send = json.end();
