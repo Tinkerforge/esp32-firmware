@@ -1,4 +1,3 @@
-import { MeterClassID } from "./generated/meter_class_id.enum";
 import { MeterConfigPlugin } from "./types";
 {{{imports}}}
 

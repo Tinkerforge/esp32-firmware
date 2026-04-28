@@ -1,4 +1,3 @@
-import { BatteryClassID } from "./generated/battery_class_id.enum";
 import { BatteryConfigPlugin } from "./types";
 {{{imports}}}
 

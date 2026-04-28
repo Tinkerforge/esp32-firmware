@@ -9,14 +9,7 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-metadata_json = os.getenv('PLATFORMIO_METADATA')
-
-if metadata_json == None:
-    print('$PLATFORMIO_METADATA not set')
-    sys.exit(-1)
-
-metadata = json.loads(metadata_json)
-branding_mod_path = pathlib.Path(metadata['branding_mod_path'])
+branding_mod_path = pathlib.Path(util.get_env_metadata()['branding_mod_path'])
 
 with open(branding_mod_path / 'favicon_192.png', 'rb') as f:
     icon_small = base64.b64encode(f.read()).decode('utf-8')

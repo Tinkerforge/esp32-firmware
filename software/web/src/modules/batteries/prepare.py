@@ -7,15 +7,7 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-with open('../../options.ts', 'r', encoding='utf-8') as f:
-    content = f.read()
-    match = re.search(r"export const BATTERIES_MAX_SLOTS = (\d+);", content)
-    if match is None:
-        print("Failed to find BATTERIES_MAX_SLOTS in options.ts!")
-        sys.exit(1)
-
-    batteries_max_slots = int(match.group(1))
-
+batteries_max_slots = util.get_env_metadata()['options']['batteries_max_slots']
 imports = []
 already_imported = set({})
 config_modules = []

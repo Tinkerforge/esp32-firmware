@@ -1342,13 +1342,6 @@ def main():
         if fc.component.under not in status_provider_order:  # Avoid duplicates
             status_provider_order.append(fc.component.under)
 
-    metadata = json.dumps({
-        'product_id': product_id,
-        'signature_preset': signature_preset,
-        'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
-        'branding_mod_path': os.path.abspath(branding_mod_path),
-    }, separators=(',', ':'))
-
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
     # The order 'Task Scheduler', 'Event Log', 'API' must be exactly this one:
@@ -1686,6 +1679,25 @@ def main():
 
     del deduplicated_modules
 
+    # Collect metadata
+    options_dict = {}
+
+    for key, value in options_value.items():
+        if re.match(r'^(-?\d+|".*")$', value) != None:
+            value = json.loads(value)
+
+        options_dict[key] = value
+
+    metadata = json.dumps({
+        'product_id': product_id,
+        'project_dir': env.subst('$PROJECT_DIR'),
+        'build_dir': env.subst('$BUILD_DIR'),
+        'signature_preset': signature_preset,
+        'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
+        'branding_mod_path': os.path.abspath(branding_mod_path),
+        'options': options_dict,
+    }, separators=(',', ':'))
+
     # Prepare backend modules
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
@@ -1693,13 +1705,8 @@ def main():
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             util.log('Preparing backend module:', backend_module.space)
 
-            environ = dict(os.environ)
-            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
-            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
-            environ['PLATFORMIO_METADATA'] = metadata
-
             with tfutil.ChangedDirectory(mod_path):
-                check_call(['uv', 'run', 'prepare.py'], env=environ)
+                check_call(['uv', 'run', 'prepare.py'], env=os.environ | {'PLATFORMIO_METADATA': metadata})
 
     # Prepare frontend modules
     for frontend_module in frontend_modules:
@@ -1708,13 +1715,8 @@ def main():
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             util.log('Preparing frontend module:', frontend_module.space)
 
-            environ = dict(os.environ)
-            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
-            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
-            environ['PLATFORMIO_METADATA'] = metadata
-
             with tfutil.ChangedDirectory(mod_path):
-                check_call(['uv', 'run', 'prepare.py'], env=environ)
+                check_call(['uv', 'run', 'prepare.py'], env=os.environ | {'PLATFORMIO_METADATA': metadata})
 
     # API
     api_imports = []

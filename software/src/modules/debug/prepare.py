@@ -7,7 +7,7 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-build_dir = os.environ['PLATFORMIO_BUILD_DIR']
+build_dir = util.get_env_metadata()['build_dir']
 bootloader_path = f"{build_dir}{os.sep}bootloader.bin"
 bootloader_data = b''
 

@@ -74,21 +74,11 @@ class FlavoredName:
 def get_digest_paths(dst_dir, var_name, env=None):
     if env is not None:
         project_dir = env.subst('$PROJECT_DIR')
-    else:
-        project_dir = os.getenv('PLATFORMIO_PROJECT_DIR')
-
-        if project_dir == None:
-            print('$PLATFORMIO_PROJECT_DIR not set')
-            sys.exit(-1)
-
-    if env is not None:
         build_dir = env.subst('$BUILD_DIR')
     else:
-        build_dir = os.getenv('PLATFORMIO_BUILD_DIR')
-
-        if build_dir == None:
-            print('$PLATFORMIO_BUILD_DIR not set')
-            sys.exit(-1)
+        metadata = get_env_metadata()
+        project_dir = metadata['project_dir']
+        build_dir = metadata['build_dir']
 
     digest1_path = os.path.realpath(os.path.join(build_dir, os.path.relpath(os.path.join(os.getcwd(), dst_dir), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest'))
     digest2_path = os.path.realpath(os.path.join(os.getcwd(), dst_dir, var_name + '.digest'))
@@ -402,25 +392,13 @@ def find_frontend_plugins(host_module_name, plugin_name):
     host_module_name = FlavoredName(host_module_name).get()
     plugin_name = FlavoredName(plugin_name).get()
 
-    project_dir = os.getenv('PLATFORMIO_PROJECT_DIR')
-
-    if project_dir == None:
-        print('$PLATFORMIO_PROJECT_DIR not set')
-        sys.exit(-1)
-
-    metadata_json = os.getenv('PLATFORMIO_METADATA')
-
-    if metadata_json == None:
-        print('$PLATFORMIO_METADATA not set')
-        sys.exit(-1)
-
-    metadata = json.loads(metadata_json)
+    metadata = get_env_metadata()
     plugins = []
     plugin_file_base = 'plugin_' + host_module_name.under + '_' + plugin_name.under
     plugin_file_names = [plugin_file_base + '.ts', plugin_file_base + '.tsx']
 
     for module_name in metadata['frontend_modules']:
-        module_path = os.path.join(project_dir, 'web', 'src', 'modules', module_name)
+        module_path = os.path.join(metadata['project_dir'], 'web', 'src', 'modules', module_name)
 
         if not os.path.isdir(module_path):
             print(f"Front-end module {module_name} from custom_frontend_modules does not exist", file=sys.stderr)
@@ -782,3 +760,14 @@ def extract_shebang(path):
         raise Exception(f'Shebang does not start with /usr/bin/env -S in {path}')
 
     return parts[2:]
+
+def get_env_metadata(default=None):
+    metadata_json = os.getenv('PLATFORMIO_METADATA')
+
+    if metadata_json == None:
+        if default != None:
+            return default
+
+        raise Exception('$PLATFORMIO_METADATA not set')
+
+    return json.loads(metadata_json)

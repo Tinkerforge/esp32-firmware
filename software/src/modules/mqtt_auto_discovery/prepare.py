@@ -7,7 +7,7 @@ tfutil.create_parent_module(__file__, "software")
 
 from software import util
 
-METER_COUNT = 4
+meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
 
 
 class DiscoveryType(Enum):
@@ -473,7 +473,7 @@ def meter_value_template(value_id, digits):
     ).format(vid=value_id, digits=digits)
 
 
-for meter_id in range(0, METER_COUNT + 1):
+for meter_id in range(0, meters_max_slots):
     # Power
     entities.append(
         Entity(
