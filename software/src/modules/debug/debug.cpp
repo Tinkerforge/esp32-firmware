@@ -411,58 +411,59 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest &request, CoolS
 
     char buf[2048];
 
-    File f = LittleFS.open(path);
-    if (!f.isDirectory()) {
-        request.beginChunkedResponse_plain(200);
-        while (f.available()) {
-            const size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
-            SEND_CHUNK_OR_FAIL_LEN(request, buf, read);
-        }
-        return request.endChunkedResponse();
-    } else {
-        request.beginChunkedResponse_html(200);
-        SEND_CHUNK_OR_FAIL(request, fs_browser_header);
-
-        {
-            String header = "<h1>" + path + "</h1>\n";
-            SEND_CHUNK_OR_FAIL(request, header);
-        }
-
-        if (path.length() > 1) {
-            SEND_CHUNK_OR_FAIL(request, fs_browser_up_button);
-        }
-
-        StringWriter sw{buf, std::size(buf)};
-
-        while (true) {
-            File file = f.openNextFile();
-
-            if (!file) {
-                break;
+    {
+        File f = LittleFS.open(path);
+        if (!f.isDirectory()) {
+            request.beginChunkedResponse_plain(200);
+            while (f.available()) {
+                const size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
+                SEND_CHUNK_OR_FAIL_LEN(request, buf, read);
             }
-
-            const bool is_directory = file.isDirectory();
-            const char *fname = file.name();
-            const size_t fname_len = strlen(fname);
-
-            sw.puts("<button type=button onclick=\"deleteFile('/");
-            sw.puts(fname, fname_len);
-            sw.puts("')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=\"");
-            sw.puts(fname, fname_len);
-            if (is_directory) sw.putc('/');
-            sw.puts("\">");
-            sw.puts(fname, fname_len);
-            if (is_directory) sw.putc('/');
-            sw.puts("</a><br>\n");
-
-            SEND_CHUNK_OR_FAIL(request, sw);
-            sw.clear();
+            return request.endChunkedResponse();
         }
-
-        SEND_CHUNK_OR_FAIL(request, fs_browser_footer);
-
-        return request.endChunkedResponse();
     }
+
+    request.beginChunkedResponse_html(200);
+    SEND_CHUNK_OR_FAIL(request, fs_browser_header);
+
+    {
+        String header = "<h1>" + path + "</h1>\n";
+        SEND_CHUNK_OR_FAIL(request, header);
+    }
+
+    if (path.length() > 1) {
+        SEND_CHUNK_OR_FAIL(request, fs_browser_up_button);
+    }
+
+    StringWriter sw{buf, std::size(buf)};
+    esp_err_t send_err = ESP_OK;
+
+    for_filename_in(path.c_str(), [&send_err, &sw, &request](const char *fname, size_t fname_len, bool is_directory) {
+        logger.printfln("%d %p %zu %.*s", is_directory, fname, fname_len, static_cast<int>(fname_len), fname);
+        sw.puts("<button type=button onclick=\"deleteFile('/");
+        sw.puts(fname, fname_len);
+        sw.puts("')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=\"");
+        sw.puts(fname, fname_len);
+        if (is_directory) sw.putc('/');
+        sw.puts("\">");
+        sw.puts(fname, fname_len);
+        if (is_directory) sw.putc('/');
+        sw.puts("</a><br>\n");
+
+        send_err = request.sendChunk(sw);
+        if (send_err != ESP_OK) {
+            return false;
+        }
+        sw.clear();
+        return true;
+    });
+    if (send_err != ESP_OK)
+        return WebServerRequestReturnProtect{.error = send_err};
+
+    SEND_CHUNK_OR_FAIL(request, fs_browser_footer);
+
+    return request.endChunkedResponse();
+
 }
 
 static WebServerRequestReturnProtect browse_delete(WebServerRequest &request, CoolString path) {

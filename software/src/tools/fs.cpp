@@ -237,6 +237,42 @@ bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_d
     return true;
 }
 
+bool for_filename_in(const char *dir, std::function<bool(const char *, size_t, bool)> callback)
+{
+    File root = LittleFS.open(dir);
+
+    // getNextFile**Name** obviously returns the file's full path m(
+    // This is still faster than opening each file.
+    size_t skip = strlen(dir);
+    if (skip > 1)
+        ++skip; // if this is not the root directory, skip the trailing /
+
+    String filename;
+    bool is_dir;
+    while (!(filename = root.getNextFileName(&is_dir)).isEmpty()) {
+        if (!callback(filename.c_str() + skip, filename.length() - skip, is_dir))
+            return false;
+    }
+    return true;
+}
+
+bool for_filename_in(const char *dir, std::function<bool(const String &, bool)> callback)
+{
+    File root = LittleFS.open(dir);
+
+    // getNextFile**Name** obviously returns the file's full path m(
+    // This is still faster than opening each file.
+    size_t skip = strlen(dir) + 1; // also skip trailing /
+    String filename;
+    bool is_dir;
+    while (!(filename = root.getNextFileName(&is_dir)).isEmpty()) {
+        if (!callback(filename.substring(skip), is_dir))
+            return false;
+    }
+    return true;
+}
+
+
 void remove_directory(const char *path)
 {
     String path_string;
