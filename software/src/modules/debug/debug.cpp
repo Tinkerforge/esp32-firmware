@@ -439,7 +439,6 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest &request, CoolS
     esp_err_t send_err = ESP_OK;
 
     for_filename_in(path.c_str(), [&send_err, &sw, &request](const char *fname, size_t fname_len, bool is_directory) {
-        logger.printfln("%d %p %zu %.*s", is_directory, fname, fname_len, static_cast<int>(fname_len), fname);
         sw.puts("<button type=button onclick=\"deleteFile('/");
         sw.puts(fname, fname_len);
         sw.puts("')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=\"");
