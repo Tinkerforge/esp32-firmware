@@ -39,7 +39,7 @@ extern char local_uid_str[32];
 #if defined(BOARD_HAS_PSRAM)
 #define MQTT_SEND_BUFFER_SIZE 32768U
 #else
-#define MQTT_SEND_BUFFER_SIZE 4096U
+#define MQTT_SEND_BUFFER_SIZE 4352U
 #endif
 
 #define MQTT_RECV_BUFFER_SIZE OPTIONS_API_JSON_MAX_LENGTH()
