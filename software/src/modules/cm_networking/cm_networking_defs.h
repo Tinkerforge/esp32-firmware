@@ -26,7 +26,7 @@
 #include "generated/client_error.enum.h"
 #include "generated/config_charge_mode.enum.h"
 #include "generated/cm_auth_feedback.enum.h"
-// #include "generated/module_available.h"
+#include "generated/cm_auth_type.enum.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
@@ -288,7 +288,7 @@ struct cm_auth_info {
      * 0 = no authentication
      * 1 = NFC
      */
-    uint8_t auth_method;
+    CMAuthType auth_method;
     uint16_t last_seen_s;
     uint8_t tag_type;
     uint8_t tag_id_len;
@@ -303,10 +303,6 @@ struct cm_state_v5 {
 
 #define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
 static_assert(CM_STATE_V5_LENGTH == 48, "Unexpected CM_STATE_V5_LENGTH");
-
-// #if MODULE_CHARGE_AUTHENTICATION_AVAILABLE()
-//     static_assert(NFC_TAG_ID_STRING_LENGTH + 1 == sizeof(cm_state_v5::tag_id), "NFC_TAG_ID_STRING_LENGTH does not match cm_state_v5::tag_id size");
-// #endif
 
 struct cm_state_packet {
     cm_packet_header header;

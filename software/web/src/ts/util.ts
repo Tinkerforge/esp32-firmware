@@ -1188,7 +1188,7 @@ export function isDarkMode(): boolean {
 // Get NFC tags from managed chargers, merged with local seen tags.
 // Returns all seen tags (local + remote), deduplicated.
 export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
-export function get_all_seen_tags(): NFCSeenTag[] {
+export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
     let all_tags: NFCSeenTag[] = API.get('nfc/seen_tags').map(t => {
         const tag: NFCSeenTag = {...t, charger_name: null};
         return tag;
@@ -1200,34 +1200,52 @@ export function get_all_seen_tags(): NFCSeenTag[] {
     ) {
         let cm_state = API.get_unchecked("charge_manager/state");
         if (cm_state && cm_state.chargers) {
-            for (const charger of cm_state.chargers) {
-                for (const auth_info of charger.ai) {
-                    if (!auth_info.ti || auth_info.ti === "") continue;
-                    // Check if tag already exists
-                    const idx = all_tags.findIndex(
-                        (t) =>
-                            t.tag_id === auth_info.ti &&
-                            t.tag_type === auth_info.tt,
-                    );
-                    if (idx !== -1) {
-                        // If remote tag is newer, update last_seen
-                        if (all_tags[idx].last_seen > auth_info.ts) {
-                            all_tags[idx] = {
-                                charger_name: charger.n,
+            try {
+                const response = await fetch("/charge_manager/auth_info");
+                if (response.ok) {
+                    const auth_info_data: {
+                        ti: string;
+                        tt: number;
+                        ts: number;
+                    }[][] = await response.json();
+                    for (
+                        let charger_idx = 0;
+                        charger_idx < auth_info_data.length &&
+                        charger_idx < cm_state.chargers.length;
+                        charger_idx++
+                    ) {
+                        const charger_name = cm_state.chargers[charger_idx].n;
+                        for (const auth_info of auth_info_data[charger_idx]) {
+                            if (!auth_info.ti || auth_info.ti === "") continue;
+                            // Check if tag already exists
+                            const idx = all_tags.findIndex(
+                                (t) =>
+                                    t.tag_id === auth_info.ti &&
+                                    t.tag_type === auth_info.tt,
+                            );
+                            if (idx !== -1) {
+                                // If remote tag is newer, update last_seen
+                                if (all_tags[idx].last_seen > auth_info.ts) {
+                                    all_tags[idx] = {
+                                        charger_name: charger_name,
+                                        tag_id: auth_info.ti,
+                                        tag_type: auth_info.tt,
+                                        last_seen: auth_info.ts,
+                                    };
+                                }
+                                continue;
+                            }
+                            all_tags.push({
                                 tag_id: auth_info.ti,
                                 tag_type: auth_info.tt,
                                 last_seen: auth_info.ts,
-                            };
+                                charger_name: charger_name,
+                            });
                         }
-                        continue;
                     }
-                    all_tags.push({
-                        tag_id: auth_info.ti,
-                        tag_type: auth_info.tt,
-                        last_seen: auth_info.ts,
-                        charger_name: charger.n,
-                    });
                 }
+            } catch (e) {
+                console.error("Failed to fetch charge_manager/auth_info:", e);
             }
         }
     }

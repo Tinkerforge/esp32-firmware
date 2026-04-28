@@ -20,9 +20,6 @@
 #include <cstdint>
 #include <Arduino.h>
 
-// Needed for DISPLAY_NAME_LENGTH definition
-#include "../users/users.h"
-
 #define USER_FILTER_ALL_USERS -2
 #define USER_FILTER_DELETED_USERS -1
 
@@ -50,11 +47,3 @@ struct [[gnu::packed]] Charge {
     ChargeStart cs;
     ChargeEnd ce;
 };
-
-struct display_name_entry {
-    uint32_t length;
-    uint32_t name[DISPLAY_NAME_LENGTH / sizeof(uint32_t)];
-};
-
-size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language);
-String chargeRecordFilename(uint32_t i, const char *directory);

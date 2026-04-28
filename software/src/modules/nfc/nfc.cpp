@@ -276,10 +276,8 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-#if MODULE_AUTOMATION_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
         automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
-#endif
-    #if MODULE_EVSE_COMMON_AVAILABLE()
         evse_common.notify_new_auth();
 #endif
     
@@ -459,6 +457,7 @@ void NFC::register_urls()
 {
     api.addState("nfc/seen_tags", &seen_tags, {}, {"tag_id", "tag_type"});
     api.addPersistentConfig("nfc/config", &config, {}, {"tag_id", "tag_type"});
+#if MODULE_EVSE_COMMON_AVAILABLE()
     api.addCommand("nfc/inject_tag", &inject_tag, {"tag_id", "tag_type"}, [this](Language /*language*/, String &/*errmsg*/) {
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_ANY;
@@ -473,6 +472,7 @@ void NFC::register_urls()
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_STOP;
     }, true);
+#endif
 }
 
 bool NFC::get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]) {
@@ -505,7 +505,7 @@ bool NFC::get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_
     return true;
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
 bool NFC::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
