@@ -36,6 +36,7 @@
 #include "build.h"
 #include "options.h"
 #include "tools/tf_websocket_client.h"
+#include "tools/bricklets.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 
