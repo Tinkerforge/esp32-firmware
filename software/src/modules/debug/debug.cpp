@@ -401,7 +401,10 @@ static constexpr char fs_browser_up_button[] = "<button type=button onclick=\"\"
 
 static WebServerRequestReturnProtect browse_get(WebServerRequest &request, CoolString path) {
     const size_t path_length = path.length();
-    if (path_length > 1 && path[path_length - 1] == '/') {
+    bool trailing_slash = path[path_length - 1] == '/';
+
+    // Omit trailing slash if this is not root.
+    if (path_length > 1 && trailing_slash) {
         path.setLength(static_cast<int>(path_length - 1));
     }
 
@@ -421,6 +424,15 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest &request, CoolS
             }
             return request.endChunkedResponse();
         }
+    }
+
+    // If this is a directory, but the requested path does not end with a /,
+    // redirect to the path with a /. This seems to work around a bug in newer firefox versions.
+    // (broken in 150, not broken in 140.10.0esr)
+    if (!trailing_slash) {
+        path = "/debug/fs" + path + "/";
+        request.addResponseHeader("Location", path.c_str());
+        return request.send_plain(307, "");
     }
 
     request.beginChunkedResponse_html(200);
