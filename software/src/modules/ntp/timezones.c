@@ -1,5 +1,5 @@
 /*
-2026a;2026-03-05T14:20:18.978706+00:00
+2026b;2026-04-28T11:49:44.660840+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -514,7 +514,7 @@ static const TableValue America_vals[] = {
     {true, {"PST8PDT,M3.2.0,M11.1.0"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"AST4"}},
-    {true, {"PST8PDT,M3.2.0,M11.1.0"}},
+    {true, {"MST7"}},
     {true, {"AST4"}},
     {true, {"MST7"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
