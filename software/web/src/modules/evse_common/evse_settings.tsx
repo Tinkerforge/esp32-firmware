@@ -40,23 +40,22 @@ export function EVSESettingsNavbar() {
 }
 
 interface EVSESettingsState {
-    button_cfg: API.getType['evse/button_configuration']
-    slots: Readonly<API.getType['evse/slots']>;
-    gpio_cfg: API.getType['evse/gpio_configuration'];
-    ev_wakeup: API.getType['evse/ev_wakeup'];
-    phase_auto_switch: API.getType['evse/phase_auto_switch'];
-    phases_connected: API.getType['evse/phases_connected'];
-    boost_mode: API.getType['evse/boost_mode'];
-    auto_start_charging: API.getType['evse/auto_start_charging'];
-    require_meter_enabled: API.getType['require_meter/config'];
-    led_configuration: API.getType['evse/led_configuration'];
-    phase_switch_wait_time: API.getType['evse/phase_switch_wait_time'];
-    central_user_management_enabled: API.getType["evse/central_user_management_enabled"];
-    evse_uptime: number
-    is_evse_v2: boolean
-    is_evse_v3: boolean
-    have_meter: boolean
-    show_custom_energy_modal: boolean
+    button_cfg: API.getType["evse/button_configuration"];
+    slots: Readonly<API.getType["evse/slots"]>;
+    gpio_cfg: API.getType["evse/gpio_configuration"];
+    ev_wakeup: API.getType["evse/ev_wakeup"];
+    phase_auto_switch: API.getType["evse/phase_auto_switch"];
+    phases_connected: API.getType["evse/phases_connected"];
+    boost_mode: API.getType["evse/boost_mode"];
+    auto_start_charging: API.getType["evse/auto_start_charging"];
+    require_meter_enabled: API.getType["require_meter/config"];
+    led_configuration: API.getType["evse/led_configuration"];
+    phase_switch_wait_time: API.getType["evse/phase_switch_wait_time"];
+    evse_uptime: number;
+    is_evse_v2: boolean;
+    is_evse_v3: boolean;
+    have_meter: boolean;
+    show_custom_energy_modal: boolean;
 }
 
 type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
@@ -170,7 +169,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             require_meter_enabled,
             led_configuration,
             phase_switch_wait_time,
-            central_user_management_enabled,
         } = s;
 
         const has_meter = API.hasFeature("meter");
@@ -239,7 +237,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     : __("evse.content.auto_start_enable")
                             }
                             checked={!auto_start_charging.auto_start_charging}
-                            disabled={central_user_management_enabled.enabled}
                             onClick={async () =>
                                 this.setState({
                                     auto_start_charging: {
