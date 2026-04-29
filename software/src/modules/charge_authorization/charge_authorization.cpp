@@ -49,11 +49,11 @@ void ChargeAuthorization::register_urls()
     api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"auth_string"});
     
     task_scheduler.scheduleUncancelable([this] {
-        // Collect indices of valid (seen) NFC tags
+        // Collect valid tags from indices 0 to TAG_LIST_LENGTH-2 (already sorted newest-first by NFC module)
         size_t valid_indices[TAG_LIST_LENGTH];
         size_t valid_count = 0;
 
-        for (size_t i = 0; i < TAG_LIST_LENGTH; ++i) {
+        for (size_t i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
             const Config *tag = static_cast<const Config *>(nfc.seen_tags.get(i));
             if (tag->get("last_seen")->asUint() == 0)
                 continue;
@@ -62,16 +62,23 @@ void ChargeAuthorization::register_urls()
             valid_indices[valid_count++] = i;
         }
 
-        // Insertion sort by last_seen ascending (smallest value = most recently seen)
-        for (size_t i = 1; i < valid_count; ++i) {
-            size_t key_idx = valid_indices[i];
-            uint32_t key_last_seen = static_cast<const Config *>(nfc.seen_tags.get(key_idx))->get("last_seen")->asUint();
-            int j = (int)i - 1;
-            while (j >= 0 && static_cast<const Config *>(nfc.seen_tags.get(valid_indices[j]))->get("last_seen")->asUint() > key_last_seen) {
-                valid_indices[j + 1] = valid_indices[j];
-                --j;
+        // The last index may contain an injected tag; insert it into the correct sorted position
+        constexpr size_t last_idx = TAG_LIST_LENGTH - 1;
+        const Config *last_tag = static_cast<const Config *>(nfc.seen_tags.get(last_idx));
+        if (last_tag->get("last_seen")->asUint() != 0 && last_tag->get("tag_id")->asString().length() != 0) {
+            uint32_t last_seen = last_tag->get("last_seen")->asUint();
+            size_t insert_pos = valid_count;
+            for (size_t i = 0; i < valid_count; ++i) {
+                if (static_cast<const Config *>(nfc.seen_tags.get(valid_indices[i]))->get("last_seen")->asUint() > last_seen) {
+                    insert_pos = i;
+                    break;
+                }
             }
-            valid_indices[j + 1] = key_idx;
+            for (size_t i = valid_count; i > insert_pos; --i) {
+                valid_indices[i] = valid_indices[i - 1];
+            }
+            valid_indices[insert_pos] = last_idx;
+            ++valid_count;
         }
 
         // Fill up to LAST_AUTH_LIST_LENGTH entries; clear the rest
