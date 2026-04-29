@@ -342,10 +342,10 @@ function EditUserFormContent({
 }: EditUserFormContentProps) {
     const seenTags = useSignal<NFCSeenTag[]>([]);
     useEffect(() => {
-      const interval = setInterval(() => {
-        util.get_all_seen_tags().then(tags => seenTags.value = tags);
-      }, 500);
-      return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            util.get_all_seen_tags().then((tags) => (seenTags.value = tags));
+        }, 500);
+        return () => clearInterval(interval);
     });
     return (
         <>
@@ -449,10 +449,10 @@ function AddUserFormContent({
 }: AddUserFormContentProps) {
     const seenTags = useSignal<NFCSeenTag[]>([]);
     useEffect(() => {
-      const interval = setInterval(() => {
-        util.get_all_seen_tags().then(tags => seenTags.value = tags);
-      }, 500);
-      return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            util.get_all_seen_tags().then((tags) => (seenTags.value = tags));
+        }, 500);
+        return () => clearInterval(interval);
     });
     return (
         <>
