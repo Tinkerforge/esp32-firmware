@@ -49,6 +49,7 @@ interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
 
     ip_label?: string
     gateway_label?: string
+    gateway_label_muted?: string
     subnet_label?: string
 
     min_subnet_prefix?: number
@@ -142,7 +143,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         if(!props.hideGateway) {
             inner = (<>
                 {inner}
-                <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")}>
+                <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")} label_muted={props.gateway_label_muted ? props.gateway_label_muted : __("component.ip_configuration.gateway_muted")}>
                     <InputIP
                         invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
                         moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}

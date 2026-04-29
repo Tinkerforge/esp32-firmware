@@ -41,6 +41,7 @@ let x = {
             "subnet": "Subnetzmaske",
             "subnet_placeholder": "Auswählen...",
             "gateway": "Gateway",
+            "gateway_muted": "0.0.0.0 falls rein lokales Netzwerk",
             "dns": "DNS-Server",
             "dns2": "Alternativer DNS-Server",
             "dns2_muted": "optional",
