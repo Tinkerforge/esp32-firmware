@@ -19,7 +19,7 @@
  */
 
 import { h } from "preact";
-import { useState, useEffect } from "preact/hooks";
+
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { AutomationTrigger } from "../automation/types";
@@ -59,14 +59,8 @@ function get_nfc_edit_children(
     trigger: NfcAutomationTrigger,
     on_trigger: (trigger: AutomationTrigger) => void,
 ) {
-    const [tags, setTags] = useState<util.NFCSeenTag[]>([]);
-
-    useEffect(() => {
-        util.get_all_seen_tags().then(setTags);
-    }, []);
-
     const known_tags = API.get("nfc/config").authorized_tags;
-    const seen_tags = tags
+    const seen_tags = API.get("nfc/seen_tags")
         .filter(
             (t) =>
                 t.tag_id != "" &&
@@ -87,10 +81,7 @@ function get_nfc_edit_children(
                     }
                 }}
             >
-                <div class="d-flex w-100 justify-content-between align-items-center">
-                    <h5 class="mb-1 pe-2">{t.tag_id}</h5>
-                    <span class="text-end">{t.charger_name}</span>
-                </div>
+                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
                 <div class="d-flex w-100 justify-content-between">
                     <span class="text-start">
                         {translate_unchecked(
