@@ -776,17 +776,21 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         auto &ai = state_pkt.v5.auth_info[i];
         memset(&ai, 0, sizeof(ai));
 
-        const CMAuthType auth_method = entry->get("type")->asEnum<CMAuthType>();
-        const uint32_t last_seen_ms = entry->get("last_seen")->asUint();
+        const CMAuthType auth_method = entry->getTag<CMAuthType>();
+
+        if (auth_method == CMAuthType::None)
+            continue;
+
+        const uint32_t last_seen_ms = entry->get()->get("last_seen")->asUint();
 
         // last_seen == 0 is interpreted as "no tag seen"
         if (last_seen_ms > 0 && last_seen_ms < 3'600'000) {
             ai.auth_method = auth_method;
             ai.last_seen_s = static_cast<uint16_t>(last_seen_ms / 1000);
-            ai.tag_type = static_cast<uint8_t>(entry->get("additional_data")->asUint());
+            ai.tag_type = static_cast<uint8_t>(entry->get()->get("additional_data")->asUint());
 
             // Parse colon-separated hex string (e.g. "AA:BB:CC") back to bytes
-            const String &auth_str = entry->get("auth_string")->asString();
+            const String &auth_str = entry->get()->get("auth_string")->asString();
             const char *str = auth_str.c_str();
             const size_t str_len = auth_str.length();
             uint8_t id_len = 0;

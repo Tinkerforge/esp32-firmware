@@ -1,2 +1,4 @@
 None = 0
-NFC = 1
+Lost = 1
+NFC = 2
+Injected NFC = 3
