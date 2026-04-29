@@ -28,18 +28,19 @@ void ChargeAuthorization::pre_setup()
 
 void ChargeAuthorization::setup()
 {
-    last_seen_authentications.replace(LAST_AUTH_LIST_LENGTH, Config::Object({
-        {"type",      Config::Enum(CMAuthType::None)},
-        /**
-         * In case of NFC: Token-String
-         */
+    auth_prototypes[0] = {CMAuthType::None, *Config::Null()};
+    auth_prototypes[1] = {CMAuthType::NFC, Config::Object({
         {"auth_string", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
-        /**
-         * Currently only used in NFC as Tag-Type
-         */
         {"additional_data", Config::Uint8(0)},
         {"last_seen", Config::Uint32(0)}
-    }));
+    })};
+
+    last_seen_authentications.replace(LAST_AUTH_LIST_LENGTH, Config::Union<CMAuthType>(
+        *Config::Null(),
+        CMAuthType::None,
+        auth_prototypes,
+        ARRAY_SIZE(auth_prototypes)
+    ));
 
     initialized = true;
 }
@@ -86,15 +87,12 @@ void ChargeAuthorization::register_urls()
             Config *auth = static_cast<Config *>(last_seen_authentications.get(i));
             if (i < valid_count) {
                 const Config *tag = static_cast<const Config *>(nfc.seen_tags.get(valid_indices[i]));
-                auth->get("type")->updateEnum(CMAuthType::NFC);
-                auth->get("auth_string")->updateString(tag->get("tag_id")->asString());
-                auth->get("additional_data")->updateUint(tag->get("tag_type")->asUint());
-                auth->get("last_seen")->updateUint(tag->get("last_seen")->asUint());
+                auth->changeUnionVariant(CMAuthType::NFC);
+                auth->get()->get("auth_string")->updateString(tag->get("tag_id")->asString());
+                auth->get()->get("additional_data")->updateUint(tag->get("tag_type")->asUint());
+                auth->get()->get("last_seen")->updateUint(tag->get("last_seen")->asUint());
             } else {
-                auth->get("type")->updateEnum(CMAuthType::None);
-                auth->get("auth_string")->updateString("");
-                auth->get("additional_data")->updateUint(0);
-                auth->get("last_seen")->updateUint(0);
+                auth->changeUnionVariant(CMAuthType::None);
             }
         }
     }, 1_s);
