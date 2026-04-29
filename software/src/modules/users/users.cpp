@@ -378,17 +378,17 @@ void Users::setup()
             bool success = read_user_slot_info(&info);
             if (success) {
                 if (!charge_start_tracked) {
-                    charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, USERS_AUTH_METHOD_LOST, Config::ConfVariant{});
+                    charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CMAuthType::Lost, Config::ConfVariant{});
                 } else {
                     // Don't track a start, but restore the current_charge API anyway.
                     charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
                     charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
                     charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
                     charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
-                    charge_tracker.current_charge.get("authorization_type")->updateUint(USERS_AUTH_METHOD_LOST);
+                    charge_tracker.current_charge.get("authorization_type")->updateEnum(CMAuthType::Lost);
                 }
             } else if (!charge_start_tracked)
-                this->start_charging(0, 32000, USERS_AUTH_METHOD_NONE, Config::ConfVariant{});
+                this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
         }
     }
 
@@ -418,7 +418,7 @@ void Users::setup()
             case CHARGER_STATE_READY_TO_CHARGE:
             case CHARGER_STATE_CHARGING:
                 if (!get_user_slot()->get("active")->asBool())
-                    this->start_charging(0, 32000, USERS_AUTH_METHOD_NONE, Config::ConfVariant{});
+                    this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
                 break;
             case CHARGER_STATE_ERROR:
                 break;
@@ -747,7 +747,7 @@ uint16_t Users::get_user_current(uint8_t user_id) {
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
+bool Users::trigger_charge_action(uint8_t user_id, CMAuthType auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
 
 // Disable this functionality if central auth is enabled.
@@ -773,16 +773,16 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_method, Config::
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
             if (charge_tracker.currentlyCharging()) {
-                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
+                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == CMAuthType::InjectedNFC || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                     this->stop_charging(user_id, false);
                 return false;
             }
-            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_stop)))
+            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && (auth_method == CMAuthType::InjectedNFC || deadline_elapsed(last_charge_action_triggered + deadtime_post_stop)))
                 return this->start_charging(user_id, current_limit, auth_method, auth_info);
             return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
-            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == USERS_AUTH_METHOD_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
+            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_method == CMAuthType::InjectedNFC || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                 this->stop_charging(user_id, false);
             return false;
         default: //Don't do anything in state A, D, and E/F
@@ -799,29 +799,21 @@ void Users::remove_username_file()
 }
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
-bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info)
+bool Users::start_charging(uint8_t user_id, uint16_t current_limit, CMAuthType auth_type, Config::ConfVariant auth_info)
 {
     last_charge_action_triggered = now_us();
 
     if (charge_tracker.currentlyCharging())
         return false;
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
     uint32_t evse_uptime = evse_common.get_low_level_state().get("uptime")->asUint();
-#elif MODULE_EM_COMMON_AVAILABLE()
-    uint32_t evse_uptime = em_common.get_low_level_state().get("uptime")->asUint();
-#else
-    uint32_t evse_uptime = 0;
-#endif
     float meter_start = get_energy();
     uint32_t timestamp = rtc.timestamp_minutes();
 
     if (!charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info))
         return false;
     write_user_slot_info(user_id, evse_uptime, timestamp, meter_start);
-#if MODULE_EVSE_COMMON_AVAILABLE()
     evse_common.set_user_current(current_limit);
-#endif
 
     return true;
 }
