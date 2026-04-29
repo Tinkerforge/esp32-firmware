@@ -23,6 +23,7 @@
 #include "config.h"
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "generated/module_available.h"
+#include "modules/cm_networking/generated/cm_auth_type.enum.h"
 
 #define LAST_AUTH_LIST_LENGTH 3
 
@@ -40,6 +41,7 @@ public:
     ConfigRoot last_seen_authentications;
 
 private:
+    ConfUnionPrototype<CMAuthType> auth_prototypes[2];
 };
 
 #include "generated/module_available_end.h"
