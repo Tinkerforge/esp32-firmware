@@ -187,7 +187,7 @@ void ChargeManager::pre_setup()
         {"d3", ThreePhaseDecision::getUnion()},
         {"dc", CurrentDecision::getUnion()},
         /*
-         * u == -2 unknown NFC-TagF
+         * u == -2 unknown NFC-Tag
          * u == -1 unauthorized
          * u == 0 authorization disabled
          * u >= 1 user authorized
