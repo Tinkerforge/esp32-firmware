@@ -19,6 +19,7 @@
  */
 
 import { h } from "preact";
+import { useState, useEffect } from "preact/hooks";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { AutomationAction } from "../automation/types";
@@ -39,86 +40,150 @@ export type NfcAutomationAction = [
 ];
 
 function get_nfc_inject_tag_table_children(action: NfcAutomationAction) {
-    return __("nfc.automation.automation_action_text")(action[1].tag_id, translate_unchecked("nfc.automation.type_" + action[1].tag_type), action[1].action);
+    return __("nfc.automation.automation_action_text")(
+        action[1].tag_id,
+        translate_unchecked("nfc.automation.type_" + action[1].tag_type),
+        action[1].action,
+    );
 }
 
-function get_nfc_inject_tag_edit_children(action: NfcAutomationAction, on_action: (action: AutomationAction) => void) {
-    const tags = util.get_all_seen_tags();
+function get_nfc_inject_tag_edit_children(
+    action: NfcAutomationAction,
+    on_action: (action: AutomationAction) => void,
+) {
+    const [tags, setTags] = useState<util.NFCSeenTag[]>([]);
+    useEffect(() => {
+        util.get_all_seen_tags().then(setTags);
+    }, []);
     const known_tags = API.get("nfc/config").authorized_tags;
-    const seen_tags = tags.filter(t => t.tag_id != "" && !known_tags.find(tag => t.tag_id == tag.tag_id)).map(t => <ListGroupItem action type="button" onClick={() => {
-        if (t.tag_id != "") {
-            on_action(util.get_updated_union(action, {tag_id: t.tag_id, tag_type: t.tag_type}));
-        }
-        }}>
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
-                <span class="text-end">{t.charger_name}</span>
-            </div>
-            <div class="d-flex w-100 justify-content-between">
-                <span class="text-start">{translate_unchecked(`nfc.automation.type_${t.tag_type}`)}</span>
-                <span class="text-end">{__("nfc.automation.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.automation.last_seen_suffix")}</span>
-            </div>
-        </ListGroupItem>);
+    const seen_tags = tags
+        .filter(
+            (t) =>
+                t.tag_id != "" &&
+                !known_tags.find((tag) => t.tag_id == tag.tag_id),
+        )
+        .map((t) => (
+            <ListGroupItem
+                action
+                type="button"
+                onClick={() => {
+                    if (t.tag_id != "") {
+                        on_action(
+                            util.get_updated_union(action, {
+                                tag_id: t.tag_id,
+                                tag_type: t.tag_type,
+                            }),
+                        );
+                    }
+                }}
+            >
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                    <span class="text-end">{t.charger_name}</span>
+                </div>
+                <div class="d-flex w-100 justify-content-between">
+                    <span class="text-start">
+                        {translate_unchecked(
+                            `nfc.automation.type_${t.tag_type}`,
+                        )}
+                    </span>
+                    <span class="text-end">
+                        {__("nfc.automation.last_seen") +
+                            util.format_timespan_ms(t.last_seen) +
+                            __("nfc.automation.last_seen_suffix")}
+                    </span>
+                </div>
+            </ListGroupItem>
+        ));
 
     const users = API.get("users/config").users;
-    const known_items = API.get("nfc/config").authorized_tags.map(t => <ListGroupItem action type="button" onClick={() => {
-        if (t.tag_id != "") {
-            on_action(util.get_updated_union(action, {tag_id: t.tag_id, tag_type: t.tag_type}));
-        }
-        }}>
+    const known_items = API.get("nfc/config").authorized_tags.map((t) => (
+        <ListGroupItem
+            action
+            type="button"
+            onClick={() => {
+                if (t.tag_id != "") {
+                    on_action(
+                        util.get_updated_union(action, {
+                            tag_id: t.tag_id,
+                            tag_type: t.tag_type,
+                        }),
+                    );
+                }
+            }}
+        >
             <h5 class="mb-1 pe-2">{t.tag_id}</h5>
             <div class="d-flex w-100 justify-content-between">
-                <span class="text-start">{translate_unchecked(`nfc.automation.type_${t.tag_type}`)}</span>
-                <span class="text-end">{__("nfc.automation.table_user_id") + ": " + users.find(u => u.id == t.user_id).display_name}</span>
+                <span class="text-start">
+                    {translate_unchecked(`nfc.automation.type_${t.tag_type}`)}
+                </span>
+                <span class="text-end">
+                    {__("nfc.automation.table_user_id") +
+                        ": " +
+                        users.find((u) => u.id == t.user_id).display_name}
+                </span>
             </div>
-        </ListGroupItem>);
+        </ListGroupItem>
+    ));
 
     const all_tags = known_items.concat(seen_tags);
 
     return [
         <FormRow label={__("nfc.automation.last_seen_and_known_tags")}>
-            {all_tags.length > 0 ?
+            {all_tags.length > 0 ? (
                 <ListGroup>{all_tags}</ListGroup>
-                : <span>{__("nfc.automation.add_tag_description")}</span>}
+            ) : (
+                <span>{__("nfc.automation.add_tag_description")}</span>
+            )}
         </FormRow>,
         <FormRow label={__("nfc.automation.table_tag_id")}>
             <InputTextPatterned
                 required
                 value={action[1].tag_id}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {tag_id: v}));
+                    on_action(util.get_updated_union(action, { tag_id: v }));
                 }}
-                minLength={8} maxLength={29}
+                minLength={8}
+                maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                invalidFeedback={__("nfc.automation.tag_id_invalid_feedback")} />
+                invalidFeedback={__("nfc.automation.tag_id_invalid_feedback")}
+            />
         </FormRow>,
         <FormRow label={__("nfc.automation.table_tag_type")}>
             <InputSelect
                 items={[
-                    ["0",__("nfc.automation.type_0")],
-                    ["1",__("nfc.automation.type_1")],
-                    ["2",__("nfc.automation.type_2")],
-                    ["3",__("nfc.automation.type_3")],
-                    ["4",__("nfc.automation.type_4")],
+                    ["0", __("nfc.automation.type_0")],
+                    ["1", __("nfc.automation.type_1")],
+                    ["2", __("nfc.automation.type_2")],
+                    ["3", __("nfc.automation.type_3")],
+                    ["4", __("nfc.automation.type_4")],
                 ]}
                 value={action[1].tag_type.toString()}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {tag_type: parseInt(v)}));
-                }} />
+                    on_action(
+                        util.get_updated_union(action, {
+                            tag_type: parseInt(v),
+                        }),
+                    );
+                }}
+            />
         </FormRow>,
         <FormRow label={__("nfc.automation.action")}>
             <InputSelect
                 items={[
                     ["0", __("nfc.automation.trigger_charge_any")],
                     ["1", __("nfc.automation.trigger_charge_start")],
-                    ["2", __("nfc.automation.trigger_charge_stop")]
+                    ["2", __("nfc.automation.trigger_charge_stop")],
                 ]}
                 value={action[1].action.toString()}
                 onValue={(v) => {
-                    on_action(util.get_updated_union(action, {action: parseInt(v)}));
-                }} />
+                    on_action(
+                        util.get_updated_union(action, { action: parseInt(v) }),
+                    );
+                }}
+            />
         </FormRow>,
-    ]
+    ];
 }
 
 function new_nfc_inject_tag_config(): AutomationAction {
@@ -137,12 +202,12 @@ export function pre_init() {
         [AutomationActionID.NFCInjectTag]: {
             name: () => __("nfc.automation.nfc"),
             new_config: new_nfc_inject_tag_config,
-            clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+            clone_config: (action: AutomationAction) =>
+                [action[0], { ...action[1] }] as AutomationAction,
             get_edit_children: get_nfc_inject_tag_edit_children,
             get_table_children: get_nfc_inject_tag_table_children,
         },
     };
 }
 
-export function init() {
-}
+export function init() {}
