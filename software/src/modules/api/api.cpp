@@ -348,7 +348,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
     // A capture list of more than one int will be heap-allocated.
     // Doing it this way (instead of capturing path and config directly)
     // saves ~ 80 bytes of DRAM per registration.
-    auto state_reg_idx = this->states.size();
+    auto state_reg_idx = this->states.size() - 1;
     CommandCallback cb = [state_reg_idx](Language /*language*/, String &/*errmsg*/) {
         auto reg = api.states[state_reg_idx];
         API::writeConfig(reg.path, reg.config);
