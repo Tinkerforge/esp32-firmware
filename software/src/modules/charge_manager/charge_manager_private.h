@@ -180,10 +180,10 @@ struct ChargerState {
     int16_t authenticated_user_id;
 
     // Timestamp when an unknown NFC tag was last seen
-    micros_t unknown_nfc_tag_timestamp;
+    micros_t unknown_authorization_timestamp;
 
     // Timestamp when a known NFC tag was last seen without a car connected
-    micros_t known_tag_no_car_timestamp;
+    micros_t known_authorization_no_car_timestamp;
 
     // Last NFC tags seen on this charger (from cm_state_v5)
     cm_auth_info auth_info[3];
