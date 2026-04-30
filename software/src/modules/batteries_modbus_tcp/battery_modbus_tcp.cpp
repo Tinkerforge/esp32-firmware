@@ -173,53 +173,52 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer);
 
 static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool success)
 {
-    task_scheduler.cancel(writer->task_id);
-
-    if (writer->delete_requested) {
+    if (writer->destroy_requested) {
         delete writer;
         return;
     }
 
-    millis_t delay = 5_s;
+    millis_t delay = success ? seconds_t{writer->repeat_interval} : 5_s;
 
-    if (success) {
-        delay = seconds_t{writer->repeat_interval};
-    }
-
-    ++writer->repeat_count;
-    writer->task_id = 0;
-    writer->index = 0;
-
-    if (delay != 0_s) {
-        writer->task_id = task_scheduler.scheduleOnce([writer]() {
-            trace("b%lu t%d ww m%c r%zu",
-                  writer->slot,
-                  writer->test ? 1 : 0,
-                  get_battery_mode_as_char(writer->mode),
-                  writer->repeat_count);
-
-            table_writer_logfln(writer, false,
-                                writer->language == Language::English
-                                ? "Setting mode \"%s\" (repeat %zu)"
-                                : "Setze Modus \"%s\" (Wiederholung %zu)",
-                                BatteryModbusTCP::get_battery_mode_display_name(writer->mode, writer->language), writer->repeat_count);
-            next_table_writer_step(writer);
-        }, delay);
-    }
-    else {
+    if (delay == 0_s) {
         writer->finished();
+        return;
     }
+
+    writer->task_id = task_scheduler.scheduleOnce([writer]() {
+        if (writer->destroy_requested) {
+            delete writer;
+            return;
+        }
+
+        writer->task_id = 0;
+        ++writer->repeat_count;
+        writer->index = 0;
+
+        trace("b%lu t%d ww m%c r%zu",
+              writer->slot,
+              writer->test ? 1 : 0,
+              get_battery_mode_as_char(writer->mode),
+              writer->repeat_count);
+
+        table_writer_logfln(writer, false,
+                            writer->language == Language::English
+                            ? "Setting mode \"%s\" (repeat %zu)"
+                            : "Setze Modus \"%s\" (Wiederholung %zu)",
+                            BatteryModbusTCP::get_battery_mode_display_name(writer->mode, writer->language), writer->repeat_count);
+        next_table_writer_step(writer);
+    }, delay);
 }
 
 static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
 {
-    if (writer->index >= writer->table->register_blocks_count) {
-        last_table_writer_step(writer, true);
+    if (writer->destroy_requested) {
+        delete writer;
         return;
     }
 
-    if (writer->delete_requested) {
-        last_table_writer_step(writer, false);
+    if (writer->index >= writer->table->register_blocks_count) {
+        last_table_writer_step(writer, true);
         return;
     }
 
@@ -301,6 +300,12 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                      const_cast<void *>(buffer),
                                                                      2_s,
     [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
+        if (writer->destroy_requested) {
+            free(buffer_to_free);
+            delete writer;
+            return;
+        }
+
         bool has_step2 = register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
                       || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
@@ -359,6 +364,12 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                              const_cast<void *>(buffer),
                                                                              2_s,
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+                if (writer->destroy_requested) {
+                    free(buffer_to_free);
+                    delete writer;
+                    return;
+                }
+
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
                     trace("b%lu t%d ww m%c i%zu/%zu s2/2 e%d%s%s",
                           writer->slot,
@@ -441,6 +452,13 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
 
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
+            if (writer->destroy_requested) {
+                delete writer;
+                return;
+            }
+
+            writer->task_id = 0;
+
             trace("b%lu t%d ww m%c %c",
                   writer->slot,
                   writer->test ? 1 : 0,
@@ -483,7 +501,7 @@ void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *write
           get_battery_mode_as_char(writer->mode));
 
     if (writer->transact_pending) {
-        writer->delete_requested = true;
+        writer->destroy_requested = true;
         return;
     }
 

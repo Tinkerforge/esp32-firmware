@@ -65,7 +65,7 @@ public:
         TableWriterVLogFLnFunction vlogfln;
         TableWriterFinishedFunction finished;
         bool transact_pending = false;
-        bool delete_requested = false;
+        bool destroy_requested = false;
         bool test;
     };
 
