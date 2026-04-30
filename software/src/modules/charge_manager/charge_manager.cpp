@@ -519,27 +519,27 @@ static void update_authentication(
         // If last_seen_s == 0, no tag was seen
         if (recent != nullptr && recent->last_seen_s != 0 && recent->last_seen_s < 2) {
             int16_t tag_auth = charger_authorized(v5, target.last_plug_out);
-            if (tag_auth >= 0 && target.known_tag_no_car_timestamp == 0_us) {
-                target.known_tag_no_car_timestamp = now_us();
-            } else if (tag_auth == UNKNOWN_NFC_TAG && deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s)) {
-                target.unknown_nfc_tag_timestamp = now_us();
+            if (tag_auth >= 0 && target.known_authorization_no_car_timestamp == 0_us) {
+                target.known_authorization_no_car_timestamp = now_us();
+            } else if (tag_auth == UNKNOWN_NFC_TAG && deadline_elapsed(target.unknown_authorization_timestamp + 2_s)) {
+                target.unknown_authorization_timestamp = now_us();
             }
         }
         return;
     }
 
-    target.known_tag_no_car_timestamp = 0_us;
+    target.known_authorization_no_car_timestamp = 0_us;
 
     if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
         // Update NFC state
         int16_t new_auth = charger_authorized(v5, target.last_plug_out);
-        bool deadline_elapsed_unknown_nfc = deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s);
+        bool deadline_elapsed_unknown_nfc = deadline_elapsed(target.unknown_authorization_timestamp + 2_s);
 
         if (new_auth == UNKNOWN_NFC_TAG) {
             // We will always have a v5 here since we have seen the nfc info
             // If last_seen_s == 0, no tag was seen
             if (recent->last_seen_s != 0 && recent->last_seen_s < 2 && deadline_elapsed_unknown_nfc)
-                target.unknown_nfc_tag_timestamp = now_us();
+                target.unknown_authorization_timestamp = now_us();
 
             if (!deadline_elapsed_unknown_nfc) {
                 target.authenticated_user_id = new_auth;
@@ -550,11 +550,11 @@ static void update_authentication(
         } else if (new_auth != NOT_AUTHORIZED) {
             target.authenticated_user_id = new_auth;
             target.user_current = get_user_current(target.authenticated_user_id);
-            target.unknown_nfc_tag_timestamp = 0_us;
+            target.unknown_authorization_timestamp = 0_us;
         } else {
             target.authenticated_user_id = NOT_AUTHORIZED;
             target.user_current = 0;
-            target.unknown_nfc_tag_timestamp = 0_us;
+            target.unknown_authorization_timestamp = 0_us;
         }
     }
 }
@@ -626,20 +626,20 @@ bool ChargeManager::send_client_packet(uint8_t i) {
                     auth_feedback = CMAuthFeedback::Ack;
                     break;
             }
-        } else if (charger.known_tag_no_car_timestamp != 0_us) {
-            if (!deadline_elapsed(charger.known_tag_no_car_timestamp + 30_s)) {
+        } else if (charger.known_authorization_no_car_timestamp != 0_us) {
+            if (!deadline_elapsed(charger.known_authorization_no_car_timestamp + 30_s)) {
                 auth_feedback = CMAuthFeedback::Ack;
-            } else if (!deadline_elapsed(charger.known_tag_no_car_timestamp + 33_s)) {
+            } else if (!deadline_elapsed(charger.known_authorization_no_car_timestamp + 33_s)) {
                 // Allow the blink to finish before sending Nack
                 auth_feedback = CMAuthFeedback::Nack;
             } else {
-                charger.known_tag_no_car_timestamp = 0_us;
+                charger.known_authorization_no_car_timestamp = 0_us;
             }
-        } else if (charger.unknown_nfc_tag_timestamp != 0_us) {
-            if (!deadline_elapsed(charger.unknown_nfc_tag_timestamp + 2_s)) {
+        } else if (charger.unknown_authorization_timestamp != 0_us) {
+            if (!deadline_elapsed(charger.unknown_authorization_timestamp + 2_s)) {
                 auth_feedback = CMAuthFeedback::Nack;
             } else {
-                charger.unknown_nfc_tag_timestamp = 0_us;
+                charger.unknown_authorization_timestamp = 0_us;
             }
         }
     }
@@ -1457,8 +1457,8 @@ void ChargeManager::register_urls()
         target.user_current = 32000;
 #endif
 
-        target.unknown_nfc_tag_timestamp = 0_us;
-        target.known_tag_no_car_timestamp = 0_us;
+        target.unknown_authorization_timestamp = 0_us;
+        target.known_authorization_no_car_timestamp = 0_us;
     }, false);
 
 #if MODULE_WEB_SERVER_AVAILABLE()
