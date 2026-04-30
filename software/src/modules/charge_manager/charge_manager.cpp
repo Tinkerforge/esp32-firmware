@@ -36,10 +36,6 @@
 #include "tools.h"
 #include "tools/malloc.h"
 #include "generated/cm_phase_rotation.enum.h"
-#include "generated/zero_phase_decision.union.h"
-#include "generated/one_phase_decision.union.h"
-#include "generated/three_phase_decision.union.h"
-#include "generated/current_decision.union.h"
 #include "modules/cm_networking/generated/client_error.enum.h"
 #include "modules/cm_networking/cm_networking_defs.h"
 #include <TFJson.h>
