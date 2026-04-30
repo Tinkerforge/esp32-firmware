@@ -121,14 +121,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         util.addApiEventListener("evse/phase_switch_wait_time", () => {
             this.setState({phase_switch_wait_time: API.get("evse/phase_switch_wait_time")});
         });
-
-        util.addApiEventListener("evse/central_user_management_enabled", () => {
-            this.setState({
-                central_user_management_enabled: API.get(
-                    "evse/central_user_management_enabled",
-                ),
-            });
-        });
     }
 
     override async sendSave(topic: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
@@ -230,11 +222,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                     <FormRow label={__("evse.content.auto_start_description")} help={__("evse.content.auto_start_description_help")}>
                         <Switch
                             desc={
-                                central_user_management_enabled.enabled
-                                    ? __(
-                                          "evse.content.auto_start_enable_central_auth",
-                                      )
-                                    : __("evse.content.auto_start_enable")
+                                 __("evse.content.auto_start_enable")
                             }
                             checked={!auto_start_charging.auto_start_charging}
                             onClick={async () =>

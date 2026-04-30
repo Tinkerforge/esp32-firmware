@@ -62,6 +62,7 @@ public:
                              bool central_charge_logging_enabled);
 
     void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb);
+    void get_manager_ip(char buf[INET_ADDRSTRLEN]);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,

@@ -81,8 +81,9 @@ export interface management_enabled {
     enabled: boolean;
 }
 
-export interface central_user_management_enabled {
-    enabled: boolean;
+export interface management_state {
+    central_user_management_enabled: boolean;
+    manager_ip: string;
 }
 
 export interface user_enabled {
