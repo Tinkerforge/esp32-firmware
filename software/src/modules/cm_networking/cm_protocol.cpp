@@ -511,6 +511,15 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     return true;
 }
 
+void CMNetworking::get_manager_ip(char buf[INET_ADDRSTRLEN])
+{
+    if (manager_addr_valid) {
+        tf_ip4addr_ntoa(&manager_addr, buf, INET_ADDRSTRLEN);
+    } else {
+        snprintf(buf, INET_ADDRSTRLEN, "0.0.0.0");
+    }
+}
+
 void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);

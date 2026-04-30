@@ -27,6 +27,7 @@
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
 #include "modules/cm_networking/cm_networking_defs.h"
+#include "tools/net.h"
 #endif
 
 extern uint32_t local_uid_num;
@@ -88,8 +89,9 @@ void EvseCommon::pre_setup()
     management_enabled = enabled_cfg;
     management_enabled_update = management_enabled;
 
-    central_user_management_enabled_state = Config::Object({
-        {"enabled", Config::Bool(false)}
+    management_state = Config::Object({
+        {"central_user_management_enabled", Config::Bool(false)},
+        {"manager_ip", Config::Str("0.0.0.0", 7, 15)},
     });
 
     user_current = current_cfg;
@@ -509,6 +511,10 @@ void EvseCommon::register_urls()
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
+        char manager_ip_buf[INET_ADDRSTRLEN];
+        cm_networking.get_manager_ip(manager_ip_buf);
+        this->management_state.get("manager_ip")->updateString(String(manager_ip_buf));
+
         this->handle_auth_feedback(auth_feedback);
 
         if (!ignore_allocation) {
@@ -664,6 +670,7 @@ void EvseCommon::register_urls()
             logger.printfln("Got no managed current update for more than 30 seconds. Setting managed current to 0");
         }
         shutdown_logged = true;
+        management_state.get("manager_ip")->updateString(String("0.0.0.0"));
         backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
     }, 1_s, 1_s);
 
@@ -747,7 +754,7 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/management_enabled", &management_enabled);
-    api.addState("evse/central_user_management_enabled", &central_user_management_enabled_state);
+    api.addState("evse/management_state", &management_state);
     api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = management_enabled_update.get("enabled")->asBool();
 
@@ -1124,7 +1131,7 @@ bool EvseCommon::get_central_user_management_enabled()
 
 void EvseCommon::set_central_user_management_enabled(bool enabled) {
     central_user_management_enabled = enabled;
-    central_user_management_enabled_state.get("enabled")->updateBool(enabled);
+    management_state.get("central_user_management_enabled")->updateBool(enabled);
 }
 
 ConfigRoot &EvseCommon::get_slots()
