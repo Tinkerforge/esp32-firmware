@@ -189,7 +189,6 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                                     y_unit="°C"
                                                     y_label={__("temperatures.content.temperature_degc")}
                                                     y_digits={1}
-                                                    only_show_visible
                                                     padding={[30, 15, null, 5]}
                                                 />
                                             </UplotLoader>

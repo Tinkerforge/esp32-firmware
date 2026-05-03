@@ -330,7 +330,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     y_unit="ct/kWh"
                                     y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                     y_digits={3}
-                                    only_show_visible
                                     padding={[30, 15, null, 5]}
                                 />
                             </UplotLoader>

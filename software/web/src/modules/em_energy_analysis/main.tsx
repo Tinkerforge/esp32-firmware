@@ -331,6 +331,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             y_unit="W"
                                             y_label={__("em_energy_analysis.script.power") + " [W]"}
                                             y_digits={0}
+                                            y_scale_ignore_visibility
                                             padding={[null, 15, null, 5]} />
                         </UplotLoader>
                     </div>
@@ -2558,6 +2559,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             y_label={__("em_energy_analysis.script.power") + " [W]"}
                                             y_digits={0}
                                             y_skip_upper
+                                            y_scale_ignore_visibility
                                             y_sync_ref={this.uplot_wrapper_5min_flags_ref}
                                             y2_enable
                                             y2_min={-2}
@@ -2566,6 +2568,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             y2_label={__("em_energy_analysis.script.price") + " [ct/kWh]"}
                                             y2_digits={3}
                                             y2_skip_upper
+                                            y2_scale_ignore_visibility
                                             padding={[0, null, null, null]} />
                             <div class={"uplot u-hz" + (util.is_native_median_app() ? "" : " u-time-in-legend-alone") + " u-hide-marker-in-legend u-hide-empty-legend"} ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
                             <div class={"uplot u-hz" + (util.is_native_median_app() ? "" : " u-hide-first-series-in-legend")} ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
@@ -2592,12 +2595,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             y_unit="kWh"
                                             y_label={__("em_energy_analysis.script.energy") + " [kWh]"}
                                             y_digits={2}
+                                            y_scale_ignore_visibility
                                             y2_enable
                                             y2_min={-1}
                                             y2_max={9}
                                             y2_unit="ct/kWh"
                                             y2_label={__("em_energy_analysis.script.price") + " [ct/kWh]"}
-                                            y2_digits={0} />
+                                            y2_digits={0}
+                                            y2_scale_ignore_visibility />
                         </UplotLoader>
                     </div>
                 </div>

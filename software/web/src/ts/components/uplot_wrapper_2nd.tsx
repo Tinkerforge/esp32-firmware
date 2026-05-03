@@ -73,6 +73,9 @@ interface UplotWrapperBProps {
     y_three_split?: boolean;
     y_skip_upper?: boolean;
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
+    y_scale_ignore_visibility?: boolean; // default: false,
+                                         // true = scale is always calculated based on all series
+                                         // false = scale is calculated based on visible series alone
     y2_enable?: boolean;
     y2_min?: number;
     y2_max?: number;
@@ -80,8 +83,10 @@ interface UplotWrapperBProps {
     y2_label?: string;
     y2_digits?: number;
     y2_skip_upper?: boolean;
+    y2_scale_ignore_visibility?: boolean; // default: false,
+                                          // true = scale is always calculated based on all series
+                                          // false = scale is calculated based on visible series alone
     padding?: uPlot.Padding;
-    only_show_visible?: boolean;
     grid_show?: boolean;
     height_min?: number;
 }
@@ -310,7 +315,27 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                 },
                 y: {
                     range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
-                        return uPlot.rangeNum(this.y_min, this.y_max, {min: {}, max: {}});
+                        let y_min: number;
+                        let y_max: number;
+
+                        if (this.props.y_scale_ignore_visibility) {
+                            y_min = this.y_min;
+                            y_max = this.y_max;
+                        }
+                        else {
+                            y_min = initMin;
+                            y_max = initMax;
+
+                            if (this.props.y_min !== undefined && (y_min === null || this.props.y_min < y_min)) {
+                                y_min = this.props.y_min;
+                            }
+
+                            if (this.props.y_max !== undefined && (y_max === null || this.props.y_max > y_max)) {
+                                y_max = this.props.y_max;
+                            }
+                        }
+
+                        return uPlot.rangeNum(y_min, y_max, {min: {}, max: {}});
                     }
                 },
             },
@@ -525,7 +550,27 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
 
             options.scales['y2'] = {
                 range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
-                    return uPlot.rangeNum(this.y2_min, this.y2_max, {min: {}, max: {}});
+                    let y2_min: number;
+                    let y2_max: number;
+
+                    if (this.props.y2_scale_ignore_visibility) {
+                        y2_min = this.y2_min;
+                        y2_max = this.y2_max;
+                    }
+                    else {
+                        y2_min = initMin;
+                        y2_max = initMax;
+
+                        if (this.props.y2_min !== undefined && (y2_min === null || this.props.y2_min < y2_min)) {
+                            y2_min = this.props.y2_min;
+                        }
+
+                        if (this.props.y2_max !== undefined && (y2_max === null || this.props.y2_max > y2_max)) {
+                            y2_max = this.props.y2_max;
+                        }
+                    }
+
+                    return uPlot.rangeNum(y2_min, y2_max, {min: {}, max: {}});
                 }
             };
         }
@@ -747,25 +792,23 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
             else {
                 let stacked_values: number[] = new Array(this.data.values[i].length);
 
-                if ((this.props.only_show_visible !== true) || this.series_visibility[this.data.keys[i]]) {
-                    for (let k = 0; k < this.data.values[i].length; ++k) {
-                        if (last_stacked_values[y_axis][k] !== null
-                            && last_stacked_values[y_axis][k] !== undefined
-                            && this.data.values[i][k] !== null
-                            && this.data.values[i][k] !== undefined) {
-                            stacked_values[k] = last_stacked_values[y_axis][k] + this.data.values[i][k];
-                        } else {
-                            stacked_values[k] = this.data.values[i][k];
+                for (let k = 0; k < this.data.values[i].length; ++k) {
+                    if (last_stacked_values[y_axis][k] !== null
+                        && last_stacked_values[y_axis][k] !== undefined
+                        && this.data.values[i][k] !== null
+                        && this.data.values[i][k] !== undefined) {
+                        stacked_values[k] = last_stacked_values[y_axis][k] + this.data.values[i][k];
+                    } else {
+                        stacked_values[k] = this.data.values[i][k];
+                    }
+
+                    if (stacked_values[k] !== null) {
+                        if (y_min[y_axis] === undefined || stacked_values[k] < y_min[y_axis]) {
+                            y_min[y_axis] = stacked_values[k];
                         }
 
-                        if (stacked_values[k] !== null) {
-                            if (y_min[y_axis] === undefined || stacked_values[k] < y_min[y_axis]) {
-                                y_min[y_axis] = stacked_values[k];
-                            }
-
-                            if (y_max[y_axis] === undefined || stacked_values[k] > y_max[y_axis]) {
-                                y_max[y_axis] = stacked_values[k];
-                            }
+                        if (y_max[y_axis] === undefined || stacked_values[k] > y_max[y_axis]) {
+                            y_max[y_axis] = stacked_values[k];
                         }
                     }
                 }

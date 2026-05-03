@@ -1249,7 +1249,6 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                         y_unit="ct/kWh"
                                         y_label={__("batteries.content.net_price_ct_per_kwh")}
                                         y_digits={3}
-                                        only_show_visible
                                         padding={[30, 15, null, 5]}
                                     />
                                 </UplotLoader>

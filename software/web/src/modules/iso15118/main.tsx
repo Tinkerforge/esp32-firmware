@@ -366,7 +366,6 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                         y_label="Attenuation (dB)"
                                         y_unit="dB"
                                         y_digits={2}
-                                        only_show_visible
                                         padding={[null, null, null, null]}
                                     />
                                 </UplotLoader>

@@ -329,7 +329,6 @@ export class EcoChart extends Component<{visible: boolean, charger_id: number, d
                     y_label="ct/kWh"
                     y_digits={3}
                     y_three_split
-                    only_show_visible
                     grid_show={false}
                     padding={[null, 15, null, 5]}
                     height_min={100}
