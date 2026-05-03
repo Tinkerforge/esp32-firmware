@@ -363,7 +363,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     ? __("day_ahead_prices.content.spot_market_price")
                     : __("day_ahead_prices.content.calendar_price");
                 data = {
-                    keys: [null, 'price', 'price2', 'price3'],
+                    keys: [null, 'spot_price', 'grid_fees', 'surcharge'],
                     names: [null, price_label, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                     values: [[], [], [], []],
                     stacked: [null, true, true, true],
