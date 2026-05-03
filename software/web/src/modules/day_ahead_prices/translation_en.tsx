@@ -15,6 +15,7 @@ let x = {
             "no_data": "No data available",
             "loading": "Loading data...",
             "time": "Time of day",
+            "total_price": "Total price",
             "electricity_price": "Electricity price",
             "spot_market_price": "Spot market price",
             "calendar_price": "Calendar price",

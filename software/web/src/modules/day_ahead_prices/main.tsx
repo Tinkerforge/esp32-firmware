@@ -340,8 +340,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 keys: [null],
                 names: [null],
                 values: [null],
-                stacked: [null],
-                paths: [null],
             }
         // Else fill with time and the different prices we want to show
         } else {
@@ -350,12 +348,12 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
 
             if (both_enabled) {
                 data = {
-                    keys: [null, 'spot_price', 'calendar_price', 'grid_fees', 'surcharge'],
-                    names: [null, __("day_ahead_prices.content.spot_market_price"), __("day_ahead_prices.content.calendar_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
-                    values: [[], [], [], [], []],
-                    stacked: [null, true, true, true, true],
-                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
-                    default_visibilty: [null, true, true, false, false],
+                    keys: [null, '__total__', 'spot_price', 'calendar_price', 'grid_fees', 'surcharge'],
+                    names: [null, __("day_ahead_prices.content.total_price"), __("day_ahead_prices.content.spot_market_price"), __("day_ahead_prices.content.calendar_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    values: [[], null, [], [], [], []],
+                    filled: [null, true, false, false, false, false],
+                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
+                    default_visibilty: [null, true, true, true, false, false],
                     lines_vertical: []
                 }
             } else {
@@ -363,14 +361,14 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     ? __("day_ahead_prices.content.spot_market_price")
                     : __("day_ahead_prices.content.calendar_price");
                 data = {
-                    keys: [null, 'spot_price', 'grid_fees', 'surcharge'],
-                    names: [null, price_label, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
-                    values: [[], [], [], []],
-                    stacked: [null, true, true, true],
-                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
+                    keys: [null, '__total__', 'spot_price', 'grid_fees', 'surcharge'],
+                    names: [null, __("day_ahead_prices.content.total_price"), price_label, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    values: [[], null, [], [], []],
+                    filled: [null, true, false, false, false],
+                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
                     // Only enable the price by default.
-                    // The chart with only the price is the most useful in most cases.
-                    default_visibilty: [null, true, false, false],
+                    // The chart with only the spot price is the most useful in most cases.
+                    default_visibilty: [null, true, true, false, false],
                     lines_vertical: []
                 }
             }
@@ -383,14 +381,14 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 if (both_enabled) {
                     const cal_raw = get_calendar_price_for_timestamp(timestamp_seconds);
                     const spot_raw = this.state.dap_prices.prices[i] - cal_raw;
-                    data.values[1].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
-                    data.values[2].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                    data.values[2].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
+                    data.values[3].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                    data.values[4].push(this.state.grid_costs_and_taxes / 1000.0);
+                    data.values[5].push(this.state.supplier_markup / 1000.0);
+                } else {
+                    data.values[2].push(get_price_from_index(i) / 1000.0);
                     data.values[3].push(this.state.grid_costs_and_taxes / 1000.0);
                     data.values[4].push(this.state.supplier_markup / 1000.0);
-                } else {
-                    data.values[1].push(get_price_from_index(i) / 1000.0);
-                    data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
-                    data.values[3].push(this.state.supplier_markup / 1000.0);
                 }
             }
 
@@ -399,14 +397,14 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             if (both_enabled) {
                 const cal_raw = get_calendar_price_for_timestamp(last_timestamp);
                 const spot_raw = this.state.dap_prices.prices[this.state.dap_prices.prices.length - 1] - cal_raw;
-                data.values[1].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
-                data.values[2].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                data.values[2].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
+                data.values[3].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                data.values[4].push(this.state.grid_costs_and_taxes / 1000.0);
+                data.values[5].push(this.state.supplier_markup / 1000.0);
+            } else {
+                data.values[2].push(get_price_from_index(this.state.dap_prices.prices.length - 1) / 1000.0);
                 data.values[3].push(this.state.grid_costs_and_taxes / 1000.0);
                 data.values[4].push(this.state.supplier_markup / 1000.0);
-            } else {
-                data.values[1].push(get_price_from_index(this.state.dap_prices.prices.length - 1) / 1000.0);
-                data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
-                data.values[3].push(this.state.supplier_markup / 1000.0);
             }
 
             // Add vertical line at current time
