@@ -357,12 +357,15 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     lines_vertical: []
                 }
             } else {
-                const price_label = dap_config.enable
+                const price_key = dap_config.enable
+                    ? 'spot_price'
+                    : 'calendar_price';
+                const price_name = dap_config.enable
                     ? __("day_ahead_prices.content.spot_market_price")
                     : __("day_ahead_prices.content.calendar_price");
                 data = {
-                    keys: [null, '__total__', 'spot_price', 'grid_fees', 'surcharge'],
-                    names: [null, __("day_ahead_prices.content.total_price"), price_label, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    keys: [null, '__total__', price_key, 'grid_fees', 'surcharge'],
+                    names: [null, __("day_ahead_prices.content.total_price"), price_name, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                     values: [[], null, [], [], []],
                     filled: [null, true, false, false, false],
                     paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
