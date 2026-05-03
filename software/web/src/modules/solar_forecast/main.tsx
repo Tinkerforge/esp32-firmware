@@ -261,23 +261,23 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             }
         } else {
             data = {
-                keys: [null],
-                names: [null],
-                values: [[]],
-                filled: [null],
+                keys: [null, '__total__'],
+                names: [null, __("solar_forecast.content.total")],
+                values: [[], null],
+                filled: [null, true],
             }
 
             for (const plane_index of active_planes) {
                 data.keys.push('plane' + plane_index);
                 data.names.push(this.state.plane_configs[plane_index].name);
                 data.values.push([]);
-                data.filled.push(true);
+                data.filled.push(false);
             }
 
             let resolution_multiplier = 60;
             for (let i = 0; i < this.state.plane_forecasts[first_index].forecast.length; i++) {
                 data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + i * 60 * resolution_multiplier);
-                let j = 1;
+                let j = 2;
                 for (const plane_index of active_planes) {
                     data.values[j].push(this.state.plane_forecasts[plane_index].forecast[i]);
                     j++;
@@ -285,7 +285,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             }
 
             data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + this.state.plane_forecasts[first_index].forecast.length * 60 * resolution_multiplier - 1);
-            let j = 1;
+            let j = 2;
             for (const plane_index of active_planes) {
                 data.values[j].push(this.state.plane_forecasts[plane_index].forecast[this.state.plane_forecasts[first_index].forecast.length - 1]);
                 j++;
@@ -293,7 +293,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
 
         // Show loader or data depending on the availability of data
-        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 2);
         this.uplot_wrapper_ref.current.set_data(data);
     }
 

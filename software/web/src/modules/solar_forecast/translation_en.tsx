@@ -19,6 +19,7 @@ let x = {
             "planes": "PV planes",
             "no_data": "No data available",
             "loading": "Loading data...",
+            "total": "Total",
             "plane_config_name": "Display name",
             "plane_config_latitude": "Latitude",
             "plane_config_latitude_muted": "e.g. 51.8846°",

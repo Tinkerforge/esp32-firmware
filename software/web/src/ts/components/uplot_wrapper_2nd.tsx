@@ -768,6 +768,44 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
         let y_min: {[id: string]: number} = {'y': this.props.y_min, 'y2': this.props.y2_min};
         let y_max: {[id: string]: number} = {'y': this.props.y_max, 'y2': this.props.y2_max};
         let last_stacked_values: {[id: string]: number[]} = {'y': [], 'y2': []};
+        let total_idx: number = undefined;
+        let total_values: number[] = undefined;
+
+        for (let i = 1; i < this.data.keys.length; ++i) {
+            if (this.data.keys[i] == '__total__') {
+                total_idx = i;
+                total_values = []; // FIXME: reserve array
+                break;
+            }
+        }
+
+        if (total_idx != undefined) {
+            for (let i = 1; i < this.data.values.length; ++i) {
+                if (this.data.keys[i] == '__total__') {
+                    continue;
+                }
+
+                let y_axis = this.data.y_axes ? this.data.y_axes[i] : 'y';
+
+                if (y_axis != 'y') {
+                    continue;
+                }
+
+                for (let k = 0; k < this.data.values[i].length; ++k) {
+                    if (total_values[k] === undefined) {
+                        total_values[k] = null; // uPlot treats null as missing value and null is auto-coerced to 0 in the summation below
+                    }
+
+                    let value = this.data.values[i][k];
+
+                    if (value !== null) {
+                        total_values[k] += value;
+                    }
+                }
+            }
+
+            this.data.values[total_idx] = total_values;
+        }
 
         this.uplot.delBand(null);
 
