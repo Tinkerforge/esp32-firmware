@@ -10,7 +10,7 @@ let x = {
         "content": {
             "solar_forecast": "Solar Forecast",
             "enable_solar_forecast": "Solar forecast enabled",
-            "enable_solar_forecast_desc": "Receives the PV yield forecast from the configured source and makes it internally availalbe to other functions.",
+            "enable_solar_forecast_desc": "Receives the PV yield forecast from the configured source and makes it internally available to other functions.",
             "source": "Source",
             "source_forecast_service": "Automatic via forecast service",
             "source_forecast_service_desc": /*FFN*/(api_url: string) => <>The forecast is queried from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,

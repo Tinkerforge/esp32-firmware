@@ -11,7 +11,7 @@ let x = {
         "content": {
             "day_ahead_prices": "Dynamic Tariff",
             "enable_day_ahead_prices": "Spot market electricity prices enabled",
-            "enable_day_ahead_prices_desc": "Receives the day-ahead spot market prices from the configured source and makes them internally availalbe to other functions.",
+            "enable_day_ahead_prices_desc": "Receives the day-ahead spot market prices from the configured source and makes them internally available to other functions.",
             "no_data": "No data available",
             "loading": "Loading data...",
             "time": "Time of day",
