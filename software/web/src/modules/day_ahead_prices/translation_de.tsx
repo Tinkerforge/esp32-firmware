@@ -17,8 +17,10 @@ let x = {
             "time": "Uhrzeit",
             "total_price": "Gesamtpreis",
             "electricity_price": "Strompreis",
-            "spot_market_price": "Börsenstrompreis",
+            "spot_market_price": "Börsenpreis",
+            "spot_market_price_incl_vat": "Börsenpreis inkl. MwSt",
             "calendar_price": "Kalenderpreis",
+            "calendar_price_incl_vat": "Kalenderpreis inkl. MwSt",
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",
             "source": "Quelle",
@@ -40,14 +42,14 @@ let x = {
             "electricity_provider_base_fee": "Grundgebühr des Stromtarifs",
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Strompreis",
-            "current_price_spot_market": "Aktueller Börsenstrompreis",
+            "current_price_spot_market": "Aktueller Börsenpreis",
             "current_price_calendar": "Aktueller Kalenderpreis",
             "price_component_spot_market": "Börse",
             "price_component_calendar": "Kalender",
             "average_price": "Durchschnittspreis",
             "now": "Jetzt",
             "vat": "Mehrwertsteuer",
-            "vat_muted": "auf Börsenstrompreis",
+            "vat_muted": "auf Börsenpreis und Kalenderpreis",
             "extra_costs_help": <>
                 <p><strong>Optional: Zusatzkosten werden nur für die Darstellung des Preises verwendet, nicht für die Regelung!</strong></p>
                 <p>Die dynamischen Börsenstrompreise sind nur ein Teil der Stromkosten. Es fallen zusätzliche fixe Steuern, Netzentgelte und Aufschläge des spezifischen Stromtarifs an.</p>

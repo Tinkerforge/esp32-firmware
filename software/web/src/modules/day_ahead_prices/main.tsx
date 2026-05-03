@@ -345,11 +345,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         } else {
             const dap_config = API.get("day_ahead_prices/config");
             const both_enabled = dap_config.enable && dap_config.enable_calendar;
+            const spot_market_price_name = dap_config.vat != 0 ? __("day_ahead_prices.content.spot_market_price_incl_vat") : __("day_ahead_prices.content.spot_market_price");
+            const calendar_price_name = dap_config.vat != 0 ? __("day_ahead_prices.content.calendar_price_incl_vat") : __("day_ahead_prices.content.calendar_price");
 
             if (both_enabled) {
                 data = {
-                    keys: [null, '__total__', 'spot_price', 'calendar_price', 'grid_fees', 'surcharge'],
-                    names: [null, __("day_ahead_prices.content.total_price"), __("day_ahead_prices.content.spot_market_price"), __("day_ahead_prices.content.calendar_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    keys: [null, '__total__', 'spot_market_price', 'calendar_price', 'grid_fees_plus_taxes', 'surcharge'],
+                    names: [null, __("day_ahead_prices.content.total_price"), spot_market_price_name, calendar_price_name, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                     values: [[], null, [], [], [], []],
                     filled: [null, true, false, false, false, false],
                     paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
@@ -357,14 +359,11 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     lines_vertical: []
                 }
             } else {
-                const price_key = dap_config.enable
-                    ? 'spot_price'
-                    : 'calendar_price';
-                const price_name = dap_config.enable
-                    ? __("day_ahead_prices.content.spot_market_price")
-                    : __("day_ahead_prices.content.calendar_price");
+                const price_key = dap_config.enable ? 'spot_market_price' : 'calendar_price';
+                const price_name = dap_config.enable ? spot_market_price_name : calendar_price_name;
+
                 data = {
-                    keys: [null, '__total__', price_key, 'grid_fees', 'surcharge'],
+                    keys: [null, '__total__', price_key, 'grid_fees_plus_taxes', 'surcharge'],
                     names: [null, __("day_ahead_prices.content.total_price"), price_name, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                     values: [[], null, [], [], []],
                     filled: [null, true, false, false, false],

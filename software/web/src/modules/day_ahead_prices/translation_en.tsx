@@ -18,7 +18,9 @@ let x = {
             "total_price": "Total price",
             "electricity_price": "Electricity price",
             "spot_market_price": "Spot market price",
+            "spot_market_price_incl_vat": "Spot market price incl. VAT",
             "calendar_price": "Calendar price",
+            "calendar_price_incl_vat": "Calendar price incl. VAT",
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
             "source": "Source",
@@ -47,7 +49,7 @@ let x = {
             "average_price": "Average price",
             "now": "Now",
             "vat": "Value-added tax",
-            "vat_muted": "on market price",
+            "vat_muted": "on spot market price and calender price",
             "extra_costs_help": <>
                 <p><strong>Optional: For control, only the net day-ahead spot market price is used; extra costs are only displayed.</strong></p>
                 <p>The day-ahead spot price is only a part of the electricity costs. Additional fixed taxes, grid fees and surcharges apply.</p>
