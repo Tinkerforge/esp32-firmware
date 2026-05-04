@@ -667,7 +667,8 @@ bool ChargeManager::send_client_packet(uint8_t i) {
                                              this->supported_charge_mode_bitmask,
                                              auth_feedback,
                                              this->ca_config->enable_central_auth,
-                                             this->ca_config->enable_charge_tracking);
+                                             this->ca_config->enable_charge_tracking,
+                                             this->charger_allocation_state[i].blocking_reason);
 }
 
 void ChargeManager::start_manager_task()
@@ -1071,6 +1072,67 @@ void ChargeManager::setup()
             }
             this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
             this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
+
+            // Derive blocking reason for each charger to send to managed chargers
+            for (int i = 0; i < this->charger_count; ++i) {
+                auto &charger_alloc = this->charger_allocation_state[i];
+                charger_alloc.blocking_reason = CMBlockingReason::None;
+                if (charger_alloc.allocated_phases != 0) {
+                    continue;
+                }
+
+                // Charger is blocked (0 phases allocated). Determine why.
+                if (charger_alloc.error == CASError::ChargerUnreachable
+                 || charger_alloc.error == CASError::EVSEUnreachable
+                 || charger_alloc.error == CASError::EVSENonreactive) {
+                    charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
+                    continue;
+                }
+
+                if (this->charger_state[i].off) {
+                    charger_alloc.blocking_reason = CMBlockingReason::ChargeModeOff;
+                    continue;
+                }
+
+                // Map from the ZeroPhaseDecision
+                switch(this->charger_decisions[i].zero.tag) {
+                    case ZeroPhaseDecisionTag::YesWaitingForRotation:
+                        charger_alloc.blocking_reason = CMBlockingReason::WaitingForRotation;
+                        continue;
+                    case ZeroPhaseDecisionTag::YesRotatedForB1:
+                    case ZeroPhaseDecisionTag::YesRotatedForHigherPrio:
+                        charger_alloc.blocking_reason = CMBlockingReason::RotatedAway;
+                        continue;
+                    case ZeroPhaseDecisionTag::YesPhaseOverload:
+                        charger_alloc.blocking_reason = CMBlockingReason::PhaseOverload;
+                        continue;
+                    case ZeroPhaseDecisionTag::YesPVExcessOverload:
+                        charger_alloc.blocking_reason = CMBlockingReason::PVExcessInsufficient;
+                        continue;
+                    case ZeroPhaseDecisionTag::None:
+                    case ZeroPhaseDecisionTag::YesNotActive:
+                    case ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil:
+                    case ZeroPhaseDecisionTag::NoHysteresisBlocksUntil:
+                        charger_alloc.blocking_reason = CMBlockingReason::None;
+                }
+                
+                switch(charger_alloc.state) {
+                    case CASState::NoVehicle:
+                    case CASState::UserBlocked:
+                    case CASState::ManagerBlocked:
+                    case CASState::CarBlocked:
+                    case CASState::Charged:
+                    case CASState::Unauthorized:
+                        charger_alloc.blocking_reason = CMBlockingReason::Unauthorized;
+                        continue;
+                    case CASState::Error:
+                        charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
+                        continue;
+                    case CASState::Charging:
+                        continue;
+                        // 0 phases while actively charging is an inconsistent state; fall through to log.
+                }
+            }
 
             fast_charger_in_c = false;
             for (int i = 0; i < this->charger_count; ++i) {

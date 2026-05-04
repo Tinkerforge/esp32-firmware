@@ -92,6 +92,7 @@ void EvseCommon::pre_setup()
     management_state = Config::Object({
         {"central_user_management_enabled", Config::Bool(false)},
         {"manager_ip", Config::Str("0.0.0.0", 7, 15)},
+        {"blocking_reason", Config::Uint8(0)},
     });
 
     user_current = current_cfg;
@@ -507,7 +508,7 @@ void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback) {
+    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback, CMBlockingReason blocking_reason) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -516,6 +517,7 @@ void EvseCommon::register_urls()
         this->management_state.get("manager_ip")->updateString(String(manager_ip_buf));
 
         this->handle_auth_feedback(auth_feedback);
+        this->management_state.get("blocking_reason")->updateUint(static_cast<uint8_t>(blocking_reason));
 
         if (!ignore_allocation) {
             set_managed_current(current);
@@ -651,6 +653,7 @@ void EvseCommon::register_urls()
     }, 100_ms, 100_ms);
 
     api.addState("evse/charge_mode", &charge_mode);
+    api.addState("evse/management_state", &management_state);
     api.addCommand("evse/charge_mode_update", &charge_mode, {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->request_charge_mode_until = now_us() + CHARGE_MODE_REQUEST_TIMEOUT;
     }, false);

@@ -10,6 +10,29 @@ let x = {
             "evse": "Ladestatus",
             "not_connected": "Getrennt",
             "waiting_for_charge_release": "Warte auf Freigabe",
+            "blocking_reason": "Blockierungsgrund",
+            "blocking_reason_text": /*SFN*/ (reason: number) => {
+                switch (reason) {
+                    case 0:
+                        return "Keiner";
+                    case 1:
+                        return "Lademodus aus";
+                    case 2:
+                        return "Warte auf Rotation";
+                    case 3:
+                        return "Für anderen Ladepunkt rotiert";
+                    case 4:
+                        return "Phasenstromlimit überschritten";
+                    case 5:
+                        return "Unzureichender PV-Überschuss";
+                    case 6:
+                        return "Anderer Ladepunkt nicht erreichbar";
+                    case 7:
+                        return "Nicht autorisiert";
+                    default:
+                        return "Unbekannt";
+                }
+            } /*NF*/,
             "ready_to_charge": "Ladebereit",
             "charging": "Lädt",
             "error": "Fehler",
@@ -265,7 +288,6 @@ let x = {
             "phases_connected_help": <><p>Hier wird konfiguriert, ob die Wallbox dreiphasig oder einphasig angeschlossen ist. Ist die Wallbox nur einphasig angeschlossen und hier auch so konfiguriert, wird das zweite Schütz für die Phasen L2 und L3 nie geschaltet, außerdem wird die Begrenzung der Ladeleistung nach §14a EnWG entsprechend berechnet.</p></>,
             "phases_connected_1": "Einphasig",
             "phases_connected_3": "Dreiphasig"
-
         },
         "automation" : {
             "external_current_wd": "Watchdog der externen Steuerung ausgelöst",
