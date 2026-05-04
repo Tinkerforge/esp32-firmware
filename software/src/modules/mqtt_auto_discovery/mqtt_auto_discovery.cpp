@@ -271,7 +271,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
         if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
             topic_num = 0;
-            delay = 1_min;
+            delay = 15_min;
         }
     }
 

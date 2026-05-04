@@ -439,7 +439,7 @@ entities = [
     ),
     Entity(
         include_generic=False,
-        component=Component.BINARY_SENSOR,
+        component=Component.SENSOR,
         feature=Feature.P14A_ENWG,
         object_id="limited",
         path="p14a_enwg/state",
@@ -448,12 +448,12 @@ entities = [
         availability_topic="",
         availability_info={},
         static_info_generic={
-            "device_class": "running",
+            "device_class": "enum",
         },
         static_info_homeassistant={
-            "value_template": "{{value_json.active}}",
-            "payload_on": "True",
-            "payload_off": "False",
+            "value_template": "{{ 'Limitiert' if value_json.active else 'Kein Limit' }}",
+            "options": ["Limitiert", "Kein Limit"],
+            "icon": "mdi:transmission-tower-export",
         },
     ),
 ]
