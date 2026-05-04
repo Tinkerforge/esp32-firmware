@@ -1,0 +1,92 @@
+From 6af074eb9f9906a9264564fd12954037f8564cfc Mon Sep 17 00:00:00 2001
+From: dbeinder <david.beinder@chronos.li>
+Date: Mon, 27 Apr 2026 15:40:04 +0200
+Subject: [PATCH] feat(netif): default netif override removal and re-reselect
+
+---
+ components/esp_netif/include/esp_netif.h      | 12 ++++++-----
+ components/esp_netif/lwip/esp_netif_lwip.c    |  7 ++++++-
+ .../main/esp_netif_test_lwip.c                | 20 ++++++++++++++++++-
+ 3 files changed, 32 insertions(+), 7 deletions(-)
+
+diff --git a/components/esp_netif/include/esp_netif.h b/components/esp_netif/include/esp_netif.h
+index 8a4980db4be9..904de154b053 100644
+--- a/components/esp_netif/include/esp_netif.h
++++ b/components/esp_netif/include/esp_netif.h
+@@ -246,11 +246,11 @@ void esp_netif_action_remove_ip6_address(void *esp_netif, esp_event_base_t base,
+ /**
+  * @brief Manual configuration of the default netif
+  *
+- * This API overrides the automatic configuration of the default interface based on the route_prio
+- * If the selected netif is set default using this API, no other interface could be set-default disregarding
+- * its route_prio number (unless the selected netif gets destroyed)
++ * This API allows overriding the automatic configuration of the default interface based on route_prio.
++ * The passed netif will be set as default, regardless of route_prio, until the netif gets destroyed.
++ * When passing NULL, the interface with the highest route_prio becomes default, and the override is removed.
+  *
+- * @param[in] esp_netif Handle to esp-netif instance
++ * @param[in] esp_netif Handle to esp-netif instance, or NULL
+  * @return ESP_OK on success
+  */
+ esp_err_t esp_netif_set_default_netif(esp_netif_t *esp_netif);
+@@ -961,6 +961,8 @@ int esp_netif_get_route_prio(esp_netif_t *esp_netif);
+ /**
+  * @brief Configures routing priority
+  *
++ * To re-select the default interface based on the new routing priority, call esp_netif_set_default_netif(NULL).
++ *
+  * @param[in]  esp_netif Handle to esp-netif instance
+  * @param[in]  route_prio Required route priority for esp-netif instance
+  *
+diff --git a/components/esp_netif/lwip/esp_netif_lwip.c b/components/esp_netif/lwip/esp_netif_lwip.c
+index cbdbb3040c97..1a9d9fab77c4 100644
+--- a/components/esp_netif/lwip/esp_netif_lwip.c
++++ b/components/esp_netif/lwip/esp_netif_lwip.c
+@@ -316,6 +316,11 @@ static esp_err_t esp_netif_update_default_netif_lwip(esp_netif_api_msg_t *msg)
+ 
+     ESP_LOGD(TAG, "%s %p", __func__, esp_netif);
+ 
++    if (action == ESP_NETIF_SET_DEFAULT && esp_netif == NULL) {
++        // SET_DEFAULT with NULL: perform auto update and remove override
++        s_is_last_default_esp_netif_overridden = false;
++        action = ESP_NETIF_STOPPED;
++    }
+     if (s_is_last_default_esp_netif_overridden && action != ESP_NETIF_SET_DEFAULT) {
+         // check if manually configured default interface hasn't been destroyed
+         s_last_default_esp_netif = esp_netif_is_active(s_last_default_esp_netif);
+diff --git a/components/esp_netif/test_apps/test_app_esp_netif/main/esp_netif_test_lwip.c b/components/esp_netif/test_apps/test_app_esp_netif/main/esp_netif_test_lwip.c
+index f76cf9a5fc59..229254c9cd8f 100644
+--- a/components/esp_netif/test_apps/test_app_esp_netif/main/esp_netif_test_lwip.c
++++ b/components/esp_netif/test_apps/test_app_esp_netif/main/esp_netif_test_lwip.c
+@@ -449,6 +449,8 @@ TEST(esp_netif, get_set_hostname)
+  * - We create 10 netifs with prios: 0, 1, 2, 3, 4, 0, 0, ...., 0 (netifs[nr_of_netifs/2] has max_prio)
+  * - We check the default netif is correct after bringing it down/up, overriding it
+  * - We destroy the default netif and check again
++ * - We set and clear a manual override, then check if we are back to using auto-selection
++ * - We modify route_prio without changing the interface state, then explicitly re-evaluate the default netif
+  * - We destroy the remaining netifs
+  */
+ TEST(esp_netif, route_priority)
+@@ -497,6 +499,22 @@ TEST(esp_netif, route_priority)
+     esp_netif_action_stop(netifs[max_prio_i], 0, 0, 0);
+     // ...so the current default is on (max_prio-1)
+     TEST_ASSERT_EQUAL_PTR(esp_netif_get_netif_impl(netifs[max_prio_i - 1]), netif_default);
++
++    // override the default with a low-prio netif, then clear the override
++    // and check if the auto-selected default is restored
++    int low_prio_i = max_prio_i + 1;  // netif with route_prio == 0 that is still up
++    esp_netif_set_default_netif(netifs[low_prio_i]);
++    TEST_ASSERT_EQUAL_PTR(esp_netif_get_netif_impl(netifs[low_prio_i]), netif_default);
++    TEST_ESP_OK(esp_netif_set_default_netif(NULL)); // remove override
++    TEST_ASSERT_EQUAL_PTR(esp_netif_get_netif_impl(netifs[max_prio_i - 1]), netif_default);
++
++    // change route_prio at runtime: the default netif does not change until we ask for re-evaluation
++    esp_netif_set_route_prio(netifs[low_prio_i], max_prio_i + 10);
++    TEST_ASSERT_EQUAL_PTR(esp_netif_get_netif_impl(netifs[max_prio_i - 1]), netif_default);
++    // trigger default netif re-evaluation
++    TEST_ESP_OK(esp_netif_set_default_netif(NULL));
++    TEST_ASSERT_EQUAL_PTR(esp_netif_get_netif_impl(netifs[low_prio_i]), netif_default);
++
+     // destroy one by one and check it's been removed
+     for (int i=0; i < override_prio_i; ++i) {
+         esp_netif_destroy(netifs[i]);

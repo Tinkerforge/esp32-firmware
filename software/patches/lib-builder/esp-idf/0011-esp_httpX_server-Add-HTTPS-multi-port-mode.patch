@@ -526,7 +526,7 @@ index b3d22e5346..32715b1bcc 100644
      free(cfg);
      return ret;
  }
-@@ -380,58 +398,81 @@ exit:
+@@ -380,59 +398,81 @@ exit:
  /** Start the server */
  esp_err_t httpd_ssl_start(httpd_handle_t *pHandle, struct httpd_ssl_config *config)
  {
@@ -617,8 +617,9 @@ index b3d22e5346..32715b1bcc 100644
 -    ret = httpd_start(&handle, &config->httpd);
 +    ret = httpd_start(&handle, httpd_config);
      if (ret != ESP_OK) {
--        free(ssl_ctx);
--        ssl_ctx = NULL;
+-        if (ssl_ctx) {
+-            free_secure_context(ssl_ctx);
+-        }
 -        return ret;
 +        goto err_out;
      }
