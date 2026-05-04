@@ -2005,64 +2005,13 @@ def main():
                 if not filename.endswith(".enum"):
                     continue
 
-                filename_parts = filename.split('.')
-
-                if len(filename_parts) != 3:
-                    print('Error: Invalid enum file "{}" in backend {}'.format(filename, mod_path))
+                try:
+                    enum_name, enum_type, enum_values, enum_comments = util.parse_enum_spec(os.path.join(mod_path, filename))
+                except Exception as e:
+                    print(f'Error: {e}')
                     sys.exit(1)
 
-                value_number = -1
-
-                enum_comments = []
-                enum_name = util.FlavoredName(filename_parts[0]).get()
-
-                enum_values: list[util.EnumValue] = []
-
-                with open(os.path.join(mod_path, filename), 'r', encoding='utf-8') as f:
-                    for line in f.readlines():
-                        line = line.strip()
-
-                        if len(line) == 0:
-                            continue
-
-                        m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(-?\d+))?\s*(?://\s*(.*))?)$', line)
-
-                        if m == None:
-                            print(f'Error: Malformed line enum file "{filename}" in backend {mod_path}: {line}')
-                            sys.exit(1)
-
-                        file_comment = m.group(1)
-
-                        if file_comment != None:
-                            continue
-
-                        enum_comment = m.group(2)
-
-                        if enum_comment != None:
-                            enum_comments.append(f'// {enum_comment}\n')
-                            continue
-
-                        value_name = util.FlavoredName(m.group(3)).get()
-
-                        if m.group(4) != None:
-                            value_number = int(m.group(4))
-                        else:
-                            value_number += 1
-
-                        value_comment = m.group(5)
-
-                        if value_comment == None:
-                            value_comment = ''
-                        else:
-                            value_comment = ' // ' + value_comment
-
-                        if any(e.name.space == value_name.space for e in enum_values):
-                            print(f'Error: Duplicate value "{value_name.space}" in enum file "{filename}" in backend {mod_path}')
-                            sys.exit(1)
-
-                        enum_values.append(util.EnumValue(value_name, value_number, value_comment))
-
-                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments))
+                util.generate_enum(filename, backend_module, enum_name, enum_type, enum_values, ''.join(enum_comments))
 
     # Generate unions
     for backend_module in backend_modules:

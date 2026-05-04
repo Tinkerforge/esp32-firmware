@@ -431,6 +431,65 @@ class EnumValue:
     number: int
     comment: str = ''
 
+def parse_enum_spec(path):
+    filename = os.path.split(path)[-1]
+    filename_parts = filename.split('.')
+
+    if len(filename_parts) != 3:
+        raise Exception(f'Invalid enum filename {repr(filename)} in path {repr(path)}')
+
+    value_number = -1
+
+    enum_name = FlavoredName(filename_parts[0]).get()
+    enum_type = filename_parts[1] + '_t'
+    enum_values: list[EnumValue] = []
+    enum_comments = []
+
+    with open(path, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            line = line.strip()
+
+            if len(line) == 0:
+                continue
+
+            m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(-?\d+))?\s*(?://\s*(.*))?)$', line)
+
+            if m == None:
+                raise Exception(f'Malformed line enum file {repr(path)}: {line}')
+
+            file_comment = m.group(1)
+
+            if file_comment != None:
+                continue
+
+            enum_comment = m.group(2)
+
+            if enum_comment != None:
+                enum_comments.append(f'// {enum_comment}\n')
+                continue
+
+            value_name = FlavoredName(m.group(3)).get()
+
+            if m.group(4) != None:
+                value_number = int(m.group(4))
+            else:
+                value_number += 1
+
+            value_comment = m.group(5)
+
+            if value_comment == None:
+                value_comment = ''
+            else:
+                value_comment = ' // ' + value_comment
+
+            if any(e.name.space == value_name.space for e in enum_values):
+                raise Exception(f'Duplicate value "{value_name.space}" in enum file {repr(path)}')
+                sys.exit(1)
+
+            enum_values.append(EnumValue(value_name, value_number, value_comment))
+
+    return enum_name, enum_type, enum_values, enum_comments
+
 def generate_enum(source_file_name: str,
                   backend_module: NameFlavors,
                   enum_name: NameFlavors,

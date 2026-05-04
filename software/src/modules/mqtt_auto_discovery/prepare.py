@@ -9,29 +9,8 @@ tfutil.create_parent_module(__file__, "software")
 from software import util
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
-
-
-def parse_enum_file(path):
-    """Parse a .enum text file: one name per line, '//' for comments.
-    Returns a list of names (index = numeric value)."""
-    names = []
-    with open(path, 'r', encoding='utf-8') as f:
-        for raw_line in f:
-            # Strip trailing '// ...' comments and surrounding whitespace
-            line = raw_line.split('//', 1)[0].strip()
-            if not line:
-                continue
-            names.append(line)
-    return names
-
-
-# Charge mode enum values
-CHARGE_MODE_NAMES = parse_enum_file(
-    os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        '..', 'cm_networking', 'Config Charge Mode.uint8.enum',
-    )
-)
+charge_mode_names = [x.name.space for x in util.parse_enum_spec(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                                             '..', 'cm_networking', 'Config Charge Mode.uint8.enum'))[2]]
 
 
 def enum_value_template(json_field, names):
@@ -507,8 +486,8 @@ entities = [
             "device_class": "enum",
         },
         static_info_homeassistant={
-            "value_template": enum_value_template("mode", CHARGE_MODE_NAMES),
-            "options": CHARGE_MODE_NAMES + ["Unknown"],
+            "value_template": enum_value_template("mode", charge_mode_names),
+            "options": charge_mode_names + ["Unknown"],
             "icon": "mdi:ev-station",
         },
     ),
