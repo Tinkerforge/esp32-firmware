@@ -10,6 +10,29 @@ let x = {
             "evse": "Charge status",
             "not_connected": "Disconnected",
             "waiting_for_charge_release": "Waiting for release",
+            "blocking_reason": "Blocking reason",
+            "blocking_reason_text": /*SFN*/ (reason: number) => {
+                switch (reason) {
+                    case 0:
+                        return "None";
+                    case 1:
+                        return "Charge mode off";
+                    case 2:
+                        return "Waiting for rotation";
+                    case 3:
+                        return "Rotated away for another charger";
+                    case 4:
+                        return "Phase current limit exceeded";
+                    case 5:
+                        return "Insufficient PV excess";
+                    case 6:
+                        return "Other charger unreachable";
+                    case 7:
+                        return "Unauthorized";
+                    default:
+                        return "Unknown";
+                }
+            } /*NF*/,
             "ready_to_charge": "Ready",
             "charging": "Charging",
             "error": "Error",

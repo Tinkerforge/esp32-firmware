@@ -32,12 +32,14 @@ import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { useId } from "preact/hooks";
 import { ChargeModeButtons } from "modules/cm_networking/charge_mode_buttons";
+import { CMBlockingReason } from "modules/cm_networking/generated/cm_blocking_reason.enum";
 
 interface EVSEStatusState {
     hidden: boolean;
     state: API.getType["evse/state"];
     auto_start: API.getType["evse/auto_start_charging"];
     slots: Readonly<API.getType["evse/slots"]>;
+    management_state: API.getType["evse/management_state"];
     configured_current: number;
     is_evse_v2: boolean;
 }
@@ -204,6 +206,19 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                         ]}
                     />
                 </FormRow>
+
+                {state.state.charger_state == 1 &&
+                this.state.management_state &&
+                this.state.management_state.blocking_reason !=
+                    CMBlockingReason.None ? (
+                    <FormRow label={__("evse.status.blocking_reason")}>
+                        <InputText
+                            value={__("evse.status.blocking_reason_text")(
+                                this.state.management_state.blocking_reason,
+                            )}
+                        />
+                    </FormRow>
+                ) : undefined}
 
                 <FormRow label={__("evse.status.charge_control")}>
                     <div class="row g-2">

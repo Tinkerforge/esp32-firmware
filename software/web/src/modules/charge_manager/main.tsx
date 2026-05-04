@@ -52,7 +52,14 @@ import { FormSeparator } from "ts/components/form_separator";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { Dropdown } from "react-bootstrap";
 import { useId } from "preact/hooks";
-import { CASAuthState } from "./generated/cas_auth_state.enum";
+
+// Charger authorization state (maps to C++ 'u' member)
+// u == -2 unknown NFC-Tag, u == -1 unauthorized, u == 0 authorization disabled, u >= 1 user authorized
+export const enum ChargerAuthState {
+    Unknown = -2,
+    Unauthorized = -1,
+    Disabled = 0,
+}
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";

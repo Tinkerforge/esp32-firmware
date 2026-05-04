@@ -59,9 +59,10 @@ public:
                              std::array<uint8_t, 2> supported_charge_mode_bitmask,
                              CMAuthFeedback auth_feedback,
                              bool central_user_management_enabled,
-                             bool central_charge_logging_enabled);
+                             bool central_charge_logging_enabled,
+                             CMBlockingReason blocking_reason);
 
-    void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb);
+    void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback, CMBlockingReason)> &manager_update_received_cb);
     void get_manager_ip(char buf[INET_ADDRSTRLEN]);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,

@@ -203,4 +203,7 @@ struct ChargerAllocationState {
     CASError error;
 
     CASState state;
+
+    // reason why this charger is blocked (0 phases allocated), sent to managed charger
+    CMBlockingReason blocking_reason;
 };

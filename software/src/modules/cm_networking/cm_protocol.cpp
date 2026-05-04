@@ -86,6 +86,7 @@ static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 and v2.
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v4),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v4) + sizeof(struct cm_command_v5),
 };
 static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSION + 1), "Unexpected amount of command packet length versions.");
 
@@ -446,7 +447,8 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
                                        std::array<uint8_t, 2> supported_charge_mode_bitmask,
                                        CMAuthFeedback auth_feedback,
                                        bool central_user_management_enabled,
-                                       bool central_charge_logging_enabled)
+                                       bool central_charge_logging_enabled,
+                                       CMBlockingReason blocking_reason)
 {
     static uint16_t next_seq_num = 1;
 
@@ -471,6 +473,9 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
 
     command_pkt.v4.auth_feedback = auth_feedback;
     memset(command_pkt.v4._padding, 0, sizeof(command_pkt.v4._padding));
+
+    command_pkt.v5.blocking_reason = blocking_reason;
+    memset(command_pkt.v5._padding, 0, sizeof(command_pkt.v5._padding));
 
     return send_command_packet(client_id, &command_pkt);
 }
@@ -520,7 +525,7 @@ void CMNetworking::get_manager_ip(char buf[INET_ADDRSTRLEN])
     }
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback, CMBlockingReason)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -588,7 +593,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
             if (!this->manager_addr_valid) {
                 // Block charging
                 if (manager_update_received_cb) {
-                    manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None);
+                    manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None, CMBlockingReason::None);
                 }
 
                 return;
@@ -604,7 +609,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
                 } else {
                     // Block charging
                     if (manager_update_received_cb) {
-                        manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None);
+                        manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None, CMBlockingReason::None);
                     }
 
                     return;
@@ -615,6 +620,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
         last_successful_recv = now_us();
 
         const CMAuthFeedback auth_feedback = command_pkt.header.version >= 4 ? command_pkt.v4.auth_feedback : CMAuthFeedback::None;
+        const CMBlockingReason blocking_reason = command_pkt.header.version >= 5 ? command_pkt.v5.blocking_reason : CMBlockingReason::None;
 
         if (manager_update_received_cb) {
             ConfigChargeMode supported_charge_modes[ARRAY_SIZE(command_pkt.v3.supported_charge_modes) * 8];
@@ -642,7 +648,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
                             command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Default,
                             supported_charge_modes, supported_charge_mode_length,
-                            auth_feedback);
+                            auth_feedback,
+                            blocking_reason);
         } else {
             this->send_command_packet(0, &command_pkt);
         }
@@ -676,7 +683,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     }
     //logger.printfln("Sending state packet.");
 
-    struct cm_state_packet state_pkt;
+    struct cm_state_packet state_pkt = {};
     state_pkt.header.magic = CM_PACKET_MAGIC;
     state_pkt.header.length = CM_STATE_PACKET_LENGTH;
     state_pkt.header.seq_num = next_seq_num;
