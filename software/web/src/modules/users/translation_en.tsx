@@ -60,7 +60,11 @@ let x = {
             "nfc_no_tags_assigned": "No NFC tags assigned",
             "nfc_no_seen_tags": "No NFC tags seen recently. Hold a tag to the charger to detect it.",
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
-                `Already assigned to user "${other_name}"` /*NF*/
+                `Already assigned to user "${other_name}"` /*NF*/,
+            "nfc_add_tag_manually": "Add tag manually",
+            "nfc_tag_id_placeholder": "e.g. 01:23:45:67",
+            "nfc_tag_id_invalid":
+                "The tag ID must have four to ten groups separated by colons, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
         },
         "script": {
             "reboot_content_changed": "user settings",
