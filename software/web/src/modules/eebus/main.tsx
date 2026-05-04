@@ -273,6 +273,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     render(props: {}, state: EEBusState & EEBusConfig) {
         if (!util.render_allowed())
             return <SubPage name="eebus"/>;
+        const trustedPeers = state.state.peers.filter(p =>
+            p.trusted
+        );
 
         let ski = state.state.ski;
         if (ski == "") {
@@ -1065,9 +1068,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         }
                                     })
                             }
-                            addEnabled={state.enable && state.state.peers.length < MAX_PEER_REMEMBERED}
+                            addEnabled={state.enable && trustedPeers.length < MAX_PEER_REMEMBERED}
                             addTitle={__("eebus.content.add_peer_title")}
-                            addMessage={__("eebus.content.add_peer_message")(state.state.peers.length, MAX_PEER_REMEMBERED)}
+                            addMessage={__("eebus.content.add_peer_message")(trustedPeers.length, MAX_PEER_REMEMBERED)}
                             onAddShow={async () => {
                                 this.setState({
                                     add: {
