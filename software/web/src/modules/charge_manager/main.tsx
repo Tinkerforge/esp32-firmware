@@ -516,11 +516,11 @@ function CMStatusCharger(props: {
 
     // Get the display name of the currently charging user
     let user_display_name = "";
-    if (c.uid >= 0) {
-        let filtered = props.users.filter(x => x.id == c.uid);
+  if (c.u >= 1) {
+        let filtered = props.users.filter((x) => x.id == c.u);
         if (filtered.length == 1) {
             user_display_name = filtered[0].display_name;
-        } else if (c.uid == 0) {
+        } else if (c.u == 0) {
             user_display_name = __("charge_tracker.script.unknown_user");
         } else {
             user_display_name = __("charge_tracker.script.deleted_user");
@@ -567,7 +567,8 @@ function CMStatusCharger(props: {
     let mode = props.charge_mode
     let mode_found = supported_charge_modes.indexOf(mode) >= 0;
 
-    let show_user_dropdown = props.central_auth_enabled && c.a === CASAuthState.Unauthenticated;
+    let show_user_dropdown =
+        props.central_auth_enabled && c.u === ChargerAuthState.Unauthorized && c.s !== CASState.NoVehicle;
 
     return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
                 <div class="card-header">
