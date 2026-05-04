@@ -6,7 +6,6 @@ import { CurrentDecision } from "./generated/current_decision.union";
 
 import { CASState } from "./generated/cas_state.enum";
 import { CASError } from "./generated/cas_error.enum";
-import { CASAuthState } from "./generated/cas_auth_state.enum";
 
 type ChargerState = {
     /** state */
@@ -26,26 +25,13 @@ type ChargerState = {
     /** name */
     n: string,
     /** uid */
-    u: number,
+    uid: number,
     d0: ZeroPhaseDecision,
     d1: OnePhaseDecision,
     d3: ThreePhaseDecision,
     dc: CurrentDecision,
-    /** auth_state */
-    a: CASAuthState,
     /** user_id - ID of the currently authenticated/charging user */
-    uid: number,
-    /** tag_id - Last NFC tag ID seen on this charger (colon-separated hex) */
-    ti: string,
-    /** tag_type - Last NFC tag type seen on this charger */
-    tt: number,
-    /** tag_last_seen - Milliseconds since tag was last seen */
-    ts: number,
-    ai: {
-      ti: string,
-      tt: number,
-      ts: number,
-      }[]
+    u: number,
 };
 
 interface ServCharger {
