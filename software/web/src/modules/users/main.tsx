@@ -30,7 +30,7 @@ import {
 } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { InputPassword } from "../../ts/components/input_password";
@@ -91,6 +91,8 @@ interface UsersState {
     nfcTagChanges: NfcTagChange[];
     nfcDeadtime: number;
     allSeenTags: NFCSeenTag[];
+    manualTagId: string;
+    manualTagType: number;
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -156,6 +158,10 @@ interface NfcTagsSectionProps {
     users: User[];
     currentUserId: number;
     currentUsername: string;
+    manualTagId: string;
+    manualTagType: number;
+    onManualTagIdChange: (value: string) => void;
+    onManualTagTypeChange: (value: number) => void;
     onRemoveTag: (index: number) => void;
     onAddTag: (tag: NfcTagRef) => void;
 }
@@ -168,6 +174,10 @@ function NfcTagsSection({
     users,
     currentUserId,
     currentUsername,
+    manualTagId,
+    manualTagType,
+    onManualTagIdChange,
+    onManualTagTypeChange,
     onRemoveTag,
     onAddTag,
 }: NfcTagsSectionProps) {
@@ -308,6 +318,82 @@ function NfcTagsSection({
                     {__("users.content.nfc_no_seen_tags")}
                 </div>
             )}
+            <div class="mt-3">
+                <label class="form-label">
+                    {__("users.content.nfc_add_tag_manually")}
+                </label>
+                <div class="d-flex gap-2">
+                    <div class="flex-grow-1">
+                        <InputTextPatterned
+                            value={manualTagId}
+                            onValue={(v) => onManualTagIdChange(v)}
+                            minLength={8}
+                            maxLength={29}
+                            pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                            placeholder={__(
+                                "users.content.nfc_tag_id_placeholder",
+                            )}
+                            invalidFeedback={__(
+                                "users.content.nfc_tag_id_invalid",
+                            )}
+                        />
+                    </div>
+                    <div>
+                        <InputSelect
+                            items={[
+                                [
+                                    "0",
+                                    translate_unchecked("nfc.content.type_0"),
+                                ],
+                                [
+                                    "1",
+                                    translate_unchecked("nfc.content.type_1"),
+                                ],
+                                [
+                                    "2",
+                                    translate_unchecked("nfc.content.type_2"),
+                                ],
+                                [
+                                    "3",
+                                    translate_unchecked("nfc.content.type_3"),
+                                ],
+                                [
+                                    "4",
+                                    translate_unchecked("nfc.content.type_4"),
+                                ],
+                            ]}
+                            value={manualTagType.toString()}
+                            onValue={(v) => onManualTagTypeChange(parseInt(v))}
+                        />
+                    </div>
+                    <div class="d-flex">
+                        <button
+                            type="button"
+                            class="btn btn-primary d-flex align-items-center"
+                            disabled={
+                                !/^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$/.test(
+                                    manualTagId,
+                                )
+                            }
+                            onClick={() => {
+                                onAddTag({
+                                    tag_type: manualTagType,
+                                    tag_id: manualTagId
+                                        .toUpperCase()
+                                        .replace(
+                                            /([0-9A-F]{2})(?!$|:)/g,
+                                            "$1:",
+                                        ),
+                                });
+                                onManualTagIdChange("");
+                                onManualTagTypeChange(0);
+                            }}
+                        >
+                            <Plus size={16} />
+                        </button>
+                    </div>
+                </div>
+            </div>
         </FormRow>
     );
 }
@@ -322,6 +408,10 @@ interface EditUserFormContentProps {
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
+    manualTagId: string;
+    manualTagType: number;
+    onManualTagIdChange: (value: string) => void;
+    onManualTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -336,6 +426,10 @@ function EditUserFormContent({
     nfcConfig,
     pendingTagChanges,
     users,
+    manualTagId,
+    manualTagType,
+    onManualTagIdChange,
+    onManualTagTypeChange,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -412,6 +506,10 @@ function EditUserFormContent({
                 users={users}
                 currentUserId={user.id}
                 currentUsername={user.username}
+                manualTagId={manualTagId}
+                manualTagType={manualTagType}
+                onManualTagIdChange={onManualTagIdChange}
+                onManualTagTypeChange={onManualTagTypeChange}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -430,6 +528,10 @@ interface AddUserFormContentProps {
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
+    manualTagId: string;
+    manualTagType: number;
+    onManualTagIdChange: (value: string) => void;
+    onManualTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -443,6 +545,10 @@ function AddUserFormContent({
     nfcConfig,
     pendingTagChanges,
     users,
+    manualTagId,
+    manualTagType,
+    onManualTagIdChange,
+    onManualTagTypeChange,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -514,6 +620,10 @@ function AddUserFormContent({
                 users={users}
                 currentUserId={-1}
                 currentUsername={user.username}
+                manualTagId={manualTagId}
+                manualTagType={manualTagType}
+                onManualTagIdChange={onManualTagIdChange}
+                onManualTagTypeChange={onManualTagTypeChange}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -557,6 +667,8 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 nfcTagChanges: [],
                 nfcDeadtime: 0,
                 allSeenTags: [],
+                manualTagId: "",
+                manualTagType: 0,
             },
         );
 
@@ -940,7 +1052,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         let seen_tags = state.allSeenTags;
         let nfc_config = API.get("nfc/config");
         //#endif
-        
+
         let evse_user_component = null;
         //#if MODULE_EVSE_COMMON_AVAILABLE
         evse_user_component = <FormRow
@@ -1136,6 +1248,18 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                                 state.nfcTagChanges
                                             }
                                             users={state.users}
+                                            manualTagId={state.manualTagId}
+                                            manualTagType={state.manualTagType}
+                                            onManualTagIdChange={(v) =>
+                                                this.setState({
+                                                    manualTagId: v,
+                                                })
+                                            }
+                                            onManualTagTypeChange={(v) =>
+                                                this.setState({
+                                                    manualTagType: v,
+                                                })
+                                            }
                                             onNfcTagsChange={(tags) =>
                                                 this.setState({
                                                     editUserNfcTags: tags,
@@ -1258,6 +1382,14 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     nfcConfig={nfc_config}
                                     pendingTagChanges={state.nfcTagChanges}
                                     users={state.users}
+                                    manualTagId={state.manualTagId}
+                                    manualTagType={state.manualTagType}
+                                    onManualTagIdChange={(v) =>
+                                        this.setState({ manualTagId: v })
+                                    }
+                                    onManualTagTypeChange={(v) =>
+                                        this.setState({ manualTagType: v })
+                                    }
                                     onNfcTagsChange={(tags) =>
                                         this.setState({
                                             addUserNfcTags: tags,
