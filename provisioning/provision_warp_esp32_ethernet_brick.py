@@ -462,14 +462,21 @@ def restart(app):
     original_stdout.write("nach disconnect")
     app.quit()
 
+last_edits_content = {}
 def update_logs(edits, restart_button, reprint_button):
     global restart_enabled
     global reprint_enabled
+    global last_edits_content
     restart_button.setEnabled(restart_enabled)
     reprint_button.setEnabled(reprint_enabled)
 
     for k, v in edits.items():
         new_log, back_color = terminal_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue())
+
+        if last_edits_content.get(k) == (new_log, back_color):
+            continue
+
+        last_edits_content[k] = (new_log, back_color)
         v.setHtml(new_log)
         v.setStyleSheet(f"background-color: {back_color};")
         v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
