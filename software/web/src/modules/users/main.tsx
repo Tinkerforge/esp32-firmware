@@ -1054,32 +1054,32 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#endif
 
         let evse_user_component = null;
-        //#if MODULE_EVSE_COMMON_AVAILABLE
-        evse_user_component = <FormRow
-            label={__("users.content.evse_user_description")}
-            warning={__(
-              "users.content.evse_user_enable_central_auth_warning",
-            )}
-            show_warning={central_auth_enabled}
-          >
-            <Switch
-              desc={__("users.content.evse_user_enable")}
-              checked={user_slot_allowed && state.userSlotEnabled}
-              disabled={
-                !user_slot_allowed || central_auth_enabled
-              }
-              className={
-                !user_slot_allowed && state.userSlotEnabled
-                  ? "is-invalid"
-                  : ""
-              }
-              onClick={this.toggle("userSlotEnabled")}
-            />
-            <div class="invalid-feedback">
-              {__("users.content.evse_user_enable_invalid")}
-            </div>
-          </FormRow>;
-        //#endif
+//#if MODULE_EVSE_COMMON_AVAILABLE
+        evse_user_component = (
+            <FormRow
+                label={__("users.content.evse_user_description")}
+                warning={__(
+                    "users.content.evse_user_enable_central_auth_warning",
+                )}
+                show_warning={central_auth_enabled}
+            >
+                <Switch
+                    desc={__("users.content.evse_user_enable")}
+                    checked={user_slot_allowed && state.userSlotEnabled}
+                    disabled={!user_slot_allowed || central_auth_enabled}
+                    className={
+                        !user_slot_allowed && state.userSlotEnabled
+                            ? "is-invalid"
+                            : ""
+                    }
+                    onClick={this.toggle("userSlotEnabled")}
+                />
+                <div class="invalid-feedback">
+                    {__("users.content.evse_user_enable_invalid")}
+                </div>
+            </FormRow>
+        );
+//#endif
 
         return (
             <SubPage name="users">
@@ -1109,7 +1109,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                         </div>
                     </FormRow>
 
-                    { evse_user_component }
+                    {evse_user_component}
 
                     <FormRow label={__("users.content.unknown_username")}>
                         <InputPassword
