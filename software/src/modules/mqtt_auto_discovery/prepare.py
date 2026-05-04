@@ -1,6 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 import json
+import os
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
@@ -8,6 +9,39 @@ tfutil.create_parent_module(__file__, "software")
 from software import util
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
+
+
+def parse_enum_file(path):
+    """Parse a .enum text file: one name per line, '//' for comments.
+    Returns a list of names (index = numeric value)."""
+    names = []
+    with open(path, 'r', encoding='utf-8') as f:
+        for raw_line in f:
+            # Strip trailing '// ...' comments and surrounding whitespace
+            line = raw_line.split('//', 1)[0].strip()
+            if not line:
+                continue
+            names.append(line)
+    return names
+
+
+# Charge mode enum values
+CHARGE_MODE_NAMES = parse_enum_file(
+    os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        '..', 'cm_networking', 'Config Charge Mode.uint8.enum',
+    )
+)
+
+
+def enum_value_template(json_field, names):
+    """Generate a Jinja value_template that maps an integer enum field to its name.
+    Uses a Jinja `{% set map = {0: 'A', 1: 'B', ...} %}` lookup with a fallback to 'Unknown'."""
+    mapping = ", ".join(f"{i}: '{name}'" for i, name in enumerate(names))
+    return (
+        "{{% set m = {{ {mapping} }} %}}"
+        "{{{{ m.get(value_json.{field}, 'Unknown') }}}}"
+    ).format(mapping=mapping, field=json_field)
 
 
 class DiscoveryType(Enum):
@@ -39,6 +73,7 @@ class Feature(Enum):
     METER_PHASES = "meter_phases"
     P14A_ENWG = "p14a_enwg"
     METERS = "meters"
+    POWER_MANAGER = "power_manager"
 
 
 @dataclass
@@ -121,6 +156,8 @@ class Entity:
             .replace('"', '\\"')
             + '"'
         )
+
+
 
 
 topic_template = """    {{
@@ -454,6 +491,25 @@ entities = [
             "value_template": "{{ 'Limitiert' if value_json.active else 'Kein Limit' }}",
             "options": ["Limitiert", "Kein Limit"],
             "icon": "mdi:transmission-tower-export",
+        },
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.POWER_MANAGER,
+        object_id="active_charge_mode",
+        path="power_manager/charge_mode",
+        name_de="Aktiver Lademodus",
+        name_en="Active charge mode",
+        availability_topic="",
+        availability_info={},
+        static_info_generic={
+            "device_class": "enum",
+        },
+        static_info_homeassistant={
+            "value_template": enum_value_template("mode", CHARGE_MODE_NAMES),
+            "options": CHARGE_MODE_NAMES + ["Unknown"],
+            "icon": "mdi:ev-station",
         },
     ),
 ]
