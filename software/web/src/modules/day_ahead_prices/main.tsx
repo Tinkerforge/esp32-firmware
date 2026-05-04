@@ -548,7 +548,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         />
                     </FormRow>
                     {dap.enable_calendar &&
-                        <CalendarGrid
+                        <div class="mb-3"><CalendarGrid
                             prices={dap.calendar_prices || new Array(672).fill(0)}
                             day_names={[
                                 __("day_ahead_prices.content.calendar_mon") as string,
@@ -568,7 +568,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 });
                             }}
                             edit_label={__("day_ahead_prices.content.calendar_edit")}
-                        />
+                        /></div>
                     }
                     <Modal size="xl" fullscreen="lg-down" show={dap.show_calendar_modal} onHide={() => {}} backdrop="static" centered>
                         <Modal.Header>
