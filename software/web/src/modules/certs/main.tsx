@@ -47,6 +47,7 @@ export class Certs extends Component<{}, State> {
         return (
             <SubPage name="certs">
                 <PageHeader title={__("certs.content.certs")}/>
+                    {__("certs.content.cert_explainer")}
                     <div class="form-group">
                         <Table
                             tableTill="md"

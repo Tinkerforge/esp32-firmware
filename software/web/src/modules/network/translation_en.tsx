@@ -39,7 +39,11 @@ let x = {
             "cert": "Certificate for HTTPS",
             "cert_help": "A self-signed certificate in PEM or DER format, or a chain of certificates in PEM format, with the device certificate first.",
             "key": "Private key for HTTPS",
-            "key_help": "Private key for the selected certificate. For performance reasons, an ECDSA key using the secp256r1 curve or alternatively a 2048 bit RSA key is recommended. Larger key sizes are significantly slower and currently provide no significant security gain.",
+            "key_help": <>
+                <p>Private key for the selected certificate.</p>
+                <p>ECDSA keys using secp256r1 or secp384r1 curves, also known als P-256 and P-384, and RSA keys with lengths from 2048 to 4096 bit are supported.</p>
+                <p>For performance reasons, an ECDSA key using the secp256r1 curve or alternatively a 2048 bit RSA key is recommended. Larger key sizes are significantly slower and currently provide no significant security gain.</p>
+            </>,
             "no_cert": "Internal self-signed certificate",
             "no_key": "Internal self-generated private key",
             "transport_mode": "Transport mode",

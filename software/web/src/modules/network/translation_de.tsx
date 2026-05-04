@@ -39,7 +39,11 @@ let x = {
             "cert": "Zertifikat für HTTPS",
             "cert_help": "Ein selbstsigniertes Zertifikat im PEM- oder DER-Format, oder eine Zertifikatskette im PEM-Format, beginnend mit dem Gerätezertifikat.",
             "key": "Privater Schlüssel für HTTPS",
-            "key_help": "Privater Schlüssel für das gewählte Zertifikat. Aus Performancegründen sollte das ein ECDSA-Schlüssel mit secp256r1-Kurve oder alternativ ein 2048-Bit-RSA-Schlüssel sein. Größere Schlüssellängen sind signifikant langsamer und bieten aktuell keinen signifikanten Sicherheitsgewinn.",
+            "key_help": <>
+                <p>Privater Schlüssel für das gewählte Zertifikat.</p>
+                <p>Unterstützt werden ECDSA-Schlüssel mit secp256r1- oder secp384r1-Kurve, auch bekannt als P-256 und P-384, und RSA-Schlüssel mit Längen von 2048 bis 4096 Bit.</p>
+                <p>Aus Performancegründen sollte ein ECDSA-Schlüssel mit secp256r1-Kurve oder alternativ ein 2048-Bit-RSA-Schlüssel verwendet werden. Größere Schlüssellängen sind deutlich langsamer und bieten aktuell keinen signifikanten Sicherheitsgewinn.</p>
+            </>,
             "no_cert": "Internes selbst-signiertes Zertifikat",
             "no_key": "Interner selbst-generierter privater Schlüssel",
             "transport_mode": "Verbindungsmodus",

@@ -9,6 +9,15 @@ let x = {
         },
         "content": {
             "certs": "TLS-Zertifikate",
+
+            "cert_explainer": <>
+                <p>Diese Schlüsseltypen werden für private Schlüssel und öffentliche Schlüssel in Zertifikaten unterstützt:</p>
+                <ul>
+                    <li>ECDSA mit secp256r1- oder secp384r1-Kurve, auch bekannt als P-256 und P-384</li>
+                    <li>RSA mit Längen von 2048 bis 4096 Bit</li>
+                </ul>
+            </>,
+
             "add_cert_title": "TLS-Zertifikat hinzufügen",
 
             "edit_cert_title": "TLS-Zertifikat bearbeiten",
