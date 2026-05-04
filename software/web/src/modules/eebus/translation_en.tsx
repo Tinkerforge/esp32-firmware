@@ -89,6 +89,7 @@ let x = {
             "commands": "Commands",
             "received": "Received",
             "sent": "Sent",
+            "mdns_disabled_warning": "mDNS is disabled in the network settings. EEBUS requires mDNS for device discovery. Please enable mDNS under Network settings.",
             "usecase_inactive": "This use case is inactive because not all required meter data has been received yet.",
             "usecase_inactive_no_vehicle": "This use case is inactive because no vehicle is connected.",
             "usecases": "Use Cases"

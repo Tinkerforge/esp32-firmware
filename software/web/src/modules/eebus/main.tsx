@@ -227,6 +227,8 @@ type EEBusRemove = API.getType["eebus/remove"];
 type EEBusStateType = API.getType["eebus/state"];
 type EEBusUsecases = API.getType["eebus/usecases"];
 
+type NetworkConfig = API.getType["network/config"];
+
 interface EEBusState {
     add: EEBusAdd;
     state: EEBusStateType;
@@ -235,6 +237,7 @@ interface EEBusState {
     usecases: EEBusUsecases;
     addPeerSkiError: string;
     addPeerIpError: string;
+    network_config: NetworkConfig;
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
@@ -252,6 +255,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         });
         util.addApiEventListener('eebus/config', () => {
             this.setState({usecases: API.get('eebus/usecases')});
+        });
+        util.addApiEventListener('network/config', () => {
+            this.setState({network_config: API.get('network/config')});
         });
     }
 
@@ -902,6 +908,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
+                    {state.enable && state.network_config && !state.network_config.enable_mdns &&
+                        <FormRow label="">
+                            <div class="alert alert-warning mb-0" role="alert">
+                                {__("eebus.content.mdns_disabled_warning")}
+                            </div>
+                        </FormRow>
+                    }
                     <FormRow label={__("eebus.content.peer_info.peers")}
                              help={__("eebus.content.peer_info.peers_desc")}>
                         <Table nestingDepth={1} // We are not nested, but this also reduces the modal's size to lg
