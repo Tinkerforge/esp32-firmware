@@ -28,6 +28,7 @@
 #include "config.h"
 #include "async_https_client.h"
 #include "ping/ping_sock.h"
+#include "generated/connection_state.enum.h"
 #include "generated/registration_state.enum.h"
 #include "language.h"
 #include "remote_access_packets.h"
@@ -100,7 +101,7 @@ private:
     void parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
     void login(const Config &user_config, const String &login_key);
     void update_registration_state(RegistrationState state, const String &message = String());
-    void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, uint8_t state_value);
+    void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, ConnectionState state_value);
     void management_auth_fail();
     void request_cleanup();
     void cleanup_after();

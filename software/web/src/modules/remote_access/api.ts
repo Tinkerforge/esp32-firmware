@@ -1,3 +1,4 @@
+import { ConnectionState } from "./generated/connection_state.enum";
 import { RegistrationState } from "./generated/registration_state.enum";
 
 export interface config {
@@ -79,7 +80,7 @@ export type start_ping = {}
 export type stop_ping = {};
 
 interface StateUser {
-    state: number,
+    state: ConnectionState;
     user: number,
     connection: number,
     last_state_change: number, // Unix timestamp in seconds
