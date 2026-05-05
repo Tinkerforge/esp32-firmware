@@ -210,7 +210,7 @@ void RemoteAccess::pre_setup()
     });
 
     connection_state = Config::Tuple(MAX_USER_CONNECTIONS + 1, Config::Object({
-        {"state", Config::Uint8(1)},
+        {"state", Config::Enum(ConnectionState::Disconnected)},
         {"user", Config::Uint8(255)},
         {"connection", Config::Uint8(255)},
         {"last_state_change", Config::Uint53(0)}, // Unix timestamp in seconds
@@ -1096,7 +1096,7 @@ void RemoteAccess::apply_config()
     } else {
         // Reset connection state to disconnected.
         for (uint8_t i = 0; i < MAX_USER_CONNECTIONS + 1; i++) {
-            connection_state.get(i)->get("state")->updateUint(1);
+            connection_state.get(i)->get("state")->updateEnum(ConnectionState::Disconnected);
         }
     }
 }
@@ -1132,11 +1132,11 @@ void RemoteAccess::update_registration_state(RegistrationState state, const Stri
     }
 }
 
-void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, uint8_t state_value) {
+void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, ConnectionState state_value) {
     auto conn_state = connection_state.get(conn_idx + 1);
     conn_state->get("user")->updateUint(user);
     conn_state->get("connection")->updateUint(connection);
-    conn_state->get("state")->updateUint(state_value);
+    conn_state->get("state")->updateEnum(state_value);
 
     struct timeval now;
     if (rtc.clock_synced(&now)) {
@@ -1667,7 +1667,7 @@ void RemoteAccess::resolve_management()
         if (!this->management_auth_failed) {
             this->connect_management();
         }
-        this->connection_state.get(0)->get("state")->updateUint(1);
+        this->connection_state.get(0)->get("state")->updateEnum(ConnectionState::Disconnected);
     };
     this->management_request_allowed = false;
     run_request_with_next_stage(url, HTTP_METHOD_PUT, json, len, config, std::move(callback));
@@ -1931,7 +1931,7 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    reinterpret_cast<void *>(conn_idx),
                    config.get("mtu")->asUint16());
 
-    update_connection_state(conn_idx, user_id, conn_id, 1);
+    update_connection_state(conn_idx, user_id, conn_id, ConnectionState::Disconnected);
 }
 
 void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port) {
@@ -1942,13 +1942,13 @@ void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool u
             logger.printfln("Management connection established but no RTC sync?");
         }
 
-        uint32_t state = 1;
+        ConnectionState state = ConnectionState::Disconnected;
         // This check was necessary before, but can probably removed now?
         // Can management be reset to nullptr while this task is in flight?
         if (management != nullptr) {
-            state = up ? 2 : 1;
+            state = up ? ConnectionState::Connected : ConnectionState::Disconnected;
         }
-        if (state == 2) {
+        if (state == ConnectionState::Connected) {
             this->last_mgmt_alive = now_us();
         }
 
@@ -1963,9 +1963,9 @@ void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool u
         }
 
         auto mgmt_state = this->connection_state.get(0);
-        if (mgmt_state->get("state")->updateUint(state)) {
+        if (mgmt_state->get("state")->updateEnum(state)) {
             mgmt_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
-            if (state == 2) {
+            if (state == ConnectionState::Connected) {
                 logger.printfln("Management connection connected");
             } else {
                 in_seq_number = 0;
@@ -1980,19 +1980,19 @@ void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool u
         if (!rtc.clock_synced(&now)) {
             now.tv_sec = 0;
         }
-        uint32_t state = 1;
+        ConnectionState state = ConnectionState::Disconnected;
         if (this->remote_connections[conn_idx].conn != nullptr) {
-            state = up ? 2 : 1;
+            state = up ? ConnectionState::Connected : ConnectionState::Disconnected;
         }
 
         auto conn_state = this->connection_state.get(conn_idx + 1); // 0 is the management connection
-        if (conn_state->get("state")->updateUint(state)) {
+        if (conn_state->get("state")->updateEnum(state)) {
             uint32_t conn = conn_state->get("connection")->asUint();
             uint32_t user = conn_state->get("user")->asUint();
             conn_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
-            if (state == 2) {
+            if (state == ConnectionState::Connected) {
                 logger.printfln("Connection %lu for user %lu connected", conn, user);
-            } else if (state == 1 && conn != 255 && user != 255) {
+            } else if (state == ConnectionState::Disconnected && conn != 255 && user != 255) {
                 logger.printfln("Connection %lu for user %lu disconnected", conn, user);
             }
         }
@@ -2168,7 +2168,7 @@ void RemoteAccess::run_management()
                             conn_state->get("user")->asUint());
             conn->end();
             conn = nullptr;
-            update_connection_state(conn_idx, 255, 255, 1);
+            update_connection_state(conn_idx, 255, 255, ConnectionState::Disconnected);
         } break;
 
         default:
@@ -2193,7 +2193,7 @@ void RemoteAccess::close_all_remote_connections() {
             remote_connections[i].conn->end();
             remote_connections[i].conn = nullptr;
             remote_connections[i].id = 255;
-            update_connection_state(i, 255, 255, 1);
+            update_connection_state(i, 255, 255, ConnectionState::Disconnected);
         }
     }
 }
@@ -2796,8 +2796,8 @@ conn_idx_found:
     // The connection state is currently updated up to 400ms after the WireGuard tunnel is established,
     // which is too late for checking the immediately established HTTP connection.
     // Use only the IP address checks for now.
-    //const uint8_t conn_state = connection_state.get(conn_idx + 1)->get("state")->asUint8();
-    //return conn_state == 2;
+    //const ConnectionState conn_state = connection_state.get(conn_idx + 1)->get("state")->asEnum<ConnectionState>();
+    //return conn_state == ConnectionState::Connected;
     (void)conn_idx;
 
     return true;
