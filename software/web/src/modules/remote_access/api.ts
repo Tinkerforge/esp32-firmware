@@ -2,88 +2,88 @@ import { ConnectionState } from "./generated/connection_state.enum";
 import { RegistrationState } from "./generated/registration_state.enum";
 
 export interface config {
-    enable: boolean,
-    uuid: string,
-    password: string,
-    relay_host: string,
-    relay_port: number,
-    cert_id: number,
-    mtu: number,
-    users: user[],
+    enable: boolean;
+    uuid: string;
+    password: string;
+    relay_host: string;
+    relay_port: number;
+    cert_id: number;
+    mtu: number;
+    users: user[];
 }
 
 interface user {
-    id: number,
-    email: string,
-    uuid: string,
-    public_key: string,
+    id: number;
+    email: string;
+    uuid: string;
+    public_key: string;
 }
 
 export interface remove_user {
-    id: number,
+    id: number;
 }
 
 interface KeyObject {
-    charger_public: string,
-    charger_private: string,
-    web_public: string,
-    web_private: string,
-    psk: string,
+    charger_public: string;
+    charger_private: string;
+    web_public: string;
+    web_private: string;
+    psk: string;
 }
 
 export interface registration_state {
-    state: RegistrationState,
-    message: string,
+    state: RegistrationState;
+    message: string;
 }
 
 export interface register {
-    config: registration_config,
-    login_key?: string,
-    auth_token?: string,
-    secret_key?: string,
-    public_key?: string,
-    user_uuid?: string,
-    note: string,
-    mgmt_charger_public: string,
-    mgmt_charger_private: string,
-    mgmt_psk: string,
-    keys: KeyObject[],
+    config: registration_config;
+    login_key?: string;
+    auth_token?: string;
+    secret_key?: string;
+    public_key?: string;
+    user_uuid?: string;
+    note: string;
+    mgmt_charger_public: string;
+    mgmt_charger_private: string;
+    mgmt_psk: string;
+    keys: KeyObject[];
 }
 
 export interface add_user {
-    secret_key?: string,
-    public_key?: string,
-    note: string,
-    email: string,
-    login_key?: string,
-    auth_token?: string,
-    user_uuid?: string,
-    wg_keys: KeyObject[],
+    secret_key?: string;
+    public_key?: string;
+    note: string;
+    email: string;
+    login_key?: string;
+    auth_token?: string;
+    user_uuid?: string;
+    wg_keys: KeyObject[];
 }
 
 interface registration_config {
-    enable: boolean,
-    relay_host: string,
-    relay_port: number,
-    email: string,
-    cert_id: number,
-    mtu: number,
+    enable: boolean;
+    relay_host: string;
+    relay_port: number;
+    email: string;
+    cert_id: number;
+    mtu: number;
 }
 
 export interface ping_state {
-    packets_sent: number,
-    packets_received: number,
-    time_elapsed_ms: number,
+    packets_sent: number;
+    packets_received: number;
+    time_elapsed_ms: number;
 }
 
-export type start_ping = {}
+export type start_ping = {};
 export type stop_ping = {};
 
 interface StateUser {
     state: ConnectionState;
-    user: number,
-    connection: number,
-    last_state_change: number, // Unix timestamp in seconds
+    user: number;
+    connection: number;
+    last_state_change: number; // Unix timestamp in seconds
 }
 
 export type state = StateUser[];
