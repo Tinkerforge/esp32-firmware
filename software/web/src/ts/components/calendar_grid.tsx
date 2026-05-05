@@ -427,7 +427,7 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                 {this.props.onEditClick
                     ? <div style="position: relative; cursor: pointer;" onClick={() => this.props.onEditClick()}>
                         {grids}
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
+                        <div style="position: absolute; top: calc(50% + 12px); left: calc(50% + 16px); transform: translate(-50%, -50%); pointer-events: none;">
                             <Button variant="primary" style="box-shadow: 0 0 20px 10px var(--bs-body-bg);">{this.props.edit_label}</Button>
                         </div>
                       </div>
