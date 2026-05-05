@@ -206,7 +206,17 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
     } else {
         // deal with one topic
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
-            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asUint() - 1];
+            size_t mode_idx = config_in_use.get("auto_discovery_mode")->asUint() - 1;
+
+            // Pick language-specific static_info if available, otherwise fall back to the default (German).
+            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[mode_idx];
+            if (default_language == Language::English) {
+                const char *en = mqtt_discovery_topic_infos[topic_num].static_infos_en[mode_idx];
+                if (en != nullptr) {
+                    static_info = en;
+                }
+            }
+
             if (static_info) { // No static info? Skip topic.
                 const String &client_name = mqtt.client_name;
                 const String &topic_prefix = mqtt.global_topic_prefix;

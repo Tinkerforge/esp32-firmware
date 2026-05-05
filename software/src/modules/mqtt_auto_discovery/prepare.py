@@ -9,8 +9,30 @@ tfutil.create_parent_module(__file__, "software")
 from software import util
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
-charge_mode_names = [x.name.space for x in util.parse_enum_spec(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                                             '..', 'cm_networking', 'Config Charge Mode.uint8.enum'))[2]]
+charge_mode_names_de = [
+    "Schnell",
+    "Aus",
+    "PV",
+    "Min + PV",
+    "Standard",
+    "Min",
+    "Eco",
+    "Eco + PV",
+    "Eco + Min",
+    "Eco + Min + PV",
+]
+charge_mode_names_en = [
+    "Fast",
+    "Off",
+    "PV",
+    "Min + PV",
+    "Default",
+    "Min",
+    "Eco",
+    "Eco + PV",
+    "Eco + Min",
+    "Eco + Min + PV",
+]
 
 
 def enum_value_template(json_field, names):
@@ -71,10 +93,21 @@ class Entity:
     static_info_homeassistant: dict
     json_attributes_topic: str = ""
     json_attributes_info: dict = None
+    # Optional English overrides for language-dependent static_info content
+    # (e.g. value_template strings containing localized labels).
+    # When set, the C++ code picks between the default (German) and English
+    # variants at runtime based on the configured language.
+    # When left empty, the default static_info is used regardless of language.
+    static_info_generic_en: dict = None
+    static_info_homeassistant_en: dict = None
 
     def __post_init__(self):
         if self.json_attributes_info is None:
             self.json_attributes_info = {}
+        if self.static_info_generic_en is None:
+            self.static_info_generic_en = {}
+        if self.static_info_homeassistant_en is None:
+            self.static_info_homeassistant_en = {}
 
     def get_json_len(self):
         return (
@@ -84,6 +117,8 @@ class Entity:
             + max(
                 len(self.get_static_info_generic_str()),
                 len(self.get_static_info_homeassistant_str()),
+                len(self.get_static_info_generic_en_str()),
+                len(self.get_static_info_homeassistant_en_str()),
             )
             + len(self.get_availability_info_str())
             + len(self.get_json_attributes_info_str())
@@ -137,6 +172,41 @@ class Entity:
             + '"'
         )
 
+    def get_static_info_generic_en_str(self):
+        if not self.static_info_generic_en:
+            return "NULL"
+        if not self.include_generic:
+            return "NULL"
+        return (
+            '"'
+            + json.dumps({**self.static_info_generic, **self.static_info_generic_en})
+            .strip()
+            .lstrip("{")
+            .rstrip("}")
+            .replace('"', '\\"')
+            + '"'
+        )
+
+    def get_static_info_homeassistant_en_str(self):
+        if not self.static_info_homeassistant_en:
+            return "NULL"
+        # Merge: generic base + generic_en overrides + homeassistant base + homeassistant_en overrides
+        merged = {
+            **self.static_info_generic,
+            **self.static_info_generic_en,
+            **self.static_info_homeassistant,
+            **self.static_info_homeassistant_en,
+        }
+        return (
+            '"'
+            + json.dumps(merged)
+            .strip()
+            .lstrip("{")
+            .rstrip("}")
+            .replace('"', '\\"')
+            + '"'
+        )
+
 
 
 
@@ -154,6 +224,10 @@ topic_template = """    {{
         .static_infos = {{
             {static_info_generic},
             {static_info_homeassistant}
+        }},
+        .static_infos_en = {{
+            {static_info_generic_en},
+            {static_info_homeassistant_en}
         }},
         .type = MqttDiscoveryType::{discovery_type},
     }}"""
@@ -472,6 +546,10 @@ entities = [
             "options": ["Limitiert", "Kein Limit"],
             "icon": "mdi:transmission-tower-export",
         },
+        static_info_homeassistant_en={
+            "value_template": "{{ 'Limited' if value_json.active else 'No Limit' }}",
+            "options": ["Limited", "No Limit"],
+        },
     ),
     Entity(
         include_generic=False,
@@ -487,8 +565,13 @@ entities = [
             "device_class": "enum",
         },
         static_info_homeassistant={
-            "value_template": enum_value_template("mode", charge_mode_names),
-            "options": charge_mode_names + ["Unknown"],
+            "value_template": enum_value_template("mode", charge_mode_names_de),
+            "options": charge_mode_names_de + ["Unbekannt"],
+            "icon": "mdi:ev-station",
+        },
+        static_info_homeassistant_en={
+            "value_template": enum_value_template("mode", charge_mode_names_en),
+            "options": charge_mode_names_en + ["Unknown"],
             "icon": "mdi:ev-station",
         },
     ),
@@ -663,6 +746,8 @@ topics = [
         json_attributes_info=x.get_json_attributes_info_str(),
         static_info_generic=x.get_static_info_generic_str(),
         static_info_homeassistant=x.get_static_info_homeassistant_str(),
+        static_info_generic_en=x.get_static_info_generic_en_str(),
+        static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
         discovery_type=x.component.get_discovery_type().value,
     )
     for x in entities

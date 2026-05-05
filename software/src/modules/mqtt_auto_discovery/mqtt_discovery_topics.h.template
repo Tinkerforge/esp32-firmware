@@ -17,6 +17,7 @@ struct MqttDiscoveryTopicInfo {
     const char * const json_attributes_topic;
     const char * const json_attributes_info;
     const char * const static_infos[2];
+    const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
     const MqttDiscoveryType type;
 };
 
