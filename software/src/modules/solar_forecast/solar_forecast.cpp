@@ -146,6 +146,7 @@ void SolarForecast::setup()
 
 void SolarForecast::register_urls()
 {
+    api.addFeature("solar_forecast");
     api.addPersistentConfig("solar_forecast/config", &config);
     api.addState("solar_forecast/state", &state);
     for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {

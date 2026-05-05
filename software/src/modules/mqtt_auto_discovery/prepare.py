@@ -53,6 +53,7 @@ class Feature(Enum):
     P14A_ENWG = "p14a_enwg"
     METERS = "meters"
     POWER_MANAGER = "power_manager"
+    SOLAR_FORECAST = "solar_forecast"
 
 
 @dataclass
@@ -489,6 +490,63 @@ entities = [
             "value_template": enum_value_template("mode", charge_mode_names),
             "options": charge_mode_names + ["Unknown"],
             "icon": "mdi:ev-station",
+        },
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.SOLAR_FORECAST,
+        object_id="solar_forecast_tomorrow",
+        path="solar_forecast/state",
+        name_de="PV Ertragsprognose morgen",
+        name_en="Solar Forecast tomorrow",
+        availability_topic="solar_forecast/config",
+        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        static_info_generic={
+            "device_class": "energy",
+        },
+        static_info_homeassistant={
+            "value_template":"{{(value_json.wh_tomorrow | float / 1000) | round(2)}}",
+            "icon": "mdi:solar-power-variant-outline",
+            "unit_of_measurement": "kWh",
+        },
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.SOLAR_FORECAST,
+        object_id="solar_forecast_today",
+        path="solar_forecast/state",
+        name_de="PV Ertragsprognose heute",
+        name_en="Solar Forecast today",
+        availability_topic="solar_forecast/config",
+        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        static_info_generic={
+            "device_class": "energy",
+        },
+        static_info_homeassistant={
+            "value_template": "{{(value_json.wh_today | float / 1000) | round(2)}}",
+            "icon": "mdi:solar-power-variant",
+            "unit_of_measurement": "kWh",
+        },
+    ),
+Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.SOLAR_FORECAST,
+        object_id="solar_forecast_outstanding",
+        path="solar_forecast/state",
+        name_de="PV Ertragsprognose ab jetzt",
+        name_en="Solar Forecast from now",
+        availability_topic="solar_forecast/config",
+        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        static_info_generic={
+            "device_class": "energy",
+        },
+        static_info_homeassistant={
+            "value_template": "{{(value_json.wh_today_remaining | float / 1000) | round(2)}}",
+            "icon": "mdi:solar-power",
+            "unit_of_measurement": "kWh",
         },
     ),
 ]
