@@ -5,7 +5,6 @@ let x = {
         "content": {
             "enable_eebus": "EEBUS enabled",
             "enable_eebus_desc": "Enables communication with EEBUS devices",
-            "eebus_detail_info": "The values that are provided or which can be written by the use cases via EEBUS are displayed here. The values displayed reflect the latest EEBUS communication data. Values that can be written by EEBUS control devices are marked as such. All other values are read-only for EEBUS devices.",
             "enable_eebus_help_intro": <>
                 <p>EEBUS is a communication standard for smart energy management. It enables communication
                     between energy devices such as EV chargers, heat pumps, PV systems and energy management systems
@@ -27,8 +26,6 @@ let x = {
             "usecase_evcs_desc": "Charging summary. Provides summaries of completed charging sessions with energy amount and costs.",
             "usecase_opev_desc": "EV Overload protection. Allows limiting the charging current of an EV. If the Limit conflicts with a limit given by the LPC use case, the LPC limit takes precedence.",
             "usecase_value_writable": "writable",
-            "cert": "certificate",
-            "key": "key",
             "ski": "SKI",
             "ski_muted": "Subject Key Identifier of this device",
             "ski_help": <>
@@ -36,19 +33,13 @@ let x = {
                 <p>If this device needs to communicate with, for example, a "Steuerbox", the SKI may be
                     required during the setup of the Steuerbox.</p>
             </>,
-            "no_cert": "Not used",
             "unknown": "Unknown",
-            "search_peers": "Search",
             "searching_peers": "Searching....",
-            "search_completed": "New Search",
-            "search_failed": "Search failed",
-            "add_peers": "Add Device",
             "add_peer_title": "Add EEBUS device",
             "add_peer_message": /*SFN*/(have: number, max: number) => `${have} of ${max} EEBUS devices configured`/*NF*/,
             "discovered_peers": "Discovered devices",
             "no_peers_found": "No devices found. Ensure devices are on the same network.",
             "add_peer_manual_desc": "Or enter device details manually:",
-            "already_added": "Added",
             "is_optional": "optional",
             "peer_info": {
                 "peers_desc": "In order to establish an EEBUS connection, an EEBUS device must first be added. Connections from other devices will be rejected.",
@@ -74,25 +65,14 @@ let x = {
                 "state_connecting": "Connecting",
                 "state_degraded": "Degraded",
                 "unknown_device": "Unknown device",
-                "approve_connection": "Approve",
-                "autoregister": "Autoregistration enabled",
-                "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected.",
-                "persistent": "Stored in config",
-                "persistent_remove_error": "Can only remove peers stored in config. Discovered peers cannot be removed. They will be automatically discarded on reboot."
+                "autoregister": "Autoregistration enabled"
             },
             "usecase_details": "Details",
             "yes": "Yes",
             "no": "No",
-            "devices": "Peers",
-            "connected": "Connected",
-            "discovered": "Discovered",
-            "commands": "Commands",
-            "received": "Received",
-            "sent": "Sent",
             "mdns_disabled_warning": "mDNS is disabled in the network settings. EEBUS requires mDNS for device discovery. Please enable mDNS under Network settings.",
             "usecase_inactive": "This use case is inactive because not all required meter data has been received yet.",
-            "usecase_inactive_no_vehicle": "This use case is inactive because no vehicle is connected.",
-            "usecases": "Use Cases"
+            "usecase_inactive_no_vehicle": "This use case is inactive because no vehicle is connected."
         },
         "navbar": {
             "eebus": "EEBUS"
@@ -102,15 +82,11 @@ let x = {
             "lpc_failsafe": "LPC Failsafe",
             "evse_failure": "EVSE Failure",
             "heartbeat_timeout": "Heartbeat Timeout",
-            "discovery_failed": "Discovery Failed",
             "n_devices_connected": "connected"
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
-            "reboot_content_changed": "EEBUS-Settings",
             "ski_required": "SKI is required",
-            "ip_required": "IP address is required",
-            "ip_too_short": "IP address must be at least 7 characters (e.g. 1.1.1.1)",
             "ip_invalid": "IP address is invalid",
             "add_peer_failed": "Failed to add peer"
         }
