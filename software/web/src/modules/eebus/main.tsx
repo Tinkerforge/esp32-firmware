@@ -902,19 +902,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
                 <SubPage.Config id="eebus_config_form" isDirty={this.isDirty()}
                                 onSave={this.save} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("eebus.content.enable_eebus")} help={buildEEBusHelpText(state.usecases)}>
+                    <FormRow label={__("eebus.content.enable_eebus")} help={buildEEBusHelpText(state.usecases)} warning={__("eebus.content.mdns_disabled_warning")} show_warning={state.enable && state.network_config && !state.network_config.enable_mdns}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    {state.enable && state.network_config && !state.network_config.enable_mdns &&
-                        <FormRow label="">
-                            <div class="alert alert-warning mb-0" role="alert">
-                                {__("eebus.content.mdns_disabled_warning")}
-                            </div>
-                        </FormRow>
-                    }
                     <FormRow label={__("eebus.content.peer_info.peers")}
                              help={__("eebus.content.peer_info.peers_desc")}>
                         <Table nestingDepth={1} // We are not nested, but this also reduces the modal's size to lg
