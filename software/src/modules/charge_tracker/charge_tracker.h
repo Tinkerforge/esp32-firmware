@@ -22,7 +22,7 @@
 #include "module.h"
 #include "config.h"
 #include "language.h"
-#include "../web_server/web_server.h"
+#include "modules/web_server/web_server.h"
 #include "csv_charge_log.h"
 #include "generated/module_available.h"
 #include "charge_tracker_defs.h"
@@ -96,10 +96,10 @@ public:
 
     void updateLastCharges();
 
-    ExportCharge *getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
+    ExportCharge *getFilteredCharges(const GenerationParams &params, size_t *out_count);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const int device_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
+    void start_charge_log_upload_for_user(const uint32_t cookie, const FileType file_type, std::unique_ptr<GenerationParams> params, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid);
 
     // Processes a pre-validated Ack or Nack management packet for the charge log send state machine.
     // Header checking (magic, packet type) is done by the remote_access module before calling this.
@@ -118,9 +118,11 @@ public:
         bool is_monthly_email,
         const uint8_t config_hash[32]);
 
-    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
-
 #endif
+
+    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, const PDFGenerationParams *params, WebServerRequest *request);
+
+
 
     ConfigRoot last_charges;
     ConfigRoot current_charge;
@@ -133,9 +135,11 @@ public:
     std::mutex records_mutex;
     std::mutex pdf_mutex;
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
     ChargeLogSendContext charge_log_send_ctx;
     std::unique_ptr<RemoteUploadRequest> remote_upload_request;
     std::unique_ptr<ChargeLogGenerationLockHelper> pending_generation_lock;
+#endif
 
 private:
     bool repair_last(float, const char *);
@@ -188,26 +192,10 @@ struct RemoteUploadRequest {
     /** Cookie to correlate upload attempts with web interface events */
     uint32_t cookie = 0;
 
-    /** User filter override (-2 = unknown user -1 = all users, 0+ = specific user) */
-    int user_filter = -2;
-
-    /** Device filter override (-2 = all chargers, -1 = local charger, 0+ = specific charger) */
-    int device_filter = -2;
-
-    /** Start of the time range to upload, in minutes since Unix epoch */
-    uint32_t start_timestamp_min = 0;
-
-    /** End of the time range to upload, in minutes since Unix epoch */
-    uint32_t end_timestamp_min = 0;
-
-    /** Language to use for the upload request */
-    Language language = Language::German;
+    std::unique_ptr<GenerationParams> generation_params;
 
     /** File type to generate and upload */
     FileType file_type = FileType::PDF;
-
-    /** CSV delimiter flavor to use if file_type is CSV */
-    CSVFlavor csv_delimiter = CSVFlavor::Excel;
 
     /** Whether to use format overrides from the struct (true) or read from config (false) */
     bool use_format_overrides = false;
@@ -267,11 +255,6 @@ struct ExportCharge {
 
         return this_timestamp > other_timestamp;
     }
-};
-
-struct display_name_entry {
-    uint32_t length;
-    uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
 };
 
 size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language);

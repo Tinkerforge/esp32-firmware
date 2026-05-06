@@ -34,6 +34,14 @@
 #define EVENT_LOG_PREFIX "csv_charge_log"
 #define MAX_ACCUMULATED 2048
 
+bool CSVGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+    if (!this->GenerationParams::parse_request(buf, doc, request))
+        return false;
+
+    this->flavor = (CSVFlavor)((int)doc["csv_delimiter"]);
+    return true;
+}
+
 const char* CSVTranslations::getHeaderStart(Language language) {
     return (language == Language::English) ? "Start time" : "Startzeit";
 }
@@ -302,23 +310,12 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
         return -1;
     }
 
-    // TODO use unique_ptr_any here
-    display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
-    defer { free(display_name_cache); };
-
-    if (display_name_cache == nullptr) {
-        logger.printfln("Failed to generate CSV: No memory");
-        return -1;
-    }
-    for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
-        display_name_cache[i].length = UINT32_MAX;
-    }
-
+    // TODO: use string writer here
     String accumulated_data;
     accumulated_data.reserve(MAX_ACCUMULATED);
 
     // Helper lambda to process a single charge record and add it to accumulated_data
-    auto process_charge = [&](const Charge* record, bool last) -> esp_err_t {
+    auto process_charge = [&params, this, &accumulated_data, &callback](const Charge* record, bool last) -> esp_err_t {
         float energy_charged = NAN;
         if (!std::isnan(record->cs.meter_start) && !std::isnan(record->ce.meter_end) &&
             record->ce.meter_end >= record->cs.meter_start) {
@@ -334,7 +331,7 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
         String fields[9];
         size_t field_count = 7;
         char display_name_buf[DISPLAY_NAME_LENGTH + 1];
-        get_display_name(record->cs.user_id, display_name_buf, display_name_cache, params.language);
+        get_display_name(record->cs.user_id, display_name_buf, params.display_name_cache, params.language);
         fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
         fields[1] = display_name_buf;
         fields[2] = formatEnergy(energy_charged, params.language);
@@ -375,30 +372,17 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
 #if OPTIONS_PRODUCT_ID_IS_WARP()
     std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
     readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
-        [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
+        [&params](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
-            auto timestamp = record->cs.timestamp_minutes;
-            auto filter_start = params.start_timestamp_min;
-            auto filter_end = params.end_timestamp_min;
-
-            if (timestamp != 0 && filter_start != 0 && timestamp < filter_start) {
+            if (!params.include_charge(record))
                 return ESP_OK;
-            }
-
-            if (timestamp != 0 && filter_end != 0 && timestamp > filter_end) {
-                return ESP_OK;
-            }
-
-            if (isUserFiltered(record->cs.user_id, params.user_filter)) {
-                return ESP_OK;
-            }
 
             return process_charge(record, last);
         });
 #else
     size_t filtered_count = 0;
-    ExportCharge *filtered_charges = charge_tracker.getFilteredCharges(params.user_filter, params.device_filter, params.start_timestamp_min, params.end_timestamp_min, &filtered_count);
+    ExportCharge *filtered_charges = charge_tracker.getFilteredCharges(params, &filtered_count);
 
     if (filtered_charges != nullptr) {
         for (size_t i = 0; i < filtered_count; ++i) {
@@ -422,15 +406,4 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     }
 
     return 0;
-}
-
-String CSVChargeLogGenerator::generateCSVString(const CSVGenerationParams& params) {
-    String result;
-
-    generateCSV(params, [&result](const char* data, size_t length) -> int {
-        result.concat(data, length);
-        return static_cast<int>(length);
-    });
-
-    return result;
 }

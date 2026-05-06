@@ -126,6 +126,7 @@ static int read_letterhead_lines(char *letterhead) {
     return letterhead_lines;
 }
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
 // Compute a SHA-256 hash over the charge log generation config fields + the month.
 // The hash is used by the backend for deduplication of charge log uploads.
 static void compute_charge_log_hash(
@@ -170,6 +171,7 @@ static void compute_charge_log_hash(
 
     mbedtls_sha256(buf, offset, out_hash, 0); // 0 = SHA-256
 }
+#endif
 
 String chargeRecordFilename(uint32_t i, const char *directory)
 {
@@ -1376,6 +1378,139 @@ void ChargeTracker::register_events()
     });
 }
 
+bool GenerationParams::init() {
+        auto result = task_scheduler.await([this]() {
+            this->electricity_price = charge_tracker.config.get("electricity_price")->asUint();
+#if MODULE_DEVICE_NAME_AVAILABLE()
+            this->display_name = device_name.display_name.get("display_name")->asString();
+            this->unique_device_name = device_name.name.get("name")->asString();
+            if (this->display_name != this->unique_device_name)
+                this->unique_device_name = display_name + " (" + unique_device_name + ")";
+#else
+            this->display_name = "unknown device";
+            this->unique_device_name = "unknown device";
+#endif
+
+            for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+                this->configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+            }
+
+            // TODO use unique_ptr_any here?
+            this->display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
+            if (this->display_name_cache == nullptr)
+                return;
+
+            for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
+                this->display_name_cache[i].length = UINT32_MAX;
+            }
+        });
+
+        return result == TaskScheduler::AwaitResult::Done && this->display_name_cache != nullptr;
+    }
+
+bool GenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+    if (request.contentLength() > 1024) {
+        request.send_plain(413);
+        return false;
+    }
+
+    buf = heap_alloc_array<char>(1024);
+    auto received = request.receive(buf.get(), 1024);
+
+    if (received < 0) {
+        request.send_plain(500, "Failed to receive request payload");
+        return false;
+    }
+
+    DeserializationError error = deserializeJson(doc, buf.get(), received);
+
+    if (error) {
+        char error_string[64];
+        StringWriter sw(error_string, ARRAY_SIZE(error_string));
+        sw.puts("Failed to deserialize string: ");
+        sw.puts(error.c_str());
+        request.send_plain(400, sw);
+        return false;
+    }
+
+    if (!bool(doc["api_not_final_acked"])) {
+        request.send_plain(400, "Please acknowledge that this API is subject to change!");
+        return false;
+    }
+
+    this->user = doc["user_filter"];
+    this->device = doc["device_filter"];
+    this->start_min = doc["start_timestamp_min"];
+    this->end_min = doc["end_timestamp_min"];
+    this->language = (Language)((uint8_t)doc["language"]);
+
+    this->current_min = rtc.timestamp_minutes();
+    // This is 0 if there is no time sync.
+    // Use the browser's time in this case.
+    if (this->current_min == 0) {
+        this->current_min = doc["current_timestamp_min"];
+    }
+    return true;
+}
+
+bool PDFGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+    if (!this->GenerationParams::parse_request(buf, doc, request))
+        return false;
+
+    this->letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
+    auto letterhead = this->letterhead_buf.get();
+
+    bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
+
+    if (letterhead_passed) {
+        if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
+            request.send_plain(400, "Letterhead is too long!");
+            return false;
+        }
+
+        strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
+    }
+
+    task_scheduler.await([this, letterhead, letterhead_passed](){
+        auto saved_letterhead = this->pdf_letterhead_config->get("letterhead");
+        if (!letterhead_passed) {
+            strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
+            return;
+        }
+
+        if (saved_letterhead->asString() != letterhead) {
+            saved_letterhead->updateString(letterhead);
+            API::writeConfig("charge_tracker/pdf_letterhead_config", this->pdf_letterhead_config);
+        }
+    });
+
+    letterhead_lines = read_letterhead_lines(letterhead);
+    return true;
+}
+
+bool GenerationParams::include_charge(const Charge *charge) const {
+    bool include_start = this->start_min == 0 // There is no start filter, accept any charge
+                     || (charge->cs.timestamp_minutes != 0 // Charge start is not unknown (charges with unknown start time are always excluded if there is a start filter)
+                         && charge->cs.timestamp_minutes >= this->start_min); // Charge start is later than filter begin.
+    if (!include_start) // The charge started before the start filter
+        return false;
+
+    bool include_end = this->end_min == 0 // There is no end filter, accept any charge
+                     || (charge->cs.timestamp_minutes != 0 // Charge start is not unknown (charges with unknown start time are always excluded if there is an end filter)
+                         && charge->cs.timestamp_minutes < this->end_min); // Charge start is earlier than filter end.
+    if (!include_end) // The charge started before the start filter
+        return false;
+
+    bool include_user = this->user == USER_FILTER_ALL_USERS // There is no user filter, accept any charge.
+                     || (user == USER_FILTER_DELETED_USERS && !user_configured(configured_users, charge->cs.user_id)) // User is not configured, i.e. deleted.
+                     || charge->cs.user_id == user; // User matches.
+    if (!include_user)
+        return false;
+
+    // device intentionally not checked here: Checking this for every charge is inefficient, because we know which device a complete set of charge-record files belongs to.
+    return true;
+}
+
 void ChargeTracker::register_urls()
 {
     // We have to do this here, not at the end of setup,
@@ -1433,86 +1568,22 @@ void ChargeTracker::register_urls()
     }, true);
 
     server.on_HTTPThread("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {
-        logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
-        #define USER_FILTER_ALL_USERS -2
-        #define USER_FILTER_DELETED_USERS -1
-        int user_filter = USER_FILTER_ALL_USERS;
-        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
-        uint32_t start_timestamp_min = 0;
-        uint32_t end_timestamp_min = 0;
-        uint32_t current_timestamp_min = rtc.timestamp_minutes();
-
-        Language language = Language::German;
-        auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
-        auto letterhead = letterhead_buf.get();
-        int letterhead_lines = 0;
         std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::LocalDownload);
         if (lock_helper == nullptr) {
             return request.send_plain(429, "Another charge log generation is already in progress");
         }
 
+        logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
+
+        PDFGenerationParams params{&this->pdf_letterhead_config};
+        if (!params.init())
+            return request.send_plain(500, "Failed to generate PDF: Task timed out");
+
         {
-            if (request.contentLength() > 1024) {
-                return request.send_plain(413);
-            }
-
             auto buf = heap_alloc_array<char>(1024);
-            auto received = request.receive(buf.get(), 1024);
-
-            if (received < 0) {
-                return request.send_plain(500, "Failed to receive request payload");
-            }
-
             StaticJsonDocument<192> doc;
-            DeserializationError error = deserializeJson(doc, buf.get(), received);
-
-            if (error) {
-                char error_string[64];
-                StringWriter sw(error_string, ARRAY_SIZE(error_string));
-                sw.puts("Failed to deserialize string: ");
-                sw.puts(error.c_str());
-                return request.send_plain(400, sw);
-            }
-
-            if (!bool(doc["api_not_final_acked"])) {
-                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
-            }
-
-            user_filter = doc["user_filter"];
-            device_filter = doc["device_filter"];
-            start_timestamp_min = doc["start_timestamp_min"];
-            end_timestamp_min = doc["end_timestamp_min"];
-            uint8_t language_val = doc["language"];
-            language = static_cast<Language>(language_val);
-
-            if (current_timestamp_min == 0) {
-                current_timestamp_min = doc["current_timestamp_min"];
-            }
-
-            bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
-
-            if (letterhead_passed) {
-                if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
-                    return request.send_plain(400, "Letterhead is too long!");
-                }
-
-                strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
-            }
-
-            task_scheduler.await([this, letterhead, letterhead_passed](){
-                auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
-                if (!letterhead_passed) {
-                    strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
-                    return;
-                }
-
-                if (saved_letterhead->asString() != letterhead) {
-                    saved_letterhead->updateString(letterhead);
-                    API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
-                }
-            });
-
-            letterhead_lines = read_letterhead_lines(letterhead);
+            if (!params.parse_request(buf, doc, request))
+                return request.unsafe_ResponseAlreadySent();
         }
 
         const auto callback = [this, &request](const void *data, size_t len) -> esp_err_t {
@@ -1527,7 +1598,7 @@ void ChargeTracker::register_urls()
         };
 
         request.beginChunkedResponse(200, "application/pdf");
-        int rc = this->generate_pdf(callback, user_filter, device_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
+        int rc = this->generate_pdf(callback, &params, &request);
         if (rc != 0)
             return WebServerRequestReturnProtect{.error = ESP_FAIL};
 
@@ -1535,71 +1606,23 @@ void ChargeTracker::register_urls()
     });
 
     server.on_HTTPThread("/charge_tracker/csv", HTTP_PUT, [this](WebServerRequest request) {
-        logger.printfln("Beginning CSV generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
-        #define USER_FILTER_ALL_USERS -2
-        #define USER_FILTER_DELETED_USERS -1
-        int user_filter = USER_FILTER_ALL_USERS;
-        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
-        uint32_t start_timestamp_min = 0;
-        uint32_t end_timestamp_min = 0;
-        uint32_t current_timestamp_min = rtc.timestamp_minutes();
-        Language language = Language::German;
-        int csv_delimiter = (int)CSVFlavor::Excel;
         std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::LocalDownload);
         if (lock_helper == nullptr) {
             return request.send_plain(429, "Another charge log generation is already in progress");
         }
 
+        logger.printfln("Beginning CSV generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
+
+        CSVGenerationParams params{};
+        if (!params.init())
+            return request.send_plain(500, "Failed to generate CSV: Task timed out");
+
         {
-            if (request.contentLength() > 1024) {
-                return request.send_plain(413);
-            }
-
             auto buf = heap_alloc_array<char>(1024);
-            auto received = request.receive(buf.get(), 1024);
-
-            if (received < 0) {
-                return request.send_plain(500, "Failed to receive request payload");
-            }
-
             StaticJsonDocument<192> doc;
-            DeserializationError error = deserializeJson(doc, buf.get(), received);
-
-            if (error) {
-                char error_string[64];
-                StringWriter sw(error_string, ARRAY_SIZE(error_string));
-                sw.puts("Failed to deserialize string: ");
-                sw.puts(error.c_str());
-                return request.send_plain(400, sw);
-            }
-
-            if (!bool(doc["api_not_final_acked"])) {
-                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
-            }
-
-            user_filter = doc["user_filter"];
-            device_filter = doc["device_filter"] | DEVICE_FILTER_ALL_CHARGERS;
-            start_timestamp_min = doc["start_timestamp_min"];
-            end_timestamp_min = doc["end_timestamp_min"];
-            uint8_t language_val = doc["language"];
-            language = static_cast<Language>(language_val);
-            csv_delimiter = doc["csv_delimiter"];
-
-            if (current_timestamp_min == 0) {
-                current_timestamp_min = doc["current_timestamp_min"];
-            }
+            if (!params.parse_request(buf, doc, request))
+                return request.unsafe_ResponseAlreadySent();
         }
-
-        CSVGenerationParams csv_params;
-        csv_params.user_filter = user_filter;
-        csv_params.device_filter = device_filter;
-        csv_params.start_timestamp_min = start_timestamp_min;
-        csv_params.end_timestamp_min = end_timestamp_min;
-        csv_params.language = language;
-        csv_params.flavor = (CSVFlavor)csv_delimiter;
-        task_scheduler.await([this, &csv_params]() {
-            csv_params.electricity_price = this->config.get("electricity_price")->asUint();
-        });
 
         const auto callback = [this, &request](const char* buffer, size_t len) -> esp_err_t {
             // FIXME: sendChunk failures probably aren't propagated upwards properly.
@@ -1609,120 +1632,96 @@ void ChargeTracker::register_urls()
 
         request.beginChunkedResponse(200, "text/csv");
         CSVChargeLogGenerator csv_generator;
-        int rc = csv_generator.generateCSV(csv_params, std::move(callback));
+        int rc = csv_generator.generateCSV(params, std::move(callback));
         if (rc < 0)
             return WebServerRequestReturnProtect{.error = ESP_FAIL};
+
         return request.endChunkedResponse();
     });
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-
-    server.on_HTTPThread("/charge_tracker/send_charge_log", HTTP_PUT, [this](WebServerRequest request) {
+    server.on_HTTPThread("/charge_tracker/send_charge_log_pdf", HTTP_PUT, [this](WebServerRequest request) {
         std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::ManualRemoteSend);
         if (lock_helper == nullptr) {
             return request.send_plain(429, "Another charge log generation is already in progress");
         }
 
-        int user_filter = -2;
-        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
-        uint32_t start_timestamp_min = 0;
-        uint32_t end_timestamp_min = 0;
-        Language language = Language::German;
-        FileType file_type = FileType::PDF;
-        int csv_delimiter = (int)CSVFlavor::Excel;
+        auto params = std::make_unique<PDFGenerationParams>(&this->pdf_letterhead_config);
+        if (!params->init())
+            return request.send_plain(500, "Failed to generate PDF mail: Task timed out");
+
         uint32_t cookie = 0;
-        uint32_t remote_upload_config_count = 0;
         String remote_access_user_uuid;
 
-        auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
-        auto letterhead = letterhead_buf.get();
         {
-            if (request.contentLength() > 1024) {
-                return request.send_plain(413);
-            }
-
             auto buf = heap_alloc_array<char>(1024);
-            auto received = request.receive(buf.get(), 1024);
-
-            if (received < 0) {
-                return request.send_plain(500, "Failed to receive request payload");
-            }
-
             StaticJsonDocument<192> doc;
-            DeserializationError error = deserializeJson(doc, buf.get(), received);
-
-            if (error) {
-                char error_string[64];
-                StringWriter sw(error_string, ARRAY_SIZE(error_string));
-                sw.puts("Failed to deserialize string: ");
-                sw.puts(error.c_str());
-                return request.send_plain(400, sw);
-            }
-
-            if (!bool(doc["api_not_final_acked"])) {
-                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
-            }
-
-            user_filter = doc["user_filter"];
-            device_filter = doc["device_filter"] | DEVICE_FILTER_ALL_CHARGERS;
-            start_timestamp_min = doc["start_timestamp_min"];
-            end_timestamp_min = doc["end_timestamp_min"];
-            uint8_t language_val = doc["language"];
-            language = static_cast<Language>(language_val);
-            uint8_t file_type_val = doc["file_type"];
-            file_type = static_cast<FileType>(file_type_val);
-            csv_delimiter = doc["csv_delimiter"];
-            cookie = doc["cookie"];
+            if (!params->parse_request(buf, doc, request))
+                return request.unsafe_ResponseAlreadySent();
 
             if (!doc.containsKey("cookie")) {
                 return request.send_plain(400, "Missing cookie parameter");
             }
 
+            cookie = doc["cookie"];
+
             if (!doc.containsKey("remote_access_user_uuid")) {
                 return request.send_plain(400, "Missing remote_access_user_uuid parameter");
             }
             remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
-
-            // Handle letterhead for PDF file type
-            bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
-
-            if (letterhead_passed) {
-                if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
-                    return request.send_plain(400, "Letterhead is too long!");
-                }
-
-                strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
-            }
-
-            task_scheduler.await([this, &remote_upload_config_count, letterhead, letterhead_passed](){
-                remote_upload_config_count = config.get("remote_upload_configs")->count();
-
-                auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
-                if (!letterhead_passed) {
-                    strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
-                    return;
-                }
-
-                if (saved_letterhead->asString() != letterhead) {
-                    saved_letterhead->updateString(letterhead);
-                    API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
-                }
-            });
         }
 
-        char *letterhead_ptr = letterhead_buf.release();
         ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
-        task_scheduler.scheduleOnce([this, cookie, user_filter, device_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr, remote_access_user_uuid]() {
+        PDFGenerationParams *params_ptr = params.release();
+        task_scheduler.scheduleOnce([this, cookie, params_ptr, lock_helper_ptr, remote_access_user_uuid]() mutable {
                 this->start_charge_log_upload_for_user(
                 cookie,
-                user_filter,
-                device_filter,
-                start_timestamp_min,
-                end_timestamp_min,
-                language,
-                file_type,
-                static_cast<CSVFlavor>(csv_delimiter),
-                std::unique_ptr<char[]>(letterhead_ptr),
+                FileType::PDF,
+                std::unique_ptr<GenerationParams>{params_ptr},
+                std::unique_ptr<ChargeLogGenerationLockHelper>(lock_helper_ptr),
+                remote_access_user_uuid);
+        });
+        return request.send_plain(200, "Charge-log upload for specific config started");
+    });
+
+    server.on_HTTPThread("/charge_tracker/send_charge_log_csv", HTTP_PUT, [this](WebServerRequest request) {
+        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::ManualRemoteSend);
+        if (lock_helper == nullptr) {
+            return request.send_plain(429, "Another charge log generation is already in progress");
+        }
+
+        auto params = std::make_unique<CSVGenerationParams>();
+        if (!params->init())
+            return request.send_plain(500, "Failed to generate CSV mail: Task timed out");
+
+        uint32_t cookie = 0;
+        String remote_access_user_uuid;
+
+        {
+            auto buf = heap_alloc_array<char>(1024);
+            StaticJsonDocument<192> doc;
+            if (!params->parse_request(buf, doc, request))
+                return request.unsafe_ResponseAlreadySent();
+
+            if (!doc.containsKey("cookie")) {
+                return request.send_plain(400, "Missing cookie parameter");
+            }
+
+            cookie = doc["cookie"];
+
+            if (!doc.containsKey("remote_access_user_uuid")) {
+                return request.send_plain(400, "Missing remote_access_user_uuid parameter");
+            }
+            remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
+        }
+
+        ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
+        CSVGenerationParams *params_ptr = params.release();
+        task_scheduler.scheduleOnce([this, cookie, params_ptr, lock_helper_ptr, remote_access_user_uuid]() mutable {
+                this->start_charge_log_upload_for_user(
+                cookie,
+                FileType::CSV,
+                std::unique_ptr<GenerationParams>{params_ptr},
                 std::unique_ptr<ChargeLogGenerationLockHelper>(lock_helper_ptr),
                 remote_access_user_uuid);
         });
@@ -2040,40 +2039,23 @@ static void charge_log_send_tcp_task(void *arg)
         return 0;
     };
 
-    if (upload_args->file_type == FileType::PDF) {
-        char default_letterhead[1] = {'\0'};
-        char *letterhead = upload_args->letterhead ? upload_args->letterhead.get() : default_letterhead;
-        const int letterhead_lines = read_letterhead_lines(letterhead);
+    upload_args->generation_params->current_min = rtc.timestamp_minutes();
 
+    if (upload_args->file_type == FileType::PDF) {
         charge_tracker.generate_pdf(
             [&tcp_send_fn](const void *buffer, size_t len) -> int {
                 return tcp_send_fn(buffer, len);
             },
-            upload_args->user_filter,
-            upload_args->device_filter,
-            upload_args->start_timestamp_min,
-            upload_args->end_timestamp_min,
-            rtc.timestamp_minutes(),
-            upload_args->language,
-            letterhead,
-            letterhead_lines,
+            static_cast<PDFGenerationParams *>(upload_args->generation_params.get()),
             nullptr);
     } else {
-        CSVGenerationParams csv_params;
-        csv_params.user_filter = upload_args->user_filter;
-        csv_params.device_filter = upload_args->device_filter;
-        csv_params.start_timestamp_min = upload_args->start_timestamp_min;
-        csv_params.end_timestamp_min = upload_args->end_timestamp_min;
-        csv_params.language = upload_args->language;
-        csv_params.flavor = upload_args->csv_delimiter;
-        task_scheduler.await([&csv_params]() {
-            csv_params.electricity_price = charge_tracker.config.get("electricity_price")->asUint();
-        });
-
         CSVChargeLogGenerator csv_generator;
-        csv_generator.generateCSV(csv_params, [&tcp_send_fn](const char *buffer, size_t len) -> int {
-            return tcp_send_fn(buffer, len);
-        });
+        csv_generator.generateCSV(
+            *static_cast<CSVGenerationParams *>(upload_args->generation_params.get()),
+            [&tcp_send_fn](const char *buffer, size_t len) -> int {
+                return tcp_send_fn(buffer, len);
+            }
+        );
     }
 
     if (send_error) {
@@ -2128,51 +2110,72 @@ bool ChargeTracker::try_start_monthly_upload_for_user(int user_idx)
         return false;
     }
 
+    auto file_type = upload_config->get("file_type")->asEnum<FileType>();
+
     // Build the upload request from config
     auto upload_request_ptr = std::make_unique<RemoteUploadRequest>();
     upload_request_ptr->config_index = user_idx;
-    upload_request_ptr->start_timestamp_min = monthly_upload_start_timestamp_min;
-    upload_request_ptr->end_timestamp_min = monthly_upload_end_timestamp_min;
     upload_request_ptr->remote_access_user_uuid = user_uuid;
-    upload_request_ptr->language = upload_config->get("language")->asEnum<Language>();
-    upload_request_ptr->file_type = upload_config->get("file_type")->asEnum<FileType>();
-    upload_request_ptr->csv_delimiter = upload_config->get("csv_delimiter")->asEnum<CSVFlavor>();
-    upload_request_ptr->user_filter = upload_config->get("user_filter")->asInt();
-    upload_request_ptr->device_filter = upload_config->get("device_filter")->asInt();
+    upload_request_ptr->file_type = file_type;
 
-    if (upload_request_ptr->file_type == FileType::PDF) {
+    std::unique_ptr<GenerationParams> params = nullptr;
+
+    if (file_type == FileType::PDF)
+        params = std::make_unique<PDFGenerationParams>(nullptr);
+    else
+        params = std::make_unique<CSVGenerationParams>();
+
+    params->user = upload_config->get("user_filter")->asInt();
+    params->device = upload_config->get("device_filter")->asInt();
+    params->start_min = monthly_upload_start_timestamp_min;
+    params->end_min = monthly_upload_end_timestamp_min;
+    params->language = upload_config->get("language")->asEnum<Language>();
+
+    params->init();
+
+    if (file_type == FileType::CSV) {
+        static_cast<CSVGenerationParams *>(params.get())->flavor = upload_config->get("csv_delimiter")->asEnum<CSVFlavor>();
+    } else if (file_type == FileType::PDF) {
         const String &letterhead_string = upload_config->get("letterhead")->asString();
         const size_t letterhead_terminated_length = letterhead_string.length() + 1;
-        upload_request_ptr->letterhead = heap_alloc_array<char>(letterhead_terminated_length);
-        strncpy(upload_request_ptr->letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+        auto letterhead_buf = heap_alloc_array<char>(letterhead_terminated_length);
+        strncpy(letterhead_buf.get(), letterhead_string.c_str(), letterhead_terminated_length);
+
+        static_cast<PDFGenerationParams *>(params.get())->letterhead_lines = read_letterhead_lines(letterhead_buf.get());
+        static_cast<PDFGenerationParams *>(params.get())->letterhead_buf = std::move(letterhead_buf);
     }
 
     // Build filename and get display name
-    String display_name = device_name.display_name.get("display_name")->asString();
     String filename = build_filename(
-        ((time_t)upload_request_ptr->start_timestamp_min) * 60,
-        ((time_t)upload_request_ptr->end_timestamp_min) * 60,
+        ((time_t)params->start_min) * 60,
+        ((time_t)params->end_min) * 60,
         upload_request_ptr->file_type,
-        upload_request_ptr->language);
+        params->language);
 
     // Compute config hash
     uint8_t config_hash[32];
     compute_charge_log_hash(config_hash,
         upload_request_ptr->file_type,
-        upload_request_ptr->language,
-        upload_request_ptr->letterhead ? upload_request_ptr->letterhead.get() : nullptr,
-        upload_request_ptr->user_filter,
-        upload_request_ptr->device_filter,
-        upload_request_ptr->csv_delimiter,
-        upload_request_ptr->start_timestamp_min,
-        upload_request_ptr->end_timestamp_min);
+        params->language,
+        file_type == FileType::PDF ? (static_cast<PDFGenerationParams *>(params.get()))->letterhead_buf.get() : nullptr,
+        params->user,
+        params->device,
+        file_type == FileType::PDF ? CSVFlavor::Excel : (static_cast<CSVGenerationParams *>(params.get()))->flavor,
+        params->start_min,
+        params->end_min);
+
+    upload_request_ptr->generation_params = std::move(params);
 
     // Start the state machine
     remote_upload_request = std::move(upload_request_ptr);
     bool sm_started = start_charge_log_send_sm(
-        filename.c_str(), filename.length(),
-        display_name.c_str(), display_name.length(),
-        parsed_uuid, remote_upload_request->language, true,
+        filename.c_str(),
+        filename.length(),
+        remote_upload_request->generation_params->display_name.c_str(),
+        remote_upload_request->generation_params->display_name.length(),
+        parsed_uuid,
+        remote_upload_request->generation_params->language,
+        true,
         config_hash);
 
     if (!sm_started) {
@@ -2193,7 +2196,7 @@ void ChargeTracker::finish_monthly_upload()
     task_scheduler.updateDelay(monthly_upload_task_id, 4_h);
 }
 
-void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const int device_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
+void ChargeTracker::start_charge_log_upload_for_user(const uint32_t cookie, const FileType file_type, std::unique_ptr<GenerationParams> params, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
 {
     // Parse the remote_access_user_uuid string to extract the binary UUID
     uint8_t user_uuid[16] = {0};
@@ -2206,22 +2209,23 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     }
 
     // Build filename for the charge log
-    String filename = build_filename(((time_t)start_timestamp_min) * 60, ((time_t)end_timestamp_min) * 60, file_type, language);
-    String display_name = device_name.display_name.get("display_name")->asString();
+    String filename = build_filename(((time_t)params->start_min) * 60, ((time_t)params->end_min) * 60, file_type, params->language);
+
+    bool pdf = file_type == FileType::PDF;
 
     // Compute config hash for deduplication
     uint8_t config_hash[32];
     compute_charge_log_hash(config_hash,
-        file_type, language,
-        letterhead ? letterhead.get() : nullptr,
-        user_filter, device_filter,
-        csv_delimiter,
-        start_timestamp_min, end_timestamp_min);
+        file_type, params->language,
+        pdf ? (static_cast<PDFGenerationParams *>(params.get()))->letterhead_buf.get() : nullptr,
+        params->user, params->device,
+        pdf ? CSVFlavor::Excel : (static_cast<CSVGenerationParams *>(params.get()))->flavor,
+        params->start_min, params->end_min);
 
     // Initiate the charge log send state machine
     if (!start_charge_log_send_sm(filename.c_str(), filename.length(),
-                                   display_name.c_str(), display_name.length(),
-                                   user_uuid, language, false, config_hash)) {
+                                   params->display_name.c_str(), params->display_name.length(),
+                                   user_uuid, params->language, false, config_hash)) {
         logger.printfln("Failed to initiate charge log send state machine");
         // If the state machine couldn't be started, notify and return
         if (cookie != 0) {
@@ -2233,16 +2237,10 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     // Create task for file generation and transmission
     remote_upload_request = std::make_unique<RemoteUploadRequest>();
     remote_upload_request->cookie = cookie;
-    remote_upload_request->user_filter = user_filter;
-    remote_upload_request->device_filter = device_filter;
-    remote_upload_request->start_timestamp_min = start_timestamp_min;
-    remote_upload_request->end_timestamp_min = end_timestamp_min;
-    remote_upload_request->language = language;
     remote_upload_request->file_type = file_type;
-    remote_upload_request->csv_delimiter = csv_delimiter;
     remote_upload_request->use_format_overrides = true;
-    remote_upload_request->letterhead = std::move(letterhead);
     remote_upload_request->remote_access_user_uuid = remote_access_user_uuid;
+    remote_upload_request->generation_params = std::move(params);
     pending_generation_lock = std::move(generation_lock);
 }
 
@@ -2537,14 +2535,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
 
 int ChargeTracker::generate_pdf(
     std::function<int(const void *buffer, size_t len)> &&callback,
-    int user_filter,
-    int device_filter,
-    uint32_t start_timestamp_min,
-    uint32_t end_timestamp_min,
-    uint32_t current_timestamp_min,
-    Language language,
-    const char *letterhead,
-    int letterhead_lines,
+    const PDFGenerationParams *params,
     WebServerRequest *request
 ) {
     char stats_buf[384];
@@ -2552,25 +2543,6 @@ int ChargeTracker::generate_pdf(
     uint32_t charged_cost_sum = 0;
     bool seen_charges_without_meter = false;
     int charge_records = 0;
-    uint32_t electricity_price;
-    String dev_name = "unknown device";
-
-    auto await_result = task_scheduler.await([this, &electricity_price, &dev_name]() mutable {
-        electricity_price = this->config.get("electricity_price")->asUint();
-#if MODULE_DEVICE_NAME_AVAILABLE()
-        dev_name = device_name.display_name.get("display_name")->asString();
-        if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
-            dev_name += " (" + device_name.name.get("name")->asString() + ")";
-#endif
-    });
-    if (await_result == TaskScheduler::AwaitResult::Timeout) {
-        if (request != nullptr) {
-            request->send_plain(500, "Failed to generate PDF: Task timed out");
-        } else {
-            logger.printfln("Failed to generate PDF: Task timed out");
-        }
-        return -1;
-    }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP()
     // WARP1 has limited memory (no PSRAM), use file-by-file reading
@@ -2579,40 +2551,19 @@ int ChargeTracker::generate_pdf(
     int last_file = -1;
     int last_charge = -1;
     std::lock_guard<std::mutex> lock{records_mutex};
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-    auto await_result_users = task_scheduler.await([configured_users]() mutable {
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
-    });
-    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
-        if (request != nullptr) {
-            request->send_plain(500, "Failed to generate PDF: Task timed out");
-        } else {
-            logger.printfln("Failed to generate PDF: Task timed out");
-        }
-        return -1;
-    }
+
     {
         char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
-        ChargeStart cs;
-        ChargeEnd ce;
+        Charge c;
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i, nullptr));
             for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
-                if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                if (f.read((uint8_t *)c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
                     goto search_done;
-                memcpy(&cs, charge_buf, sizeof(ChargeStart));
-                memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
+
+                if (!params->include_charge(&c))
                     continue;
-                }
-                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                    continue;
-                }
-                bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                if (!include_user)
-                    continue;
+
                 if (first_file == -1)
                     first_file = i;
                 if (first_charge == -1)
@@ -2620,13 +2571,13 @@ int ChargeTracker::generate_pdf(
                 last_file = i;
                 last_charge = j;
                 ++charge_records;
-                if (charged_invalid(cs, ce))
+                if (charged_invalid(c.cs, c.ce)) {
                     seen_charges_without_meter = true;
-                else {
-                    double charged = ce.meter_end - cs.meter_start;
+                } else {
+                    double charged = c.ce.meter_end - c.cs.meter_start;
                     charged_sum += charged;
-                    if (electricity_price != 0)
-                        charged_cost_sum += round(charged * electricity_price / 100.0f);
+                    if (params->electricity_price != 0)
+                        charged_cost_sum += round(charged * params->electricity_price / 100.0f);
                 }
             }
         }
@@ -2635,7 +2586,7 @@ search_done:
 #else
     // Non-WARP1 builds have PSRAM, use getFilteredCharges for efficient charge collection
     size_t filtered_count = 0;
-    ExportCharge *filtered_charges = getFilteredCharges(user_filter, device_filter, start_timestamp_min, end_timestamp_min, &filtered_count);
+    ExportCharge *filtered_charges = getFilteredCharges(*params, &filtered_count);
 
     // Calculate statistics from filtered charges
     charge_records = static_cast<int>(filtered_count);
@@ -2647,54 +2598,41 @@ search_done:
         } else {
             double charged = ce.meter_end - cs.meter_start;
             charged_sum += charged;
-            if (electricity_price != 0)
-                charged_cost_sum += round(charged * electricity_price / 100.0f);
+            if (params->electricity_price != 0)
+                charged_cost_sum += round(charged * params->electricity_price / 100.0f);
         }
     }
 #endif
 
-    display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
-    if (display_name_cache == nullptr) {
-#if !OPTIONS_PRODUCT_ID_IS_WARP()
-        delete[] filtered_charges;
-#endif
-        if (request != nullptr) {
-            request->send_plain(500, "Failed to generate PDF: No memory");
-        } else {
-            logger.printfln("Failed to generate PDF: No memory");
-        }
-        return -1;
-    }
-    for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
-        display_name_cache[i].length = UINT32_MAX;
-    }
+    bool english = params->language == Language::English;
+
     char *stats_head = stats_buf;
-    stats_head += 1 + sprintf_u(stats_head, "%s: %s", (language == Language::English) ? "Charger" : "Wallbox", dev_name.c_str());
-    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported on" : "Exportiert am");
-    stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, language);
-    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported users" : "Exportierte Benutzer");
-    if (user_filter == USER_FILTER_ALL_USERS)
-        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "all users" : "Alle Benutzer");
-    else if (user_filter == USER_FILTER_DELETED_USERS)
-        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "deleted users" : "Gelöschte Benutzer");
+    stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", params->unique_device_name.c_str());
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
+    stats_head += 1 + timestamp_min_to_date_time_string(stats_head, params->current_min, params->language);
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
+    if (params->user == USER_FILTER_ALL_USERS)
+        stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
+    else if (params->user == USER_FILTER_DELETED_USERS)
+        stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
     else
-        stats_head += get_display_name(user_filter, stats_head, display_name_cache, language);
+        stats_head += get_display_name(params->user, stats_head, params->display_name_cache, params->language);
     ++stats_head;
-    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported period" : "Exportierter Zeitraum");
-    if (start_timestamp_min == 0)
-        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "record start" : "Aufzeichnungsbeginn");
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
+    if (params->start_min == 0)
+        stats_head += sprintf_u(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
     else
-        stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, language);
-    stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? " to " : " bis ");
-    if (end_timestamp_min == 0)
-        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
+        stats_head += timestamp_min_to_date_time_string(stats_head, params->start_min, params->language);
+    stats_head += sprintf_u(stats_head, "%s", english ? " to " : " bis ");
+    if (params->end_min == 0)
+        stats_head += sprintf_u(stats_head, "%s", english ? "record end" : (params->start_min == 0 ? "-ende" : "Aufzeichnungsende"));
     else
-        stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, language);
+        stats_head += timestamp_min_to_date_time_string(stats_head, params->end_min, params->language);
     ++stats_head;
-    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
     if (charged_sum <= 999999999.999f) {
         int written = sprintf_u(stats_head, "%.3f kWh", charged_sum);
-        if (language == Language::German)
+        if (params->language == Language::German)
             for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
                     stats_head[i] = ',';
@@ -2704,13 +2642,13 @@ search_done:
         memcpy(stats_head, ">=1000000000 kWh", ARRAY_SIZE(">=1000000000 kWh"));
         stats_head += ARRAY_SIZE(">=1000000000 kWh");
     }
-    if (electricity_price != 0) {
+    if (params->electricity_price != 0) {
         int written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
-                        (language == Language::English) ? "Total cost" : "Gesamtkosten",
+                        english ? "Total cost" : "Gesamtkosten",
                         charged_cost_sum / 100, charged_cost_sum % 100,
-                        electricity_price / 100.0f,
-                        seen_charges_without_meter ? ((language == Language::English) ? " Incomplete!" : " Unvollständig!") : "");
-        if (language == Language::German)
+                        params->electricity_price / 100.0f,
+                        seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
+        if (params->language == Language::German)
             for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
                     stats_head[i] = ',';
@@ -2749,33 +2687,26 @@ search_done:
     File f;
 
     int rc = init_pdf_generator(callback,
-                       (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
-                       stats_buf, (electricity_price == 0) ? 5 : 6,
-                       letterhead, letterhead_lines,
-                       (language == Language::English) ? table_header_en : table_header_de,
+                       english ? "WARP Charge Log" : "WARP Ladelog",
+                       stats_buf, (params->electricity_price == 0) ? 5 : 6,
+                       params->letterhead.get(), params->letterhead_lines,
+                       english ? table_header_en : table_header_de,
                        charge_records,
-                       [this,
-                        user_filter,
-                        &table_lines_buffer,
+                       [&table_lines_buffer,
                         &f,
+                        params,
                         first_file,
                         first_charge,
                         last_file,
                         last_charge,
                         &current_file,
                         &current_charge,
-                        electricity_price,
-                        language,
-                        configured_users,
-                        &display_name_cache,
                         any_charges_tracked]
                        (const char * * table_lines) {
         memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
         int lines_generated = 0;
         char *table_lines_head = table_lines_buffer;
-        char charge_buf[CHARGE_RECORD_SIZE];
-        ChargeStart cs;
-        ChargeEnd ce;
+        Charge c;
         while (any_charges_tracked && current_file <= last_file) {
             if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
                 current_charge = 0;
@@ -2787,14 +2718,13 @@ search_done:
             for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
                 if ((lines_generated == 8) || (current_file == last_file && current_charge > last_charge))
                     break;
-                if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                if (f.read((uint8_t *)c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
                     break;
-                memcpy(&cs, charge_buf, sizeof(ChargeStart));
-                memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-                bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                if (!include_user)
+
+                if (!params->include_charge(&c))
                     continue;
-                table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
+
+                table_lines_head = tracked_charge_to_string(table_lines_head, c.cs, c.ce, params->language, params->electricity_price, params->display_name_cache);
                 ++lines_generated;
             }
             if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
@@ -2817,18 +2747,16 @@ search_done:
     size_t current_charge_idx = 0;
 
     int rc = init_pdf_generator(callback,
-                       (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
-                       stats_buf, (electricity_price == 0) ? 5 : 6,
-                       letterhead, letterhead_lines,
-                       (language == Language::English) ? table_header_en : table_header_de,
+                       english ? "WARP Charge Log" : "WARP Ladelog",
+                       stats_buf, (params->electricity_price == 0) ? 5 : 6,
+                       params->letterhead_buf.get(), params->letterhead_lines,
+                       english ? table_header_en : table_header_de,
                        charge_records,
                        [&table_lines_buffer,
                         &current_charge_idx,
+                        params,
                         filtered_charges,
                         filtered_count,
-                        electricity_price,
-                        language,
-                        &display_name_cache,
                         any_charges_tracked]
                        (const char * * table_lines) {
         memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
@@ -2839,7 +2767,7 @@ search_done:
             const ChargeStart &cs = filtered_charges[current_charge_idx].charge.cs;
             const ChargeEnd &ce = filtered_charges[current_charge_idx].charge.ce;
 
-            table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
+            table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, params->language, params->electricity_price, params->display_name_cache);
             ++lines_generated;
             ++current_charge_idx;
         }
@@ -2852,7 +2780,6 @@ search_done:
 
     free_any(filtered_charges);
 #endif
-    free(display_name_cache);
 
     return rc;
 }
@@ -2927,22 +2854,8 @@ static bool should_include_directory_for_device_filter(int device_filter, const 
     }
 }
 
-ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count)
+ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, size_t *out_count)
 {
-    // Get configured users for filtering deleted users
-    // Do this before acquiring the mutex to avoid deadlocks during the main task
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-    auto await_result = task_scheduler.await([configured_users]() mutable {
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
-    });
-    if (await_result == TaskScheduler::AwaitResult::Timeout) {
-        logger.printfln("Failed to get configured users: Task timed out");
-        *out_count = 0;
-        return nullptr;
-    }
-
     std::lock_guard<std::mutex> lock{records_mutex};
 
     const size_t max_records_per_file = CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
@@ -2958,9 +2871,9 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
     }
 
     bool local_charger_in_config = is_charger_in_config_await(nullptr);
-    bool include_main_dir = ((device_filter == DEVICE_FILTER_ALL_CHARGERS && local_charger_in_config) ||
-                             device_filter == local_uid ||
-                             (device_filter == DEVICE_FILTER_DELETED_CHARGERS && !local_charger_in_config));
+    bool include_main_dir = ((params.device == DEVICE_FILTER_ALL_CHARGERS && local_charger_in_config) ||
+                             params.device == local_uid ||
+                             (params.device == DEVICE_FILTER_DELETED_CHARGERS && !local_charger_in_config));
 
     if (include_main_dir) {
         if (getChargerChargeRecords(nullptr, &main_first, &main_last)) {
@@ -2982,7 +2895,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
                 }
 
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(device_filter, dirname.c_str())) {
+                if (!should_include_directory_for_device_filter(params.device, dirname.c_str())) {
                     continue;
                 }
 
@@ -3001,9 +2914,9 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
         return nullptr;
     }
 
-    size_t max_charges = total_files * max_records_per_file + 1;
+    size_t max_charges = total_files * max_records_per_file + 1; // TODO: why +1 here?
 
-    ExportCharge *charges = static_cast<ExportCharge *>(malloc_psram((max_charges + 1) * sizeof(ExportCharge)));
+    ExportCharge *charges = static_cast<ExportCharge *>(malloc_psram((max_charges + 1) * sizeof(ExportCharge))); // TODO: why *also* +1 here?!?
     if (charges == nullptr) {
         *out_count = 0;
         return nullptr;
@@ -3012,7 +2925,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
     size_t charge_count = 0;
 
     // Helper lambda to read charges from a directory
-    auto read_directory_charges = [this, &charges, &charge_count, max_charges, user_filter, start_timestamp_min, end_timestamp_min, configured_users](const char *directory) {
+    auto read_directory_charges = [this, &charges, &charge_count, max_charges, &params](const char *directory) {
         uint32_t first_record = 0, last_record = 0;
         if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
             return;
@@ -3027,9 +2940,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
         }
 
         uint32_t prev_known_timestamp = 0;
-        uint8_t charge_buf[CHARGE_RECORD_SIZE];
-        ChargeStart cs;
-        ChargeEnd ce;
+        Charge c;
 
         for (uint32_t file_idx = first_record; file_idx <= last_record && charge_count <= max_charges; ++file_idx) {
             File f = LittleFS.open(chargeRecordFilename(file_idx, directory));
@@ -3041,48 +2952,26 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
             size_t num_complete_records = file_size / CHARGE_RECORD_SIZE;
 
             for (size_t record_idx = 0; record_idx < num_complete_records && charge_count <= max_charges; ++record_idx) {
-                size_t bytes_read = f.read(charge_buf, CHARGE_RECORD_SIZE);
+                size_t bytes_read = f.read((uint8_t *)&c, CHARGE_RECORD_SIZE);
                 if (bytes_read != CHARGE_RECORD_SIZE) {
                     break;
                 }
 
-                memcpy(&cs, charge_buf, sizeof(cs));
-                memcpy(&ce, charge_buf + sizeof(cs), sizeof(ce));
-
-                // Apply timestamp filters
-                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
-                    if (cs.timestamp_minutes != 0) {
-                        prev_known_timestamp = cs.timestamp_minutes;
-                    }
-                    continue;
-                }
-                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                    if (cs.timestamp_minutes != 0) {
-                        prev_known_timestamp = cs.timestamp_minutes;
+                if (!params.include_charge(&c)) {
+                    if (c.cs.timestamp_minutes != 0) {
+                        prev_known_timestamp = c.cs.timestamp_minutes;
                     }
                     continue;
                 }
 
-                // Apply user filter
-                bool include_user = user_filter == USER_FILTER_ALL_USERS
-                    || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id))
-                    || cs.user_id == user_filter;
-
-                if (!include_user) {
-                    if (cs.timestamp_minutes != 0) {
-                        prev_known_timestamp = cs.timestamp_minutes;
-                    }
-                    continue;
-                }
-
-                charges[charge_count].charge.cs = cs;
-                charges[charge_count].charge.ce = ce;
+                charges[charge_count].charge.cs = c.cs;
+                charges[charge_count].charge.ce = c.ce;
                 charges[charge_count].charger_uid = charger_uid;
                 charges[charge_count].prev_known_timestamp_minutes = prev_known_timestamp;
                 ++charge_count;
 
-                if (cs.timestamp_minutes != 0) {
-                    prev_known_timestamp = cs.timestamp_minutes;
+                if (c.cs.timestamp_minutes != 0) {
+                    prev_known_timestamp = c.cs.timestamp_minutes;
                 }
             }
 
@@ -3107,7 +2996,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
                 }
 
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(device_filter, dirname.c_str())) {
+                if (!should_include_directory_for_device_filter(params.device, dirname.c_str())) {
                     continue;
                 }
 
