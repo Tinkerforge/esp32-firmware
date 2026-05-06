@@ -429,9 +429,6 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
 
 template <typename T> size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
 {
-    if (strcmp(function_name, "deviceDiagnosisHeartbeatData") > 0) {
-        eebus.trace_fmtln("EEBUS: Informing subscribers of %s", function_name);
-    }
     if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
         return 0;
     }
@@ -446,7 +443,9 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
             }
         }
     }
-    eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
+    if (sent_count > 0 || error_count > 0) {
+        eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
+    }
     return sent_count;
 }
 
