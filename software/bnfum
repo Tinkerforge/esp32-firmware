@@ -1,0 +1,2 @@
+#!/bin/sh
+PLATFORMIO_BUILD_FLAGS=-DNIGHTLY uv run pio run -t upload -t monitor -e "$@"
