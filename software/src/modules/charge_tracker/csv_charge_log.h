@@ -81,5 +81,6 @@ struct CSVTranslations {
     static const char* getHeaderPrice(Language language);
     static const char* getUnknownUser(Language language);
     static const char* getDeletedUser(Language language);
+    static const char* getDeletedCharger(Language language);
     static const char* getUnknownChargeStart(Language language);
 };
