@@ -326,11 +326,7 @@ export function pre_init() {
                                     placeholder={__("select")}
                                     value={virtual_meter !== null ? virtual_meter.toString() : null}
                                     onValue={(v) => {
-                                        let location = config[1].location;
-
-                                        if (util.hasValue(get_default_location)) {
-                                            location = get_default_location(config[1].table[0], parseInt(v));
-                                        }
+                                        let location = get_default_location(config[1].table[0], parseInt(v));
 
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)}), location: location}));
                                     }} />
