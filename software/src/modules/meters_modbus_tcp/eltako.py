@@ -1,7 +1,7 @@
 display_names = [
     ('Eltako DSZ16DZE', {
-        'en': 'Eltako DSZ16DZE',
-        'de': 'Eltako DSZ16DZE',
+        'en': 'Eltako DSZ16D[ZE]',
+        'de': 'Eltako DSZ16D[ZE]',
     }),
 ]
 
