@@ -12,12 +12,10 @@ struct MqttDiscoveryTopicInfo {
     const char * const object_id;
     const char * const name_de;
     const char * const name_en;
-    const char * const availability_topic;
-    const char * const availability_info;
-    const char * const json_attributes_topic;
-    const char * const json_attributes_info;
+    const char * const availability_path;
+    const char * const availability_yes;
+    const char * const availability_no;
     const char * const static_infos[2];
-    const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
     const MqttDiscoveryType type;
 };
 
