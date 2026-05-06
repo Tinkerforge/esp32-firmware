@@ -338,10 +338,22 @@ export function pre_init() {
                     }
 
                     if (virtual_meter === null) {
-                        default_location = null;
+                        default_location = undefined;
+
+                        // check if default location depends on virtual meter. for example, for Carlo Gavazzi EM270 and EM280 this is not the case
+                        for (let item of virtual_meter_items) {
+                            if (get_default_location(config[1].table[0], parseInt(item[0])) != MeterLocation.Unknown) {
+                                default_location = null;
+                                break;
+                            }
+                        }
                     }
                     else {
                         default_location = get_default_location(config[1].table[0], virtual_meter);
+
+                        if (default_location == MeterLocation.Unknown) {
+                            default_location = undefined;
+                        }
                     }
 
                     if (default_location === undefined) {
