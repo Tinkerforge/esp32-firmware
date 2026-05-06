@@ -27,8 +27,6 @@
 #include "tools.h"
 #include "digest_auth.h"
 
-#define USERNAME_FILE "/users/all_usernames"
-
 #if MODULE_EVSE_COMMON_AVAILABLE()
 // We have to do access the evse/evse_v2 configs manually
 // because a lot of the code runs in setup(), i.e. before APIs
