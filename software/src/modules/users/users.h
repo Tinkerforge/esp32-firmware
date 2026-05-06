@@ -40,6 +40,8 @@
 #define MAX_ACTIVE_USERS 17
 #endif
 
+#define USERNAME_FILE "/users/all_usernames"
+
 class Users final : public IModule
 {
 public:
