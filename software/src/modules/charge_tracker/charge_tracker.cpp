@@ -1088,50 +1088,11 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language)
-{
-    if (display_name_cache[user_id].length > DISPLAY_NAME_LENGTH) {
-        struct {
-            size_t length = 0;
-            char buf[sizeof(display_name_cache[user_id].name)];
-        } name;
-
-        task_scheduler.await([&name, user_id, language]() {
-            name.length = users.get_display_name(user_id, name.buf, language);
-        });
-
-        if (name.length > sizeof(display_name_cache[user_id].name)) {
-            logger.printfln("Returned user name too long: [%.*s]", sizeof(name.buf), name.buf);
-            display_name_cache[user_id].length = 0;
-        } else {
-            const size_t copy_length = (name.length + 3) & -4; // Round up to IRAM-compatible multiple of 32bit.
-            memcpy(display_name_cache[user_id].name, name.buf, copy_length); // The compiler is hell-bent on using memcpy here, so let it have its way.
-
-            display_name_cache[user_id].length = name.length;
-        }
-    }
-
-    if (display_name_cache[user_id].length > 0) {
-        // Can't use memcpy because that uses illegal IRAM reads when ret_buf is not aligned.
-        uint32_t *src_start = display_name_cache[user_id].name;
-        uint32_t *src_end = src_start + (display_name_cache[user_id].length + 3) / 4; // Round up to IRAM-compatible multiple of 32bit; copies some buffer slack behind termination that the caller must ignore.
-        uint32_t *dst = reinterpret_cast<uint32_t *>(ret_buf);
-
-        while (src_start < src_end) {
-            *dst++ = *src_start++;
-        }
-    }
-
-    ret_buf[display_name_cache[user_id].length] = '\0';
-
-    return display_name_cache[user_id].length;
-}
-
 static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, Language language, uint32_t electricity_price, display_name_entry *display_name_cache)
 {
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, language);
 
-    size_t name_len = get_display_name(cs.user_id, buf, display_name_cache, language);
+    size_t name_len = display_name_cache[cs.user_id].get(buf);
     buf += 1 + name_len;
 
     if (charged_invalid(cs, ce)) {
@@ -1400,9 +1361,49 @@ bool GenerationParams::init() {
             if (this->display_name_cache == nullptr)
                 return;
 
-            for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
-                this->display_name_cache[i].length = UINT32_MAX;
+            {
+                File f = LittleFS.open(USERNAME_FILE, "r");
+
+                for (size_t user_id = 0; user_id < MAX_PASSIVE_USERS; ++user_id) {
+                    f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
+
+                    char buf[USERNAME_LENGTH];
+                    f.read((uint8_t *)buf, DISPLAY_NAME_LENGTH);
+
+                    auto length = strnlen(buf, DISPLAY_NAME_LENGTH);
+                    this->display_name_cache[user_id].set(length, buf);
+                }
             }
+
+
+            const auto &c = api.getState("users/config")->get("users");
+            for (const auto &cfg : c) {
+                auto user_id = cfg.get("id")->asUint();
+                auto length = cfg.get("display_name")->asString().length();
+
+                char buf[USERNAME_LENGTH];
+                memcpy(buf, cfg.get("display_name")->asEphemeralCStr(), length);
+
+                this->display_name_cache[user_id].set(length, buf);
+            }
+
+            for (size_t user_id = 0; user_id < MAX_PASSIVE_USERS; ++user_id) {
+                char buf[USERNAME_LENGTH + 1]; // +1 to always fit \0
+                size_t length = this->display_name_cache[user_id].get(buf);
+
+                if (length == 0) {
+                    // length should never be 0 except if we manually upload test data to the charger.
+                    const char *b = CSVTranslations::getDeletedUser(this->language);
+                    length = strlen(b);
+                    strncpy(buf, b, DISPLAY_NAME_LENGTH);
+                } else if (user_id == 0 && strcmp(buf, "Anonymous") == 0) {
+                    // Replace "Anonymous" with translated string
+                    const char *b = CSVTranslations::getUnknownUser(this->language);
+                    length = strlen(b);
+                    strncpy(buf, b, DISPLAY_NAME_LENGTH);
+                }
+            }
+
         });
 
         return result == TaskScheduler::AwaitResult::Done && this->display_name_cache != nullptr;
@@ -2616,7 +2617,7 @@ search_done:
     else if (params->user == USER_FILTER_DELETED_USERS)
         stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
     else
-        stats_head += get_display_name(params->user, stats_head, params->display_name_cache, params->language);
+        stats_head += params->display_name_cache[params->user].get(stats_head);
     ++stats_head;
     stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
     if (params->start_min == 0)
