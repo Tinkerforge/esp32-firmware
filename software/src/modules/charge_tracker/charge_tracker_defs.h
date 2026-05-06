@@ -20,6 +20,10 @@
 #include <cstdint>
 #include <Arduino.h>
 
+#include "language.h"
+#include "modules/users/users.h"
+#include "modules/web_server/web_server.h"
+
 #define USER_FILTER_ALL_USERS -2
 #define USER_FILTER_DELETED_USERS -1
 
@@ -46,4 +50,49 @@ static_assert(sizeof(ChargeEnd) == 7, "Unexpected size of ChargeEnd");
 struct [[gnu::packed]] Charge {
     ChargeStart cs;
     ChargeEnd ce;
+};
+
+struct display_name_entry {
+    uint32_t length;
+    uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
+};
+
+struct GenerationParams {
+    GenerationParams() {}
+    GenerationParams(const GenerationParams&) = delete;
+    GenerationParams &operator=(const GenerationParams&) = delete;
+
+    // Initialized in parse_request or manually
+    int user = USER_FILTER_ALL_USERS;
+    int device = DEVICE_FILTER_ALL_CHARGERS;
+    uint32_t start_min = 0;
+    uint32_t end_min = 0;
+    uint32_t current_min = 0;
+    Language language = Language::German;
+
+    // Initialized in init()
+    uint32_t electricity_price = 0;
+    String display_name = "";
+    String unique_device_name = "";
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    display_name_entry *display_name_cache = nullptr;
+
+    ~GenerationParams() {
+        free_any(display_name_cache);
+    }
+
+    bool init();
+
+    virtual bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request);
+    bool include_charge(const Charge *charge) const;
+};
+
+struct PDFGenerationParams final : public GenerationParams {
+    std::unique_ptr<char[]> letterhead_buf = nullptr;
+    int letterhead_lines = 0;
+    Config *pdf_letterhead_config = nullptr;
+
+    PDFGenerationParams(Config *pdf_letterhead_config) : pdf_letterhead_config(pdf_letterhead_config) {}
+
+    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) override;
 };

@@ -43,6 +43,7 @@ import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } fr
 import { CSVFlavor } from "./generated/csv_flavor.enum";
 import { Language } from "../../ts/language";
 import { GenerationState } from "./generated/generation_state.enum";
+import { FileType } from "./generated/file_type.enum";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -362,19 +363,31 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             let start_minutes = Math.floor(startOfLastMonth.getTime() / 1000 / 60);
             let end_minutes = Math.floor(endOfLastMonth.getTime() / 1000 / 60);
 
-            await API.call("charge_tracker/send_charge_log", {
-                api_not_final_acked: true,
-                language: config.language,
-                start_timestamp_min: start_minutes,
-                end_timestamp_min: end_minutes,
-                user_filter: config.user_filter,
-                device_filter: config.device_filter,
-                file_type: config.file_type,
-                letterhead: config.letterhead,
-                csv_delimiter: config.csv_delimiter,
-                cookie: Math.floor(Math.random() * 0xFFFFFFFF),
-                remote_access_user_uuid: user.uuid
-            }, () => __("charge_tracker.script.upload_charge_log_failed"));
+            if (config.file_type == FileType.PDF) {
+                await API.call("charge_tracker/send_charge_log_pdf", {
+                    api_not_final_acked: true,
+                    language: config.language,
+                    start_timestamp_min: start_minutes,
+                    end_timestamp_min: end_minutes,
+                    user_filter: config.user_filter,
+                    device_filter: config.device_filter,
+                    letterhead: config.letterhead,
+                    cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                    remote_access_user_uuid: user.uuid
+                }, () => __("charge_tracker.script.upload_charge_log_failed"));
+            } else if (config.file_type == FileType.CSV) {
+                await API.call("charge_tracker/send_charge_log_csv", {
+                    api_not_final_acked: true,
+                    language: config.language,
+                    start_timestamp_min: start_minutes,
+                    end_timestamp_min: end_minutes,
+                    user_filter: config.user_filter,
+                    device_filter: config.device_filter,
+                    csv_delimiter: config.csv_delimiter,
+                    cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                    remote_access_user_uuid: user.uuid
+                }, () => __("charge_tracker.script.upload_charge_log_failed"));
+            }
 
             this.setState({generator_state: GenerationState.ManualRemoteSend});
             util.add_alert("test-charge-log-send", "info", () => __("charge_tracker.script.test_charge_log_upload_started"), () => "");
@@ -629,19 +642,32 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
                 let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
-                await API.call("charge_tracker/send_charge_log", {
-                    api_not_final_acked: true,
-                    language: parseInt(state.language),
-                    start_timestamp_min: start_minutes,
-                    end_timestamp_min: end_minutes,
-                    user_filter: parseInt(state.user_filter),
-                    file_type: parseInt(state.file_type),
-                    device_filter: parseInt(state.device_filter),
-                    letterhead: state.pdf_letterhead,
-                    csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
-                    cookie: Math.floor(Math.random() * 0xFFFFFFFF),
-                    remote_access_user_uuid
-                }, () => __("charge_tracker.script.upload_charge_log_failed"));
+                let file_type = parseInt(state.file_type);
+                if (file_type == FileType.PDF) {
+                    await API.call("charge_tracker/send_charge_log_pdf", {
+                        api_not_final_acked: true,
+                        language: parseInt(state.language),
+                        start_timestamp_min: start_minutes,
+                        end_timestamp_min: end_minutes,
+                        user_filter: parseInt(state.user_filter),
+                        device_filter: parseInt(state.device_filter),
+                        letterhead: state.pdf_letterhead,
+                        cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                        remote_access_user_uuid
+                    }, () => __("charge_tracker.script.upload_charge_log_failed"));
+                } else if (file_type == FileType.CSV) {
+                    await API.call("charge_tracker/send_charge_log_csv", {
+                        api_not_final_acked: true,
+                        language: parseInt(state.language),
+                        start_timestamp_min: start_minutes,
+                        end_timestamp_min: end_minutes,
+                        user_filter: parseInt(state.user_filter),
+                        device_filter: parseInt(state.device_filter),
+                        csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
+                        cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                        remote_access_user_uuid
+                    }, () => __("charge_tracker.script.upload_charge_log_failed"));
+                }
             } catch {}
         };
         const remoteAccessConfig = API.get('remote_access/config');

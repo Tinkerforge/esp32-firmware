@@ -29,23 +29,10 @@
 #include "charge_tracker_defs.h"
 #include "tools/string_builder.h"
 
-struct CSVGenerationParams {
-    CSVFlavor flavor;
-    int user_filter;
-    int device_filter;
-    uint32_t start_timestamp_min;
-    uint32_t end_timestamp_min;
-    uint32_t electricity_price;
-    Language language;
+struct CSVGenerationParams final : public GenerationParams {
+    CSVFlavor flavor = CSVFlavor::Excel;
 
-    CSVGenerationParams() :
-        flavor(CSVFlavor::Excel),
-        user_filter(USER_FILTER_ALL_USERS),
-        device_filter(DEVICE_FILTER_ALL_CHARGERS),
-        start_timestamp_min(0),
-        end_timestamp_min(UINT32_MAX),
-        electricity_price(0),
-        language(Language::German) {}
+    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) override;
 };
 
 class CSVChargeLogGenerator {
@@ -55,16 +42,8 @@ public:
      * @param params Generation parameters (format, filters, etc.)
      * @param callback Function called with generated CSV data chunks
      */
-    int generateCSV(const CSVGenerationParams& params,
+    int generateCSV(const CSVGenerationParams &params,
                      std::function<int(const char* data, size_t length)> callback);
-
-    /**
-     * @brief Simplified CSV generation that returns complete CSV as String
-     * @param params Generation parameters
-     * @return Complete CSV data as String, or empty string on error
-     * @note Use with caution for large datasets due to memory usage
-     */
-    String generateCSVString(const CSVGenerationParams& params);
 
 private:
     void escapeCSVField(const String& field, StringWriter &output);

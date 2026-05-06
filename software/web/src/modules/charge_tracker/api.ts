@@ -27,17 +27,27 @@ interface remote_upload_config {
     last_upload_timestamp_min: number;
 }
 
-export interface send_charge_log {
+export interface send_charge_log_pdf {
     api_not_final_acked: boolean;
     cookie: number;
     user_filter: number;
     device_filter: number;
     start_timestamp_min: number;
     end_timestamp_min: number;
-    file_type: FileType;
+    language: Language;
+    letterhead?: string;
+    remote_access_user_uuid: string;
+}
+
+export interface send_charge_log_csv {
+    api_not_final_acked: boolean;
+    cookie: number;
+    user_filter: number;
+    device_filter: number;
+    start_timestamp_min: number;
+    end_timestamp_min: number;
     language: Language;
     csv_delimiter: CSVFlavor;
-    letterhead?: string;
     remote_access_user_uuid: string;
 }
 
