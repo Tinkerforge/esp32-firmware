@@ -53,9 +53,6 @@ struct [[gnu::packed]] Charge {
 };
 
 struct display_name_entry {
-    uint32_t length;
-    uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
-
     void set(uint32_t len, char *buf) {
         this->length = len;
         const size_t copy_length = (len + 3) & -4; // Round up to IRAM-compatible multiple of 32bit.
@@ -77,7 +74,10 @@ struct display_name_entry {
         buf[this->length] = '\0';
         return this->length;
     }
-};
+
+    uint32_t length;
+private:
+    uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
 };
 
 struct GenerationParams {
