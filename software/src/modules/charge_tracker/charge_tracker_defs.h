@@ -80,6 +80,36 @@ private:
     uint32_t name[32 / sizeof(uint32_t)]; // 32 == DISPLAY_NAME_LENGTH; can't include users.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
 };
 
+struct charger_display_name_entry {
+    void set(uint32_t charger_uid, uint32_t len, char *buf) {
+        this->uid = charger_uid;
+        this->length = len;
+        const size_t copy_length = (len + 3) & -4; // Round up to IRAM-compatible multiple of 32bit.
+        memcpy(this->name, buf, copy_length); // The compiler is hell-bent on using memcpy here, so let it have its way.
+    }
+
+    size_t get(char *buf) {
+        if (this->length > 0) {
+            // Can't use memcpy because that uses illegal IRAM reads when ret_buf is not aligned.
+            uint32_t *src_start = this->name;
+            uint32_t *src_end = src_start + (this->length + 3) / 4; // Round up to IRAM-compatible multiple of 32bit; copies some buffer slack behind termination that the caller must ignore.
+            uint32_t *dst = reinterpret_cast<uint32_t *>(buf);
+
+            while (src_start < src_end) {
+                *dst++ = *src_start++;
+            }
+        }
+
+        buf[this->length] = '\0';
+        return this->length;
+    }
+
+    uint32_t uid;
+    uint32_t length;
+private:
+    uint32_t name[32 / sizeof(uint32_t)]; // 32 == CHARGER_NAME_LENGTH; can't include charge_manager.h here due to module_available guards. Validated by static_assert in charge_tracker.cpp.
+};
+
 struct GenerationParams {
     GenerationParams() {}
     GenerationParams(const GenerationParams&) = delete;
@@ -99,9 +129,13 @@ struct GenerationParams {
     String unique_device_name = "";
     uint8_t configured_users[MAX_ACTIVE_USERS] = {};
     display_name_entry *display_name_cache = nullptr;
+    charger_display_name_entry *charger_display_name_cache = nullptr;
+
+    size_t get_charger_display_name(uint32_t uid, char *buf) const;
 
     ~GenerationParams() {
         free_any(display_name_cache);
+        free_any(charger_display_name_cache);
     }
 
     bool init();

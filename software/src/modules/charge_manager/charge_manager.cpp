@@ -1307,35 +1307,6 @@ void ChargeManager::rename_charger(uint32_t uid, const String &display_name)
     f.write((const uint8_t *)buf, sizeof(buf));
 }
 
-size_t ChargeManager::get_charger_display_name(uint32_t uid, char *ret_buf)
-{
-    // First try to get from config (for currently configured chargers)
-    for (const auto &charger : config.get("chargers")) {
-        if (charger.get("uid")->asUint() == uid) {
-            const String &s = charger.get("name")->asString();
-            strncpy(ret_buf, s.c_str(), CHARGER_NAME_LENGTH);
-            return std::min(s.length(), (unsigned int)CHARGER_NAME_LENGTH);
-        }
-    }
-
-    // Fallback to the charger names file
-    File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
-    if (!f) {
-        ret_buf[0] = '\0';
-        return 0;
-    }
-
-    int offset = find_charger_entry(f, uid);
-    if (offset < 0) {
-        ret_buf[0] = '\0';
-        return 0;
-    }
-
-    f.seek(offset + sizeof(uid), SeekMode::SeekSet);
-    f.read((uint8_t *)ret_buf, CHARGER_NAME_LENGTH);
-    return strnlen(ret_buf, CHARGER_NAME_LENGTH);
-}
-
 void ChargeManager::remove_charger_names_file()
 {
     if (LittleFS.exists(CHARGER_NAMES_FILE))

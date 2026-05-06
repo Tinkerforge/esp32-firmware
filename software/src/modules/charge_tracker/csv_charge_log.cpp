@@ -82,6 +82,10 @@ const char* CSVTranslations::getDeletedUser(Language language) {
     return (language == Language::English) ? "Deleted User" : "Gelöschter Benutzer";
 }
 
+const char* CSVTranslations::getDeletedCharger(Language language) {
+    return (language == Language::English) ? "Deleted Charger" : "Gelöschte Wallbox";
+}
+
 const char* CSVTranslations::getUnknownChargeStart(Language language) {
     return (language == Language::English) ? "Unknown" : "Unbekannt";
 }

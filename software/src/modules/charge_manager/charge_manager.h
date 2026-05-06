@@ -89,7 +89,6 @@ public:
     bool is_only_proxy() { return this->config.get("chargers")->count() == 1 && !this->config.get("enable_charge_manager")->asBool(); }
 
     void rename_charger(uint32_t uid, const String &display_name);
-    size_t get_charger_display_name(uint32_t uid, char *ret_buf);
     void remove_charger_names_file();
     void remove_from_charger_names_file(uint32_t uid);
     bool is_charger_tracked(uint32_t uid);
