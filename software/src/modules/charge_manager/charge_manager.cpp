@@ -92,7 +92,7 @@ void ChargeManager::pre_setup()
 
     config_chargers_prototype = Config::Object({
         {"host", Config::Str("", 0, 64)},
-        {"name", Config::Str("", 0, 32)},
+        {"name", Config::Str("", 0, CHARGER_NAME_LENGTH)},
         {"rot", Config::Enum(CMPhaseRotation::Unknown)},
         {"uid", Config::Uint32(0)},
     });
