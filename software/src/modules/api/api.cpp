@@ -1118,6 +1118,16 @@ void API::addFeature(const char *name)
     new_feature->updateString(name);
 }
 
+bool API::removeFeature(const char *name)
+{
+    size_t feature_count = features.count();
+    for (size_t i = 0; i < feature_count; ++i)
+        if (features.get(i)->asString() == name) {
+            return features.remove(i);
+        }
+    return false;
+}
+
 bool API::already_registered(const char *path, size_t path_len, const char *api_type)
 {
     for (auto &reg : this->states) {
