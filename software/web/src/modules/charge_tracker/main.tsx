@@ -420,7 +420,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     onAddRemoteUploadConfigGetChildren(user_filter_items: [string, string][]) {
         const remote_access_config = API.get("remote_access/config").users;
         const remote_access_user_items: [string, string][] = remote_access_config.map(u => [u.id.toString(), u.email]);
-        const device_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.u.toString(), x.n]);
+        const device_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.uid.toString(), x.n]);
 
         return <>
             <FormRow label={__("charge_tracker.content.user_filter_label")}>
@@ -587,7 +587,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
         user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
 
-        let device_filter_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.u.toString(), x.n]);
+        let device_filter_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.uid.toString(), x.n]);
         device_filter_items.unshift(["-1", __("charge_tracker.script.deleted_chargers")]);
         device_filter_items.unshift(["-2", __("charge_tracker.script.all_chargers")]);
 
