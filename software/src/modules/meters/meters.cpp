@@ -299,7 +299,16 @@ void Meters::setup()
             meter_slot.power_history.setup();
         }
 
+        // The updated flag is still set from restoring the config.
+        // Clear it to detect changes made by the meter setup function
+        // that might patch the location
+        meter_slot.config_union.clear_updated(0xFF);
         meter->setup(static_cast<Config *>(meter_slot.config_union.get()));
+
+        if (meter_slot.config_union.was_updated(0xFF)) {
+            api.writeConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union);
+        }
+
         // Setup before calling supports_reset to allow a meter to decide in
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
