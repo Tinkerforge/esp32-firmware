@@ -1115,7 +1115,7 @@ void ChargeManager::setup()
                     case ZeroPhaseDecisionTag::NoHysteresisBlocksUntil:
                         charger_alloc.blocking_reason = CMBlockingReason::None;
                 }
-                
+
                 switch(charger_alloc.state) {
                     case CASState::NoVehicle:
                     case CASState::UserBlocked:
