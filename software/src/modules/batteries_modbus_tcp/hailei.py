@@ -20,6 +20,11 @@ repeat_intervals = [
     ('Hailei Hybrid Inverter', alpha_ess.repeat_intervals[0][1]),
 ]
 
+variants = []
+
+for variant in alpha_ess.variants:
+    variants.append(variant[0].replace('Alpha ESS', 'Hailei'), deepcopy(variant[1]))
+
 specs = deepcopy(alpha_ess.specs)
 
 for spec in specs:

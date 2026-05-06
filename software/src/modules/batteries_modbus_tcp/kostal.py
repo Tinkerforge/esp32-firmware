@@ -10,26 +10,18 @@ def f32le(value):
 
 
 display_names = [
-    ('Kostal Plenticore Plus G2 Big Endian', {
-        'en': 'KOSTAL PLENTICORE plus G2 (big-endian)',
-        'de': 'KOSTAL PLENTICORE plus G2 (Big-Endian)',
+    ('Kostal Plenticore Plus G2', {
+        'en': 'KOSTAL PLENTICORE plus G2',
+        'de': 'KOSTAL PLENTICORE plus G2',
     }),
-    ('Kostal Plenticore Plus G2 Little Endian', {
-        'en': 'KOSTAL PLENTICORE plus G2 (little-endian)',
-        'de': 'KOSTAL PLENTICORE plus G2 (Little-Endian)',
-    }),
-    ('Kostal Plenticore G3 Big Endian', {
-        'en': 'KOSTAL PLENTICORE G3 (big-endian)',
-        'de': 'KOSTAL PLENTICORE G3 (Big-Endian)',
-    }),
-    ('Kostal Plenticore G3 Little Endian', {
-        'en': 'KOSTAL PLENTICORE G3 (little-endian)',
-        'de': 'KOSTAL PLENTICORE G3 (Little-Endian)',
+    ('Kostal Plenticore G3', {
+        'en': 'KOSTAL PLENTICORE G3',
+        'de': 'KOSTAL PLENTICORE G3',
     }),
 ]
 
 table_prototypes = [
-    ('Kostal Plenticore Plus G2 Big Endian', [
+    ('Kostal Plenticore Plus G2', [
         'device_address',
         {
             'name': 'force_charge_power',
@@ -42,33 +34,7 @@ table_prototypes = [
             'default': 2000,  # W
         },
     ]),
-    ('Kostal Plenticore Plus G2 Little Endian', [
-        'device_address',
-        {
-            'name': 'force_charge_power',
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 2000,  # W
-        },
-        {
-            'name': 'force_discharge_power',
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 2000,  # W
-        },
-    ]),
-    ('Kostal Plenticore G3 Big Endian', [
-        'device_address',
-        {
-            'name': 'force_charge_power',
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 2000,  # W
-        },
-        {
-            'name': 'force_discharge_power',
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 2000,  # W
-        },
-    ]),
-    ('Kostal Plenticore G3 Little Endian', [
+    ('Kostal Plenticore G3', [
         'device_address',
         {
             'name': 'force_charge_power',
@@ -84,17 +50,18 @@ table_prototypes = [
 ]
 
 default_device_addresses = [
-    ('Kostal Plenticore Plus G2 Big Endian', 71),
-    ('Kostal Plenticore Plus G2 Little Endian', 71),
-    ('Kostal Plenticore G3 Big Endian', 71),
-    ('Kostal Plenticore G3 Little Endian', 71),
+    ('Kostal Plenticore Plus G2', 71),
+    ('Kostal Plenticore G3', 71),
 ]
 
 repeat_intervals = [
-    ('Kostal Plenticore Plus G2 Big Endian', 20),  # Kostal watchdog duration minimum is 30 seconds
-    ('Kostal Plenticore Plus G2 Little Endian', 20),  # Kostal watchdog duration minimum is 30 seconds
-    ('Kostal Plenticore G3 Big Endian', 20),  # Kostal watchdog duration minimum is 30 seconds
-    ('Kostal Plenticore G3 Little Endian', 20),  # Kostal watchdog duration minimum is 30 seconds
+    ('Kostal Plenticore Plus G2', 20),  # Kostal watchdog duration minimum is 30 seconds
+    ('Kostal Plenticore G3', 20),  # Kostal watchdog duration minimum is 30 seconds
+]
+
+variants = [
+    ('Kostal Plenticore Plus G2', ['Big Endian', 'Little Endian']),
+    ('Kostal Plenticore G3', ['Big Endian', 'Little Endian']),
 ]
 
 # FIXME: register 1034 cannot actively be cleared. it can only be cleared passively by the
@@ -136,7 +103,8 @@ plenticore_plus_g2_specs = [
         'group': 'Kostal Plenticore Plus G2',
         'mode': 'Normal',
         'register_blocks': [
-            # don't write register 1034, 1038, 1040 to let the watchdog clear any previous force/block charge/discharge
+            # don't write register 1034, 1038, 1040 to let the watchdog clear any previous
+            # force/block charge/discharge to gain normal charge/discharge
         ],
     },
     {
@@ -268,7 +236,8 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Block',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous force charge/discharge to gain normal charge/discharge
+            # don't write register 1034 to let the watchdog clear any previous
+            # force charge/discharge to gain normal charge/discharge
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -291,7 +260,8 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Normal',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous force charge/discharge to gain normal charge/discharge
+            # don't write register 1034 to let the watchdog clear any previous
+            # force charge/discharge to gain normal charge/discharge
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -314,7 +284,8 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Block Discharge',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous force charge/discharge to gain normal charge
+            # don't write register 1034 to let the watchdog clear any previous
+            # force charge/discharge to gain normal charge/discharge
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -367,7 +338,8 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Block Charge',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous force charge/discharge to gain normal discharge
+            # don't write register 1034 to let the watchdog clear any previous
+            # force charge/discharge to gain normal charge/discharge
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -419,11 +391,11 @@ plenticore_g3_specs = [
 ]
 
 
-def make_specs(specs, group_suffix, f32_convert):
+def make_specs_variant(specs, variant, f32_convert):
     specs = deepcopy(specs)
 
     for spec in specs:
-        spec['group'] += group_suffix
+        spec['variant'] = variant
 
         for register_block in spec['register_blocks']:
             register_block['values'] = []
@@ -436,7 +408,7 @@ def make_specs(specs, group_suffix, f32_convert):
     return specs
 
 
-specs = make_specs(plenticore_plus_g2_specs, ' Big Endian', f32be) \
-      + make_specs(plenticore_plus_g2_specs, ' Little Endian', f32le) \
-      + make_specs(plenticore_g3_specs, ' Big Endian', f32be) \
-      + make_specs(plenticore_g3_specs, ' Little Endian', f32le)
+specs = make_specs_variant(plenticore_plus_g2_specs, 'Big Endian', f32be) \
+      + make_specs_variant(plenticore_plus_g2_specs, 'Little Endian', f32le) \
+      + make_specs_variant(plenticore_g3_specs, 'Big Endian', f32be) \
+      + make_specs_variant(plenticore_g3_specs, 'Little Endian', f32le)

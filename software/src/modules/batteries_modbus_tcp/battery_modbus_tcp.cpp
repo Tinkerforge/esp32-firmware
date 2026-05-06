@@ -38,25 +38,30 @@
 
 static char get_battery_mode_as_char(BatteryMode mode)
 {
-    if (mode == BatteryMode::None) {
+    if (mode == BatteryMode::Discover) {
+        return 'd';
+    }
+    else if (mode == BatteryMode::None) {
         return 'n';
     }
-
-    return '0' + static_cast<char>(mode);
+    else {
+        return '0' + static_cast<char>(mode);
+    }
 }
 
 [[gnu::const]]
 const char *BatteryModbusTCP::get_battery_mode_display_name(BatteryMode value, Language language)
 {
     switch (value) {
-    case BatteryMode::None:           return language == Language::English ? "none"                                : "nichts";
+    case BatteryMode::Discover:
+    case BatteryMode::None:           esp_system_abort("Invalid battery mode for display name lookup");
     case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
     case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
     case BatteryMode::BlockDischarge: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
     case BatteryMode::ForceCharge:    return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
     case BatteryMode::BlockCharge:    return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
     case BatteryMode::ForceDischarge: return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
-    default:                          return language == Language::English ? "unknown"                             : "unbekannt";
+    default:                          esp_system_abort("Unknown battery mode in display name lookup call");
     }
 }
 
@@ -427,7 +432,7 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
                                                                      uint16_t repeat_interval, // seconds
                                                                      BatteryMode mode,
                                                                      TableSpec *table,
-                                                                     TableWriterVLogFLnFunction &&vlogfln,
+                                                                     VLogFLnFunction &&vlogfln,
                                                                      TableWriterFinishedFunction &&finished,
                                                                      Language language /*= Language::English*/)
 {
@@ -449,42 +454,49 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
     writer->vlogfln = std::move(vlogfln);
     writer->finished = std::move(finished);
     writer->test = test;
+    writer->task_id = task_scheduler.scheduleOnce([writer]() {
+        if (writer->destroy_requested) {
+            delete writer;
+            return;
+        }
 
-    if (table->register_blocks_count > 0) {
-        writer->task_id = task_scheduler.scheduleOnce([writer]() {
-            if (writer->destroy_requested) {
-                delete writer;
-                return;
-            }
+        writer->task_id = 0;
 
-            writer->task_id = 0;
+        if (writer->table == nullptr || writer->table->register_blocks_count == 0) {
+            table_writer_logfln(writer, false,
+                                writer->language == Language::English
+                                ? "Table is empty, nothing to do"
+                                : "Tabelle ist leer, nichts zu tun");
 
-            trace("b%lu t%d ww m%c %c",
-                  writer->slot,
-                  writer->test ? 1 : 0,
-                  get_battery_mode_as_char(writer->mode),
-                  writer->repeat_interval > 0 ? 'f' : 'o');
+            writer->finished();
+            return;
+        }
 
-            if (writer->repeat_interval > 0) {
-                table_writer_logfln(writer, false,
-                                    writer->language == Language::English
-                                    ? "Setting mode \"%s\" (will repeat in %u second%s)"
-                                    : "Setze Modus \"%s\" (Wiederholung in %u Sekunde%s)",
-                                    get_battery_mode_display_name(writer->mode, writer->language),
-                                    writer->repeat_interval,
-                                    writer->repeat_interval > 1 ? (writer->language == Language::English ? "s" : "n") : "");
-            }
-            else {
-                table_writer_logfln(writer, false,
-                                    writer->language == Language::English
-                                    ? "Setting mode \"%s\" (once)"
-                                    : "Setze Modus \"%s\" (einmalig)",
-                                    get_battery_mode_display_name(writer->mode, writer->language));
-            }
+        trace("b%lu t%d ww m%c %c",
+              writer->slot,
+              writer->test ? 1 : 0,
+              get_battery_mode_as_char(writer->mode),
+              writer->repeat_interval > 0 ? 'f' : 'o');
 
-            next_table_writer_step(writer);
-        });
-    }
+        if (writer->repeat_interval > 0) {
+            table_writer_logfln(writer, false,
+                                writer->language == Language::English
+                                ? "Setting mode \"%s\" (will repeat in %u second%s)"
+                                : "Setze Modus \"%s\" (Wiederholung in %u Sekunde%s)",
+                                get_battery_mode_display_name(writer->mode, writer->language),
+                                writer->repeat_interval,
+                                writer->repeat_interval > 1 ? (writer->language == Language::English ? "s" : "n") : "");
+        }
+        else {
+            table_writer_logfln(writer, false,
+                                writer->language == Language::English
+                                ? "Setting mode \"%s\" (once)"
+                                : "Setze Modus \"%s\" (einmalig)",
+                                get_battery_mode_display_name(writer->mode, writer->language));
+        }
+
+        next_table_writer_step(writer);
+    });
 
     return writer;
 }
@@ -509,6 +521,211 @@ void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *write
     delete writer;
 }
 
+[[gnu::format(__printf__, 3, 4)]]
+static void discover_logfln(BatteryModbusTCP::DiscoverContext *ctx, bool error, const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    ctx->vlogfln(error, fmt, args);
+    va_end(args);
+}
+
+static void free_discover(BatteryModbusTCP::DiscoverContext *ctx)
+{
+    free(ctx->buffer);
+    delete ctx;
+}
+
+static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext *ctx)
+{
+    if (ctx->destroy_requested) {
+        free_discover(ctx);
+        return;
+    }
+
+    trace("b%lu t%d dr k",
+          ctx->slot,
+          ctx->test ? 1 : 0);
+
+    ctx->transact_pending = true;
+
+    static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
+                                                                  TFModbusTCPFunctionCode::ReadHoldingRegisters,
+                                                                  5,
+                                                                  1,
+                                                                  ctx->buffer,
+                                                                  2_s,
+    [ctx](TFModbusTCPClientTransactionResult result, const char *error_message) {
+        if (ctx->destroy_requested) {
+            free_discover(ctx);
+            return;
+        }
+
+        ctx->transact_pending = false;
+
+        bool error;
+
+        if (result == TFModbusTCPClientTransactionResult::Success) {
+            error = ctx->complete(ctx);
+        }
+        else {
+            trace("b%lu t%d dr k e%d%s%s",
+                  ctx->slot,
+                  ctx->test ? 1 : 0,
+                  static_cast<int>(result),
+                  error_message != nullptr ? " / " : "",
+                  error_message != nullptr ? error_message : "");
+
+            discover_logfln(ctx, true,
+                            ctx->language == Language::English
+                            ? "Could not discover Modbus/TCP byte order: %s (%d)%s%s"
+                            : "Konnte Modbus/TCP-Byte-Reihenfolge nicht ermitteln: %s (%d)%s%s",
+                            get_tf_modbus_tcp_client_transaction_result_name(result),
+                            static_cast<int>(result),
+                            error_message != nullptr ? " / " : "",
+                            error_message != nullptr ? error_message : "");
+
+            error = true;
+        }
+
+        if (error) {
+            ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
+                read_kostal_plenticore_byte_order(ctx);
+            }, 5_s);
+        }
+    },
+    ctx->transaction_id_mask);
+}
+
+BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(uint32_t slot,
+                                                                     bool test,
+                                                                     TFModbusTCPSharedClient *client,
+                                                                     uint8_t device_address,
+                                                                     uint16_t transaction_id_mask,
+                                                                     VLogFLnFunction &&vlogfln,
+                                                                     Language language /*= Language::English*/)
+{
+    trace("b%lu t%d dc", slot, test ? 1 : 0);
+
+    DiscoverContext *ctx = new DiscoverContext;
+
+    ctx->language = language;
+    ctx->slot = slot;
+    ctx->client = client;
+    ctx->device_address = device_address;
+    ctx->transaction_id_mask = transaction_id_mask;
+    ctx->vlogfln = std::move(vlogfln);
+    ctx->test = test;
+
+    return ctx;
+}
+
+void BatteryModbusTCP::destroy_discover(DiscoverContext *ctx)
+{
+    if (ctx == nullptr) {
+        return;
+    }
+
+    trace("b%lu t%d dd", ctx->slot, ctx->test ? 1 : 0);
+
+    if (ctx->transact_pending) {
+        ctx->destroy_requested = true;
+        return;
+    }
+
+    task_scheduler.cancel(ctx->task_id);
+    free_discover(ctx);
+}
+
+void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
+{
+    ctx->buffer = malloc(sizeof(uint16_t));
+    ctx->complete = [ctx, callback = std::move(callback)](DiscoverContext *ctx_) {
+        uint16_t byte_order = *static_cast<uint16_t *>(ctx_->buffer);
+
+        if (byte_order == 0) {
+            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
+
+            discover_logfln(ctx_, false,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE plus G2 reports little endian byte order"
+                            : "KOSTAL PLENTICORE plus G2 meldet Little-Endian Byte-Reihenfolge");
+
+            callback(KostalPlenticorePlusG2Variant::LittleEndian);
+            return false;
+        }
+        else if (byte_order == 1) {
+            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
+
+            discover_logfln(ctx_, false,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE plus G2 reports big endian byte order"
+                            : "KOSTAL PLENTICORE plus G2 meldet Big-Endian Byte-Reihenfolge");
+
+            callback(KostalPlenticorePlusG2Variant::BigEndian);
+            return false;
+        }
+        else {
+            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
+
+            discover_logfln(ctx_, true,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE plus G2 reports unknown byte order: %u"
+                            : "KOSTAL PLENTICORE plus G2 meldet unbekannte Byte-Reihenfolge: %u",
+                            byte_order);
+
+            return true;
+        }
+    };
+
+    read_kostal_plenticore_byte_order(ctx);
+}
+
+void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ctx, std::function<void(KostalPlenticoreG3Variant variant)> &&callback)
+{
+    ctx->buffer = malloc(sizeof(uint16_t));
+    ctx->complete = [ctx, callback = std::move(callback)](DiscoverContext *ctx_) {
+        uint16_t byte_order = *static_cast<uint16_t *>(ctx_->buffer);
+
+        if (byte_order == 0) {
+            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
+
+            discover_logfln(ctx_, false,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE G3 reports little endian byte order"
+                            : "KOSTAL PLENTICORE G3 meldet Little-Endian Byte-Reihenfolge");
+
+            callback(KostalPlenticoreG3Variant::LittleEndian);
+            return false;
+        }
+        else if (byte_order == 1) {
+            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
+
+            discover_logfln(ctx_, false,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE G3 reports big endian byte order"
+                            : "KOSTAL PLENTICORE G3 meldet Big-Endian Byte-Reihenfolge");
+
+            callback(KostalPlenticoreG3Variant::BigEndian);
+            return false;
+        }
+        else {
+            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
+
+            discover_logfln(ctx_, true,
+                            ctx_->language == Language::English
+                            ? "KOSTAL PLENTICORE G3 reports unknown byte order: %u"
+                            : "KOSTAL PLENTICORE G3 meldet unbekannte Byte-Reihenfolge: %u",
+                            byte_order);
+
+            return true;
+        }
+    };
+
+    read_kostal_plenticore_byte_order(ctx);
+}
+
 BatteryClassID BatteryModbusTCP::get_class() const
 {
     return BatteryClassID::ModbusTCP;
@@ -521,7 +738,6 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     table_id = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
 
     const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
-    const Config *battery_modes_config;
 
     if (table_id == BatteryModbusTCPTableID::SAXPowerHomeBasicMode) {
         transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
@@ -530,25 +746,27 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     switch (table_id) {
     case BatteryModbusTCPTableID::None:
         logger.printfln_battery("No table selected");
-        return;
+        break;
 
     case BatteryModbusTCPTableID::Custom:
         device_address = table_config->get("device_address")->asUint8();
         transaction_id_mask = UINT16_MAX;
         repeat_interval = table_config->get("repeat_interval")->asUint16();
-        battery_modes_config = static_cast<const Config *>(table_config->get("battery_modes"));
-
-        for (size_t i = static_cast<size_t>(BatteryMode::Block); i <= static_cast<size_t>(BatteryMode::_max); ++i) {
-            load_custom_table(&tables[i], static_cast<const Config *>(battery_modes_config->get(i)));
-        }
-
         break;
 
 #include "generated/battery_modbus_tcp_setup.inc"
 
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
-        return;
+        break;
+    }
+
+    if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
+     || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+        discover_table_config = new Config(*table_config);
+    }
+    else {
+        load_tables(table_config);
     }
 }
 
@@ -573,6 +791,10 @@ void BatteryModbusTCP::pre_reboot()
 
 void BatteryModbusTCP::set_mode(BatteryMode mode)
 {
+    if (mode == BatteryMode::Discover) {
+        esp_system_abort("BatteryMode::Discover not allowed for set_mode call");
+    }
+
     if (requested_mode == mode) {
         return;
     }
@@ -581,18 +803,6 @@ void BatteryModbusTCP::set_mode(BatteryMode mode)
     finished = false;
 
     update_active_mode();
-
-    BatteryMode effective_mode = BatteryMode::None;
-
-    if (requested_mode != BatteryMode::None) {
-        TableSpec *table = tables[static_cast<size_t>(requested_mode)];
-
-        if (table != nullptr) {
-            effective_mode = table->effective_mode;
-        }
-    }
-
-    state->get("effective_mode")->updateEnum(effective_mode);
 }
 
 void BatteryModbusTCP::set_paused(bool paused_)
@@ -614,6 +824,11 @@ void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, 
         return;
     }
 
+    if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
+     || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+        discover = true; // (re-)discover after (re-)connect
+    }
+
     update_active_mode();
 }
 
@@ -624,27 +839,81 @@ void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason re
     update_active_mode();
 }
 
+void BatteryModbusTCP::load_tables(const Config *table_config)
+{
+    const Config *battery_modes_config;
+
+    // free potential old tables first. tables might be reloaded if rediscover happens
+    for (size_t i = 0; i < std::size(tables); ++i) {
+        free_table(tables[i]);
+        tables[i] = nullptr;
+    }
+
+    switch (table_id) {
+    case BatteryModbusTCPTableID::None:
+        logger.printfln_battery("No table selected");
+        break;
+
+    case BatteryModbusTCPTableID::Custom:
+        battery_modes_config = static_cast<const Config *>(table_config->get("battery_modes"));
+
+        for (size_t i = static_cast<size_t>(BatteryMode::Block); i <= static_cast<size_t>(BatteryMode::_max); ++i) {
+            load_custom_table(&tables[i], static_cast<const Config *>(battery_modes_config->get(i)));
+        }
+
+        break;
+
+#include "generated/battery_modbus_tcp_load_tables.inc"
+
+    default:
+        logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
+        break;
+    }
+}
+
 void BatteryModbusTCP::update_active_mode()
 {
-    BatteryMode next_mode = requested_mode;
+    BatteryMode next_mode;
+    BatteryMode effective_mode;
+    TableSpec *table;
 
-    if (connected_client == nullptr || requested_mode == BatteryMode::None || paused || finished) {
+    if (requested_mode == BatteryMode::None || connected_client == nullptr || paused) {
         next_mode = BatteryMode::None;
+        effective_mode = BatteryMode::None;
+        table = nullptr;
     }
+    else if (discover) {
+        next_mode = BatteryMode::Discover;
+        effective_mode = BatteryMode::Discover;
+        table = nullptr;
+    }
+    else {
+        table = tables[static_cast<size_t>(requested_mode)];
+
+        if (table == nullptr) {
+            next_mode = BatteryMode::None;
+            effective_mode = BatteryMode::None;
+        }
+        else {
+            if (finished) {
+                next_mode = BatteryMode::None;
+            }
+            else {
+                next_mode = requested_mode;
+            }
+
+            effective_mode = table->effective_mode;
+        }
+    }
+
+    state->get("effective_mode")->updateEnum(effective_mode);
 
     if (active_mode == next_mode) {
         return;
     }
 
-    TableSpec *table = nullptr;
-
-    if (next_mode != BatteryMode::None) {
-        table = tables[static_cast<size_t>(next_mode)];
-    }
-
-    if (table == nullptr) {
-        next_mode = BatteryMode::None;
-    }
+    destroy_discover(discover_ctx);
+    discover_ctx = nullptr;
 
     destroy_table_writer(active_writer);
     active_writer = nullptr;
@@ -660,7 +929,66 @@ void BatteryModbusTCP::update_active_mode()
 
     active_mode = next_mode;
 
-    if (table != nullptr) {
+    if (active_mode == BatteryMode::Discover) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
+        discover_ctx = create_discover(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+                                       device_address, transaction_id_mask,
+        [this](bool error, const char *fmt, va_list args) {
+            char message[256];
+
+            vsnprintf(message, sizeof(message), fmt, args);
+            logger.printfln_battery("%s", message);
+        });
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+        if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2) {
+            discover_kostal_plenticore_plus_g2_variant(discover_ctx,
+            [this](KostalPlenticorePlusG2Variant variant) {
+                kostal_plenticore_plus_g2_variant = variant;
+                load_tables(discover_table_config);
+
+                task_scheduler.scheduleOnce([this]() {
+                    discover = false;
+
+                    // destroy the discover context on the main task.
+                    // calling destroy_discover in the outer lambda
+                    // would delete the std::function holding that lambda
+                    destroy_discover(discover_ctx);
+                    discover_ctx = nullptr;
+
+                    update_active_mode();
+                });
+            });
+        }
+        else if (table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+            discover_kostal_plenticore_g3_variant(discover_ctx,
+            [this](KostalPlenticoreG3Variant variant) {
+                kostal_plenticore_g3_variant = variant;
+                load_tables(discover_table_config);
+
+                task_scheduler.scheduleOnce([this]() {
+                    discover = false;
+
+                    // destroy the discover context on the main task.
+                    // calling destroy_discover in the outer lambda
+                    // would delete the std::function holding that lambda
+                    destroy_discover(discover_ctx);
+                    discover_ctx = nullptr;
+
+                    update_active_mode();
+                });
+            });
+        }
+        else {
+            esp_system_abort("Entered battery discover mode without anything to discover");
+        }
+    }
+    else if (table != nullptr) {
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"

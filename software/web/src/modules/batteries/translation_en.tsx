@@ -33,7 +33,8 @@ let x = {
             "battery_mode_long_block_charge": "Block charge, discharge normally",
             "battery_mode_long_force_discharge": "Block charge, force discharge",
 
-            "battery_state_unknown": "Unknown",
+            "battery_state_discover": "Discover",
+            "battery_state_none": "N/A",
             "battery_state_blocked": "Blocked",
             "battery_state_normal": "Normal",
             "battery_state_discharge_blocked": "Discharge blocked",
@@ -42,14 +43,15 @@ let x = {
             "battery_state_discharge_forced": "Discharge forced",
             "battery_state_by_mode": /*SFN*/(mode: BatteryMode) => {
                 return [
-                    __("batteries.content.battery_state_unknown"),
+                    __("batteries.content.battery_state_discover"),
+                    __("batteries.content.battery_state_none"),
                     __("batteries.content.battery_state_blocked"),
                     __("batteries.content.battery_state_normal"),
                     __("batteries.content.battery_state_discharge_blocked"),
                     __("batteries.content.battery_state_charge_forced"),
                     __("batteries.content.battery_state_charge_blocked"),
                     __("batteries.content.battery_state_discharge_forced"),
-                ][mode + 1];
+                ][mode + 2];
             }/*NF*/,
 
             "status_charge": "Charging",

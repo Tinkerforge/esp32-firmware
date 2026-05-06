@@ -40,6 +40,8 @@ repeat_intervals = [
     ('Victron Energy GX', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Victron Energy GX',

@@ -58,6 +58,8 @@ repeat_intervals = [
     ('SAX Power Home Basic Mode', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'SAX Power Home Basic Mode',

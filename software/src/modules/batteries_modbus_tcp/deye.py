@@ -39,6 +39,8 @@ repeat_intervals = [
     ('Deye Hybrid Inverter', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Deye Hybrid Inverter',

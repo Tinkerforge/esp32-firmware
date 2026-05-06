@@ -44,6 +44,8 @@ repeat_intervals = [
     ('Solis Hybrid Inverter', 60),  # Solis watchdog duration is 5 minutes
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Solis Hybrid Inverter',

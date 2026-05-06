@@ -29,6 +29,8 @@ repeat_intervals = [
     ('Growatt Hybrid Inverter', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Growatt Hybrid Inverter',

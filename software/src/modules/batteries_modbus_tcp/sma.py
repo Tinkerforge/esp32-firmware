@@ -43,6 +43,8 @@ repeat_intervals = [
     ('SMA Hybrid Inverter', 60),  # SMA watchdog duration is 5 minutes
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'SMA Hybrid Inverter',

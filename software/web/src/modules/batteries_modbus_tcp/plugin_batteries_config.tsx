@@ -945,18 +945,16 @@ export function pre_init() {
                                 </Alert>
                             </FormRow>);
                     }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian) {
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
                         edit_children.push(
                             <FormRow>
                                 <Alert variant="warning" className="mb-0">
                                     {__("batteries_modbus_tcp.content.kostal_plenticore_warning")}
-                                    {__("batteries_modbus_tcp.content.kostal_plenticore_g2_degradation_warning")}
+                                    {__("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_degradation_warning")}
                                 </Alert>
                             </FormRow>);
                     }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3BigEndian
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3LittleEndian) {
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
                         edit_children.push(
                             <FormRow>
                                 <Alert variant="warning" className="mb-0">
@@ -1337,10 +1335,8 @@ export function pre_init() {
                             force_discharge_rate: config[1].table[1].force_discharge_rate,
                         };
                     }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3BigEndian
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3LittleEndian) {
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2
+                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
                         edit_children.push(
                             <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputNumber
@@ -1452,17 +1448,28 @@ export function pre_init() {
 
                 return edit_children;
             },
-            get_degradation_warning: (config: BatteryConfig): ComponentChild => {
+            get_effective_mode_warning: (config: BatteryConfig, mode: BatteryMode, effective_mode: BatteryMode): ComponentChild => {
                 if (!util.hasValue(config[1].table)) {
                     return undefined;
                 }
 
                 if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
-                    return __("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning");
+                    if (effective_mode != BatteryMode.None) {
+                        return __("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning");
+                    }
                 }
-                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2BigEndian
-                      || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2LittleEndian){
-                    return __("batteries_modbus_tcp.content.kostal_plenticore_g2_degradation_warning");
+                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
+                    if (effective_mode == BatteryMode.Discover) {
+                        return __("batteries_modbus_tcp.content.kostal_plenticore_discover_warning");
+                    }
+                    else if (effective_mode != BatteryMode.None) {
+                        return __("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_degradation_warning");
+                    }
+                }
+                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
+                    if (effective_mode == BatteryMode.Discover) {
+                        return __("batteries_modbus_tcp.content.kostal_plenticore_discover_warning");
+                    }
                 }
 
                 return undefined;

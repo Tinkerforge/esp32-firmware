@@ -84,14 +84,16 @@ function get_battery_state_name(battery_configs: {[battery_slot: number]: Batter
     let warning_icon = undefined;
 
     if (effective_mode != battery_control_mode) {
-        let new_warning = config_plugins[battery_configs[battery_slot][0]].get_degradation_warning(battery_configs[battery_slot]);
+        let new_warning = config_plugins[battery_configs[battery_slot][0]].get_effective_mode_warning(battery_configs[battery_slot], battery_control_mode, effective_mode);
 
         if (warning && warning != new_warning) {
             // if warning is expanded then update it
             set_warning_cb(new_warning);
         }
 
-        warning_icon = <div class="col"><span onClick={() => set_warning_cb(warning ? undefined : new_warning)}><AlertTriangle {...{class: "alter-triangle" + (warning ? " alter-triangle-expanded" : ""), style: "cursor: pointer;"} as any} /></span></div>;
+        if (new_warning !== undefined) {
+            warning_icon = <div class="col"><span onClick={() => set_warning_cb(warning ? undefined : new_warning)}><AlertTriangle {...{class: "alter-triangle" + (warning ? " alter-triangle-expanded" : ""), style: "cursor: pointer;"} as any} /></span></div>;
+        }
     }
     else if (warning) {
         set_warning_cb(undefined);

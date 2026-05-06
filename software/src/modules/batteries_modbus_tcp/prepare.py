@@ -43,6 +43,7 @@ specs = []
 all_table_prototypes = {}
 all_modes = {}
 translation_tables = {}
+variants = {}
 
 for module in modules:
     for display_name in module.display_names:
@@ -144,17 +145,36 @@ for module in modules:
 
     default_device_addresses += module.default_device_addresses
 
-    for group, repeat_interval in module.repeat_intervals:
-        assert group not in repeat_intervals, (group, repeat_interval)
+    for group_, repeat_interval in module.repeat_intervals:
+        group = util.FlavoredName(group_).get()
+
+        assert group not in repeat_intervals, (group_, repeat_interval)
 
         repeat_intervals[group] = repeat_interval
 
+    for group_, variant_list in module.variants:
+        group = util.FlavoredName(group_).get()
+
+        assert group not in variants, (group_, variant_list)
+
+        variants[group] = [util.FlavoredName(variant).get() for variant in variant_list]
+
     specs += module.specs
+
+for group, variant_list in variants.items():
+    values = []
+
+    for i, variant in enumerate(variant_list):
+        values.append(util.EnumValue(variant, i))
+
+    util.generate_enum(f'{group.space} Variant.uint8.enum', util.FlavoredName('Batteries Modbus TCP').get(), util.FlavoredName(f'{group.space} Variant').get(), 'uint8_t', values)
 
 specs_h = []
 specs_cpp = []
 setup_inc = []
-test_inc = []
+load_tables_inc = []
+test_setup_inc = []
+test_load_table_inc = []
 
 specs_h.append('namespace DefaultDeviceAddress {')
 specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
@@ -162,6 +182,14 @@ specs_h.append('}')
 
 for spec in specs:
     group = util.FlavoredName(spec['group']).get()
+    variant = spec.get('variant')
+    variant_name_under = ''
+
+    if variant != None:
+        variant = util.FlavoredName(variant).get()
+        variant_name_under = f'_{variant.under}'
+        variant_name_slash = f'/ {variant.space}'
+
     mode = util.FlavoredName(spec['mode']).get()
     effective_mode = util.FlavoredName(spec.get('effective_mode', spec['mode'])).get()
 
@@ -193,10 +221,10 @@ for spec in specs:
             if isinstance(value, str):
                 has_mapping = True
 
-    all_modes.setdefault(group, []).append((mode, has_mapping))
+    all_modes.setdefault(group, []).append((variant, mode, has_mapping))
 
     if has_mapping:
-        specs_cpp.append(f'static BatteryModbusTCP::TableSpec *load_{group.under}_{mode.under}_table(const Config *config)\n'
+        specs_cpp.append(f'static BatteryModbusTCP::TableSpec *load_{group.under}{variant_name_under}_{mode.under}_table(const Config *config)\n'
                           '{\n'
                          f'    BatteryModbusTCP::RegisterBlockSpec *register_blocks = static_cast<BatteryModbusTCP::RegisterBlockSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::RegisterBlockSpec) * {len(spec['register_blocks'])}));\n'
                          f'    uint8_t *total_buffer = static_cast<uint8_t *>(malloc_psram_or_dram({total_buffer_length}));')
@@ -214,11 +242,11 @@ for spec in specs:
             values_count = len(register_block['values'])
 
             if values_count == 0:
-                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has no values')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has no values')
                 sys.exit(1)
 
             if start_address < 0 or start_address + values_count > 65535 + 1:
-                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid start address {start_address}')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid start address {start_address}')
                 sys.exit(1)
 
             function_code = register_block['function_code']
@@ -244,11 +272,11 @@ for spec in specs:
                 specs_cpp.append('        uint8_t values[1];')
 
                 if values_count != 1:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value count')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
                 if not isinstance(register_block['values'][0], str) and register_block['values'][0] not in [0, 1]:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value')
                     sys.exit(1)
 
                 specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
@@ -270,7 +298,7 @@ for spec in specs:
             elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
-                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
 
             #specs_cpp[-1] = specs_cpp[-1].rstrip()
@@ -314,7 +342,7 @@ for spec in specs:
                 start_address = register_block['start_address']
 
             if len(register_block['values']) == 0:
-                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has no values')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has no values')
                 sys.exit(1)
 
             function_code = register_block['function_code']
@@ -322,45 +350,45 @@ for spec in specs:
 
             if function_code == 'WriteSingleCoil':
                 if len(register_block['values']) != 1:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value count')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
                 if register_block['values'][0] not in [0, 1]:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value')
                     sys.exit(1)
 
-                specs_cpp.append(f'static const uint8_t {group.under}_{mode.under}_register_block_{i}_values[] = {{ {register_block['values'][0]} }};')
+                specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {register_block['values'][0]} }};')
             elif function_code == 'WriteMultipleCoils':
                 values = [0] * ((len(register_block['values']) + 7) // 8)
 
                 for k, bit in enumerate(register_block['values']):
                     if bit not in [0, 1]:
-                        print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value')
+                        print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value')
                         sys.exit(1)
 
                     values[k // 8] |= bit << (k % 8)
 
-                specs_cpp.append(f'static const uint8_t {group.under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in values])}\n}};')
+                specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in values])}\n}};')
             elif function_code in ['WriteSingleRegister', 'WriteMultipleRegisters']:
-                specs_cpp.append(f'static const uint16_t {group.under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
+                specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
             elif function_code == 'MaskWriteRegister':
                 if len(register_block['values']) != 2:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value count')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
-                specs_cpp.append(f'static const uint16_t {group.under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
+                specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
             elif function_code == 'ReadMaskWriteSingleRegister':
                 if len(register_block['values']) != 2:
-                    print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value count')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
-                specs_cpp.append(f'static const uint16_t {group.under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
+                specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
 
                 values_count_scale = 2
             elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
-                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
 
             register_block_specs.append('    {\n'
@@ -371,14 +399,14 @@ for spec in specs:
                                         '    },')
 
         if len(register_block_specs) > 0:
-            specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {group.under}_{mode.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
+            specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {group.under}{variant_name_under}_{mode.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
 
-        specs_cpp.append(f'static const BatteryModbusTCP::TableSpec {group.under}_{mode.under}_table = {{\n'
+        specs_cpp.append(f'static const BatteryModbusTCP::TableSpec {group.under}{variant_name_under}_{mode.under}_table = {{\n'
                          f'    BatteryMode::{effective_mode.camel},\r')
 
         if len(register_block_specs) > 0:
-            specs_cpp.append(f'    const_cast<BatteryModbusTCP::RegisterBlockSpec *>({group.under}_{mode.under}_register_blocks),\n'
-                             f'    ARRAY_SIZE({group.under}_{mode.under}_register_blocks),\r')
+            specs_cpp.append(f'    const_cast<BatteryModbusTCP::RegisterBlockSpec *>({group.under}{variant_name_under}_{mode.under}_register_blocks),\n'
+                             f'    ARRAY_SIZE({group.under}{variant_name_under}_{mode.under}_register_blocks),\r')
         else:
             specs_cpp.append('    nullptr,\n'
                              '    0,\r')
@@ -386,57 +414,104 @@ for spec in specs:
         specs_cpp.append('};')
 
 for group, modes in all_modes.items():
-    has_any_mapping = any([x[1] for x in modes])
+    has_any_variant = len(variants.get(group, [])) > 0
+    has_any_mapping = any([x[2] for x in modes])
+
+    if has_any_variant:
+        variant_suffix = f', {group.camel}Variant variant'
+    else:
+        variant_suffix = ''
 
     if has_any_mapping:
-        suffix = ', const Config *config'
+        mapping_suffix = ', const Config *config'
     else:
-        suffix = ''
+        mapping_suffix = ''
 
-    specs_h.append(f'void load_{group.under}_table(BatteryModbusTCP::TableSpec **table_ptr, uint16_t *repeat_interval_ptr, BatteryMode mode{suffix});')
-    specs_h.append(f'void load_{group.under}_tables(BatteryModbusTCP::TableSpec *tables[6], uint16_t *repeat_interval_ptr{suffix});')
+    specs_h.append(f'void load_{group.under}_table(BatteryModbusTCP::TableSpec **table_ptr{variant_suffix}, BatteryMode mode{mapping_suffix});')
+    specs_h.append(f'void load_{group.under}_tables(BatteryModbusTCP::TableSpec *tables[6]{variant_suffix}{mapping_suffix});')
 
-    specs_cpp.append(f'void load_{group.under}_table(BatteryModbusTCP::TableSpec **table_ptr, uint16_t *repeat_interval_ptr, BatteryMode mode{suffix})\n'
-                      '{\n'
-                      '    switch (mode) {\n'
-                      '    case BatteryMode::None:\n'
-                      '        *table_ptr = nullptr;\n'
-                      '        break;')
-
-    for mode_has_mapping in modes:
-        mode, has_mapping = mode_has_mapping
-
-        specs_cpp.append(f'    case BatteryMode::{mode.camel}:\r')
-
-        if has_mapping:
-            specs_cpp.append(f'        *table_ptr = load_{group.under}_{mode.under}_table(config);\n'
-                              '        break;')
-        else:
-            specs_cpp.append(f'        *table_ptr = const_cast<BatteryModbusTCP::TableSpec *>(&{group.under}_{mode.under}_table);\n'
-                              '        break;')
-
-    specs_cpp.append(f'    default:\n'
-                      '        *table_ptr = nullptr;\n'
-                      '        break;\n'
-                      '    }\n\n'
-                     f'    *repeat_interval_ptr = {repeat_intervals[group.space]};\n'
-                      '}')
-
-    specs_cpp.append(f'void load_{group.under}_tables(BatteryModbusTCP::TableSpec *tables[6], uint16_t *repeat_interval_ptr{suffix})\n'
+    specs_cpp.append(f'void load_{group.under}_table(BatteryModbusTCP::TableSpec **table_ptr{variant_suffix}, BatteryMode mode{mapping_suffix})\n'
                       '{\r')
 
-    for mode_has_mapping in modes:
-        mode, has_mapping = mode_has_mapping
+    if has_any_variant:
+        indent = '    '
 
-        if has_mapping:
-            specs_cpp.append(f'    tables[static_cast<size_t>(BatteryMode::{mode.camel})] = load_{group.under}_{mode.under}_table(config);\r')
-        else:
-            specs_cpp.append(f'    tables[static_cast<size_t>(BatteryMode::{mode.camel})] = const_cast<BatteryModbusTCP::TableSpec *>(&{group.under}_{mode.under}_table);\r')
+        specs_cpp.append('    switch (variant) {\r')
+    else:
+        indent = ''
 
-    specs_cpp[-1] = specs_cpp[-1].rstrip()
+    for variant in variants.get(group, [None]):
+        if variant != None:
+            specs_cpp.append(f'    case {group.camel}Variant::{variant.camel}:\r')
 
-    specs_cpp.append(f'    *repeat_interval_ptr = {repeat_intervals[group.space]};\n'
-                      '}')
+        specs_cpp.append(f'{indent}    switch (mode) {{\n'
+                         f'{indent}    case BatteryMode::Discover:\n'
+                         f'{indent}    case BatteryMode::None:\n'
+                         f'{indent}        esp_system_abort("Invalid battery mode for loading table");')
+
+        expected_modes = [util.FlavoredName(x).get() for x in ['Block', 'Normal', 'Block Discharge', 'Force Charge', 'Block Charge', 'Force Discharge']]
+
+        for variant_mode_has_mapping in modes:
+            variant_, mode, has_mapping = variant_mode_has_mapping
+
+            if variant_ != variant:
+                continue
+
+            expected_modes.remove(mode)
+
+            specs_cpp.append(f'{indent}    case BatteryMode::{mode.camel}:\r')
+
+            if variant != None:
+                variant_name_under = f'_{variant.under}'
+            else:
+                variant_name_under = ''
+
+            if has_mapping:
+                specs_cpp.append(f'{indent}        *table_ptr = load_{group.under}{variant_name_under}_{mode.under}_table(config);\n'
+                                 f'{indent}        break;')
+            else:
+                specs_cpp.append(f'{indent}        *table_ptr = const_cast<BatteryModbusTCP::TableSpec *>(&{group.under}{variant_name_under}_{mode.under}_table);\n'
+                                 f'{indent}        break;')
+
+        for mode in expected_modes:
+            specs_cpp.append(f'{indent}    case BatteryMode::{mode.camel}:\n'
+                             f'{indent}        *table_ptr = nullptr;\n'
+                             f'{indent}        break;')
+
+        specs_cpp.append(f'{indent}    default:\n'
+                         f'{indent}        esp_system_abort("Unknown battery mode in loading table call");\n'
+                         f'{indent}    }}\r')
+
+        if variant != None:
+            specs_cpp[-1] = specs_cpp[-1].rstrip()
+            specs_cpp.append('        break;')
+
+    if has_any_variant:
+        specs_cpp.append(f'    default:\n'
+                          '        *table_ptr = nullptr;\n'
+                          '        break;\n'
+                          '    }\r')
+
+    specs_cpp.append('}')
+    specs_cpp.append(f'void load_{group.under}_tables(BatteryModbusTCP::TableSpec *tables[6]{variant_suffix}{mapping_suffix})\n'
+                      '{\r')
+
+    expected_modes = [util.FlavoredName(x).get() for x in ['Block', 'Normal', 'Block Discharge', 'Force Charge', 'Block Charge', 'Force Discharge']]
+
+    for variant_mode_has_mapping in modes:
+        variant_, mode, has_mapping = variant_mode_has_mapping
+
+        if mode not in expected_modes:
+            continue
+
+        expected_modes.remove(mode)
+
+        specs_cpp.append(f'    load_{group.under}_table(&tables[static_cast<size_t>(BatteryMode::{mode.camel})]{", variant" if has_any_variant else ""}, BatteryMode::{mode.camel}{", config" if has_any_mapping else ""});\r')
+
+    for mode in expected_modes:
+        specs_cpp.append(f'    tables[static_cast<size_t>(BatteryMode::{mode.camel})] = nullptr;\r')
+
+    specs_cpp.append('}')
 
     setup_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n')
 
@@ -447,28 +522,29 @@ for group, modes in all_modes.items():
             print(f'Error: Table prototype {group.space} has unknown member {member_name}')
             sys.exit(1)
 
-    setup_inc.append(f'        load_{group.under}_tables(tables, &repeat_interval{", table_config" if has_any_mapping else ""});\n'
+    setup_inc.append(f'        repeat_interval = {repeat_intervals[group]};\n'
                       '        break;\n\n')
 
-    test_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
-                     '        test->mode = table_config->get("mode")->asEnum<BatteryMode>();\n')
+    load_tables_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
+                           f'        load_{group.under}_tables(tables{f", {group.under}_variant" if has_any_variant else ""}{", table_config" if has_any_mapping else ""});\n'
+                            '        break;\n\n')
+
+    test_setup_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
+                           '        test->mode = table_config->get("mode")->asEnum<BatteryMode>();\n')
 
     for member_name in standard_table_members.get(group.space, []):
         if member_name == 'device_address':
-            test_inc.append('        test->device_address = table_config->get("device_address")->asUint8();\n')
+            test_setup_inc.append('        test->device_address = table_config->get("device_address")->asUint8();\n')
         else:
             print(f'Error: Table prototype {group.space} has unknown member {member_name}')
             sys.exit(1)
 
-    test_inc.append(f'\n        load_{group.under}_table(&test->table, &test->repeat_interval, test->mode{", table_config" if has_any_mapping else ""});\n\n'
-                     '        if (test->table == nullptr) {\n'
-                     '            test_printfln(test->language == Language::English\n'
-                    f'                          ? "Unknown {display_names[group.space]["en"]} mode: %u"\n'
-                    f'                          : "Unbekannter {display_names[group.space]["de"]} Modus: %u",\n'
-                     '                          static_cast<uint8_t>(test->mode));\n'
-                     '            return;\n'
-                     '        }\n\n'
-                     '        break;\n\n')
+    test_setup_inc.append(f'        test->repeat_interval = {repeat_intervals[group]};\n'
+                           '        break;\n\n')
+
+    test_load_table_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
+                               f'        load_{group.under}_table(&test->table{f", test->{group.under}_variant" if has_any_variant else ""}, test->mode{", table_config" if has_any_mapping else ""});\n'
+                                '        break;\n\n')
 
 ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";\n\n'
@@ -544,7 +620,8 @@ util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generat
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#include "config.h"\n'
-h += '#include "../battery_modbus_tcp.h"\n\n'
+h += '#include "../battery_modbus_tcp.h"\n'
+h += '\n'.join([f'#include "{group.under}_variant.enum.h"' for group in variants.keys()]) + '\n\n'
 h += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes);\n\n'
 h += 'void get_battery_modbus_tcp_test_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *test_table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
@@ -571,7 +648,11 @@ util.write_generated_file('generated/battery_modbus_tcp_specs.cpp', cpp)
 
 util.write_generated_file('generated/battery_modbus_tcp_setup.inc', ''.join(setup_inc))
 
-util.write_generated_file('generated/batteries_modbus_tcp_test.inc', ''.join(test_inc))
+util.write_generated_file('generated/battery_modbus_tcp_load_tables.inc', ''.join(load_tables_inc))
+
+util.write_generated_file('generated/batteries_modbus_tcp_test_setup.inc', ''.join(test_setup_inc))
+
+util.write_generated_file('generated/batteries_modbus_tcp_test_load_table.inc', ''.join(test_load_table_inc))
 
 table_ids_items_rpl = ', '.join([f'[BatteryModbusTCPTableID.{table_id.camel}.toString(), __("batteries_modbus_tcp.content.table_{table_id.under}")]' for table_id in table_ids])
 

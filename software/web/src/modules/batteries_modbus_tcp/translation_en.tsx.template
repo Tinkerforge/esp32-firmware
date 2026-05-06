@@ -28,7 +28,8 @@ let x = {
             "sax_power_home_basic_mode_degradation_warning": <><p>Due to limited controllability of the SAX Power Home battery storage, it is not possible to force charge and force discharge. Instead charge and discharge are left at normal in this cases.</p></>,
             "kostal_plenticore_warning": <><p>Please ensure that the KOSTAL inverter battery control is set to "External via protocol (Modbus TCP)". For optimal response time of the battery, please ensure that the "Timeout for ext. battery control [s]" is set as short as possible, but not less than 30 seconds.</p>
                                            <p>Due to the specific battery control behaviour of KOSTAL inverters, the switch between different modes can be delayed by "Timeout for ext. battery control [s]"</p></>,
-            "kostal_plenticore_g2_degradation_warning": <><p>Due to the specific battery control behaviour of KOSTAL PLENTICORE plus G2 inverters, it is not possible to block charge and discharge separately. Instead charge and discharge are always blocked together.</p></>,
+            "kostal_plenticore_discover_warning": <><p>Discovering the Modbus/TCP byte order of the KOSTAL inverter. If this status persist longer than a few seconds then most likely there is a Modbus/TCP communication problem with the inverter.</p></>,
+            "kostal_plenticore_plus_g2_degradation_warning": <><p>Due to the specific battery control behaviour of KOSTAL PLENTICORE plus G2 inverters, it is not possible to block charge and discharge separately. Instead charge and discharge are always blocked together.</p></>,
             "kostal_plenticore_g3_firmware_warning": <><p>Please ensure that software version 03.05.xxxxx or newer is installed on the inverter.</p></>,
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,

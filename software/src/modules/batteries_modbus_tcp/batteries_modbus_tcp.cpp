@@ -164,7 +164,8 @@ void BatteriesModbusTCP::register_urls()
         test->port = static_cast<uint16_t>(test_config.get("port")->asUint());
         test->cookie = test_config.get("cookie")->asUint();
         test->last_keep_alive = now_us();
-        test->state = TestState::Done;
+        test->state = TestState::Start;
+        test->table_id = table_id;
 
         if (table_id == BatteryModbusTCPTableID::SAXPowerHomeBasicMode) {
             test->transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
@@ -172,43 +173,34 @@ void BatteriesModbusTCP::register_urls()
 
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
-            errmsg = test->language == Language::English ? "No table" : "Keine Tabelle";
+            errmsg = language == Language::English ? "No table" : "Keine Tabelle";
             return;
 
         case BatteryModbusTCPTableID::Custom:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
-
-            BatteryModbusTCP::load_custom_table(&test->table, table_config);
-
-            if (test->table == nullptr) {
-                errmsg = test->language == Language::English ? "Invalid custom table" : "Ungültige benutzerdefinerte Tabelle";
-                return;
-            }
-
             break;
 
-#include "generated/batteries_modbus_tcp_test.inc"
+#include "generated/batteries_modbus_tcp_test_setup.inc"
 
         default:
-            errmsg = test->language == Language::English ? "Unknown table" : "Unbekannte Tabelle";
+            errmsg = language == Language::English ? "Unknown table" : "Unbekannte Tabelle";
             return;
+        }
+
+        if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
+         || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+            test->discover_table_config = new Config(*table_config);
+        }
+        else {
+            test_load_table(table_config);
         }
 
         test_printfln(language == Language::English
                       ? "Starting test for mode \"%s\""
                       : "Starte Test für Modus \"%s\"",
-                      BatteryModbusTCP::get_battery_mode_display_name(test->mode, test->language));
-
-        if (test->table->register_blocks_count > 0) {
-            test->state = TestState::Connect;
-        }
-        else {
-            test_printfln(language == Language::English
-                          ? "Table is empty, nothing to do"
-                          : "Tabelle ist leer, nichts zu tun");
-        }
+                      BatteryModbusTCP::get_battery_mode_display_name(test->mode, language));
     }, true);
 
     api.addState("batteries_modbus_tcp/test_state", &test_state);
@@ -268,6 +260,14 @@ void BatteriesModbusTCP::loop()
     }
 
     switch (test->state) {
+    case TestState::Start:
+        if (instances[test->slot] != nullptr) {
+            instances[test->slot]->set_paused(true);
+        }
+
+        test->state = TestState::Connect;
+        break;
+
     case TestState::Connect:
         if (test->stop) {
             test->state = TestState::Done;
@@ -294,7 +294,14 @@ void BatteriesModbusTCP::loop()
             }
 
             test->client = shared_client;
-            test->state = TestState::CreateTableWriter;
+
+            if (test->table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
+             || test->table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+                test->state = TestState::CreateDiscover;
+            }
+            else {
+                test->state = TestState::CreateTableWriter;
+            }
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             trace("b%lu t1 cd%d sl%d", test->slot, static_cast<int>(reason), static_cast<int>(share_level));
@@ -306,12 +313,24 @@ void BatteriesModbusTCP::loop()
 
             test->client = nullptr;
             test->reconnect = reason == TFGenericTCPClientDisconnectReason::Forced;
-            test->state = TestState::DestroyTableWriter;
 
-            // immediately destroy the writer to stop the separate
-            // writer task from accessing the disconnected client
-            BatteryModbusTCP::destroy_table_writer(test->writer);
-            test->writer = nullptr;
+            if (test->state == TestState::Discovering) {
+                test->state = TestState::DestroyDiscover;
+                test->state_after_discover = TestState::Disconnect;
+
+                // immediately destroy the discover to stop the separate
+                // discover task from accessing the disconnected client
+                BatteryModbusTCP::destroy_discover(test->discover_ctx);
+                test->discover_ctx = nullptr;
+            }
+            else {
+                test->state = TestState::DestroyTableWriter;
+
+                // immediately destroy the writer to stop the separate
+                // writer task from accessing the disconnected client
+                BatteryModbusTCP::destroy_table_writer(test->writer);
+                test->writer = nullptr;
+            }
         });
 
         break;
@@ -349,8 +368,78 @@ void BatteriesModbusTCP::loop()
             }
 #endif
 
+            if (instances[test->slot] != nullptr) {
+                instances[test->slot]->set_paused(false);
+            }
+
+            delete test->discover_table_config;
             delete test;
             test = nullptr;
+        }
+
+        break;
+
+    case TestState::CreateDiscover:
+        if (test->stop) {
+            test->state = TestState::Disconnect;
+            break;
+        }
+
+        test->state = TestState::Discovering;
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
+        test->discover_ctx = BatteryModbusTCP::create_discover(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+                                                               test->device_address, test->transaction_id_mask,
+        [this](bool error, const char *fmt, va_list args) {
+            test_vprintfln(fmt, args);
+        });
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+        if (test->table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2) {
+            BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(test->discover_ctx,
+            [this](KostalPlenticorePlusG2Variant variant) {
+                test->kostal_plenticore_plus_g2_variant = variant;
+
+                test_load_table(test->discover_table_config);
+
+                test->state = TestState::DestroyDiscover;
+                test->state_after_discover = TestState::CreateTableWriter;
+            });
+        }
+        else if (test->table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+            BatteryModbusTCP::discover_kostal_plenticore_g3_variant(test->discover_ctx,
+            [this](KostalPlenticoreG3Variant variant) {
+                test->kostal_plenticore_g3_variant = variant;
+
+                test_load_table(test->discover_table_config);
+
+                test->state = TestState::DestroyDiscover;
+                test->state_after_discover = TestState::CreateTableWriter;
+            });
+        }
+        else {
+            esp_system_abort("Entered battery discover mode without anything to discover");
+        }
+
+        break;
+
+    case TestState::DestroyDiscover:
+        BatteryModbusTCP::destroy_discover(test->discover_ctx);
+        test->discover_ctx = nullptr;
+
+        test->state = test->state_after_discover;
+        break;
+
+    case TestState::Discovering:
+        if (test->stop) {
+            test->state = TestState::DestroyDiscover;
+            test->state_after_discover = TestState::Disconnect;
+            break;
         }
 
         break;
@@ -359,10 +448,6 @@ void BatteriesModbusTCP::loop()
         if (test->stop) {
             test->state = TestState::Disconnect;
             break;
-        }
-
-        if (instances[test->slot] != nullptr) {
-            instances[test->slot]->set_paused(true);
         }
 
         test_state.get("slot")->updateUint(test->slot);
@@ -402,10 +487,6 @@ void BatteriesModbusTCP::loop()
         test_state.get("slot")->updateUint(test->slot);
         test_state.get("mode")->updateEnum(BatteryMode::None);
 
-        if (instances[test->slot] != nullptr) {
-            instances[test->slot]->set_paused(false);
-        }
-
         if (test->client != nullptr) {
             test->state = TestState::Disconnect;
         }
@@ -421,6 +502,7 @@ void BatteriesModbusTCP::loop()
     case TestState::TableWriting:
         if (test->stop) {
             test->state = TestState::DestroyTableWriter;
+            break;
         }
 
         break;
@@ -543,6 +625,29 @@ void BatteriesModbusTCP::test_printfln(const char *fmt, ...)
     va_start(args, fmt);
     test_vprintfln(fmt, args);
     va_end(args);
+}
+
+void BatteriesModbusTCP::test_load_table(const Config *table_config)
+{
+    // free potential old table first. table might be reloaded if rediscover happens
+    BatteryModbusTCP::free_table(test->table);
+    test->table = nullptr;
+
+    switch (test->table_id) {
+    case BatteryModbusTCPTableID::None:
+        test_printfln(test->language == Language::English ? "No table" : "Keine Tabelle");
+        break;
+
+    case BatteryModbusTCPTableID::Custom:
+        BatteryModbusTCP::load_custom_table(&test->table, table_config);
+        break;
+
+#include "generated/batteries_modbus_tcp_test_load_table.inc"
+
+    default:
+        test_printfln(test->language == Language::English ? "Unknown table" : "Unbekannte Tabelle");
+        break;
+    }
 }
 
 void BatteriesModbusTCP::trace_timestamp()

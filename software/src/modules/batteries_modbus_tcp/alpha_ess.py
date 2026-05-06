@@ -29,6 +29,8 @@ repeat_intervals = [
     ('Alpha ESS Hybrid Inverter', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',

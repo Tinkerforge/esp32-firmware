@@ -27,6 +27,8 @@
 #include "options.h"
 #include "language.h"
 #include "generated/battery_modbus_tcp_table_id.enum.h"
+#include "generated/kostal_plenticore_plus_g2_variant.enum.h"
+#include "generated/kostal_plenticore_g3_variant.enum.h"
 #include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/modbus_tcp_client/generated/modbus_function_code.enum.h"
@@ -47,8 +49,11 @@ public:
         size_t register_blocks_count;
     };
 
-    typedef std::function<void(bool error, const char *fmt, va_list args)> TableWriterVLogFLnFunction;
+    struct DiscoverContext;
+
+    typedef std::function<void(bool error, const char *fmt, va_list args)> VLogFLnFunction;
     typedef std::function<void(void)> TableWriterFinishedFunction;
+    typedef std::function<bool(DiscoverContext *ctx)> DiscoverCompleteFunction;
 
     struct TableWriter {
         Language language;
@@ -62,7 +67,7 @@ public:
         TableSpec *table;
         size_t repeat_count = 0;
         size_t index = 0;
-        TableWriterVLogFLnFunction vlogfln;
+        VLogFLnFunction vlogfln;
         TableWriterFinishedFunction finished;
         bool transact_pending = false;
         bool destroy_requested = false;
@@ -75,9 +80,30 @@ public:
     static void free_table(TableSpec *table);
     static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
                                             uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
-                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln,
+                                            BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
                                             TableWriterFinishedFunction &&finished, Language language = Language::English);
     static void destroy_table_writer(TableWriter *writer);
+
+    struct DiscoverContext {
+        Language language;
+        uint64_t task_id = 0;
+        uint32_t slot;
+        TFModbusTCPSharedClient *client;
+        uint8_t device_address;
+        uint16_t transaction_id_mask;
+        VLogFLnFunction vlogfln;
+        DiscoverCompleteFunction complete = nullptr;
+        void *buffer = nullptr;
+        bool transact_pending = false;
+        bool destroy_requested = false;
+        bool test;
+    };
+
+    static DiscoverContext *create_discover(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+                                            uint16_t transaction_id_mask, VLogFLnFunction &&vlogfln, Language language = Language::English);
+    static void destroy_discover(DiscoverContext *ctx);
+    static void discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback);
+    static void discover_kostal_plenticore_g3_variant(DiscoverContext *ctx,  std::function<void(KostalPlenticoreG3Variant variant)> &&callback);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
         GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
@@ -94,6 +120,7 @@ public:
 private:
     void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
+    void load_tables(const Config *table_config);
     void update_active_mode();
 
     uint32_t slot;
@@ -107,8 +134,15 @@ private:
     uint16_t transaction_id_mask = UINT16_MAX;
     uint16_t repeat_interval; // seconds
     BatteryMode requested_mode = BatteryMode::None;
+    bool discover = false;
     bool paused = false;
     bool finished = false;
     BatteryMode active_mode = BatteryMode::None;
     TableWriter *active_writer = nullptr;
+    Config *discover_table_config = nullptr; // FIXME: leaking this, because as of right now battery instances don't get destroyed
+    DiscoverContext *discover_ctx = nullptr;
+    union {
+        KostalPlenticorePlusG2Variant kostal_plenticore_plus_g2_variant;
+        KostalPlenticoreG3Variant kostal_plenticore_g3_variant;
+    };
 };

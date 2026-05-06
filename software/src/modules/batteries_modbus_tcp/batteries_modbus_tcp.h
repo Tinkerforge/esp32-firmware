@@ -26,6 +26,8 @@
 #include "language.h"
 #include "battery_modbus_tcp.h"
 #include "generated/battery_modbus_tcp_table_id.enum.h"
+#include "generated/kostal_plenticore_plus_g2_variant.enum.h"
+#include "generated/kostal_plenticore_g3_variant.enum.h"
 #include "modules/batteries/ibattery_generator.h"
 
 #if defined(__GNUC__)
@@ -56,10 +58,14 @@ public:
 
 private:
     enum class TestState : uint8_t {
+        Start,
         Connect,
         Connecting,
         Disconnect,
         Done,
+        CreateDiscover,
+        DestroyDiscover,
+        Discovering,
         CreateTableWriter,
         DestroyTableWriter,
         TableWriting,
@@ -68,6 +74,7 @@ private:
     void test_flush_log();
     [[gnu::format(__printf__, 2, 0)]] void test_vprintfln(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] void test_printfln(const char *fmt, ...);
+    void test_load_table(const Config *table_config);
 
     Config config_prototype;
     Config table_custom_register_block_prototype;
@@ -93,14 +100,23 @@ private:
         uint8_t device_address;
         uint16_t transaction_id_mask = UINT16_MAX;
         uint16_t repeat_interval; // seconds
-        BatteryModbusTCP::TableSpec *table;
-        BatteryModbusTCP::TableWriter *writer;
+        BatteryModbusTCPTableID table_id;
+        Config *discover_table_config = nullptr;
+        BatteryModbusTCP::DiscoverContext *discover_ctx = nullptr;
+        BatteryModbusTCP::TableSpec *table = nullptr;
+        BatteryModbusTCP::TableWriter *writer = nullptr;
         TestState state;
+        TestState state_after_discover;
         char printfln_buffer[512] = "";
         micros_t printfln_last_flush = 0_us;
         size_t printfln_buffer_used = 0;
         bool reconnect = false;
         bool stop = false;
+
+        union {
+            KostalPlenticorePlusG2Variant kostal_plenticore_plus_g2_variant;
+            KostalPlenticoreG3Variant kostal_plenticore_g3_variant;
+        };
     };
 
     Test *test = nullptr;

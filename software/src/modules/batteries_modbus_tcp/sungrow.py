@@ -39,6 +39,8 @@ repeat_intervals = [
     ('Sungrow Hybrid Inverter', 60),
 ]
 
+variants = []
+
 specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
