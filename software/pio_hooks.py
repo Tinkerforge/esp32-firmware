@@ -936,6 +936,49 @@ def main():
         remove_all_generated_files()
         return
 
+    workspace_dir = env.subst('$PROJECT_WORKSPACE_DIR')
+    build_cache_dir = os.path.join(workspace_dir, 'build_cache')
+    build_cache_limit = env.GetProjectOption("custom_build_cache_limit", None)  # < 0: disable, = 0: unlimited, > 0: drop when over this limit in byte, default: 1 GiB
+
+    if build_cache_limit == None:
+        build_cache_limit = 1024 * 1024 * 1024
+    else:
+        build_cache_limit = int(build_cache_limit)
+
+    if build_cache_limit < 0:
+        print('Build cache is disabled')
+
+        try:
+            shutil.rmtree(build_cache_dir)
+        except FileNotFoundError:
+            pass
+    elif build_cache_limit > 0:
+        build_cache_size = 0
+
+        try:
+            for root, dirs, files in os.walk(build_cache_dir):
+                for name in dirs + files:
+                    build_cache_size += os.path.getsize(os.path.join(root, name))
+        except FileNotFoundError:
+            pass
+
+        print(f'Build cache is {int(build_cache_size / build_cache_limit * 100)}% in use')
+
+        if build_cache_size > build_cache_limit:
+            print('Dropping build cache')
+
+            try:
+                shutil.rmtree(build_cache_dir)
+            except FileNotFoundError:
+                pass
+
+    else:
+        print('Build cache is unlimited')
+
+    if build_cache_limit >= 0:
+        os.makedirs(build_cache_dir, exist_ok=True)
+        env.CacheDir(build_cache_dir)
+
     # Enable this for class_size script
     #env.Append(CXXFLAGS=["-fdump-lang-class"])
 
