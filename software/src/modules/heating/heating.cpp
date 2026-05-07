@@ -96,11 +96,13 @@ void Heating::pre_setup()
         }
 
         // Validate curve hours at both endpoints
-        if (update.get("extended_hours_warm")->asUint() + update.get("blocking_hours_warm")->asUint() > control_period_hours) {
-            return "Sum of extended and blocking hours at warm endpoint exceeds control period";
-        }
-        if (update.get("extended_hours_cold")->asUint() + update.get("blocking_hours_cold")->asUint() > control_period_hours) {
-            return "Sum of extended and blocking hours at cold endpoint exceeds control period";
+        if(update.get("enable_heating_curve")->asBool()) {
+            if (update.get("extended_hours_warm")->asUint() + update.get("blocking_hours_warm")->asUint() > control_period_hours) {
+                return "Sum of extended and blocking hours at warm endpoint exceeds control period";
+            }
+            if (update.get("extended_hours_cold")->asUint() + update.get("blocking_hours_cold")->asUint() > control_period_hours) {
+                return "Sum of extended and blocking hours at cold endpoint exceeds control period";
+            }
         }
 
         task_scheduler.scheduleOnce([this]() {
