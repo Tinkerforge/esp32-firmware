@@ -14,25 +14,19 @@ charge_mode_names_de = [
     "Aus",
     "PV",
     "Min + PV",
-    "Standard",
-    "Min",
-    "Eco",
-    "Eco + PV",
-    "Eco + Min",
-    "Eco + Min + PV",
 ]
 charge_mode_names_en = [
     "Fast",
     "Off",
     "PV",
     "Min + PV",
-    "Default",
-    "Min",
-    "Eco",
-    "Eco + PV",
-    "Eco + Min",
-    "Eco + Min + PV",
 ]
+
+
+def command_template_for_select(names):
+    """Generate a Jinja command_template that maps a selected option name back to a JSON mode payload."""
+    mapping = ", ".join(f"'{name}': {i}" for i, name in enumerate(names))
+    return "{%% set m = {%s} %%}{{ { 'mode': m.get(value, 0)} | tojson }}" % mapping
 
 
 def enum_value_template(json_field, names):
@@ -57,6 +51,7 @@ class Component(Enum):
     SWITCH = "switch"
     BUTTON = "button"
     NUMBER = "number"
+    SELECT = "select"
 
     def get_discovery_type(self) -> DiscoveryType:
         return {
@@ -65,6 +60,7 @@ class Component(Enum):
             Component.SWITCH: DiscoveryType.STATE_AND_UPDATE,
             Component.NUMBER: DiscoveryType.STATE_AND_UPDATE,
             Component.BUTTON: DiscoveryType.COMMAND_ONLY,
+            Component.SELECT: DiscoveryType.STATE_AND_UPDATE,
         }[self]
 
 
@@ -554,26 +550,52 @@ entities = [
     ),
     Entity(
         include_generic=False,
-        component=Component.SENSOR,
+        component=Component.SELECT,
         feature=Feature.POWER_MANAGER,
         object_id="active_charge_mode",
         path="power_manager/charge_mode",
         name_de="Aktiver Lademodus",
         name_en="Active charge mode",
-        availability_topic="",
-        availability_info={},
+        availability=[
+            MQTT_NOT_READ_ONLY,
+            AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
+        ],
         static_info_generic={
+            "icon": "mdi:ev-station",
+        },
+        static_info_homeassistant={
+            "value_template": enum_value_template("mode", charge_mode_names_de),
+            "command_template": command_template_for_select(charge_mode_names_de),
+            "options": charge_mode_names_de,
+        },
+        static_info_homeassistant_en={
+            "value_template": enum_value_template("mode", charge_mode_names_en),
+            "command_template": command_template_for_select(charge_mode_names_en),
+            "options": charge_mode_names_en,
+        },
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.POWER_MANAGER,
+        object_id="current_charge_mode",
+        path="power_manager/charge_mode",
+        name_de="Aktueller Lademodus",
+        name_en="Current charge mode",
+        availability=[
+            AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
+        ],
+        static_info_generic={
+            "icon": "mdi:ev-station",
             "device_class": "enum",
         },
         static_info_homeassistant={
             "value_template": enum_value_template("mode", charge_mode_names_de),
-            "options": charge_mode_names_de + ["Unbekannt"],
-            "icon": "mdi:ev-station",
+            "options": charge_mode_names_de,
         },
         static_info_homeassistant_en={
             "value_template": enum_value_template("mode", charge_mode_names_en),
-            "options": charge_mode_names_en + ["Unknown"],
-            "icon": "mdi:ev-station",
+            "options": charge_mode_names_en,
         },
     ),
     Entity(
@@ -712,8 +734,6 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Stromverbrauch Stromzähler {meter_id} relativ",
             name_en=f"Energy consumption meter {meter_id} (relative)",
-            availability_topic=f"meters/{meter_id}/config",
-            availability_info={"availability_template": "{{ 'offline' if value_json[0] == 0 else 'online' }}"},
             availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
             create_disabled=True,
             static_info_generic={
