@@ -842,10 +842,9 @@ table ul {
     }
 }
 
-input.borderless-form-control:disabled, input.form-control:disabled {
-    color: #6c757d;
+input.borderless-form-control:disabled, input.form-control:disabled, select.borderless-form-control:disabled, select.form-control:disabled {
+    color: var(--bs-secondary);
 }
-
 
 // Bootstrap 5: Change some styling to match Boostrap 4
 .form-control[readonly] {
