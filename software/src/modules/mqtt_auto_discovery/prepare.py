@@ -79,6 +79,20 @@ class Feature(Enum):
 
 
 @dataclass
+class AvailabilityEntry:
+    topic: str
+    value_template: str
+
+
+# Common availability entry to check if MQTT is not in read-only mode.
+# Should be added to all entities that have a command_topic.
+MQTT_NOT_READ_ONLY = AvailabilityEntry(
+    topic="mqtt/config",
+    value_template="{{ 'online' if not value_json.read_only else 'offline' }}",
+)
+
+
+@dataclass
 class Entity:
     include_generic: bool
     component: Component
@@ -87,12 +101,12 @@ class Entity:
     path: str
     name_de: str
     name_en: str
-    availability_topic: str
-    availability_info: dict
+    availability: list  # list of AvailabilityEntry
     static_info_generic: dict
     static_info_homeassistant: dict
     json_attributes_topic: str = ""
     json_attributes_info: dict = None
+    create_disabled: bool = False
     # Optional English overrides for language-dependent static_info content
     # (e.g. value_template strings containing localized labels).
     # When set, the C++ code picks between the default (German) and English
@@ -110,6 +124,12 @@ class Entity:
             self.static_info_homeassistant_en = {}
 
     def get_json_len(self):
+        # Estimate max length of the availability section
+        avail_len = 0
+        for entry in self.availability:
+            # Each entry contributes: {"topic":"<prefix>/<topic>","value_template":"<template>"}
+            # Prefix is at most ~20 chars, plus overhead
+            avail_len += len(entry.topic) + len(entry.value_template) + 80
         return (
             max(len(self.name_de), len(self.name_en))
             + len(self.object_id)
@@ -120,19 +140,8 @@ class Entity:
                 len(self.get_static_info_generic_en_str()),
                 len(self.get_static_info_homeassistant_en_str()),
             )
-            + len(self.get_availability_info_str())
+            + avail_len
             + len(self.get_json_attributes_info_str())
-        )
-
-    def get_availability_info_str(self):
-        return (
-            '"'
-            + json.dumps(self.availability_info)
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
         )
 
     def get_json_attributes_info_str(self):
@@ -207,7 +216,15 @@ class Entity:
             + '"'
         )
 
-
+    def get_availability_entries_str(self):
+        """Generate C initializer list entries for availability array."""
+        if not self.availability:
+            return ""
+        entries = []
+        for entry in self.availability:
+            escaped_template = entry.value_template.replace('"', '\\"')
+            entries.append(f'{{"{entry.topic}", "{escaped_template}"}}')
+        return ", ".join(entries)
 
 
 topic_template = """    {{
@@ -217,8 +234,8 @@ topic_template = """    {{
         .object_id = "{object_id}",
         .name_de = "{name_de}",
         .name_en = "{name_en}",
-        .availability_topic = "{availability_topic}",
-        .availability_info = {availability_info},
+        .availability = {{{availability_entries}}},
+        .availability_count = {availability_count},
         .json_attributes_topic = "{json_attributes_topic}",
         .json_attributes_info = {json_attributes_info},
         .static_infos = {{
@@ -230,6 +247,7 @@ topic_template = """    {{
             {static_info_homeassistant_en}
         }},
         .type = MqttDiscoveryType::{discovery_type},
+        .create_disabled = {create_disabled},
     }}"""
 
 entities = [
@@ -241,8 +259,7 @@ entities = [
         path="meter/values",
         name_de="Leistungsaufnahme",
         name_en="Power draw",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json.power | round(0)}}",
             "unit_of_measurement": "W",
@@ -259,8 +276,7 @@ entities = [
         path="meter/values",
         name_de="Stromverbrauch absolut",
         name_en="Energy consumption (absolute)",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json.energy_abs | round(3)}}",
             "unit_of_measurement": "kWh",
@@ -277,8 +293,7 @@ entities = [
         path="meter/values",
         name_de="Stromverbrauch relativ",
         name_en="Energy consumption (relative)",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json.energy_rel | round(3)}}",
             "unit_of_measurement": "kWh",
@@ -295,8 +310,7 @@ entities = [
         path="meter/all_values",
         name_de="Strom L1",
         name_en="Current L1",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json[3] | round(3)}}",
             "unit_of_measurement": "A",
@@ -313,8 +327,7 @@ entities = [
         path="meter/all_values",
         name_de="Strom L2",
         name_en="Current L2",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json[4] | round(3)}}",
             "unit_of_measurement": "A",
@@ -331,8 +344,7 @@ entities = [
         path="meter/all_values",
         name_de="Strom L3",
         name_en="Current L3",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json[5] | round(3)}}",
             "unit_of_measurement": "A",
@@ -349,8 +361,7 @@ entities = [
         path="evse/state",
         name_de="Ladestatus",
         name_en="Charge state",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{value_json.charger_state}}",
             "icon": "mdi:ev-plug-type2",
@@ -365,8 +376,7 @@ entities = [
         path="evse/external_current",
         name_de="Ladestromlimit",
         name_en="charging current limit",
-        availability_topic="",
-        availability_info={},
+        availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
             "value_template": "{{(value_json.current | float / 1000) | round(3)}}",
             "command_template": "{{ value * 1000 }}",
@@ -386,8 +396,7 @@ entities = [
         path="evse/state",
         name_de="Erlaubter Ladestrom",
         name_en="Allowed charging current",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "value_template": "{{(value_json.allowed_charging_current | float / 1000) | round(3)}}",
             "unit_of_measurement": "A",
@@ -406,8 +415,7 @@ entities = [
         path="evse/start_charging",
         name_de="Ladevorgang starten",
         name_en="Start charging",
-        availability_topic="",
-        availability_info={},
+        availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
             "payload_press": "null",  # for Home Assistant
             "payload_on": "null",  # for Domoticz
@@ -423,8 +431,7 @@ entities = [
         path="evse/stop_charging",
         name_de="Ladevorgang beenden",
         name_en="Stop charging",
-        availability_topic="",
-        availability_info={},
+        availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
             "payload_press": "null",  # for Home Assistant
             "payload_on": "null",  # for Domoticz
@@ -440,8 +447,7 @@ entities = [
         path="evse/state",
         name_de="Wallbox-Ladekabel verbunden",
         name_en="Charger cable connected",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "plug",
         },
@@ -459,8 +465,7 @@ entities = [
         path="evse/state",
         name_de="Wallbox ladebereit",
         name_en="Charger ready to charge",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "power",
         },
@@ -478,8 +483,7 @@ entities = [
         path="evse/state",
         name_de="Wallbox lädt",
         name_en="Charger charging",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "battery_charging",
         },
@@ -497,8 +501,7 @@ entities = [
         path="evse/state",
         name_de="Wallbox-Fehler",
         name_en="Charger error",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "problem",
         },
@@ -516,8 +519,7 @@ entities = [
         path="evse/low_level_state",
         name_de="Wallbox verfügbar",
         name_en="Charger online",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "connectivity",
             "expire_after": "30",
@@ -536,8 +538,7 @@ entities = [
         path="p14a_enwg/state",
         name_de="Limitiert nach §14a ENWG",
         name_en="Limited according to §14a EnWG",
-        availability_topic="",
-        availability_info={},
+        availability=[],
         static_info_generic={
             "device_class": "enum",
         },
@@ -583,8 +584,7 @@ entities = [
         path="solar_forecast/state",
         name_de="PV Ertragsprognose morgen",
         name_en="Solar Forecast tomorrow",
-        availability_topic="solar_forecast/config",
-        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_generic={
             "device_class": "energy",
         },
@@ -602,8 +602,7 @@ entities = [
         path="solar_forecast/state",
         name_de="PV Ertragsprognose heute",
         name_en="Solar Forecast today",
-        availability_topic="solar_forecast/config",
-        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_generic={
             "device_class": "energy",
         },
@@ -621,8 +620,7 @@ Entity(
         path="solar_forecast/state",
         name_de="PV Ertragsprognose ab jetzt",
         name_en="Solar Forecast from now",
-        availability_topic="solar_forecast/config",
-        availability_info={"availability_template": "{{ 'online' if value_json.enable else 'offline' }}"},
+        availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_generic={
             "device_class": "energy",
         },
@@ -660,8 +658,8 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Leistungsaufnahme Stromzähler {meter_id}",
             name_en=f"Power draw meter {meter_id}",
-            availability_topic=f"meters/{meter_id}/config",
-            availability_info={"availability_template": "{{ 'offline' if value_json[0] == 0 else 'online' }}"},
+            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF, 0
@@ -687,8 +685,8 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Stromverbrauch Stromzähler {meter_id} absolut",
             name_en=f"Energy consumption meter {meter_id} (absolute)",
-            availability_topic=f"meters/{meter_id}/config",
-            availability_info={"availability_template": "{{ 'offline' if value_json[0] == 0 else 'online' }}"},
+            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM, 3
@@ -716,6 +714,8 @@ for meter_id in range(0, meters_max_slots):
             name_en=f"Energy consumption meter {meter_id} (relative)",
             availability_topic=f"meters/{meter_id}/config",
             availability_info={"availability_template": "{{ 'offline' if value_json[0] == 0 else 'online' }}"},
+            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM_RESETTABLE, 3
@@ -740,8 +740,8 @@ topics = [
         object_id=x.object_id,
         name_de=x.name_de,
         name_en=x.name_en,
-        availability_topic=x.availability_topic,
-        availability_info=x.get_availability_info_str(),
+        availability_entries=x.get_availability_entries_str(),
+        availability_count=len(x.availability),
         json_attributes_topic=x.json_attributes_topic,
         json_attributes_info=x.get_json_attributes_info_str(),
         static_info_generic=x.get_static_info_generic_str(),
@@ -749,6 +749,7 @@ topics = [
         static_info_generic_en=x.get_static_info_generic_en_str(),
         static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
         discovery_type=x.component.get_discovery_type().value,
+        create_disabled="true" if x.create_disabled else "false",
     )
     for x in entities
 ]
@@ -769,6 +770,7 @@ h = tfutil.specialize_template(
     {
         "{{{topic_count}}}": str(len(topics)),
         "{{{max_json_len}}}": str(max([x.get_json_len() for x in entities])),
+        "{{{max_availability_count}}}": str(max([len(x.availability) for x in entities])),
     },
 )
 
