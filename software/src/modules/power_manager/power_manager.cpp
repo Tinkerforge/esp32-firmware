@@ -75,7 +75,7 @@ void PowerManager::pre_setup()
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
-    }), [](const Config &cfg, ConfigSource source) -> String {
+    }), [this](const Config &cfg, ConfigSource source) -> String {
         const bool excess_charging_enable = cfg.get("excess_charging_enable")->asBool();
 
         if (cfg.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_EXTERNAL_CONTROL && excess_charging_enable) {
@@ -88,6 +88,16 @@ void PowerManager::pre_setup()
 
             if (slot_grid == slot_battery) {
                 return "Grid and battery storage cannot use the same power meter";
+            }
+        }
+        const bool will_enable = cfg.get("enabled")->asBool();
+        const bool is_enabled = config.get("enabled")->asBool();
+        if (will_enable!=is_enabled) {
+            if (will_enable) {
+                api.addFeature("power_manager");
+
+            } else {
+                api.removeFeature("power_manager");
             }
         }
 
@@ -464,7 +474,6 @@ void PowerManager::setup()
 void PowerManager::register_urls()
 {
     api.addState("power_manager/state", &state);
-    api.addFeature("power_manager");
 
     api.addPersistentConfig("power_manager/config", &config);
     api.addPersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
