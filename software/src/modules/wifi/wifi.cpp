@@ -25,6 +25,7 @@
 #include <esp_wifi.h>
 #include <esp_eap_client.h>
 #include <TFJson.h>
+#include <lwip/tcpip.h>
 
 #include "event_log_prefix.h"
 #include "build.h"
@@ -922,6 +923,13 @@ void Wifi::register_sta_event_handlers()
             const uint32_t subnet = ip_info.netmask.addr;
 
             logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
+
+            const auto gateway = ip_info.gw.addr;
+
+            tcpip_callback([](void *param) {
+                WiFi.STA.setRoutePrio(reinterpret_cast<int>(param)); // Prefer WiFi over Ethernet, which has priority 50, only if a gateway is configured.
+                esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
+            }, reinterpret_cast<void *>(gateway == 0 ? 40 : 100));
 
             task_scheduler.scheduleOnce([this, ip_str, subnet](){
                 char subnet_str[INET_ADDRSTRLEN];

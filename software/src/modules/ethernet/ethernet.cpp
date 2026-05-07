@@ -30,6 +30,7 @@
 #include "generated/module_dependencies.h"
 
 #include <ETH.h>
+#include <lwip/tcpip.h>
 
 #include "event_log_prefix.h"
 
@@ -278,16 +279,12 @@ void Ethernet::setup()
             const String ip_string{ip_str};
             const auto gateway = ip_info.gw.addr;
 
-            esp_netif_tcpip_exec([](void *param) {
+            tcpip_callback([](void *param) {
                 ETH.setRoutePrio(reinterpret_cast<int>(param)); // Prefer Ethernet over WiFi, which has priority 100, if a gateway is configured.
-                return 0;
+                esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
             }, reinterpret_cast<void *>(gateway == 0 ? 50 : 110));
 
             task_scheduler.scheduleOnce([this, now, ip_string, subnet, was_already_connected, ip_changed, gateway]() {
-
-
-
-
                 char subnet_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
@@ -335,6 +332,10 @@ void Ethernet::setup()
             }
 
             this->runtime_data->connection_state = EthernetState::Connecting;
+
+            tcpip_callback([](void *param) {
+                esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
+            }, nullptr);
 
             task_scheduler.scheduleOnce([this, now]() {
                 task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
