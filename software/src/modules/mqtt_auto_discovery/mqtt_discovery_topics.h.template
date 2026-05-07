@@ -18,8 +18,6 @@ struct MqttDiscoveryTopicInfo {
     const char * const object_id;
     const char * const name_de;
     const char * const name_en;
-    const char * const availability_topic;
-    const char * const availability_info;
     const MqttDiscoveryAvailabilityEntry availability[MQTT_DISCOVERY_MAX_AVAILABILITY_COUNT];
     const uint8_t availability_count;
     const char * const json_attributes_topic;
