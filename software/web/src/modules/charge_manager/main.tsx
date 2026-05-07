@@ -470,7 +470,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
         timestamps[1] = get_timestamp_d1(decs[1])
     if (decs[2] !== undefined)
         timestamps[2] = get_timestamp_d3(decs[2])
-    
+
     let dec_tups = decs.map((d, i) => { return { d: d, i: i, ts: timestamps[i] } }).filter(tup => tup.d !== undefined);
     let idx = 0;
 
@@ -573,10 +573,10 @@ function CMStatusCharger(props: {
     return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
                 <div class="card-header">
                     <div class="row gx-2 align-items-center">
-                        { props.central_auth_enabled && <div class="col">
+                        <div class="col">
                             <h5 class="mb-0">{name_link}</h5>
-                            {user_display_name ? <div class="text-muted" style="font-size: 0.875rem;">{__("charge_manager.script.currently_charging_user")}: {user_display_name}</div> : null}
-                        </div> }
+                            { props.central_auth_enabled &&  user_display_name ? <div class="text-muted" style="font-size: 0.875rem;">{__("charge_manager.script.currently_charging_user")}: {user_display_name}</div> : null}
+                        </div>
                         <div class="col-auto">
                             <InputSelect
                                 items={modes}
