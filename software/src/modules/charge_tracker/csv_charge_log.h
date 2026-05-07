@@ -36,6 +36,7 @@ struct CSVGenerationParams {
     uint32_t end_timestamp_min;
     uint32_t electricity_price;
     Language language;
+    uint8_t configured_users[MAX_ACTIVE_USERS];
 
     CSVGenerationParams() :
         flavor(CSVFlavor::Excel),

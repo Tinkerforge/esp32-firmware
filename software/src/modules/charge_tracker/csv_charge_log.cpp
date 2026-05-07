@@ -337,21 +337,8 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
         [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
-            auto timestamp = record->cs.timestamp_minutes;
-            auto filter_start = params.start_timestamp_min;
-            auto filter_end = params.end_timestamp_min;
-
-            if (timestamp != 0 && filter_start != 0 && timestamp < filter_start) {
+            if (!ChargeTracker::include_charge(record->cs, params.user_filter, params.start_timestamp_min, params.end_timestamp_min, params.configured_users))
                 return ESP_OK;
-            }
-
-            if (timestamp != 0 && filter_end != 0 && timestamp > filter_end) {
-                return ESP_OK;
-            }
-
-            if (isUserFiltered(record->cs.user_id, params.user_filter)) {
-                return ESP_OK;
-            }
 
             float energy_charged = NAN;
             if (!std::isnan(record->cs.meter_start) && !std::isnan(record->ce.meter_end) &&

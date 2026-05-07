@@ -1036,6 +1036,12 @@ void ChargeTracker::register_urls()
         csv_params.flavor = (CSVFlavor)csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
+
+            auto count = users.config.get("users")->count();
+            for (size_t i = 0; i < count; ++i) {
+                csv_params.configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+            }
+            memset(&csv_params.configured_users[count], 0, MAX_ACTIVE_USERS - count);
         });
 
         const auto callback = [this, &request](const char* buffer, size_t len) -> esp_err_t {
@@ -1454,6 +1460,12 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         csv_params.flavor = upload_args->csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
+
+            auto count = users.config.get("users")->count();
+            for (size_t i = 0; i < count; ++i) {
+                csv_params.configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+            }
+            memset(&csv_params.configured_users[count], 0, MAX_ACTIVE_USERS - count);
         });
 
         auto csv_stream_cb = [&remote_client = *upload_args->remote_client](const char* buffer, size_t len) -> esp_err_t {
@@ -1617,6 +1629,36 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
 }
 #endif
 
+// Back-ported from feature-central-user-management-14
+bool ChargeTracker::include_charge(
+    ChargeStart cs,
+    int user,
+    uint32_t start_min,
+    uint32_t end_min,
+    const uint8_t *configured_users
+) {
+    bool include_start = start_min == 0 // There is no start filter, accept any charge
+                     || (cs.timestamp_minutes != 0 // Charge start is not unknown (charges with unknown start time are always excluded if there is a start filter)
+                         && cs.timestamp_minutes >= start_min); // Charge start is later than filter begin.
+    if (!include_start) // The charge started before the start filter
+        return false;
+
+    bool include_end = end_min == 0 // There is no end filter, accept any charge
+                     || (cs.timestamp_minutes != 0 // Charge start is not unknown (charges with unknown start time are always excluded if there is an end filter)
+                         && cs.timestamp_minutes < end_min); // Charge start is earlier than filter end.
+    if (!include_end) // The charge started before the start filter
+        return false;
+
+    bool include_user = user == USER_FILTER_ALL_USERS // There is no user filter, accept any charge.
+                     || (user == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) // User is not configured, i.e. deleted.
+                     || cs.user_id == user; // User matches.
+    if (!include_user)
+        return false;
+
+    // device intentionally not checked here: Checking this for every charge is inefficient, because we know which device a complete set of charge-record files belongs to.
+    return true;
+}
+
 int ChargeTracker::generate_pdf(
     std::function<int(const void *buffer, size_t len)> &&callback,
     int user_filter,
@@ -1671,15 +1713,10 @@ int ChargeTracker::generate_pdf(
                     goto search_done;
                 memcpy(&cs, charge_buf, sizeof(ChargeStart));
                 memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
+
+                if (!ChargeTracker::include_charge(cs, user_filter, start_timestamp_min, end_timestamp_min, configured_users))
                     continue;
-                }
-                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                    continue;
-                }
-                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                if (!include_user)
-                    continue;
+
                 if (first_file == -1)
                     first_file = i;
                 if (first_charge == -1)
@@ -1796,6 +1833,8 @@ search_done:
                        charge_records,
                        [this,
                         user_filter,
+                        start_timestamp_min,
+                        end_timestamp_min,
                         &table_lines_buffer,
                         &f,
                         first_file,
@@ -1831,9 +1870,10 @@ search_done:
                     break;
                 memcpy(&cs, charge_buf, sizeof(ChargeStart));
                 memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                if (!include_user)
+
+                if (!ChargeTracker::include_charge(cs, user_filter, start_timestamp_min, end_timestamp_min, configured_users))
                     continue;
+
                 table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
                 ++lines_generated;
             }
