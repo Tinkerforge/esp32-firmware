@@ -248,10 +248,21 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                         break;
                 }
 
-                if (strlen(mqtt_discovery_topic_infos[topic_num].availability_topic) > 0) {
-                    json.addMemberBoolean("enabled_by_default", false); // Entities which may or may not be available are added as disabled
-                    json.addMemberStringF("availability_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].availability_topic);
-                    json_write_raw(json, mqtt_discovery_topic_infos[topic_num].availability_info, strlen(mqtt_discovery_topic_infos[topic_num].availability_info));
+                if (mqtt_discovery_topic_infos[topic_num].availability_count > 0) {
+                    json.addMemberArray("availability");
+                    for (uint8_t i = 0; i < mqtt_discovery_topic_infos[topic_num].availability_count; i++) {
+                        const auto &entry = mqtt_discovery_topic_infos[topic_num].availability[i];
+                        json.addObject();
+                        json.addMemberStringF("topic", "%s/%s", topic_prefix.c_str(), entry.topic);
+                        json.addMemberString("value_template", entry.value_template);
+                        json.endObject();
+                    }
+                    json.endArray();
+                    json.addMemberString("availability_mode", "all");
+                }
+
+                if (mqtt_discovery_topic_infos[topic_num].create_disabled) {
+                    json.addMemberBoolean("enabled_by_default", false);
                 }
 
                 if (strlen(mqtt_discovery_topic_infos[topic_num].json_attributes_topic) > 0) {

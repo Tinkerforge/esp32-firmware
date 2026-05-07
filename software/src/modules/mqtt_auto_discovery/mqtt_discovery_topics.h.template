@@ -2,8 +2,14 @@
 
 #define MQTT_DISCOVERY_TOPIC_COUNT ({{{topic_count}}})
 #define MQTT_DISCOVERY_MAX_JSON_LENGTH ({{{max_json_len}}})
+#define MQTT_DISCOVERY_MAX_AVAILABILITY_COUNT ({{{max_availability_count}}})
 
 #include "mqtt_discovery_type.enum.h"
+
+struct MqttDiscoveryAvailabilityEntry {
+    const char * const topic;
+    const char * const value_template;
+};
 
 struct MqttDiscoveryTopicInfo {
     const char * const feature;
@@ -14,11 +20,14 @@ struct MqttDiscoveryTopicInfo {
     const char * const name_en;
     const char * const availability_topic;
     const char * const availability_info;
+    const MqttDiscoveryAvailabilityEntry availability[MQTT_DISCOVERY_MAX_AVAILABILITY_COUNT];
+    const uint8_t availability_count;
     const char * const json_attributes_topic;
     const char * const json_attributes_info;
     const char * const static_infos[2];
     const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
     const MqttDiscoveryType type;
+    const bool create_disabled;
 };
 
 extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];
