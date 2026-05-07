@@ -2650,12 +2650,11 @@ int ChargeTracker::generate_pdf(
     std::lock_guard<std::mutex> lock{records_mutex};
 
     {
-        char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
         Charge c;
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i, nullptr));
             for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
-                if (f.read((uint8_t *)c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                if (f.read((uint8_t *)&c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
                     goto search_done;
 
                 if (!params->include_charge(&c))
@@ -2789,7 +2788,7 @@ search_done:
     int rc = init_pdf_generator(callback,
                        english ? "WARP Charge Log" : "WARP Ladelog",
                        stats_buf, (params->electricity_price == 0) ? 5 : 6,
-                       params->letterhead.get(), params->letterhead_lines,
+                       params->letterhead_buf.get(), params->letterhead_lines,
                        english ? table_header_en : table_header_de,
                        charge_records,
                        [&table_lines_buffer,
@@ -2818,7 +2817,7 @@ search_done:
             for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
                 if ((lines_generated == 8) || (current_file == last_file && current_charge > last_charge))
                     break;
-                if (f.read((uint8_t *)c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                if (f.read((uint8_t *)&c, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
                     break;
 
                 if (!params->include_charge(&c))
