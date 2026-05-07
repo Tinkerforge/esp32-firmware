@@ -17,7 +17,7 @@ specs = [
     {
         'name': 'E3DC Hauskraftwerk Grid',
         'virtual_meter': ('E3DC Hauskraftwerk', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -31,7 +31,7 @@ specs = [
     {
         'name': 'E3DC Hauskraftwerk Battery',
         'virtual_meter': ('E3DC Hauskraftwerk', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -51,7 +51,7 @@ specs = [
     {
         'name': 'E3DC Hauskraftwerk Load',
         'virtual_meter': ('E3DC Hauskraftwerk', 'Load'),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -65,7 +65,7 @@ specs = [
     {
         'name': 'E3DC Hauskraftwerk PV',
         'virtual_meter': ('E3DC Hauskraftwerk', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -136,7 +136,7 @@ specs = [
     {
         'name': 'E3DC Hauskraftwerk Additional Generation',
         'virtual_meter': ('E3DC Hauskraftwerk', 'Additional Generation'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

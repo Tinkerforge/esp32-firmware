@@ -23,15 +23,14 @@ import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
-import { get_meter_location_items } from "../meters/meter_location";
+import { get_meter_location_items, translate_meter_location } from "../meters/meter_location";
 import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/generated/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
-import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
-import { PRESET_VALUE_IDS, PRESET_DEFAULT_LOCATIONS } from "./generated/presets";
+import { PRESET_VALUE_IDS, PRESET_FIXED_LOCATIONS } from "./generated/presets";
 
 export type APIMetersConfig = [
     MeterClassID.API,
@@ -249,11 +248,11 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
     constructor(props: PresetSelectorProps) {
         super(props);
 
-        let needle = props.config[1].value_ids.toString();
+        let value_ids_str = props.config[1].value_ids.toString();
         let preset_key = "none";
 
         for (let key in PRESET_VALUE_IDS) {
-            if (needle == PRESET_VALUE_IDS[key].toString()) {
+            if (this.props.config[1].location == PRESET_FIXED_LOCATIONS[key] && value_ids_str == PRESET_VALUE_IDS[key].toString()) {
                 preset_key = key;
                 break;
             }
@@ -265,82 +264,39 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
     }
 
     render() {
-        let children = [
-            <FormRow label={__("meters_api.content.api_meter_preset")}>
-                <InputSelect
-                    items={[
-                        ["none", __("meters_api.content.api_meter_no_preset")],
-                        ["pve", __("meters_api.content.meter_type_pv_only")],
-                        ["dlm", __("meters_api.content.meter_type_dlm_only")],
-                        ["pve_dlm", __("meters_api.content.meter_type_pv_dlm_only")],
-                        ["eastron_sdm72", __("meters.script.meter_type_1")],
-                        ["eastron_sdm630", __("meters.script.meter_type_2")],
-                        ["eastron_sdm72v2", __("meters.script.meter_type_3")]
-                    ]}
-                    value={this.state.preset_key}
-                    onValue={async (preset_key) => {
-                        let value_ids = PRESET_VALUE_IDS[preset_key];
-
-                        if (this.props.config[1].value_ids.toString() !== PRESET_VALUE_IDS[this.state.preset_key].toString()) {
-                            if (!await util.async_modal_ref.current.show({
-                                title: () => __("meters_api.content.override_modal_title"),
-                                body: () => __("meters_api.content.override_modal_body"),
-                                yes_text: () => __("meters_api.content.override_modal_confirm"),
-                                no_text: () => __("meters_api.content.override_modal_cancel"),
-                                yes_variant: "danger",
-                                no_variant: "secondary",
-                                nestingDepth: 2
-                            })) {
-                                this.setState({preset_key: this.state.preset_key});
-                                return;
-                            }
+        return <FormRow label={__("meters_api.content.api_meter_preset")}>
+            <InputSelect
+                items={[
+                    ["none", __("meters_api.content.api_meter_no_preset")],
+                    ["pve", __("meters_api.content.meter_type_pv_only")],
+                    ["dlm", __("meters_api.content.meter_type_dlm_only")],
+                    ["pve_dlm", __("meters_api.content.meter_type_pv_dlm_only")],
+                    ["eastron_sdm72", __("meters.script.meter_type_1")],
+                    ["eastron_sdm630", __("meters.script.meter_type_2")],
+                    ["eastron_sdm72v2", __("meters.script.meter_type_3")]
+                ]}
+                value={this.state.preset_key}
+                onValue={async (preset_key) => {
+                    if ((PRESET_FIXED_LOCATIONS[this.state.preset_key] != MeterLocation.Unknown && this.props.config[1].location != PRESET_FIXED_LOCATIONS[this.state.preset_key])
+                     || this.props.config[1].value_ids.toString() !== PRESET_VALUE_IDS[this.state.preset_key].toString()) {
+                        if (!await util.async_modal_ref.current.show({
+                            title: () => __("meters_api.content.override_modal_title"),
+                            body: () => __("meters_api.content.override_modal_body"),
+                            yes_text: () => __("meters_api.content.override_modal_confirm"),
+                            no_text: () => __("meters_api.content.override_modal_cancel"),
+                            yes_variant: "danger",
+                            no_variant: "secondary",
+                            nestingDepth: 2
+                        })) {
+                            this.setState({preset_key: this.state.preset_key});
+                            return;
                         }
+                    }
 
-                        this.setState({preset_key: preset_key});
-                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids, location: PRESET_DEFAULT_LOCATIONS[preset_key]}));
-                    }}/>
-            </FormRow>,
-        ];
-
-        let default_location = PRESET_DEFAULT_LOCATIONS[this.state.preset_key];
-
-        if (default_location == MeterLocation.Unknown) {
-            children.push(
-                <FormRow label={__("meters_api.content.config_location")}>
-                    <InputSelect
-                        required
-                        items={get_meter_location_items()}
-                        placeholder={__("select")}
-                        value={this.props.config[1].location.toString()}
-                        onValue={(v) => {
-                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
-                        }} />
-                </FormRow>);
-        }
-        else {
-            let enable_location_override = default_location != this.props.config[1].location;
-
-            children.push(
-                <FormRow label={__("meters_api.content.config_location")}>
-                    <SwitchableInputSelect
-                        required
-                        items={get_meter_location_items()}
-                        placeholder={__("select")}
-                        value={this.props.config[1].location.toString()}
-                        onValue={(v) => {
-                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
-                        }}
-                        checked={enable_location_override}
-                        onSwitch={() => {
-                            this.props.on_config(util.get_updated_union(this.props.config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
-                        }}
-                        switch_label_active={__("meters_api.content.location_different")}
-                        switch_label_inactive={__("meters_api.content.location_matching")}
-                        />
-                </FormRow>);
-        }
-
-        return children;
+                    this.setState({preset_key: preset_key});
+                    this.props.on_config(util.get_updated_union(this.props.config, {location: PRESET_FIXED_LOCATIONS[preset_key], value_ids: PRESET_VALUE_IDS[preset_key]}));
+                }}/>
+        </FormRow>;
     }
 }
 
@@ -362,6 +318,16 @@ export function pre_init() {
                             }}/>
                     </FormRow>,
                     <PresetSelector config={config} on_config={on_config} />,
+                    <FormRow label={__("meters_api.content.config_location")}>
+                        <InputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }} />
+                    </FormRow>,
                     <FormRow label={__("meters_api.content.config_value_ids")}>
                         <MeterValueIDTable config={config} on_config={on_config} />
                     </FormRow>,

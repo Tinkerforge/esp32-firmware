@@ -16,7 +16,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Eltako DSZ16DZE',
-        'default_location': 'Unknown',
+        'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
             {

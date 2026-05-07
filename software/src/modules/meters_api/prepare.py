@@ -190,7 +190,7 @@ for preset in presets:
     inc += f"    {len(preset[2])},\n"
 
 inc += '};\n\n'
-inc += 'static const MeterLocation preset_default_locations[] = {\n'
+inc += 'static const MeterLocation preset_fixed_locations[] = {\n'
 
 for preset in presets:
     if preset[1] == 'Unknown':
@@ -216,7 +216,7 @@ for preset in presets:
     ts += '   ],\n'
 
 ts += '};\n\n'
-ts += 'export const PRESET_DEFAULT_LOCATIONS: {[key: string]: MeterLocation} = {\n'
+ts += 'export const PRESET_FIXED_LOCATIONS: {[key: string]: MeterLocation} = {\n'
 
 for preset in presets:
     ts += f"   '{preset[0]}': MeterLocation.{preset[1]},\n"

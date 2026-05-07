@@ -23,7 +23,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter',
         'virtual_meter': ('Solax Hybrid Inverter', 'Inverter'),
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -38,7 +38,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter Grid',
         'virtual_meter': ('Solax Hybrid Inverter', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -182,7 +182,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter Battery',
         'virtual_meter': ('Solax Hybrid Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -236,7 +236,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter PV',  # FIXME: some models have PV3, but it's unclear how to detect it properly: https://github.com/evcc-io/evcc/issues/19598
         'virtual_meter': ('Solax Hybrid Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -306,7 +306,7 @@ specs = [
     {
         'name': 'Solax String Inverter',
         'virtual_meter': ('Solax String Inverter', 'Inverter'),
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -370,7 +370,7 @@ specs = [
     {
         'name': 'Solax String Inverter Grid',
         'virtual_meter': ('Solax String Inverter', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -462,7 +462,7 @@ specs = [
     {
         'name': 'Solax String Inverter PV',
         'virtual_meter': ('Solax String Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
             {

@@ -211,7 +211,7 @@ for spec in specs:
             else:
                 virtual_meter_member = None
 
-            virtual_meters.setdefault(virtual_meter_group, []).append((virtual_meter_member, spec_name, spec['default_location']))
+            virtual_meters.setdefault(virtual_meter_group, []).append((virtual_meter_member, spec_name, spec['fixed_location']))
 
         if spec['values'] == None:
             continue
@@ -294,7 +294,7 @@ for spec in specs:
         specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n{"\n".join(value_index)}\n}};')
 
         specs_cpp.append(f'extern const MeterModbusTCP::TableSpec {spec_name.under}_table = {{\n'
-                         f'    MeterLocation::{spec['default_location']},\n'
+                         f'    MeterLocation::{spec['fixed_location']},\n'
                          f'    {spec_name.under}_specs,\n'
                          f'    ARRAY_SIZE({spec_name.under}_specs),\r')
 
@@ -322,8 +322,8 @@ for group, value in virtual_meters.items():
                      f'        logger.printfln_meter("No {group.space} Virtual Meter selected");\n'
                       '        return nullptr;')
 
-    for member_spec_name_default_location in value:
-        member, spec_name, _ = member_spec_name_default_location
+    for member_spec_name_fixed_location in value:
+        member, spec_name, _ = member_spec_name_fixed_location
 
         specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
                          f'        return &{spec_name.under}_table;')
@@ -345,8 +345,8 @@ for group, value in virtual_meters.items():
     specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
                      '        virtual_meter_items = [\r')
 
-    for member_spec_name_default_location in value:
-        member, _, _ = member_spec_name_default_location
+    for member_spec_name_fixed_location in value:
+        member, _, _ = member_spec_name_fixed_location
 
         specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
 
@@ -359,7 +359,7 @@ specs_ts.append('    }\n\n'
                 '    return virtual_meter_items;\n'
                 '}')
 
-specs_ts.append('export function get_default_location(table_id: number, virtual_meter: number) {\n'
+specs_ts.append('export function get_fixed_location(table_id: number, virtual_meter: number) {\n'
                 '    switch (table_id) {\r')
 
 for group, value in virtual_meters.items():
@@ -367,10 +367,10 @@ for group, value in virtual_meters.items():
         specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
                          '        switch (virtual_meter) {\r')
 
-        for member_spec_name_default_location in value:
-            member, _, default_location = member_spec_name_default_location
+        for member_spec_name_fixed_location in value:
+            member, _, fixed_location = member_spec_name_fixed_location
 
-            specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{default_location};\r')
+            specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{fixed_location};\r')
 
         specs_ts.append('        }\n'
                         '\n'
@@ -487,8 +487,8 @@ for group, value in virtual_meters.items():
     if len(value) == 1 and value[0][0] == None:
         continue
 
-    for member_spec_name_default_location in value:
-        member, _, _ = member_spec_name_default_location
+    for member_spec_name_fixed_location in value:
+        member, _, _ = member_spec_name_fixed_location
 
         is_inc += f'bool is_{group.under}_{member.under}_meter() const;\n'
         is_cpp += f'\nbool MeterModbusTCP::is_{group.under}_{member.under}_meter() const\n' \

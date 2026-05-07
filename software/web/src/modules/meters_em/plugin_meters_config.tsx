@@ -25,7 +25,7 @@ import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
-import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
+import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 
@@ -55,21 +55,14 @@ export function pre_init() {
                             }}/>
                     </FormRow>,
                     <FormRow label={__("meters_em.content.config_location")}>
-                        <SwitchableInputSelect
+                        <InputSelect
                             required
                             items={get_meter_location_items()}
                             placeholder={__("select")}
                             value={config[1].location.toString()}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                            }}
-                            checked={config[1].location != MeterLocation.Grid}
-                            onSwitch={() => {
-                                on_config(util.get_updated_union(config, {location: (config[1].location != MeterLocation.Grid ? MeterLocation.Grid : MeterLocation.Unknown)}));
-                            }}
-                            switch_label_active={__("meters_em.content.location_different")}
-                            switch_label_inactive={__("meters_em.content.location_matching")}
-                            />
+                            }} />
                     </FormRow>,
                 ];
             },

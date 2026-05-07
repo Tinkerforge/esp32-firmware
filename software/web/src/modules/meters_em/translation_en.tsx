@@ -6,10 +6,7 @@ let x = {
             "meter_class": "Connected to Energy Manager",
 
             "config_display_name": "Display name",
-            "config_location": "Location",
-
-            "location_matching": "Matching",
-            "location_different": "Different"
+            "config_location": "Location"
         }
     }
 }

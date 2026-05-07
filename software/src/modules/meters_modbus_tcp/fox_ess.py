@@ -29,7 +29,7 @@ specs = [
     {
         'name': 'Fox ESS H3 AC3 Hybrid Inverter',
         'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Inverter'),
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -121,7 +121,7 @@ specs = [
     {
         'name': 'Fox ESS H3 AC3 Hybrid Inverter Grid',
         'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -164,7 +164,7 @@ specs = [
     {
         'name': 'Fox ESS H3 AC3 Hybrid Inverter Battery',
         'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -220,7 +220,7 @@ specs = [
     {
         'name': 'Fox ESS H3 AC3 Hybrid Inverter Load',
         'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Load'),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -253,7 +253,7 @@ specs = [
     {
         'name': 'Fox ESS H3 AC3 Hybrid Inverter PV',
         'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -324,7 +324,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Inverter'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -426,7 +426,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Grid',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Grid'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -488,7 +488,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery 1',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Battery 1'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -582,7 +582,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery 2',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Battery 2'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -676,7 +676,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery 1 And 2',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Battery 1 And 2'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -804,7 +804,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Load',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Load'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -853,7 +853,7 @@ specs = [
         'name': 'Fox ESS H3 {variant} Hybrid Inverter PV',
         'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'PV'),
         'variants': ['Smart', 'Pro'],
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

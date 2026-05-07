@@ -21,7 +21,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter',
         'virtual_meter': ('Deye Hybrid Inverter', 'Inverter'),
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -156,7 +156,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Grid',
         'virtual_meter': ('Deye Hybrid Inverter', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -374,7 +374,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Battery Device Type',
         'virtual_meter': ('Deye Hybrid Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -388,7 +388,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter {variant} Battery',
         'variants': ['Low Voltage', 'High Voltage'],
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -463,7 +463,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Load',
         'virtual_meter': ('Deye Hybrid Inverter', 'Load'),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -541,7 +541,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter PV Device Type',
         'virtual_meter': ('Deye Hybrid Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -555,7 +555,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter {variant} PV',
         'variants': ['Low Voltage', 'High Voltage'],
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

@@ -44,18 +44,16 @@ void MeterAPI::setup(Config *ephemeral_config)
     }
 
     if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown) {
-        MeterLocation default_location = MeterLocation::Unknown;
+        MeterLocation fixed_location = MeterLocation::Unknown;
 
         for (size_t i = 0; i < ARRAY_SIZE(preset_value_ids); i++) {
             if (preset_value_ids_count[i] == value_count && memcmp(preset_value_ids[i], ids, value_count) == 0) {
-                default_location = preset_default_locations[i];
+                fixed_location = preset_fixed_locations[i];
                 break;
             }
         }
 
-        if (default_location != MeterLocation::Unknown) {
-            ephemeral_config->get("location")->updateEnum(default_location);
-        }
+        ephemeral_config->get("location")->updateEnum(fixed_location);
     }
 
     meters.declare_value_ids(slot, ids, value_count);

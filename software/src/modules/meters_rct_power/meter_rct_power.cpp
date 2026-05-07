@@ -180,7 +180,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
     port          = ephemeral_config->get("port")->asUint16();
     virtual_meter = ephemeral_config->get("virtual_meter")->asEnum<VirtualMeter>();
 
-    MeterLocation default_location = MeterLocation::Unknown;
+    MeterLocation fixed_location = MeterLocation::Unknown;
 
     switch (virtual_meter) {
     case VirtualMeter::None:
@@ -192,7 +192,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         value_specs_length = ARRAY_SIZE(inverter_rct_value_specs);
         value_ids = inverter_value_ids;
         value_ids_length = ARRAY_SIZE(inverter_value_ids);
-        default_location = MeterLocation::Inverter;
+        fixed_location = MeterLocation::Inverter;
         break;
 
     case VirtualMeter::Grid:
@@ -200,7 +200,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         value_specs_length = ARRAY_SIZE(grid_rct_value_specs);
         value_ids = grid_value_ids;
         value_ids_length = ARRAY_SIZE(grid_value_ids);
-        default_location = MeterLocation::Grid;
+        fixed_location = MeterLocation::Grid;
         break;
 
     case VirtualMeter::Battery:
@@ -208,7 +208,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         value_specs_length = ARRAY_SIZE(battery_rct_value_specs);
         value_ids = battery_value_ids;
         value_ids_length = ARRAY_SIZE(battery_value_ids);
-        default_location = MeterLocation::Battery;
+        fixed_location = MeterLocation::Battery;
         break;
 
     case VirtualMeter::Load:
@@ -216,7 +216,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         value_specs_length = ARRAY_SIZE(load_rct_value_specs);
         value_ids = load_value_ids;
         value_ids_length = ARRAY_SIZE(load_value_ids);
-        default_location = MeterLocation::Load;
+        fixed_location = MeterLocation::Load;
         break;
 
     case VirtualMeter::PV:
@@ -224,7 +224,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         value_specs_length = ARRAY_SIZE(pv_rct_value_specs);
         value_ids = pv_value_ids;
         value_ids_length = ARRAY_SIZE(pv_value_ids);
-        default_location = MeterLocation::PV;
+        fixed_location = MeterLocation::PV;
         break;
 
     default:
@@ -234,8 +234,8 @@ void MeterRCTPower::setup(Config *ephemeral_config)
 
     meters.declare_value_ids(slot, value_ids, value_ids_length);
 
-    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
-        ephemeral_config->get("location")->updateEnum(default_location);
+    if (fixed_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(fixed_location);
     }
 
     task_scheduler.scheduleUncancelable([this]() {

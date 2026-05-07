@@ -118,7 +118,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 custom_index[i] = i;
             }
 
-            custom_table->default_location = MeterLocation::Unknown;
+            custom_table->fixed_location = MeterLocation::Unknown;
             custom_table->specs = custom_specs;
             custom_table->specs_length = registers_count;
             custom_table->ids = custom_ids;
@@ -143,8 +143,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     max_register_count = std::min(static_cast<size_t>(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE), max_register_count);
 
-    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && table->default_location != MeterLocation::Unknown) {
-        ephemeral_config->get("location")->updateEnum(table->default_location);
+    if (table->fixed_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(table->fixed_location);
     }
 
     if (table->ids_length > 0) {

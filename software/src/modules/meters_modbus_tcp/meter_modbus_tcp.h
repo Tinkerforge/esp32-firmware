@@ -57,7 +57,7 @@ public:
     };
 
     struct TableSpec {
-        MeterLocation default_location;
+        MeterLocation fixed_location;
         const ValueSpec *specs;
         size_t specs_length;
         const MeterValueID *ids;

@@ -17,7 +17,7 @@ specs = [
     {
         'name': 'SMA Hybrid Inverter Battery',  # FIXME: handle NAN markers
         'virtual_meter': ('SMA Hybrid Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {

@@ -5,7 +5,7 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-ModelSpec = namedtuple('ModelSpec', 'model_name display_name_en display_name_de model_id is_meter_like meter_location is_supported')
+ModelSpec = namedtuple('ModelSpec', 'model_name display_name_en display_name_de model_id is_meter_like fixed_location is_supported')
 
 model_specs = [
     ModelSpec('Basic Aggregator',                           'FIXME',                            'FIXME',                               2,     False, 'Unknown',  False),
@@ -121,14 +121,14 @@ spec_values = []
 translation_values = {'en': [], 'de': []}
 model_infos = []
 model_is_meter_like = []
-model_meter_location = []
+model_fixed_location = []
 model_is_supported = []
 
 for model_spec in model_specs:
     enum_key = model_spec.model_name.replace(' ', '').replace('-', '')
 
     enum_values.append(f'    {enum_key} = {model_spec.model_id},\n')
-    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        "{model_spec.model_name}",\n        MeterLocation::{model_spec.meter_location},\n    }},\n')
+    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        "{model_spec.model_name}",\n        MeterLocation::{model_spec.fixed_location},\n    }},\n')
 
     if model_spec.is_meter_like:
         translation_values['en'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_en}"')
@@ -136,7 +136,7 @@ for model_spec in model_specs:
 
     model_infos.append(f'    {{model_id: {model_spec.model_id}, is_meter_like: {str(model_spec.is_meter_like).lower()}, is_supported: {str(model_spec.is_supported).lower()}}},\n')
     model_is_meter_like.append(f'    {model_spec.model_id}: {str(model_spec.is_meter_like).lower()},\n')
-    model_meter_location.append(f'    {model_spec.model_id}: MeterLocation.{model_spec.meter_location},\n')
+    model_fixed_location.append(f'    {model_spec.model_id}: MeterLocation.{model_spec.fixed_location},\n')
     model_is_supported.append(f'    {model_spec.model_id}: {str(model_spec.is_supported).lower()},\n')
 
 h = '// WARNING: This file is generated.\n\n'
@@ -150,7 +150,7 @@ h += '};\n\n'
 h += 'struct SunSpecModelSpec {\n'
 h += '    SunSpecModelID model_id;\n'
 h += '    const char *model_name;\n'
-h += '    MeterLocation meter_location;\n'
+h += '    MeterLocation fixed_location;\n'
 h += '};\n\n'
 h += 'extern const SunSpecModelSpec sun_spec_model_specs[];\n\n'
 h += 'extern const size_t sun_spec_model_specs_length;\n'
@@ -179,8 +179,8 @@ ts += '];\n\n'
 ts += 'export const SUN_SPEC_MODEL_IS_METER_LIKE: {[model_id: number]: boolean} = {\n'
 ts += ''.join(model_is_meter_like)
 ts += '};\n\n'
-ts += 'export const SUN_SPEC_MODEL_METER_LOCATION: {[model_id: number]: number} = {\n'
-ts += ''.join(model_meter_location)
+ts += 'export const SUN_SPEC_MODEL_FIXED_LOCATION: {[model_id: number]: number} = {\n'
+ts += ''.join(model_fixed_location)
 ts += '};\n\n'
 ts += 'export const SUN_SPEC_MODEL_IS_SUPPORTED: {[model_id: number]: boolean} = {\n'
 ts += ''.join(model_is_supported)

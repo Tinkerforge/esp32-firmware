@@ -23,7 +23,7 @@ specs = [
     {
         'name': 'SAX Power Home Basic Mode Grid',
         'virtual_meter': ('SAX Power Home Basic Mode', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -38,7 +38,7 @@ specs = [
     {
         'name': 'SAX Power Home Basic Mode Battery',
         'virtual_meter': ('SAX Power Home Basic Mode', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -60,7 +60,7 @@ specs = [
     {
         'name': 'SAX Power Home Extended Mode Grid',
         'virtual_meter': ('SAX Power Home Extended Mode', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -152,7 +152,7 @@ specs = [
     {
         'name': 'SAX Power Home Extended Mode Battery',
         'virtual_meter': ('SAX Power Home Extended Mode', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {

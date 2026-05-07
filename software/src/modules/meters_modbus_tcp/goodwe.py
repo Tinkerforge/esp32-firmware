@@ -25,7 +25,7 @@ specs = [
     {
         'name': 'Goodwe Inverter',
         'virtual_meter': ('Goodwe Inverter', 'Inverter'),
-        'default_location': 'Inverter',
+        'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -68,7 +68,7 @@ specs = [
     {
         'name': 'Goodwe Inverter Grid Detect',
         'virtual_meter': ('Goodwe Inverter', 'Grid'),
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -83,7 +83,7 @@ specs = [
     {
         'name': 'Goodwe Inverter Grid {variant}',
         'variants': ['32bit Energy', '64bit Energy'],
-        'default_location': 'Grid',
+        'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -276,7 +276,7 @@ specs = [
     {
         'name': 'Goodwe  Inverter Battery Modes',
         'virtual_meter': ('Goodwe Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -297,7 +297,7 @@ specs = [
     },
     {
         'name': 'Goodwe Inverter Battery 1',
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -358,7 +358,7 @@ specs = [
     },
     {
         'name': 'Goodwe Inverter Battery 2',
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -419,7 +419,7 @@ specs = [
     },
     {
         'name': 'Goodwe Inverter Battery 1 And 2',
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -534,7 +534,7 @@ specs = [
     {
         'name': 'Goodwe Inverter Load',
         'virtual_meter': ('Goodwe Inverter', 'Load'),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -573,7 +573,7 @@ specs = [
     {
         'name': 'Goodwe Inverter Backup Load',
         'virtual_meter': ('Goodwe Inverter', 'Backup Load'),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -669,7 +669,7 @@ specs = [
         # FIXME: need to implement the same 32/64 bit energy register split as done for the grid meter
         'name': 'Goodwe Inverter Meter',
         'virtual_meter': ('Goodwe Inverter', 'Meter'),
-        'default_location': 'Other',
+        'fixed_location': 'Other',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -857,7 +857,7 @@ specs = [
     {
         'name': 'Goodwe Inverter PV',
         'virtual_meter': ('Goodwe Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

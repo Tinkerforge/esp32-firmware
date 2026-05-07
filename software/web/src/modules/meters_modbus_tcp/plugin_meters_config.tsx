@@ -25,11 +25,11 @@ import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
-import { get_meter_location_items } from "../meters/meter_location";
+import { get_meter_location_items, translate_meter_location } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID } from "./generated/meter_modbus_tcp_table_id.enum";
-import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config, get_virtual_meter_items, get_default_location } from "./generated/meter_modbus_tcp_specs";
+import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config, get_virtual_meter_items, get_fixed_location } from "./generated/meter_modbus_tcp_specs";
 import { ModbusRegisterType } from "../modbus_tcp_client/generated/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/generated/modbus_register_address_mode.enum";
 import { ModbusValueType } from "../modbus_tcp_client/generated/modbus_value_type.enum";
@@ -43,7 +43,6 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { Table, TableRow } from "../../ts/components/table";
 
 export type ModbusTCPMetersConfig = [
@@ -313,7 +312,7 @@ export function pre_init() {
 
                     let virtual_meter_items: [string, string][] = get_virtual_meter_items(config[1].table[0]);
                     let virtual_meter: number = undefined; // undefined: there are no virtual meters, null: virtual meter is not known yet
-                    let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
+                    let fixed_location = MeterLocation.Unknown; // MeterLocation.Unknown: there is no fixed location, null: fixed location is not known yet
 
                     if (virtual_meter_items.length > 0) {
                         virtual_meter = util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).virtual_meter) ? (config[1].table[1] as any).virtual_meter : null;
@@ -326,7 +325,7 @@ export function pre_init() {
                                     placeholder={__("select")}
                                     value={virtual_meter !== null ? virtual_meter.toString() : null}
                                     onValue={(v) => {
-                                        let location = get_default_location(config[1].table[0], parseInt(v));
+                                        let location = get_fixed_location(config[1].table[0], parseInt(v));
 
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)}), location: location}));
                                     }} />
@@ -334,60 +333,33 @@ export function pre_init() {
                     }
 
                     if (virtual_meter === null) {
-                        default_location = undefined;
-
-                        // check if default location depends on virtual meter. for example, for Carlo Gavazzi EM270 and EM280 this is not the case
+                        // check if location depends on virtual meter. for example, for Carlo Gavazzi EM270 and EM280 this is not the case
                         for (let item of virtual_meter_items) {
-                            if (get_default_location(config[1].table[0], parseInt(item[0])) != MeterLocation.Unknown) {
-                                default_location = null;
+                            if (get_fixed_location(config[1].table[0], parseInt(item[0])) != MeterLocation.Unknown) {
+                                fixed_location = null;
                                 break;
                             }
                         }
                     }
-                    else {
-                        default_location = get_default_location(config[1].table[0], virtual_meter);
-
-                        if (default_location == MeterLocation.Unknown) {
-                            default_location = undefined;
-                        }
+                    else if (virtual_meter !== undefined) {
+                        fixed_location = get_fixed_location(config[1].table[0], virtual_meter);
                     }
 
-                    if (default_location === undefined) {
-                        edit_children.push(
-                            <FormRow label={__("meters_modbus_tcp.content.location")}>
-                                <InputSelect
-                                    required
-                                    items={get_meter_location_items()}
-                                    placeholder={__("select")}
-                                    value={config[1].location.toString()}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                    }} />
-                            </FormRow>);
-                    }
-                    else {
-                        let enable_location_override = default_location !== null && default_location != config[1].location;
-
-                        edit_children.push(
-                            <FormRow label={__("meters_modbus_tcp.content.location")}>
-                                <SwitchableInputSelect
-                                    required
-                                    disabled={default_location === null}
-                                    items={get_meter_location_items()}
-                                    placeholder={__("select")}
-                                    value={config[1].location.toString()}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                    }}
-                                    checked={enable_location_override}
-                                    onSwitch={() => {
-                                        on_config(util.get_updated_union(config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
-                                    }}
-                                    switch_label_active={__("meters_modbus_tcp.content.location_different")}
-                                    switch_label_inactive={__("meters_modbus_tcp.content.location_matching")}
-                                    />
-                            </FormRow>);
-                    }
+                    edit_children.push(
+                        <FormRow label={__("meters_modbus_tcp.content.location")}>
+                            {fixed_location === null ?
+                                <InputText value={__("meters_modbus_tcp.content.location_depends_virtual_meter")} /> :
+                                (fixed_location == MeterLocation.Unknown ?
+                                    <InputSelect
+                                        required
+                                        items={get_meter_location_items()}
+                                        placeholder={__("select")}
+                                        value={config[1].location.toString()}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                        }} /> :
+                                    <InputText value={translate_meter_location(fixed_location)} />)}
+                        </FormRow>);
 
                     if (config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM) {
                         edit_children.push(

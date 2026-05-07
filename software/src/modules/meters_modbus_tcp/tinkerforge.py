@@ -24,7 +24,7 @@ specs = [
     {
         'name': 'Tinkerforge WARP Charger',
         'virtual_meter': ('Tinkerforge WARP Charger', None),
-        'default_location': 'Load',
+        'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
             {

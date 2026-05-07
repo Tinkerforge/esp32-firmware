@@ -17,7 +17,7 @@ specs = [
     {
         'name': 'Solaredge Inverter Battery',
         'virtual_meter': ('Solaredge Inverter', 'Battery'),
-        'default_location': 'Battery',
+        'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'f32_negative_max_as_nan': True,
         'values': [
@@ -116,7 +116,7 @@ specs = [
     {
         'name': 'Solaredge Inverter PV',
         'virtual_meter': ('Solaredge Inverter', 'PV'),
-        'default_location': 'PV',
+        'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'f32_negative_max_as_nan': True,
         'values': [

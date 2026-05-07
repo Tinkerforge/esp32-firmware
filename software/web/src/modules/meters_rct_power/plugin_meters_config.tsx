@@ -22,13 +22,12 @@ import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
-import { get_meter_location_items } from "../meters/meter_location";
+import { get_meter_location_items, translate_meter_location } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
-import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { VirtualMeter } from "./generated/virtual_meter.enum";
 
@@ -43,7 +42,7 @@ export type RCTPowerMetersConfig = [
     },
 ];
 
-function get_default_location(virtual_meter: number) {
+function get_fixed_location(virtual_meter: number) {
     if (util.hasValue(virtual_meter)) {
         switch (virtual_meter) {
         case VirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -64,6 +63,14 @@ export function pre_init() {
             new_config: () => [MeterClassID.RCTPower, {display_name: "", location: MeterLocation.Unknown, host: "", port: 8899, virtual_meter: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RCTPowerMetersConfig, on_config: (config: RCTPowerMetersConfig) => void): ComponentChildren => {
+                let virtual_meter_items: [string, string][] = [
+                    [VirtualMeter.Inverter.toString(), __("meters_rct_power.content.virtual_meter_inverter")],
+                    [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
+                    [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
+                    [VirtualMeter.Load.toString(), __("meters_rct_power.content.virtual_meter_load")],
+                    [VirtualMeter.PV.toString(), __("meters_rct_power.content.virtual_meter_pv")],
+                ];
+
                 let edit_children = [
                     <FormRow label={__("meters_rct_power.content.display_name")}>
                         <InputText
@@ -94,59 +101,46 @@ export function pre_init() {
                     <FormRow label={__("meters_rct_power.content.virtual_meter")}>
                         <InputSelect
                             required
-                            items={[
-                                [VirtualMeter.Inverter.toString(), __("meters_rct_power.content.virtual_meter_inverter")],
-                                [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
-                                [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
-                                [VirtualMeter.Load.toString(), __("meters_rct_power.content.virtual_meter_load")],
-                                [VirtualMeter.PV.toString(), __("meters_rct_power.content.virtual_meter_pv")],
-                            ]}
+                            items={virtual_meter_items}
                             placeholder={__("select")}
                             value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : null}
                             onValue={(v) => {
-                                on_config(util.get_updated_union(config, {virtual_meter: parseInt(v), location: get_default_location(parseInt(v))}));
+                                on_config(util.get_updated_union(config, {virtual_meter: parseInt(v), location: get_fixed_location(parseInt(v))}));
                             }} />
                     </FormRow>
                 ];
 
-                let default_location = get_default_location(config[1].virtual_meter);
+                let virtual_meter: number = util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter : null; // null: virtual meter is not known yet
+                let fixed_location = MeterLocation.Unknown; // MeterLocation.Unknown: there is no fixed location, null: fixed location is not known yet
 
-                if (default_location == MeterLocation.Unknown) {
-                    edit_children.push(
-                        <FormRow label={__("meters_rct_power.content.location")}>
-                            <InputSelect
-                                required
-                                disabled={config[1].virtual_meter === null}
-                                items={get_meter_location_items()}
-                                placeholder={__("select")}
-                                value={config[1].location.toString()}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                }} />
-                        </FormRow>);
+                if (virtual_meter === null) {
+                    // check if location depends on virtual meter
+                    for (let item of virtual_meter_items) {
+                        if (get_fixed_location(parseInt(item[0])) != MeterLocation.Unknown) {
+                            fixed_location = null;
+                            break;
+                        }
+                    }
                 }
-                else {
-                    let enable_location_override = config[1].virtual_meter !== null && default_location != config[1].location;
+                else if (virtual_meter !== undefined) {
+                    fixed_location = get_fixed_location(virtual_meter);
+                }
 
-                    edit_children.push(
-                        <FormRow label={__("meters_rct_power.content.location")}>
-                            <SwitchableInputSelect
-                                required
-                                items={get_meter_location_items()}
-                                placeholder={__("select")}
-                                value={config[1].location.toString()}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                }}
-                                checked={enable_location_override}
-                                onSwitch={() => {
-                                    on_config(util.get_updated_union(config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
-                                }}
-                                switch_label_active={__("meters_rct_power.content.location_different")}
-                                switch_label_inactive={__("meters_rct_power.content.location_matching")}
-                                />
-                        </FormRow>);
-                }
+                edit_children.push(
+                    <FormRow label={__("meters_rct_power.content.location")}>
+                        {fixed_location === null ?
+                            <InputText value={__("meters_rct_power.content.location_depends_virtual_meter")} /> :
+                            (fixed_location == MeterLocation.Unknown ?
+                                <InputSelect
+                                    required
+                                    items={get_meter_location_items()}
+                                    placeholder={__("select")}
+                                    value={config[1].location.toString()}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                    }} /> :
+                                <InputText value={translate_meter_location(fixed_location)} />)}
+                    </FormRow>);
 
                 return edit_children;
             },

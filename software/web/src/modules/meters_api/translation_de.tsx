@@ -21,9 +21,7 @@ let x = {
             "override_modal_title": "Stromzählerwerte überschreiben",
             "override_modal_body": "Die Stromzählerwerte werden überschrieben. Fortfahren?",
             "override_modal_confirm": "Überschreiben",
-            "override_modal_cancel": "Abbrechen",
-            "location_matching": "Übereinstimmend",
-            "location_different": "Abweichend"
+            "override_modal_cancel": "Abbrechen"
         }
     }
 }

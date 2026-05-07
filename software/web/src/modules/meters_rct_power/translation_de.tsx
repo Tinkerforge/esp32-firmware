@@ -16,8 +16,7 @@ let x = {
             "virtual_meter_load": "Last",
             "virtual_meter_pv": "PV",
             "location": "Messort",
-            "location_matching": "Übereinstimmend",
-            "location_different": "Abweichend"
+            "location_depends_virtual_meter": "Hängt vom virtuellen Zähler ab..."
         }
     }
 }

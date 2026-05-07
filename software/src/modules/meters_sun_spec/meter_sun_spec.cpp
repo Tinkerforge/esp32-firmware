@@ -84,17 +84,17 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     dc_port_type      = ephemeral_config->get("dc_port_type")->asEnum<DCPortType>();
     model_parser      = MetersSunSpecParser::new_parser(slot, manufacturer_name.c_str(), model_name.c_str(), model_id, dc_port_type);
 
-    MeterLocation default_location = MeterLocation::Unknown;
+    MeterLocation fixed_location = MeterLocation::Unknown;
 
     for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
         if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
-            default_location = sun_spec_model_specs[i].meter_location;
+            fixed_location = sun_spec_model_specs[i].fixed_location;
             break;
         }
     }
 
-    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
-        ephemeral_config->get("location")->updateEnum(default_location);
+    if (fixed_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(fixed_location);
     }
 
     location = ephemeral_config->get("location")->asEnum<MeterLocation>();
