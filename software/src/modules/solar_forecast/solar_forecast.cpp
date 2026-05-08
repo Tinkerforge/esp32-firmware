@@ -66,11 +66,6 @@ void SolarForecast::pre_setup()
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Solar Forecast API URL";
         }
-        if (update.get("enable")->asBool()) {
-            api.addFeature("solar_forecast");
-        } else {
-            api.removeFeature("solar_forecast");
-        }
 
         this->next_update();
         return "";
@@ -151,6 +146,7 @@ void SolarForecast::setup()
 
 void SolarForecast::register_urls()
 {
+    api.addFeature("solar_forecast");
     api.addPersistentConfig("solar_forecast/config", &config);
     api.addState("solar_forecast/state", &state);
     for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {

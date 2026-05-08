@@ -75,13 +75,7 @@ void P14aEnwg::pre_setup()
         task_scheduler.scheduleOnce([this]() {
             this->update();
         }, 0_s);
-        if (was_enabled != will_enable) {
-            if (will_enable) {
-                api.addFeature("p14a_enwg");
-            } else {
-                api.removeFeature("p14a_enwg");
-            }
-        }
+
         return "";
     }};
 
@@ -111,6 +105,7 @@ void P14aEnwg::register_urls()
 {
     api.addPersistentConfig("p14a_enwg/config", &config);
     api.addState("p14a_enwg/state", &state);
+    api.addFeature("p14a_enwg");
 
     // "Volatile" control endpoint for API source.
     // Resets to inactive on reboot.

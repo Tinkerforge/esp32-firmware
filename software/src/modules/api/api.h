@@ -146,7 +146,6 @@ public:
     const Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
-    bool removeFeature(const char *name);
 
     // Prefer this version of addCommand over the one below.
     void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action);
