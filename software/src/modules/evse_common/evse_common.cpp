@@ -653,7 +653,6 @@ void EvseCommon::register_urls()
     }, 100_ms, 100_ms);
 
     api.addState("evse/charge_mode", &charge_mode);
-    api.addState("evse/management_state", &management_state);
     api.addCommand("evse/charge_mode_update", &charge_mode, {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->request_charge_mode_until = now_us() + CHARGE_MODE_REQUEST_TIMEOUT;
     }, false);
