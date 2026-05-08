@@ -1466,6 +1466,17 @@ de_hyph = [
     "Ge-samt-preis",
     "Steu-er-sig-na-le",
     "ver-ar-bei-tet",
+    "vir-tu-el-len",
+    "secp384r1",
+    "Ge-rä-te-er-ken-nung",
+    "Schlüs-sel-ty-pen",
+    "öf-fent-li-che",
+    "Schät-zung",
+    "Sta-ti-sche",
+    "Ge-nutz-ter",
+    "Be-stan-den",
+    "Tak-t-ra-ten",
+    "Bench-mark",
 ]
 
 en_hyph = [
@@ -1958,6 +1969,11 @@ en_hyph = [
     "eval-u-at-ed",
     "in-ter-nal-ly",
     "pro-cessed",
+    "secp384r1",
+    "Al-lo-cat-ed",
+    "in-tegri-ty",
+    "In-tegri-ty",
+    "bench-mark",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
