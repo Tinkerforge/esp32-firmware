@@ -105,7 +105,6 @@ void P14aEnwg::register_urls()
 {
     api.addPersistentConfig("p14a_enwg/config", &config);
     api.addState("p14a_enwg/state", &state);
-    api.addFeature("p14a_enwg");
 
     // "Volatile" control endpoint for API source.
     // Resets to inactive on reboot.
