@@ -33,8 +33,10 @@ MeterClassID MeterEVSEV2::get_class() const
     return MeterClassID::EVSEV2;
 }
 
-void MeterEVSEV2::setup(Config */*ephemeral_config*/)
+void MeterEVSEV2::setup(Config *ephemeral_config)
 {
+    ephemeral_config->get("location")->updateEnum(MeterLocation::Charger);
+
     // Trigger meter value update, in case other modules expect meter values during setup.
     evse_v2.update_all_data();
 }

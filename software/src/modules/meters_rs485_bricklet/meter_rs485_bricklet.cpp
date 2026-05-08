@@ -25,6 +25,7 @@
 #include "generated/module_dependencies.h"
 #include "meters_rs485_bricklet.h"
 #include "modules/meters/generated/meter_value_id.h"
+#include "modules/meters/generated/meter_location.enum.h"
 #include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 #include "sdm630_defs.h"
@@ -221,6 +222,8 @@ void MeterRS485Bricklet::setupMeter()
 
 void MeterRS485Bricklet::setup(Config *ephemeral_config)
 {
+    ephemeral_config->get("location")->updateEnum(MeterLocation::Charger);
+
     // TODO Trigger meter value update, in case other modules expect meter values during setup.
 
     this->type_override = ephemeral_config->get("type_override")->asUint();
