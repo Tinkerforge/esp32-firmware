@@ -45,6 +45,7 @@
 #define METER_TYPE_DMED341MID7ER 8
 #define METER_TYPE_DSZ16DZE 9
 #define METER_TYPE_WM3M4C 10
+#define METER_TYPE_WM3M4 11
 
 // Supported by mqtt_meter module
 #define METER_TYPE_CUSTOM_BASIC 200

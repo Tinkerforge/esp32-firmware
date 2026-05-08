@@ -412,7 +412,8 @@ void rs485_helper_get_value_ids(uint32_t meter_type, const MeterValueID **value_
             *value_ids_len = ARRAY_SIZE(rs485_helper_dmed341mid7er_ids);
             return;
 
-        case METER_TYPE_WM3M4C:
+        case METER_TYPE_WM3M4C: /* fall-through */
+        case METER_TYPE_WM3M4:
             *value_ids = rs485_helper_wm3m4c_ids;
             *value_ids_len = ARRAY_SIZE(rs485_helper_wm3m4c_ids);
             return;

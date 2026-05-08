@@ -189,6 +189,7 @@ let x = {
                                 <li>8: Lovato DMED341MID7ER</li>
                                 <li>9: Eltako DSZ16D[ZE]</li>
                                 <li>10: Iskra WM3M4C</li>
+                                <li>11: Iskra WM3M4</li>
                             </ul>
                         </td>
                     </tr>

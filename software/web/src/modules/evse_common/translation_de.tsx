@@ -370,6 +370,7 @@ let x = {
             "meter_type_8": "Lovato DMED341MID7ER",
             "meter_type_9": "Eltako DSZ16DZE",
             "meter_type_10": "Iskra WM3M4C",
+            "meter_type_11": "Iskra WM3M4",
             "meter_type_254": "intern"
         }
     }

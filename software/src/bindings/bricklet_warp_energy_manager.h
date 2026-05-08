@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2025-09-21.      *
+ * This file was automatically generated on 2026-05-08.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -368,6 +368,11 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_WM3M4C 10
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_WM3M4 11
 
 /**
  * \ingroup TF_WARPEnergyManager
