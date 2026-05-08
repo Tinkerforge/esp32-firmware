@@ -22,13 +22,12 @@ import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
-//import { get_meter_location_items } from "../meters/meter_location";
+import { translate_meter_location } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 import { InputSelect } from "../../ts/components/input_select";
-//import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 
 export type RS485BrickletMetersConfig = [
     MeterClassID.RS485Bricklet,
@@ -57,24 +56,7 @@ export function pre_init() {
                             }}
                         />
                     </FormRow>,
-                    /*<FormRow label={__("meters_rs485_bricklet.content.config_location")}>
-                        <SwitchableInputSelect
-                            required
-                            items={get_meter_location_items()}
-                            placeholder={__("select")}
-                            value={config[1].location.toString()}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                            }}
-                            checked={config[1].location != MeterLocation.Charger}
-                            onSwitch={() => {
-                                on_config(util.get_updated_union(config, {location: (config[1].location != MeterLocation.Charger ? MeterLocation.Charger : MeterLocation.Unknown)}));
-                            }}
-                            switch_label_active={__("meters_rs485_bricklet.content.location_different")}
-                            switch_label_inactive={__("meters_rs485_bricklet.content.location_matching")}
-                            />
-                    </FormRow>,*/
-                    <FormRow label={__("meters_rs485_bricklet.content.type_override")}>
+                    <FormRow label={__("meters_rs485_bricklet.content.config_type_override")}>
                         <InputSelect items={[
                                 ["255", __("meters.script.meter_type_255")],
                                 ["1",   __("meters.script.meter_type_1")],
@@ -85,6 +67,9 @@ export function pre_init() {
                             value={config[1].type_override}
                             onValue={(v) => on_config(util.get_updated_union(config, {type_override: parseInt(v)}))}
                             />
+                    </FormRow>,
+                    <FormRow label={__("meters_rs485_bricklet.content.config_location")}>
+                        <InputText value={translate_meter_location(config[1].location)} />
                     </FormRow>,
                 ];
             },

@@ -7,11 +7,7 @@ let x = {
 
             "config_display_name": "Anzeigename",
             "config_location": "Messort",
-
-            "location_matching": "Übereinstimmend",
-            "location_different": "Abweichend",
-
-            "type_override": "Zählertyp"
+            "config_type_override": "Zählertyp"
         }
     }
 }

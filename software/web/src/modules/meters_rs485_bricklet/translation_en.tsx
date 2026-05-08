@@ -7,11 +7,7 @@ let x = {
 
             "config_display_name": "Display name",
             "config_location": "Location",
-
-            "location_matching": "Matching",
-            "location_different": "Different",
-
-            "type_override": "Meter type"
+            "config_type_override": "Meter type"
         }
     }
 }

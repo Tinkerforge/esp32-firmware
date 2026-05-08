@@ -6,10 +6,7 @@ let x = {
             "meter_class": "Wallbox-intern",
 
             "config_display_name": "Anzeigename",
-            "config_location": "Messort",
-
-            "location_matching": "Übereinstimmend",
-            "location_different": "Abweichend"
+            "config_location": "Messort"
         }
     }
 }
