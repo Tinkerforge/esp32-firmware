@@ -1000,7 +1000,8 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
     return true;
 }
 
-int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
+// return: -1 (error), 0 (expected state not matching), 1 (new state applied)
+int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
 {
     size_t ota_index;
     const char *app_state_key;
@@ -1031,7 +1032,13 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
         return -1;
     }
 
-    if (old_ota_state != ESP_OTA_IMG_UNDEFINED && ota_data.ota_state != old_ota_state) {
+    uint32_t previous_ota_state = ota_data.ota_state;
+
+    if (previous_ota_state == new_ota_state) {
+        return 1;
+    }
+
+    if (expected_ota_state != ESP_OTA_IMG_UNDEFINED && previous_ota_state != expected_ota_state) {
         return 0;
     }
 
@@ -1041,7 +1048,7 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
         if (!silent) {
             logger.printfln("Could not change %s partition OTA state from %s to %s",
                             partition->label,
-                            get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(old_ota_state)),
+                            get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(previous_ota_state)),
                             get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(new_ota_state)));
         }
 
@@ -1053,7 +1060,7 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
     if (!silent) {
         logger.printfln("Changed %s partition OTA state from %s to %s",
                         partition->label,
-                        get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(old_ota_state)),
+                        get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(previous_ota_state)),
                         get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(new_ota_state)));
     }
 

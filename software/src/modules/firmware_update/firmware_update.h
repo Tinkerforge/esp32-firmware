@@ -84,7 +84,7 @@ public:
     int change_update_partition_to_invalid(bool silent = false);
 
 private:
-    int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
+    int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
     bool is_vehicle_blocking_update() const;
     InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr);
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
