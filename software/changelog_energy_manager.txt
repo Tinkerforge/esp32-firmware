@@ -613,7 +613,7 @@
 - Update timezone database
 - Unify device scan dialogs
 
-2026-05-08: 2.6.1 (<unknown>)
+2026-05-08: 2.6.1 (1af788ea)
 - Fix network interface priority
 - Fix support of ECDSA curve P-384
 - Battery control: Show effective mode in table

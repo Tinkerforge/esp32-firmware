@@ -1057,7 +1057,7 @@
 2026-04-23: 2.10.1 (9c0329bc)
 - Fix OCPP authorization
 
-2026-05-08: 2.10.2 (<unknown>)
+2026-05-08: 2.10.2 (1af788ea)
 - Fix charge log generation with date filter
 - Fix network interface priority
 - Fix support of ECDSA curve P-384

@@ -318,7 +318,7 @@
 - Update timezone database
 - Unify device scan dialogs
 
-2026-05-08: 1.5.1 (<unknown>)
+2026-05-08: 1.5.1 (1af788ea)
 - Fix network interface priority
 - Heating: Only evaluate heating curve when it is enabled
 - Fix support of ECDSA curve P-384

@@ -979,7 +979,7 @@
 - Update timezone database
 - Unify device scan dialogs
 
-2026-05-08: 2.10.1 (<unknown>)
+2026-05-08: 2.10.1 (1af788ea)
 - Fix charge log generation with date filter
 - Fix support of ECDSA curve P-384
 - Increase MQTT send buffer size to fix saving automation/config
