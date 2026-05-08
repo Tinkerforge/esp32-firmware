@@ -295,13 +295,13 @@ def gzip_compress(data):
     sevenz_path = which('7z') or which('7za')
     if sevenz_path:
         from subprocess import run
-        result = run([sevenz_path, 'a', '-tgzip', '-mx=9', '-mfb=258', '-mpass=5', '-an', '-si', '-so'], input=data, capture_output=True)
+        result = run([sevenz_path, 'a', '-tgzip', '-mx=9', '-mfb=258', '-mpass=5', '-an', '-si', '-so', '-mtm=off'], input=data, capture_output=True)
         if result.returncode == 0:
             return result.stdout
 
     print("Using gzip! Install 7z or 7za to reduce the web interface size by ~ 5 %")
     from gzip import compress
-    return compress(data)
+    return compress(data, mtime=0)
 
 def merge(left, right, path=[]):
     for key in right:
