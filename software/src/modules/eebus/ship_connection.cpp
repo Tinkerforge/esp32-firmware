@@ -54,12 +54,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             if (data->payload_len == 0) {
                 return;
             }
-            if (data->op_code != WS_TRANSPORT_OPCODES_BINARY) {
-                eebus.trace_fmtln("ShipConnection: Received non-binary data from peer");
+            // Accept both binary and text frames. Text is allowed after CMI
+            ws_transport_opcodes_t opcode = (ws_transport_opcodes_t)(data->op_code & ~WS_TRANSPORT_OPCODES_FIN);
+            if (opcode != WS_TRANSPORT_OPCODES_BINARY && opcode != WS_TRANSPORT_OPCODES_TEXT) {
+                eebus.trace_fmtln("ShipConnection: Received unexpected opcode 0x%02x from peer", data->op_code);
                 return;
             }
             httpd_ws_frame frame = {};
-            frame.payload = (uint8_t *)data->data_ptr;
+            frame.payload = (uint8_t*)data->data_ptr;
             frame.len = data->payload_len;
             frame.fragmented = !data->fin;
             frame.final = data->fin;
@@ -68,9 +70,15 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             break;
         }
-        default:
-            eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
-            return; // Ignore other events for now
+    case WEBSOCKET_EVENT_DISCONNECTED:
+        conn->schedule_close(0_ms, "WebSocket disconnected");
+        break;
+    case WEBSOCKET_EVENT_CONNECTED:
+        conn->start_client_confirm();
+        break;
+    default:
+        //eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
+        return; // Ignore other events for now
     }
 }
 
@@ -106,11 +114,18 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std
 void ShipConnection::start_client()
 {
     esp_err_t err = tf_websocket_client_start(ws_server);
-    if (err == ESP_OK) {
-        state_machine_next_step();
-    } else {
+    if (err != ESP_OK) {
         schedule_close(0_ms, "Error connecting to peer");
     }
+}
+
+void ShipConnection::start_client_confirm()
+{
+    task_scheduler.scheduleOnce(
+            [this]() {
+                state_machine_next_step();
+            },
+            1_s);
 }
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
@@ -171,8 +186,9 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
 
     peer_node->state = NodeState::Disconnected;
     task_scheduler.scheduleOnce(
-        [this]() {
-            logger.printfln("Closing connections to %s", peer_node->node_name().c_str());
+        [this, reason]() {
+            logger.printfln("Closing connection to %s", peer_node->node_name().c_str());
+            eebus.trace_fmtln("Closing connection to %s. Reason: ", peer_node->node_name().c_str(), reason.c_str());
             // Close socket and
             if (role == Role::Server) {
                 if (ws_client != nullptr) {
@@ -244,7 +260,6 @@ void ShipConnection::send_current_outgoing_message()
         }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server, reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
-        //TODO: What are good timeouts here?
     }
 }
 
@@ -343,7 +358,6 @@ void ShipConnection::set_state(ShipConnectionState state)
     }
     ShipConnectionState old_state = this->state;
     eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)", get_ship_connection_state_name(old_state), static_cast<std::underlying_type<ShipConnectionState>::type>(old_state), get_ship_connection_state_name(state), static_cast<std::underlying_type<ShipConnectionState>::type>(state));
-
     this->previous_state = old_state;
     this->state = state;
 }
@@ -722,7 +736,6 @@ void ShipConnection::state_sme_hello_ready_listen()
     json_to_type_connection_hello(&peer_hello_phase);
 
     // SHIP 13.4.4.1.3 Sub-state SME_HELLO_STATE_READY_LISTEN
-
     switch (peer_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Pending: {
             if (peer_hello_phase.prolongation_request && peer_hello_phase.prolongation_request_valid) {
@@ -991,7 +1004,7 @@ void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
                 // TODO: Check format. This is not done yet because the format is not parsed by the json parser
                 type_to_json_handshake_type(&handshake);
                 send_current_outgoing_message();
-                set_state(ShipConnectionState::SmeProtocolHandshakeClientOk);
+                set_and_schedule_state(ShipConnectionState::SmeProtocolHandshakeClientOk);
             } else {
                 sme_protocol_abort_procedure(ProtocolAbortReason::SelectionMismatch);
             }
@@ -1136,7 +1149,10 @@ void ShipConnection::state_done()
             break;
         }
         case ProtocolState::ConnectionPinState: {
-            set_and_schedule_state(ShipConnectionState::SmePinCheckInit);
+            // SHIP 13.4.4.3: Peer's pin state received. We already sent ours
+            // during the initial SmePinCheckInit transition, so just consume
+            // this message without replying to avoid an infinite ping-pong loop.
+            eebus.trace_fmtln("SHIP: Received peer pin state in Done state, consumed (no reply needed)");
             break;
         }
         case ProtocolState::AccessMethodsRequest: {
@@ -1182,8 +1198,6 @@ void ShipConnection::state_is_not_implemented()
 
 void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connection_hello)
 {
-    //logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
-
     incoming_json_doc.clear();
     DeserializationError error = deserializeJson(incoming_json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
@@ -1336,7 +1350,7 @@ void ShipConnection::to_json_access_methods_type()
 
 void ShipConnection::log_message(const String &state_prefix, Message *msg)
 {
-    eebus.trace_fmtln("SHIP: %s received %d (len %d)", state_prefix.c_str(), reinterpret_cast<uint8_t>(msg->data[0]), msg->length);
+    eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %d)", state_prefix.c_str(), reinterpret_cast<uint8_t>(msg->data[0]), msg->length);
     eebus.trace_strln(reinterpret_cast<const char *>(&msg->data[1]), msg->length - 1);
 }
 

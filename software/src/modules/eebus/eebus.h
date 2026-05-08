@@ -82,8 +82,7 @@
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 #define EEBUS_NO_VALUE INT32_MIN
 
-//#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for disabl
-//#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
+#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
 
 // Forward declarations (so we don't have to include spine_types.h here)
 class EEBusUseCases;

@@ -148,4 +148,5 @@ private:
     WebSockets web_sockets;
     Cert cert;
     bool wss_registered = false;
+    uint64_t autoconnect_timer = 0;
 };

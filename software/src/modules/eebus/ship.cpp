@@ -182,7 +182,14 @@ void Ship::enable_ship()
                 },
                 1_s);
         }
+        autoconnect_timer = task_scheduler.scheduleWithFixedDelay(
+            [this]() {
+                connect_trusted_peers();
+            },
+            30_s,
+            30_s);
     }
+
 }
 
 void Ship::disable_ship()
@@ -198,6 +205,7 @@ void Ship::disable_ship()
         mdns_service_remove("_ship", "_tcp");
     }
 
+    task_scheduler.cancel(autoconnect_timer);
     eebus.trace_fmtln("disable_ship end");
 }
 

@@ -50,7 +50,7 @@
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE SHIP_CONNECTION_MAX_JSON_SIZE
 
 // Client Timeouts. These are only needed for when we are and using websockets as a client
-#define SHIP_CONNECTION_WS_TIMEOUT_MS 1000
+#define SHIP_CONNECTION_WS_TIMEOUT_MS 10000
 
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
@@ -147,6 +147,8 @@ public:
     /// Start the WebSocket client task. Must be called AFTER this ShipConnection
     /// has been added to ship_connections so that event callbacks can find it.
     void start_client();
+    // Confirm to the ship Connection that the client has started successfully and it may now begin with CMI
+    void start_client_confirm();
 
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
