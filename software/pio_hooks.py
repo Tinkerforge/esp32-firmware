@@ -10,7 +10,6 @@ import glob
 import pathlib
 import hashlib
 from base64 import b64encode
-from zlib import crc32
 from collections import namedtuple
 import tomllib
 import tinkerforge_util as tfutil
@@ -83,40 +82,6 @@ def get_changelog_version(product_id):
     version_oldest = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]), str(versions[0][3]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
     return version_oldest, version
-
-def write_firmware_info(product_id, product_name, version, build_timestamp):
-    print(f'Firmware info: {product_id}, {product_name}, {".".join(version[:3]) + ("-beta." + version[3] if version[3] != "255" else "")}, {build_timestamp:08X}')
-
-    buf = bytearray([0xFF] * 4096)
-
-    # 7121CE12F0126E
-    # tink er for ge
-    buf[0:7] = bytes.fromhex("7121CE12F0126E") # magic
-    buf[7] = 0x03 # firmware info version, note: a new version has to be backwards compatible
-    product_name_bytes = product_name.encode("utf-8") # max 60 bytes
-
-    if len(product_name_bytes) > 60:
-        raise Exception('product_name is longer than 60 bytes')
-
-    buf[8:8 + len(product_name_bytes)] = product_name_bytes
-    buf[8 + len(product_name_bytes):68] = bytes(60 - len(product_name_bytes))
-    buf[68] = 0x00 # 0 byte to make sure string is terminated. also pads the version, so that the build timestamp will be 4-byte aligned
-    buf[69] = int(version[0])
-    buf[70] = int(version[1])
-    buf[71] = int(version[2])
-    buf[72:76] = build_timestamp.to_bytes(4, byteorder='little')
-    buf[76] = int(version[3]) # since firmware info version 2
-    product_id_bytes = product_id.encode("utf-8") # max 30 bytes
-
-    if len(product_id_bytes) > 60:
-        raise Exception('product_id is longer than 60 bytes')
-
-    buf[77:77 + len(product_id_bytes)] = product_id_bytes # since firmware info version 3
-    buf[77 + len(product_id_bytes):137] = bytes(60 - len(product_id_bytes))
-    buf[137] = 0x00 # 0 byte to make sure string is terminated
-    buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
-
-    pathlib.Path(env.subst('$BUILD_DIR'), 'firmware_info.bin').write_bytes(buf)
 
 def generate_module_dependencies(info_path, module, modules, all_modules_upper):
     def get_and_check_duplicates(config, config_key):
@@ -1294,9 +1259,6 @@ def main():
     tfutil.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
 
-    with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
-        f.write(firmware_basename)
-
     frontend_modules = [util.FlavoredName(x).get() for x in ['Web Server'] + get_finalized_list('custom_frontend_modules')]
 
     if nightly:
@@ -1690,8 +1652,6 @@ def main():
     else:
         firmware_info_product_name = json.loads(options_value['product_name'])
 
-    write_firmware_info(firmware_info_product_id, firmware_info_product_name, version, build_timestamp)
-
     # Handle frontend modules
     main_ts_entries = []
     pre_scss_paths = []
@@ -1735,11 +1695,19 @@ def main():
         'product_id': product_id,
         'project_dir': env.subst('$PROJECT_DIR'),
         'build_dir': env.subst('$BUILD_DIR'),
+        'firmware_basename': firmware_basename,
         'signature_preset': signature_preset,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
         'branding_mod_path': os.path.abspath(branding_mod_path),
         'options': options_dict,
+        'firmware_info_product_id': firmware_info_product_id,
+        'firmware_info_product_name': firmware_info_product_name,
+        'version': version,
+        'build_timestamp': build_timestamp,
     }, separators=(',', ':'))
+
+    with open(os.path.join(env.subst('$BUILD_DIR'), 'metadata.json'), 'w', encoding='utf-8') as f:
+        f.write(metadata)
 
     # Prepare backend modules
     for backend_module in backend_modules:
