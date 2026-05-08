@@ -25,6 +25,7 @@
 #include "meter_class_none.h"
 #include "generated/meter_value_imexdiff.h"
 #include "tools.h"
+#include "tools/malloc.h"
 #include "tools/string_builder.h"
 #include "tools/float.h"
 
@@ -207,7 +208,11 @@ char *format_meter_slot(uint32_t slot)
 
 void Meters::pre_setup()
 {
-    for (MeterSlot &meter_slot : meter_slots) {
+    meter_slots = perm_new_array_prefer<MeterSlot>(OPTIONS_METERS_MAX_SLOTS(), PSRAM, DRAM, _NONE);
+
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        MeterSlot &meter_slot = meter_slots[slot];
+
         meter_slot.value_ids = Config::Tuple({});
         meter_slot.values    = Config::Tuple({});
 
@@ -615,8 +620,8 @@ IMeter *Meters::get_meter(uint32_t slot)
 uint32_t Meters::get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
 {
     uint32_t found_count = 0;
-    for (uint32_t i = 0; i < OPTIONS_METERS_MAX_SLOTS(); i++) {
-        IMeter *meter = meter_slots[i].meter;
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        IMeter *meter = meter_slots[slot].meter;
         if (meter->get_class() == meter_class) {
             if (found_count < found_meters_capacity) {
                 found_meters[found_count] = meter;

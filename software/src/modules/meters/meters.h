@@ -164,7 +164,7 @@ private:
 
     float live_samples_per_second();
 
-    MeterSlot meter_slots[OPTIONS_METERS_MAX_SLOTS()];
+    MeterSlot *meter_slots;
 
     bool meters_feature_declared = false;
 
