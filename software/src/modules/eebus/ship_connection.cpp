@@ -51,7 +51,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     }
     switch (event_id) {
         case WEBSOCKET_EVENT_DATA: {
-            if (data->payload_len == 0) {
+            if (data->data_len == 0) {
                 return;
             }
             // Accept both binary and text frames. Text is allowed after CMI
@@ -62,9 +62,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }
             httpd_ws_frame frame = {};
             frame.payload = (uint8_t*)data->data_ptr;
-            frame.len = data->payload_len;
-            frame.fragmented = !data->fin;
-            frame.final = data->fin;
+            frame.len = data->data_len;
+            bool last_chunk = (data->payload_offset + data->data_len >= data->payload_len);
+            frame.fragmented = !data->fin || !last_chunk;
+            frame.final = data->fin && last_chunk;
 
             conn->frame_received(&frame);
 
@@ -146,6 +147,9 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
     }
     if (message_incoming->multipart_index + ws_pkt->len >= SHIP_CONNECTION_MAX_BUFFER_SIZE) {
         eebus.trace_fmtln("frame_received: ws frame too big for the buffer. Current index: %zu, incoming length: %d, max buffer size: %d", message_incoming->multipart_index, ws_pkt->len, SHIP_CONNECTION_MAX_BUFFER_SIZE);
+        message_incoming->multipart_index = SIZE_MAX;
+        message_incoming->length = 0;
+        return;
     }
     memcpy(message_incoming->data + sizeof(uint8_t) * (message_incoming->multipart_index), ws_pkt->payload, ws_pkt->len);
 
