@@ -1467,7 +1467,6 @@ de_hyph = [
     "Steu-er-sig-na-le",
     "ver-ar-bei-tet",
     "vir-tu-el-len",
-    "secp384r1",
     "Ge-rä-te-er-ken-nung",
     "Schlüs-sel-ty-pen",
     "öf-fent-li-che",
@@ -1475,7 +1474,7 @@ de_hyph = [
     "Sta-ti-sche",
     "Ge-nutz-ter",
     "Be-stan-den",
-    "Tak-t-ra-ten",
+    "Takt-ra-ten",
     "Bench-mark",
 ]
 
@@ -1969,7 +1968,6 @@ en_hyph = [
     "eval-u-at-ed",
     "in-ter-nal-ly",
     "pro-cessed",
-    "secp384r1",
     "Al-lo-cat-ed",
     "in-tegri-ty",
     "In-tegri-ty",
@@ -2100,5 +2098,6 @@ allowed_missing = set([
     "extension",
     "departure",
     "contactor",
-    "connected"
+    "connected",
+    "secp384r1"
 ])
