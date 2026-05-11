@@ -193,45 +193,59 @@ def bb_get_device_info():
     return DeviceInfo(product_name, model_name, firmware_version, serial_number, calibration_date)
 
 
-def bb_start_test(suffix):
+def bb_start_test(suffix, retry_on_empty=True):
     result = bb_call('BB; START_SINGLETEST ' + suffix)
 
     if not result.success:
         raise BlackboxException(f'ST failed: {result.response}')
 
-    passed = None
-    parameters = {}
-    limits = {}
-    results = {}
+    while True:
+        passed = None
+        empty = False
+        parameters = {}
+        limits = {}
+        results = {}
 
-    for response in result.response:
-        kind, suffix = response.removeprefix('BB; ST; ').split(' ', 1)
+        for response in result.response:
+            kind, suffix = response.removeprefix('BB; ST; ').split(' ', 1)
 
-        if kind == 'START':
-            pass
-        elif kind == 'STATUS':
-            if suffix == '= pass':
-                passed = True
-            elif suffix == '= fail':
-                passed = False
+            if kind == 'START':
+                pass
+            elif kind == 'STATUS':
+                if suffix == '= pass':
+                    passed = True
+                elif suffix == '= fail':
+                    passed = False
+                elif suffix == '= empty':
+                    empty = True
+                else:
+                    raise BlackboxException(f'ST response malformed: {result.response}')
             else:
-                raise BlackboxException(f'ST response malformed: {result.response}')
-        else:
-            if '=' in suffix:
-                key, value = suffix.split(' = ', 1)
-                value = value.split(';')[0]  # FIXME: drop tail
-            else:
-                key = suffix
-                value = None
+                if '=' in suffix:
+                    key, value = suffix.split(' = ', 1)
+                    value = value.split(';')[0]  # FIXME: drop tail
+                else:
+                    key = suffix
+                    value = None
 
-            if kind == 'PARAMETER':
-                parameters[METREL_PARAMETERS[key]] = value
-            elif kind == 'LIMIT':
-                limits[METREL_LIMITS[key]] = value
-            elif kind == 'RESULT':
-                results[METREL_RESULTS[key]] = value
-            else:
-                raise BlackboxException(f'ST response malformed: {result.response}')
+                if kind == 'PARAMETER':
+                    parameters[METREL_PARAMETERS[key]] = value
+                elif kind == 'LIMIT':
+                    limits[METREL_LIMITS[key]] = value
+                elif kind == 'RESULT':
+                    results[METREL_RESULTS[key]] = value
+                else:
+                    raise BlackboxException(f'ST response malformed: {result.response}')
+
+        if not empty:
+            break
+
+        if retry_on_empty:
+            retry_on_empty = False
+            debug(f'ST response with empty status, retrying: {result.response}')
+            continue
+
+        raise BlackboxException(f'ST response with empty status: {result.response}')
 
     return TestResult(passed, parameters, limits, results)
 
