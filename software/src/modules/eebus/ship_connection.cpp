@@ -734,6 +734,21 @@ void ShipConnection::hello_start_trust_check_timer()
         SHIP_CONNECTION_TRUST_CHECK_INTERVAL);
 }
 
+void ShipConnection::notify_trust_changed()
+{
+    // Only relevant if we are in the hello pending state waiting for trust approval
+    if (state != ShipConnectionState::SmeHelloPendingListen && state != ShipConnectionState::SmeHelloPendingInit) {
+        return;
+    }
+
+    if (peer_node->trusted) {
+        eebus.trace_fmtln("Peer %s trust changed to trusted (external notification), transitioning to ready", peer_node->node_name().c_str());
+        task_scheduler.cancel(hello_trust_check_timer);
+        this_hello_phase.phase = ConnectionHelloPhase::Type::Ready;
+        set_and_schedule_state(ShipConnectionState::SmeHelloReadyInit);
+    }
+}
+
 void ShipConnection::state_sme_hello_ready_init()
 {
     // 13.4.4.1.3 "Update Message"

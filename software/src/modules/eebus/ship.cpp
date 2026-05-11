@@ -648,6 +648,24 @@ void Ship::remove(const ShipConnection &ship_connection)
     // The unique_ptr will be destroyed here and the memory will be freed.
 }
 
+void Ship::close_connections_by_ski(const String &ski, const String &reason) const
+{
+    for (auto &conn : ship_connections) {
+        if (conn->peer_node && conn->peer_node->txt_ski == ski && !conn->closing_scheduled) {
+            conn->schedule_close(0_ms, reason);
+        }
+    }
+}
+
+void Ship::notify_peer_updated(const String &ski) const
+{
+    for (auto &conn : ship_connections) {
+        if (conn->peer_node && conn->peer_node->txt_ski == ski && !conn->closing_scheduled) {
+            conn->notify_trust_changed();
+        }
+    }
+}
+
 void ShipNode::as_json(StringBuilder *sb)
 {
     size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length() + txt_brand.length() + txt_model.length() + txt_type.length();

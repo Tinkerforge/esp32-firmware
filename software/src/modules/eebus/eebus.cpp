@@ -614,6 +614,8 @@ void EEBus::register_urls()
 
             update_peers_state();
 
+            ship.notify_peer_updated(ski);
+
             ship.connect_trusted_peers();
         },
         true);
@@ -643,6 +645,9 @@ void EEBus::register_urls()
 
             // Check if peer was persistent before removing
             bool was_persistent = peer->persistent;
+
+            // Close all active connections to this peer before removing it
+            ship.close_connections_by_ski(ski, "Peer removed by user");
 
             ship.peer_handler.remove_peer_by_ski(ski);
 

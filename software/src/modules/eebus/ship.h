@@ -121,6 +121,13 @@ public:
     void discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
+    /// Close all active connections to a peer identified by SKI.
+    void close_connections_by_ski(const String &ski, const String &reason) const;
+
+    /// Notify active connections that a peer's trust status may have changed.
+    /// Connections in the hello pending state will immediately re-check trust.
+    void notify_peer_updated(const String &ski) const;
+
     /**
      * Attempts to connect to all unconnected peers that are marked as trusted.
      */

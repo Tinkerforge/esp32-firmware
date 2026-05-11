@@ -351,6 +351,10 @@ public:
     /// @brief Start a periodic timer to re-check trust status while in pending state
     void hello_start_trust_check_timer();
 
+    /// @brief Called externally when peer trust status may have changed.
+    /// If in hello pending state, immediately re-checks trust and transitions if needed.
+    void notify_trust_changed();
+
     //--------------------------------------------------------------------------------
     // Protocol Handshake Specific stuff
 
