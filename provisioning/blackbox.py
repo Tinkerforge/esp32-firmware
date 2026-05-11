@@ -81,8 +81,12 @@ METREL_RESULTS = {
 }
 
 CallResult = namedtuple('CallResult', 'success response')
-DeviceInfo = namedtuple('DeviceInfo', 'valid product_name model_name firmware_version serial_number calibration_date')
+DeviceInfo = namedtuple('DeviceInfo', 'product_name model_name firmware_version serial_number calibration_date')
 TestResult = namedtuple('TestResult', 'passed parameters limits results')
+
+
+class BlackboxException(Exception):
+    pass
 
 
 def debug(*args, **kwags):
@@ -163,41 +167,37 @@ def bb_reset():
 def bb_get_device_info():
     result = bb_call('MWH')
 
-    valid = False
+    if not result.success:
+        raise BlackboxException(f'MWH failed: {result.response}')
+
     product_name = None
     model_name = None
     firmware_version = None
     serial_number = None
     calibration_date = None
 
-    if not result.success:
-        debug(f'MWH failed: {result.response}')
-    else:
-        valid = True
+    for response in result.response:
+        key, value = response.split('.', 1)
 
-        for response in result.response:
-            key, value = response.split('.', 1)
+        if key == '02':
+            product_name = value
+        elif key == '03':
+            model_name = value
+        elif key == '04':
+            firmware_version = value
+        elif key == '07':
+            serial_number = value
+        elif key == '11':
+            calibration_date = value
 
-            if key == '02':
-                product_name = value
-            elif key == '03':
-                model_name = value
-            elif key == '04':
-                firmware_version = value
-            elif key == '07':
-                serial_number = value
-            elif key == '11':
-                calibration_date = value
-
-    return DeviceInfo(valid, product_name, model_name, firmware_version, serial_number, calibration_date)
+    return DeviceInfo(product_name, model_name, firmware_version, serial_number, calibration_date)
 
 
 def bb_start_test(suffix):
     result = bb_call('BB; START_SINGLETEST ' + suffix)
 
     if not result.success:
-        debug(f'ST failed: {result.response}')
-        return None
+        raise BlackboxException(f'ST failed: {result.response}')
 
     passed = None
     parameters = {}
@@ -215,8 +215,7 @@ def bb_start_test(suffix):
             elif suffix == '= fail':
                 passed = False
             else:
-                debug(f'ST response malformed: {result.response}')
-                return None
+                raise BlackboxException(f'ST response malformed: {result.response}')
         else:
             if '=' in suffix:
                 key, value = suffix.split(' = ', 1)
@@ -232,8 +231,7 @@ def bb_start_test(suffix):
             elif kind == 'RESULT':
                 results[METREL_RESULTS[key]] = value
             else:
-                debug(f'ST response malformed: {result.response}')
-                return None
+                raise BlackboxException(f'ST response malformed: {result.response}')
 
     return TestResult(passed, parameters, limits, results)
 

@@ -791,12 +791,7 @@ class Stage3:
         if not reset['success']:
             fatal_error('Could not reset electrical tester')
 
-        device_info = blackbox.bb_get_device_info()._asdict()
-
-        if not device_info['valid']:
-            fatal_error('Could not get electrical tester device info')
-
-        return device_info
+        return blackbox.bb_get_device_info()._asdict()
 
     # requires power_on
     def measure_front_panel_rlow(self, report):
