@@ -908,7 +908,7 @@ class Stage3:
 
             if state == 'C':
                 self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, 0))
-                if (e := self.get_contactor_state_function()) != 27:
+                if (e := self.get_contactor_state_function()) != (27 if not is_warp2 else 3):
                     fatal_error(f"EVSE reports contactor state {e}. Check auxillary contacts!")
             else:
                 self.verify_voltages(p_type2=[], p_meter=['L1', 'L2', 'L3'])
