@@ -119,6 +119,7 @@ class Stage3:
                  get_iec_state_function,
                  reset_dc_fault_function,
                  switch_phases_function,
+                 get_contactor_state_function,
                  get_evse_uptime_function,
                  reset_evse_function,
                  get_cp_pwm_function,
@@ -128,6 +129,7 @@ class Stage3:
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
         self.switch_phases_function = switch_phases_function
+        self.get_contactor_state_function = get_contactor_state_function
         self.get_evse_uptime_function = lambda: get_evse_uptime_function() / 1000.0
         self.reset_evse_function = reset_evse_function
         self.get_cp_pwm_function = get_cp_pwm_function
@@ -906,6 +908,8 @@ class Stage3:
 
             if state == 'C':
                 self.verify_voltages(['L1', 'L2', 'L3'], missing_type2_voltage_cb=functools.partial(clear_contactor, 0))
+                if (e := self.get_contactor_state_function()) != 27:
+                    fatal_error(f"EVSE reports contactor state {e}. Check auxillary contacts!")
             else:
                 self.verify_voltages(p_type2=[], p_meter=['L1', 'L2', 'L3'])
 
@@ -1153,6 +1157,7 @@ def main():
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
                     switch_phases_function=lambda x: None,
+                    get_contactor_state_function=lambda: None,
                     get_evse_uptime_function=lambda: None,
                     reset_evse_function=lambda: None,
                     get_cp_pwm_function=lambda: 1000,

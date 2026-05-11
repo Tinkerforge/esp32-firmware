@@ -303,6 +303,10 @@ def has_evse_error():
     global evse
     return retry_wrapper(lambda: evse.get_state().error_state != 0, "get EVSE error state")
 
+def get_contactor_state():
+    global evse
+    return retry_wrapper(lambda: evse.get_state().contactor_state, "get EVSE contactor error")
+
 def switch_phases(phases):
     global evse
     return retry_wrapper(lambda: evse.set_phase_control(phases), "set phases")
@@ -442,6 +446,7 @@ def led_wrap():
                     get_iec_state_function=get_iec_state,
                     reset_dc_fault_function=reset_dc_fault,
                     switch_phases_function=switch_phases,
+                    get_contactor_state_function=get_contactor_state,
                     get_evse_uptime_function=get_evse_uptime,
                     reset_evse_function=reset_evse,
                     get_cp_pwm_function=get_cp_pwm,
