@@ -40,6 +40,7 @@ tests = [
     "amqtt", # mqtt/reconfigure
     "ocpp", # ocpp/*
     "websockets", # ocpp/*
+    "pikepdf", # charge_tracker/pdf_chargelog
 ]
 
 iso15118 = [
