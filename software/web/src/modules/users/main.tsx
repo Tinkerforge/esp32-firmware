@@ -285,49 +285,50 @@ function NfcTagsSection({
                 onAddGetChildren={() => (
                     <>
                         <FormRow label={__("users.content.nfc_seen_tags")}>
-                              <DiscoveryResultGroup>
-                                  {seenTags.filter((t) => t.tag_id !== "").map((t) => {
-                                      const error = getTagError(t);
-                                      return (
-                                          <DiscoveryResultItem
-                                              key={`${t.tag_type}-${t.tag_id}`}
-                                              title={
-                                                  <div class="h5">
-                                                      {t.tag_id}
-                                                  </div>
-                                              }
-                                              labelAdd={<Plus />}
-                                              error={error}
-                                              onClick={() => {
-                                                  onEditTagIdChange(t.tag_id);
-                                                  onEditTagTypeChange(t.tag_type);
-                                              }
-                                              }
-                                          >
-                                              <div>
-                                                  {translate_unchecked(
-                                                      `nfc.content.type_${t.tag_type}`,
-                                                  )}
-                                              </div>
-                                              <div class="text-muted small">
-                                                  {translate_unchecked(
-                                                      "nfc.content.last_seen",
-                                                  ) +
-                                                      util.format_timespan_ms(
-                                                          t.last_seen,
-                                                      ) +
-                                                      translate_unchecked(
-                                                          "nfc.content.last_seen_suffix",
-                                                      )}
-                                              </div>
-                                          </DiscoveryResultItem>
-                                      );
-                                  })}
-                              </DiscoveryResultGroup>
+                            <DiscoveryResultGroup>
+                                {seenTags
+                                    .filter((t) => t.tag_id !== "")
+                                    .map((t) => {
+                                        const error = getTagError(t);
+                                        return (
+                                            <DiscoveryResultItem
+                                                key={`${t.tag_type}-${t.tag_id}`}
+                                                title={
+                                                    <div class="h5">
+                                                        {t.tag_id}
+                                                    </div>
+                                                }
+                                                labelAdd={<Plus />}
+                                                error={error}
+                                                onClick={() => {
+                                                    onEditTagIdChange(t.tag_id);
+                                                    onEditTagTypeChange(
+                                                        t.tag_type,
+                                                    );
+                                                }}
+                                            >
+                                                <div>
+                                                    {translate_unchecked(
+                                                        `nfc.content.type_${t.tag_type}`,
+                                                    )}
+                                                </div>
+                                                <div class="text-muted small">
+                                                    {translate_unchecked(
+                                                        "nfc.content.last_seen",
+                                                    ) +
+                                                        util.format_timespan_ms(
+                                                            t.last_seen,
+                                                        ) +
+                                                        translate_unchecked(
+                                                            "nfc.content.last_seen_suffix",
+                                                        )}
+                                                </div>
+                                            </DiscoveryResultItem>
+                                        );
+                                    })}
+                            </DiscoveryResultGroup>
                         </FormRow>
-                        <FormRow
-                            label={__("users.content.nfc_tag_id")}
-                        >
+                        <FormRow label={__("users.content.nfc_tag_id")}>
                             <InputTextPatterned
                                 value={editTagId}
                                 onValue={(v) => onEditTagIdChange(v)}
@@ -340,65 +341,63 @@ function NfcTagsSection({
                                 invalidFeedback={__(
                                     "users.content.nfc_tag_id_invalid",
                                 )}
-                                />
+                            />
                         </FormRow>
-                        <FormRow
-                            label={__("users.content.nfc_tag_type")}
-                        >
-                                    <InputSelect
-                                        items={[
-                                            [
-                                                "0",
-                                                translate_unchecked(
-                                                    "nfc.content.type_0",
-                                                ),
-                                            ],
-                                            [
-                                                "1",
-                                                translate_unchecked(
-                                                    "nfc.content.type_1",
-                                                ),
-                                            ],
-                                            [
-                                                "2",
-                                                translate_unchecked(
-                                                    "nfc.content.type_2",
-                                                ),
-                                            ],
-                                            [
-                                                "3",
-                                                translate_unchecked(
-                                                    "nfc.content.type_3",
-                                                ),
-                                            ],
-                                            [
-                                                "4",
-                                                translate_unchecked(
-                                                    "nfc.content.type_4",
-                                                ),
-                                            ],
-                                        ]}
-                                        value={editTagType.toString()}
-                                        onValue={(v) =>
-                                            onEditTagTypeChange(parseInt(v))
-                                        }
-                                    />
+                        <FormRow label={__("users.content.nfc_tag_type")}>
+                            <InputSelect
+                                items={[
+                                    [
+                                        "0",
+                                        translate_unchecked(
+                                            "nfc.content.type_0",
+                                        ),
+                                    ],
+                                    [
+                                        "1",
+                                        translate_unchecked(
+                                            "nfc.content.type_1",
+                                        ),
+                                    ],
+                                    [
+                                        "2",
+                                        translate_unchecked(
+                                            "nfc.content.type_2",
+                                        ),
+                                    ],
+                                    [
+                                        "3",
+                                        translate_unchecked(
+                                            "nfc.content.type_3",
+                                        ),
+                                    ],
+                                    [
+                                        "4",
+                                        translate_unchecked(
+                                            "nfc.content.type_4",
+                                        ),
+                                    ],
+                                ]}
+                                value={editTagType.toString()}
+                                onValue={(v) =>
+                                    onEditTagTypeChange(parseInt(v))
+                                }
+                            />
                         </FormRow>
                     </>
                 )}
-                onAddSubmit={ async () => {
-                      onAddTag({
-                          tag_type: editTagType,
-                          tag_id: editTagId
-                              .toUpperCase()
-                              .replace(/([0-9A-F]{2})(?!$|:)/g, "$1:"),
-                      });
-                      onEditTagIdChange("");
-                      onEditTagTypeChange(0);
+                onAddSubmit={async () => {
+                    onAddTag({
+                        tag_type: editTagType,
+                        tag_id: editTagId
+                            .toUpperCase()
+                            .replace(/([0-9A-F]{2})(?!$|:)/g, "$1:"),
+                    });
+                    onEditTagIdChange("");
+                    onEditTagTypeChange(0);
                 }}
-                onAddHide={ async () => {
-                  onEditTagIdChange("");
-                  onEditTagTypeChange(0);
+                onAddHide={async () => {
+                    onEditTagIdChange("");
+                    onEditTagTypeChange(0);
                 }}
             />
         </FormRow>
