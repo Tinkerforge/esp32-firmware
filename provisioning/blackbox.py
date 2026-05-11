@@ -74,7 +74,7 @@ METREL_RESULTS = {
     '31': 'Id',
     '32': 'Uc_Id',
     '114': 'Uc',
-    '261': 'ZPLE_Auto',
+    '261': 'ZLPE_Auto',
     '269': 'ZLN_Auto',
     '270': 'IPSC_LN_Auto',
     '271': 'IPSC_LPE_Auto',
