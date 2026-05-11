@@ -64,6 +64,8 @@ let x = {
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Already assigned to user "${other_name}"` /*NF*/,
             "nfc_add_tag": "Add NFC Tag",
+            "nfc_add_tag_message": /*SFN*/ (have: number, max: number) =>
+                `${have} of ${max} tags configured` /*NF*/,
             "nfc_seen_tags": "Seen Tags",
             "nfc_last_seen": "Last seen",
             "nfc_add_tag_manually": "Add tag manually",

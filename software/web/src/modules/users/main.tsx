@@ -260,17 +260,23 @@ function NfcTagsSection({
         return undefined;
     };
 
+    const MAX_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
+
     return (
         <FormRow label={__("users.content.nfc_tags")}>
             <Table
                 columnNames={[
                     __("users.content.nfc_tag_id"),
                     __("users.content.nfc_tag_type"),
-          ]}
+                ]}
                 nestingDepth={2}
                 rows={getRows()}
                 tableTill="md"
-                addEnabled={true}
+                addMessage={__("users.content.nfc_add_tag_message")(
+                    authorizedTags.length,
+                    MAX_TAGS,
+                )}
+                addEnabled={authorizedTags.length < MAX_TAGS}
                 addTitle={__("users.content.nfc_add_tag")}
                 onAddShow={async () => {
                     onEditTagIdChange("");
