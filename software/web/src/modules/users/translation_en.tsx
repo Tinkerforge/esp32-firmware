@@ -57,10 +57,15 @@ let x = {
                 </>,
 
             "nfc_tags": "NFC Tags",
+            "nfc_tag_id": "Tag ID",
+            "nfc_tag_type": "Tag Type",
             "nfc_no_tags_assigned": "No NFC tags assigned",
             "nfc_no_seen_tags": "No NFC tags seen recently. Hold a tag to the charger to detect it.",
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Already assigned to user "${other_name}"` /*NF*/,
+            "nfc_add_tag": "Add NFC Tag",
+            "nfc_seen_tags": "Seen Tags",
+            "nfc_last_seen": "Last seen",
             "nfc_add_tag_manually": "Add tag manually",
             "nfc_tag_id_placeholder": "e.g. 01:23:45:67",
             "nfc_tag_id_invalid":

@@ -61,11 +61,16 @@ let x = {
                 </>,
 
             "nfc_tags": "NFC-Tags",
+            "nfc_tag_id": "Tag-ID",
+            "nfc_tag_type": "Tag-Typ",
             "nfc_no_tags_assigned": "Keine NFC-Tags zugeordnet",
             "nfc_no_seen_tags":
                 "In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an die Wallbox, um es zu erkennen.",
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Bereits Benutzer "${other_name}" zugeordnet` /*NF*/,
+            "nfc_add_tag": "NFC-Tag hinzufügen",
+            "nfc_seen_tags": "Erkannte Tags",
+            "nfc_last_seen": "Zuletzt erkannt",
             "nfc_add_tag_manually": "Tag manuell hinzuf\u00fcgen",
             "nfc_tag_id_placeholder": "z.B. 01:23:45:67",
             "nfc_tag_id_invalid":
