@@ -454,7 +454,8 @@ def led_wrap():
 
     try:
         main(stage3, scanner, result)
-    except BaseException:
+    except BaseException as e:
+        result['failure_exception'] = str(e)
         result['failure_traceback'] = traceback.format_exc()
 
         if power_off_on_error:
