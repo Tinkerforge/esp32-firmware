@@ -1,0 +1,33 @@
+From 626910c43da5e2a82aeec93936be786090ca1ee4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 11 May 2026 14:48:47 +0200
+Subject: [PATCH] Allow TLS 1.3 sig algs in TLS 1.2
+
+This is used by real-world servers and Just Works (TM).
+---
+ library/ssl_misc.h | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/library/ssl_misc.h b/library/ssl_misc.h
+index 218a30d40..82e57ed97 100644
+--- a/library/ssl_misc.h
++++ b/library/ssl_misc.h
+@@ -2656,7 +2656,14 @@ static inline int mbedtls_ssl_sig_alg_is_supported(
+ 
+ #if defined(MBEDTLS_SSL_PROTO_TLS1_2)
+     if (ssl->tls_version == MBEDTLS_SSL_VERSION_TLS1_2) {
+-        return mbedtls_ssl_tls12_sig_alg_is_supported(sig_alg);
++        if (mbedtls_ssl_tls12_sig_alg_is_supported(sig_alg)) {
++            return 1;
++        }
++#if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED)
++        return mbedtls_ssl_tls13_sig_alg_is_supported(sig_alg);
++#else
++        return 0;
++#endif
+     }
+ #endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
+ 
+-- 
+2.47.3
+
