@@ -589,7 +589,6 @@ void EEBus::register_urls()
                 return;
             }
             if (!errmsg.isEmpty()) {
-                // TODO: Some user feedback when this goes wrong
                 logger.printfln("An error occurred while adding peer: %s", errmsg.c_str());
                 eebus.trace_fmtln("Error adding or Updating peer: %s", errmsg.c_str());
                 return;

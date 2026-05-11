@@ -182,12 +182,13 @@ void Ship::enable_ship()
                 },
                 1_s);
         }
-        autoconnect_timer = task_scheduler.scheduleWithFixedDelay(
+        logger.printfln("Set up autotimer");
+        autoconnect_timer = task_scheduler.scheduleOnce(
             [this]() {
                 connect_trusted_peers();
+                discover_ship_peers();
             },
-            30_s,
-            30_s);
+            30_s); // Initial Timeout is 30s after that EEBUS_SHIP_AUTOCONNECT_INTERVAL should be used
     }
 
 }
@@ -332,7 +333,7 @@ void Ship::setup_wss()
 void Ship::connect_trusted_peers()
 {
 #ifdef EEBUS_SHIP_AUTOCONNECT
-
+    task_scheduler.cancel(autoconnect_timer);
     if (!cert.is_loaded()) {
         eebus.trace_fmtln("connect_trusted_peers: Certificate not loaded, skipping");
         return;
@@ -395,6 +396,12 @@ void Ship::connect_trusted_peers()
     if (trusted_peer_count > 0) {
         logger.printfln("SHIP: Connecting to %d trusted peer(s)", trusted_peer_count);
     }
+    autoconnect_timer= task_scheduler.scheduleOnce(
+        [this]() {
+            discover_ship_peers();
+            connect_trusted_peers();
+        },
+        EEBUS_SHIP_AUTOCONNECT_INTERVAL);
 #endif
 }
 
