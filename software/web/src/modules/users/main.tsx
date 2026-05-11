@@ -38,7 +38,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { EVSE_SLOT_USER } from "../evse_common/api";
 //#endif
 import { SubPage } from "../../ts/components/sub_page";
-import { Table } from "../../ts/components/table";
+import { Table, TableRow } from "../../ts/components/table";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Slash, Check, Plus, X, Users as UsersSymbol } from "react-feather";
 //#if MODULE_NFC_AVAILABLE
@@ -91,8 +91,8 @@ interface UsersState {
     nfcTagChanges: NfcTagChange[];
     nfcDeadtime: number;
     allSeenTags: NFCSeenTag[];
-    manualTagId: string;
-    manualTagType: number;
+    editTagId: string;
+    editTagType: number;
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -158,10 +158,10 @@ interface NfcTagsSectionProps {
     users: User[];
     currentUserId: number;
     currentUsername: string;
-    manualTagId: string;
-    manualTagType: number;
-    onManualTagIdChange: (value: string) => void;
-    onManualTagTypeChange: (value: number) => void;
+    editTagId: string;
+    editTagType: number;
+    onEditTagIdChange: (value: string) => void;
+    onEditTagTypeChange: (value: number) => void;
     onRemoveTag: (index: number) => void;
     onAddTag: (tag: NfcTagRef) => void;
 }
@@ -174,226 +174,227 @@ function NfcTagsSection({
     users,
     currentUserId,
     currentUsername,
-    manualTagId,
-    manualTagType,
-    onManualTagIdChange,
-    onManualTagTypeChange,
+    editTagId,
+    editTagType,
+    onEditTagIdChange,
+    onEditTagTypeChange,
     onRemoveTag,
     onAddTag,
 }: NfcTagsSectionProps) {
+    const getRows = (): TableRow[] => {
+        return assignedTags.map((tag, j) => ({
+            columnValues: [
+                tag.tag_id,
+                translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+            ],
+            fieldNames: [
+                __("users.content.nfc_tag_id"),
+                __("users.content.nfc_tag_type"),
+            ],
+            fieldValues: [
+                tag.tag_id,
+                translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+            ],
+            hideRemoveButton: false,
+            onRemoveClick: async () => {
+                onRemoveTag(j);
+                return true;
+            },
+        }));
+    };
+
+    const usedTagKeys = new Set(
+        assignedTags.map((t) => `${t.tag_type}-${t.tag_id}`),
+    );
+
+    const getTagError = (t: {
+        tag_type: number;
+        tag_id: string;
+    }): string | undefined => {
+        const key = `${t.tag_type}-${t.tag_id}`;
+
+        if (usedTagKeys.has(key)) {
+            return __("component.discovery_result.already_added") as string;
+        }
+
+        const pendingUser = pendingTagChanges.find(
+            (c) =>
+                (currentUserId > 0
+                    ? c.user_id !== currentUserId
+                    : c.username !== currentUsername) &&
+                c.tags.some(
+                    (tag) =>
+                        tag.tag_id === t.tag_id && tag.tag_type === t.tag_type,
+                ),
+        );
+
+        if (pendingUser) {
+            const u = users.find((u) =>
+                pendingUser.user_id > 0
+                    ? u.id === pendingUser.user_id
+                    : u.username === pendingUser.username,
+            );
+            const ownerName = u ? u.display_name : pendingUser.username;
+            return __("users.content.nfc_tag_already_assigned")(
+                ownerName,
+            ) as string;
+        }
+
+        const authorizedOwner = authorizedTags.find(
+            (at) =>
+                at.tag_id === t.tag_id &&
+                at.tag_type === t.tag_type &&
+                at.user_id !== 0 &&
+                (currentUserId <= 0 || at.user_id !== currentUserId),
+        );
+
+        if (authorizedOwner) {
+            const u = users.find((u) => u.id === authorizedOwner.user_id);
+            if (u) {
+                return __("users.content.nfc_tag_already_assigned")(
+                    u.display_name,
+                ) as string;
+            }
+        }
+
+        return undefined;
+    };
+
     return (
         <FormRow label={__("users.content.nfc_tags")}>
-            {assignedTags.length > 0 ? (
-                <div class="mb-2">
-                    {assignedTags.map((tag, j) => (
-                        <div
-                            class="d-flex justify-content-between align-items-center border rounded p-2 mb-1"
-                            key={tag.tag_id}
+            <Table
+                columnNames={[
+                    __("users.content.nfc_tag_id"),
+                    __("users.content.nfc_tag_type"),
+          ]}
+                nestingDepth={2}
+                rows={getRows()}
+                tableTill="md"
+                addEnabled={true}
+                addTitle={__("users.content.nfc_add_tag")}
+                onAddShow={async () => {
+                    onEditTagIdChange("");
+                    onEditTagTypeChange(0);
+                }}
+                onAddGetChildren={() => (
+                    <>
+                        <FormRow label={__("users.content.nfc_seen_tags")}>
+                              <DiscoveryResultGroup>
+                                  {seenTags.filter((t) => t.tag_id !== "").map((t) => {
+                                      const error = getTagError(t);
+                                      return (
+                                          <DiscoveryResultItem
+                                              key={`${t.tag_type}-${t.tag_id}`}
+                                              title={
+                                                  <div class="h5">
+                                                      {t.tag_id}
+                                                  </div>
+                                              }
+                                              labelAdd={<Plus />}
+                                              error={error}
+                                              onClick={() => {
+                                                  onEditTagIdChange(t.tag_id);
+                                                  onEditTagTypeChange(t.tag_type);
+                                              }
+                                              }
+                                          >
+                                              <div>
+                                                  {translate_unchecked(
+                                                      `nfc.content.type_${t.tag_type}`,
+                                                  )}
+                                              </div>
+                                              <div class="text-muted small">
+                                                  {translate_unchecked(
+                                                      "nfc.content.last_seen",
+                                                  ) +
+                                                      util.format_timespan_ms(
+                                                          t.last_seen,
+                                                      ) +
+                                                      translate_unchecked(
+                                                          "nfc.content.last_seen_suffix",
+                                                      )}
+                                              </div>
+                                          </DiscoveryResultItem>
+                                      );
+                                  })}
+                              </DiscoveryResultGroup>
+                        </FormRow>
+                        <FormRow
+                            label={__("users.content.nfc_tag_id")}
                         >
-                            <div>
-                                <span>{tag.tag_id}</span>{" "}
-                                <small class="text-muted">
-                                    {translate_unchecked(
-                                        `nfc.content.type_${tag.tag_type}`,
-                                    )}
-                                </small>
-                            </div>
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-danger d-flex align-middle"
-                                onClick={() => onRemoveTag(j)}
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div class="text-muted mb-2">
-                    {__("users.content.nfc_no_tags_assigned")}
-                </div>
-            )}
-            {seenTags.filter((t) => t.tag_id !== "").length > 0 ? (
-                <DiscoveryResultGroup>
-                    {seenTags
-                        .filter((t) => t.tag_id !== "")
-                        .map((t) => {
-                            let isAssignedToThisUser = assignedTags.some(
-                                (at) =>
-                                    at.tag_id === t.tag_id &&
-                                    at.tag_type === t.tag_type,
-                            );
-                            let otherUserDisplayName: string | undefined;
-                            if (!isAssignedToThisUser) {
-                                const pendingOwner = pendingTagChanges.find(
-                                    (c) =>
-                                        (currentUserId > 0
-                                            ? c.user_id !== currentUserId
-                                            : c.username !== currentUsername) &&
-                                        c.tags.some(
-                                            (tag) =>
-                                                tag.tag_id === t.tag_id &&
-                                                tag.tag_type === t.tag_type,
-                                        ),
-                                );
-                                if (pendingOwner) {
-                                    const u = users.find((u) =>
-                                        pendingOwner.user_id > 0
-                                            ? u.id === pendingOwner.user_id
-                                            : u.username ===
-                                              pendingOwner.username,
-                                    );
-                                    otherUserDisplayName = u
-                                        ? u.display_name
-                                        : pendingOwner.username;
-                                } else {
-                                    const authorizedOwner = authorizedTags.find(
-                                        (at) =>
-                                            at.tag_id === t.tag_id &&
-                                            at.tag_type === t.tag_type &&
-                                            at.user_id !== 0 &&
-                                            (currentUserId <= 0 ||
-                                                at.user_id !== currentUserId),
-                                    );
-                                    if (authorizedOwner) {
-                                        const u = users.find(
-                                            (u) =>
-                                                u.id ===
-                                                authorizedOwner.user_id,
-                                        );
-                                        otherUserDisplayName = u
-                                            ? u.display_name
-                                            : undefined;
-                                    }
-                                }
-                            }
-                            let isAssignedToOtherUser =
-                                !isAssignedToThisUser &&
-                                otherUserDisplayName !== undefined;
-                            return (
-                                <DiscoveryResultItem
-                                    key={t.tag_id}
-                                    title={<h5>{t.tag_id}</h5>}
-                                    labelAdd={<Plus />}
-                                    error={
-                                        isAssignedToThisUser
-                                            ? __(
-                                                  "component.discovery_result.already_added",
-                                              )
-                                            : isAssignedToOtherUser
-                                              ? __(
-                                                    "users.content.nfc_tag_already_assigned",
-                                                )(otherUserDisplayName!)
-                                              : undefined
-                                    }
-                                    onClick={() =>
-                                        onAddTag({
-                                            tag_type: t.tag_type,
-                                            tag_id: t.tag_id,
-                                        })
-                                    }
-                                >
-                                    <div>
-                                        {translate_unchecked(
-                                            `nfc.content.type_${t.tag_type}`,
-                                        )}
-                                    </div>
-                                    <div>
-                                        {translate_unchecked(
-                                            "nfc.content.last_seen",
-                                        ) +
-                                            util.format_timespan_ms(
-                                                t.last_seen,
-                                            ) +
-                                            translate_unchecked(
-                                                "nfc.content.last_seen_suffix",
-                                            )}
-                                    </div>
-                                </DiscoveryResultItem>
-                            );
-                        })}
-                </DiscoveryResultGroup>
-            ) : (
-                <div class="text-muted">
-                    {__("users.content.nfc_no_seen_tags")}
-                </div>
-            )}
-            <div class="mt-3">
-                <label class="form-label">
-                    {__("users.content.nfc_add_tag_manually")}
-                </label>
-                <div class="d-flex gap-2">
-                    <div class="flex-grow-1">
-                        <InputTextPatterned
-                            value={manualTagId}
-                            onValue={(v) => onManualTagIdChange(v)}
-                            minLength={8}
-                            maxLength={29}
-                            pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                            placeholder={__(
-                                "users.content.nfc_tag_id_placeholder",
-                            )}
-                            invalidFeedback={__(
-                                "users.content.nfc_tag_id_invalid",
-                            )}
-                        />
-                    </div>
-                    <div>
-                        <InputSelect
-                            items={[
-                                [
-                                    "0",
-                                    translate_unchecked("nfc.content.type_0"),
-                                ],
-                                [
-                                    "1",
-                                    translate_unchecked("nfc.content.type_1"),
-                                ],
-                                [
-                                    "2",
-                                    translate_unchecked("nfc.content.type_2"),
-                                ],
-                                [
-                                    "3",
-                                    translate_unchecked("nfc.content.type_3"),
-                                ],
-                                [
-                                    "4",
-                                    translate_unchecked("nfc.content.type_4"),
-                                ],
-                            ]}
-                            value={manualTagType.toString()}
-                            onValue={(v) => onManualTagTypeChange(parseInt(v))}
-                        />
-                    </div>
-                    <div class="d-flex">
-                        <button
-                            type="button"
-                            class="btn btn-primary d-flex align-items-center"
-                            disabled={
-                                !/^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$/.test(
-                                    manualTagId,
-                                )
-                            }
-                            onClick={() => {
-                                onAddTag({
-                                    tag_type: manualTagType,
-                                    tag_id: manualTagId
-                                        .toUpperCase()
-                                        .replace(
-                                            /([0-9A-F]{2})(?!$|:)/g,
-                                            "$1:",
-                                        ),
-                                });
-                                onManualTagIdChange("");
-                                onManualTagTypeChange(0);
-                            }}
+                            <InputTextPatterned
+                                value={editTagId}
+                                onValue={(v) => onEditTagIdChange(v)}
+                                minLength={8}
+                                maxLength={29}
+                                pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                placeholder={__(
+                                    "users.content.nfc_tag_id_placeholder",
+                                )}
+                                invalidFeedback={__(
+                                    "users.content.nfc_tag_id_invalid",
+                                )}
+                                />
+                        </FormRow>
+                        <FormRow
+                            label={__("users.content.nfc_tag_type")}
                         >
-                            <Plus size={16} />
-                        </button>
-                    </div>
-                </div>
-            </div>
+                                    <InputSelect
+                                        items={[
+                                            [
+                                                "0",
+                                                translate_unchecked(
+                                                    "nfc.content.type_0",
+                                                ),
+                                            ],
+                                            [
+                                                "1",
+                                                translate_unchecked(
+                                                    "nfc.content.type_1",
+                                                ),
+                                            ],
+                                            [
+                                                "2",
+                                                translate_unchecked(
+                                                    "nfc.content.type_2",
+                                                ),
+                                            ],
+                                            [
+                                                "3",
+                                                translate_unchecked(
+                                                    "nfc.content.type_3",
+                                                ),
+                                            ],
+                                            [
+                                                "4",
+                                                translate_unchecked(
+                                                    "nfc.content.type_4",
+                                                ),
+                                            ],
+                                        ]}
+                                        value={editTagType.toString()}
+                                        onValue={(v) =>
+                                            onEditTagTypeChange(parseInt(v))
+                                        }
+                                    />
+                        </FormRow>
+                    </>
+                )}
+                onAddSubmit={ async () => {
+                      onAddTag({
+                          tag_type: editTagType,
+                          tag_id: editTagId
+                              .toUpperCase()
+                              .replace(/([0-9A-F]{2})(?!$|:)/g, "$1:"),
+                      });
+                      onEditTagIdChange("");
+                      onEditTagTypeChange(0);
+                }}
+                onAddHide={ async () => {
+                  onEditTagIdChange("");
+                  onEditTagTypeChange(0);
+                }}
+            />
         </FormRow>
     );
 }
@@ -408,10 +409,10 @@ interface EditUserFormContentProps {
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
-    manualTagId: string;
-    manualTagType: number;
-    onManualTagIdChange: (value: string) => void;
-    onManualTagTypeChange: (value: number) => void;
+    editTagId: string;
+    editTagType: number;
+    onEditTagIdChange: (value: string) => void;
+    onEditTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -426,10 +427,10 @@ function EditUserFormContent({
     nfcConfig,
     pendingTagChanges,
     users,
-    manualTagId,
-    manualTagType,
-    onManualTagIdChange,
-    onManualTagTypeChange,
+    editTagId,
+    editTagType,
+    onEditTagIdChange,
+    onEditTagTypeChange,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -506,10 +507,10 @@ function EditUserFormContent({
                 users={users}
                 currentUserId={user.id}
                 currentUsername={user.username}
-                manualTagId={manualTagId}
-                manualTagType={manualTagType}
-                onManualTagIdChange={onManualTagIdChange}
-                onManualTagTypeChange={onManualTagTypeChange}
+                editTagId={editTagId}
+                editTagType={editTagType}
+                onEditTagIdChange={onEditTagIdChange}
+                onEditTagTypeChange={onEditTagTypeChange}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -528,10 +529,10 @@ interface AddUserFormContentProps {
     nfcConfig: API.getType["nfc/config"];
     pendingTagChanges: NfcTagChange[];
     users: User[];
-    manualTagId: string;
-    manualTagType: number;
-    onManualTagIdChange: (value: string) => void;
-    onManualTagTypeChange: (value: number) => void;
+    editTagId: string;
+    editTagType: number;
+    onEditTagIdChange: (value: string) => void;
+    onEditTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
@@ -545,10 +546,10 @@ function AddUserFormContent({
     nfcConfig,
     pendingTagChanges,
     users,
-    manualTagId,
-    manualTagType,
-    onManualTagIdChange,
-    onManualTagTypeChange,
+    editTagId,
+    editTagType,
+    onEditTagIdChange,
+    onEditTagTypeChange,
     onNfcTagsChange,
     //#endif
     onUserChange,
@@ -620,10 +621,10 @@ function AddUserFormContent({
                 users={users}
                 currentUserId={-1}
                 currentUsername={user.username}
-                manualTagId={manualTagId}
-                manualTagType={manualTagType}
-                onManualTagIdChange={onManualTagIdChange}
-                onManualTagTypeChange={onManualTagTypeChange}
+                editTagId={editTagId}
+                editTagType={editTagType}
+                onEditTagIdChange={onEditTagIdChange}
+                onEditTagTypeChange={onEditTagTypeChange}
                 onRemoveTag={(j) =>
                     onNfcTagsChange(nfcTags.filter((_, k) => k !== j))
                 }
@@ -667,8 +668,8 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 nfcTagChanges: [],
                 nfcDeadtime: 0,
                 allSeenTags: [],
-                manualTagId: "",
-                manualTagType: 0,
+                editTagId: "",
+                editTagType: 0,
             },
         );
 
@@ -1248,16 +1249,16 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                                 state.nfcTagChanges
                                             }
                                             users={state.users}
-                                            manualTagId={state.manualTagId}
-                                            manualTagType={state.manualTagType}
-                                            onManualTagIdChange={(v) =>
+                                            editTagId={state.editTagId}
+                                            editTagType={state.editTagType}
+                                            onEditTagIdChange={(v) =>
                                                 this.setState({
-                                                    manualTagId: v,
+                                                    editTagId: v,
                                                 })
                                             }
-                                            onManualTagTypeChange={(v) =>
+                                            onEditTagTypeChange={(v) =>
                                                 this.setState({
-                                                    manualTagType: v,
+                                                    editTagType: v,
                                                 })
                                             }
                                             onNfcTagsChange={(tags) =>
@@ -1382,13 +1383,13 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     nfcConfig={nfc_config}
                                     pendingTagChanges={state.nfcTagChanges}
                                     users={state.users}
-                                    manualTagId={state.manualTagId}
-                                    manualTagType={state.manualTagType}
-                                    onManualTagIdChange={(v) =>
-                                        this.setState({ manualTagId: v })
+                                    editTagId={state.editTagId}
+                                    editTagType={state.editTagType}
+                                    onEditTagIdChange={(v) =>
+                                        this.setState({ editTagId: v })
                                     }
-                                    onManualTagTypeChange={(v) =>
-                                        this.setState({ manualTagType: v })
+                                    onEditTagTypeChange={(v) =>
+                                        this.setState({ editTagType: v })
                                     }
                                     onNfcTagsChange={(tags) =>
                                         this.setState({
