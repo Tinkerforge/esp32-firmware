@@ -1138,6 +1138,43 @@ void ShipConnection::state_done()
     // Update frontend and config to inform it of the new connection state
     if (!connection_established && peer_node->state != NodeState::Connected) {
         update_config_state(NodeState::Connected);
+
+        // SHIP 13.4.6.2: Parallel connection resolution.
+        // On first entry to Done state, check if there is another active connection
+        // to the same peer (can happen when both sides initiate simultaneously).
+        // The connection initiated by the node with the higher SKI
+        // shall be closed. The other connection survives.
+        String own_ski = eebus.state.get("ski")->asString();
+        String peer_ski = peer_node->txt_ski;
+        for (auto &conn : eebus.ship.ship_connections) {
+            if (conn.get() == this || conn->closing_scheduled) {
+                continue;
+            }
+            if (conn->peer_node && conn->peer_node->txt_ski == peer_ski && conn->connection_established) {
+                // Duplicate connection found. Determine which to close.
+                // Close the one where the initiator (client role) has the higher SKI.
+                // If we are client and our SKI > peer SKI, close this connection.
+                // If we are server and peer SKI > our SKI, close this connection (peer initiated it and has higher SKI).
+                bool close_this;
+                if (role == Role::Client) {
+                    close_this = own_ski > peer_ski;
+                } else {
+                    close_this = peer_ski > own_ski;
+                }
+
+                if (close_this) {
+                    eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing this connection (role=%s)",
+                        peer_node->node_name().c_str(), role == Role::Client ? "client" : "server");
+                    schedule_close(0_ms, "Duplicate connection resolved per SHIP 13.4.6.2");
+                    return;
+                } else {
+                    eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing other connection (role=%s)",
+                        peer_node->node_name().c_str(), conn->role == Role::Client ? "client" : "server");
+                    conn->schedule_close(0_ms, "Duplicate connection resolved per SHIP 13.4.6.2");
+                }
+                break;
+            }
+        }
     }
     connection_established = true;
 
