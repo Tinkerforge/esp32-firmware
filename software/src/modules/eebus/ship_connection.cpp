@@ -656,13 +656,9 @@ void ShipConnection::state_sme_hello()
 void ShipConnection::hello_send_sme_update()
 {
     // SHIP 13.4.4.1.3 "Common Procedure for Sending an SME "hello" Update Message:"
-    uint64_t timer_end = hello_wait_for_ready_timestamp + millis_t{SHIP_CONNECTION_SME_INIT_TIMEOUT}.as<uint64_t>();
-    if (timer_end < millis()) {
-        this_hello_phase.waiting = 0;
-        this_hello_phase.waiting_valid = true;
-    } else {
-        this_hello_phase.waiting = millis() - (hello_wait_for_ready_timestamp + millis_t{SHIP_CONNECTION_SME_INIT_TIMEOUT}.as<uint64_t>());
-    }
+    // We always report the maximum waiting time to give the peer sufficient time.
+    this_hello_phase.waiting = millis_t{SHIP_CONNECTION_SME_INIT_TIMEOUT}.as<uint64_t>();
+    this_hello_phase.waiting_valid = true;
     type_to_json_connection_hello(&this_hello_phase);
     send_current_outgoing_message();
 }
@@ -711,7 +707,7 @@ ShipConnection::ConnectionHelloPhase::Type ShipConnection::hello_check_trust_sta
         // Set peer state to AwaitingApproval so it appears in the UI for user to approve
         peer_node->state = NodeState::AwaitingApproval;
         eebus.update_peers_state();
-        return ConnectionHelloPhase::Type::Aborted; // TODO: For now we close the connection if the peers is not trusted. In the future maybe handle this differently.
+        return ConnectionHelloPhase::Type::Pending;
     }
 }
 
@@ -755,11 +751,12 @@ void ShipConnection::state_sme_hello_ready_listen()
     // SHIP 13.4.4.1.3 Sub-state SME_HELLO_STATE_READY_LISTEN
     switch (peer_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Pending: {
+            // Peer is pending (not yet trusted us or waiting for user approval).
+            // Reply with our current state and the remaining time we are willing to wait,
             if (peer_hello_phase.prolongation_request && peer_hello_phase.prolongation_request_valid) {
-                // We always accept prolongation requests for an infinite time
                 hello_decide_prolongation();
-                hello_send_sme_update();
             }
+            hello_send_sme_update();
             break;
         }
         case ConnectionHelloPhase::Type::Ready: {
