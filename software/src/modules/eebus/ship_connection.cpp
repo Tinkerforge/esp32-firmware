@@ -56,6 +56,19 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }
             // Accept both binary and text frames. Text is allowed after CMI
             ws_transport_opcodes_t opcode = (ws_transport_opcodes_t)(data->op_code & ~WS_TRANSPORT_OPCODES_FIN);
+            if (opcode == WS_TRANSPORT_OPCODES_CLOSE) {
+                uint16_t close_code = 0;
+                String close_reason;
+                if (data->data_len >= 2) {
+                    close_code = ((uint8_t)data->data_ptr[0] << 8) | (uint8_t)data->data_ptr[1];
+                    if (data->data_len > 2) {
+                        close_reason = String(data->data_ptr + 2, data->data_len - 2);
+                    }
+                }
+                eebus.trace_fmtln("ShipConnection: Received WebSocket close frame from peer. Code: %u, Reason: %s", close_code, close_reason.c_str());
+                conn->schedule_close(0_ms, "Peer closed WebSocket connection");
+                return;
+            }
             if (opcode != WS_TRANSPORT_OPCODES_BINARY && opcode != WS_TRANSPORT_OPCODES_TEXT) {
                 eebus.trace_fmtln("ShipConnection: Received unexpected opcode 0x%02x from peer", data->op_code);
                 return;
