@@ -274,6 +274,36 @@ function NfcTagsSection({
     };
 
     const MAX_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
+    const MAX_TAGS_PER_USER = 5;
+
+    const perUserTagCount = assignedTags.length;
+    const userTagLimitReached = perUserTagCount >= MAX_TAGS_PER_USER;
+
+    // Compute effective total tag count reflecting pending changes and the current edit.
+    // 1. Saved tags for users that have no pending change and are not the current user.
+    const savedTagsCount = authorizedTags.filter((at) => {
+        if (currentUserId > 0 && at.user_id === currentUserId) return false;
+        if (
+            pendingTagChanges.some(
+                (c) => c.user_id > 0 && c.user_id === at.user_id,
+            )
+        )
+            return false;
+        return true;
+    }).length;
+    // 2. Pending tag changes from other users (not the one being edited right now).
+    const pendingOtherTagsCount = pendingTagChanges
+        .filter((c) =>
+            currentUserId > 0
+                ? c.user_id !== currentUserId
+                : c.username !== currentUsername,
+        )
+        .reduce((sum, c) => sum + c.tags.length, 0);
+    // 3. Current user's tags come from assignedTags (live-updated).
+    const effectiveTagCount =
+        savedTagsCount + pendingOtherTagsCount + perUserTagCount;
+
+    const globalTagLimitReached = effectiveTagCount >= MAX_TAGS;
 
     return (
         <FormRow label={__("users.content.nfc_tags")}>
@@ -281,15 +311,18 @@ function NfcTagsSection({
                 columnNames={[
                     __("users.content.nfc_tag_id"),
                     __("users.content.nfc_tag_type"),
+                    __("users.content.nfc_last_seen"),
                 ]}
                 nestingDepth={2}
                 rows={getRows()}
                 tableTill="md"
                 addMessage={__("users.content.nfc_add_tag_message")(
-                    authorizedTags.length,
+                    effectiveTagCount,
                     MAX_TAGS,
+                    perUserTagCount,
+                    MAX_TAGS_PER_USER,
                 )}
-                addEnabled={authorizedTags.length < MAX_TAGS}
+                addEnabled={!userTagLimitReached && !globalTagLimitReached}
                 addTitle={__("users.content.nfc_add_tag")}
                 onAddShow={async () => {
                     onEditTagIdChange("");
@@ -1073,7 +1106,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#endif
 
         let evse_user_component = null;
-//#if MODULE_EVSE_COMMON_AVAILABLE
+        //#if MODULE_EVSE_COMMON_AVAILABLE
         evse_user_component = (
             <FormRow
                 label={__("users.content.evse_user_description")}
@@ -1098,7 +1131,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 </div>
             </FormRow>
         );
-//#endif
+        //#endif
 
         return (
             <SubPage name="users">
@@ -1479,7 +1512,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
     }
 }
 
-export function getAllUsernames() {
+export async function getAllUsernames() {
     return util
         .download("/users/all_usernames", true)
         .then((blob) => blob.arrayBuffer())

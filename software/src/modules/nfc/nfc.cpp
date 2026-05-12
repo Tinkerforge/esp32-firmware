@@ -159,6 +159,20 @@ void NFC::pre_setup()
                     return String("Unknown user with ID ") + (int)user_id + ".";
             }
 
+            // Check per-user tag limit (max 5 tags per user)
+            for (size_t tag = 0; tag < tags_count; ++tag) {
+                uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
+                if (user_id == 0)
+                    continue; // Skip user_id 0 (unauthorized/anonymous)
+                size_t count_for_user = 0;
+                for (size_t t = 0; t < tags_count; ++t) {
+                    if (tags->get(t)->get("user_id")->asUint() == user_id)
+                        ++count_for_user;
+                }
+                if (count_for_user > 5)
+                    return String("User with ID ") + (int)user_id + " has more than 5 NFC tags assigned.";
+            }
+
             // Check for duplicated tag_id+type entries
             for (size_t tag = 0; tag < tags_count; ++tag) {
                 const String &tag_id = tags->get(tag)->get("tag_id")->asString();
