@@ -332,7 +332,10 @@ export function pre_init() {
                             </FormRow>);
                     }
 
-                    if (virtual_meter === null) {
+                    if (config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger) {
+                        fixed_location = MeterLocation.Load;
+                    }
+                    else if (virtual_meter === null) {
                         // check if location depends on virtual meter. for example, for Carlo Gavazzi EM270 and EM280 this is not the case
                         for (let item of virtual_meter_items) {
                             if (get_fixed_location(config[1].table[0], parseInt(item[0])) != MeterLocation.Unknown) {
