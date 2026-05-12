@@ -122,7 +122,7 @@ public:
     esp_transport_handle_t ext_transport = nullptr; ///< Owned external transport, destroyed on close
     Role role;
     std::shared_ptr<ShipNode> peer_node;
-    unique_ptr_any<SpineConnection> spine;
+    unique_ptr_any<SpineConnection> spine; // Shall only be initialized after SHIP connection has been established
     bool connection_established = false;
     bool closing_scheduled = false;
     WebsocketMode ws_mode = WebsocketMode::TaskScheduler;

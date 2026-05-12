@@ -147,6 +147,7 @@ private:
     bool use_case_data_received = false;
     bool subscription_data_received = false;
     bool initial_peer_discovery_started = false;
+    uint32_t initial_peer_discovery_timer = 0;
     void initial_peer_discovery();
 
     void eebus_active(bool active) const;

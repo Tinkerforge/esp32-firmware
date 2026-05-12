@@ -34,12 +34,21 @@ SpineConnection::SpineConnection(ShipConnection *ship_conn)
             check_ack_expired();
         },
         60_s); // Every 60 seconds we check for expired acks. Worst case an ack expires and it takes 119 seconds to notice.
+    initial_peer_discovery_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            if (!initial_peer_discovery_started) {
+                eebus.trace_fmtln("SPINE: Peer has not initiated discovery. Starting discovery ourselves...");
+                initial_peer_discovery();
+            }
+        },
+        5_s); // If we haven't started the initial peer discovery within 5 seconds after connection, we force it. This is to attempt to move the connection into "eebus active" state. If the peer has not started discovery it is likely that they are not compatible anyway.
     eebus.trace_fmtln("New SPINE Connection created for peer %s", ship_connection->peer_node->node_name().c_str());
 }
 SpineConnection::~SpineConnection()
 {
     task_scheduler.cancel(ack_check_timer);
     task_scheduler.cancel(update_api_timer);
+    task_scheduler.cancel(initial_peer_discovery_timer);
 }
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
@@ -137,9 +146,22 @@ void SpineConnection::initial_peer_discovery()
     if (initial_peer_discovery_started)
         return;
     initial_peer_discovery_started = true;
-    FeatureAddressType address = received_header.addressSource.get();
-    address.entity = {0};
-    address.feature = 0;
+    bool cleanup_address = false;
+    FeatureAddressType address{};
+    if (received_header.addressSource.has_value()) {
+        address = received_header.addressSource.get();
+        address.entity = {0};
+        address.feature = 0;
+    } else {
+        // No messages received yet (timer-initiated discovery).
+        // Use default SPINE node management address and register it
+        // so get_spine_connection() can route messages through us.
+        cleanup_address = true;
+        address.device = "";
+        address.entity = {0};
+        address.feature = 0;
+        known_addresses.push_back(address);
+    }
     if (!detailed_discovery_data_received)
         eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
     if (!use_case_data_received)

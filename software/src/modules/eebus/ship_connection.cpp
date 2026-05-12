@@ -100,7 +100,6 @@ ShipConnection::ShipConnection(WebSocketsClient *ws_client, std::shared_ptr<Ship
 {
     role = Role::Server;
     peer_node = std::move(node);
-    spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as server", peer_node->node_name().c_str());
@@ -111,7 +110,6 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std
 {
     peer_node = std::move(node);
     role = Role::Client;
-    spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
 
@@ -1196,6 +1194,10 @@ void ShipConnection::state_done()
     auto protocol_state = get_protocol_state();
 
     eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
+    if (!spine)
+    {
+        spine = make_unique_psram<SpineConnection>(this);
+    }
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
