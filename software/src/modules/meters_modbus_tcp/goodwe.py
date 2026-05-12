@@ -669,7 +669,7 @@ specs = [
         # FIXME: need to implement the same 32/64 bit energy register split as done for the grid meter
         'name': 'Goodwe Inverter Meter',
         'virtual_meter': ('Goodwe Inverter', 'Meter'),
-        'fixed_location': 'Other',
+        'fixed_location': 'Unknown',
         'register_type': 'HoldingRegister',
         'values': [
             {
