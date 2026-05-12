@@ -100,15 +100,21 @@ void ChargeAuthorization::register_urls()
 
 int16_t ChargeAuthorization::find_user(const cm_auth_info &info)
 {
-    if (info.auth_method != CMAuthType::NFC)
-        return -1;
+    switch (info.auth_method) {
+        case CMAuthType::NFC:
+        case CMAuthType::InjectedNFC: {
+            NFC::tag_t tag;
+            tag.type = info.tag_type;
+            tag.id_length = info.tag_id_len;
 
-    NFC::tag_t tag;
-    tag.type = info.tag_type;
-    tag.id_length = info.tag_id_len;
+            static_assert(sizeof(tag.id_bytes) == sizeof(info.tag_id), "Tag ID size mismatch");
+            memcpy(tag.id_bytes, info.tag_id, sizeof(info.tag_id));
 
-    static_assert(sizeof(tag.id_bytes) == sizeof(info.tag_id), "Tag ID size mismatch");
-    memcpy(tag.id_bytes, info.tag_id, sizeof(info.tag_id));
-
-    return nfc.get_user_id(tag);
+            return nfc.get_user_id(tag);
+        }
+        case CMAuthType::None:
+        case CMAuthType::Lost:
+            return -1;
+    }
+    return -1;
 }
