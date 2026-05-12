@@ -350,36 +350,36 @@ void Users::setup()
         search_next_free_user();
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
-        Config *user_slot = get_user_slot();
-        bool charge_start_tracked = charge_tracker.currentlyCharging();
-        bool charging = get_charger_state() == 2 || get_charger_state() == 3
-                        || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
+    Config *user_slot = get_user_slot();
+    bool charge_start_tracked = charge_tracker.currentlyCharging();
+    bool charging = get_charger_state() == 2 || get_charger_state() == 3
+                    || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
 
-        if (charge_start_tracked && !charging) {
-            float override_value = get_energy();
-            // The energy value can be NaN if the meter is not readable yet.
-            // This will be repaired when starting the next charge.
-            this->stop_charging(0, true, override_value);
-        }
+    if (charge_start_tracked && !charging) {
+        float override_value = get_energy();
+        // The energy value can be NaN if the meter is not readable yet.
+        // This will be repaired when starting the next charge.
+        this->stop_charging(0, true, override_value);
+    }
 
-        if (charging) {
-            // If the EVSE is already charging, read back the user slot info, in case the ESP just power cycled.
-            UserSlotInfo info;
-            bool success = read_user_slot_info(&info);
-            if (success) {
-                if (!charge_start_tracked) {
-                    charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CMAuthType::Lost, Config::ConfVariant{});
-                } else {
-                    // Don't track a start, but restore the current_charge API anyway.
-                    charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
-                    charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
-                    charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
-                    charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
-                    charge_tracker.current_charge.get("authorization_type")->updateEnum(CMAuthType::Lost);
-                }
-            } else if (!charge_start_tracked)
-                this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
-        }
+    if (charging) {
+        // If the EVSE is already charging, read back the user slot info, in case the ESP just power cycled.
+        UserSlotInfo info;
+        bool success = read_user_slot_info(&info);
+        if (success) {
+            if (!charge_start_tracked) {
+                charge_tracker.startCharge(info.timestamp_minutes, info.meter_start, info.user_id, info.evse_uptime_on_start, CMAuthType::Lost, Config::ConfVariant{});
+            } else {
+                // Don't track a start, but restore the current_charge API anyway.
+                charge_tracker.current_charge.get("user_id")->updateInt(info.user_id);
+                charge_tracker.current_charge.get("meter_start")->updateFloat(info.meter_start);
+                charge_tracker.current_charge.get("evse_uptime_start")->updateUint(info.evse_uptime_on_start);
+                charge_tracker.current_charge.get("timestamp_minutes")->updateUint(info.timestamp_minutes);
+                charge_tracker.current_charge.get("authorization_type")->updateEnum(CMAuthType::Lost);
+            }
+        } else if (!charge_start_tracked)
+            this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
+    }
 
     auto outer_charger_state = get_charger_state();
     task_scheduler.scheduleUncancelable([this, outer_charger_state](){
