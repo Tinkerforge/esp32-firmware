@@ -182,25 +182,38 @@ function NfcTagsSection({
     onAddTag,
 }: NfcTagsSectionProps) {
     const getRows = (): TableRow[] => {
-        return assignedTags.map((tag, j) => ({
-            columnValues: [
-                tag.tag_id,
-                translate_unchecked(`nfc.content.type_${tag.tag_type}`),
-            ],
-            fieldNames: [
-                __("users.content.nfc_tag_id"),
-                __("users.content.nfc_tag_type"),
-            ],
-            fieldValues: [
-                tag.tag_id,
-                translate_unchecked(`nfc.content.type_${tag.tag_type}`),
-            ],
-            hideRemoveButton: false,
-            onRemoveClick: async () => {
-                onRemoveTag(j);
-                return true;
-            },
-        }));
+        return assignedTags.map((tag, j) => {
+            const seen = seenTags.find(
+                (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
+            );
+            const lastSeenText = seen
+                ? translate_unchecked("nfc.content.last_seen") +
+                  util.format_timespan_ms(seen.last_seen) +
+                  translate_unchecked("nfc.content.last_seen_suffix")
+                : "";
+            return {
+                columnValues: [
+                    tag.tag_id,
+                    translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+                    lastSeenText,
+                ],
+                fieldNames: [
+                    __("users.content.nfc_tag_id"),
+                    __("users.content.nfc_tag_type"),
+                    __("users.content.nfc_last_seen"),
+                ],
+                fieldValues: [
+                    tag.tag_id,
+                    translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+                    lastSeenText,
+                ],
+                hideRemoveButton: false,
+                onRemoveClick: async () => {
+                    onRemoveTag(j);
+                    return true;
+                },
+            };
+        });
     };
 
     const usedTagKeys = new Set(
