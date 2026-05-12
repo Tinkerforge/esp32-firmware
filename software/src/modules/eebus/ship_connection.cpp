@@ -1218,7 +1218,7 @@ void ShipConnection::state_done()
             // SHIP 13.4.4.3: Peer's pin state received. We already sent ours
             // during the initial SmePinCheckInit transition, so just consume
             // this message without replying to avoid an infinite ping-pong loop.
-            eebus.trace_fmtln("SHIP: Received peer pin state in Done state, consumed (no reply needed)");
+            eebus.trace_fmtln("SHIP: Received peer pin state in Done state (no reply needed)");
             break;
         }
         case ProtocolState::AccessMethodsRequest: {
