@@ -185,8 +185,8 @@ void Ship::enable_ship()
         logger.printfln("Set up autotimer");
         autoconnect_timer = task_scheduler.scheduleOnce(
             [this]() {
-                connect_trusted_peers();
                 discover_ship_peers();
+                connect_trusted_peers();
             },
             30_s); // Initial Timeout is 30s after that EEBUS_SHIP_AUTOCONNECT_INTERVAL should be used
     }
@@ -347,7 +347,7 @@ void Ship::connect_trusted_peers()
         if (!node->trusted) {
             continue;
         }
-        if (node->state != NodeState::Discovered && node->state != NodeState::LoadedFromConfig) {
+        if (node->state != NodeState::Discovered && node->state != NodeState::Disconnected) {
             continue;
         }
         if (node->ip_address.empty() || node->port == 0) {
@@ -584,7 +584,7 @@ void Ship::check_mdns_results()
         for (const String &ip : ip_addresses) {
             peer_handler.update_ip_by_ski(txt_ski, ip);
         }
-        if (peer->state == NodeState::Disconnected) {
+        if (peer->state == NodeState::Disconnected || peer->state == NodeState::LoadedFromConfig) {
             peer->state = NodeState::Discovered;
         }
 
