@@ -912,7 +912,7 @@ class Stage3:
                     fatal_error(f"EVSE reports contactor state {e}. Is an auxillary contact broken?")
             else:
                 self.verify_voltages(p_type2=[], p_meter=['L1', 'L2', 'L3'])
-                if (e := self.get_contactor_state_function()) != (1 if not is_warp2 else 0b10000):
+                if (e := self.get_contactor_state_function()) != (1 if is_warp2 else 0b10000):
                     fatal_error(f"EVSE reports contactor state {e}. Is an auxillary contact stuck?")
 
             self.verify_evse_not_crashed()
