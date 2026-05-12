@@ -63,7 +63,7 @@ static float get_energy()
     evse_common.get_charger_meter_energy(&energy);
     return energy;
 }
-#endif
+
 
 #define USER_SLOT_INFO_VERSION 1
 struct UserSlotInfo {
@@ -75,7 +75,6 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
 static uint16_t calc_checksum(const UserSlotInfo &info)
 {
     uint32_t float_buf = 0;
