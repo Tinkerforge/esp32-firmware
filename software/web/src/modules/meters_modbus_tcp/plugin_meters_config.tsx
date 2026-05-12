@@ -242,6 +242,15 @@ export function pre_init() {
 //#replace "generated/meter_modbus_tcp_specific_table_ids_items.rpl"
                 ];
 
+                for (let i = 0; i < table_items.length; ++i) {
+                    let table_id = parseInt(table_items[i][0]);
+                    let virtual_meter_items: [string, string][] = get_virtual_meter_items(table_id);
+
+                    if (virtual_meter_items.length == 1) {
+                        table_items[i][1] += ` – ${virtual_meter_items[0][1]}`;
+                    }
+                }
+
                 table_items.sort((a, b) => a[1].localeCompare(b[1]));
                 table_items.push([MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")]);
 
@@ -278,14 +287,25 @@ export function pre_init() {
                             placeholder={__("select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
-                                let table = parseInt(v);
                                 let location = MeterLocation.Unknown;
+                                let table_id = parseInt(v);
+                                let table = new_table_config(table_id);
 
-                                if (table == MeterModbusTCPTableID.TinkerforgeWARPCharger) {
-                                    location = MeterLocation.Load; // FIXME: maybe use MeterLocation.Charger in the future?
+                                if (table_id == MeterModbusTCPTableID.TinkerforgeWARPCharger) {
+                                    location = MeterLocation.Load;
+                                }
+                                else {
+                                    let virtual_meter_items: [string, string][] = get_virtual_meter_items(table_id);
+
+                                    if (virtual_meter_items.length == 1) {
+                                        let virtual_meter = parseInt(virtual_meter_items[0][0]);
+
+                                        table = util.get_updated_union(table, {virtual_meter: virtual_meter});
+                                        location = get_fixed_location(table_id, virtual_meter);
+                                    }
                                 }
 
-                                on_config(util.get_updated_union(config, {location: location, table: new_table_config(table)}));
+                                on_config(util.get_updated_union(config, {location: location, table: table}));
                             }} />
                     </FormRow>,
                 ];
@@ -327,7 +347,7 @@ export function pre_init() {
                                     onValue={(v) => {
                                         let location = get_fixed_location(config[1].table[0], parseInt(v));
 
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)}), location: location}));
+                                        on_config(util.get_updated_union(config, {location: location, table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
                                     }} />
                             </FormRow>);
                     }
