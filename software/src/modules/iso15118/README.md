@@ -116,7 +116,7 @@ The EXI message encoding/decoding is based on [libcbv2g](https://github.com/Audr
 ## System Interface
 
 ### SoC Reporting
-- SoC values are written to the `meters` module into the wallbox meter
+- SoC values are written to the `meters` module into the charger meter
 
 ### EV Fingerprinting
 - The ISO 15118 module collects the last 8 MAC addresses
