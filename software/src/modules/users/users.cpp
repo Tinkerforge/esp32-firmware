@@ -350,13 +350,6 @@ void Users::setup()
         search_next_free_user();
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
-    evse_common.set_central_user_management_enabled(config.get("http_auth_enabled")->asBool());
-#if MODULE_CHARGE_MANAGER_AVAILABLE()
-    bool central_auth_enabled = charge_manager.config.get("enable_central_auth")->asBool();
-#else
-    bool central_auth_enabled = false;
-#endif
-    if (!central_auth_enabled) {
         Config *user_slot = get_user_slot();
         bool charge_start_tracked = charge_tracker.currentlyCharging();
         bool charging = get_charger_state() == 2 || get_charger_state() == 3
@@ -387,14 +380,10 @@ void Users::setup()
             } else if (!charge_start_tracked)
                 this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
         }
-    }
 
     auto outer_charger_state = get_charger_state();
-    task_scheduler.scheduleUncancelable([this, outer_charger_state, central_auth_enabled](){
+    task_scheduler.scheduleUncancelable([this, outer_charger_state](){
         static uint8_t last_charger_state = outer_charger_state;
-
-        if (central_auth_enabled)
-            return;
 
         uint8_t charger_state = get_charger_state();
         if (charger_state == last_charger_state)
@@ -746,13 +735,6 @@ uint16_t Users::get_user_current(uint8_t user_id) {
 // Only returns true if the triggered action was a charge start.
 bool Users::trigger_charge_action(uint8_t user_id, CMAuthType auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
-
-// Disable this functionality if central auth is enabled.
-#if MODULE_CHARGE_MANAGER_AVAILABLE()
-    if (charge_manager.config.get("enable_central_auth")->asBool())
-        return false;
-#endif
-
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
         return false;
