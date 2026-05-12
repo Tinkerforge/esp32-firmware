@@ -290,26 +290,12 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
-        automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
-        evse_common.notify_new_auth();
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
 #endif
-    
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    int16_t user_id = get_user_id(info->tag);
 
-    bool blink_handled = false;
-#if MODULE_OCPP_AVAILABLE()
-    char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
-    id_to_string_without_separator(buf_ocpp, &info->tag);
-    blink_handled = ocpp.on_tag_seen(buf_ocpp);
-#endif
-#if MODULE_EVSE_LED_AVAILABLE()
-    if (!blink_handled)
-        evse_led.set_module(user_id >= 0 ? EvseLed::Blink::Ack : EvseLed::Blink::Nack, 2000);
-#else
-    (void) blink_handled;
-#endif
+#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
+    int16_t user_id = get_user_id(info->tag);
 
     if (user_id >= 0) {
         // Found a new authorized tag.
@@ -318,11 +304,14 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
         char buf[NFC_TAG_ID_STRING_LENGTH + 1];
         id_to_string(buf, &info->tag);
         auth_info.get("tag_id")->updateString(buf);
-
-        users.trigger_charge_action(user_id, injected ? CMAuthType::InjectedNFC : CMAuthType::NFC, auth_info.value,
-                injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
-
     }
+
+    charge_authorization.notify_auth(
+        user_id,
+        millis_t{info->last_seen},
+        injected ? CMAuthType::InjectedNFC : CMAuthType::NFC,
+        injected ? tag_injection_action : TRIGGER_CHARGE_ANY,
+        auth_info.value);
 #endif
 }
 
