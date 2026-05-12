@@ -99,6 +99,8 @@ public:
             backend->reset();
     }
 
+    micros_t get_deadtime_post_start() const { return this->deadtime_post_start; }
+
 private:
     Config config_authorized_tags_prototype;
     ConfigRoot config;

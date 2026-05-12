@@ -23,79 +23,95 @@
 
 void ChargeAuthorization::pre_setup()
 {
-    last_seen_authentications = Config::Tuple({});
+    auth_prototypes[0] = {CMAuthType::None, *Config::Null()};
+    auth_prototypes[1] = {CMAuthType::Lost, *Config::Null()};
+    auth_prototypes[2] = {CMAuthType::NFC, Config::Object({
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+        {"tag_type", Config::Uint8(0)}
+    })};
+    auth_prototypes[3] = {CMAuthType::InjectedNFC, Config::Object({
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+        {"tag_type", Config::Uint8(0)}
+    })};
+
+
+    last_seen_authentications = Config::Tuple(
+        LAST_AUTH_LIST_LENGTH,
+        Config::Object({
+            {"seen_at", Config::Uptime()},
+            {"auth_info", Config::Union<CMAuthType>(
+                *Config::Null(),
+                CMAuthType::None,
+                auth_prototypes,
+                ARRAY_SIZE(auth_prototypes)
+            )}
+        })
+    );
 }
 
 void ChargeAuthorization::setup()
 {
-    auth_prototypes[0] = {CMAuthType::None, *Config::Null()};
-    auth_prototypes[1] = {CMAuthType::NFC, Config::Object({
-        {"auth_string", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
-        {"additional_data", Config::Uint8(0)},
-        {"last_seen", Config::Uint32(0)}
-    })};
-
-    last_seen_authentications.replace(LAST_AUTH_LIST_LENGTH, Config::Union<CMAuthType>(
-        *Config::Null(),
-        CMAuthType::None,
-        auth_prototypes,
-        ARRAY_SIZE(auth_prototypes)
-    ));
-
     initialized = true;
+}
+
+void ChargeAuthorization::notify_auth(int16_t user_id, millis_t last_seen, CMAuthType auth_type, int action, Config::ConfVariant auth_info)
+{
+    auto seen_at = now_us() - last_seen;
+
+    size_t insert_at = 0;
+
+    for (size_t i = 0; i < LAST_AUTH_LIST_LENGTH; ++i) {
+        Config *auth = static_cast<Config *>(last_seen_authentications.get(i));
+        // Empty slots have a seen_at timestamp of 0.
+        // This is always less than now_us() - last_seen except if a tag was seen before the ESP started.
+        // It's fine to ignore it in this case.
+        if (auth->get("seen_at")->asUptime() >= seen_at)
+            continue;
+
+        insert_at = i;
+        break;
+    }
+
+    for (int i = LAST_AUTH_LIST_LENGTH - 1; i > insert_at; --i) {
+        Config *src = static_cast<Config *>(last_seen_authentications.get(i - 1));
+        Config *dst = static_cast<Config *>(last_seen_authentications.get(i));
+        *dst = *src;
+    }
+
+    Config *dst = static_cast<Config *>(last_seen_authentications.get(insert_at));
+    dst->get("seen_at")->updateUptime(seen_at);
+    dst->get("auth_info")->changeUnionVariant(auth_type);
+    static_cast<Config *>(dst->get("auth_info")->get())->value = auth_info;
+
+    bool blink_handled = false;
+#if MODULE_OCPP_AVAILABLE()
+    if (auth_type == CMAuthType::NFC || auth_type == CMAuthType::InjectedNFC) {
+        // TODO: this is a hack but good enough for now.
+        char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
+        nfc.get_last_tag_seen(nullptr, nullptr, buf_ocpp);
+        blink_handled = ocpp.on_tag_seen(buf_ocpp);
+    }
+#endif
+
+#if MODULE_EVSE_LED_AVAILABLE()
+    if (!blink_handled)
+        evse_led.set_module(user_id >= 0 ? EvseLed::Blink::Ack : EvseLed::Blink::Nack, 2000);
+#else
+    (void) blink_handled;
+#endif
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    if (user_id >= 0)
+        users.trigger_charge_action(user_id, auth_type, auth_info, action, 3_s, /*TODO: De-hack */nfc.get_deadtime_post_start());
+
+    // TODO: Maybe let notify_new_auth return blink_handled so that central user auth wins against local?
+    evse_common.notify_new_auth();
+#endif
 }
 
 void ChargeAuthorization::register_urls()
 {
-    api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"auth_string"});
-    
-    task_scheduler.scheduleUncancelable([this] {
-        // Collect valid tags from indices 0 to TAG_LIST_LENGTH-2 (already sorted newest-first by NFC module)
-        size_t valid_indices[TAG_LIST_LENGTH];
-        size_t valid_count = 0;
-
-        for (size_t i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-            const Config *tag = static_cast<const Config *>(nfc.seen_tags.get(i));
-            if (tag->get("last_seen")->asUint() == 0)
-                continue;
-            if (tag->get("tag_id")->asString().length() == 0)
-                continue;
-            valid_indices[valid_count++] = i;
-        }
-
-        // The last index may contain an injected tag; insert it into the correct sorted position
-        constexpr size_t last_idx = TAG_LIST_LENGTH - 1;
-        const Config *last_tag = static_cast<const Config *>(nfc.seen_tags.get(last_idx));
-        if (last_tag->get("last_seen")->asUint() != 0 && last_tag->get("tag_id")->asString().length() != 0) {
-            uint32_t last_seen = last_tag->get("last_seen")->asUint();
-            size_t insert_pos = valid_count;
-            for (size_t i = 0; i < valid_count; ++i) {
-                if (static_cast<const Config *>(nfc.seen_tags.get(valid_indices[i]))->get("last_seen")->asUint() > last_seen) {
-                    insert_pos = i;
-                    break;
-                }
-            }
-            for (size_t i = valid_count; i > insert_pos; --i) {
-                valid_indices[i] = valid_indices[i - 1];
-            }
-            valid_indices[insert_pos] = last_idx;
-            ++valid_count;
-        }
-
-        // Fill up to LAST_AUTH_LIST_LENGTH entries; clear the rest
-        for (size_t i = 0; i < LAST_AUTH_LIST_LENGTH; ++i) {
-            Config *auth = static_cast<Config *>(last_seen_authentications.get(i));
-            if (i < valid_count) {
-                const Config *tag = static_cast<const Config *>(nfc.seen_tags.get(valid_indices[i]));
-                auth->changeUnionVariant(CMAuthType::NFC);
-                auth->get()->get("auth_string")->updateString(tag->get("tag_id")->asString());
-                auth->get()->get("additional_data")->updateUint(tag->get("tag_type")->asUint());
-                auth->get()->get("last_seen")->updateUint(tag->get("last_seen")->asUint());
-            } else {
-                auth->changeUnionVariant(CMAuthType::None);
-            }
-        }
-    }, 1_s);
+    api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"tag_id"});
 }
 
 int16_t ChargeAuthorization::find_user(const cm_auth_info &info)

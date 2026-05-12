@@ -38,10 +38,12 @@ public:
     // or -1 if the tag was not recognized or auth type is unsupported.
     int16_t find_user(const cm_auth_info &info);
 
+    void notify_auth(int16_t user_id, millis_t last_seen, CMAuthType auth_type, int action /*currently users.h TRIGGER_CHARGE_* should be an enum*/, Config::ConfVariant auth_info);
+
     ConfigRoot last_seen_authentications;
 
 private:
-    ConfUnionPrototype<CMAuthType> auth_prototypes[2];
+    ConfUnionPrototype<CMAuthType> auth_prototypes[4];
 };
 
 #include "generated/module_available_end.h"
