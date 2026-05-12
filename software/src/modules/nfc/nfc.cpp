@@ -410,9 +410,10 @@ void NFC::update_seen_tags()
     old_tags = new_tags;
     new_tags = tmp;
 
+    // Tag lists are already swapped. Read old_tags here.
     for (size_t i = 0; i < TAG_LIST_LENGTH; ++i)
         if (new_seen_tags[i])
-            tag_seen(&new_tags[i], i == TAG_LIST_LENGTH - 1);
+            tag_seen(&old_tags[i], i == TAG_LIST_LENGTH - 1);
 }
 
 
