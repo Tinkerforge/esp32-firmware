@@ -1189,7 +1189,7 @@ export function isDarkMode(): boolean {
 // Returns all seen tags (local + remote), deduplicated.
 export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
 export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
-    let all_tags: NFCSeenTag[] = API.get('nfc/seen_tags').map(t => {
+    let all_tags: NFCSeenTag[] = API.get('nfc/seen_tags')?.map(t => {
         const tag: NFCSeenTag = {...t, charger_name: null};
         return tag;
     });
