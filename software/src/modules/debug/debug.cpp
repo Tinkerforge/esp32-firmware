@@ -57,6 +57,22 @@ extern "C" {
 #include "gcc_warnings.h"
 
 #ifdef DEBUG_FS_ENABLE
+
+/*
+- start capturing traffic
+- trigger TLS connection
+- download trace_log
+- get block between
+  __begin_sslkeylogfile__
+  and
+  __end_sslkeylogfile__
+  and put it into a file
+- select this file in Wireshark:
+  Edit -> Preferences -> Protocols -> TLS
+  select as (Pre)-Master-Secret log filename
+- redissect capture: View -> Redissect Packets
+*/
+
 constexpr const char * const prf_type[] {
     "TLS_PRF_NONE",
     "TLS_PRF_SHA384",
