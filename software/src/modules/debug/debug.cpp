@@ -31,6 +31,10 @@
 #include <spi_flash_chip_driver.h>
 #include <freertos/task.h>
 
+#ifdef DEBUG_FS_ENABLE
+#include <mbedtls/ssl.h>
+#endif
+
 // lwip_socket_dbg_get_socket() in sockets_priv.h is not declared extern "C".
 extern "C" {
 #include <lwip/priv/sockets_priv.h>
@@ -47,9 +51,114 @@ extern "C" {
 
 #ifdef DEBUG_FS_ENABLE
 #include "generated/embedded_bootloader.embedded.h"
+#include "tools/hexdump.h"
 #endif
 
 #include "gcc_warnings.h"
+
+#ifdef DEBUG_FS_ENABLE
+constexpr const char * const prf_type[] {
+    "TLS_PRF_NONE",
+    "TLS_PRF_SHA384",
+    "TLS_PRF_SHA256",
+    "HKDF_EXPAND_SHA384",
+    "HKDF_EXPAND_SHA256"
+};
+
+unsigned char last_server_random[32]{};
+
+extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
+                                mbedtls_ssl_key_export_type type,
+                                const unsigned char *secret,
+                                size_t secret_len,
+                                const unsigned char client_random[32],
+                                const unsigned char server_random[32],
+                                mbedtls_tls_prf_types tls_prf_type);
+
+extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
+                                mbedtls_ssl_key_export_type type,
+                                const unsigned char *secret,
+                                size_t secret_len,
+                                const unsigned char client_random[32],
+                                const unsigned char server_random[32],
+                                mbedtls_tls_prf_types tls_prf_type)
+{
+    auto secret_hex = heap_alloc_array<char>(secret_len * 2 + 1);
+    hexdump(secret, secret_len, secret_hex.get(), secret_len * 2 + 1, HexdumpCase::Lower);
+
+    auto client_random_hex = heap_alloc_array<char>(32 * 2 + 1);
+    hexdump(client_random, 32, client_random_hex.get(), 32 * 2 + 1, HexdumpCase::Lower);
+
+    auto server_random_hex = heap_alloc_array<char>(32 * 2 + 1);
+    hexdump(server_random, 32, server_random_hex.get(), 32 * 2 + 1, HexdumpCase::Lower);
+
+    if (memcmp(last_server_random, server_random, 32) != 0) {
+        char timestamp_buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+        logger.format_timestamp(timestamp_buf);
+
+        logger.tracefln_plain(
+            debug.ssl_key_trace_buffer_index,
+            "\n# %s p_expkey %p prf_type %s server_random %s ",
+            timestamp_buf, p_expkey, prf_type[tls_prf_type], server_random_hex.get());
+
+        memcpy(last_server_random, server_random, 32);
+    }
+
+    switch (type) {
+        case MBEDTLS_SSL_KEY_EXPORT_TLS12_MASTER_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "CLIENT_RANDOM %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_EARLY_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "CLIENT_EARLY_TRAFFIC_SECRET %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_EARLY_EXPORTER_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "EARLY_EXPORTER_SECRET %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_HANDSHAKE_TRAFFIC_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "CLIENT_HANDSHAKE_TRAFFIC_SECRET %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_SERVER_HANDSHAKE_TRAFFIC_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "SERVER_HANDSHAKE_TRAFFIC_SECRET %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_APPLICATION_TRAFFIC_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "CLIENT_TRAFFIC_SECRET_0 %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_SERVER_APPLICATION_TRAFFIC_SECRET:
+            logger.tracefln_plain(
+                debug.ssl_key_trace_buffer_index,
+                "SERVER_TRAFFIC_SECRET_0 %s %s",
+                client_random_hex.get(), secret_hex.get());
+            break;
+
+        default:
+            return;
+    }
+}
+#endif
 
 static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
@@ -219,6 +328,10 @@ void Debug::pre_setup()
 
     register_task("ipc0", IPC_STACK_SIZE);
     register_task("ipc1", IPC_STACK_SIZE);
+
+#ifdef DEBUG_FS_ENABLE
+    this->ssl_key_trace_buffer_index = logger.alloc_trace_buffer("sslkeylogfile", 8*1024u);
+#endif
 }
 
 void Debug::setup()

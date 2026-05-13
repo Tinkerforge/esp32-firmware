@@ -54,6 +54,10 @@ public:
     void deregister_task(const char *task_name);
     void deregister_task(TaskHandle_t handle);
 
+#ifdef DEBUG_FS_ENABLE
+    size_t ssl_key_trace_buffer_index;
+#endif
+
 private:
     void deregister_task_internal(size_t index);
 
