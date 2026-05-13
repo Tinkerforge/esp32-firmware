@@ -290,7 +290,7 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-#if MODULE_AUTOMATION_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
     automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
 #endif
 
@@ -310,7 +310,11 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
         user_id,
         millis_t{info->last_seen},
         injected ? CMAuthType::InjectedNFC : CMAuthType::NFC,
+#if MODULE_EVSE_COMMON_AVAILABLE()
         injected ? tag_injection_action : TRIGGER_CHARGE_ANY,
+#else
+        0,
+#endif
         auth_info.value);
 #endif
 }
