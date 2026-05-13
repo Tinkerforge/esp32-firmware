@@ -72,7 +72,7 @@ def write_firmware_info():
     # 7121CE12F0126E
     # tink er for ge
     buf[0:7] = bytes.fromhex("7121CE12F0126E")  # magic
-    buf[7] = 0x03  # firmware info version, note: a new version has to be backwards compatible
+    buf[7] = 0x04  # firmware info version, note: a new version has to be backwards compatible
     firmware_info_product_name_bytes = firmware_info_product_name.encode("utf-8")  # max 60 bytes
 
     if len(firmware_info_product_name_bytes) > 60:
@@ -91,9 +91,13 @@ def write_firmware_info():
     if len(firmware_info_product_id_bytes) > 60:
         raise Exception('firmware_info_product_id is longer than 60 bytes')
 
+    application_bytes = pathlib.Path(env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')).read_bytes()
+    padded_application_bytes = application_bytes + bytearray([0xFF] * ((((len(application_bytes) + 4095)) & ~4095) - len(application_bytes)))  # pad to multiple of 4096
+
     buf[77:77 + len(firmware_info_product_id_bytes)] = firmware_info_product_id_bytes  # since firmware info version 3
     buf[77 + len(firmware_info_product_id_bytes):137] = bytes(60 - len(firmware_info_product_id_bytes))
     buf[137] = 0x00  # 0 byte to make sure string is terminated
+    buf[138:170] = hashlib.sha256(padded_application_bytes).digest()  # since firmware info version 4
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
     pathlib.Path(env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin')).write_bytes(buf)

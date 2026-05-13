@@ -31,6 +31,7 @@
 #include "options.h"
 #include "build.h"
 #include "rollback_timing.h"
+#include "tools/hexdump.h"
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
 #include "generated/check_state.enum.h"
@@ -60,9 +61,9 @@ static const uint8_t signature_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0xE6, 0x
 // The firmware files are merged with the bootloader, partition table, signature_info,
 // firmware_info and slot configuration bins.
 // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
-// The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
-// So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
-#define FIRMWARE_OFFSET (0x10000 - 0x1000)
+// The first application slot (i.e. the one that is flashed over USB) starts at 0x10000.
+// So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual application starts.
+#define APPLICATION_OFFSET (0x10000 - 0x1000)
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
@@ -465,6 +466,9 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr)
 {
     if (chunk_offset == 0) {
+        application_len = complete_len - APPLICATION_OFFSET;
+        padded_application_len = (application_len + 4095) & ~static_cast<size_t>(4095); // pad to a multiple of 4096
+
 #if signature_sodium_public_key_length != 0
         if (signature_override_cookie != 0) {
             signature_override_cookie = 0;
@@ -472,14 +476,18 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         }
 #endif
 
-        if (!Update.begin(complete_len - FIRMWARE_OFFSET, U_FLASH)) {
+        if (!Update.begin(padded_application_len, U_FLASH)) {
             logger.printfln("Failed to update: Could not initialize flash writer: %s", Update.errorString());
             Update.abort();
             return InstallState::FlashBeginFailed;
         }
+
         mark_update_partition_invalid = true;
 
         firmware_info.reset();
+
+        mbedtls_sha256_init(&sha256_ctx);
+        mbedtls_sha256_starts(&sha256_ctx, 0);
 
 #if signature_sodium_public_key_length != 0
         if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
@@ -541,15 +549,15 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         }
     }
 
-    if (chunk_offset + chunk_len < FIRMWARE_OFFSET) {
+    if (chunk_offset + chunk_len < APPLICATION_OFFSET) {
         return InstallState::InProgress;
     }
 
     uint8_t *start = chunk_data;
     size_t len = chunk_len;
 
-    if (chunk_offset < FIRMWARE_OFFSET) {
-        size_t to_skip = FIRMWARE_OFFSET - chunk_offset;
+    if (chunk_offset < APPLICATION_OFFSET) {
+        size_t to_skip = APPLICATION_OFFSET - chunk_offset;
         start += to_skip;
         len -= to_skip;
     }
@@ -558,6 +566,8 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         task_scheduler.await([this](){ this->change_update_partition_to_invalid(); });
         mark_update_partition_invalid = false;
     }
+
+    mbedtls_sha256_update(&sha256_ctx, start, len);
 
     size_t written = Update.write(start, len);
 
@@ -568,6 +578,42 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     }
 
     if (is_complete) {
+        size_t padding_len = padded_application_len - application_len;
+        uint8_t padding_block[64];
+
+        memset(padding_block, 0xFF, sizeof(padding_block));
+
+        while (padding_len > 0) {
+            size_t padding_block_len = std::min(padding_len, sizeof(padding_block));
+
+            mbedtls_sha256_update(&sha256_ctx, padding_block, padding_block_len);
+
+            written = Update.write(padding_block, padding_block_len);
+
+            if (written != padding_block_len) {
+                logger.printfln("Failed to update: Could not write padding with length %u; written %u, error: %s", padding_block_len, written, Update.errorString());
+                Update.abort();
+                return InstallState::FlashShortWrite;
+            }
+
+            padding_len -= padding_block_len;
+        }
+
+        uint8_t actual_padded_application_sha256sum[32];
+        mbedtls_sha256_finish(&sha256_ctx, actual_padded_application_sha256sum);
+
+        if (firmware_info.block.version >= 4 && memcmp(firmware_info.block.padded_application_sha256sum, actual_padded_application_sha256sum, 32) != 0) {
+            char padded_application_sha256sum_str[64 + 1];
+            char actual_padded_application_sha256sum_str[64 + 1];
+
+            hexdump(firmware_info.block.padded_application_sha256sum, 32, padded_application_sha256sum_str, std::size(padded_application_sha256sum_str), HexdumpCase::Lower);
+            hexdump(actual_padded_application_sha256sum, 32, actual_padded_application_sha256sum_str, std::size(actual_padded_application_sha256sum_str), HexdumpCase::Lower);
+
+            logger.printfln("Failed to update: Application is corrupted; expected checksum %s, actual checksum %s", padded_application_sha256sum_str, actual_padded_application_sha256sum_str);
+            Update.abort();
+            return InstallState::ApplicationCorrupted;
+        }
+
 #if signature_sodium_public_key_length != 0
         if (!signature_info.block_found || crypto_sign_final_verify(&signature_state, signature_info_signature, signature_sodium_public_key_data) < 0) {
             signature_override_cookie = esp_random();
@@ -1549,7 +1595,7 @@ void FirmwareUpdate::install_firmware(const char *url)
                 return;
             }
 
-            if (event->data_complete_len <= FIRMWARE_OFFSET) {
+            if (event->data_complete_len <= APPLICATION_OFFSET) {
                 logger.printfln("Firmware file is too small: %zd", event->data_complete_len);
                 install_state.get("state")->updateEnum(InstallState::FirmwareTooSmall);
                 https_client.abort_async();

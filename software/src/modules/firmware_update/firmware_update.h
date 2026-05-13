@@ -25,6 +25,7 @@
 #include <esp_partition.h>
 #include <esp_ota_ops.h>
 #include <sodium.h>
+#include <mbedtls/sha256.h>
 
 #include "module.h"
 #include "config.h"
@@ -120,9 +121,11 @@ private:
         uint32_t fw_build_timestamp = 0;
         uint8_t fw_version_beta = 0; // since firmware info version 2, before it's 0xFF
         char product_id[61] = {}; // since firmware info version 3, before it's 0xFF
+        uint8_t padded_application_sha256sum[32] = {}; // since firmware info version 4, before it's 0xFF
     };
 
     BlockReader<firmware_info_t> firmware_info;
+    mbedtls_sha256_context sha256_ctx;
 
 #if signature_sodium_public_key_length != 0
     struct signature_info_t {
@@ -147,4 +150,6 @@ private:
     bool check_for_update_in_progress = false;
     bool install_firmware_in_progress = false;
     bool mark_update_partition_invalid = true;
+    size_t application_len;
+    size_t padded_application_len;
 };

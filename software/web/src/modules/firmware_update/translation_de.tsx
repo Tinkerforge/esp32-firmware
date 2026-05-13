@@ -88,6 +88,7 @@ let x = {
             "install_state_27": "Größe der Firmware-Datei ist unbekannt",
             "install_state_28": "Fehler beim Empfangen der Daten aufgetreten",
             "install_state_29": "Signatur-Info in Firmware-Datei ist beschädigt (Prüfsummenfehler)",
+            "install_state_30": "Applikation in der Firmware-Datei ist beschädigt (Prüfsummenfehler)",
             "build_time": /*SFN*/(build_time: string) => `erstellt ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `von ${publisher}`/*NF*/,
             "install_failed": "Installation fehlgeschlagen"
