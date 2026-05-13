@@ -42,13 +42,13 @@ static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT
 
 static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};
 
-// Newer firmwares contain a firmware info page.
+// Newer firmwares contain a firmware info
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
 static const uint8_t firmware_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0x71, 0x21, 0xCE, 0x12, 0xF0, 0x12, 0x6E};
 
-// Signed firmwares contain a signature info page.
+// Signed firmwares contain a signature info
 #define SIGNATURE_INFO_OFFSET (0xc000 - 0x1000)
 #define SIGNATURE_INFO_LENGTH 0x1000
 
@@ -332,13 +332,13 @@ void FirmwareUpdate::setup()
     cert_id = config.get("cert_id")->asInt();
 
 #if signature_sodium_public_key_length != 0
-    logger.printfln("Firmware is signed by: %s", signature_publisher);
+    logger.printfln("Running firmware is signed by: %s", signature_publisher);
 
     if (update_url.length() > 0) {
         api.addFeature("firmware_update");
     }
 #else
-    logger.printfln("Firmware is not signed");
+    logger.printfln("Running firmware is not signed");
 #endif
 
     read_app_partition_state();
@@ -364,20 +364,20 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 {
     if (!firmware_info.block_found && OPTIONS_FIRMWARE_UPDATE_REQUIRE_FIRMWARE_INFO()) {
         if (log) {
-            logger.printfln("Failed to update: Firmware has no info page!");
+            logger.printfln("Failed to update: Firmware info is missing");
         }
 
-        return InstallState::NoInfoPage;
+        return InstallState::FirmwareInfoMissing;
     }
 
     if (firmware_info.block_found) {
         if (firmware_info.expected_checksum != firmware_info.actual_checksum) {
             if (log) {
-                logger.printfln("Failed to update: Firmware info page corrupted! Expected checksum 0x%08lx, actual checksum 0x%08lx",
+                logger.printfln("Failed to update: Firmware info corrupted; expected checksum 0x%08lx, actual checksum 0x%08lx",
                                 firmware_info.expected_checksum, firmware_info.actual_checksum);
             }
 
-            return InstallState::InfoPageCorrupted;
+            return InstallState::FirmwareInfoCorrupted;
         }
 
         firmware_info.block.product_name[ARRAY_SIZE(firmware_info.block.product_name) - 1] = '\0';
@@ -392,7 +392,7 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 
             if (strcmp(firmware_info.block.product_id, expected_product_id) != 0) {
                 if (log) {
-                    logger.printfln("Failed to update: Firmware is for %s but this is %s!",
+                    logger.printfln("Failed to update: Firmware is for %s, but this is %s",
                                     firmware_info.block.product_id, expected_product_id);
                 }
 
@@ -408,7 +408,7 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 
             if (strcmp(firmware_info.block.product_name, expected_product_name) != 0) {
                 if (log) {
-                    logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
+                    logger.printfln("Failed to update: Firmware is for a %s, but this is a %s",
                                     firmware_info.block.product_name, expected_product_name);
                 }
 
@@ -421,7 +421,7 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 
         if (detect_downgrade && fw_version.compare(build_version) < 0) {
             if (log) {
-                logger.printfln("Firmware is a downgrade!");
+                logger.printfln("Firmware update is a downgrade");
             }
 
             if (json_ptr != nullptr) {
@@ -455,7 +455,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
 #endif
 
         if (!Update.begin(complete_len - FIRMWARE_OFFSET, U_FLASH)) {
-            logger.printfln("Failed to begin update: %s", Update.errorString());
+            logger.printfln("Failed to update: Could not initialize flash writer: %s", Update.errorString());
             Update.abort();
             return InstallState::FlashBeginFailed;
         }
@@ -465,7 +465,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
 
 #if signature_sodium_public_key_length != 0
         if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
-            logger.printfln("Failed to begin signature verification");
+            logger.printfln("Failed to update: Could not initialize signature verification");
             Update.abort();
             return InstallState::SignatureBeginFailed;
         }
@@ -496,7 +496,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     }
 
     if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
-        logger.printfln("Failed to update signature verification");
+        logger.printfln("Failed to update: Could not continue signature verification");
         Update.abort();
         return InstallState::SignatureUpdateFailed;
     }
@@ -532,7 +532,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     size_t written = Update.write(start, len);
 
     if (written != len) {
-        logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", len, written, Update.errorString());
+        logger.printfln("Failed to update: Could not write data with length %u; written %u, error: %s", len, written, Update.errorString());
         Update.abort();
         return InstallState::FlashShortWrite;
     }
@@ -831,7 +831,7 @@ void FirmwareUpdate::register_urls()
             char json_buf[64] = "";
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-            install_state_to_json_error(InstallState::InfoPageTooBig, &json);
+            install_state_to_json_error(InstallState::FirmwareInfoTooBig, &json);
             request.send_json(400, json);
             task_scheduler.await([this](){check_firmware_in_progress = false;});
             return false;
@@ -956,7 +956,7 @@ static bool read_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, bo
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not read OTA partition page %zu: %d", ota_index, err);
+            logger.printfln("Could not read OTA partition data %zu: %d", ota_index, err);
         }
 
         return false;
@@ -981,7 +981,7 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not erase OTA partition page %zu: %d", ota_index, err);
+            logger.printfln("Could not erase OTA partition data %zu: %d", ota_index, err);
         }
 
         return false;
@@ -991,7 +991,7 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not write OTA partition page %zu: %d", ota_index, err);
+            logger.printfln("Could not write OTA partition data %zu: %d", ota_index, err);
         }
 
         return false;

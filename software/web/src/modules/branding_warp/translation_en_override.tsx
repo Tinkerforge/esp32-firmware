@@ -16,7 +16,7 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "install_state_19": "Firmware file corrupted or for WARP1 Charger (info page missing)"
+            "install_state_19": "Firmware info missing in firmware file or firmware file is for WARP1 Charger"
         }
     },
     "meters": {

@@ -59,7 +59,7 @@ de_hyph = [
     'Blind-energie',
     'Blind-leistung',
     'Blo-ckie-ren',
-    'Check-summen-fehler',
+    'Prüf-summen-fehler',
     'De-akti-vieren',
     'de-akti-vieren',
     'De-akti-viert',

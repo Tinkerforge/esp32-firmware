@@ -16,9 +16,9 @@ Signature Begin Failed
 Signature Update Failed
 Signature Verify Failed
 Vehicle Connected
-Info Page Too Big
-No Info Page
-Info Page Corrupted
+Firmware Info Too Big
+Firmware Info Missing
+Firmware Info Corrupted
 Wrong Firmware Type
 Downgrade
 Aborted

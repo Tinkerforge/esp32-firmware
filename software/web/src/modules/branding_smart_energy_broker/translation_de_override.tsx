@@ -16,7 +16,7 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "install_state_19": "Firmware-Datei ist beschädigt oder für ein anderes Produkt (Firmware-Info-Seite fehlt)"
+            "install_state_19": "Firmware-Info fehlt in Firmware-Datei oder Firmware-Datei ist für ein anderes Produkt"
         }
     },
     "meters": {
