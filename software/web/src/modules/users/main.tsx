@@ -1112,7 +1112,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             <FormRow
                 label={__("users.content.evse_user_description")}
                 warning={__(
-                    "users.content.evse_user_enable_central_auth_warning",
+                    "users.content.evse_user_enable_central_management_warning"
                 )(manager_ip)}
                 show_warning={user_slot_allowed && state.userSlotEnabled && central_auth_enabled}
             >

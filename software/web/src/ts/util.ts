@@ -1196,7 +1196,7 @@ export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
 
     if (
         API.hasModule("charge_manager") &&
-        API.get("charge_manager/config").enable_central_auth
+        API.get("charge_manager/config").enable_central_management
     ) {
         let cm_state = API.get_unchecked("charge_manager/state");
         if (cm_state && cm_state.chargers) {

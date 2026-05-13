@@ -55,7 +55,7 @@ let x = {
                 </>,
             "evse_user_enable_invalid":
                 "Für die Ladefreigabe ist mindestens ein Benutzer notwendig.",
-            "evse_user_enable_central_auth_warning": /*FFN*/(manager_ip: string) => <>Deaktiviert, weil die <a href={`http://${manager_ip}/#charge_manager_chargers`}>zentrale Ladefreigabe</a> im Lastmanager aktiviert ist.</>/*NF*/,
+            "evse_user_enable_central_management_warning": /*FFN*/(manager_ip: string) => <>Deaktiviert, weil die <a href={`http://${manager_ip}/#charge_manager_chargers`}>zentrale Ladefreigabe</a> im Lastmanager aktiviert ist.</>/*NF*/,
 
             "nfc_tags": "NFC-Tags",
             "nfc_tag_id": "Tag-ID",

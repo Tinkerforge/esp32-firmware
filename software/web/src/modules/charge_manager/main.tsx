@@ -726,7 +726,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         const charge_modes = API.get("charge_manager/charge_modes");
         const uptime = API.get("info/keep_alive").uptime;
         const users = API.get("users/config").users;
-        const central_auth_enabled = state.config.enable_central_auth;
+        const central_auth_enabled = state.config.enable_central_management;
 
         let cards = state.state.chargers.map((c, i) =>
             <CMStatusCharger

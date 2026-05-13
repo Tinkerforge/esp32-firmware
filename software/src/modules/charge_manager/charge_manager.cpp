@@ -99,8 +99,7 @@ void ChargeManager::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
-        {"enable_central_auth", Config::Bool(false)},
-        {"enable_charge_tracking", Config::Bool(true)},
+        {"enable_central_management", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
         {"maximum_available_current", Config::Uint(0, 0, 32000 * MAX_CONTROLLED_CHARGERS)},
@@ -372,7 +371,7 @@ static void update_charge_tracking(
     ChargerState *charger_state)
 {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-    if (!cfg->enable_charge_tracking)
+    if (!cfg->enable_central_management)
         return;
 
     auto now = now_us();
@@ -502,7 +501,7 @@ static void update_authentication(
     auto &target = charger_state[client_id];
 
     // If central auth is disabled, always authorize
-    if (!cfg->enable_central_auth) {
+    if (!cfg->enable_central_management) {
         target.authenticated_user_id = AUTHD_ANONYMOUSLY;
         target.user_current = get_user_current(target.authenticated_user_id);
         return;
@@ -612,7 +611,7 @@ bool ChargeManager::send_client_packet(uint8_t i) {
     auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
 
     CMAuthFeedback auth_feedback = CMAuthFeedback::None;
-    if (this->ca_config->enable_central_auth) {
+    if (this->ca_config->enable_central_management) {
         auto &charger = this->charger_state[i];
         if (charger.charger_state != 0) {
             switch (charger.authenticated_user_id) {
@@ -666,8 +665,8 @@ bool ChargeManager::send_client_packet(uint8_t i) {
                                              charge_mode,
                                              this->supported_charge_mode_bitmask,
                                              auth_feedback,
-                                             this->ca_config->enable_central_auth,
-                                             this->ca_config->enable_charge_tracking,
+                                             this->ca_config->enable_central_management,
+                                             this->ca_config->enable_central_management,
                                              this->charger_allocation_state[i].blocking_reason);
 }
 
@@ -904,8 +903,7 @@ void ChargeManager::setup()
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
     ca_config->requested_current_margin = config.get("requested_current_margin")->asUint();
     ca_config->requested_current_threshold = config.get("requested_current_threshold")->asUint();
-    ca_config->enable_central_auth = config.get("enable_central_auth")->asBool();
-    ca_config->enable_charge_tracking = config.get("enable_charge_tracking")->asBool();
+    ca_config->enable_central_management = config.get("enable_central_management")->asBool();
 
     this->ca_state = new CurrentAllocatorState();
 
@@ -1470,7 +1468,7 @@ void ChargeManager::register_urls()
             return;
         }
 
-        if (!this->ca_config->enable_central_auth) {
+        if (!this->ca_config->enable_central_management) {
             errmsg = "Central authorization is not enabled";
             return;
         }

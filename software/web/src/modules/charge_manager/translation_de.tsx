@@ -38,10 +38,9 @@ let x = {
             "enable_watchdog": "Watchdog aktiviert",
             "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
-            "enable_central_auth": "Zentrale Ladefreigabe",
-            "enable_central_auth_desc": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag). Benutzer und NFC-Tags müssen auf dem Lastmanager (diesem Gerät) konfiguriert sein.",
-            "enable_charge_tracking": "Zentraler Ladetracker",
-            "enable_charge_tracking_desc": "Zeichnet Ladevorgänge aller kontrollierten Wallboxen auf diesem Gerät auf.",
+            "enable_central_management": "Zentrale Ladefreigabe",
+            "enable_central_management_desc": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag). Benutzer und NFC-Tags müssen auf dem Lastmanager (diesem Gerät) konfiguriert sein.",
+
             "verbose": "Stromverteilungsprotokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
             "default_available_current": "Voreingestellt verfügbarer Strom",
