@@ -227,8 +227,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             enable_charge_manager: cfg.enable_charge_manager,
             chargers: cfg.chargers,
             maximum_available_current: cfg.maximum_available_current,
-            enable_central_auth: cfg.enable_central_auth,
-            enable_charge_tracking: cfg.enable_charge_tracking};
+            enable_central_management: cfg.enable_central_management}
 
         // Only set the default available current if it was equal to the old maximum (the user has probably not changed it)
         if ((API.get('charge_manager/config').default_available_current == API.get('charge_manager/config').maximum_available_current)
@@ -520,24 +519,17 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                 />
             </FormRow>
 
-        let enable_central_auth = null;
+        let enable_central_management = null;
 //#if MODULE_NFC_AVAILABLE
-        enable_central_auth = <FormRow label={__("charge_manager.content.enable_central_auth")}>
-                <Switch desc={__("charge_manager.content.enable_central_auth_desc")}
-                        checked={state.enable_central_auth}
-                        onClick={this.toggle("enable_central_auth")}/>
+        enable_central_management = <FormRow label={__("charge_manager.content.enable_central_management")}>
+                <Switch desc={__("charge_manager.content.enable_central_management_desc")}
+                        checked={state.enable_central_management}
+                        onClick={this.toggle("enable_central_management")}/>
             </FormRow>;
 //#endif
 
 
-        let enable_charge_tracking = null;
-//#if MODULE_CHARGE_TRACKER_AVAILABLE
-        enable_charge_tracking = <FormRow label={__("charge_manager.content.enable_charge_tracking")}>
-                <Switch desc={__("charge_manager.content.enable_charge_tracking_desc")}
-                        checked={state.enable_charge_tracking}
-                        onClick={this.toggle("enable_charge_tracking")}/>
-            </FormRow>;
-//#endif
+
 
         let show_charger_settings = state.enable_charge_manager;
         let show_available_current = true;
@@ -599,8 +591,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             <Collapse in={state.enable_charge_manager}>
                                 <div>
                                     {available_current}
-                                    {enable_central_auth}
-                                    {enable_charge_tracking}
+                                    {enable_central_management}
                                 </div>
                             </Collapse>
                             {chargers}
