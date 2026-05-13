@@ -423,49 +423,23 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const device_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.uid.toString(), x.n]);
 
         return <>
-            <FormRow label={__("charge_tracker.content.user_filter_label")}>
-                <InputSelect
-                    value={this.state.new_remote_upload_config.user_filter.toString()}
-                    onValue={v => this.setState({
-                        new_remote_upload_config: {
-                            ...this.state.new_remote_upload_config,
-                            user_filter: parseInt(v)
+                <FormRow label={__("charge_tracker.content.user_filter_label")}>
+                    <InputSelect
+                        value={this.state.new_remote_upload_config.user_filter.toString()}
+                        onValue={(v) =>
+                            this.setState({
+                                new_remote_upload_config: {
+                                    ...this.state.new_remote_upload_config,
+                                    user_filter: parseInt(v),
+                                },
+                            })
                         }
-                    })}
-                    items={user_filter_items}
-                />
-            </FormRow>
-            <FormRow label={__("charge_tracker.content.device_filter_label")}>
-                <InputSelect
-                    value={this.state.new_remote_upload_config.device_filter.toString()}
-                    onValue={v => this.setState({
-                        new_remote_upload_config: {
-                            ...this.state.new_remote_upload_config,
-                            device_filter: parseInt(v)
-                        }
-                    })}
-                    items={[
-                        ["-2", __("charge_tracker.script.all_chargers")],
-                        ["-1", __("charge_tracker.script.deleted_chargers")],
-                        ...device_items
-                    ]}
-                />
-            </FormRow>
-            <FormRow label={__("charge_tracker.content.device_filter_label")}>
-                <InputSelect
-                    value={this.state.new_remote_upload_config.device_filter.toString()}
-                    onValue={v => this.setState({
-                        new_remote_upload_config: {
-                            ...this.state.new_remote_upload_config,
-                            device_filter: parseInt(v)
-                        }
-                    })}
-                    items={[
-                        ["-2", __("charge_tracker.script.all_chargers")],
-                        ["-1", __("charge_tracker.script.deleted_chargers")],
-                        ...device_items
-                    ]}
-                />
+                        items={[
+                            ["-2", __("charge_tracker.script.all_chargers")],
+                            ["-1", __("charge_tracker.script.deleted_chargers")],
+                            ...device_items
+                        ]}
+                    />
             </FormRow>
             <FormRow label={__("charge_tracker.content.file_type_label")}>
                 <InputSelect
