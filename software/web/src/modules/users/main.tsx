@@ -1094,31 +1094,32 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         let user_slot_allowed = state.users.length > 1;
 
         let central_auth_enabled = false;
-        //#if MODULE_CHARGE_MANAGER_AVAILABLE
-        central_auth_enabled = API.get(
-            "charge_manager/config",
-        ).enable_central_auth;
-        //#endif
+        let manager_ip = "";
+//#if MODULE_EVSE_COMMON_AVAILABLE
+        let management_state = API.get("evse/management_state");
+        central_auth_enabled = management_state.central_user_management_enabled;
+        manager_ip = management_state.manager_ip;
+//#endif
 
-        //#if MODULE_NFC_AVAILABLE
+//#if MODULE_NFC_AVAILABLE
         let seen_tags = state.allSeenTags;
         let nfc_config = API.get("nfc/config");
-        //#endif
+//#endif
 
         let evse_user_component = null;
-        //#if MODULE_EVSE_COMMON_AVAILABLE
+//#if MODULE_EVSE_COMMON_AVAILABLE
         evse_user_component = (
             <FormRow
                 label={__("users.content.evse_user_description")}
                 warning={__(
                     "users.content.evse_user_enable_central_auth_warning",
-                )}
-                show_warning={central_auth_enabled}
+                )(manager_ip)}
+                show_warning={user_slot_allowed && state.userSlotEnabled && central_auth_enabled}
             >
                 <Switch
                     desc={__("users.content.evse_user_enable")}
                     checked={user_slot_allowed && state.userSlotEnabled}
-                    disabled={!user_slot_allowed || central_auth_enabled}
+                    disabled={!user_slot_allowed}
                     className={
                         !user_slot_allowed && state.userSlotEnabled
                             ? "is-invalid"
@@ -1131,7 +1132,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 </div>
             </FormRow>
         );
-        //#endif
+//#endif
 
         return (
             <SubPage name="users">
