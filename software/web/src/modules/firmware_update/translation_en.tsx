@@ -87,6 +87,7 @@ let x = {
             "install_state_26": "Installation is not supported",
             "install_state_27": "Firmware file size is unknown",
             "install_state_28": "Error occurred while receiving data",
+            "install_state_29": "Signature info in firmware file is corrupted (checksum error)",
             "build_time": /*SFN*/(build_time: string) => `created ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `by ${publisher}`/*NF*/,
             "install_failed": "Install failed"

@@ -86,8 +86,11 @@ public:
 private:
     int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
     bool is_vehicle_blocking_update() const;
-    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr);
+#if signature_sodium_public_key_length != 0
+    InstallState check_signature_info();
+#endif
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
+    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr);
     void check_for_update();
     void install_firmware(const char *url);
     void read_app_partition_state();
@@ -130,6 +133,7 @@ private:
     };
 
     BlockReader<signature_info_t> signature_info;
+    unsigned char signature_info_signature[crypto_sign_BYTES];
     crypto_sign_state signature_state;
     uint32_t signature_override_cookie = 0;
 #endif

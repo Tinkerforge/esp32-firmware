@@ -360,6 +360,24 @@ static void install_state_to_json_error(InstallState state, TFJsonSerializer *js
     json_ptr->end();
 }
 
+#if signature_sodium_public_key_length != 0
+
+InstallState FirmwareUpdate::check_signature_info()
+{
+    if (signature_info.block_found && signature_info.expected_checksum != signature_info.actual_checksum) {
+        logger.printfln("Failed to update: Signature info is corrupted; expected checksum %08lx, actual checksum %08lx",
+                        signature_info.expected_checksum, signature_info.actual_checksum);
+
+        return InstallState::SignatureInfoCorrupted;
+    }
+
+    signature_info.block.publisher[std::size(signature_info.block.publisher) - 1] = '\0';
+
+    return InstallState::InProgress;
+}
+
+#endif
+
 InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr)
 {
     if (!firmware_info.block_found && OPTIONS_FIRMWARE_UPDATE_REQUIRE_FIRMWARE_INFO()) {
@@ -475,24 +493,36 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     }
 
 #if signature_sodium_public_key_length != 0
-    signature_info.handle_chunk(chunk_offset, chunk_data, chunk_len);
-
     if (chunk_offset + chunk_len >= SIGNATURE_INFO_SIGNATURE_OFFSET && chunk_offset < SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH) {
         uint8_t *start = chunk_data;
         size_t len = chunk_len;
         size_t to_skip = 0;
+        size_t offset = 0;
 
         if (chunk_offset < SIGNATURE_INFO_SIGNATURE_OFFSET) {
             to_skip = SIGNATURE_INFO_SIGNATURE_OFFSET - chunk_offset;
             start += to_skip;
             len -= to_skip;
         }
+        else {
+            offset = chunk_offset - SIGNATURE_INFO_SIGNATURE_OFFSET;
+        }
 
         if (chunk_offset + chunk_len > SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH) {
             len -= (chunk_offset + chunk_len) - (SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH);
         }
 
+        memcpy(signature_info_signature + offset, start, len);
         memset(start, 0x55, len);
+    }
+
+    if (signature_info.handle_chunk(chunk_offset, chunk_data, chunk_len)) {
+        InstallState result = check_signature_info();
+
+        if (result != InstallState::InProgress) {
+            Update.abort();
+            return result;
+        }
     }
 
     if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
@@ -539,9 +569,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
 
     if (is_complete) {
 #if signature_sodium_public_key_length != 0
-        signature_info.block.publisher[ARRAY_SIZE(signature_info.block.publisher) - 1] = '\0';
-
-        if (crypto_sign_final_verify(&signature_state, signature_info.block.signature, signature_sodium_public_key_data) < 0) {
+        if (!signature_info.block_found || crypto_sign_final_verify(&signature_state, signature_info_signature, signature_sodium_public_key_data) < 0) {
             signature_override_cookie = esp_random();
 
             if (signature_override_cookie == 0) {
@@ -552,7 +580,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
                 json_ptr->addObject();
                 json_ptr->addMemberNumber("error", static_cast<uint8_t>(InstallState::SignatureVerifyFailed));
 
-                if (signature_info.block.publisher[0] == 0xff) {
+                if (!signature_info.block_found) {
                     json_ptr->addMemberNull("actual_publisher");
                 }
                 else {
@@ -565,7 +593,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
                 json_ptr->end();
             }
 
-            logger.printfln("Failed to verify signature");
+            logger.printfln(!signature_info.block_found ? "Signature info is missing" : "Update signature is not valid");
             return InstallState::SignatureVerifyFailed;
         }
 
