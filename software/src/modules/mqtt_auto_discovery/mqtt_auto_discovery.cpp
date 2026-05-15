@@ -206,14 +206,39 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         topic_num = 0;
         delay = 5_s;
     } else {
-        // deal with one topic
-        if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
+        // Determine if this topic should be announced based on its check type.
+        const auto &info = mqtt_discovery_topic_infos[topic_num];
+        bool entity_enabled = false;
+
+        switch (info.check_type) {
+            case MqttDiscoveryCheckType::Feature:
+                entity_enabled = api.hasFeature(info.feature);
+                break;
+
+            case MqttDiscoveryCheckType::ApiBool: {
+                const Config *cfg = api.getState(info.api_check_path, false);
+                if (cfg != nullptr) {
+                    entity_enabled = cfg->get(info.api_check_key)->asBool();
+                }
+                break;
+            }
+
+            case MqttDiscoveryCheckType::MeterConfig: {
+                const Config *cfg = api.getState(info.api_check_path, false);
+                if (cfg != nullptr && cfg->count() > 0) {
+                    entity_enabled = cfg->get(0)->asUint() > 0;
+                }
+                break;
+            }
+        }
+
+        if (entity_enabled) {
             size_t mode_idx = config_in_use.get("auto_discovery_mode")->asUint() - 1;
 
             // Pick language-specific static_info if available, otherwise fall back to the default (German).
-            const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[mode_idx];
+            const char *static_info = info.static_infos[mode_idx];
             if (default_language == Language::English) {
-                const char *en = mqtt_discovery_topic_infos[topic_num].static_infos_en[mode_idx];
+                const char *en = info.static_infos_en[mode_idx];
                 if (en != nullptr) {
                     static_info = en;
                 }
@@ -222,7 +247,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
             if (static_info) { // No static info? Skip topic.
                 const String &client_name = mqtt.client_name;
                 const String &topic_prefix = mqtt.global_topic_prefix;
-                const char *name = default_language == Language::English ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
+                const char *name = default_language == Language::English ? info.name_en : info.name_de;
 
                 constexpr size_t json_doc_size = MQTT_DISCOVERY_MAX_JSON_LENGTH + 265 + 7 * 64 + 13 + 250;
 
@@ -234,26 +259,26 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 json.addMemberString("name", name);
 
-                json.addMemberStringF("unique_id", "%s-%s", client_name.c_str(), mqtt_discovery_topic_infos[topic_num].object_id);
-                json.addMemberStringF("default_entity_id", "%s.%s-%s", mqtt_discovery_topic_infos[topic_num].component, client_name.c_str(), mqtt_discovery_topic_infos[topic_num].object_id);
-                json.addMemberStringF("object_id", "%s-%s", client_name.c_str(), mqtt_discovery_topic_infos[topic_num].object_id);
+                json.addMemberStringF("unique_id", "%s-%s", client_name.c_str(), info.object_id);
+                json.addMemberStringF("default_entity_id", "%s.%s-%s", info.component, client_name.c_str(), info.object_id);
+                json.addMemberStringF("object_id", "%s-%s", client_name.c_str(), info.object_id);
 
-                switch (mqtt_discovery_topic_infos[topic_num].type) {
+                switch (info.type) {
                     case MqttDiscoveryType::StateAndUpdate:
-                        json.addMemberStringF("command_topic", "%s/%s_update", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].path);
+                        json.addMemberStringF("command_topic", "%s/%s_update", topic_prefix.c_str(), info.path);
                         /* FALLTHROUGH */
                     case MqttDiscoveryType::StateOnly:
-                        json.addMemberStringF("state_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].path);
+                        json.addMemberStringF("state_topic", "%s/%s", topic_prefix.c_str(), info.path);
                         break;
                     case MqttDiscoveryType::CommandOnly:
-                        json.addMemberStringF("command_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].path);
+                        json.addMemberStringF("command_topic", "%s/%s", topic_prefix.c_str(), info.path);
                         break;
                 }
 
-                if (mqtt_discovery_topic_infos[topic_num].availability_count > 0) {
+                if (info.availability_count > 0) {
                     json.addMemberArray("availability");
-                    for (uint8_t i = 0; i < mqtt_discovery_topic_infos[topic_num].availability_count; i++) {
-                        const auto &entry = mqtt_discovery_topic_infos[topic_num].availability[i];
+                    for (uint8_t i = 0; i < info.availability_count; i++) {
+                        const auto &entry = info.availability[i];
                         json.addObject();
                         json.addMemberStringF("topic", "%s/%s", topic_prefix.c_str(), entry.topic);
                         json.addMemberString("value_template", entry.value_template);
@@ -263,13 +288,13 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                     json.addMemberString("availability_mode", "all");
                 }
 
-                if (mqtt_discovery_topic_infos[topic_num].create_disabled) {
+                if (info.create_disabled) {
                     json.addMemberBoolean("enabled_by_default", false);
                 }
 
-                if (strlen(mqtt_discovery_topic_infos[topic_num].json_attributes_topic) > 0) {
-                    json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), mqtt_discovery_topic_infos[topic_num].json_attributes_topic);
-                    json_write_raw(json, mqtt_discovery_topic_infos[topic_num].json_attributes_info, strlen(mqtt_discovery_topic_infos[topic_num].json_attributes_info));
+                if (strlen(info.json_attributes_topic) > 0) {
+                    json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), info.json_attributes_topic);
+                    json_write_raw(json, info.json_attributes_info, strlen(info.json_attributes_info));
                 }
 
                 // Inject pre-formatted static_info as raw JSON object members
