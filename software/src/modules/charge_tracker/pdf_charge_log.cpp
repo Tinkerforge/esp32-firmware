@@ -304,6 +304,7 @@ int init_pdf_generator(std::function<int(const void *data, size_t len)> &write_c
                        int letterhead_lines,
                        const char *table_header,
                        uint16_t tracked_charges,
+                       Language language,
                        const std::function<int(const char **)> &table_lines_cb)
 {
     struct pdf_info info;
@@ -348,7 +349,7 @@ int init_pdf_generator(std::function<int(const void *data, size_t len)> &write_c
         return pdf_add_png_image_data(pdf_doc, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, logo_background, logo_png, sizeof(logo_png));
     });
 
-    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
+    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header, language](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
         // Logo background
         if (stream_num == 0)
             return pdf_add_filled_rectangle(pdf_doc, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, logo_background, 0);
@@ -358,7 +359,8 @@ int init_pdf_generator(std::function<int(const void *data, size_t len)> &write_c
         if (stream_num == 0) {
             float width = 0.0f;
             char buf[32] = {};
-            snprintf(buf, ARRAY_SIZE(buf), "Seite %ld von %d", page_num + 1, pages_to_be_created);
+            const char *page_label = language == Language::English ? "Page %ld of %d" : "Seite %ld von %d";
+            snprintf(buf, ARRAY_SIZE(buf), page_label, page_num + 1, pages_to_be_created);
             pdf_get_font_text_width(pdf_doc, DEFAULT_FONT, buf, FONT_SIZE, &width);
             return pdf_add_text(pdf_doc, NULL, buf, FONT_SIZE, (PDF_A4_WIDTH - width) / 2, BOTTOM_MARGIN, PDF_BLACK);
         }

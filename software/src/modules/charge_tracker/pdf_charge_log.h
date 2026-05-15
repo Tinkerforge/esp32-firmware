@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <algorithm>
 
+#include "language.h"
 #include "modules/web_server/web_server.h"
 
 int init_pdf_generator(std::function<int(const void *data, size_t len)> &callback,
@@ -32,4 +33,5 @@ int init_pdf_generator(std::function<int(const void *data, size_t len)> &callbac
                        int letterhead_lines,
                        const char *table_header,
                        uint16_t tracked_charges,
+                       Language language,
                        const std::function<int(const char **)> &table_lines_cb);
