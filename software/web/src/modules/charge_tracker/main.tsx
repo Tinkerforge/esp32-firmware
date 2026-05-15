@@ -372,6 +372,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     user_filter: config.user_filter,
                     device_filter: config.device_filter,
                     letterhead: config.letterhead,
+                    persist_letterhead: false,
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                     remote_access_user_uuid: user.uuid
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
@@ -627,7 +628,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         device_filter: parseInt(state.device_filter),
                         letterhead: state.pdf_letterhead,
                         cookie: Math.floor(Math.random() * 0xFFFFFFFF),
-                        remote_access_user_uuid
+                        remote_access_user_uuid,
+                        persist_letterhead: true
                     }, () => __("charge_tracker.script.upload_charge_log_failed"));
                 } else if (file_type == FileType.CSV) {
                     await API.call("charge_tracker/send_charge_log_csv", {
