@@ -36,6 +36,7 @@ export interface send_charge_log_pdf {
     end_timestamp_min: number;
     language: Language;
     letterhead?: string;
+    persist_letterhead: boolean;
     remote_access_user_uuid: string;
 }
 

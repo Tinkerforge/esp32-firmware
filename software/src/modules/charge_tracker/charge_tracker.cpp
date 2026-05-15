@@ -1568,18 +1568,30 @@ bool PDFGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJson
         strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
     }
 
-    task_scheduler.await([this, letterhead, letterhead_passed](){
-        auto saved_letterhead = this->pdf_letterhead_config->get("letterhead");
-        if (!letterhead_passed) {
-            strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
-            return;
-        }
+    bool persist_letterhead = !doc.containsKey("persist_letterhead") || doc["persist_letterhead"];
 
-        if (saved_letterhead->asString() != letterhead) {
-            saved_letterhead->updateString(letterhead);
-            API::writeConfig("charge_tracker/pdf_letterhead_config", this->pdf_letterhead_config);
-        }
-    });
+    if (this->pdf_letterhead_config != nullptr && persist_letterhead) {
+        task_scheduler.await([this, letterhead, letterhead_passed](){
+            auto saved_letterhead = this->pdf_letterhead_config->get("letterhead");
+            if (!letterhead_passed) {
+                strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
+                return;
+            }
+
+            if (saved_letterhead->asString() != letterhead) {
+                saved_letterhead->updateString(letterhead);
+                API::writeConfig("charge_tracker/pdf_letterhead_config", this->pdf_letterhead_config);
+            }
+        });
+    } else if (this->pdf_letterhead_config != nullptr && !letterhead_passed) {
+        task_scheduler.await([this, letterhead](){
+            auto saved_letterhead = this->pdf_letterhead_config->get("letterhead");
+            strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
+        });
+    } else if (!letterhead_passed) {
+        request.send_plain(400, "Letterhead is required for send endpoints");
+        return false;
+    }
 
     letterhead_lines = read_letterhead_lines(letterhead);
     return true;
