@@ -102,6 +102,13 @@ public:
     {
         detailed_discovery_data_received = true;
         detailed_discovery_data = data;
+        // After receiving the discovery reply, immediately subscribe to the
+        // peer's NodeManagement feature and read the use case data.
+        // This matches the message ordering of working peers (e.g. devices-app)
+        // and keeps aggressive peers (e.g. SMA SHM 2.0) from closing before
+        // we have a chance to respond.
+        subscribe_to_peer_node_management();
+        send_use_case_read();
         inform_usecases_supported_functionalities();
     }
     void update_use_case_data(const NodeManagementUseCaseDataType &data)
@@ -164,4 +171,6 @@ private:
     uint64_t update_api_timer = 0;
 
     void inform_usecases_supported_functionalities();
+    void subscribe_to_peer_node_management();
+    void send_use_case_read();
 };

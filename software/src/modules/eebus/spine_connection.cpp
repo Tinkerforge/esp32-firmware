@@ -164,8 +164,9 @@ void SpineConnection::initial_peer_discovery()
     }
     if (!detailed_discovery_data_received)
         eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
-    if (!use_case_data_received)
-        eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementUseCaseData);
+    // Use case data read is deferred until we receive the discovery reply.
+    // After receiving the discovery reply we first subscribe to the peer's
+    // NodeManagement feature and then read the use case data as this is the behavior of e.g. eebus-go and ensure reliable connection establishment with tested peers
 
     update_api_timer = task_scheduler.scheduleOnce(
         [this] { // If the connection gets interrupted and removed, this might cause a crash
@@ -273,6 +274,48 @@ void SpineConnection::check_ack_expired()
         }
     }
 }
+void SpineConnection::send_use_case_read()
+{
+    if (use_case_data_received)
+        return;
+    FeatureAddressType peer_nm{};
+    if (detailed_discovery_data.deviceInformation.has_value()
+        && detailed_discovery_data.deviceInformation->description.has_value()
+        && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
+        peer_nm.device = detailed_discovery_data.deviceInformation->description->deviceAddress->device;
+    } else if (!known_addresses.empty()) {
+        peer_nm.device = known_addresses[0].device;
+    }
+    peer_nm.entity = {0};
+    peer_nm.feature = 0;
+
+    eebus.usecases->node_management.send_full_read(0, peer_nm, SpineDataTypeHandler::Function::nodeManagementUseCaseData);
+}
+
+void SpineConnection::subscribe_to_peer_node_management()
+{
+    // Build our local NodeManagement address (entity [0], feature 0)
+    FeatureAddressType local_nm{};
+    local_nm.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    local_nm.entity = {0};
+    local_nm.feature = 0;
+
+    // Build the peer's NodeManagement address from the discovery data
+    FeatureAddressType peer_nm{};
+    if (detailed_discovery_data.deviceInformation.has_value()
+        && detailed_discovery_data.deviceInformation->description.has_value()
+        && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
+        peer_nm.device = detailed_discovery_data.deviceInformation->description->deviceAddress->device;
+    } else if (!known_addresses.empty()) {
+        peer_nm.device = known_addresses[0].device;
+    }
+    peer_nm.entity = {0};
+    peer_nm.feature = 0;
+
+    eebus.trace_fmtln("SPINE: Subscribing to peer NodeManagement feature (%s)", peer_nm.device.get().c_str());
+    eebus.usecases->node_management.subscribe_to_feature(local_nm, peer_nm, FeatureTypeEnumType::NodeManagement);
+}
+
 void SpineConnection::inform_usecases_supported_functionalities()
 {
     if (detailed_discovery_data_received && use_case_data_received)
