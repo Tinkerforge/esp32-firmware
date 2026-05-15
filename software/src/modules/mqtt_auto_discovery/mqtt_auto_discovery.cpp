@@ -56,7 +56,8 @@ void MqttAutoDiscovery::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"auto_discovery_mode", Config::Enum(MqttAutoDiscoveryMode::Disabled)},
-        {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
+        {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)},
+        {"broadcast_empty", Config::Bool(false)}
     }),  [](Config &cfg, ConfigSource source) -> String {
         const String &global_topic_prefix = mqtt.global_topic_prefix;
         const String &auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
@@ -74,6 +75,7 @@ void MqttAutoDiscovery::setup()
 
     config_in_use = config;
     mode = config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
+    broadcast_empty = config_in_use.get("broadcast_empty")->asBool();
 
     initialized = true;
 
@@ -288,6 +290,9 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 free(buf);
 
             }
+        } else if (broadcast_empty && mqtt_discovery_topics[topic_num].full_path.length() > 0) {
+            // Entity is not enabled; send empty payload to remove it from HA.
+            mqtt.publish(mqtt_discovery_topics[topic_num].full_path, String(), true);
         }
 
         if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
