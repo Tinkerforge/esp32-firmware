@@ -1211,8 +1211,8 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                                 }
                             }
                         } else {
-                            char err_buf[64];
-                            snprintf(err_buf, sizeof(err_buf), "Error code %u", static_cast<uint8_t>(event->error));
+                            char err_buf[128];
+                            snprintf(err_buf, sizeof(err_buf), "%s (error code %u)", translate_error(event), static_cast<uint8_t>(event->error));
                             update_registration_state(RegistrationState::Error, String(err_buf));
                         }
                         this->cleanup_after();
