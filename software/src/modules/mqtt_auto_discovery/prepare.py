@@ -74,6 +74,12 @@ class Feature(Enum):
     SOLAR_FORECAST = "solar_forecast"
 
 
+class CheckType(Enum):
+    FEATURE = "Feature"          # Check api.hasFeature(feature)
+    API_BOOL = "ApiBool"         # Check API path exists and bool key is true
+    METER_CONFIG = "MeterConfig" # Check API path exists and first array element > 0
+
+
 @dataclass
 class AvailabilityEntry:
     topic: str
@@ -110,6 +116,10 @@ class Entity:
     # When left empty, the default static_info is used regardless of language.
     static_info_generic_en: dict = None
     static_info_homeassistant_en: dict = None
+    # Check type: how to determine if this entity should be announced.
+    check_type: CheckType = CheckType.FEATURE
+    api_check_path: str = None  # API path to check (for ApiBool and MeterConfig)
+    api_check_key: str = None   # Key within the config to check (for ApiBool)
 
     def __post_init__(self):
         if self.json_attributes_info is None:
@@ -244,6 +254,9 @@ topic_template = """    {{
         }},
         .type = MqttDiscoveryType::{discovery_type},
         .create_disabled = {create_disabled},
+        .check_type = MqttDiscoveryCheckType::{check_type},
+        .api_check_path = {api_check_path},
+        .api_check_key = {api_check_key},
     }}"""
 
 entities = [
@@ -547,6 +560,9 @@ entities = [
             "value_template": "{{ 'Limited' if value_json.active else 'No Limit' }}",
             "options": ["Limited", "No Limit"],
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="p14a_enwg/config",
+        api_check_key="enable",
     ),
     Entity(
         include_generic=False,
@@ -573,6 +589,9 @@ entities = [
             "command_template": command_template_for_select(charge_mode_names_en),
             "options": charge_mode_names_en,
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="power_manager/config",
+        api_check_key="enabled",
     ),
     Entity(
         include_generic=False,
@@ -597,6 +616,9 @@ entities = [
             "value_template": enum_value_template("mode", charge_mode_names_en),
             "options": charge_mode_names_en,
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="power_manager/config",
+        api_check_key="enabled",
     ),
     Entity(
         include_generic=False,
@@ -615,6 +637,9 @@ entities = [
             "icon": "mdi:solar-power-variant-outline",
             "unit_of_measurement": "kWh",
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="solar_forecast/config",
+        api_check_key="enable",
     ),
     Entity(
         include_generic=False,
@@ -633,6 +658,9 @@ entities = [
             "icon": "mdi:solar-power-variant",
             "unit_of_measurement": "kWh",
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="solar_forecast/config",
+        api_check_key="enable",
     ),
 Entity(
         include_generic=False,
@@ -651,6 +679,9 @@ Entity(
             "icon": "mdi:solar-power",
             "unit_of_measurement": "kWh",
         },
+        check_type=CheckType.API_BOOL,
+        api_check_path="solar_forecast/config",
+        api_check_key="enable",
     ),
 ]
 # MeterValueID constants (from generated/meter_value_id.h)
@@ -695,6 +726,8 @@ for meter_id in range(0, meters_max_slots):
             json_attributes_info={
                 "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
             },
+            check_type=CheckType.METER_CONFIG,
+            api_check_path=f"meters/{meter_id}/config",
         )
     )
     # Energy absolute
@@ -722,6 +755,8 @@ for meter_id in range(0, meters_max_slots):
             json_attributes_info={
                 "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
             },
+            check_type=CheckType.METER_CONFIG,
+            api_check_path=f"meters/{meter_id}/config",
         )
     )
     # Energy relative
@@ -749,6 +784,8 @@ for meter_id in range(0, meters_max_slots):
             json_attributes_info={
                 "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
             },
+            check_type=CheckType.METER_CONFIG,
+            api_check_path=f"meters/{meter_id}/config",
         )
     )
 
@@ -770,6 +807,9 @@ topics = [
         static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
         discovery_type=x.component.get_discovery_type().value,
         create_disabled="true" if x.create_disabled else "false",
+        check_type=x.check_type.value,
+        api_check_path='"%s"' % x.api_check_path if x.api_check_path else "NULL",
+        api_check_key='"%s"' % x.api_check_key if x.api_check_key else "NULL",
     )
     for x in entities
 ]
