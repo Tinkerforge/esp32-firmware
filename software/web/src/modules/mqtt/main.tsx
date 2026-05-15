@@ -289,6 +289,12 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                                 invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
                                 />
                     </FormRow>
+
+                    <FormRow label={__("mqtt.content.broadcast_empty")}>
+                        <Switch desc={__("mqtt.content.broadcast_empty_desc")}
+                                checked={state.auto_discovery_config.broadcast_empty}
+                                onClick={() => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, broadcast_empty: !this.state.auto_discovery_config.broadcast_empty}})}/>
+                    </FormRow>
 {/*#endif*/}
                 </SubPage.Config>
             </SubPage>
