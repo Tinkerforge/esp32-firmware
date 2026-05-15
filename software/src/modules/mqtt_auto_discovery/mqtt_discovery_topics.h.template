@@ -6,6 +6,13 @@
 
 #include "mqtt_discovery_type.enum.h"
 
+// How to check whether this discovery topic should be announced.
+enum class MqttDiscoveryCheckType : uint8_t {
+    Feature,     // Check api.hasFeature(feature) — hardware capability check
+    ApiBool,     // Check if api_check_path exists and api_check_key is true (bool)
+    MeterConfig, // Check if api_check_path exists and first array element > 0
+};
+
 struct MqttDiscoveryAvailabilityEntry {
     const char * const topic;
     const char * const value_template;
@@ -26,6 +33,9 @@ struct MqttDiscoveryTopicInfo {
     const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
     const MqttDiscoveryType type;
     const bool create_disabled;
+    const MqttDiscoveryCheckType check_type;
+    const char * const api_check_path; // API path to check (for ApiBool and MeterConfig)
+    const char * const api_check_key;  // Key within the config to check (for ApiBool)
 };
 
 extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];
