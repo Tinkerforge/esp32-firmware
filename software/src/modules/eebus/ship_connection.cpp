@@ -1191,6 +1191,16 @@ void ShipConnection::state_done()
             }
         });
     }
+    if (!connection_established) {
+        // SHIP 12.2.5: After entering the data exchange state (Done),
+        // send an accessMethodsRequest to the peer.
+        // This must happen on first entry before processing any data.
+        task_scheduler.scheduleOnce([this]() {
+            const char *request = "{\"accessMethodsRequest\":[]}";
+            send_string(request, strlen(request));
+        });
+    }
+
     connection_established = true;
 
     auto protocol_state = get_protocol_state();

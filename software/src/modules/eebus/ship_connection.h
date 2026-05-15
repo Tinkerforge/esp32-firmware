@@ -422,9 +422,7 @@ public:
 
     void common_procedure_enable_data_exchange();
 
-    // We don't intend to use accessMethodsRequest ourself,
-    // so we only have to implement a function that
-    // generates a proper json for the accessMethods
+    // Generates a proper json for the accessMethods
     // that is returned on accessMethodsRequest
     void to_json_access_methods_type();
 

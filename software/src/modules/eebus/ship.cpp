@@ -303,6 +303,7 @@ void Ship::setup_wss()
             return;
         }
 
+        eebus.trace_fmtln("onDisconnect_HTTPThread called for %s", ship_connection->peer_node->node_name().c_str());
         client->setCtx(nullptr);
         ship_connection->ws_client = nullptr; // Connection already closed, can't use it anymore.
         ship_connection->schedule_close(0_ms, "Websocket disconnected");
