@@ -170,6 +170,7 @@ void EvccUsecase::ev_connected_state(bool connected)
     eebus.trace_fmtln("EV connected: %d, previous: %d", connected, ev_connected);
     bool changed = (ev_connected != connected);
     entity_active = ev_connected = connected;
+    eebus.usecases->ev_heartbeat.set_active(connected);
     if (changed) {
         entities_updated();
         update_api();

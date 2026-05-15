@@ -108,6 +108,11 @@ public:
         return entity_active;
     }
 
+    void set_active(bool active)
+    {
+        entity_active = active;
+    }
+
     /**
      * @brief Send a full read request for a specific function.
      *

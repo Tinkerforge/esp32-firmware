@@ -73,9 +73,10 @@ EEBusUseCases::EEBusUseCases()
     monitoring_of_grid_connection_point.set_entity_address(EVSEEntity::entity_address);
 #endif
 
-    // EV actors
+    // EV actors — inactive until an EV is connected (toggled by EVCC)
     usecase_list.push_back(&ev_heartbeat);
     ev_heartbeat.set_entity_address(EVEntity::entity_address);
+    ev_heartbeat.set_active(false);
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address);
