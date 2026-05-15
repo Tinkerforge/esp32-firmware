@@ -871,6 +871,10 @@ WebServer::listen_port_handlers_t *WebServer::find_handlers(uint16_t port)
     for (size_t i = 1; i < std::size(listen_port_handlers); i++) {
         listen_port_handlers_t *handlers = listen_port_handlers[i];
 
+        if (handlers == nullptr) {
+            continue;
+        }
+
         if (handlers->port == port) {
             return handlers;
         }
