@@ -146,22 +146,11 @@ void SpineConnection::initial_peer_discovery()
     if (initial_peer_discovery_started)
         return;
     initial_peer_discovery_started = true;
-    bool cleanup_address = false;
     FeatureAddressType address{};
-    if (received_header.addressSource.has_value()) {
-        address = received_header.addressSource.get();
-        address.entity = {0};
-        address.feature = 0;
-    } else {
-        // No messages received yet (timer-initiated discovery).
-        // Use default SPINE node management address and register it
-        // so get_spine_connection() can route messages through us.
-        cleanup_address = true;
-        address.device = "";
-        address.entity = {0};
-        address.feature = 0;
-        known_addresses.push_back(address);
-    }
+    address = received_header.addressSource.get();
+    address.entity = {0};
+    address.feature = 0;
+
     if (!detailed_discovery_data_received)
         eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
     // Use case data read is deferred until we receive the discovery reply.

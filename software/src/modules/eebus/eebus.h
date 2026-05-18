@@ -28,10 +28,10 @@
 // If the EVSE module is available we are probably a charger.
 #if MODULE_EVSE_COMMON_AVAILABLE()
 #define EEBUS_MODE_EVSE
-#define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined
 #else
 #define EEBUS_MODE_EM
-#define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined
 #endif
 
 //#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
