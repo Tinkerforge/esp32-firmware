@@ -456,8 +456,6 @@ void NFC::setup()
         this->update_seen_tags();
     }, 300_ms);
 
-    api.addFeature("nfc");
-
     initialized = true;
 }
 

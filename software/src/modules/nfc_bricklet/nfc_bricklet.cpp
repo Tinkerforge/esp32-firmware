@@ -42,6 +42,9 @@ void NFCBricklet::setup()
 
     nfc.register_backend(this);
 
+    api.addFeature("nfc");
+
+
     task_scheduler.scheduleUncancelable([this]() {
         this->check_state();
     }, 5_min, 5_min);
