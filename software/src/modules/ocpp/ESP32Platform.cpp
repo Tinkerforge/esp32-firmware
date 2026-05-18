@@ -42,15 +42,48 @@
 
 #include "generated/mvid_to_measurand.h"
 
-static bool feature_evse = false;
-static bool feature_phase_switch = false;
-#define REQUIRE_FEATURE(x, default_val) do { if (!feature_##x && !api.hasFeature(#x)) { return default_val; } feature_##x = true;} while(0)
+struct PlatformMeterCache {
+    std::unique_ptr<MeterValueID[]> value_ids = nullptr;
+    size_t value_ids_length = 0;
+    uint32_t charger_meter_slot = UINT32_MAX;
+    std::unique_ptr<uint32_t[]> idx_cache = nullptr;
+    uint32_t power_offered_l1_idx;
+    uint32_t power_offered_l2_idx;
+    uint32_t power_offered_l3_idx;
+    uint32_t current_offered_l1_idx;
+    uint32_t current_offered_l2_idx;
+    uint32_t current_offered_l3_idx;
+};
 
-void(*recv_cb)(char *, size_t, void *) = nullptr;
-void *recv_cb_userdata = nullptr;
+struct PlatformContext {
+    bool feature_evse = false;
+    bool feature_phase_switch = false;
 
-void (*pong_cb)(void *) = nullptr;
-void *pong_cb_userdata = nullptr;
+    void(*recv_cb)(char *, size_t, void *) = nullptr;
+    void *recv_cb_userdata = nullptr;
+
+    void (*pong_cb)(void *) = nullptr;
+    void *pong_cb_userdata = nullptr;
+
+    tf_websocket_client_handle_t client = nullptr;
+    bool client_running = false;
+    std::unique_ptr<String[]> auth_headers = nullptr;
+    size_t auth_headers_count = 0;
+    size_t next_auth_header = 0;
+    PlatformMeterCache meter_cache;
+    std::unique_ptr<unsigned char[]> cert = nullptr;
+
+    OcppDirEnt dir_ent{};
+
+    char model[21] = {};
+};
+
+// TODO: It's ugly to hold the context pointer here,
+// but tfocpp only passes the void *ctx in some functions.
+// Once that's fixed, we can rely on the passed pointer.
+static std::unique_ptr<PlatformContext> ctx;
+
+#define REQUIRE_FEATURE(x, default_val) do { if (!ctx->feature_##x && !api.hasFeature(#x)) { return default_val; } ctx->feature_##x = true;} while(0)
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -66,42 +99,27 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
         // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
         // - client->rx_buffer is char * (so not const)
-        task_scheduler.await([data](){
-            recv_cb(const_cast<char *>(data->data_ptr), data->data_len, recv_cb_userdata);
+        task_scheduler.await([data, c=&ctx](){
+            if (!c)
+                return;
+            (*c)->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, (*c)->recv_cb_userdata);
         });
         break;
     case WEBSOCKET_EVENT_PONG:
-        task_scheduler.scheduleOnce([](){pong_cb(pong_cb_userdata);});
+        task_scheduler.scheduleOnce([c=&ctx](){
+            if (!c)
+                return;
+            (*c)->pong_cb((*c)->pong_cb_userdata);
+        });
         break;
     }
 }
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-struct PlatformMeterCache {
-    std::unique_ptr<MeterValueID[]> value_ids = nullptr;
-    size_t value_ids_length = 0;
-    uint32_t charger_meter_slot = UINT32_MAX;
-    std::unique_ptr<uint32_t[]> idx_cache = nullptr;
-    uint32_t power_offered_l1_idx;
-    uint32_t power_offered_l2_idx;
-    uint32_t power_offered_l3_idx;
-    uint32_t current_offered_l1_idx;
-    uint32_t current_offered_l2_idx;
-    uint32_t current_offered_l3_idx;
-};
-
-static tf_websocket_client_handle_t client;
-static bool client_running = false;
-static std::unique_ptr<String[]> auth_headers;
-static size_t auth_headers_count = 0;
-static size_t next_auth_header = 0;
-static std::unique_ptr<PlatformMeterCache> meter_cache;
-static std::unique_ptr<unsigned char[]> cert;
-
 void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials, size_t credentials_length)
 {
-    meter_cache = std::unique_ptr<PlatformMeterCache>(new PlatformMeterCache());
+    ctx = std::make_unique<PlatformContext>();
 
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
@@ -111,13 +129,13 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
         websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     else {
         size_t cert_len = 0;
-        cert = certs.get_cert(cert_id, &cert_len);
-        if (cert == nullptr) {
+        ctx->cert = certs.get_cert(cert_id, &cert_len);
+        if (ctx->cert == nullptr) {
             logger.printfln("OCPP platform: Configured TLS certificate does not exist!");
             return nullptr;
         }
 
-        websocket_cfg.cert_pem = (const char *)cert.get();
+        websocket_cfg.cert_pem = (const char *)ctx->cert.get();
     }
 
     websocket_cfg.disable_auto_reconnect = true;
@@ -134,8 +152,8 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     // Instead create and pass the authorization header(s) directly.
 
     if (credentials_length > 0) {
-        auth_headers = heap_alloc_array<String>(credentials_length);
-        auth_headers_count = credentials_length;
+        ctx->auth_headers = heap_alloc_array<String>(credentials_length);
+        ctx->auth_headers_count = credentials_length;
 
         for(size_t i = 0; i < credentials_length; ++i) {
             String header = "Authorization: Basic ";
@@ -158,22 +176,22 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
             header += base64_buf.get();
             header += "\r\n";
 
-            auth_headers[i] = header;
+            ctx->auth_headers[i] = header;
         }
 
-        websocket_cfg.headers = auth_headers[0].c_str();
-        next_auth_header = (next_auth_header + 1) % auth_headers_count;
+        websocket_cfg.headers = ctx->auth_headers[0].c_str();
+        ctx->next_auth_header = (ctx->next_auth_header + 1) % ctx->auth_headers_count;
     }
 
-    client = tf_websocket_client_init(&websocket_cfg);
-    tf_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+    ctx->client = tf_websocket_client_init(&websocket_cfg);
+    tf_websocket_register_events(ctx->client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ctx->client);
 
     if (network.is_connected()) {
-        tf_websocket_client_start(client);
-        client_running = true;
+        tf_websocket_client_start(ctx->client);
+        ctx->client_running = true;
     }
 
-    return client;
+    return ctx->client;
 }
 
 bool platform_has_fixed_cable(int32_t connectorId)
@@ -181,70 +199,65 @@ bool platform_has_fixed_cable(int32_t connectorId)
     return true;
 }
 
-void platform_disconnect(void *ctx)
+void platform_disconnect(void *_ctx)
 {
-    if (client_running) {
-        tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
-        client_running = false;
+    if (ctx->client_running) {
+        tf_websocket_client_close(ctx->client, pdMS_TO_TICKS(1000));
+        ctx->client_running = false;
     }
 }
 
-void platform_reconnect(void *ctx)
+void platform_reconnect(void *_ctx)
 {
-    if (client_running) {
-        tf_websocket_client_stop(client);
-        client_running = false;
+    if (ctx->client_running) {
+        tf_websocket_client_stop(ctx->client);
+        ctx->client_running = false;
     }
 
     // Try next set of credentials if available.
-    if (auth_headers_count > 0) {
-        tf_websocket_client_set_headers(client, auth_headers[next_auth_header].c_str());
-        next_auth_header = (next_auth_header + 1) % auth_headers_count;
+    if (ctx->auth_headers_count > 0) {
+        tf_websocket_client_set_headers(ctx->client, ctx->auth_headers[ctx->next_auth_header].c_str());
+        ctx->next_auth_header = (ctx->next_auth_header + 1) % ctx->auth_headers_count;
     }
 
     if (network.is_connected()) {
-        tf_websocket_client_start(client);
-        client_running = true;
+        tf_websocket_client_start(ctx->client);
+        ctx->client_running = true;
     }
 }
 
-void platform_destroy(void *ctx)
+void platform_destroy(void *_ctx)
 {
-    tf_websocket_client_destroy(client);
+    tf_websocket_client_destroy(ctx->client);
 
-    client_running = false;
-    auth_headers = nullptr;
-    auth_headers_count = 0;
-    next_auth_header = 0;
-    meter_cache = nullptr;
-    cert = nullptr;
+    ctx = nullptr;
 }
 
-bool platform_ws_connected(void *ctx)
+bool platform_ws_connected(void *_ctx)
 {
-    return tf_websocket_client_is_connected(client);
+    return tf_websocket_client_is_connected(ctx->client);
 }
 
-bool platform_ws_send(void *ctx, const char *buf, size_t buf_len)
+bool platform_ws_send(void *_ctx, const char *buf, size_t buf_len)
 {
-    return tf_websocket_client_send_text(client, buf, buf_len, pdMS_TO_TICKS(1000)) == buf_len;
+    return tf_websocket_client_send_text(ctx->client, buf, buf_len, pdMS_TO_TICKS(1000)) == buf_len;
 }
 
-bool platform_ws_send_ping(void *ctx)
+bool platform_ws_send_ping(void *_ctx)
 {
-    return tf_websocket_client_send_ping(client, pdMS_TO_TICKS(1000)) >= 0;
+    return tf_websocket_client_send_ping(ctx->client, pdMS_TO_TICKS(1000)) >= 0;
 }
 
-void platform_ws_register_receive_callback(void *ctx, void (*cb)(char *, size_t, void *), void *user_data)
+void platform_ws_register_receive_callback(void *_ctx, void (*cb)(char *, size_t, void *), void *user_data)
 {
-    recv_cb = cb;
-    recv_cb_userdata = user_data;
+    ctx->recv_cb = cb;
+    ctx->recv_cb_userdata = user_data;
 }
 
-void platform_ws_register_pong_callback(void *ctx, void (*cb)(void *), void *user_data)
+void platform_ws_register_pong_callback(void *_ctx, void (*cb)(void *), void *user_data)
 {
-    pong_cb = cb;
-    pong_cb_userdata = user_data;
+    ctx->pong_cb = cb;
+    ctx->pong_cb_userdata = user_data;
 }
 
 uint32_t platform_now_ms()
@@ -252,16 +265,13 @@ uint32_t platform_now_ms()
     return now_us().to<millis_t>().as<uint32_t>();
 }
 
-time_t last_system_time = 0;
-uint32_t last_system_time_set_at = 0;
-
-void platform_set_system_time(void *ctx, time_t t)
+void platform_set_system_time(void *_ctx, time_t t)
 {
     struct timeval tv{t, 0};
     rtc.push_system_time(tv, Rtc::Quality::Force);
 }
 
-time_t platform_get_system_time(void *ctx)
+time_t platform_get_system_time(void *_ctx)
 {
     struct timeval tv_now;
     gettimeofday(&tv_now, NULL);
@@ -283,13 +293,13 @@ void platform_printfln(int level, const char *fmt, ...)
     va_end(args);
 }
 
-void platform_register_tag_seen_callback(void *ctx, void (*cb)(int32_t, const char *, void *), void *user_data)
+void platform_register_tag_seen_callback(void *_ctx, void (*cb)(int32_t, const char *, void *), void *user_data)
 {
     ocpp.tag_seen_cb = cb;
     ocpp.tag_seen_cb_user_data = user_data;
 }
 
-const char *trt_string[] = {
+static constexpr const char * const trt_string[] = {
     "Blocked",
     "Expired",
     "Invalid",
@@ -384,27 +394,27 @@ static bool platform_meter_available(int32_t connector_id) {
     if (connector_id != 1)
         return false;
 
-    if (meter_cache->value_ids != nullptr)
+    if (ctx->meter_cache.value_ids != nullptr)
         return true;
 
-    if (meter_cache->charger_meter_slot == UINT32_MAX) {
+    if (ctx->meter_cache.charger_meter_slot == UINT32_MAX) {
         REQUIRE_FEATURE(evse, false);
-        meter_cache->charger_meter_slot = evse_common.get_charger_meter();
+        ctx->meter_cache.charger_meter_slot = evse_common.get_charger_meter();
     }
 
     size_t value_ids_length;
-    auto result = meters.get_value_ids_extended(meter_cache->charger_meter_slot, nullptr, &value_ids_length);
+    auto result = meters.get_value_ids_extended(ctx->meter_cache.charger_meter_slot, nullptr, &value_ids_length);
     if (result != MeterValueAvailability::Fresh)
         return false;
 
     auto value_ids = heap_alloc_array<MeterValueID>(value_ids_length);
-    result = meters.get_value_ids_extended(meter_cache->charger_meter_slot, value_ids.get(), &value_ids_length);
+    result = meters.get_value_ids_extended(ctx->meter_cache.charger_meter_slot, value_ids.get(), &value_ids_length);
 
     if (result != MeterValueAvailability::Fresh)
         return false;
 
-    meter_cache->value_ids = std::move(value_ids);
-    meter_cache->value_ids_length = value_ids_length;
+    ctx->meter_cache.value_ids = std::move(value_ids);
+    ctx->meter_cache.value_ids_length = value_ids_length;
     return true;
 }
 
@@ -441,8 +451,8 @@ static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMea
         if (entry.measurand != m || entry.phase != p)
             continue;
 
-        for (size_t i = 0; i < meter_cache->value_ids_length; ++i)
-            if (meter_cache->value_ids[i] == (MeterValueID)mvidx)
+        for (size_t i = 0; i < ctx->meter_cache.value_ids_length; ++i)
+            if (ctx->meter_cache.value_ids[i] == (MeterValueID)mvidx)
                 return (MeterValueID) mvidx;
     }
 
@@ -522,19 +532,19 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
 void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index) {
     if (m == SampledValueMeasurand::POWER_OFFERED) {
         if (p == SampledValuePhase::L1)
-            meter_cache->power_offered_l1_idx = index;
+            ctx->meter_cache.power_offered_l1_idx = index;
         if (p == SampledValuePhase::L2)
-            meter_cache->power_offered_l2_idx = index;
+            ctx->meter_cache.power_offered_l2_idx = index;
         if (p == SampledValuePhase::L3)
-            meter_cache->power_offered_l3_idx = index;
+            ctx->meter_cache.power_offered_l3_idx = index;
     }
     if (m == SampledValueMeasurand::CURRENT_OFFERED) {
         if (p == SampledValuePhase::L1)
-            meter_cache->current_offered_l1_idx = index;
+            ctx->meter_cache.current_offered_l1_idx = index;
         if (p == SampledValuePhase::L2)
-            meter_cache->current_offered_l2_idx = index;
+            ctx->meter_cache.current_offered_l2_idx = index;
         if (p == SampledValuePhase::L3)
-            meter_cache->current_offered_l3_idx = index;
+            ctx->meter_cache.current_offered_l3_idx = index;
     }
 }
 
@@ -547,25 +557,25 @@ float get_custom_value(uint32_t index) {
 
     float current = evse_common.get_state().get("allowed_charging_current")->asUint() / 1000.0f;
 
-    if (index == meter_cache->power_offered_l1_idx)
+    if (index == ctx->meter_cache.power_offered_l1_idx)
         return current * (phases >= 1 ? 1 : 0) * 230;
-    if (index == meter_cache->power_offered_l2_idx)
+    if (index == ctx->meter_cache.power_offered_l2_idx)
         return current * (phases >= 2 ? 1 : 0) * 230;
-    if (index == meter_cache->power_offered_l3_idx)
+    if (index == ctx->meter_cache.power_offered_l3_idx)
         return current * (phases >= 3 ? 1 : 0) * 230;
 
-    if (index == meter_cache->current_offered_l1_idx)
+    if (index == ctx->meter_cache.current_offered_l1_idx)
         return current * (phases >= 1 ? 1 : 0);
-    if (index == meter_cache->current_offered_l2_idx)
+    if (index == ctx->meter_cache.current_offered_l2_idx)
         return current * (phases >= 2 ? 1 : 0);
-    if (index == meter_cache->current_offered_l3_idx)
+    if (index == ctx->meter_cache.current_offered_l3_idx)
         return current * (phases >= 3 ? 1 : 0);
 
     return 0.0f;
 }
 
 static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len) {
-    meter_cache->idx_cache = heap_alloc_array<uint32_t>(result_len);
+    ctx->meter_cache.idx_cache = heap_alloc_array<uint32_t>(result_len);
 
     auto mvids = heap_alloc_array<MeterValueID>(result_len);
 
@@ -630,7 +640,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
     }
 
 done:
-    meters.fill_index_cache(meter_cache->charger_meter_slot, written, mvids.get(), meter_cache->idx_cache.get());
+    meters.fill_index_cache(ctx->meter_cache.charger_meter_slot, written, mvids.get(), ctx->meter_cache.idx_cache.get());
     return written;
 }
 
@@ -651,14 +661,14 @@ bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measura
 
 
 float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx) {
-    if (meter_cache->idx_cache == nullptr)
+    if (ctx->meter_cache.idx_cache == nullptr)
         return 0.0f;
 
-    if (meter_cache->idx_cache[measurand_idx] == UINT32_MAX)
+    if (ctx->meter_cache.idx_cache[measurand_idx] == UINT32_MAX)
         return get_custom_value(measurand_idx);
 
     float result = 0.0f;
-    meters.get_value_by_index(meter_cache->charger_meter_slot, meter_cache->idx_cache[measurand_idx], &result);
+    meters.get_value_by_index(ctx->meter_cache.charger_meter_slot, ctx->meter_cache.idx_cache[measurand_idx], &result);
     return result;
 }
 
@@ -733,17 +743,15 @@ void *platform_open_dir(const char *name)
     return f;
 }
 
-OcppDirEnt dir_ent;
-
 // return nullptr if no more files
 OcppDirEnt *platform_read_dir(void *dir_fd)
 {
     File *dir = (File *)dir_fd;
     File f;
     while ((f = dir->openNextFile())) {
-        dir_ent.is_dir = f.isDirectory();
-        strncpy(dir_ent.name, f.name(), ARRAY_SIZE(dir_ent.name) - 1);
-        return &dir_ent;
+        ctx->dir_ent.is_dir = f.isDirectory();
+        strncpy(ctx->dir_ent.name, f.name(), ARRAY_SIZE(ctx->dir_ent.name) - 1);
+        return &ctx->dir_ent;
     }
     return nullptr;
 }
@@ -780,7 +788,7 @@ void platform_reset(bool hard)
     trigger_reboot("OCPP", 1_s);
 }
 
-void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data)
+void platform_register_stop_callback(void *_ctx, void (*cb)(int32_t, StopReason, void *), void *user_data)
 {
 }
 
@@ -790,12 +798,11 @@ const char *platform_get_charge_point_vendor()
     return OPTIONS_MANUFACTURER_FULL();
 }
 
-static char model[21] = {0};
 const char *platform_get_charge_point_model()
 {
 #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-    device_name.get20CharDisplayType().toCharArray(model, ARRAY_SIZE(model));
-    return model;
+    device_name.get20CharDisplayType().toCharArray(ctx->model, ARRAY_SIZE(ctx->model));
+    return ctx->model;
 #else
     #warning "platform_get_charge_point_model implementation missing for this product"
     return "Unknown Device";
@@ -910,7 +917,7 @@ void platform_update_config_state(ConfigKey key,
 }
 #endif
 
-bool platform_supports_signed_meter_values(void *ctx, int32_t connectorId) {
+bool platform_supports_signed_meter_values(void *_ctx, int32_t connectorId) {
     // We will use an eFuse later to identify "Eichrecht"-conforming chargers. For now, accept all WARP4 hardware.
     return OPTIONS_PRODUCT_ID_IS_WARP4();
 }
