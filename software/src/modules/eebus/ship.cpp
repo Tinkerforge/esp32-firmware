@@ -186,7 +186,6 @@ void Ship::enable_ship()
         autoconnect_timer = task_scheduler.scheduleOnce(
             [this]() {
                 discover_ship_peers();
-                connect_trusted_peers();
             },
             30_s); // Initial Timeout is 30s after that EEBUS_SHIP_AUTOCONNECT_INTERVAL should be used
     }
@@ -400,7 +399,6 @@ void Ship::connect_trusted_peers()
     autoconnect_timer= task_scheduler.scheduleOnce(
         [this]() {
             discover_ship_peers();
-            connect_trusted_peers();
         },
         EEBUS_SHIP_AUTOCONNECT_INTERVAL);
 #endif
@@ -595,6 +593,7 @@ void Ship::check_mdns_results()
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
     eebus.update_peers_state();
+    connect_trusted_peers();
 }
 void Ship::update_discovery_state(ShipDiscoveryState new_state)
 {

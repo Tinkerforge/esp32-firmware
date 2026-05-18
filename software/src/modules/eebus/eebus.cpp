@@ -616,7 +616,7 @@ void EEBus::register_urls()
 
             ship.notify_peer_updated(ski);
 
-            ship.connect_trusted_peers();
+            ship.discover_ship_peers();
         },
         true);
 

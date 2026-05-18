@@ -118,6 +118,7 @@ public:
     void disable_ship();
 
     void remove(const ShipConnection &ship_connection);
+    //// Initiate an mDNS discovery of all SHIP devices followed by a call to connect_trusted_peers
     void discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
