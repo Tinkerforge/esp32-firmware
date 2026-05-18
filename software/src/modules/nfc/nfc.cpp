@@ -297,14 +297,11 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
 #if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
     int16_t user_id = get_user_id(info->tag);
 
-    if (user_id >= 0) {
-        // Found a new authorized tag.
-        auth_info.get("tag_type")->updateUint(info->tag.type);
+    auth_info.get("tag_type")->updateUint(info->tag.type);
 
-        char buf[NFC_TAG_ID_STRING_LENGTH + 1];
-        id_to_string(buf, &info->tag);
-        auth_info.get("tag_id")->updateString(buf);
-    }
+    char buf[NFC_TAG_ID_STRING_LENGTH + 1];
+    id_to_string(buf, &info->tag);
+    auth_info.get("tag_id")->updateString(buf);
 
     charge_authorization.notify_auth(
         user_id,
