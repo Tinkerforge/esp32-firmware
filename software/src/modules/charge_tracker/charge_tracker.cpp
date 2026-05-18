@@ -2715,7 +2715,7 @@ search_done:
     bool english = params->language == Language::English;
 
     char *stats_head = stats_buf;
-    stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", params->unique_device_name.c_str());
+    stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Device" : "Gerät", params->unique_device_name.c_str());
     stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
     stats_head += 1 + timestamp_min_to_date_time_string(stats_head, params->current_min, params->language);
     stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
