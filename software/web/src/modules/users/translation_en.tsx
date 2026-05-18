@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "users": {
         "status": {},
@@ -59,7 +60,11 @@ let x = {
             "nfc_tag_id": "Tag ID",
             "nfc_tag_type": "Tag Type",
             "nfc_no_tags_assigned": "No NFC tags assigned",
-            "nfc_no_seen_tags": "No NFC tags seen recently. Hold a tag to the charger to detect it.",
+            "nfc_no_seen_tags":  /*FFN*/(central_management: boolean) =>
+                central_management ?
+                    <>No NFC tags seen recently. Hold a tag to one of the controlled chargers to detect it.</> :
+                    <>No NFC tags seen recently. Hold a tag to this charger to detect it.</>
+                 /*NF*/,
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Already assigned to user "${other_name}"` /*NF*/,
             "nfc_add_tag": "Add NFC Tag",

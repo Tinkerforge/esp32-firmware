@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "users": {
         "status": {},
@@ -61,8 +62,11 @@ let x = {
             "nfc_tag_id": "Tag-ID",
             "nfc_tag_type": "Tag-Typ",
             "nfc_no_tags_assigned": "Keine NFC-Tags zugeordnet",
-            "nfc_no_seen_tags":
-                "In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an die Wallbox, um es zu erkennen.",
+            "nfc_no_seen_tags": /*FFN*/(central_management: boolean) =>
+                central_management ?
+                    <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an eine der kontrollierten Wallboxen, um es zu erkennen.</> :
+                    <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an diese Wallbox, um es zu erkennen.</>
+                /*NF*/,
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Bereits Benutzer "${other_name}" zugeordnet` /*NF*/,
             "nfc_add_tag": "NFC-Tag hinzufügen",

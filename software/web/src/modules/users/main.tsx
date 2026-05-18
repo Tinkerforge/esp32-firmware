@@ -328,11 +328,8 @@ function NfcTagsSection({
                     onEditTagIdChange("");
                     onEditTagTypeChange(0);
                 }}
-                onAddGetChildren={() => (
-                    <>
-                        <FormRow label={__("users.content.nfc_seen_tags")}>
-                            <DiscoveryResultGroup>
-                                {seenTags
+                onAddGetChildren={() => {
+                    let filtered = seenTags
                                     .filter((t) => t.tag_id !== "")
                                     .map((t) => {
                                         const error = getTagError(t);
@@ -371,7 +368,24 @@ function NfcTagsSection({
                                                 </div>
                                             </DiscoveryResultItem>
                                         );
-                                    })}
+                                    });
+
+                    let tags = filtered.length > 0 ?
+                        filtered :
+                        <DiscoveryResultItem
+                            key="-1"
+                            title=""
+                            error={__("users.content.nfc_no_seen_tags")(
+                                !API.hasFeature("nfc") || (
+                                API.hasModule("charge_manager") &&
+                                API.get("charge_manager/config").enable_central_management))}
+                            labelAdd="">
+                        </DiscoveryResultItem>;
+
+                   return  <>
+                        <FormRow label={__("users.content.nfc_seen_tags")}>
+                            <DiscoveryResultGroup>
+                                {tags}
                             </DiscoveryResultGroup>
                         </FormRow>
                         <FormRow label={__("users.content.nfc_tag_id")}>
@@ -430,7 +444,7 @@ function NfcTagsSection({
                             />
                         </FormRow>
                     </>
-                )}
+                }}
                 onAddSubmit={async () => {
                     onAddTag({
                         tag_type: editTagType,
