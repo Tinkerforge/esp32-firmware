@@ -1,0 +1,37 @@
+From 84d2a4f5e09c0d8f10ed81c91c57c66c4ef39352 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 13 May 2026 16:04:33 +0200
+Subject: [PATCH] Add weakly-linked default callback for TLS key export
+
+---
+ library/ssl_tls.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/library/ssl_tls.c b/library/ssl_tls.c
+index f8c10d18b..fa6feb23f 100644
+--- a/library/ssl_tls.c
++++ b/library/ssl_tls.c
+@@ -1312,12 +1312,20 @@ static int ssl_cookie_check_dummy(void *ctx,
+ }
+ #endif /* MBEDTLS_SSL_DTLS_HELLO_VERIFY && MBEDTLS_SSL_SRV_C */
+ 
++static void __mbedtls_ssl_export_keys_default_cb(void *p_expkey, mbedtls_ssl_key_export_type type, const unsigned char *secret, size_t secret_len, const unsigned char client_random[32], const unsigned char server_random[32], mbedtls_tls_prf_types tls_prf_type) {}
++void mbedtls_ssl_export_keys_default_cb(void *p_expkey, mbedtls_ssl_key_export_type type, const unsigned char *secret, size_t secret_len, const unsigned char client_random[32], const unsigned char server_random[32], mbedtls_tls_prf_types tls_prf_type) __attribute__((weak, alias("__mbedtls_ssl_export_keys_default_cb")));
++
+ /*
+  * Initialize an SSL context
+  */
+ void mbedtls_ssl_init(mbedtls_ssl_context *ssl)
+ {
+     memset(ssl, 0, sizeof(mbedtls_ssl_context));
++
++    if (&mbedtls_ssl_export_keys_default_cb != &__mbedtls_ssl_export_keys_default_cb) {
++        ssl->f_export_keys = &mbedtls_ssl_export_keys_default_cb;
++        printf("mbedTLS default key export callback is %p\n", mbedtls_ssl_export_keys_default_cb);
++    }
+ }
+ 
+ MBEDTLS_CHECK_RETURN_CRITICAL
+-- 
+2.47.3
+
