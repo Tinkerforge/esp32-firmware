@@ -31,7 +31,15 @@
 
 // Out-of-line destructor: unique_ptr_any<SpineConnection> needs complete SpineConnection type
 // for DeleterAny.
-ShipConnection::~ShipConnection() = default;
+ShipConnection::~ShipConnection()
+{
+    task_scheduler.cancel(timeout_task);
+    task_scheduler.cancel(hello_wait_for_ready_timer);
+    task_scheduler.cancel(hello_send_prolongation_request_timer);
+    task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    task_scheduler.cancel(hello_trust_check_timer);
+    task_scheduler.cancel(protocol_handshake_timer);
+}
 
 extern EEBus eebus;
 
