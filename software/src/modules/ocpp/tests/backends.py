@@ -123,3 +123,6 @@ def test_ecarup_ws(tc: TestContext):
         })
 
     verify_transaction(tc, tag_id)
+
+if __name__ == "__main__":
+    run_testsuite(locals())
