@@ -71,10 +71,9 @@ let x = {
             "nfc_add_tag_message": /*SFN*/ (
                 have: number,
                 max: number,
-                haveForUser: number,
-                maxPerUser: number,
+                haveForUser: number
             ) =>
-                `${have} of ${max} tags configured (${haveForUser} of ${maxPerUser} for this user)` /*NF*/,
+                `${have} of ${max} tags configured (${haveForUser} assigned to this user)` /*NF*/,
             "nfc_seen_tags": "Seen Tags",
             "nfc_last_seen": "Last seen",
             "nfc_add_tag_manually": "Add tag manually",

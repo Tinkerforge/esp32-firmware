@@ -274,10 +274,8 @@ function NfcTagsSection({
     };
 
     const MAX_TAGS = API.hasModule("esp32_ethernet_brick") ? 32 : 16;
-    const MAX_TAGS_PER_USER = 5;
 
     const perUserTagCount = assignedTags.length;
-    const userTagLimitReached = perUserTagCount >= MAX_TAGS_PER_USER;
 
     // Compute effective total tag count reflecting pending changes and the current edit.
     // 1. Saved tags for users that have no pending change and are not the current user.
@@ -319,10 +317,9 @@ function NfcTagsSection({
                 addMessage={__("users.content.nfc_add_tag_message")(
                     effectiveTagCount,
                     MAX_TAGS,
-                    perUserTagCount,
-                    MAX_TAGS_PER_USER,
+                    perUserTagCount
                 )}
-                addEnabled={!userTagLimitReached && !globalTagLimitReached}
+                addEnabled={!globalTagLimitReached}
                 addTitle={__("users.content.nfc_add_tag")}
                 onAddShow={async () => {
                     onEditTagIdChange("");
