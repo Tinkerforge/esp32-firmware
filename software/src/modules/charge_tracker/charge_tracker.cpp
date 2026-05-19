@@ -186,6 +186,18 @@ String chargeRecordFilename(uint32_t i, const char *directory)
     return String(buf, sw.getLength());
 }
 
+String chargeRecordDirectory(const char *directory)
+{
+    char buf[64];
+    StringWriter sw(buf, sizeof(buf));
+    if (directory == nullptr) {
+        sw.printf("%s", CHARGE_RECORD_FOLDER);
+    } else {
+        sw.printf(CHARGE_RECORD_FOLDER "/%.30s", directory);
+    }
+    return String(buf, sw.getLength());
+}
+
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 static bool wants_send(uint32_t current_time_min, uint32_t last_send_time_min)
 {
@@ -493,24 +505,15 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
         return true;
     }
 
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                // Skip the directory name prefix if present
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-                if (check_directory(dirname.c_str())) {
-                    return true;
-                }
-            }
-        }
-    }
+    bool user_not_tracked = for_filename_in(CHARGE_RECORD_FOLDER,
+        [&check_directory](const char *filename, size_t filename_len, bool is_dir) {
+            if (is_dir)
+                if (check_directory(filename))
+                    return false; // early exit if check_directory returns true
+            return true;
+        });
 
-    return false;
+    return !user_not_tracked;
 }
 
 bool ChargeTracker::has_tracked_charges(uint32_t charger_uid)
@@ -650,51 +653,53 @@ void ChargeTracker::removeOldRecords()
 
 bool ChargeTracker::setupRecords(const char *directory)
 {
-    // Extract the folder path from the first charge record filename
-    String first_record_path = chargeRecordFilename(1, directory);
-    int last_slash = first_record_path.lastIndexOf('/');
-    String folder_path = first_record_path.substring(0, last_slash);
+    String folder_path = chargeRecordDirectory(directory);
 
     if (!LittleFS.mkdir(folder_path)) { // mkdir also returns true if the directory already exists and is a directory.
         logger.printfln("Failed to create charge record folder: %s", folder_path.c_str());
         return false;
     }
 
-    File folder = LittleFS.open(folder_path);
-
     // Two more to handle power cycles where a new record was created but the oldest one was not yet deleted.
     uint32_t found_blobs[CHARGE_RECORD_FILE_COUNT + 2] = {0};
     size_t found_blobs_size = ARRAY_SIZE(found_blobs);
     int found_blob_counter = 0;
 
-    while (File f = folder.openNextFile()) {
-        String name{f.name()};
-        if (f.isDirectory()) {
-            continue;
-        }
+    if (!for_filename_in(folder_path.c_str(),
+            [&found_blobs,
+                &found_blobs_size,
+                &found_blob_counter]
+            (const String &name, bool is_dir) {
+                if (is_dir) {
+                    return true;
+                }
 
-        if (name == "use_imexsum") {
-            continue;
-        }
+                if (name == "use_imexsum") {
+                    return true;
+                }
 
-        if (!name.startsWith("charge-record-") || !name.endsWith(".bin")) {
-            logger.printfln("Unexpected file %s in charge record folder", name.c_str());
-            continue;
-        }
+                if (!name.startsWith("charge-record-") || !name.endsWith(".bin")) {
+                    logger.printfln("Unexpected file %s in charge record folder", name.c_str());
+                    return true;
+                }
 
-        long suffix = name.substring(14, name.length() - 4).toInt();
-        if (suffix == 0) {
-            logger.printfln("Unexpected file %s in charge record folder", name.c_str());
-            continue;
-        }
+                long suffix = name.substring(14, name.length() - 4).toInt();
+                if (suffix == 0) {
+                    logger.printfln("Unexpected file %s in charge record folder", name.c_str());
+                    return true;
+                }
 
-        if (found_blob_counter >= found_blobs_size) {
-            logger.printfln("Too many charge records found!");
-            return false;
-        }
+                if (found_blob_counter >= found_blobs_size) {
+                    logger.printfln("Too many charge records found!");
+                    return false;
+                }
 
-        found_blobs[found_blob_counter] = suffix;
-        ++found_blob_counter;
+                found_blobs[found_blob_counter] = suffix;
+                ++found_blob_counter;
+                return true;
+            })
+        ) {
+        return false;
     }
 
     if (found_blob_counter == 0) {
@@ -790,37 +795,33 @@ bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *fir
         return true;
     }
 
-    char folder_path[96];
-    snprintf(folder_path, sizeof(folder_path), CHARGE_RECORD_FOLDER "/%s", directory);
+    String folder_path = chargeRecordDirectory(directory);
 
     if (!LittleFS.exists(folder_path))
-        return false;
-
-    File folder = LittleFS.open(folder_path);
-    if (!folder || !folder.isDirectory())
         return false;
 
     uint32_t found_blobs[CHARGE_RECORD_FILE_COUNT + 2] = {0};
     int found_blob_counter = 0;
 
-    while (File f = folder.openNextFile()) {
-        String name{f.name()};
-        if (f.isDirectory())
-            continue;
+    for_filename_in(folder_path.c_str(),
+        [&found_blobs, &found_blob_counter](String name, bool is_dir) {
+            if (is_dir)
+                return true;
 
-        if (!name.startsWith("charge-record-") || !name.endsWith(".bin"))
-            continue;
+            if (!name.startsWith("charge-record-") || !name.endsWith(".bin"))
+                return true;
 
-        long suffix = name.substring(14, name.length() - 4).toInt();
-        if (suffix == 0)
-            continue;
+            long suffix = name.substring(14, name.length() - 4).toInt();
+            if (suffix == 0)
+                return true;
 
-        if (found_blob_counter >= ARRAY_SIZE(found_blobs))
-            break;
+            if (found_blob_counter >= ARRAY_SIZE(found_blobs))
+                return false;
 
-        found_blobs[found_blob_counter] = suffix;
-        ++found_blob_counter;
-    }
+            found_blobs[found_blob_counter] = suffix;
+            ++found_blob_counter;
+            return true;
+    });
 
     if (found_blob_counter == 0)
         return false;
@@ -947,24 +948,16 @@ void ChargeTracker::setup()
     }
 
     // Setup all subdirectories
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                // Skip the directory name prefix if present
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-
+    for_filename_in(CHARGE_RECORD_FOLDER,
+        [this](const char *name, size_t name_len, bool is_dir) {
+            if (is_dir) {
                 // Setup records for this subdirectory
-                if (!this->setupRecords(dirname.c_str())) {
-                    logger.printfln("Warning: Failed to setup records for directory %s", dirname.c_str());
+                if (!this->setupRecords(name)) {
+                    logger.printfln("Warning: Failed to setup records for directory %s", name);
                 }
             }
-        }
-    }
+            return true;
+        });
 
     last_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
 
@@ -1296,20 +1289,13 @@ void ChargeTracker::repair_charges()
     repair_directory(nullptr, is_charger_in_config(nullptr));
 
     // Scan all subdirectories
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                // Skip the directory name prefix if present
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-                repair_directory(dirname.c_str(), is_charger_in_config(dirname.c_str()));
+    for_filename_in(CHARGE_RECORD_FOLDER,
+        [&repair_directory](const char *name, size_t name_len, bool is_dir) {
+            if (is_dir) {
+                repair_directory(name, is_charger_in_config(name));
             }
-        }
-    }
+            return true;
+        });
 
     if (num_repaired != 0) {
         logger.printfln("Repaired %lu charge-entries across all directories.", num_repaired);
@@ -2921,19 +2907,13 @@ void ChargeTracker::updateLastCharges()
 
     get_charges_from_directory(nullptr);
 
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-                get_charges_from_directory(dirname.c_str());
+    for_filename_in(CHARGE_RECORD_FOLDER,
+        [&get_charges_from_directory](const char *name, size_t name_len, bool is_dir) {
+            if (is_dir) {
+                get_charges_from_directory(name);
             }
-        }
-    }
+            return true;
+        });
 
     while (last_charges.count() > 0) {
         last_charges.remove(0);
@@ -3006,30 +2986,23 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
     logger.printfln("Main directory has %u files", total_files);
 
     // Count files in subdirectories
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-
+    for_filename_in(CHARGE_RECORD_FOLDER,
+        [this, &params, &total_files](const char *name, size_t name_len, bool is_dir) {
+            if (is_dir) {
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(params.device, dirname.c_str())) {
-                    continue;
+                if (!should_include_directory_for_device_filter(params.device, name)) {
+                    return true;
                 }
 
                 uint32_t first_record = 0, last_record = 0;
-                if (getChargerChargeRecords(dirname.c_str(), &first_record, &last_record)) {
+                if (getChargerChargeRecords(name, &first_record, &last_record)) {
                     total_files += (last_record - first_record + 1);
-                    logger.printfln("Directory '%s' has %lu files. Totalling to %u", dirname.c_str(), (last_record - first_record + 1), total_files);
+                    logger.printfln("Directory '%s' has %lu files. Totalling to %u", name, (last_record - first_record + 1), total_files);
                 }
             }
             vTaskDelay(1); // After every directory, give other tasks a chance to run and reset their watchdogs.
-        }
-    }
+            return true;
+        });
 
     if (total_files == 0) {
         *out_count = 0;
@@ -3107,26 +3080,19 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
         read_directory_charges(nullptr);
     }
 
-    root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-
+    for_filename_in(CHARGE_RECORD_FOLDER,
+        [&params, &read_directory_charges](const char *name, size_t name_len, bool is_dir) {
+            if (is_dir) {
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(params.device, dirname.c_str())) {
-                    continue;
+                if (!should_include_directory_for_device_filter(params.device, name)) {
+                    return true;
                 }
 
-                read_directory_charges(dirname.c_str());
+                read_directory_charges(name);
             }
             vTaskDelay(1);
-        }
-    }
+            return true;
+        });
 
     std::sort(charges, charges + charge_count, [](const ExportCharge &a, const ExportCharge &b) {
         return b > a;
