@@ -73,9 +73,9 @@ class Feature(Enum):
 
 
 class CheckType(Enum):
-    FEATURE = "Feature"          # Check api.hasFeature(feature)
-    API_BOOL = "ApiBool"         # Check API path exists and bool key is true
-    METER_CONFIG = "MeterConfig" # Check API path exists and first array element > 0
+    FEATURE = "Feature"  # Check api.hasFeature(feature)
+    API_BOOL = "ApiBool"  # Check API path exists and bool key is true
+    METER_CONFIG = "MeterConfig"  # Check API path exists and first array element > 0
 
 
 @dataclass
@@ -116,7 +116,7 @@ class Entity:
     # Check type: how to determine if this entity should be announced.
     check_type: CheckType = CheckType.FEATURE
     api_check_path: str = None  # API path to check (for ApiBool and MeterConfig)
-    api_check_key: str = None   # Key within the config to check (for ApiBool)
+    api_check_key: str = None  # Key within the config to check (for ApiBool)
 
     def __post_init__(self):
         if self.json_attributes_info is None:
@@ -134,28 +134,28 @@ class Entity:
             # Prefix is at most ~20 chars, plus overhead
             avail_len += len(entry.topic) + len(entry.value_template) + 80
         return (
-            max(len(self.name_de), len(self.name_en))
-            + len(self.object_id)
-            + len(self.path)
-            + max(
-                len(self.get_static_info_generic_str()),
-                len(self.get_static_info_homeassistant_str()),
-                len(self.get_static_info_generic_en_str()),
-                len(self.get_static_info_homeassistant_en_str()),
-            )
-            + avail_len
-            + len(self.get_json_attributes_info_str())
+                max(len(self.name_de), len(self.name_en))
+                + len(self.object_id)
+                + len(self.path)
+                + max(
+            len(self.get_static_info_generic_str()),
+            len(self.get_static_info_homeassistant_str()),
+            len(self.get_static_info_generic_en_str()),
+            len(self.get_static_info_homeassistant_en_str()),
+        )
+                + avail_len
+                + len(self.get_json_attributes_info_str())
         )
 
     def get_json_attributes_info_str(self):
         return (
-            '"'
-            + json.dumps(self.json_attributes_info)
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
+                '"'
+                + json.dumps(self.json_attributes_info)
+                .strip()
+                .lstrip("{")
+                .rstrip("}")
+                .replace('"', '\\"')
+                + '"'
         )
 
     def get_static_info_generic_str(self):
@@ -164,24 +164,24 @@ class Entity:
         # static info is not a json object, but only more key value pairs, so remove the {}.
         # also this is a string literal, so escape inner ".
         return (
-            '"'
-            + json.dumps(self.static_info_generic)
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
+                '"'
+                + json.dumps(self.static_info_generic)
+                .strip()
+                .lstrip("{")
+                .rstrip("}")
+                .replace('"', '\\"')
+                + '"'
         )
 
     def get_static_info_homeassistant_str(self):
         return (
-            '"'
-            + json.dumps({**self.static_info_generic, **self.static_info_homeassistant})
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
+                '"'
+                + json.dumps({**self.static_info_generic, **self.static_info_homeassistant})
+                .strip()
+                .lstrip("{")
+                .rstrip("}")
+                .replace('"', '\\"')
+                + '"'
         )
 
     def get_static_info_generic_en_str(self):
@@ -190,13 +190,13 @@ class Entity:
         if not self.include_generic:
             return "NULL"
         return (
-            '"'
-            + json.dumps({**self.static_info_generic, **self.static_info_generic_en})
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
+                '"'
+                + json.dumps({**self.static_info_generic, **self.static_info_generic_en})
+                .strip()
+                .lstrip("{")
+                .rstrip("}")
+                .replace('"', '\\"')
+                + '"'
         )
 
     def get_static_info_homeassistant_en_str(self):
@@ -210,13 +210,13 @@ class Entity:
             **self.static_info_homeassistant_en,
         }
         return (
-            '"'
-            + json.dumps(merged)
-            .strip()
-            .lstrip("{")
-            .rstrip("}")
-            .replace('"', '\\"')
-            + '"'
+                '"'
+                + json.dumps(merged)
+                .strip()
+                .lstrip("{")
+                .rstrip("}")
+                .replace('"', '\\"')
+                + '"'
         )
 
     def get_availability_entries_str(self):
@@ -648,7 +648,7 @@ entities = [
             "device_class": "energy",
         },
         static_info_homeassistant={
-            "value_template":"{{(value_json.wh_tomorrow | float / 1000) | round(2)}}",
+            "value_template": "{{(value_json.wh_tomorrow | float / 1000) | round(2)}}",
             "icon": "mdi:solar-power-variant-outline",
             "unit_of_measurement": "kWh",
         },
@@ -676,7 +676,7 @@ entities = [
         api_check_path="solar_forecast/config",
         api_check_key="enable",
     ),
-Entity(
+    Entity(
         include_generic=False,
         component=Component.SENSOR,
         object_id="solar_forecast_outstanding",
@@ -694,6 +694,26 @@ Entity(
         },
         check_type=CheckType.API_BOOL,
         api_check_path="solar_forecast/config",
+        api_check_key="enable",
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        object_id="current_electricity_price",
+        path="day_ahead_prices/state",
+        name_de="Aktueller Börsenstrompreis",
+        name_en="Current electricity market price",
+        availability=[AvailabilityEntry("day_ahead_prices/config", "{{ 'online' if value_json.enable else 'offline' }}")],
+        static_info_generic={
+            "device_class": "monetary",
+        },
+        static_info_homeassistant={
+            "value_template": "{{(value_json.current_price | float / 1000) | round(2)}}",
+            "icon": "mdi:solar-power",
+            "unit_of_measurement": "ct/kWh",
+        },
+        check_type=CheckType.API_BOOL,
+        api_check_path="day_ahead_prices/config",
         api_check_key="enable",
     ),
     Entity(
@@ -740,7 +760,8 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Leistungsaufnahme Zähler {meter_id}",
             name_en=f"Power draw meter {meter_id}",
-            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            availability=[
+                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF, 0
@@ -768,7 +789,8 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Stromverbrauch Zähler {meter_id} absolut",
             name_en=f"Energy consumption meter {meter_id} (absolute)",
-            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            availability=[
+                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM, 3
@@ -796,7 +818,8 @@ for meter_id in range(0, meters_max_slots):
             path=f"meters/{meter_id}/values",
             name_de=f"Stromverbrauch Zähler {meter_id} relativ",
             name_en=f"Energy consumption meter {meter_id} (relative)",
-            availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+            availability=[
+                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM_RESETTABLE, 3
