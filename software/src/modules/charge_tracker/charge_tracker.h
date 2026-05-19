@@ -126,7 +126,6 @@ public:
 
     ConfigRoot last_charges;
     ConfigRoot current_charge;
-    ConfigRoot current_charges;
     ConfigRoot state;
 
     ConfigRoot config;
