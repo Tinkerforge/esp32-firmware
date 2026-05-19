@@ -28,6 +28,7 @@
 
 #include "build.h"
 #include "event_log_prefix.h"
+#include "modules/meters/generated/meter_class_id.enum.h"
 #include "generated/module_dependencies.h"
 #include "language.h"
 #include "options.h"
@@ -225,8 +226,8 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
             case MqttDiscoveryCheckType::MeterConfig: {
                 const Config *cfg = api.getState(info.api_check_path, false);
-                if (cfg != nullptr && cfg->count() > 0) {
-                    entity_enabled = cfg->get(0)->asUint() > 0;
+                if (cfg != nullptr && cfg->is<Config::ConfUnion>()) {
+                    entity_enabled = cfg->getTag<MeterClassID>() != MeterClassID::None;
                 }
                 break;
             }
@@ -288,9 +289,6 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                     json.addMemberString("availability_mode", "all");
                 }
 
-                if (info.create_disabled) {
-                    json.addMemberBoolean("enabled_by_default", false);
-                }
 
                 if (strlen(info.json_attributes_topic) > 0) {
                     json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), info.json_attributes_topic);
