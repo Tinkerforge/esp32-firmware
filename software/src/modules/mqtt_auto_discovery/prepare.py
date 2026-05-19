@@ -65,13 +65,11 @@ class Component(Enum):
 
 
 class Feature(Enum):
+    NULL = "none"
     EVSE = "evse"
     METER = "meter"
     METER_PHASES = "meter_phases"
-    P14A_ENWG = "p14a_enwg"
     METERS = "meters"
-    POWER_MANAGER = "power_manager"
-    SOLAR_FORECAST = "solar_forecast"
 
 
 class CheckType(Enum):
@@ -98,7 +96,6 @@ MQTT_NOT_READ_ONLY = AvailabilityEntry(
 class Entity:
     include_generic: bool
     component: Component
-    feature: Feature
     object_id: str
     path: str
     name_de: str
@@ -106,9 +103,9 @@ class Entity:
     availability: list  # list of AvailabilityEntry
     static_info_generic: dict
     static_info_homeassistant: dict
+    feature: Feature = Feature.NULL
     json_attributes_topic: str = ""
     json_attributes_info: dict = None
-    create_disabled: bool = False
     # Optional English overrides for language-dependent static_info content
     # (e.g. value_template strings containing localized labels).
     # When set, the C++ code picks between the default (German) and English
@@ -253,7 +250,6 @@ topic_template = """    {{
             {static_info_homeassistant_en}
         }},
         .type = MqttDiscoveryType::{discovery_type},
-        .create_disabled = {create_disabled},
         .check_type = MqttDiscoveryCheckType::{check_type},
         .api_check_path = {api_check_path},
         .api_check_key = {api_check_key},
@@ -376,6 +372,29 @@ entities = [
             "icon": "mdi:ev-plug-type2",
         },
         static_info_homeassistant={},
+    ),
+    Entity(
+        include_generic=False,
+        component=Component.SENSOR,
+        feature=Feature.EVSE,
+        object_id="current_charge_mode_evse",
+        path="evse/charge_mode",
+        name_de="Aktueller Lademodus EVSE",
+        name_en="Current charge mode EVSE",
+        availability=[],
+        static_info_generic={
+            "icon": "mdi:ev-station",
+            "device_class": "enum",
+        },
+        static_info_homeassistant={
+            "value_template": enum_value_template("mode", charge_mode_names_de),
+            "options": charge_mode_names_de,
+        },
+        static_info_homeassistant_en={
+            "value_template": enum_value_template("mode", charge_mode_names_en),
+            "options": charge_mode_names_en,
+        },
+        check_type=CheckType.FEATURE,
     ),
     Entity(
         include_generic=True,
@@ -542,7 +561,6 @@ entities = [
     Entity(
         include_generic=False,
         component=Component.SENSOR,
-        feature=Feature.P14A_ENWG,
         object_id="limited",
         path="p14a_enwg/state",
         name_de="Limitiert nach §14a ENWG",
@@ -567,7 +585,6 @@ entities = [
     Entity(
         include_generic=False,
         component=Component.SELECT,
-        feature=Feature.POWER_MANAGER,
         object_id="active_charge_mode",
         path="power_manager/charge_mode",
         name_de="Aktiver Lademodus",
@@ -596,7 +613,6 @@ entities = [
     Entity(
         include_generic=False,
         component=Component.SENSOR,
-        feature=Feature.POWER_MANAGER,
         object_id="current_charge_mode",
         path="power_manager/charge_mode",
         name_de="Aktueller Lademodus",
@@ -623,7 +639,6 @@ entities = [
     Entity(
         include_generic=False,
         component=Component.SENSOR,
-        feature=Feature.SOLAR_FORECAST,
         object_id="solar_forecast_tomorrow",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose morgen",
@@ -644,7 +659,6 @@ entities = [
     Entity(
         include_generic=False,
         component=Component.SENSOR,
-        feature=Feature.SOLAR_FORECAST,
         object_id="solar_forecast_today",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose heute",
@@ -665,7 +679,6 @@ entities = [
 Entity(
         include_generic=False,
         component=Component.SENSOR,
-        feature=Feature.SOLAR_FORECAST,
         object_id="solar_forecast_outstanding",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose ab jetzt",
@@ -709,10 +722,9 @@ for meter_id in range(0, meters_max_slots):
             feature=Feature.METERS,
             object_id=f"meter_{meter_id}_powernow",
             path=f"meters/{meter_id}/values",
-            name_de=f"Leistungsaufnahme Stromzähler {meter_id}",
+            name_de=f"Leistungsaufnahme Zähler {meter_id}",
             name_en=f"Power draw meter {meter_id}",
             availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF, 0
@@ -738,10 +750,9 @@ for meter_id in range(0, meters_max_slots):
             feature=Feature.METERS,
             object_id=f"meter_{meter_id}_energyabs",
             path=f"meters/{meter_id}/values",
-            name_de=f"Stromverbrauch Stromzähler {meter_id} absolut",
+            name_de=f"Stromverbrauch Zähler {meter_id} absolut",
             name_en=f"Energy consumption meter {meter_id} (absolute)",
             availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM, 3
@@ -767,10 +778,9 @@ for meter_id in range(0, meters_max_slots):
             feature=Feature.METERS,
             object_id=f"meter_{meter_id}_energyrel",
             path=f"meters/{meter_id}/values",
-            name_de=f"Stromverbrauch Stromzähler {meter_id} relativ",
+            name_de=f"Stromverbrauch Zähler {meter_id} relativ",
             name_en=f"Energy consumption meter {meter_id} (relative)",
             availability=[AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            create_disabled=True,
             static_info_generic={
                 "value_template": meter_value_template(
                     METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM_RESETTABLE, 3
@@ -806,7 +816,6 @@ topics = [
         static_info_generic_en=x.get_static_info_generic_en_str(),
         static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
         discovery_type=x.component.get_discovery_type().value,
-        create_disabled="true" if x.create_disabled else "false",
         check_type=x.check_type.value,
         api_check_path='"%s"' % x.api_check_path if x.api_check_path else "NULL",
         api_check_key='"%s"' % x.api_check_key if x.api_check_key else "NULL",
