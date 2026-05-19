@@ -31,6 +31,7 @@ import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_defau
 import { ModbusFunctionCode } from "../modbus_tcp_client/generated/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/generated/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { InputHost } from "../../ts/components/input_host";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputFloat } from "../../ts/components/input_float";
@@ -865,10 +866,9 @@ export function pre_init() {
                             }} />
                     </FormRow>,
                     <FormRow label={__("batteries_modbus_tcp.content.host")}>
-                        <InputTextPatterned
+                        <InputHost
                             required
                             maxLength={64}
-                            pattern="^[a-zA-Z0-9\-\.]+$"
                             value={config[1].host}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {host: v}));

@@ -780,6 +780,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                     <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
                         <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
                             <InputHost required
+                                    maxLength={64}
                                     value={this.state.relay_host}
                                     onValue={(v) => this.setState({relay_host: v})} />
                         </FormRow>

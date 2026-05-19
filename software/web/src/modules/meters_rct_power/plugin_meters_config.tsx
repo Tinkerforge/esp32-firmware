@@ -85,6 +85,7 @@ export function pre_init() {
                     <FormRow label={__("meters_rct_power.content.host")}>
                         <InputHost
                             required
+                            maxLength={64}
                             value={config[1].host}
                             onValue={(v) => on_config(util.get_updated_union(config, {host: v}))} />
                     </FormRow>,

@@ -596,6 +596,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     required
+                    maxLength={64}
                     disabled={this.state.waiting || this.state.meter_slot >= 0}
                     value={this.state.meter_slot >= 0 ? this.state.meter_host : this.state.custom_host}
                     onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_host: v}) : undefined} />

@@ -27,6 +27,7 @@ interface InputHostProps {
     class?: string
     required?: boolean
     disabled?: boolean
+    maxLength: number
     value: string
     onValue?: (value: string) => void
     invalidFeedback?: string
@@ -44,7 +45,7 @@ export function InputHost(props: InputHostProps) {
     //        any octet, but the hostname part of the pattern is too lax and accepts those anyway
     return <InputTextPatterned {...props}
                 invalidFeedback={invalidFeedback}
-                maxLength={64}
+                maxLength={props.maxLength}
                 class={props.class + (props.value.endsWith(".localhost") ? " is-invalid" : "")}
                 pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|[a-zA-Z0-9\\-\\.]+)$`} />
 }

@@ -26,6 +26,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow } from "../../ts/components/form_row";
 import timezones from "../ntp/timezones";
 import { InputSelect } from "../../ts/components/input_select";
+import { InputHost } from "../../ts/components/input_host";
 import { Button } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
@@ -202,14 +203,14 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                     </FormRow>
 
                     <FormRow label={__("time.content.server")}>
-                        <InputText required
+                        <InputHost required
                                    maxLength={64}
                                    value={state.server}
                                    onValue={this.set("server")}/>
                     </FormRow>
 
                     <FormRow label={__("time.content.server2")} label_muted={__("time.content.server2_muted")}>
-                        <InputText maxLength={64}
+                        <InputHost maxLength={64}
                                    value={state.server2}
                                    onValue={this.set("server2")}/>
                     </FormRow>

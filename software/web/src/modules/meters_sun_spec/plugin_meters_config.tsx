@@ -476,6 +476,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
             <FormRow label={__("meters_sun_spec.content.config_host")}>
                 <InputHost
                     required
+                    maxLength={64}
                     value={this.props.config[1].host}
                     onValue={(v) => this.props.on_config(util.get_updated_union(this.props.config, {host: v}))} />
             </FormRow>,

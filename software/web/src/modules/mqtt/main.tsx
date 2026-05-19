@@ -29,6 +29,7 @@ import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
+import { InputHost } from "../../ts/components/input_host";
 import { Switch } from "../../ts/components/switch";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
@@ -201,7 +202,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                     </Collapse>
 
                     <FormRow label={__("mqtt.content.broker_host")}>
-                        <InputText required={state.enable_mqtt}
+                        <InputHost required={state.enable_mqtt}
                                    maxLength={128}
                                    value={state.broker_host}
                                    onValue={this.set("broker_host")}/>

@@ -170,6 +170,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
                     <FormRow label={__("wireguard.content.remote_host")}>
                         <InputHost required={state.enable}
+                                   maxLength={64}
                                    value={state.remote_host}
                                    onValue={this.set("remote_host")}/>
                     </FormRow>

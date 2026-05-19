@@ -393,6 +393,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             value={state.editCharger.host}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, host: v}})}
                                             required
+                                            maxLength={64}
                                             disabled={!energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost')}
                                             class={check_host(state.editCharger.host, i) != undefined ? "is-invalid" : ""}
                                             invalidFeedback={check_host(state.editCharger.host, i)}/>
@@ -450,6 +451,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                     value={state.addCharger.host}
                                     onValue={(v) => this.setState({addCharger: {...state.addCharger, host: v}})}
                                     required
+                                    maxLength={64}
                                     class={check_host(state.addCharger.host, -1) != undefined ? "is-invalid" : ""}
                                     invalidFeedback={check_host(state.addCharger.host, -1)}/>
                             </FormRow>
