@@ -696,6 +696,22 @@ Entity(
         api_check_path="solar_forecast/config",
         api_check_key="enable",
     ),
+    Entity(
+        include_generic=False,
+        component=Component.BINARY_SENSOR,
+        feature=Feature.EVSE,
+        object_id="evse_button_pressed",
+        path="evse/button_state",
+        name_de="Fronttaster gedrückt",
+        name_en="Front button pressed",
+        availability=[],
+        static_info_generic={},
+        static_info_homeassistant={
+            "value_template": "{{value_json.button_pressed}}",
+            "payload_on": "True",
+            "payload_off": "False",
+        },
+    ),
 ]
 # MeterValueID constants (from generated/meter_value_id.h)
 METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF = 74
