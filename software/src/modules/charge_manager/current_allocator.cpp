@@ -140,6 +140,8 @@ void update_from_client_packet(
         target_alloc.allocated_phases = 0;
     }
 
+    target.allowed_current = v1->allowed_charging_current;
+
     if (target.supported_current != v1->supported_current)
         trace("RECV %d: supported %u -> %u mA", client_id, target.supported_current, v1->supported_current);
     target.supported_current = v1->supported_current;
