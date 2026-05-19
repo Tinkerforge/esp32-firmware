@@ -128,6 +128,7 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
                 client_random_hex.get(), secret_hex.get());
             break;
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_EARLY_SECRET:
             logger.tracefln_plain(
                 debug.ssl_key_trace_buffer_index,
@@ -169,6 +170,7 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
                 "SERVER_TRAFFIC_SECRET_0 %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
+#endif
 
         default:
             return;
