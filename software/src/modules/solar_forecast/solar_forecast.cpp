@@ -66,11 +66,6 @@ void SolarForecast::pre_setup()
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Solar Forecast API URL";
         }
-        if (update.get("enable")->asBool()) {
-            api.addFeature("solar_forecast");
-        } else {
-            api.removeFeature("solar_forecast");
-        }
 
         this->next_update();
         return "";
