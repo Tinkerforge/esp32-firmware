@@ -74,14 +74,6 @@ public:
     std::mutex records_mutex;
     std::mutex pdf_mutex;
 
-    static bool include_charge(
-        ChargeStart cs,
-        int user,
-        uint32_t start_min,
-        uint32_t end_min,
-        const uint8_t *configured_users
-    );
-
 private:
     bool repair_last(float);
     void repair_charges();
