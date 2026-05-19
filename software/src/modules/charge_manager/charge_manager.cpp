@@ -392,7 +392,7 @@ static void update_charge_tracking(
             charge_tracker.endCharge(
                 0, // Unknown duration
                 v1->energy_abs,
-                    is_local_charger ? nullptr : uid_str);
+                is_local_charger ? nullptr : uid_str);
         }
     }
 
