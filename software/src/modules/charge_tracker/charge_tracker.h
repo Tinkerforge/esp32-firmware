@@ -90,7 +90,7 @@ public:
     bool has_tracked_charges(uint32_t charger_uid);
 
     size_t completeRecordsInLastFile();
-    bool currentlyCharging(const char *directory = nullptr);
+    bool currentlyCharging(const char *directory = nullptr, ChargeStart *cs = nullptr);
 
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
 

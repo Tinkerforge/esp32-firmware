@@ -756,7 +756,7 @@ size_t ChargeTracker::completeRecordsInLastFile()
     return fsize / CHARGE_RECORD_SIZE;
 }
 
-bool ChargeTracker::currentlyCharging(const char *directory)
+bool ChargeTracker::currentlyCharging(const char *directory, ChargeStart *cs)
 {
     uint32_t first_record = 0;
     uint32_t last_record = 0;
@@ -769,7 +769,17 @@ bool ChargeTracker::currentlyCharging(const char *directory)
     }
 
     const size_t fsize = file_size(LittleFS, chargeRecordFilename(last_record, directory));
-    return (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
+    auto result = (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
+
+    if (result && cs != nullptr) {
+        char buf[sizeof(ChargeStart)];
+        File f = LittleFS.open(chargeRecordFilename(last_record, directory), "r");
+        f.seek(-sizeof(ChargeStart), SeekMode::SeekEnd);
+        f.readBytes(buf, sizeof(ChargeStart));
+        memcpy(cs, buf, sizeof(ChargeStart));
+    }
+
+    return result;
 }
 
 bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record)

@@ -358,6 +358,13 @@ static bool is_packet_stale(
     return false;
 }
 
+static uint16_t get_user_current(uint8_t user_id) {
+#if MODULE_USERS_AVAILABLE()
+        return users.get_user_current(user_id);
+#else
+        return 32000;
+#endif
+}
 
 static constexpr int16_t NOT_AUTHORIZED = -1;
 static constexpr int16_t UNKNOWN_NFC_TAG = -2;
@@ -383,16 +390,23 @@ static void update_charge_tracking(
         char uid_str[32];
         tf_base58_encode(target.uid, uid_str);
 
-        // TODO: is this necessary? A charge can continue after a charge manager reboot.
-
-        // If the charger is currently charging when first seen, end that charge
-        // since we don't know when it started
         bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
-        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
-            charge_tracker.endCharge(
-                0, // Unknown duration
-                v1->energy_abs,
-                is_local_charger ? nullptr : uid_str);
+        ChargeStart cs;
+
+        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str, &cs)) {
+            if (v1->charger_state != 0 && (target.authenticated_user_id < 0 || target.authenticated_user_id == cs.user_id)) {
+                // Car is still connected and we trust our charge tracking. Authenticate for tracked user.
+                target.authenticated_user_id = cs.user_id;
+                target.user_current = get_user_current(target.authenticated_user_id);
+                target.unknown_authorization_timestamp = 0_us;
+            } else {
+                // Car not connected or we've already authenticated another user than was tracked the last time.
+                // Track stop (and potentially track start below for other user)
+                charge_tracker.endCharge(
+                    0, // We don't know when the car was disconnected -> unknown duration
+                    v1->energy_abs,
+                    is_local_charger ? nullptr : uid_str);
+            }
         }
     }
 
@@ -479,14 +493,6 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
 #else
     // If we can't check the NFC tag, it is not authorized.
     return NOT_AUTHORIZED;
-#endif
-}
-
-static uint16_t get_user_current(uint8_t user_id) {
-#if MODULE_USERS_AVAILABLE()
-        return users.get_user_current(user_id);
-#else
-        return 32000;
 #endif
 }
 
