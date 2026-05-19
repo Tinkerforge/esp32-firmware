@@ -828,16 +828,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         return save_allowed;
     }
 
-    async save_authentication_config(enabled: boolean) {
-        await API.call_unchecked(
-            "users/http_auth_update",
-            {
-                enabled: enabled,
-            },
-            () => __("users.script.save_failed"),
-        );
-    }
-
     user_has_password(u: User) {
         return (
             (u.digest_hash == null && // user is known and has password set, which is censored
@@ -880,7 +870,14 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             // If we want to disable authentication, do this first,
             // to make sure authentication is never enabled
             // while no user without password is configured.
-            await this.save_authentication_config(new_config.http_auth_enabled);
+            // Don't show the reboot modal in this case.
+            await API.call_unchecked(
+                "users/http_auth_update",
+                {
+                    enabled: new_config.http_auth_enabled,
+                },
+                () => __("users.script.save_failed"),
+            );
         }
 
         if (
@@ -956,14 +953,11 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             next_user_id = Math.max(1, (next_user_id + 1) % 256);
         }
 
-        await this.save_authentication_config(new_config.http_auth_enabled);
-
         //#if MODULE_EVSE_COMMON_AVAILABLE
         await API.save(
             "evse/user_enabled",
             { enabled: this.state.userSlotEnabled },
-            () => __("evse.script.save_failed"),
-            () => __("users.script.reboot_content_changed"),
+            () => __("evse.script.save_failed")
         );
         //#endif
 
@@ -1032,6 +1026,16 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             this.setState({ nfcTagChanges: [] });
         }
         //#endif
+
+        // This is the last API call to be done. Show reboot modal here.
+        await API.call_unchecked(
+            "users/http_auth_update",
+            {
+                enabled: new_config.http_auth_enabled,
+            },
+            () => __("users.script.save_failed"),
+            () => __("users.script.reboot_content_changed")
+        );
     }
 
     setUser(i: number, val: Partial<User>) {
