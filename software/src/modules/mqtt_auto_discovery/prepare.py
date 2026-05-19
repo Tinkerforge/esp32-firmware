@@ -701,8 +701,8 @@ entities = [
         component=Component.SENSOR,
         object_id="current_electricity_price",
         path="day_ahead_prices/state",
-        name_de="Aktueller Börsenstrompreis",
-        name_en="Current electricity market price",
+        name_de="Börsenstrompreis",
+        name_en="Electricity market price",
         availability=[AvailabilityEntry("day_ahead_prices/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_generic={
             "device_class": "monetary",
