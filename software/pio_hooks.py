@@ -882,7 +882,7 @@ def remove_stale_generated_files():
 def check_generated_files():
     generated_files = get_generated_files_index()
 
-    for generated_file, expected_digest in generated_files.items():
+    for generated_file, expected_digest in sorted(generated_files.items()):
         if expected_digest == None:
             continue
 
