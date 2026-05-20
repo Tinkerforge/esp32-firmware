@@ -1,5 +1,3 @@
-# This is the same register table as Hailei
-
 display_names = [
     ('Alpha ESS Hybrid Inverter', {
         'en': 'Alpha ESS hybrid inverter',
