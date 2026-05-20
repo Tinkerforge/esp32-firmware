@@ -2880,6 +2880,117 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 6], energy_discharge);
         }
     }
+    else if (is_qcells_hybrid_inverter_pv_meter()) {
+        if (register_start_address == QCellsHybridInverterPVAddress::PV1Voltage) {
+            qcells_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == QCellsHybridInverterPVAddress::PV2Voltage) {
+            qcells_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == QCellsHybridInverterPVAddress::PV1Current) {
+            qcells_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == QCellsHybridInverterPVAddress::PV2Current) {
+            qcells_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == QCellsHybridInverterPVAddress::PV1Power) {
+            qcells_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == QCellsHybridInverterPVAddress::PV2Power) {
+            qcells_hybrid_inverter.pv2_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(qcells_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += qcells_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(qcells_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += qcells_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = qcells_hybrid_inverter.pv1_current
+                              + qcells_hybrid_inverter.pv2_current;
+
+            float power_sum = qcells_hybrid_inverter.pv1_power
+                            + qcells_hybrid_inverter.pv2_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+        }
+    }
+    else if (is_qcells_string_inverter_inverter_meter()) {
+        if (register_start_address == QCellsStringInverterAddress::OutputPower) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_qcells_string_inverter_pv_meter()) {
+        if (register_start_address == QCellsStringInverterPVAddress::PV1Voltage) {
+            qcells_string_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV2Voltage) {
+            qcells_string_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV1Current) {
+            qcells_string_inverter.pv1_current = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV2Current) {
+            qcells_string_inverter.pv2_current = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV1Power) {
+            qcells_string_inverter.pv1_power = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV2Power) {
+            qcells_string_inverter.pv2_power = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV3Voltage) {
+            qcells_string_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV3Current) {
+            qcells_string_inverter.pv3_current = value;
+        }
+        else if (register_start_address == QCellsStringInverterPVAddress::PV3Power) {
+            qcells_string_inverter.pv3_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(qcells_string_inverter.pv1_voltage)) {
+                voltage_sum += qcells_string_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(qcells_string_inverter.pv2_voltage)) {
+                voltage_sum += qcells_string_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(qcells_string_inverter.pv3_voltage)) {
+                voltage_sum += qcells_string_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = qcells_string_inverter.pv1_current
+                              + qcells_string_inverter.pv2_current
+                              + qcells_string_inverter.pv3_current;
+
+            float power_sum = qcells_string_inverter.pv1_power
+                            + qcells_string_inverter.pv2_power
+                            + qcells_string_inverter.pv3_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+        }
+    }
 
     if (table->index[read_index] != VALUE_INDEX_META && table->index[read_index] != VALUE_INDEX_DEBUG) {
         meters.update_value(slot, table->index[read_index], value);

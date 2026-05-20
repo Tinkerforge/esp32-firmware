@@ -537,6 +537,31 @@ private:
             float pv4_voltage;
             float pv4_current;
         } growatt_hybrid_inverter;
+
+        // QCells hybrid inverter
+        struct {
+            QCellsHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv2_voltage;
+            float pv1_current;
+            float pv2_current;
+            float pv1_power;
+            float pv2_power;
+        } qcells_hybrid_inverter;
+
+        // QCells string inverter
+        struct {
+            QCellsStringInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv2_voltage;
+            float pv1_current;
+            float pv2_current;
+            float pv1_power;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+        } qcells_string_inverter;
     };
 };
 

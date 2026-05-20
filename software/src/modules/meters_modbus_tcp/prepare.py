@@ -29,6 +29,7 @@ import janitza
 import solis
 import growatt
 import eltako
+import qcells
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -61,6 +62,7 @@ modules = [
     solis,
     growatt,
     eltako,
+    qcells,
 ]
 
 display_names = {}
