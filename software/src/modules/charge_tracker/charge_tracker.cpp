@@ -64,18 +64,10 @@ extern char local_uid_str[32];
 
 static bool repair_logic(Charge *);
 
-#if OPTIONS_PRODUCT_ID_IS_WARP()
-static uint32_t get_charge_log_file_limit()
+static constexpr uint32_t get_charge_log_file_limit()
 {
-    return 30;
+    return std::max(30, static_cast<int>(MAX_CONTROLLED_CHARGERS * 2));
 }
-#else
-static uint32_t get_charge_log_file_limit()
-{
-    size_t managed_chargers = charge_manager.get_charger_count();
-    return std::max(30, static_cast<int>(managed_chargers * 2));
-}
-#endif
 
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
