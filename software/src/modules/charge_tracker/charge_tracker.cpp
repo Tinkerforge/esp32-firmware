@@ -141,36 +141,23 @@ static void compute_charge_log_hash(
     uint32_t start_timestamp_min,
     uint32_t end_timestamp_min)
 {
-    const size_t letterhead_len = letterhead ? strlen(letterhead) : 0;
-    const size_t fixed_size = 1 + 1 + 1 + 1 + 1 + sizeof(uint32_t) + sizeof(uint32_t); // 13 bytes
-    const size_t total_size = fixed_size + letterhead_len;
+    mbedtls_sha256_context ctx;
+    mbedtls_sha256_init(&ctx);
+    defer {mbedtls_sha256_free(&ctx);};
 
-    uint8_t stack_buf[64];
-    uint8_t *buf;
-    std::unique_ptr<uint8_t[]> heap_buf;
-    if (total_size <= sizeof(stack_buf)) {
-        buf = stack_buf;
-    } else {
-        heap_buf.reset(new uint8_t[total_size]);
-        buf = heap_buf.get();
-    }
+    mbedtls_sha256_starts(&ctx, 0 /*use SHA256*/);
 
-    size_t offset = 0;
-    buf[offset++] = static_cast<uint8_t>(file_type);
-    buf[offset++] = static_cast<uint8_t>(language);
-    buf[offset++] = static_cast<uint8_t>(static_cast<int8_t>(user_filter));
-    buf[offset++] = static_cast<uint8_t>(static_cast<int8_t>(device_filter));
-    buf[offset++] = static_cast<uint8_t>(csv_delimiter);
-    memcpy(buf + offset, &start_timestamp_min, sizeof(start_timestamp_min));
-    offset += sizeof(start_timestamp_min);
-    memcpy(buf + offset, &end_timestamp_min, sizeof(end_timestamp_min));
-    offset += sizeof(end_timestamp_min);
-    if (letterhead_len > 0) {
-        memcpy(buf + offset, letterhead, letterhead_len);
-        offset += letterhead_len;
-    }
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&file_type), sizeof(file_type));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&language), sizeof(language));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&user_filter), sizeof(user_filter));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&device_filter), sizeof(device_filter));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&csv_delimiter), sizeof(csv_delimiter));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&start_timestamp_min), sizeof(start_timestamp_min));
+    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&end_timestamp_min), sizeof(end_timestamp_min));
+    if (letterhead != nullptr)
+        mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char *>(&letterhead), strlen(letterhead));
 
-    mbedtls_sha256(buf, offset, out_hash, 0); // 0 = SHA-256
+    mbedtls_sha256_finish(&ctx, out_hash);
 }
 #endif
 
