@@ -3,7 +3,7 @@
 #include <WString.h>
 
 // Arduino String that allows accessing more methods.
-class CoolString : public String
+class CoolString final : public String
 {
 public:
     using String::String;
