@@ -67,7 +67,14 @@ void GenericModbusTCPClient::start_generic_read()
         read_pending = false;
         generic_read_request.result = TFModbusTCPClientTransactionResult::Aborted;
         generic_read_request.done_callback();
-        force_reconnect();
+
+        // we might be inside a callback from the TFModbusTCPClient or its pool. in that
+        // case it is not allowed to call the disconnect/connect functions. trigger the
+        // forced reconnect in the main task to avoid a potential non-reentrant abort
+        task_scheduler.scheduleOnce([this]() {
+            force_reconnect();
+        });
+
         return;
     }
 
