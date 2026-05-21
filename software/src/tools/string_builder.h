@@ -60,7 +60,7 @@ protected:
     static char *empty;
 };
 
-class StringBuilder : public StringWriter
+class StringBuilder final : public StringWriter
 {
 public:
     StringBuilder();

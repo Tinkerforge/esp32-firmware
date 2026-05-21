@@ -28,7 +28,7 @@
 #include "generated/automation_action_id.enum.h"
 #include "automation_backend.h"
 
-class Automation : public IModule, public IAutomationBackend
+class Automation final : public IModule, public IAutomationBackend
 {
 public:
     typedef std::function<void(const Config *)>    ActionCb;

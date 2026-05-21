@@ -1208,7 +1208,7 @@ public:
 
 static_assert(sizeof(Config) == 4, "Config size unexpected!");
 
-struct ConfigRoot : public Config {
+struct ConfigRoot final : public Config {
 public:
     using Validator = std::function<String(Config &, ConfigSource)>;
 

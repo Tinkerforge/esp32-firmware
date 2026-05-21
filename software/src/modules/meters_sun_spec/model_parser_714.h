@@ -22,7 +22,7 @@
 #include "imodel_parser.h"
 #include "generated/dc_port_type.enum.h"
 
-class MetersSunSpecParser714 : public IMetersSunSpecParser
+class MetersSunSpecParser714 final : public IMetersSunSpecParser
 {
 public:
     MetersSunSpecParser714(uint32_t slot_, DCPortType port_type_) : slot(slot_), port_type(port_type_) {}

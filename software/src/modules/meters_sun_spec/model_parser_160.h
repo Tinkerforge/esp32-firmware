@@ -21,7 +21,7 @@
 
 #include "imodel_parser.h"
 
-class MetersSunSpecParser160 : public IMetersSunSpecParser
+class MetersSunSpecParser160 final : public IMetersSunSpecParser
 {
 public:
     enum class Mode {

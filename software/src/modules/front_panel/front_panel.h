@@ -30,7 +30,7 @@
 #define FRONT_PANEL_TILES 6
 #define TILE_TYPES 8
 
-class FrontPanel : public DeviceModule<TF_WARPFrontPanel,
+class FrontPanel final : public DeviceModule<TF_WARPFrontPanel,
                                        tf_warp_front_panel_create,
                                        tf_warp_front_panel_get_bootloader_mode,
                                        tf_warp_front_panel_reset,

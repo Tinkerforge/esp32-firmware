@@ -23,7 +23,7 @@
 #include "generated/module_dependencies.h"
 #include "options.h"
 
-class HTTPChunkedResponse : public IBaseChunkedResponse
+class HTTPChunkedResponse final : public IBaseChunkedResponse
 {
 public:
     HTTPChunkedResponse(WebServerRequest *request): request(request) {}
