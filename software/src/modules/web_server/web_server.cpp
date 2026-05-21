@@ -1020,7 +1020,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
 {
     if (chunkedResponseState != ChunkedResponseState::NotStarted) {
-        esp_system_abort("BUG: Multiple calls to beginChunkedResponse detected!");
+        esp_system_abort("Multiple calls to beginChunkedResponse detected!");
     }
 
     auto result = httpd_resp_set_type(req, content_type);
@@ -1046,13 +1046,13 @@ esp_err_t WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
         case ChunkedResponseState::Failed:
             return ESP_FAIL;
         case ChunkedResponseState::NotStarted:
-            esp_system_abort("BUG: sendChunk was called before beginChunkedResponse!");
+            esp_system_abort("sendChunk was called before beginChunkedResponse!");
         case ChunkedResponseState::Ended:
-            esp_system_abort("BUG: sendChunk was called after endChunkedResponse");
+            esp_system_abort("sendChunk was called after endChunkedResponse");
         case ChunkedResponseState::Started:
             break;
         default:
-            esp_system_abort("BUG: sendChunk in invalid state");
+            esp_system_abort("sendChunk in invalid state");
     }
 
     if (chunk_len == 0)
@@ -1076,13 +1076,13 @@ WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
         case ChunkedResponseState::Failed:
             return WebServerRequestReturnProtect{};
         case ChunkedResponseState::NotStarted:
-            esp_system_abort("BUG: endChunkedResponse was called before beginChunkedResponse!");
+            esp_system_abort("endChunkedResponse was called before beginChunkedResponse!");
         case ChunkedResponseState::Ended:
-            esp_system_abort("BUG: endChunkedResponse was called twice!");
+            esp_system_abort("endChunkedResponse was called twice!");
         case ChunkedResponseState::Started:
             break;
         default:
-            esp_system_abort("BUG: sendChunk in invalid state");
+            esp_system_abort("sendChunk in invalid state");
     }
 
     auto result = httpd_resp_send_chunk(req, nullptr, 0);

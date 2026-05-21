@@ -113,7 +113,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<Config::Key> 
             const bool is_obj = obj_variant != nullptr;
             if (is_obj) {
                 if (!address_is_in_rodata(*obj_variant))
-                    esp_system_abort("event path key not in flash! Please pass a string literal!");
+                    esp_system_abort("Event path key not in flash! Please pass a string literal!");
                 state_member = (const Config *)state_member->get(*obj_variant);
             }
             else

@@ -53,7 +53,7 @@ void GenericModbusTCPClient::start_generic_read()
     }
 
     if (read_pending) {
-        esp_system_abort("generic_modbus_tcp_client: Previous read pending while trying to read");
+        esp_system_abort("Previous read pending while trying to read");
     }
 
     read_pending = true;
@@ -90,7 +90,7 @@ void GenericModbusTCPClient::start_generic_read()
 void GenericModbusTCPClient::read_next()
 {
     if (connected_client == nullptr) {
-        esp_system_abort("generic_modbus_tcp_client: Not connected while trying to read");
+        esp_system_abort("Not connected while trying to read");
     }
 
     uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
@@ -111,7 +111,7 @@ void GenericModbusTCPClient::read_next()
     case ModbusRegisterType::Coil:
     case ModbusRegisterType::DiscreteInput:
     default:
-        esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
+        esp_system_abort("Unsupported register type to read");
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,

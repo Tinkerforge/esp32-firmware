@@ -778,7 +778,7 @@ void MetersSunSpec::loop()
         break;
 
     default:
-        esp_system_abort("meters_sun_spec: Invalid state.");
+        esp_system_abort("Invalid state during scan");
     }
 }
 

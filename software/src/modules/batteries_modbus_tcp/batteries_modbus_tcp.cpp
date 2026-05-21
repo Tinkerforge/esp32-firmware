@@ -426,7 +426,7 @@ void BatteriesModbusTCP::loop()
         break;
 
     default:
-        esp_system_abort("batteries_modbus_tcp: Invalid state.");
+        esp_system_abort("Invalid state during test");
     }
 }
 

@@ -372,8 +372,7 @@ void MeterModbusTCP::parse_next()
         break;
 
     default:
-        logger.printfln_meter("Value at index %u of %s has unsupported register count: %zu", read_index, get_meter_modbus_tcp_table_id_name(table_id), register_count);
-        return;
+        esp_system_abort("Value has unsupported register count");
     }
 
     switch (value_type) {
@@ -518,7 +517,7 @@ void MeterModbusTCP::parse_next()
         break;
 
     default:
-        break;
+        esp_system_abort("Value has unsupported type");
     }
 
     if (table->specs[read_index].drop_sign) {
