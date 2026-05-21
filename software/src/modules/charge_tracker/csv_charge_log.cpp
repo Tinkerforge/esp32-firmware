@@ -185,19 +185,6 @@ String CSVChargeLogGenerator::formatPrice(float price_euros, Language language) 
     return price_str;
 }
 
-bool CSVChargeLogGenerator::isUserFiltered(uint8_t user_id, int user_filter) {
-    switch (user_filter) {
-        case USER_FILTER_ALL_USERS:
-            return false;
-
-        case USER_FILTER_DELETED_USERS:
-            return charge_tracker.is_user_tracked(user_id);
-
-        default:
-            return user_id != user_filter;
-    }
-}
-
 String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& params) {
     String headers[9];
     size_t field_count = 7;
