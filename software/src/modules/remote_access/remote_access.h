@@ -92,6 +92,7 @@ private:
     void cleanup_after();
     bool user_already_registered(const String &email);
     void setup_inner_socket();
+    void start_timeout_task();
     int start_ping();
     int stop_ping();
     std::unique_ptr<WireGuard> management = nullptr;
@@ -107,6 +108,7 @@ private:
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
     uint64_t management_task_id = 0;
+    uint64_t timeout_task_id = 0;
 
     esp_ping_handle_t ping = nullptr;
     micros_t ping_start = 0_us;

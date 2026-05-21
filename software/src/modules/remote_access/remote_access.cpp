@@ -1054,6 +1054,22 @@ void RemoteAccess::register_events()
     });
 }
 
+void RemoteAccess::start_timeout_task()
+{
+    const millis_t random_delay = millis_t{esp_random() % 4096};
+    this->timeout_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+        // Check if we got unlucky timing and management request ran
+        // without the management connection getting connected afterwards
+        if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
+            logger.printfln("Management connection timed out");
+
+            // Reset the timeout to prevent log and reconnect spamming
+            this->last_mgmt_alive = now_us();
+            this->management_request_done = false;
+        }
+    }, random_delay, 30_s + random_delay);
+}
+
 void RemoteAccess::apply_config()
 {
     // Cancel periodic resolve task if running.
@@ -1088,17 +1104,6 @@ void RemoteAccess::apply_config()
         // Start periodic resolve_management task.
         const millis_t random_delay = millis_t{esp_random() % 4096};
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-
-            // Check if we got unlucky timing and management request ran
-            // without the management connection getting connected afterwards
-            if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
-                logger.printfln("Management connection timed out");
-
-                // Reset the timeout to prevent log and reconnect spamming
-                this->last_mgmt_alive = now_us();
-                this->management_request_done = false;
-            }
-
             if (!this->management_request_done && !this->management_auth_failed) {
                 this->resolve_management();
             }
@@ -1520,6 +1525,9 @@ void RemoteAccess::resolve_management()
         return;
     }
 
+    task_scheduler.cancel(this->timeout_task_id);
+    this->timeout_task_id = 0;
+
     const String url = construct_relay_url(config, "/api/management");
 
     const String &uuid = config.get("uuid")->asString();
@@ -1675,6 +1683,7 @@ void RemoteAccess::resolve_management()
         this->request_cleanup();
         // Don't reconnect if authentication failed
         if (!this->management_auth_failed) {
+            this->start_timeout_task();
             this->connect_management();
         }
         this->connection_state.get(0)->get("state")->updateUint(1);
@@ -1949,6 +1958,8 @@ void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool u
             mgmt_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
             if (state == 2) {
                 logger.printfln("Management connection connected");
+                task_scheduler.cancel(this->timeout_task_id);
+                this->timeout_task_id = 0;
             } else {
                 in_seq_number = 0;
                 this->management_request_done = false;
