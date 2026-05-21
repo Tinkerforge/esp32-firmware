@@ -23,10 +23,13 @@
 #include "language.h"
 #include "modules/users/users.h"
 #include "modules/web_server/web_server.h"
+#include "modules/cm_networking/cm_networking_defs.h"
 
+#define USER_FILTER_CONFIGURED_USERS -3
 #define USER_FILTER_ALL_USERS -2
 #define USER_FILTER_DELETED_USERS -1
 
+#define DEVICE_FILTER_CONFIGURED_CHARGERS -3
 #define DEVICE_FILTER_ALL_CHARGERS -2
 #define DEVICE_FILTER_DELETED_CHARGERS -1
 
@@ -116,8 +119,8 @@ struct GenerationParams {
     GenerationParams &operator=(const GenerationParams&) = delete;
 
     // Initialized in parse_request or manually
-    int user = USER_FILTER_ALL_USERS;
-    int device = DEVICE_FILTER_ALL_CHARGERS;
+    int16_t user = USER_FILTER_ALL_USERS;
+    int64_t device = DEVICE_FILTER_ALL_CHARGERS;
     uint32_t start_min = 0;
     uint32_t end_min = 0;
     uint32_t current_min = 0;
@@ -128,6 +131,7 @@ struct GenerationParams {
     String display_name = "";
     String unique_device_name = "";
     uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    int32_t configured_chargers[MAX_CONTROLLED_CHARGERS] = {};
     display_name_entry *display_name_cache = nullptr;
     charger_display_name_entry *charger_display_name_cache = nullptr;
 
@@ -142,6 +146,8 @@ struct GenerationParams {
 
     virtual bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request);
     bool include_charge(const Charge *charge) const;
+    bool include_device(const char *directory) const;
+    bool include_device(uint32_t uid) const;
 };
 
 struct PDFGenerationParams final : public GenerationParams {

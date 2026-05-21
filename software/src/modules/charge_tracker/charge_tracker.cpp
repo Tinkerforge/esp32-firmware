@@ -136,7 +136,7 @@ static void compute_charge_log_hash(
     Language language,
     const char *letterhead,
     int user_filter,
-    int device_filter,
+    int64_t device_filter,
     CSVFlavor csv_delimiter,
     uint32_t start_timestamp_min,
     uint32_t end_timestamp_min)
@@ -246,8 +246,8 @@ void ChargeTracker::pre_setup()
         {"file_type", Config::Enum(FileType::PDF)},
         {"language", Config::Enum(Language::German)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
-        {"user_filter", Config::Int8(0)},
-        {"device_filter", Config::Int8(DEVICE_FILTER_ALL_CHARGERS)},
+        {"user_filter", Config::Int16(0)},
+        {"device_filter", Config::Int52(DEVICE_FILTER_ALL_CHARGERS)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
         {"last_upload_timestamp_min", Config::Uint32(0)}
     });
@@ -851,20 +851,6 @@ static bool is_charger_in_config(const char *directory)
     }
 
     return false;
-}
-
-static bool is_charger_in_config_await(const char *directory)
-{
-    bool result = false;
-    String directory_copy = directory == nullptr ? String() : String(directory);
-    auto await_result = task_scheduler.await([&result, &directory_copy]() {
-        result = is_charger_in_config(directory_copy.isEmpty() ? nullptr : directory_copy.c_str());
-    });
-    if (await_result != TaskScheduler::AwaitResult::Done) {
-        logger.printfln("is_charger_in_config_await: Task timed out");
-        return false;
-    }
-    return result;
 }
 
 static String get_charger_display_name_from_host(const char *directory)
@@ -1595,12 +1581,45 @@ bool GenerationParams::include_charge(const Charge *charge) const {
 
     bool include_user = this->user == USER_FILTER_ALL_USERS // There is no user filter, accept any charge.
                      || (user == USER_FILTER_DELETED_USERS && !user_configured(configured_users, charge->cs.user_id)) // User is not configured, i.e. deleted.
+                     || (user == USER_FILTER_CONFIGURED_USERS && user_configured(configured_users, charge->cs.user_id)) // User is configured, i.e. not deleted.
                      || charge->cs.user_id == user; // User matches.
     if (!include_user)
         return false;
 
     // device intentionally not checked here: Checking this for every charge is inefficient, because we know which device a complete set of charge-record files belongs to.
     return true;
+}
+
+bool GenerationParams::include_device(const char *directory) const {
+    uint32_t uid = 0;
+    if (tf_base58_decode(directory == nullptr ? local_uid_str : directory, &uid) != 0) {
+        return false;
+    }
+    return this->include_device(uid);
+}
+
+bool GenerationParams::include_device(uint32_t uid) const {
+    if (this->device == DEVICE_FILTER_ALL_CHARGERS)
+        return true;
+
+    if (this->device >= 0)
+        return this->device == uid;
+
+    bool configured = false;
+    for (size_t i = 0; i < ARRAY_SIZE(this->configured_chargers); ++i) {
+        if (this->configured_chargers[i] == uid) {
+            configured = true;
+            break;
+        }
+    }
+
+    if (this->device == DEVICE_FILTER_CONFIGURED_CHARGERS)
+        return configured;
+
+    if (this->device == DEVICE_FILTER_DELETED_CHARGERS)
+        return !configured;
+
+    return false;
 }
 
 void ChargeTracker::register_urls()
@@ -2216,8 +2235,8 @@ bool ChargeTracker::try_start_monthly_upload_for_user(int user_idx)
     else
         params = std::make_unique<CSVGenerationParams>();
 
-    params->user = upload_config->get("user_filter")->asInt();
-    params->device = upload_config->get("device_filter")->asInt();
+    params->user = upload_config->get("user_filter")->asInt16();
+    params->device = upload_config->get("device_filter")->asInt52();
     params->start_min = monthly_upload_start_timestamp_min;
     params->end_min = monthly_upload_end_timestamp_min;
     params->language = upload_config->get("language")->asEnum<Language>();
@@ -2703,6 +2722,8 @@ search_done:
     stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
     if (params->user == USER_FILTER_ALL_USERS)
         stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
+    else if (params->user == USER_FILTER_CONFIGURED_USERS)
+        stats_head += sprintf_u(stats_head, "%s", english ? "configured users" : "Konfigurierte Benutzer");
     else if (params->user == USER_FILTER_DELETED_USERS)
         stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
     else
@@ -2924,24 +2945,6 @@ void ChargeTracker::updateLastCharges()
     }
 }
 
-// Returns true if the directory should be included based on the device filter
-static bool should_include_directory_for_device_filter(int device_filter, const char *dirname)
-{
-    uint32_t dir_uid = 0;
-    if (tf_base58_decode(dirname, &dir_uid) != 0) {
-        return false;
-    }
-    if (device_filter == DEVICE_FILTER_ALL_CHARGERS) {
-        // Only include if charger is in config
-        return is_charger_in_config_await(dirname);
-    } else if (device_filter == DEVICE_FILTER_DELETED_CHARGERS) {
-        // Only include if charger is NOT in config
-        return !is_charger_in_config_await(dirname);
-    } else {
-        return dir_uid == static_cast<uint32_t>(device_filter);
-    }
-}
-
 ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, size_t *out_count)
 {
     std::lock_guard<std::mutex> lock{records_mutex};
@@ -2949,21 +2952,10 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
     const size_t max_records_per_file = CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
     size_t total_files = 0;
 
-    // Count files in main directory (only if device_filter matches or is DEVICE_FILTER_ALL_CHARGERS)
+    // Count files in main directory if device_filter matches
     uint32_t main_first = 0, main_last = 0;
-    uint32_t local_uid = 0;
-    if (tf_base58_decode(local_uid_str, &local_uid) != 0) {
-        logger.printfln("Failed to decode local UID");
-        *out_count = 0;
-        return nullptr;
-    }
 
-    bool local_charger_in_config = is_charger_in_config_await(nullptr);
-    bool include_main_dir = ((params.device == DEVICE_FILTER_ALL_CHARGERS && local_charger_in_config) ||
-                             params.device == local_uid ||
-                             (params.device == DEVICE_FILTER_DELETED_CHARGERS && !local_charger_in_config));
-
-    if (include_main_dir) {
+    if (params.include_device(nullptr)) {
         if (getChargerChargeRecords(nullptr, &main_first, &main_last)) {
             total_files += (main_last - main_first + 1);
         }
@@ -2976,7 +2968,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
         [this, &params, &total_files](const char *name, size_t name_len, bool is_dir) {
             if (is_dir) {
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(params.device, name)) {
+                if (!params.include_device(name)) {
                     return true;
                 }
 
@@ -3062,7 +3054,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
     };
 
     // Only read main directory if device filter matches
-    if (include_main_dir) {
+    if (params.include_device(nullptr)) {
         read_directory_charges(nullptr);
     }
 
@@ -3070,7 +3062,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
         [&params, &read_directory_charges](const char *name, size_t name_len, bool is_dir) {
             if (is_dir) {
                 // Check if this directory matches the device filter
-                if (!should_include_directory_for_device_filter(params.device, name)) {
+                if (!params.include_device(name)) {
                     return true;
                 }
 

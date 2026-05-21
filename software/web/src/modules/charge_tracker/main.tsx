@@ -437,6 +437,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         }
                         items={[
                             ["-2", __("charge_tracker.script.all_chargers")],
+                            ["-3", __("charge_tracker.script.configured_chargers")],
                             ["-1", __("charge_tracker.script.deleted_chargers")],
                             ...device_items
                         ]}
@@ -560,10 +561,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
         user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
+        user_filter_items.unshift(["-3",  __("charge_tracker.script.configured_users")]);
         user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
 
         let device_filter_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.uid.toString(), x.n]);
         device_filter_items.unshift(["-1", __("charge_tracker.script.deleted_chargers")]);
+        device_filter_items.unshift(["-3", __("charge_tracker.script.configured_chargers")]);
         device_filter_items.unshift(["-2", __("charge_tracker.script.all_chargers")]);
 
         // TODO show hint that day ahead prices are not used here!

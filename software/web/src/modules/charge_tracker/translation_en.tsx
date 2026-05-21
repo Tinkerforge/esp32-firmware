@@ -93,9 +93,11 @@ let x = {
             "unknown_users": "Unknown users",
             "deleted_user": "Deleted user",
             "deleted_users": "Deleted users",
+            "configured_users": "Configured users",
             "all_users": "All users",
             "all_chargers": "All chargers",
             "deleted_chargers": "Deleted chargers",
+            "configured_chargers": "Configured chargers",
             "unknown_charge_start": "Unknown start time",
 
             "remove_failed": "Failed to remove tracked charges",

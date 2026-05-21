@@ -93,8 +93,10 @@ let x = {
             "unknown_users": "Unbekannte Benutzer",
             "deleted_user": "Gelöschter Benutzer",
             "deleted_users": "Gelöschte Benutzer",
+            "configured_users": "Konfigurierte Benutzer",
             "all_users": "Alle Benutzer",
             "all_chargers": "Alle Wallboxen",
+            "configured_chargers": "Konfigurierte Wallboxen",
             "deleted_chargers": "Gelöschte Wallboxen",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
