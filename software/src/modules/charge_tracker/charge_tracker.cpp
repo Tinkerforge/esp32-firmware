@@ -694,18 +694,13 @@ bool ChargeTracker::setupRecords(const char *directory)
     }
 
     this->total_charge_log_files += found_blob_counter;
+
     if (found_blob_counter == 0) {
-        logger.printfln("No charge record files found in directory: %s", directory ? directory : "main");
         return true;
     }
 
     std::sort(found_blobs, found_blobs + found_blob_counter);
 
-    uint32_t first = found_blobs[0];
-    uint32_t last = found_blobs[found_blob_counter - 1];
-
-    logger.printfln("Directory %s: Found %u record%s: first is %lu, last is %lu",
-                    directory ? directory : "main", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
     for (int i = 0; i < found_blob_counter - 1; ++i) {
         if (found_blobs[i] + 1 != found_blobs[i + 1]) {
             logger.printfln("Directory %s: Non-consecutive charge records found! (Next after %lu is %lu. Expected was %lu)",
@@ -724,8 +719,6 @@ bool ChargeTracker::setupRecords(const char *directory)
 
     const String last_file_name = chargeRecordFilename(found_blobs[found_blob_counter - 1], directory);
     const size_t last_file_size = file_size(LittleFS, last_file_name);
-    logger.printfln("Directory %s: Last charge record size is %u bytes (%u, %u)",
-                    directory ? directory : "main", last_file_size, last_file_size / CHARGE_RECORD_SIZE, (last_file_size % CHARGE_RECORD_SIZE));
     if (last_file_size > CHARGE_RECORD_MAX_FILE_SIZE) {
         logger.printfln("Directory %s: Last charge record %s is too long: %u bytes (max: %u)",
                        directory ? directory : "main", last_file_name.c_str(), last_file_size, CHARGE_RECORD_MAX_FILE_SIZE);
@@ -912,6 +905,7 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *di
 
 void ChargeTracker::setup()
 {
+    logger.printfln("Checking charge records");
     initialized = this->setupRecords(nullptr);
     if (!initialized) {
         return;
@@ -932,6 +926,8 @@ void ChargeTracker::setup()
     last_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
 
     repair_charges();
+
+    logger.printfln("Done");
 
     api.restorePersistentConfig("charge_tracker/config", &config);
     api.restorePersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
@@ -2949,8 +2945,6 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
         }
     }
 
-    logger.printfln("Main directory has %u files", total_files);
-
     // Count files in subdirectories
     for_filename_in(CHARGE_RECORD_FOLDER,
         [this, &params, &total_files](const char *name, size_t name_len, bool is_dir) {
@@ -2963,7 +2957,6 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
                 uint32_t first_record = 0, last_record = 0;
                 if (getChargerChargeRecords(name, &first_record, &last_record)) {
                     total_files += (last_record - first_record + 1);
-                    logger.printfln("Directory '%s' has %lu files. Totalling to %u", name, (last_record - first_record + 1), total_files);
                 }
             }
             vTaskDelay(1); // After every directory, give other tasks a chance to run and reset their watchdogs.
