@@ -1224,6 +1224,10 @@ void ChargeTracker::repair_charges()
                 File write_f = LittleFS.open(chargeRecordFilename(i, directory), "w");
                 write_f.write(reinterpret_cast<uint8_t *>(&buf[1]), read);
             }
+
+            // buf[0] is the last charge of the last file,
+            // buf[256] is the last charge of the this file.
+            // Advance one file.
             buf[0] = buf[256];
         }
 
