@@ -292,7 +292,7 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
             return false;
         }
 
-        if (r_file.size() > sizeof(Charge)) {
+        if (r_file.size() >= sizeof(Charge) * 2) {
             r_file.seek(r_file.size() - sizeof(Charge) * 2);
             r_file.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge) * 2);
         }
