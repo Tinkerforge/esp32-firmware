@@ -1324,8 +1324,6 @@ bool GenerationParams::init() {
                 File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
 
                 for (size_t i = 0; i < MAX_TRACKED_CHARGERS; ++i) {
-                    f.seek(i * CHARGER_NAME_ENTRY_LENGTH, SeekMode::SeekSet);
-
                     struct [[gnu::packed]] {
                         uint32_t uid;
                         char buf[CHARGER_NAME_LENGTH];
