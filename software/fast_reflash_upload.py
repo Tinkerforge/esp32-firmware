@@ -34,6 +34,7 @@ import shutil
 import subprocess
 import time
 import re
+import sys
 
 env = None
 
@@ -47,6 +48,49 @@ VALID_MODES = ("fast", "no-verify", "off")
 
 # Prefix for all print output to distinguish from esptool's native output
 P = ">>>"
+
+
+# esptool uses \r to print an in-place progress bar. but for some reason in the
+# context this script is running in \r doesn't work and just does the same as \n,
+# resulting in a scrolling progress bar. use \n + ESC[1A (curser up one line) to
+# emulate the behavior of \r to fix the progress bar
+def subprocess_call(cmd):
+    stdout_len_ref = [0]
+    stderr_len_ref = [0]
+
+    def communicate(p, timeout=None):
+        try:
+            stdout, stderr = p.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as e:
+            stdout, stderr = e.stdout, e.stderr
+
+        if stdout == None:
+            stdout = b''
+
+        if stderr == None:
+            stderr = b''
+
+        new_stdout = stdout[stdout_len_ref[0]:]
+        stdout_len_ref[0] = len(stdout)
+
+        new_stderr = stderr[stderr_len_ref[0]:]
+        stderr_len_ref[0] = len(stderr)
+
+        new_stdout = new_stdout.replace(b'\r', b'\n\x1b[1A')
+        new_stderr = new_stderr.replace(b'\r', b'\n\x1b[1A')
+
+        sys.stdout.buffer.write(new_stdout)
+        sys.stdout.buffer.flush()
+
+        sys.stderr.buffer.write(new_stderr)
+        sys.stderr.buffer.flush()
+
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+        while p.poll() == None:
+            communicate(p, timeout=0.1)
+
+        communicate(p)
+        return p.returncode
 
 
 def parse_version(version_str):
@@ -264,7 +308,7 @@ def do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir, mode):
         print(f"{P} No previous binaries for comparison -- full flash this time.")
 
     print(f"{P} Running: {' '.join(cmd)}")
-    return subprocess.call(cmd)
+    return subprocess_call(cmd)
 
 
 def do_normal_flash(env, esptool_cmd, port, binaries):
@@ -279,7 +323,7 @@ def do_normal_flash(env, esptool_cmd, port, binaries):
 
     cmd = list(esptool_cmd) + upload_flags + flash_args
     print(f"{P} Running: {' '.join(cmd)}")
-    return subprocess.call(cmd)
+    return subprocess_call(cmd)
 
 
 def save_flashed_binaries(binaries, last_flashed_dir):
