@@ -709,7 +709,6 @@ static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
     while (target_free_space > (pdf->write_buf_size - pdf->write_buf_used)) {
         ssize_t written = pdf->write_fn(head, pdf->write_buf_used);
         if (written <= 0) {
-            printf("write_fn failed %zd.\n", written);
             pdf->write_error_occurred = true;
             return;
         }

@@ -137,13 +137,6 @@ struct [[gnu::packed]] charge_log_send_metadata_packet {
         memcpy(buf + offset, user_uuid, 16);
         offset += 16;
 
-        printf("uuid: %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
-                         user_uuid[0], user_uuid[1], user_uuid[2], user_uuid[3],
-                         user_uuid[4], user_uuid[5],
-                         user_uuid[6], user_uuid[7],
-                         user_uuid[8], user_uuid[9],
-                         user_uuid[10], user_uuid[11], user_uuid[12], user_uuid[13], user_uuid[14], user_uuid[15]);
-
         // Write filename_length
         memcpy(buf + offset, &filename_len, sizeof(filename_len));
         offset += sizeof(filename_len);
