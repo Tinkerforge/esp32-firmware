@@ -80,7 +80,7 @@ public:
 
     bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
-    void removeOldRecords();
+    bool removeOldRecords();
     bool setupRecords(const char *directory = nullptr);
     void updateState();
     bool is_user_tracked(uint8_t user_id);
@@ -118,8 +118,6 @@ public:
 
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, const PDFGenerationParams *params, WebServerRequest *request);
 
-
-
     ConfigRoot last_charges;
     ConfigRoot current_charge;
     ConfigRoot state;
@@ -146,7 +144,6 @@ private:
     Config current_charge_prototype;
     Config charge_log_send_prototype;
 
-    std::vector<ChargeWithLocation> oldest_charges_per_directory;
     uint32_t total_charge_log_files;
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()

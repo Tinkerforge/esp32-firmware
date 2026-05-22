@@ -30,6 +30,7 @@
 #include "generated/cm_blocking_reason.enum.h"
 
 #if defined(BOARD_HAS_PSRAM)
+// Also change charge_tracker_max_tracked_charges when changing this!
 #define MAX_CONTROLLED_CHARGERS 64
 #else
 #define MAX_CONTROLLED_CHARGERS 10

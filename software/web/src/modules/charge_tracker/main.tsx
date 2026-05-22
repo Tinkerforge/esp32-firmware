@@ -49,8 +49,6 @@ export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
 }
 
-const MAX_TRACKED_CHARGES = 7680;
-
 type Charge = API.getType["charge_tracker/last_charges"][0];
 type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
@@ -826,7 +824,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
                 <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>
-                    <InputText value={__("charge_tracker.script.tracked_charge_count")(state.tracked_charges, MAX_TRACKED_CHARGES)}/>
+                    <InputText value={__("charge_tracker.script.tracked_charge_count")(state.tracked_charges, options.CHARGE_TRACKER_MAX_TRACKED_CHARGES)}/>
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.first_charge_timestamp")} label_muted={__("charge_tracker.content.first_charge_timestamp_muted")}>
