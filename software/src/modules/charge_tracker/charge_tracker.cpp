@@ -343,11 +343,12 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
         logger.printfln("Last charge record file %s is full. Creating the new file %s", file.name(), new_file_name.c_str());
         file.close();
 
-        removeOldRecords();
-        updateState();
+        if (removeOldRecords())
+            this->update_first_charge_timestamp();
 
         file = LittleFS.open(new_file_name, "w", true);
         ++this->total_charge_log_files;
+        state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
     }
 
     cs.timestamp_minutes = timestamp_minutes;
@@ -425,7 +426,8 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
     current_charge.get("authorization_type")->updateUint(0);
     current_charge.get("authorization_info")->value = Config::ConfVariant{};
 
-    updateState();
+    ++this->total_charge_log_entries;
+    state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
 }
 
 bool ChargeTracker::is_user_tracked(uint8_t user_id)
@@ -580,6 +582,7 @@ bool ChargeTracker::removeOldRecords()
 
         --this->total_charge_log_files;
         this->total_charge_log_entries -= CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
+        state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
     }
 
     // Remove users from users_to_delete that are still tracked in other charge records.
@@ -690,6 +693,7 @@ bool ChargeTracker::setupRecords(const char *directory)
         return false;
     }
 
+    this->total_charge_log_files += found_blob_counter;
     if (found_blob_counter == 0) {
         logger.printfln("No charge record files found in directory: %s", directory ? directory : "main");
         return true;
@@ -728,6 +732,7 @@ bool ChargeTracker::setupRecords(const char *directory)
         return false;
     }
 
+    this->total_charge_log_entries += ((found_blob_counter - 1) * CHARGE_RECORD_MAX_FILE_SIZE + last_file_size) / CHARGE_RECORD_SIZE;
 
     return true;
 }
@@ -794,6 +799,40 @@ bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *fir
         *last_record = found_blobs[found_blob_counter - 1];
 
     return true;
+}
+
+void ChargeTracker::update_first_charge_timestamp() {
+    uint32_t first_charge_timestamp = UINT32_MAX;
+
+    auto read_first_charge = [this, &first_charge_timestamp](const char *directory) {
+        uint32_t first_record;
+        getChargerChargeRecords(directory, &first_record, nullptr);
+        File f = LittleFS.open(chargeRecordFilename(first_record, directory));
+
+        if (!f)
+            return;
+
+        uint8_t buf[CHARGE_RECORD_SIZE];
+        size_t bytes_read = f.read(buf, CHARGE_RECORD_SIZE);
+        if (bytes_read != CHARGE_RECORD_SIZE)
+            return;
+
+        Charge c;
+        memcpy(&c, buf, CHARGE_RECORD_SIZE);
+        first_charge_timestamp = std::min(first_charge_timestamp, c.cs.timestamp_minutes);
+    };
+
+    read_first_charge(nullptr);
+
+    for_filename_in(CHARGE_RECORD_FOLDER, [this, &read_first_charge](const char *name, size_t name_len, bool is_dir) {
+        if (!is_dir)
+            return true;
+
+        read_first_charge(name);
+        return true;
+    });
+
+    state.get("first_charge_timestamp")->updateUint(first_charge_timestamp == UINT32_MAX ? 0 : first_charge_timestamp);
 }
 
 bool charged_invalid(ChargeStart cs, ChargeEnd ce)
@@ -871,10 +910,6 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *di
     }
 }
 
-void ChargeTracker::updateState()
-{
-}
-
 void ChargeTracker::setup()
 {
     initialized = this->setupRecords(nullptr);
@@ -900,10 +935,6 @@ void ChargeTracker::setup()
 
     api.restorePersistentConfig("charge_tracker/config", &config);
     api.restorePersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
-
-    // Note: last_charges is now populated during repair_charges()
-
-    updateState();
 }
 
 std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(const char *directory)
@@ -926,8 +957,6 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
         if (!f) {
             continue;
         }
-
-        ++this->total_charge_log_files;
 
         size_t file_size = f.size();
         size_t num_records = file_size / CHARGE_RECORD_SIZE;
@@ -1578,7 +1607,10 @@ void ChargeTracker::register_urls()
     // which requires that the user config is already loaded from flash.
     // This happens in users::setup() i.e. _after_ charge_tracker::setup()
     removeOldRecords();
-    updateState();
+
+    // We've removed a charge record. Update first charge timestamp
+    this->update_first_charge_timestamp();
+    state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
 
     api.addPersistentConfig("charge_tracker/config", &config);
     api.addPersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config, {}, {"letterhead"});

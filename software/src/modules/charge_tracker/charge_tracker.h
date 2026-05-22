@@ -82,7 +82,6 @@ public:
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     bool removeOldRecords();
     bool setupRecords(const char *directory = nullptr);
-    void updateState();
     bool is_user_tracked(uint8_t user_id);
     bool has_tracked_charges(uint32_t charger_uid);
 
@@ -144,7 +143,10 @@ private:
     Config current_charge_prototype;
     Config charge_log_send_prototype;
 
-    uint32_t total_charge_log_files;
+    void update_first_charge_timestamp();
+
+    uint32_t total_charge_log_files = 0;
+    uint32_t total_charge_log_entries = 0;
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     // Sends the MetadataForChargeLog packet using data stored in charge_log_send_ctx.
