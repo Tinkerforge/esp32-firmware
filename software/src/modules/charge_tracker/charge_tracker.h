@@ -78,9 +78,6 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    uint32_t first_charge_record;
-    uint32_t last_charge_record;
-
     bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     void removeOldRecords();
@@ -89,7 +86,6 @@ public:
     bool is_user_tracked(uint8_t user_id);
     bool has_tracked_charges(uint32_t charger_uid);
 
-    size_t completeRecordsInLastFile();
     bool currentlyCharging(const char *directory = nullptr, ChargeStart *cs = nullptr);
 
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
