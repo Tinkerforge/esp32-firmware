@@ -23,11 +23,17 @@ class ChargeLogEntry:
     meter_end: float
 
     def pack(self):
-        return struct.pack("LfB", self.timestamp, self.meter_start, self.user_id) + self.duration.to_bytes(3) + struct.pack("f", self.meter_end)
+        r = struct.pack("< I f B 3B f",
+                        self.timestamp,
+                        self.meter_start,
+                        self.user_id,
+                        *self.duration.to_bytes(3, 'little'),
+                        self.meter_end)
+        return r
 
     @classmethod
     def unpack(cls, b):
-        return ChargeLogEntry(*struct.unpack("<IfBIf", b[:12] + bytes([0]) + b[12:]))
+        return ChargeLogEntry(*struct.unpack("<IfBIf", b[:12] + b'\0' + b[12:]))
 
 @dataclass
 class Charge:
