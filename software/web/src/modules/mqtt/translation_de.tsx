@@ -60,7 +60,7 @@ let x = {
             "auto_discovery_prefix": "Discovery-Topic-Präfix",
             "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein.",
             "broadcast_empty": "Nicht verfügbare Entities entfernen",
-            "broadcast_empty_desc": "Sendet leere Discovery-Nachrichten für deaktivierte oder nicht verfügbare Entities, um sie aus der Hausautomatisierung zu entfernen."
+            "broadcast_empty_desc": "Entferne Entities welche nicht mehr verfügbar sind automatisch aus der Hausautomatisierung."
         },
         "automation": {
             "mqtt": "Sende MQTT-Nachricht",
