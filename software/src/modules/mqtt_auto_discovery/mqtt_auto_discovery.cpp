@@ -210,6 +210,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         // Determine if this topic should be announced based on its check type.
         const auto &info = mqtt_discovery_topic_infos[topic_num];
         bool entity_enabled = false;
+        int resolved_meter_index = -1;
 
         switch (info.check_type) {
             case MqttDiscoveryCheckType::Feature:
@@ -224,10 +225,28 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 break;
             }
 
-            case MqttDiscoveryCheckType::MeterConfig: {
+            case MqttDiscoveryCheckType::MeterValue: {
                 const Config *cfg = api.getState(info.api_check_path, false);
                 if (cfg != nullptr && cfg->is<Config::ConfUnion>()) {
-                    entity_enabled = cfg->getTag<MeterClassID>() != MeterClassID::None;
+                    if (cfg->getTag<MeterClassID>() != MeterClassID::None) {
+                        // Meter is enabled. Now find the value_id index in the value_ids array.
+                        String value_ids_path = info.api_check_path;
+                        int last_slash = value_ids_path.lastIndexOf('/');
+                        if (last_slash >= 0) {
+                            value_ids_path = value_ids_path.substring(0, last_slash + 1) + "value_ids";
+                        }
+                        const Config *value_ids_cfg = api.getState(value_ids_path.c_str(), false);
+                        if (value_ids_cfg != nullptr) {
+                            size_t count = value_ids_cfg->count();
+                            for (size_t idx = 0; idx < count; idx++) {
+                                if (value_ids_cfg->get(idx)->asUint() == (uint32_t)info.meter_value_id) {
+                                    entity_enabled = true;
+                                    resolved_meter_index = (int)idx;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
                 break;
             }
@@ -298,6 +317,13 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 // Inject pre-formatted static_info as raw JSON object members
                 json_write_raw(json, static_info, strlen(static_info));
 
+                // For MeterValue entities, inject dynamically-resolved value_template
+                if (info.check_type == MqttDiscoveryCheckType::MeterValue && info.value_template_fmt != nullptr && resolved_meter_index >= 0) {
+                    char vt_buf[128];
+                    snprintf(vt_buf, sizeof(vt_buf), info.value_template_fmt, resolved_meter_index);
+                    json.addMemberString("value_template", vt_buf);
+                }
+
                 json.addMemberObject("device");
                 json.addMemberString("identifiers", mqtt.client_name.c_str());
                 json.addMemberString("manufacturer", OPTIONS_MANUFACTURER_FULL());
@@ -320,7 +346,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
         if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
             topic_num = 0;
-            delay = 15_min;
+            delay = 1_min;
         }
     }
 

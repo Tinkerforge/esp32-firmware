@@ -75,7 +75,7 @@ class Feature(Enum):
 class CheckType(Enum):
     FEATURE = "Feature"  # Check api.hasFeature(feature)
     API_BOOL = "ApiBool"  # Check API path exists and bool key is true
-    METER_CONFIG = "MeterConfig"  # Check API path exists and first array element > 0
+    METER_VALUE = "MeterValue"  # Check meter config enabled + value_id present in value_ids
 
 
 @dataclass
@@ -115,8 +115,10 @@ class Entity:
     static_info_homeassistant_en: dict = None
     # Check type: how to determine if this entity should be announced.
     check_type: CheckType = CheckType.FEATURE
-    api_check_path: str = None  # API path to check (for ApiBool and MeterConfig)
+    api_check_path: str = None  # API path to check (for ApiBool and MeterValue)
     api_check_key: str = None  # Key within the config to check (for ApiBool)
+    meter_value_id: int = -1   # MeterValueID to look up in value_ids (for MeterValue)
+    value_template_fmt: str = None  # printf format with %d for resolved index (for MeterValue)
 
     def __post_init__(self):
         if self.json_attributes_info is None:
@@ -253,6 +255,8 @@ topic_template = """    {{
         .check_type = MqttDiscoveryCheckType::{check_type},
         .api_check_path = {api_check_path},
         .api_check_key = {api_check_key},
+        .meter_value_id = {meter_value_id},
+        .value_template_fmt = {value_template_fmt},
     }}"""
 
 entities = [
@@ -733,110 +737,42 @@ entities = [
         },
     ),
 ]
-# MeterValueID constants (from generated/meter_value_id.h)
-METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF = 74
-METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM = 213
-METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM_RESETTABLE = 214
-
-
-def meter_value_template(value_id, digits):
-    """Generate a Jinja value_template that looks up a MeterValueID in the value_ids attribute (populated via json_attributes_topic from meters/{id}/value_ids) and uses the found index to extract the value from the values array."""
-    return (
-        "{{% set ids = this.attributes.get('ids', none) %}}"
-        "{{% if ids != none and {vid} in ids %}}"
-        "{{{{ value_json[ids.index({vid})] | round({digits}) }}}}"
-        "{{% else %}}None{{% endif %}}"
-    ).format(vid=value_id, digits=digits)
-
+# meter value definitions.
+# Each tuple: (object_id_suffix, name_de, name_en, meter_value_id, rounding, unit, device_class, state_class)
+meter_value_entries = [
+    ("powernow",  "Leistungsaufnahme",      "Power draw",                74,  0, "W",   "power",  "measurement"),
+    ("energyabs", "Stromverbrauch absolut",  "Energy consumption (abs)", 213,  3, "kWh", "energy", "total"),
+    ("energyrel", "Stromverbrauch relativ",  "Energy consumption (rel)", 214,  3, "kWh", "energy", "total"),
+]
 
 for meter_id in range(0, meters_max_slots):
-    # Power
-    entities.append(
-        Entity(
-            include_generic=True,
-            component=Component.SENSOR,
-            feature=Feature.METERS,
-            object_id=f"meter_{meter_id}_powernow",
-            path=f"meters/{meter_id}/values",
-            name_de=f"Leistungsaufnahme Zähler {meter_id}",
-            name_en=f"Power draw meter {meter_id}",
-            availability=[
-                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            static_info_generic={
-                "value_template": meter_value_template(
-                    METER_VALUE_ID_POWER_ACTIVE_L_SUM_IM_EX_DIFF, 0
-                ),
-                "unit_of_measurement": "W",
-                "device_class": "power",
-                "state_class": "measurement",
-            },
-            static_info_homeassistant={},
-            json_attributes_topic=f"meters/{meter_id}/value_ids",
-            json_attributes_info={
-                "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
-            },
-            check_type=CheckType.METER_CONFIG,
-            api_check_path=f"meters/{meter_id}/config",
+    for suffix, name_de, name_en, value_id, rounding, unit, dev_class, state_class in meter_value_entries:
+        # The value_template_fmt contains a %d placeholder that the C++ code replaces
+        # with the resolved index from meters/N/value_ids at runtime.
+        value_template_fmt = "{{value_json[%d] | round(" + str(rounding) + ")}}"
+        entities.append(
+            Entity(
+                include_generic=True,
+                component=Component.SENSOR,
+                feature=Feature.METERS,
+                object_id=f"meter_{meter_id}_{suffix}",
+                path=f"meters/{meter_id}/values",
+                name_de=f"{name_de} Zähler {meter_id}",
+                name_en=f"{name_en} meter {meter_id}",
+                availability=[
+                    AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
+                static_info_generic={
+                    "unit_of_measurement": unit,
+                    "device_class": dev_class,
+                    "state_class": state_class,
+                },
+                static_info_homeassistant={},
+                check_type=CheckType.METER_VALUE,
+                api_check_path=f"meters/{meter_id}/config",
+                meter_value_id=value_id,
+                value_template_fmt=value_template_fmt,
+            )
         )
-    )
-    # Energy absolute
-    entities.append(
-        Entity(
-            include_generic=True,
-            component=Component.SENSOR,
-            feature=Feature.METERS,
-            object_id=f"meter_{meter_id}_energyabs",
-            path=f"meters/{meter_id}/values",
-            name_de=f"Stromverbrauch Zähler {meter_id} absolut",
-            name_en=f"Energy consumption meter {meter_id} (absolute)",
-            availability=[
-                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            static_info_generic={
-                "value_template": meter_value_template(
-                    METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM, 3
-                ),
-                "unit_of_measurement": "kWh",
-                "device_class": "energy",
-                "state_class": "total",
-            },
-            static_info_homeassistant={},
-            json_attributes_topic=f"meters/{meter_id}/value_ids",
-            json_attributes_info={
-                "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
-            },
-            check_type=CheckType.METER_CONFIG,
-            api_check_path=f"meters/{meter_id}/config",
-        )
-    )
-    # Energy relative
-    entities.append(
-        Entity(
-            include_generic=True,
-            component=Component.SENSOR,
-            feature=Feature.METERS,
-            object_id=f"meter_{meter_id}_energyrel",
-            path=f"meters/{meter_id}/values",
-            name_de=f"Stromverbrauch Zähler {meter_id} relativ",
-            name_en=f"Energy consumption meter {meter_id} (relative)",
-            availability=[
-                AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-            static_info_generic={
-                "value_template": meter_value_template(
-                    METER_VALUE_ID_ENERGY_ACTIVE_L_SUM_IM_EX_SUM_RESETTABLE, 3
-                ),
-                "unit_of_measurement": "kWh",
-                "device_class": "energy",
-                "state_class": "total",
-            },
-            static_info_homeassistant={},
-            json_attributes_topic=f"meters/{meter_id}/value_ids",
-            json_attributes_info={
-                "json_attributes_template": "{{ {'ids': value_json} | tojson }}"
-            },
-            check_type=CheckType.METER_CONFIG,
-            api_check_path=f"meters/{meter_id}/config",
-        )
-    )
 
 topics = [
     topic_template.format(
@@ -858,6 +794,8 @@ topics = [
         check_type=x.check_type.value,
         api_check_path='"%s"' % x.api_check_path if x.api_check_path else "NULL",
         api_check_key='"%s"' % x.api_check_key if x.api_check_key else "NULL",
+        meter_value_id=x.meter_value_id,
+        value_template_fmt='"%s"' % x.value_template_fmt.replace('"', '\\"') if x.value_template_fmt else "NULL",
     )
     for x in entities
 ]

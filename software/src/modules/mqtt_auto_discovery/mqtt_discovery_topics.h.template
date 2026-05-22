@@ -10,7 +10,7 @@
 enum class MqttDiscoveryCheckType : uint8_t {
     Feature,     // Check api.hasFeature(feature) — hardware capability check
     ApiBool,     // Check if api_check_path exists and api_check_key is true (bool)
-    MeterConfig, // Check if api_check_path exists, if its a union and first element > 0
+    MeterValue,  // Check meter config enabled + value_id present in value_ids; resolves index at runtime
 };
 
 struct MqttDiscoveryAvailabilityEntry {
@@ -33,8 +33,10 @@ struct MqttDiscoveryTopicInfo {
     const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
     const MqttDiscoveryType type;
     const MqttDiscoveryCheckType check_type;
-    const char * const api_check_path; // API path to check (for ApiBool and MeterConfig)
+    const char * const api_check_path; // API path to check (for ApiBool and MeterValue)
     const char * const api_check_key;  // Key within the config to check (for ApiBool)
+    const int16_t meter_value_id;      // MeterValueID to look up in value_ids (for MeterValue; -1 if unused)
+    const char * const value_template_fmt; // printf format with %d for resolved index (for MeterValue; NULL if unused)
 };
 
 extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];
