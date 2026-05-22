@@ -224,7 +224,6 @@ class ChargeLogGenerationLockHelper {
 struct ChargeWithLocation {
     Charge charge;
     String directory;
-    uint32_t file_index;
     uint32_t prev_known_timestamp_minutes;
 
     bool operator>(const ChargeWithLocation &other) const {

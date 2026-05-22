@@ -986,7 +986,6 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
             charge.charge.cs = cs;
             charge.charge.ce = ce;
             charge.directory = directory ? String(directory) : String("");
-            charge.file_index = file_idx;
             charge.prev_known_timestamp_minutes = prev_known_timestamp;
 
             charges.push_back(charge);
@@ -1191,8 +1190,6 @@ void ChargeTracker::repair_charges()
 {
     auto buf = heap_alloc_array<Charge>(258);
     uint32_t num_repaired = 0;
-    Charge transfer;
-    transfer.ce.meter_end = NAN;
 
     std::vector<ChargeWithLocation> all_charges;
     all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
@@ -1206,9 +1203,6 @@ void ChargeTracker::repair_charges()
         if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
             return; // No records in this directory
         }
-
-        Charge transfer_local;
-        transfer_local.ce.meter_end = NAN;
 
         for (uint32_t i = first_record; i <= last_record; ++i) {
             bool file_needs_repair = false;
@@ -1228,7 +1222,6 @@ void ChargeTracker::repair_charges()
             if (read == -1 || read == 0) {
                 break;
             }
-
 
             for (int a = 1; a < read / sizeof(Charge); a++) {
                 if (repair_logic(&buf[a])) {
