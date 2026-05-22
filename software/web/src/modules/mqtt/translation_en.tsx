@@ -60,7 +60,7 @@ let x = {
             "auto_discovery_prefix": "Discovery topic prefix",
             "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty.",
             "broadcast_empty": "Remove unavailable entities",
-            "broadcast_empty_desc": "Sends empty discovery messages for disabled or unavailable entities to remove them from the home automation system."
+            "broadcast_empty_desc": "Remove entities automatically from the home automation if they are no longer available."
         },
         "automation": {
             "mqtt": "Send MQTT message",
