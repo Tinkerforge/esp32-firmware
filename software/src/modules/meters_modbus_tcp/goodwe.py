@@ -274,7 +274,7 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe  Inverter Battery Modes',
+        'name': 'Goodwe Inverter Battery Modes',
         'virtual_meter': ('Goodwe Inverter', 'Battery'),
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
