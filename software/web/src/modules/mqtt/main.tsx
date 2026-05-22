@@ -279,22 +279,22 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                             value={state.auto_discovery_config.auto_discovery_mode}
                             onValue={(v) => {this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_mode: parseInt(v)}})}}/>
                     </FormRow>
-
-                    <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
-                        <InputTextPatterned required
-                                maxLength={64}
-                                pattern="^[^#+$][^#+]*"
-                                value={state.auto_discovery_config.auto_discovery_prefix}
-                                onValue={(v) => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_prefix: v}})}
-                                invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
-                                />
-                    </FormRow>
-
-                    <FormRow label={__("mqtt.content.broadcast_empty")}>
-                        <Switch desc={__("mqtt.content.broadcast_empty_desc")}
-                                checked={state.auto_discovery_config.broadcast_empty}
-                                onClick={() => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, broadcast_empty: !this.state.auto_discovery_config.broadcast_empty}})}/>
-                    </FormRow>
+                    {state.auto_discovery_config.auto_discovery_mode != MqttAutoDiscoveryMode.Disabled&& <>
+                        <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
+                            <InputTextPatterned required
+                                    maxLength={64}
+                                    pattern="^[^#+$][^#+]*"
+                                    value={state.auto_discovery_config.auto_discovery_prefix}
+                                    onValue={(v) => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_prefix: v}})}
+                                    invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
+                                    />
+                        </FormRow>
+                        <FormRow label={__("mqtt.content.broadcast_empty")} label_muted={__("mqtt.content.broadcast_empty_desc")}>
+                            <Switch
+                                    checked={state.auto_discovery_config.broadcast_empty}
+                                    onClick={() => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, broadcast_empty: !this.state.auto_discovery_config.broadcast_empty}})}/>
+                        </FormRow>
+                    </>}
 {/*#endif*/}
                 </SubPage.Config>
             </SubPage>
