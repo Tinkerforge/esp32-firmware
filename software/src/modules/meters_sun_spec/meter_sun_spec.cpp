@@ -106,13 +106,14 @@ void MeterSunSpec::setup(Config *ephemeral_config)
 
     task_scheduler.scheduleUncancelable([this]() {
         if (read_allowed) {
+            read_allowed = false;
+
             if (deadline_elapsed(last_successful_parse + SUCCESSFUL_PARSE_TIMEOUT)) {
                 logger.printfln("Last successful parse occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
                 force_reconnect();
                 return;
             }
 
-            read_allowed = false;
             start_generic_read();
         }
     }, 2_s, 1_s);
@@ -232,25 +233,30 @@ void MeterSunSpec::trace_response()
 void MeterSunSpec::read_start(size_t model_regcount)
 {
     if (!alloc_read_buffer(model_regcount)) {
-        read_allowed = false;
-        return;
+        return; // this is fatal, the reading will not be restarted till the next reconnect
     }
 
     generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
     generic_read_request.register_count = model_regcount;
-    generic_read_request.done_callback = [this]{ read_done_callback(); };
+    generic_read_request.done_callback = [this]{ read_done(); };
 
     start_generic_read();
 }
 
-void MeterSunSpec::read_done_callback()
+void MeterSunSpec::read_done()
 {
-    read_allowed = connected_client != nullptr; // stop reading while disconnected
+    read_allowed = true;
 
     trace_response();
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
+            // an abort is triggered before a connection close or before a forced
+            // reconnect, stop reading. in both cases the reading will be restarted
+            // by the automatic reconnect
+            read_allowed = false;
+        }
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
@@ -290,7 +296,7 @@ void MeterSunSpec::read_done_callback()
 
         if (more_registers_to_read) {
             if (!alloc_read_buffer(registers_to_read)) {
-                read_allowed = false;
+                read_allowed = false; // this is fatal, the reading will not be restarted till the next reconnect
             }
 
             return;
@@ -346,7 +352,7 @@ void MeterSunSpec::read_done_callback()
     }
 }
 
-void MeterSunSpec::scan_start_delay()
+void MeterSunSpec::scan_start_delayed()
 {
     task_scheduler.cancel(this->scan_task_id);
 
@@ -388,7 +394,7 @@ void MeterSunSpec::scan_start()
     start_generic_read();
 }
 
-void MeterSunSpec::scan_read_delay()
+void MeterSunSpec::scan_read_delayed()
 {
     task_scheduler.scheduleOnce([this](){
         this->start_generic_read();
@@ -401,7 +407,7 @@ void MeterSunSpec::scan_next_base_address()
 
     if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
         logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
-        scan_start_delay();
+        scan_start_delayed();
     }
     else {
         generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
@@ -418,11 +424,15 @@ void MeterSunSpec::scan_next()
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::NotConnected) {
-            logger.printfln_meter("Connection got lost while scanning %s:%u:%u", host.c_str(), port, device_address);
+            // the scan will be restarted by the automatic reconnect
             return;
         }
-
-        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
+            // an abort is triggered before a connection close or before a forced
+            // reconnect. in both cases the scan will be restarted by the automatic reconnect
+            return;
+        }
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
@@ -431,7 +441,7 @@ void MeterSunSpec::scan_next()
             scan_next_base_address();
         }
         else {
-            scan_read_delay();
+            scan_read_delayed();
         }
 
         return;
@@ -469,7 +479,7 @@ void MeterSunSpec::scan_next()
                 if (scan_model_id == NON_IMPLEMENTED_UINT16) { // End model found
                     logger.printfln_meter("Configured SunSpec model %u/%u not found at %s:%u:%u",
                                           model_id, model_instance, host.c_str(), port, device_address);
-                    scan_start_delay();
+                    scan_start_delayed();
                 }
                 else if (scan_device_found && scan_model_id == model_id) {
                     if (scan_model_counter > 0) {
@@ -484,7 +494,7 @@ void MeterSunSpec::scan_next()
                         if (!model_parser->is_model_length_supported(block_length)) {
                             logger.printfln_meter("Configured SunSpec model %u/%u found but has unsupported length: %u",
                                                   model_id, model_instance, block_length);
-                            scan_start_delay();
+                            scan_start_delayed();
                         }
                         else {
                             scan_state_next = ScanState::Idle;

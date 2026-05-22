@@ -238,16 +238,19 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         ephemeral_config->get("location")->updateEnum(fixed_location);
     }
 
-    task_scheduler.scheduleUncancelable([this]() {
-        if (read_allowed) {
-            read_next();
-        }
-    }, 2_s, 250_ms);
+    if (value_specs != nullptr && value_specs_length > 0) {
+        task_scheduler.scheduleUncancelable([this]() {
+            if (read_allowed) {
+                read_allowed = false;
+                read_next();
+            }
+        }, 2_s, 250_ms);
+    }
 }
 
 void MeterRCTPower::register_events()
 {
-    if (value_specs == nullptr) {
+    if (value_specs == nullptr || value_specs_length == 0) {
         return;
     }
 
@@ -275,7 +278,6 @@ void MeterRCTPower::connect_callback(TFGenericTCPClientConnectResult result)
     }
 
     value_index = 0;
-
     read_next();
 }
 
@@ -286,20 +288,17 @@ void MeterRCTPower::disconnect_callback(TFGenericTCPClientDisconnectReason reaso
 
 void MeterRCTPower::read_next()
 {
-    if (value_specs_length == 0) {
-        return;
-    }
-
-    read_allowed = false;
-
-    if (value_index >= value_specs_length) {
-        value_index = 0;
-    }
-
     static_cast<TFRCTPowerSharedClient *>(connected_client)->read(value_specs[value_index].id, 2_s,
     [this](TFRCTPowerClientTransactionResult result, float value) {
+        read_allowed = true;
+
         if (result != TFRCTPowerClientTransactionResult::Success) {
-            if (result == TFRCTPowerClientTransactionResult::Timeout) {
+            if (result == TFRCTPowerClientTransactionResult::Aborted) {
+                // an abort is triggered before a connection close, stop reading.
+                // the reading will be restarted by the automatic reconnect
+                read_allowed = false;
+            }
+            else if (result == TFRCTPowerClientTransactionResult::Timeout) {
                 auto timeout = errors->get("timeout");
                 timeout->updateUint(timeout->asUint() + 1);
             }
@@ -368,8 +367,10 @@ void MeterRCTPower::read_next()
             meters.finish_update(slot);
 
             ++value_index;
-        }
 
-        read_allowed = connected_client != nullptr; // stop reading while disconnected
+            if (value_index >= value_specs_length) {
+                value_index = 0;
+            }
+        }
     });
 }

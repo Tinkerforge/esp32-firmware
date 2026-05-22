@@ -51,8 +51,6 @@ public:
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
 
-    void read_done_callback();
-
 private:
     enum class ScanState {
         Idle,
@@ -67,10 +65,11 @@ private:
     bool alloc_read_buffer(size_t model_regcount);
     void trace_response();
     void read_start(size_t model_regcount);
+    void read_done();
 
-    void scan_start_delay();
+    void scan_start_delayed();
     void scan_start();
-    void scan_read_delay();
+    void scan_read_delayed();
     void scan_next_base_address();
     void scan_next();
 

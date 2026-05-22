@@ -53,7 +53,7 @@ void GenericModbusTCPClient::start_generic_read()
     }
 
     if (read_pending) {
-        esp_system_abort("Previous read pending while trying to read");
+        esp_system_abort_prefixed("Previous read pending while trying to read");
     }
 
     read_pending = true;
@@ -61,7 +61,7 @@ void GenericModbusTCPClient::start_generic_read()
     if (deadline_elapsed(last_successful_read + SUCCESSFUL_READ_TIMEOUT)) {
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "%sLast successful read occurred too long ago, reconnecting to %s:%u",
-                                 event_log_message_prefix,
+                                  event_log_message_prefix,
                                  host.c_str(), port);
 
         read_pending = false;
@@ -94,10 +94,19 @@ void GenericModbusTCPClient::start_generic_read()
     read_next();
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+void GenericModbusTCPClient::esp_system_abort_prefixed(const char *message)
+{
+    char buf[128];
+    snprintf(buf, ARRAY_SIZE(buf), "%s%s", event_log_message_prefix, message);
+    esp_system_abort(buf);
+}
+
 void GenericModbusTCPClient::read_next()
 {
     if (connected_client == nullptr) {
-        esp_system_abort("Not connected while trying to read");
+        esp_system_abort_prefixed("Not connected while trying to read");
     }
 
     uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
@@ -118,7 +127,7 @@ void GenericModbusTCPClient::read_next()
     case ModbusRegisterType::Coil:
     case ModbusRegisterType::DiscreteInput:
     default:
-        esp_system_abort("Unsupported register type to read");
+        esp_system_abort_prefixed("Unsupported register type to read");
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,

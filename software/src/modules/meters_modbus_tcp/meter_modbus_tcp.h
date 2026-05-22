@@ -80,14 +80,12 @@ public:
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
 
-    void read_done_callback();
-
 private:
     void connect_callback(TFGenericTCPClientConnectResult result) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
-    bool prepare_read();
     void read_next();
-    void parse_next();
+    void read_done();
+    bool parse_next();
 
 #include "generated/meter_modbus_tcp_is.inc"
 

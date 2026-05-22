@@ -154,6 +154,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     if (table->specs_length > 0) {
         task_scheduler.scheduleUncancelable([this]() {
             if (read_allowed) {
+                read_allowed = false;
                 read_next();
             }
         }, 2_s, 1_s);
@@ -196,12 +197,9 @@ void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
     generic_read_request.data[0] = register_buffer;
     generic_read_request.data[1] = nullptr;
     generic_read_request.read_twice = false;
-    generic_read_request.done_callback = [this]{ read_done_callback(); };
+    generic_read_request.done_callback = [this]{ read_done(); };
 
     read_index = 0;
-    register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE; // this tells read_next() that generic_read_request is not fully initialized
-
-    prepare_read();
     read_next();
 }
 
@@ -212,10 +210,8 @@ void MeterModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reas
     read_allowed = false;
 }
 
-bool MeterModbusTCP::prepare_read()
+void MeterModbusTCP::read_next()
 {
-    bool overflow = false;
-
     while (
 #ifndef DEBUG_VALUES_TO_TRACE_LOG
         table->index[read_index] == VALUE_INDEX_DEBUG ||
@@ -224,49 +220,34 @@ bool MeterModbusTCP::prepare_read()
         read_index = (read_index + 1) % table->specs_length;
 
         if (read_index == 0) {
-            overflow = true;
+            meters.finish_update(slot);
+            read_allowed = true;
+            return; // make a little pause after each round trip
         }
     }
 
-    return overflow;
-}
+    generic_read_request.register_type = table->specs[read_index].register_type;
+    generic_read_request.start_address = table->specs[read_index].start_address;
+    generic_read_request.register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type);
 
-void MeterModbusTCP::read_next()
-{
-    read_allowed = false;
-
-    if (register_buffer_index != METER_MODBUS_TCP_REGISTER_BUFFER_SIZE // only use fully initialized generic_read_request from last read
-     && register_buffer_index < generic_read_request.register_count
-     && generic_read_request.register_type == table->specs[read_index].register_type
-     && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
-     && register_buffer_index + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type) <= generic_read_request.register_count) {
-        parse_next();
-    }
-    else {
-        generic_read_request.register_type = table->specs[read_index].register_type;
-        generic_read_request.start_address = table->specs[read_index].start_address;
-        generic_read_request.register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type);
-
-        for (size_t i = read_index + 1; i < table->specs_length; ++i) {
-            if (generic_read_request.register_type == table->specs[i].register_type
-             && generic_read_request.start_address + generic_read_request.register_count == table->specs[i].start_address
-             && generic_read_request.register_count + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type) <= max_register_count) {
-                generic_read_request.register_count += MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type);
-                continue;
-            }
-
-            break;
+    for (size_t i = read_index + 1; i < table->specs_length; ++i) {
+        if (generic_read_request.register_type == table->specs[i].register_type
+         && generic_read_request.start_address + generic_read_request.register_count == table->specs[i].start_address
+         && generic_read_request.register_count + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type) <= max_register_count) {
+            generic_read_request.register_count += MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type);
+            continue;
         }
 
-        register_buffer_index = 0;
-        register_start_address = generic_read_request.start_address;
-
-        start_generic_read();
+        break;
     }
+
+    start_generic_read();
 }
 
-void MeterModbusTCP::read_done_callback()
+void MeterModbusTCP::read_done()
 {
+    read_allowed = true;
+
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         trace("m%lu t%u i%zu a%zu:%x c%zu e%lu",
               slot,
@@ -277,38 +258,60 @@ void MeterModbusTCP::read_done_callback()
               generic_read_request.register_count,
               static_cast<uint32_t>(generic_read_request.result));
 
-        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
+            // an abort is triggered before a connection close or before a forced reconnect,
+            // stop reading. in both cases the reading will be restarted by the automatic reconnect
+            read_allowed = false;
+        }
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
-        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::ModbusIllegalDataAddress &&
-                 is_goodwe_inverter_grid_meter() &&
-                 goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading &&
-                 generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal) {
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::ModbusIllegalDataAddress
+              && is_goodwe_inverter_grid_meter()
+              && goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading
+              && generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal) {
             goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected32bitEnergy;
             table = &goodwe_inverter_grid_32bit_energy_table;
+            read_index = 0;
 
             logger.printfln_meter("Goodwe inverter with 32-bit grid energy registers detected (reading 64-bit grid energy register returns error)");
-
             meters.declare_value_ids(slot, table->ids, table->ids_length);
-
-            read_allowed = true;
-            read_index = 0;
-            register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-            prepare_read();
-            return;
         }
 
-        read_allowed = connected_client != nullptr; // stop reading while disconnected
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-        return;
+        return; // make a little pause after each error or restart
     }
 
-    parse_next();
+    register_buffer_index = 0;
+    register_start_address = generic_read_request.start_address;
+
+    while (true) {
+        if (!parse_next()) {
+            read_index = 0;
+            return; // make a little pause after each restart
+        }
+
+        if (read_index == 0) {
+            meters.finish_update(slot);
+            return; // make a little pause after each round trip
+        }
+
+        if (register_buffer_index < generic_read_request.register_count
+         && generic_read_request.register_type == table->specs[read_index].register_type
+         && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
+         && register_buffer_index + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type) <= generic_read_request.register_count) {
+            continue;
+        }
+
+        break;
+    }
+
+    read_allowed = false;
+    read_next();
 }
 
-void MeterModbusTCP::parse_next()
+// returns true for continue, returns false for restart
+bool MeterModbusTCP::parse_next()
 {
     union {
         uint16_t u;
@@ -532,471 +535,347 @@ void MeterModbusTCP::parse_next()
     }
 
     if (is_sungrow_hybrid_inverter_inverter_meter()
-     && generic_read_request.start_address == SungrowHybridInverterOutputTypeAddress::OutputType) {
-        if (sungrow_hybrid_inverter.output_type < 0) {
-            bool success = true;
+     && generic_read_request.start_address == SungrowHybridInverterOutputTypeAddress::OutputType
+     && sungrow_hybrid_inverter.output_type < 0) {
+        switch (c16.u) {
+        case 0:
+            table = &sungrow_hybrid_inverter_1p2l_table;
+            logger.printfln_meter("Sungrow 1P2L Hybrid Inverter detected");
+            break;
 
-            switch (c16.u) {
-            case 0:
-                table = &sungrow_hybrid_inverter_1p2l_table;
-                logger.printfln_meter("Sungrow 1P2L Hybrid Inverter detected");
-                break;
+        case 1:
+            table = &sungrow_hybrid_inverter_3p4l_table;
+            logger.printfln_meter("Sungrow 3P4L Hybrid Inverter detected");
+            break;
 
-            case 1:
-                table = &sungrow_hybrid_inverter_3p4l_table;
-                logger.printfln_meter("Sungrow 3P4L Hybrid Inverter detected");
-                break;
+        case 2:
+            table = &sungrow_hybrid_inverter_3p3l_table;
+            logger.printfln_meter("Sungrow 3P3L Hybrid Inverter detected");
+            break;
 
-            case 2:
-                table = &sungrow_hybrid_inverter_3p3l_table;
-                logger.printfln_meter("Sungrow 3P3L Hybrid Inverter detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Sungrow Hybrid Inverter has unknown output type: %u", c16.u);
-                break;
-            }
-
-            if (success) {
-               sungrow_hybrid_inverter.output_type = c16.u;
-
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Sungrow Hybrid Inverter has unknown output type: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        sungrow_hybrid_inverter.output_type = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_sungrow_string_inverter_inverter_meter()
-     && generic_read_request.start_address == SungrowStringInverterOutputTypeAddress::OutputType) {
-        if (sungrow_string_inverter.output_type < 0) {
-            bool success = true;
+     && generic_read_request.start_address == SungrowStringInverterOutputTypeAddress::OutputType
+     && sungrow_string_inverter.output_type < 0) {
+        switch (c16.u) {
+        case 0:
+            table = &sungrow_string_inverter_1p2l_table;
+            logger.printfln_meter("Sungrow 1P2L String Inverter detected");
+            break;
 
-            switch (c16.u) {
-            case 0:
-                table = &sungrow_string_inverter_1p2l_table;
-                logger.printfln_meter("Sungrow 1P2L String Inverter detected");
-                break;
+        case 1:
+            table = &sungrow_string_inverter_3p4l_table;
+            logger.printfln_meter("Sungrow 3P4L String Inverter detected");
+            break;
 
-            case 1:
-                table = &sungrow_string_inverter_3p4l_table;
-                logger.printfln_meter("Sungrow 3P4L String Inverter detected");
-                break;
+        case 2:
+            table = &sungrow_string_inverter_3p3l_table;
+            logger.printfln_meter("Sungrow 3P3L String Inverter detected");
+            break;
 
-            case 2:
-                table = &sungrow_string_inverter_3p3l_table;
-                logger.printfln_meter("Sungrow 3P3L String Inverter detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Sungrow String Inverter has unknown output type: %u", c16.u);
-                break;
-            }
-
-            if (success) {
-                sungrow_string_inverter.output_type = c16.u;
-
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Sungrow String Inverter has unknown output type: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        sungrow_string_inverter.output_type = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_deye_hybrid_inverter_battery_meter()
-     && generic_read_request.start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType) {
-        if (deye_hybrid_inverter.device_type < 0) {
-            bool success = true;
+     && generic_read_request.start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType
+     && deye_hybrid_inverter.device_type < 0) {
+        switch (c16.u) {
+        case 0x0002:
+        case 0x0003:
+        case 0x0004:
+            logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
+            return false;
 
-            switch (c16.u) {
-            case 0x0002:
-            case 0x0003:
-            case 0x0004:
-                logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
-                return;
+        case 0x0005:
+            table = &deye_hybrid_inverter_low_voltage_battery_table;
+            logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
+            break;
 
-            case 0x0005:
-                table = &deye_hybrid_inverter_low_voltage_battery_table;
-                logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
-                break;
+        case 0x0006:
+        case 0x0106:
+            table = &deye_hybrid_inverter_high_voltage_battery_table;
+            logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
+            break;
 
-            case 0x0006:
-            case 0x0106:
-                table = &deye_hybrid_inverter_high_voltage_battery_table;
-                logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
-                break;
-            }
-
-            if (success) {
-                deye_hybrid_inverter.device_type = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        deye_hybrid_inverter.device_type = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_deye_hybrid_inverter_pv_meter()
-     && generic_read_request.start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType) {
-        if (deye_hybrid_inverter.device_type < 0) {
-            bool success = true;
+     && generic_read_request.start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType
+     && deye_hybrid_inverter.device_type < 0) {
+        switch (c16.u) {
+        case 0x0002:
+        case 0x0003:
+        case 0x0004:
+            logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
+            return false;
 
-            switch (c16.u) {
-            case 0x0002:
-            case 0x0003:
-            case 0x0004:
-                logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
-                return;
+        case 0x0005:
+            table = &deye_hybrid_inverter_low_voltage_pv_table;
+            logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
+            break;
 
-            case 0x0005:
-                table = &deye_hybrid_inverter_low_voltage_pv_table;
-                logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
-                break;
+        case 0x0006:
+        case 0x0106:
+            table = &deye_hybrid_inverter_high_voltage_pv_table;
+            logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
+            break;
 
-            case 0x0006:
-            case 0x0106:
-                table = &deye_hybrid_inverter_high_voltage_pv_table;
-                logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
-                break;
-            }
-
-            if (success) {
-                deye_hybrid_inverter.device_type = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        deye_hybrid_inverter.device_type = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
-    if (is_goodwe_inverter_grid_meter() &&
-        goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading &&
-        generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal) {
+    if (is_goodwe_inverter_grid_meter()
+     && generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal
+     && goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading) {
         if (c64.u == UINT64_MAX) {
-            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected32bitEnergy;
             table = &goodwe_inverter_grid_32bit_energy_table;
+            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected32bitEnergy;
             logger.printfln_meter("Goodwe inverter with 32-bit grid energy registers detected (reading 64-bit grid energy register returns invalid value)");
         }
         else {
-            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected64bitEnergy;
             table = &goodwe_inverter_grid_64bit_energy_table;
+            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected64bitEnergy;
             logger.printfln_meter("Goodwe inverter with 64-bit grid energy registers detected");
         }
 
         meters.declare_value_ids(slot, table->ids, table->ids_length);
-
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        return false;
     }
 
-    if (is_goodwe_inverter_battery_meter()) {
-        if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery1Mode) {
-            if (goodwe_inverter.battery_1_mode < 0) {
-                goodwe_inverter.battery_1_mode = c16.u;
+    if (is_goodwe_inverter_battery_meter()
+     && generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery1Mode
+     && goodwe_inverter.battery_1_mode < 0) {
+        goodwe_inverter.battery_1_mode = c16.u;
 
-                if (goodwe_inverter.battery_1_mode == UINT16_MAX) {
-                    // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
-                    goodwe_inverter.battery_1_mode = 0;
-                }
-            }
+        if (goodwe_inverter.battery_1_mode == UINT16_MAX) {
+            // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
+            goodwe_inverter.battery_1_mode = 0;
         }
-        else if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery2Mode) {
-            if (goodwe_inverter.battery_2_mode < 0) {
-                goodwe_inverter.battery_2_mode = c16.u;
 
-                if (goodwe_inverter.battery_2_mode == UINT16_MAX) {
-                    // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
-                    goodwe_inverter.battery_2_mode = 0;
-                }
+        return true;
+    }
 
-                bool success = true;
+    if (is_goodwe_inverter_battery_meter()
+     && generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery2Mode
+     && goodwe_inverter.battery_2_mode < 0) {
+        goodwe_inverter.battery_2_mode = c16.u;
 
-                if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode != 0) {
-                    table = &goodwe_inverter_battery_1_and_2_table;
-                    logger.printfln_meter("Goodwe inverter with battery 1 and 2 detected");
-                }
-                else if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode == 0) {
-                    table = &goodwe_inverter_battery_1_table;
-                    logger.printfln_meter("Goodwe inverter with battery 1 detected");
-                }
-                else if (goodwe_inverter.battery_1_mode == 0 && goodwe_inverter.battery_2_mode != 0) {
-                    table = &goodwe_inverter_battery_2_table;
-                    logger.printfln_meter("Goodwe inverter with battery 2 detected");
-                }
-                else {
-                    success = false;
-                    logger.printfln_meter("Goodwe inverter without battery detected");
-                }
-
-                if (success) {
-                    meters.declare_value_ids(slot, table->ids, table->ids_length);
-                }
-                else {
-                    goodwe_inverter.battery_1_mode = -1;
-                    goodwe_inverter.battery_2_mode = -1;
-                }
-            }
-
-            read_allowed = true;
-            read_index = 0;
-            register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-            prepare_read();
-            return;
+        if (goodwe_inverter.battery_2_mode == UINT16_MAX) {
+            // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
+            goodwe_inverter.battery_2_mode = 0;
         }
+
+        if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode != 0) {
+            table = &goodwe_inverter_battery_1_and_2_table;
+            logger.printfln_meter("Goodwe inverter with battery 1 and 2 detected");
+        }
+        else if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode == 0) {
+            table = &goodwe_inverter_battery_1_table;
+            logger.printfln_meter("Goodwe inverter with battery 1 detected");
+        }
+        else if (goodwe_inverter.battery_1_mode == 0 && goodwe_inverter.battery_2_mode != 0) {
+            table = &goodwe_inverter_battery_2_table;
+            logger.printfln_meter("Goodwe inverter with battery 2 detected");
+        }
+        else {
+            goodwe_inverter.battery_1_mode = -1;
+            goodwe_inverter.battery_2_mode = -1;
+            logger.printfln_meter("Goodwe inverter without battery detected");
+            return false;
+        }
+
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_fronius_gen24_plus_battery_meter()
-     && generic_read_request.start_address == FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID) {
-        if (fronius_gen24_plus.input_id_or_model_id < 0) {
-            bool success = true;
+     && generic_read_request.start_address == FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID
+     && fronius_gen24_plus.input_id_or_model_id < 0) {
+        switch (c16.u) {
+        case 1: // module/1/ID: Input ID
+            table = &fronius_gen24_plus_battery_integer_table;
+            fronius_gen24_plus.start_address_shift = 0;
+            logger.printfln_meter("Fronius GEN24 Plus inverter with integer MPPT model detected");
+            break;
 
-            switch (c16.u) {
-            case 1: // module/1/ID: Input ID
-                table = &fronius_gen24_plus_battery_integer_table;
-                fronius_gen24_plus.start_address_shift = 0;
-                logger.printfln_meter("Fronius GEN24 Plus inverter with integer MPPT model detected");
-                break;
+        case 160: // ID: SunSpec Model ID
+            table = &fronius_gen24_plus_battery_float_table;
+            fronius_gen24_plus.start_address_shift = 10;
+            logger.printfln_meter("Fronius GEN24 Plus inverter with float MPPT model detected");
+            break;
 
-            case 160: // ID: SunSpec Model ID
-                table = &fronius_gen24_plus_battery_float_table;
-                fronius_gen24_plus.start_address_shift = 10;
-                logger.printfln_meter("Fronius GEN24 Plus inverter with float MPPT model detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Fronius GEN24 Plus inverter has malformed MPPT model: %u", c16.u);
-                break;
-            }
-
-            if (success) {
-                fronius_gen24_plus.input_id_or_model_id = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Fronius GEN24 Plus inverter has malformed MPPT model: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        fronius_gen24_plus.input_id_or_model_id = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_huawei_sun2000_battery_meter()
-     && generic_read_request.start_address == HuaweiSUN2000BatteryProductModelAddress::EnergyStorageProductModel) {
-        if (huawei_sun2000.energy_storage_product_model < 0) {
-            bool success = true;
+     && generic_read_request.start_address == HuaweiSUN2000BatteryProductModelAddress::EnergyStorageProductModel
+     && huawei_sun2000.energy_storage_product_model < 0) {
+        switch (c16.u) {
+        case 0: // None
+            logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
+            return false;
 
-            switch (c16.u) {
-            case 0: // None
-                success = false;
-                logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
-                return;
+        case 1: // LG RESU
+            table = &huawei_sun2000_battery_lg_resu_table;
+            logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
+            break;
 
-            case 1: // LG RESU
-                table = &huawei_sun2000_battery_lg_resu_table;
-                logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
-                break;
+        case 2: // Huawei LUNA2000
+            table = &huawei_sun2000_battery_huawei_luna2000_table;
+            logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
+            break;
 
-            case 2: // Huawei LUNA2000
-                table = &huawei_sun2000_battery_huawei_luna2000_table;
-                logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
-                break;
-            }
-
-            if (success) {
-                huawei_sun2000.energy_storage_product_model = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        huawei_sun2000.energy_storage_product_model = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_huawei_sun2000_pv_meter()
-     && generic_read_request.start_address == HuaweiSUN2000PVStringCountAddress::NumberOfPVStrings) {
-        if (huawei_sun2000.number_of_pv_strings < 0) {
-            switch (c16.u) {
-            case 0:
-                table = &huawei_sun2000_pv_no_strings_table;
-                break;
+     && generic_read_request.start_address == HuaweiSUN2000PVStringCountAddress::NumberOfPVStrings
+     && huawei_sun2000.number_of_pv_strings < 0) {
+        switch (c16.u) {
+        case 0:
+            table = &huawei_sun2000_pv_no_strings_table;
+            break;
 
-            case 1:
-                table = &huawei_sun2000_pv_1_string_table;
-                break;
+        case 1:
+            table = &huawei_sun2000_pv_1_string_table;
+            break;
 
-            case 2:
-                table = &huawei_sun2000_pv_2_strings_table;
-                break;
+        case 2:
+            table = &huawei_sun2000_pv_2_strings_table;
+            break;
 
-            case 3:
-                table = &huawei_sun2000_pv_3_strings_table;
-                break;
+        case 3:
+            table = &huawei_sun2000_pv_3_strings_table;
+            break;
 
-            case 4:
-                table = &huawei_sun2000_pv_4_strings_table;
-                break;
+        case 4:
+            table = &huawei_sun2000_pv_4_strings_table;
+            break;
 
-            case 5:
-                table = &huawei_sun2000_pv_5_strings_table;
-                break;
+        case 5:
+            table = &huawei_sun2000_pv_5_strings_table;
+            break;
 
-            case 6:
-                table = &huawei_sun2000_pv_6_strings_table;
-                break;
+        case 6:
+            table = &huawei_sun2000_pv_6_strings_table;
+            break;
 
-            case 7:
-                table = &huawei_sun2000_pv_7_strings_table;
-                break;
+        case 7:
+            table = &huawei_sun2000_pv_7_strings_table;
+            break;
 
-            case 8:
-                table = &huawei_sun2000_pv_8_strings_table;
-                break;
+        case 8:
+            table = &huawei_sun2000_pv_8_strings_table;
+            break;
 
-            case 9:
-            default:
-                table = &huawei_sun2000_pv_9_strings_table;
-                break;
-            }
-
-            huawei_sun2000.number_of_pv_strings = c16.u;
-            logger.printfln_meter("Huawei SUN2000 inverter has %u PV string%s", c16.u, c16.u != 1 ? "s" : "");
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        case 9:
+        default:
+            table = &huawei_sun2000_pv_9_strings_table;
+            break;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        logger.printfln_meter("Huawei SUN2000 inverter has %u PV string%s", c16.u, c16.u != 1 ? "s" : "");
+        huawei_sun2000.number_of_pv_strings = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_huawei_sun2000_smart_dongle_battery_meter()
-     && generic_read_request.start_address == HuaweiSUN2000SmartDongleBatteryProductModelAddress::EnergyStorageProductModel) {
-        if (huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
-            bool success = true;
+     && generic_read_request.start_address == HuaweiSUN2000SmartDongleBatteryProductModelAddress::EnergyStorageProductModel
+     && huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
+        switch (c16.u) {
+        case 0: // None
+            logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
+            return false;
 
-            switch (c16.u) {
-            case 0: // None
-                success = false;
-                logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
-                return;
+        case 1: // LG RESU
+            table = &huawei_sun2000_smart_dongle_battery_lg_resu_table;
+            logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
+            break;
 
-            case 1: // LG RESU
-                table = &huawei_sun2000_smart_dongle_battery_lg_resu_table;
-                logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
-                break;
+        case 2: // Huawei LUNA2000
+            table = &huawei_sun2000_smart_dongle_battery_huawei_luna2000_table;
+            logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
+            break;
 
-            case 2: // Huawei LUNA2000
-                table = &huawei_sun2000_smart_dongle_battery_huawei_luna2000_table;
-                logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
-                return;
-            }
-
-            if (success) {
-                huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_fronius_verto_plus_battery_meter()
-     && generic_read_request.start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID) {
-        if (fronius_verto_plus.input_id_or_model_id < 0) {
-            bool success = true;
+     && generic_read_request.start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID
+     && fronius_verto_plus.input_id_or_model_id < 0) {
+        switch (c16.u) {
+        case 1: // module/1/ID: Input ID
+            table = &fronius_verto_plus_battery_integer_table;
+            fronius_verto_plus.start_address_shift = 0;
+            logger.printfln_meter("Fronius Verto Plus inverter with integer MPPT model detected");
+            break;
 
-            switch (c16.u) {
-            case 1: // module/1/ID: Input ID
-                table = &fronius_verto_plus_battery_integer_table;
-                fronius_verto_plus.start_address_shift = 0;
-                logger.printfln_meter("Fronius Verto Plus inverter with integer MPPT model detected");
-                break;
+        case 160: // ID: SunSpec Model ID
+            table = &fronius_verto_plus_battery_float_table;
+            fronius_verto_plus.start_address_shift = 10;
+            logger.printfln_meter("Fronius Verto Plus inverter with float MPPT model detected");
+            break;
 
-            case 160: // ID: SunSpec Model ID
-                table = &fronius_verto_plus_battery_float_table;
-                fronius_verto_plus.start_address_shift = 10;
-                logger.printfln_meter("Fronius Verto Plus inverter with float MPPT model detected");
-                break;
-
-            default:
-                success = false;
-                logger.printfln_meter("Fronius Verto Plus inverter has malformed MPPT model: %u", c16.u);
-                break;
-            }
-
-            if (success) {
-                fronius_verto_plus.input_id_or_model_id = c16.u;
-                meters.declare_value_ids(slot, table->ids, table->ids_length);
-            }
+        default:
+            logger.printfln_meter("Fronius Verto Plus inverter has malformed MPPT model: %u", c16.u);
+            return false;
         }
 
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-        return;
+        fronius_verto_plus.input_id_or_model_id = c16.u;
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
     }
 
     if (is_sungrow_hybrid_inverter_inverter_meter() || is_sungrow_string_inverter_inverter_meter()) {
@@ -2999,18 +2878,5 @@ void MeterModbusTCP::parse_next()
     register_start_address += register_count;
     read_index = (read_index + 1) % table->specs_length;
 
-    bool overflow = read_index == 0;
-
-    if (prepare_read()) {
-        overflow = true;
-    }
-
-    if (overflow) {
-        // make a little pause after each round trip
-        meters.finish_update(slot);
-        read_allowed = true;
-    }
-    else {
-        read_next();
-    }
+    return true;
 }
