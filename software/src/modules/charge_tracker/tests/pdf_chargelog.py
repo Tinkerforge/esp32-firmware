@@ -221,16 +221,10 @@ def fetch_charge_log(tc: TestContext):
     log = tc.http_request('GET', '/charge_tracker/charge_log', timeout=1)
     return [ChargeLogEntry.unpack(bytes(entry)) for entry in itertools.batched(log, 16)]
 
-def create_directory(tc: TestContext, path: str):
-    tc.http_request('PUT', f"/debug/fs{path}{'' if path.endswith('/') else '/'}")
-
-def upload_file(tc: TestContext, path: str, data: bytes):
-    tc.http_request('PUT', f"/debug/fs{path}", data)
-
 def generate_test_data(tc: TestContext):
     CHARGER_COUNT = 64
 
-    create_directory(tc, '/charge-records')
+    tc.create_directory('/charge-records')
 
     charge_counter = 0
 
@@ -240,7 +234,7 @@ def generate_test_data(tc: TestContext):
         uid_str = base58encode(uid_num)
         directory = f"/charge-records/{uid_str}"
 
-        create_directory(tc, directory)
+        tc.create_directory(directory)
 
         entries = [ChargeLogEntry(
                         timestamp=(i * 360 + uid_num * 99000) // 60,
@@ -251,7 +245,7 @@ def generate_test_data(tc: TestContext):
                         ).pack() for i in range(256)]
         b"".join(entries)
 
-        upload_file(tc, f"{directory}/charge-record-1.bin", b"".join(entries))
+        tc.upload_file(f"{directory}/charge-record-1.bin", b"".join(entries))
 
         charge_counter += len(entries)
 
@@ -266,12 +260,13 @@ def generate_test_data(tc: TestContext):
 
         charge_counter += len(entries)
 
-        upload_file(tc, f"{directory}/charge-record-2.bin", b"".join(entries))
+        tc.upload_file(f"{directory}/charge-record-2.bin", b"".join(entries))
 
         charger_names += uid_num.to_bytes(4, 'little')
         charger_names += f'warp-{uid_str}'.encode('utf-8').ljust(32, b'\0')
         print(uid_num, f'warp-{uid_str}');
 
-    upload_file(tc, f"/charge_manager/all_charger_names", charger_names.ljust(256*36, b'\0'))
+    tc.upload_file(f"/charge_manager/all_charger_names", charger_names.ljust(256*36, b'\0'))
+
 if __name__ == '__main__':
     run_testsuite(locals())

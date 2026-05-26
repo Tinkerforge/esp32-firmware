@@ -71,6 +71,8 @@ class TestContext:
 
     _to_restore: dict[str, JSON] = field(default_factory=dict)
 
+    _debug_fs_enabled: bool | None = None
+
     def init_testbox(self):
         if self._brickd_host is None:
             return False
@@ -478,6 +480,36 @@ class TestContext:
             except OSError:
                 continue
         raise RuntimeError(f"No free TCP port found in range {start}..{start + 99}")
+
+    def debug_fs_enabled(self):
+        if self._debug_fs_enabled is None:
+            try:
+                self.http_request('GET', '/debug/fs/')
+                self._debug_fs_enabled = True
+            except HTTPError as e:
+                if e.code == 404:
+                    self._debug_fs_enabled = False
+                else:
+                    raise
+        return self._debug_fs_enabled
+
+    def create_directory(self, path: str):
+        if not self.debug_fs_enabled():
+            self.skip("Firmware was built without DEBUG_FS_ENABLE")
+
+        self.http_request('PUT', f"/debug/fs{path}{'' if path.endswith('/') else '/'}")
+
+    def upload_file(self, path: str, data: bytes):
+        if not self.debug_fs_enabled():
+            self.skip("Firmware was built without DEBUG_FS_ENABLE")
+
+        self.http_request('PUT', f"/debug/fs{path}", data)
+
+    def download_file(self, path: str):
+        if not self.debug_fs_enabled():
+            self.skip("Firmware was built without DEBUG_FS_ENABLE")
+
+        self.http_request('GET', f"/debug/fs{path}")
 
     # @dataclass
     # class Cap:
