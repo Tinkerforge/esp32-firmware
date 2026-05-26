@@ -1105,17 +1105,6 @@ void RemoteAccess::apply_config()
         // Start periodic resolve_management task.
         const millis_t random_delay = millis_t{esp_random() % 4096};
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-
-            // Check if we got unlucky timing and management request ran
-            // without the management connection getting connected afterwards
-            if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
-                logger.printfln("Management connection timed out");
-
-                // Reset the timeout to prevent log and reconnect spamming
-                this->last_mgmt_alive = now_us();
-                this->management_request_done = false;
-            }
-
             if (!this->management_request_done && !this->management_auth_failed) {
                 this->resolve_management();
             }
