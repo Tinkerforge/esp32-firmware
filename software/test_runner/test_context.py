@@ -509,7 +509,7 @@ class TestContext:
         if not self.debug_fs_enabled():
             self.skip("Firmware was built without DEBUG_FS_ENABLE")
 
-        self.http_request('GET', f"/debug/fs{path}")
+        return self.http_request('GET', f"/debug/fs{path}")
 
     # @dataclass
     # class Cap:
