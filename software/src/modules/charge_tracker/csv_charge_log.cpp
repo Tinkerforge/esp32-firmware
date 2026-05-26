@@ -361,8 +361,11 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     };
 
 #if OPTIONS_PRODUCT_ID_IS_WARP()
+    uint32_t first_record;
+    uint32_t last_record;
+    charge_tracker.getChargerChargeRecords(nullptr, &first_record, &last_record);
     std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
-    readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
+    readChargeRecords(first_record, last_record,
         [&params, &process_charge](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 

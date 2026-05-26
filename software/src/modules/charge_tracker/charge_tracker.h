@@ -93,6 +93,8 @@ public:
 
     ExportCharge *getFilteredCharges(const GenerationParams &params, size_t *out_count);
 
+    bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
+
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void start_charge_log_upload_for_user(const uint32_t cookie, const FileType file_type, std::unique_ptr<GenerationParams> params, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid);
 
@@ -137,7 +139,6 @@ private:
     bool repair_last(float, const char *);
     void repair_charges();
     std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
-    bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
     Config last_charges_prototype;
     Config current_charge_prototype;

@@ -2647,8 +2647,8 @@ int ChargeTracker::generate_pdf(
     int last_charge = -1;
     std::lock_guard<std::mutex> lock{records_mutex};
 
-    int first_charge_record = 0;
-    int last_charge_record = 0;
+    uint32_t first_charge_record = 0;
+    uint32_t last_charge_record = 0;
 
     if (getChargerChargeRecords(nullptr, &first_charge_record, &last_charge_record)) {
         Charge c;
