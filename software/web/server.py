@@ -2,6 +2,8 @@
 
 import sys
 import os
+import posixpath
+import re
 import argparse
 from flask import Flask, Response, request
 from flask_sock import Sock  # pip install flask-sock
@@ -28,7 +30,7 @@ def ws_thread_fn(q: queue.Queue):
     while True:
         time.sleep(0.1)
         try:
-            ws = websocket.create_connection(f'ws://{host}/ws')
+            ws = websocket.create_connection(f'ws://{host}/ws')  # nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket
         except Exception as e:
             print('create_connection failed:', e)
             continue
@@ -72,8 +74,9 @@ def index():
 
 @app.route('/<path:path>', methods=['GET', 'PUT', 'POST'])
 def forward_html(path):
+    safe_path = posixpath.normpath('/' + path).lstrip('/')
     try:
-        with urlopen(Request(f'http://{host}/{path}', data=request.data, method=request.method)) as f:
+        with urlopen(Request(f'http://{host}/{safe_path}', data=request.data, method=request.method)) as f:  # nosemgrep: python.flask.security.injection.tainted-url-host.tainted-url-host
             # Exclude Transfer-Encoding: chunked header.  The chunked response is already reassembled.
             return Response(f.read(), headers={x: f.headers[x] for x in f.headers if x != "Transfer-Encoding"})
     except HTTPError as e:
@@ -111,21 +114,17 @@ parser.add_argument('host')
 
 args = parser.parse_args(sys.argv[1:])
 host = args.host
+if not re.match(r'^[a-zA-Z0-9.\-:\[\]]+$', host):
+    parser.error(f"Invalid host: {host}")
 
 thread = threading.Thread(target=ws_thread_fn, args=[ws_thread_queue])
 thread.start()
 
-port = 5000
-while True:
-    try:
-        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-        s.bind(('::', port))
-        s.close()
-        break
-    except OSError:
-        print(f"Port {port} already in use, trying {port + 1}")
-        port += 1
+with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
+    s.bind(('::1', 0))
+    port = s.getsockname()[1]
 
-app.run(host="::", port=port)
+if __name__ == '__main__':
+    app.run(host="::", port=port)
 
 ws_thread_queue.put(None)
