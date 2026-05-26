@@ -762,7 +762,11 @@ void ShipConnection::state_sme_hello_ready_init()
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     hello_send_sme_update();
-    set_state(ShipConnectionState::SmeHelloReadyListen);
+    if (peer_hello_phase.phase == ConnectionHelloPhase::Type::Ready) {
+        set_and_schedule_state(ShipConnectionState::SmeHelloReadyListen); // If we already know the peer is ready (likely because we were in pending state) jump straight to listen state
+    } else {
+        set_state(ShipConnectionState::SmeHelloReadyListen);
+    }
 }
 
 void ShipConnection::state_sme_hello_ready_listen()
@@ -784,11 +788,7 @@ void ShipConnection::state_sme_hello_ready_listen()
             set_and_schedule_state(ShipConnectionState::SmeHelloOk);
             break;
         }
-        case ConnectionHelloPhase::Type::Aborted: {
-            // Peer wants to abort so we abort too
-            set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
-            break;
-        }
+        case ConnectionHelloPhase::Type::Aborted:
         case ConnectionHelloPhase::Type::Unknown: {
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
