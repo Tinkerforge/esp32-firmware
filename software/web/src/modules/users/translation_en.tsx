@@ -54,7 +54,7 @@ let x = {
                 </>,
             "evse_user_enable_invalid":
                 "At least one user is required for the charge release.",
-            "evse_user_enable_central_management_warning": /*FFN*/(manager_ip: string) => <>Disabled because <a href={`http://${manager_ip}/#charge_manager_chargers`}>central authorization</a> is enabled in the charge manager.</>/*NF*/,
+            "evse_user_enable_central_management_warning": /*FFN*/(manager_ip: string) => <>{__("This_device")} is managed by {manager_ip}. The (local) charge release can be used in parallel, but users and NFC tags have to be configured here as well as on the charge manager.</>/*NF*/,
 
             "nfc_tags": "NFC Tags",
             "nfc_tag_id": "Tag ID",

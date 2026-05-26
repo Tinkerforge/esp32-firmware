@@ -38,8 +38,8 @@ let x = {
             "enable_watchdog": "Watchdog enabled",
             "enable_watchdog_muted": "only enable if using the API (not required for normal charge manager use!)",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
-            "enable_central_management": "Central authorization",
-            "enable_central_management_desc": "Enables central authorization handling by the charge manager. When enabled, managed chargers must be authorized by the charge manager before charging can begin.",
+            "enable_central_management": "Central management",
+            "enable_central_management_desc": "Track charges of controlled chargers on this device (the charge manager): Users must authorize (for example via NFC tag) to charge. Users and NFC tags must be configured on this device.",
 
             "verbose": "Current distribution log enabled",
             "verbose_desc": "Creates log entries whenever current is redistributed",
