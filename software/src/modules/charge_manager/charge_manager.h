@@ -134,6 +134,8 @@ private:
 
     bool send_client_packet(uint8_t i);
 
+    void run_allocator();
+
     /*
         Charge modes are confusing.
 
@@ -228,8 +230,6 @@ private:
     ChargerDecision *charger_decisions = nullptr;
 
     std::array<uint8_t, 2> supported_charge_mode_bitmask;
-
-    micros_t next_allocation = 0_us;
 
     uint64_t allocate_task_id = 0;
     uint64_t send_client_task_id = 0;

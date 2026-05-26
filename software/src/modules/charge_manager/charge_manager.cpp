@@ -967,11 +967,6 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    auto get_charger_name_fn = [this](uint8_t idx) {return this->get_charger_name(idx);};
-    auto notify_charger_unresponsive_fn = [](uint8_t charger_index) {return cm_networking.notify_charger_unresponsive(charger_index);};
-
-    this->next_allocation = now_us() + 1_s;
-
     task_scheduler.scheduleUncancelable([this](){
         const micros_t unreachable_threshold = now_us() - CHARGER_UNREACHABLE_TIMEOUT;
         this->allocated_currents = Cost();
@@ -992,166 +987,36 @@ void ChargeManager::setup()
         }
     }, 1_s);
 
-    task_scheduler.scheduleUncancelable([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
-            if (!deadline_elapsed(this->next_allocation))
-                return;
-
-#if MODULE_P14A_ENWG_AVAILABLE()
-            auto p14_limit_w = p14a_enwg.get_managed_chargers_limit();
-            // Copy old limits, we need those to be able to restore them below.
-            // If neither PV excess charging not dynamic load management are active,
-            // the limits are never written after ::setup().
-            auto limits_before = this->limits;
-            if (p14_limit_w != 0) {
-                // It is not the most effective way to evenly distribute this limit to
-                // all three phases. We could allow more charging if we would track
-                // this as a separate limit, but it is unlikely that the p14a_enwg
-                // module will ever block, so this is good enough(tm) for now.
-                auto p14_limit_mA = (int)(((double)p14_limit_w * 1000.0) / 3 / 230);
-                for (size_t p = (size_t)GridPhase::L1; p <= (size_t)GridPhase::L3; ++p) {
-                    this->limits.raw[p] = std::min(this->limits.raw[p], p14_limit_mA);
-                    this->limits.min[p] = std::min(this->limits.min[p], p14_limit_mA);
-                    this->limits.spread[p] = std::min(this->limits.spread[p], p14_limit_mA);
-                }
-            }
-#endif
-
-            if (!all_chargers_seen) {
-                // This branch does not update this->next_allocation,
-                // because the task itself runs once per second.
-
-                // Even if all_chargers_seen is now true, don't run the allocation algorithm yet.
-                // This gives the power manager one second to re-calculate the limits with all now known
-                // active chargers
-                all_chargers_seen = seen_all_chargers();
-
-                this->limits_post_allocation = this->limits;
-
-                for (size_t i = 0; i < charger_count; ++i) {
-                    if (this->charger_state[i].last_update == 0_us)
-                        cm_networking.notify_charger_unresponsive(i);
-
-                    auto allocd_current = this->charger_state[i].allowed_current;
-                    auto allocd_phases = this->charger_state[i].phases;
-
-                    this->charger_allocation_state[i].allocated_current = allocd_current;
-                    this->charger_allocation_state[i].allocated_phases = allocd_phases;
-
-                    auto cost = get_cost(allocd_current, allocd_phases, this->charger_state[i].phase_rotation, 0, 0);
-
-                    apply_cost(cost, &this->limits_post_allocation);
-                }
-                return;
-            }
-
-            this->next_allocation = now_us() + ca_config->allocation_interval;
+    (void)task_scheduler.scheduleWithFixedDelay([this](){
+            all_chargers_seen = seen_all_chargers();
 
             this->limits_post_allocation = this->limits;
 
-            for(size_t i = 0; i < charger_count; ++i) {
-                update_charger_state_from_mode(&charger_state[i], i);
+            for (size_t i = 0; i < charger_count; ++i) {
+                if (this->charger_state[i].last_update == 0_us)
+                    cm_networking.notify_charger_unresponsive(i);
+
+                auto allocd_current = this->charger_state[i].allowed_current;
+                auto allocd_phases = this->charger_state[i].phases;
+
+                this->charger_allocation_state[i].allocated_current = allocd_current;
+                this->charger_allocation_state[i].allocated_phases = allocd_phases;
+
+                auto cost = get_cost(allocd_current, allocd_phases, this->charger_state[i].phase_rotation, 0, 0);
+
+                apply_cost(cost, &this->limits_post_allocation);
             }
 
-            int result = allocate_current(
-                this->ca_config,
-                &this->limits_post_allocation,
-                this->control_pilot_disconnect.get("disconnect")->asBool(),
-                this->charger_state,
-                this->hosts.get(),
-                get_charger_name_fn,
-                notify_charger_unresponsive_fn,
+            if (all_chargers_seen) {
+                task_scheduler.cancel(task_scheduler.currentTaskId());
+                // Delay first allocation algorithm run by one second:
+                // This gives the power manager one second to re-calculate
+                // the limits with all now known active chargers.
 
-                this->ca_state,
-                this->charger_allocation_state,
-                this->charger_decisions
-            );
-
-            for (size_t i = 0; i < 4; i++) {
-                this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
-                this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
-                this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
-                this->state.get("alloc")->get(i)->updateInt(this->limits.raw[i] - limits_post_allocation.raw[i]);
-                this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
-                this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
+                this->allocate_task_id = task_scheduler.scheduleUncancelable([this](){
+                    this->run_allocator();
+                }, 1_s, ca_config->allocation_interval.to<millis_t>());
             }
-            this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
-            this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
-
-            // Derive blocking reason for each charger to send to managed chargers
-            for (int i = 0; i < this->charger_count; ++i) {
-                auto &charger_alloc = this->charger_allocation_state[i];
-                charger_alloc.blocking_reason = CMBlockingReason::None;
-                if (charger_alloc.allocated_phases != 0) {
-                    continue;
-                }
-
-                // Charger is blocked (0 phases allocated). Determine why.
-                if (charger_alloc.error == CASError::ChargerUnreachable
-                 || charger_alloc.error == CASError::EVSEUnreachable
-                 || charger_alloc.error == CASError::EVSENonreactive) {
-                    charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
-                    continue;
-                }
-
-                if (this->charger_state[i].off) {
-                    charger_alloc.blocking_reason = CMBlockingReason::ChargeModeOff;
-                    continue;
-                }
-
-                // Map from the ZeroPhaseDecision
-                switch(this->charger_decisions[i].zero.tag) {
-                    case ZeroPhaseDecisionTag::YesWaitingForRotation:
-                        charger_alloc.blocking_reason = CMBlockingReason::WaitingForRotation;
-                        continue;
-                    case ZeroPhaseDecisionTag::YesRotatedForB1:
-                    case ZeroPhaseDecisionTag::YesRotatedForHigherPrio:
-                        charger_alloc.blocking_reason = CMBlockingReason::RotatedAway;
-                        continue;
-                    case ZeroPhaseDecisionTag::YesPhaseOverload:
-                        charger_alloc.blocking_reason = CMBlockingReason::PhaseOverload;
-                        continue;
-                    case ZeroPhaseDecisionTag::YesPVExcessOverload:
-                        charger_alloc.blocking_reason = CMBlockingReason::PVExcessInsufficient;
-                        continue;
-                    case ZeroPhaseDecisionTag::None:
-                    case ZeroPhaseDecisionTag::YesNotActive:
-                    case ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil:
-                    case ZeroPhaseDecisionTag::NoHysteresisBlocksUntil:
-                        charger_alloc.blocking_reason = CMBlockingReason::None;
-                }
-
-                switch(charger_alloc.state) {
-                    case CASState::NoVehicle:
-                    case CASState::UserBlocked:
-                    case CASState::ManagerBlocked:
-                    case CASState::CarBlocked:
-                    case CASState::Charged:
-                    case CASState::Unauthorized:
-                        charger_alloc.blocking_reason = CMBlockingReason::Unauthorized;
-                        continue;
-                    case CASState::Error:
-                        charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
-                        continue;
-                    case CASState::Charging:
-                        continue;
-                        // 0 phases while actively charging is an inconsistent state; fall through to log.
-                }
-            }
-
-            fast_charger_in_c = false;
-            for (int i = 0; i < this->charger_count; ++i) {
-                update_charger_state_config(i);
-                this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
-                this->charger_decisions[i].one.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d1"));
-                this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
-                this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
-            }
-
-            this->state.get("state")->updateUint(result);
-
-#if MODULE_P14A_ENWG_AVAILABLE()
-            this->limits = limits_before;
-#endif
         }, 1_s);
 
     if (config.get("verbose")->asBool()) {
@@ -1161,6 +1026,136 @@ void ChargeManager::setup()
         ca_config->distribution_log = nullptr;
         ca_config->distribution_log_len = 0;
     }
+}
+
+void ChargeManager::run_allocator()
+{
+#if MODULE_P14A_ENWG_AVAILABLE()
+    auto p14_limit_w = p14a_enwg.get_managed_chargers_limit();
+    // Copy old limits, we need those to be able to restore them below.
+    // If neither PV excess charging not dynamic load management are active,
+    // the limits are never written after ::setup().
+    auto limits_before = this->limits;
+    if (p14_limit_w != 0) {
+        // It is not the most effective way to evenly distribute this limit to
+        // all three phases. We could allow more charging if we would track
+        // this as a separate limit, but it is unlikely that the p14a_enwg
+        // module will ever block, so this is good enough(tm) for now.
+        auto p14_limit_mA = (int)(((double)p14_limit_w * 1000.0) / 3 / 230);
+        for (size_t p = (size_t)GridPhase::L1; p <= (size_t)GridPhase::L3; ++p) {
+            this->limits.raw[p] = std::min(this->limits.raw[p], p14_limit_mA);
+            this->limits.min[p] = std::min(this->limits.min[p], p14_limit_mA);
+            this->limits.spread[p] = std::min(this->limits.spread[p], p14_limit_mA);
+        }
+    }
+#endif
+
+    this->limits_post_allocation = this->limits;
+
+    for(size_t i = 0; i < charger_count; ++i) {
+        update_charger_state_from_mode(&charger_state[i], i);
+    }
+
+    int result = allocate_current(
+        this->ca_config,
+        &this->limits_post_allocation,
+        this->control_pilot_disconnect.get("disconnect")->asBool(),
+        this->charger_state,
+        this->hosts.get(),
+        [this](uint8_t idx) {return this->get_charger_name(idx);},
+        [](uint8_t charger_index) {return cm_networking.notify_charger_unresponsive(charger_index);},
+
+        this->ca_state,
+        this->charger_allocation_state,
+        this->charger_decisions
+    );
+
+    for (size_t i = 0; i < 4; i++) {
+        this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
+        this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
+        this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
+        this->state.get("alloc")->get(i)->updateInt(this->limits.raw[i] - limits_post_allocation.raw[i]);
+        this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
+        this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
+    }
+    this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
+    this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
+
+    // Derive blocking reason for each charger to send to managed chargers
+    for (int i = 0; i < this->charger_count; ++i) {
+        auto &charger_alloc = this->charger_allocation_state[i];
+        charger_alloc.blocking_reason = CMBlockingReason::None;
+        if (charger_alloc.allocated_phases != 0) {
+            continue;
+        }
+
+        // Charger is blocked (0 phases allocated). Determine why.
+        if (charger_alloc.error == CASError::ChargerUnreachable
+        || charger_alloc.error == CASError::EVSEUnreachable
+        || charger_alloc.error == CASError::EVSENonreactive) {
+            charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
+            continue;
+        }
+
+        if (this->charger_state[i].off) {
+            charger_alloc.blocking_reason = CMBlockingReason::ChargeModeOff;
+            continue;
+        }
+
+        // Map from the ZeroPhaseDecision
+        switch(this->charger_decisions[i].zero.tag) {
+            case ZeroPhaseDecisionTag::YesWaitingForRotation:
+                charger_alloc.blocking_reason = CMBlockingReason::WaitingForRotation;
+                continue;
+            case ZeroPhaseDecisionTag::YesRotatedForB1:
+            case ZeroPhaseDecisionTag::YesRotatedForHigherPrio:
+                charger_alloc.blocking_reason = CMBlockingReason::RotatedAway;
+                continue;
+            case ZeroPhaseDecisionTag::YesPhaseOverload:
+                charger_alloc.blocking_reason = CMBlockingReason::PhaseOverload;
+                continue;
+            case ZeroPhaseDecisionTag::YesPVExcessOverload:
+                charger_alloc.blocking_reason = CMBlockingReason::PVExcessInsufficient;
+                continue;
+            case ZeroPhaseDecisionTag::None:
+            case ZeroPhaseDecisionTag::YesNotActive:
+            case ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil:
+            case ZeroPhaseDecisionTag::NoHysteresisBlocksUntil:
+                charger_alloc.blocking_reason = CMBlockingReason::None;
+        }
+
+        switch(charger_alloc.state) {
+            case CASState::NoVehicle:
+            case CASState::UserBlocked:
+            case CASState::ManagerBlocked:
+            case CASState::CarBlocked:
+            case CASState::Charged:
+            case CASState::Unauthorized:
+                charger_alloc.blocking_reason = CMBlockingReason::Unauthorized;
+                continue;
+            case CASState::Error:
+                charger_alloc.blocking_reason = CMBlockingReason::OtherChargerError;
+                continue;
+            case CASState::Charging:
+                continue;
+                // 0 phases while actively charging is an inconsistent state; fall through to log.
+        }
+    }
+
+    fast_charger_in_c = false;
+    for (int i = 0; i < this->charger_count; ++i) {
+        update_charger_state_config(i);
+        this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
+        this->charger_decisions[i].one.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d1"));
+        this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
+        this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
+    }
+
+    this->state.get("state")->updateUint(result);
+
+#if MODULE_P14A_ENWG_AVAILABLE()
+    this->limits = limits_before;
+#endif
 }
 
 void ChargeManager::check_watchdog()
