@@ -37,7 +37,7 @@ AsyncHTTPSClient::AsyncHTTPSClient(bool use_cookies) : use_cookies{use_cookies}
     this->add_default_headers();
 }
 
-AsyncHTTPSClient::~AsyncHTTPSClient()  {
+AsyncHTTPSClient::~AsyncHTTPSClient() {
     if (task_id != 0) {
         task_scheduler.cancel(task_id);
     }

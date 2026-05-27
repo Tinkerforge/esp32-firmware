@@ -59,12 +59,12 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         const char *shared;
 
         switch (share_level) {
-        case  TFGenericTCPClientPoolShareLevel::Undefined:
-        case  TFGenericTCPClientPoolShareLevel::Primary:
+        case TFGenericTCPClientPoolShareLevel::Undefined:
+        case TFGenericTCPClientPoolShareLevel::Primary:
             shared = "Connected to";
             break;
 
-        case  TFGenericTCPClientPoolShareLevel::Secondary:
+        case TFGenericTCPClientPoolShareLevel::Secondary:
             shared = "Shared existing connection to";
             break;
 
@@ -146,12 +146,12 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
     const char *shared;
 
     switch (share_level) {
-    case  TFGenericTCPClientPoolShareLevel::Undefined:
-    case  TFGenericTCPClientPoolShareLevel::Primary:
+    case TFGenericTCPClientPoolShareLevel::Undefined:
+    case TFGenericTCPClientPoolShareLevel::Primary:
         shared = "";
         break;
 
-    case  TFGenericTCPClientPoolShareLevel::Secondary:
+    case TFGenericTCPClientPoolShareLevel::Secondary:
         shared = language == Language::English ? " (shared connection)" : " (geteilte Verbindung)";
         break;
 

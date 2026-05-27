@@ -998,7 +998,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
                     val.u = 5;
                 else if (iec_state == 4)
                     // An error has occurred.
-                    val.u =  4;
+                    val.u = 4;
                 else
                     // 0 is start-up, 1 to 3 are IEC states A to C
                     val.u = iec_state + 1;
@@ -1047,7 +1047,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
 
                 if (auth_method == 2 || auth_method == 3) {
                     const auto &tag_id = cache->current_charge->get("authorization_info")->get("tag_id")->asString();
-                    val.u  = export_tag_id_as_uint32(tag_id);
+                    val.u = export_tag_id_as_uint32(tag_id);
                 }
             } break;
         case 1502: REQUIRE(meter); {

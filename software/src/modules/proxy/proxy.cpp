@@ -91,7 +91,8 @@ void Proxy::pre_setup()
          {"authentication_secret", Config::Str("", 0, 64)},
          {"listen_address", Config::Str("0.0.0.0", 7, 15)},
          {"listen_port", Config::Uint16(4223)}
-    }),  [this](Config &cfg, ConfigSource source) -> String {
+    }),
+    [this](Config &cfg, ConfigSource source) -> String {
         IPAddress listen_address;
         if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr()))
             return "Failed to parse \"listen_address\": Expected format is dotted decimal, i.e. 10.0.0.1";
