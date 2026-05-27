@@ -92,8 +92,8 @@ public:
     void set_paused(bool paused);
 
 private:
-    void connect_callback(TFGenericTCPClientConnectResult result) override;
-    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
+    void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
     void update_active_mode();
 
     uint32_t slot;

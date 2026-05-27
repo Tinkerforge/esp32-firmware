@@ -142,11 +142,11 @@ void MeterSunSpec::pre_reboot()
     stop_connection();
 }
 
-void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result)
+void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
-    GenericModbusTCPClient::connect_callback(result);
+    GenericModbusTCPClient::connect_callback(result, share_level);
 
-    trace("m%lu c%d", slot, static_cast<int>(result));
+    trace("m%lu c%d sl%d", slot, static_cast<int>(result), static_cast<int>(share_level));
 
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -157,9 +157,9 @@ void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result)
     scan_start();
 }
 
-void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
+void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
-    trace("m%lu d%d", slot, static_cast<int>(reason));
+    trace("m%lu d%d sl%d", slot, static_cast<int>(reason), static_cast<int>(share_level));
 
     read_allowed = false;
 

@@ -271,7 +271,7 @@ void MeterRCTPower::pre_reboot()
     stop_connection();
 }
 
-void MeterRCTPower::connect_callback(TFGenericTCPClientConnectResult result)
+void MeterRCTPower::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -281,7 +281,7 @@ void MeterRCTPower::connect_callback(TFGenericTCPClientConnectResult result)
     read_next();
 }
 
-void MeterRCTPower::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
+void MeterRCTPower::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
     read_allowed = false;
 }

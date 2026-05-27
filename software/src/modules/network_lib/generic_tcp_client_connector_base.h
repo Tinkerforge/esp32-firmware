@@ -47,8 +47,8 @@ protected:
     void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level);
     void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level);
 
-    virtual void connect_callback(TFGenericTCPClientConnectResult result) = 0;
-    virtual void disconnect_callback(TFGenericTCPClientDisconnectReason reason) = 0;
+    virtual void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) = 0;
+    virtual void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) = 0;
     virtual void force_reconnect() = 0;
 
     const char *event_log_prefix_override;

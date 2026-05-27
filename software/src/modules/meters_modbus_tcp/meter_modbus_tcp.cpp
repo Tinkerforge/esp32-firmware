@@ -184,11 +184,11 @@ void MeterModbusTCP::pre_reboot()
     stop_connection();
 }
 
-void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
+void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
-    GenericModbusTCPClient::connect_callback(result);
+    GenericModbusTCPClient::connect_callback(result, share_level);
 
-    trace("m%lu t%u c%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(result));
+    trace("m%lu t%u c%d sl%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(result), static_cast<int>(share_level));
 
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -203,9 +203,9 @@ void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
     read_next();
 }
 
-void MeterModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
+void MeterModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
-    trace("m%lu t%u d%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(reason));
+    trace("m%lu t%u d%d sl%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(reason), static_cast<int>(share_level));
 
     read_allowed = false;
 }

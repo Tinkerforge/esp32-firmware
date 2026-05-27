@@ -117,7 +117,7 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
     }
 
     if (report_result) {
-        connect_callback(result);
+        connect_callback(result, share_level);
     }
 
     last_connect_result = result;
@@ -131,7 +131,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
     format_disconnect_reason(reason, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
     logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
 
-    disconnect_callback(reason);
+    disconnect_callback(reason, share_level);
 
     if (keep_connected) {
         task_scheduler.scheduleOnce([this]() {

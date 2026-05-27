@@ -32,7 +32,7 @@
 
 #define SUCCESSFUL_READ_TIMEOUT 1_min
 
-void GenericModbusTCPClient::connect_callback(TFGenericTCPClientConnectResult result)
+void GenericModbusTCPClient::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;

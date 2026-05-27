@@ -50,8 +50,8 @@ public:
     //bool supports_currents() override       {return true;}
 
 private:
-    void connect_callback(TFGenericTCPClientConnectResult result) override;
-    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
+    void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
     void read_next();
 
     uint32_t slot;

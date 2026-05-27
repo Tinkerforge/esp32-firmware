@@ -606,9 +606,9 @@ void BatteryModbusTCP::set_paused(bool paused_)
     update_active_mode();
 }
 
-void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
+void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
-    trace("b%lu t0 cc%d", slot, static_cast<int>(result));
+    trace("b%lu t0 cc%d sl%d", slot, static_cast<int>(result), static_cast<int>(share_level));
 
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -617,9 +617,9 @@ void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
     update_active_mode();
 }
 
-void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
+void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
-    trace("b%lu t0 cd%d", slot, static_cast<int>(reason));
+    trace("b%lu t0 cd%d sl%d", slot, static_cast<int>(reason), static_cast<int>(share_level));
 
     update_active_mode();
 }

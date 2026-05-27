@@ -281,7 +281,7 @@ void BatteriesModbusTCP::loop()
 
         modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port,
         [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            trace("b%lu t1 cc%d", test->slot, static_cast<int>(result));
+            trace("b%lu t1 cc%d sl%d", test->slot, static_cast<int>(result), static_cast<int>(share_level));
 
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
@@ -297,7 +297,7 @@ void BatteriesModbusTCP::loop()
             test->state = TestState::CreateTableWriter;
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            trace("b%lu t1 cd%d", test->slot, static_cast<int>(reason));
+            trace("b%lu t1 cd%d sl%d", test->slot, static_cast<int>(reason), static_cast<int>(share_level));
 
             char buf[256] = "";
 

@@ -59,8 +59,8 @@ private:
         ReadModel,
     };
 
-    void connect_callback(TFGenericTCPClientConnectResult result) override;
-    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
+    void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
 
     bool alloc_read_buffer(size_t model_regcount);
     void trace_response();
