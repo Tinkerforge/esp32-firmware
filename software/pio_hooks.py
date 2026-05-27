@@ -896,11 +896,7 @@ def check_generated_files():
         if actual_digest != expected_digest:
             print(f'Warning: Previously generated file {generated_file} was modified', file=sys.stderr)
 
-def main():
-    if env.IsCleanTarget():
-        remove_all_generated_files()
-        return
-
+def handle_build_cache():
     workspace_dir = env.subst('$PROJECT_WORKSPACE_DIR')
     build_cache_dir = os.path.join(workspace_dir, 'build_cache')
     build_cache_limit = env.GetProjectOption("custom_build_cache_limit", None)  # < 0: disable, = 0: unlimited, > 0: drop when over this limit in byte, default: 1 GiB
@@ -943,6 +939,13 @@ def main():
     if build_cache_limit >= 0:
         os.makedirs(build_cache_dir, exist_ok=True)
         env.CacheDir(build_cache_dir)
+
+def main():
+    if env.IsCleanTarget():
+        remove_all_generated_files()
+        return
+
+    handle_build_cache()
 
     # Enable this for class_size script
     #env.Append(CXXFLAGS=["-fdump-lang-class"])
