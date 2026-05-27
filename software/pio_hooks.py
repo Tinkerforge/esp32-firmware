@@ -945,6 +945,8 @@ def main():
         remove_all_generated_files()
         return
 
+    build = len(COMMAND_LINE_TARGETS) == 0 or any(x in COMMAND_LINE_TARGETS for x in ['upload', 'erase_upload', 'coredump', 'metrics', 'size'])
+
     handle_build_cache()
 
     # Enable this for class_size script
@@ -1060,25 +1062,26 @@ def main():
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
-    try:
-        os.remove(f'build/{product_id}_firmware_latest.elf')
-    except FileNotFoundError:
-        pass
+    if build:
+        try:
+            os.remove(f'build/{product_id}_firmware_latest.elf')
+        except FileNotFoundError:
+            pass
 
-    try:
-        os.remove(f'build/{product_id}_firmware_latest_merged.bin')
-    except FileNotFoundError:
-        pass
+        try:
+            os.remove(f'build/{product_id}_firmware_latest_merged.bin')
+        except FileNotFoundError:
+            pass
 
-    try:
-        os.remove('build/firmware_latest.elf')
-    except FileNotFoundError:
-        pass
+        try:
+            os.remove('build/firmware_latest.elf')
+        except FileNotFoundError:
+            pass
 
-    try:
-        os.remove('build/firmware_latest_merged.bin')
-    except FileNotFoundError:
-        pass
+        try:
+            os.remove('build/firmware_latest_merged.bin')
+        except FileNotFoundError:
+            pass
 
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
     is_dirty = len(subprocess.run(["git", "diff", "HEAD"], check=True, capture_output=True).stdout) > 0
@@ -2050,6 +2053,9 @@ def main():
                 spec.generate(backend_module)
 
     remove_stale_generated_files()
+
+    if not build:
+        return
 
     # Preprocessing web interface
     util.log('Preprocessing web interface')
