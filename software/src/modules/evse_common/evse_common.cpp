@@ -1162,11 +1162,17 @@ uint32_t EvseCommon::get_evse_version()
 }
 
 void EvseCommon::notify_new_auth() {
+    if (notify_new_auth_task_in_flight)
+        return;
+
     auto state = this->state.get("iec61851_state")->asUint8();
     if (state != 0 && state != 1)
         return;
 
+    notify_new_auth_task_in_flight = true;
+
     // Immediately send the next client update to reduce NFC check latency.
     // If a car is already connected, also request reallocation.
-    send_cm_client_update(true, state == 1);
+    // Decouple via task scheduler to catch all new auths.
+    task_scheduler.scheduleOnce([this, state](){send_cm_client_update(true, state == 1); notify_new_auth_task_in_flight = false;});
 }

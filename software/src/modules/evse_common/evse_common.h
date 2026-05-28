@@ -259,6 +259,7 @@ private:
 
     bool use_imexsum = false;
     bool central_user_management_enabled = false;
+    bool notify_new_auth_task_in_flight = false;
 
 #if MODULE_AUTOMATION_AVAILABLE()
     uint64_t wd_trigger_task_id = 0;
