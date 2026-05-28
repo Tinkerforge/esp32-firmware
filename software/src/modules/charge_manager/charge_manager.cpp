@@ -522,18 +522,25 @@ static void update_authentication(
     if (v5 == nullptr)
         return;
 
-    const cm_auth_info *recent = &v5->auth_info[0];
+    micros_t latest_auth_fail = 0_us;
+    for (int i = ARRAY_SIZE(v5->auth_info) - 1; i >= 0; --i) {
+        const cm_auth_info &info = v5->auth_info[i];
+        if (info.last_seen_s != 0 && info.last_seen_s < 2) {
+            int16_t tag_auth = charge_authorization.find_user(info);
+            if (tag_auth == -1)
+                tag_auth = UNKNOWN_NFC_TAG;
 
-    if (recent->last_seen_s != 0 && recent->last_seen_s < 2) {
-        int16_t tag_auth = charge_authorization.find_user(*recent);
-        if (tag_auth == -1)
-            tag_auth = UNKNOWN_NFC_TAG;
-
-        if (tag_auth >= AUTHD_ANONYMOUSLY && on_auth_success((uint8_t) tag_auth, client_id, charger_state)) {
-            target.last_auth_success_timestamp = now_us() - seconds_t{recent->last_seen_s};
-        } else {
-            target.last_auth_fail_timestamp = now_us() - seconds_t{recent->last_seen_s};
+            if (tag_auth >= AUTHD_ANONYMOUSLY && on_auth_success((uint8_t) tag_auth, client_id, charger_state)) {
+                target.last_auth_success_timestamp = now_us() - seconds_t{info.last_seen_s};
+                break; // A successful auth wins immediately.
+            } else {
+                latest_auth_fail = now_us() - seconds_t{info.last_seen_s};
+            }
         }
+    }
+
+    if (latest_auth_fail != 0_us) {
+        target.last_auth_fail_timestamp = latest_auth_fail;
     }
 }
 
