@@ -1,12 +1,60 @@
 from enum import Enum
 from dataclasses import dataclass
+import csv
 import json
 import os
+import re
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
 
 from software import util
+
+
+# Meter value IDs to expose via MQTT auto-discovery (per meter slot).
+# Add IDs from meters/meter_value_id.csv here to make them discoverable.
+# Do not overdo it as this can drastically increase the required memory and flash size (number of meter value ids * meters_max_slots)
+METER_VALUE_IDS = [
+    1,
+    2,
+    3,
+    17,
+    21,
+    39,
+    48,
+    57,
+    353,
+    354,
+    355,
+    74,
+    356,
+    209,
+    211,
+    122,
+    130,
+    138,
+    82,
+    90,
+    98,
+    365,
+    366,
+    367,
+    25,
+    7,
+    29,
+    33,
+    154,
+    114,
+    368,
+    210,
+    212,
+    213,
+    214,
+    364,
+    14,
+    18,
+    22
+]
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
 charge_mode_names_de = [
@@ -37,6 +85,176 @@ def enum_value_template(json_field, names):
         "{{% set m = {{ {mapping} }} %}}"
         "{{{{ m.get(value_json.{field}, 'Unknown') }}}}"
     ).format(mapping=mapping, field=json_field)
+
+
+def _sanitize_slug(s: str) -> str:
+    """Convert a string into a ascii alphanumeric string for e.g. IDs"""
+    s = s.lower().strip()
+    s = s.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+    s = s.replace("σ", "sum").replace("⌀", "avg")
+    s = re.sub(r'[^a-z0-9]+', '_', s)
+    return s.strip('_')
+
+
+def load_meter_value_entries(wanted_ids: list[int]) -> list:
+    """Read meter_value_id.csv and return entries only for the given IDs.
+
+    Returns a list of tuples:
+        (object_id_suffix, name_de, name_en, meter_value_id, rounding, unit,
+         device_class, state_class)
+
+    The HA device_class is derived from the CSV unit and measurand so that it
+    matches https://www.home-assistant.io/integrations/sensor#device-class.
+    The object_id_suffix is built from the CSV fields and the meter ID to guarantee uniqueness.
+    """
+    wanted = set(wanted_ids)
+    csv_path = os.path.join(
+        os.path.dirname(__file__), '..', 'meters', 'meter_value_id.csv'
+    )
+
+    # --- HA device-class mapping ------------------------------------------
+    # Map (unit, measurand-hint) -> HA device_class.
+    # HA only accepts specific unit strings per device_class; we must match.
+    UNIT_TO_DEVICE_CLASS = {
+        'V':     'voltage',
+        'A':     'current',
+        'W':     'power',
+        'var':   'reactive_power',
+        'VA':    'apparent_power',
+        'kWh':   'energy',
+        'kvarh': 'reactive_energy',  # HA accepts kvarh for reactive_energy
+        'Hz':    'frequency',
+        '°C':    'temperature',
+        's':     'duration',
+        'Ah':    None,      # no HA device class
+        'kVAh':  None,      # HA has no "apparent_energy" class
+        'rpm':   None,      # no HA device class
+    }
+
+    def get_device_class(unit: str, measurand: str) -> str | None:
+        """Return the HA device_class string or None."""
+        if unit == '%':
+            if measurand == 'State Of Charge':
+                return 'battery'
+            if measurand == 'Power Factor':
+                return 'power_factor'
+            # THD percentages have no HA device class
+            return None
+        if unit == '°':
+            # Phase angle - no HA device class
+            return None
+        return UNIT_TO_DEVICE_CLASS.get(unit)
+
+    # --- state_class mapping ----------------------------------------------
+    def get_state_class(measurand: str, kind: str, unit: str) -> str:
+        """Return the HA state_class string."""
+        # Energy values are totals (monotonically increasing or resettable)
+        if measurand == 'Energy' or unit in ('kWh', 'kvarh', 'kVAh'):
+            return 'total'
+        # Electric charge (Ah) is also a total
+        if unit == 'Ah':
+            return 'total'
+        # Run time is a total
+        if measurand == 'Run Time':
+            return 'total_increasing'
+        # Capacity is a measurement
+        if measurand == 'Capacity':
+            return 'measurement'
+        # Everything else (voltage, current, power, frequency, temp, etc.)
+        return 'measurement'
+
+    # --- Build object_id_suffix -------------------------------------------
+    def build_object_id(row: dict) -> str:
+        """Build a unique, short object_id_suffix from CSV fields.
+
+        Format: {measurand}[_{submeasurand}]_{phase}[_{direction}][_{kind}]
+        with appropriate shortening.
+        """
+        parts = []
+
+        measurand = row['measurand'].strip()
+        submeasurand = row['submeasurand'].strip()
+        phase = row['phase'].strip()
+        direction = row['direction'].strip()
+        kind = row['kind'].strip()
+
+        # Measurand
+        meas_slug = _sanitize_slug(measurand)
+        parts.append(meas_slug)
+
+        # Submeasurand (e.g. Active, Reactive, Apparent, PV1..PV9, PV Sum, etc.)
+        if submeasurand and not submeasurand.startswith('*'):
+            parts.append(_sanitize_slug(submeasurand))
+
+        # Phase
+        if phase:
+            parts.append(_sanitize_slug(phase))
+
+        # Direction
+        if direction and not direction.startswith('*'):
+            parts.append(_sanitize_slug(direction))
+
+        # Kind (Resettable, Virtual, etc.) - skip *-prefixed defaults
+        if kind and not kind.startswith('*'):
+            parts.append(_sanitize_slug(kind))
+
+        return '_'.join(parts)
+
+    # --- Build display names ----------------------------------------------
+    def build_name(row: dict, lang: str) -> str:
+        """Build a display name from display_name + display_name_muted columns."""
+        name_key = f'display_name_{lang}'
+        muted_key = f'display_name_{lang}_muted'
+        name = row[name_key].strip()
+        muted = row[muted_key].strip()
+        if muted:
+            return f"{name} ({muted})"
+        return name
+
+    # --- Read and parse CSV -----------------------------------------------
+    entries = []
+    seen_ids = set()
+
+    with open(csv_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            vid = int(row['id'].strip())
+            if vid not in wanted:
+                continue
+            unit = row['unit'].strip()
+            digits = int(row['digits'].strip())
+            measurand = row['measurand'].strip()
+            kind = row['kind'].strip()
+
+            obj_id = build_object_id(row)
+            # Guarantee uniqueness by appending the numeric id if collision
+            if obj_id in seen_ids:
+                obj_id = f"{obj_id}_{vid}"
+            seen_ids.add(obj_id)
+
+            name_en = build_name(row, 'en')
+            name_de = build_name(row, 'de')
+
+            device_class = get_device_class(unit, measurand)
+            state_class = get_state_class(measurand, kind, unit)
+
+            entries.append((
+                obj_id,     # object_id_suffix
+                name_de,    # name_de
+                name_en,    # name_en
+                vid,        # meter_value_id
+                digits,     # rounding
+                unit,       # unit_of_measurement
+                device_class,  # HA device_class (None if not applicable)
+                state_class,   # HA state_class
+            ))
+
+    found_ids = {e[3] for e in entries}
+    missing = wanted - found_ids
+    if missing:
+        raise ValueError(f"Meter value IDs not found in CSV: {sorted(missing)}")
+
+    return entries
 
 
 class DiscoveryType(Enum):
@@ -737,19 +955,23 @@ entities = [
         },
     ),
 ]
-# meter value definitions.
+
+
+# meter value definitions, derived from meters/meter_value_id.csv.
 # Each tuple: (object_id_suffix, name_de, name_en, meter_value_id, rounding, unit, device_class, state_class)
-meter_value_entries = [
-    ("powernow",  "Leistungsaufnahme",      "Power draw",                74,  0, "W",   "power",  "measurement"),
-    ("energyabs", "Stromverbrauch absolut",  "Energy consumption (abs)", 213,  3, "kWh", "energy", "total"),
-    ("energyrel", "Stromverbrauch relativ",  "Energy consumption (rel)", 214,  3, "kWh", "energy", "total"),
-]
+meter_value_entries = load_meter_value_entries(METER_VALUE_IDS)
 
 for meter_id in range(0, meters_max_slots):
     for suffix, name_de, name_en, value_id, rounding, unit, dev_class, state_class in meter_value_entries:
         # The value_template_fmt contains a %d placeholder that the C++ code replaces
         # with the resolved index from meters/N/value_ids at runtime.
         value_template_fmt = "{{value_json[%d] | round(" + str(rounding) + ")}}"
+        static_info = {
+            "unit_of_measurement": unit,
+            "state_class": state_class,
+        }
+        if dev_class is not None:
+            static_info["device_class"] = dev_class
         entities.append(
             Entity(
                 include_generic=True,
@@ -761,11 +983,7 @@ for meter_id in range(0, meters_max_slots):
                 name_en=f"{name_en} meter {meter_id}",
                 availability=[
                     AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-                static_info_generic={
-                    "unit_of_measurement": unit,
-                    "device_class": dev_class,
-                    "state_class": state_class,
-                },
+                static_info_generic=static_info,
                 static_info_homeassistant={},
                 check_type=CheckType.METER_VALUE,
                 api_check_path=f"meters/{meter_id}/config",
