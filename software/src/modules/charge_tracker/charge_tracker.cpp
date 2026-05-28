@@ -363,9 +363,9 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     if (directory != nullptr) {
         logger.printfln("Tracked start of charge for %s", directory);
         return true;
-    } else {
-        logger.printfln("Tracked start of charge for local charger.");
     }
+
+    logger.printfln("Tracked start of charge for local charger.");
 
     current_charge.get("user_id")->updateInt(user_id);
     current_charge.get("meter_start")->updateFloat(meter_start);
