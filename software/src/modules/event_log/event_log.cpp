@@ -541,7 +541,11 @@ size_t EventLog::printfln_plain(const char *fmt, ...)
 size_t EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     size_t written = 0;
+#if defined(TF_NETWORK_DEBUG_LOG) && TF_NETWORK_DEBUG_LOG > 1
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1024];
+#else
     char buf[EVENT_LOG_TIMESTAMP_LENGTH + 256];
+#endif
     size_t buf_len = ARRAY_SIZE(buf);
 
     written += vsnprintf_prefixed(buf, buf_len, prefix, prefix_len, fmt, args);
