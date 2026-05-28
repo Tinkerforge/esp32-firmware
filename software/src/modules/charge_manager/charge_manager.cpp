@@ -428,17 +428,11 @@ static void update_charge_tracking(
             if (rtc.clock_synced(&_timeval))
                 charge_start = rtc.timestamp_minutes();
 
-            const cm_auth_info *auth = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
-            CMAuthType auth_method = CMAuthType::None;
-            if (auth != nullptr) {
-                auth_method = auth->auth_method;
-            }
-
             charge_tracker.startCharge(charge_start,
                                        v1->energy_abs,
                                        target.authenticated_user_id,
                                        v1->evse_uptime,
-                                       auth_method,
+                                       CMAuthType::None,
                                        Config::ConfVariant(),
                                        local_charger ? nullptr : uid_str);
         }
