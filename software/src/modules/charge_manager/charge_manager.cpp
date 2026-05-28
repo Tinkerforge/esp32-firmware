@@ -26,12 +26,14 @@
 #include <time.h>
 #include <LittleFS.h>
 
+#include "TFTools/Micros.h"
 #include "bindings/base58.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "current_allocator.h"
 #include "build.h"
+#include "modules/cm_networking/generated/cm_auth_feedback.enum.h"
 #include "options.h"
 #include "tools.h"
 #include "tools/malloc.h"
@@ -398,7 +400,6 @@ static void update_charge_tracking(
                 // Car is still connected and we trust our charge tracking. Authenticate for tracked user.
                 target.authenticated_user_id = cs.user_id;
                 target.user_current = get_user_current(target.authenticated_user_id);
-                target.unknown_authorization_timestamp = 0_us;
             } else {
                 // Car not connected or we've already authenticated another user than was tracked the last time.
                 // Track stop (and potentially track start below for other user)
@@ -459,41 +460,27 @@ static void update_charge_tracking(
 #endif
 }
 
-// Check if the charger is authorized based on NFC tag information.
-// Returns the user_id of the authorized user (0 if not authorized)
-static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
-    if (v5 == nullptr) {
-        return NOT_AUTHORIZED;
+static bool on_auth_success(uint8_t new_user_id,
+    uint8_t client_id,
+    ChargerState *charger_state)
+{
+    auto &target = charger_state[client_id];
+    if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
+        // Authorize
+        target.authenticated_user_id = new_user_id;
+        target.user_current = get_user_current(target.authenticated_user_id);
+        return true;
     }
 
-#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
-    const cm_auth_info &info = v5->auth_info[0];
-    // If last_seen_s == 0, no tag was seen
-    if (info.last_seen_s == 0) {
-        return NOT_AUTHORIZED;
+    if (target.authenticated_user_id != new_user_id) {
+        // Only allow deauthorize if this is the same user as the one that is authorized.
+        return false;
     }
 
-    auto auth_timestamp = now_us() - seconds_t{info.last_seen_s};
-    if (auth_timestamp < last_plug_out) {
-        return NOT_AUTHORIZED;
-    }
-
-    // Only accept a NFC tag if it was seen in the last 30 seconds and after the last time a car was unplugged.
-    if(deadline_elapsed(auth_timestamp + 30_s)) {
-        return NOT_AUTHORIZED;
-    }
-
-
-    int16_t user_id = charge_authorization.find_user(info);
-    if (user_id == -1) {
-        return UNKNOWN_NFC_TAG;
-    }
-
-    return user_id;
-#else
-    // If we can't check the NFC tag, it is not authorized.
-    return NOT_AUTHORIZED;
-#endif
+    // Deauthorize
+    target.authenticated_user_id = NOT_AUTHORIZED;
+    target.user_current = get_user_current(target.authenticated_user_id);
+    return true;
 }
 
 static void update_authentication(
@@ -506,6 +493,11 @@ static void update_authentication(
     // TODO: bounds check
     auto &target = charger_state[client_id];
 
+    micros_t deadtime = 30_s;
+#if MODULE_NFC_AVAILABLE()
+    deadtime = nfc.get_deadtime_post_start();
+#endif
+
     // If central auth is disabled, always authorize
     if (!cfg->enable_central_management) {
         target.authenticated_user_id = AUTHD_ANONYMOUSLY;
@@ -513,53 +505,40 @@ static void update_authentication(
         return;
     }
 
-    // Show feedback for tags when tag is seen before a car is connected
-    const cm_auth_info *recent = (v5 != nullptr) ? &v5->auth_info[0] : nullptr;
-
-    // Reset allocated energy if no car is connected
-    if (v1->charger_state == 0) {
-        target.authenticated_user_id = NOT_AUTHORIZED; // Reset authorization state when no car is connected
+    // De-authorize on plug out
+    if (v1->charger_state == 0 && target.charger_state != 0) {
+        target.authenticated_user_id = NOT_AUTHORIZED;
         target.user_current = 0;
 
-        // If last_seen_s == 0, no tag was seen
-        if (recent != nullptr && recent->last_seen_s != 0 && recent->last_seen_s < 2) {
-            int16_t tag_auth = charger_authorized(v5, target.last_plug_out);
-            if (tag_auth >= 0 && target.known_authorization_no_car_timestamp == 0_us) {
-                target.known_authorization_no_car_timestamp = now_us();
-            } else if (tag_auth == UNKNOWN_NFC_TAG && deadline_elapsed(target.unknown_authorization_timestamp + 2_s)) {
-                target.unknown_authorization_timestamp = now_us();
-            }
-        }
+        // Allow re-auth immediately
+        target.last_auth_success_timestamp = -deadtime;
+    }
+
+    // De-authorize when the last auth expires and there is still no car connected
+    if (target.last_auth_success_timestamp != 0_us && deadline_elapsed(target.last_auth_success_timestamp + 30_s) && v1->charger_state == 0) {
+        target.authenticated_user_id = NOT_AUTHORIZED;
+        target.user_current = 0;
+    }
+
+    // If we are still in the auth deadtime, ignore new auths.
+    if (target.last_auth_success_timestamp != 0_us && !deadline_elapsed(target.last_auth_success_timestamp + deadtime)) {
         return;
     }
 
-    target.known_authorization_no_car_timestamp = 0_us;
+    if (v5 == nullptr)
+        return;
 
-    if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
-        // Update NFC state
-        int16_t new_auth = charger_authorized(v5, target.last_plug_out);
-        bool deadline_elapsed_unknown_nfc = deadline_elapsed(target.unknown_authorization_timestamp + 2_s);
+    const cm_auth_info *recent = &v5->auth_info[0];
 
-        if (new_auth == UNKNOWN_NFC_TAG) {
-            // We will always have a v5 here since we have seen the nfc info
-            // If last_seen_s == 0, no tag was seen
-            if (recent->last_seen_s != 0 && recent->last_seen_s < 2 && deadline_elapsed_unknown_nfc)
-                target.unknown_authorization_timestamp = now_us();
+    if (recent->last_seen_s != 0 && recent->last_seen_s < 2) {
+        int16_t tag_auth = charge_authorization.find_user(*recent);
+        if (tag_auth == -1)
+            tag_auth = UNKNOWN_NFC_TAG;
 
-            if (!deadline_elapsed_unknown_nfc) {
-                target.authenticated_user_id = new_auth;
-            } else {
-                target.authenticated_user_id = NOT_AUTHORIZED; // switch back to nag after short nack window
-                target.user_current = 0;
-            }
-        } else if (new_auth != NOT_AUTHORIZED) {
-            target.authenticated_user_id = new_auth;
-            target.user_current = get_user_current(target.authenticated_user_id);
-            target.unknown_authorization_timestamp = 0_us;
+        if (tag_auth >= AUTHD_ANONYMOUSLY && on_auth_success((uint8_t) tag_auth, client_id, charger_state)) {
+            target.last_auth_success_timestamp = now_us() - seconds_t{recent->last_seen_s};
         } else {
-            target.authenticated_user_id = NOT_AUTHORIZED;
-            target.user_current = 0;
-            target.unknown_authorization_timestamp = 0_us;
+            target.last_auth_fail_timestamp = now_us() - seconds_t{recent->last_seen_s};
         }
     }
 }
@@ -619,33 +598,13 @@ bool ChargeManager::send_client_packet(uint8_t i) {
     CMAuthFeedback auth_feedback = CMAuthFeedback::None;
     if (this->ca_config->enable_central_management) {
         auto &charger = this->charger_state[i];
-        if (charger.charger_state != 0) {
-            switch (charger.authenticated_user_id) {
-                case UNKNOWN_NFC_TAG:
-                    auth_feedback = CMAuthFeedback::Nack;
-                    break;
-                case -1:
-                    auth_feedback = CMAuthFeedback::Nag;
-                    break;
-                default:
-                    auth_feedback = CMAuthFeedback::Ack;
-                    break;
-            }
-        } else if (charger.known_authorization_no_car_timestamp != 0_us) {
-            if (!deadline_elapsed(charger.known_authorization_no_car_timestamp + 30_s)) {
-                auth_feedback = CMAuthFeedback::Ack;
-            } else if (!deadline_elapsed(charger.known_authorization_no_car_timestamp + 33_s)) {
-                // Allow the blink to finish before sending Nack
-                auth_feedback = CMAuthFeedback::Nack;
-            } else {
-                charger.known_authorization_no_car_timestamp = 0_us;
-            }
-        } else if (charger.unknown_authorization_timestamp != 0_us) {
-            if (!deadline_elapsed(charger.unknown_authorization_timestamp + 2_s)) {
-                auth_feedback = CMAuthFeedback::Nack;
-            } else {
-                charger.unknown_authorization_timestamp = 0_us;
-            }
+
+        if (!deadline_elapsed(charger.last_auth_success_timestamp + 2_s)) {
+            auth_feedback = CMAuthFeedback::Ack;
+        } else if (!deadline_elapsed(charger.last_auth_fail_timestamp + 2_s)) {
+            auth_feedback = CMAuthFeedback::Nack;
+        } else if (charger.charger_state == 1 && charger.authenticated_user_id == NOT_AUTHORIZED) {
+            auth_feedback = CMAuthFeedback::Nag;
         }
     }
 
@@ -1488,9 +1447,6 @@ void ChargeManager::register_urls()
 #else
         target.user_current = 32000;
 #endif
-
-        target.unknown_authorization_timestamp = 0_us;
-        target.known_authorization_no_car_timestamp = 0_us;
     }, false);
 
 #if MODULE_WEB_SERVER_AVAILABLE()
