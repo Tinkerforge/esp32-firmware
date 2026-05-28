@@ -61,7 +61,7 @@ let x = {
             "csv_flavor": "CSV-Format",
             "csv_flavor_muted": "",
             "csv_flavor_excel": "Excel-kompatibel (; als Feldtrenner, Windows-1252-kodiert)",
-            "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)",
+            "csv_flavor_rfc4180": "Nach RFC 4180 (, als Feldtrenner, UTF-8-kodiert)",
 
             "user_filter_label": "Benutzerfilter",
             "device_filter_label": "Wallbox-Filter",

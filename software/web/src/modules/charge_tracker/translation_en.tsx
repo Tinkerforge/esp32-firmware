@@ -61,7 +61,7 @@ let x = {
             "csv_flavor": "CSV flavor",
             "csv_flavor_muted": "",
             "csv_flavor_excel": "Compatible to Excel (; as field separator, Windows-1252 encoded)",
-            "csv_flavor_rfc4180": "According to RFC4180 (, as field separator, UTF-8 encoded)",
+            "csv_flavor_rfc4180": "According to RFC 4180 (, as field separator, UTF-8 encoded)",
 
             "user_filter_label": "User filter",
             "device_filter_label": "Charger filter",
