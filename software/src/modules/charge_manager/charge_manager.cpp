@@ -526,14 +526,16 @@ static void update_authentication(
     for (int i = ARRAY_SIZE(v5->auth_info) - 1; i >= 0; --i) {
         const cm_auth_info &info = v5->auth_info[i];
         if (info.last_seen_s != 0 && info.last_seen_s < 2) {
-            int16_t tag_auth = charge_authorization.find_user(info);
+            int16_t tag_auth = NOT_AUTHORIZED;
+#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
+            tag_auth = charge_authorization.find_user(info);
             if (tag_auth == -1)
                 tag_auth = UNKNOWN_NFC_TAG;
-
+#endif
             if (tag_auth >= AUTHD_ANONYMOUSLY && on_auth_success((uint8_t) tag_auth, client_id, charger_state)) {
                 target.last_auth_success_timestamp = now_us() - seconds_t{info.last_seen_s};
                 break; // A successful auth wins immediately.
-            } else {
+            } else if (tag_auth == UNKNOWN_NFC_TAG) {
                 latest_auth_fail = now_us() - seconds_t{info.last_seen_s};
             }
         }
