@@ -411,7 +411,7 @@ entities = [
         availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
             "value_template": "{{(value_json.current | float / 1000) | round(3)}}",
-            "command_template": "{{ value * 1000 | int }}",
+            "command_template": "{{ (value * 1000) | int }}",
             "unit_of_measurement": "A",
             "min": 0,
             "max": 32,
