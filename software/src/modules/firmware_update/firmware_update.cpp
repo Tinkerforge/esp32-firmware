@@ -750,6 +750,70 @@ static void boot_other_partition(const char *other_partition_label, String &errm
     errmsg = String("Other partition not found: ") + other_partition_label;
 }
 
+bool FirmwareUpdate::erase_other_partition(String &errmsg, bool erase_all)
+{
+    const esp_partition_t *running_partition = esp_ota_get_running_partition();
+
+    if (running_partition == nullptr) {
+        errmsg = "Could not get running partition";
+        return false;
+    }
+
+    const char *other_partition_label;
+
+    if (strcmp(running_partition->label, "app0") == 0) {
+        other_partition_label = "app1";
+    }
+    else if (strcmp(running_partition->label, "app1") == 0) {
+        other_partition_label = "app0";
+    }
+    else {
+        char buf[48];
+        StringWriter sw{buf, sizeof(buf)};
+
+        sw.printf("Unexpected running partition: %s", running_partition->label);
+
+        errmsg = sw.getPtr();
+        return false;
+    }
+
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
+                                                                ESP_PARTITION_SUBTYPE_ANY,
+                                                                other_partition_label);
+
+    if (partition == nullptr) {
+        char buf[48];
+        StringWriter sw{buf, sizeof(buf)};
+
+        sw.printf("Other partition '%s' not found", other_partition_label);
+
+        errmsg = sw.getPtr();
+        return false;
+    }
+
+    const size_t erase_size = erase_all ? partition->size : partition->erase_size;
+
+    const micros_t t_start = now_us();
+    esp_err_t err = esp_partition_erase_range(partition, 0, erase_size);
+    const uint32_t runtime_us = (now_us() - t_start).as<uint32_t>();
+
+    bool success;
+    char buf[64];
+    StringWriter sw{buf, sizeof(buf)};
+
+    if (err == ESP_OK) {
+        const uint32_t runtime_ms = runtime_us / 1000;
+        sw.printf("Erased %s of partition %s in %lu.%lus", erase_all ? "all" : "beginning", other_partition_label, runtime_ms / 1000, runtime_ms % 1000);
+        success = true;
+    } else {
+        sw.printf("Could not erase partition '%s': %s (0x%04x)", other_partition_label, esp_err_to_name(err), static_cast<unsigned>(err));
+        success = false;
+    }
+
+    errmsg = sw.getPtr();
+    return success;
+}
+
 void FirmwareUpdate::register_urls()
 {
     if (strlen(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL()) > 0) {
@@ -872,6 +936,13 @@ void FirmwareUpdate::register_urls()
     api.addCommand("firmware_update/validate", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         change_running_partition_from_pending_verify_to_valid();
     }, true);
+
+    // Completely erase other firmware in HTTP thread because it takes a while.
+    server.on_HTTPThread("/firmware_update/erase_other", HTTP_GET, [this](WebServerRequest request) {
+        String errmsg;
+        const bool success = erase_other_partition(errmsg, true);
+        return request.send_plain(success ? 200 : 500, errmsg);
+    });
 
     server.on_HTTPThread("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         char json_buf[256] = "";
