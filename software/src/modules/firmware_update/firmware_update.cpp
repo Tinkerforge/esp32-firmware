@@ -1640,7 +1640,10 @@ void FirmwareUpdate::read_app_partition_state()
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
     if (running_partition == nullptr) {
+        // If the running partition can't be found, the partition table is probably not readable/valid.
+        // The OTA functions don't handle this gracefully, so abort here.
         logger.printfln("Could not get running partition");
+        return;
     }
     else {
         state.get("running_partition")->updateString(running_partition->label);
