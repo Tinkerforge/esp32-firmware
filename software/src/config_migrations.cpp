@@ -1099,6 +1099,11 @@ bool prepare_migrations()
 
 void migrate_config()
 {
+    if (LittleFS.totalBytes() == 0) {
+        logger.printfln("Data partition not mounted, skipping migrations");
+        return;
+    }
+
     size_t migration_count = ARRAY_SIZE(migrations);
 
     if (!LittleFS.exists("/config") && LittleFS.exists("/migration/version")) {
