@@ -41,7 +41,7 @@ static uint8_t tmp_read_buf[2] = {};
 void WarpEsp32I2c::pre_setup()
 {
     this->state = Config::Object({
-        {"temperature", Config::Int(0, -8192, 12800)}
+        {"temperature", Config::Int16(0)}, // in 0.01 °C
     });
 }
 
