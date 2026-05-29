@@ -51,6 +51,7 @@ extern "C" {
 
 #ifdef DEBUG_FS_ENABLE
 #include "generated/embedded_bootloader.embedded.h"
+#include "generated/embedded_partition_table.embedded.h"
 #include "tools/hexdump.h"
 #endif
 
@@ -689,13 +690,10 @@ enum class BootloaderAccess {
     WriteVerify,
 };
 
-static constexpr uint32_t BOOTLOADER_ADDRESS = 0x1000;
-static constexpr uint32_t BOOTLOADER_SIZE    = 0x7000;
-
 [[gnu::noinline]]
-static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool force_write = false)
+static esp_err_t write_and_verify_boot_data(BootloaderAccess access_type, const uint8_t *data, uint32_t length, uint32_t address, bool force_write)
 {
-    if (embedded_bootloader_length == 0) {
+    if (length == 0) {
         return ESP_ERR_NOT_SUPPORTED;
     }
 
@@ -707,7 +705,7 @@ static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool 
         return read_protect_err;
     }
 
-    uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(embedded_bootloader_length, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(length, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
 
     if (buf == nullptr) {
         return ESP_ERR_NO_MEM;
@@ -729,13 +727,13 @@ static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool 
         }
 
         if (access_type == BootloaderAccess::VerifyOnly || !force_write) {
-            const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, embedded_bootloader_length);
+            const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, address, length);
 
             if (err != ESP_OK) {
                 return err;
             }
 
-            const int result = memcmp(embedded_bootloader_data, buf, embedded_bootloader_length);
+            const int result = memcmp(data, buf, length);
 
             if (result == 0) { // Match
                 if (access_type == BootloaderAccess::WriteVerify && attempts == 0) {
@@ -760,13 +758,14 @@ static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool 
             }
         }
 
-        memcpy(buf, embedded_bootloader_data, embedded_bootloader_length);
+        memcpy(buf, data, length);
 
         esp_flash_set_dangerous_write_protection(esp_flash_default_chip, false);
 
         const micros_t t_start = now_us();
 
-        const esp_err_t err_erase = esp_flash_erase_region(esp_flash_default_chip, BOOTLOADER_ADDRESS, BOOTLOADER_SIZE);
+        const uint32_t erase_length = ALIGNUP(esp_flash_default_chip->chip_drv->sector_size, length);
+        const esp_err_t err_erase = esp_flash_erase_region(esp_flash_default_chip, address, erase_length);
 
         if (err_erase != ESP_OK) {
             logger.printfln("Bootloader erase failed: %s (0x%04X)", esp_err_to_name(err_erase), static_cast<unsigned>(err_erase));
@@ -775,7 +774,7 @@ static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool 
 
         const micros_t t_mid = now_us();
 
-        const esp_err_t err_write = esp_flash_write(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, embedded_bootloader_length);
+        const esp_err_t err_write = esp_flash_write(esp_flash_default_chip, buf, address, length);
 
         if (err_write != ESP_OK) {
             logger.printfln("Bootloader write failed: %s (0x%04X)", esp_err_to_name(err_write), static_cast<unsigned>(err_write));
@@ -796,12 +795,70 @@ static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool 
             logger.printfln("Not locking flash chip");
         }
 
-        logger.printfln("Bootloader erase %lums, write %lums", (t_mid - t_start).as<uint32_t>() / 1000, (t_end - t_mid  ).as<uint32_t>() / 1000);
+        logger.printfln("Erase %lums, write %lums", (t_mid - t_start).as<uint32_t>() / 1000, (t_end - t_mid  ).as<uint32_t>() / 1000);
 
         return ESP_OK;
     };
 
     return ESP_ERR_NOT_FINISHED;
+}
+
+[[gnu::noinline]]
+static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool force_write = false)
+{
+    return write_and_verify_boot_data(access_type, embedded_bootloader_data, embedded_bootloader_length, CONFIG_BOOTLOADER_OFFSET_IN_FLASH, force_write);
+}
+
+[[gnu::noinline]]
+static esp_err_t write_and_verify_partition_table(BootloaderAccess access_type, bool force_write = false)
+{
+    return write_and_verify_boot_data(access_type, embedded_partition_table_data, embedded_partition_table_length, CONFIG_PARTITION_TABLE_OFFSET, force_write);
+}
+
+bool Debug::repartition(String &errmsg, bool reboot_immediately)
+{
+    esp_err_t err = write_and_verify_partition_table(BootloaderAccess::WriteVerify, true);
+
+    if (err == ESP_ERR_NOT_SUPPORTED) {
+        errmsg = "No embedded partition table";
+        return false;
+    }
+
+    if (err == ESP_OK) {
+        err = write_and_verify_bootloader(BootloaderAccess::WriteVerify, true);
+
+        if (err == ESP_ERR_NOT_SUPPORTED) {
+            errmsg = "No embedded bootloader";
+            return false;
+        }
+    }
+
+    if (err != ESP_OK) {
+        char msg[128];
+        StringWriter sw{msg, std::size(msg)};
+        sw.printf("Repartitioning failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+        errmsg = sw.getPtr();
+        return false;
+    }
+
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
+    if (!firmware_update.erase_other_partition(errmsg, false)) {
+        logger.printfln("Destroying other partition failed: %s", errmsg.c_str());
+        // Clear errmsg to make this error non-fatal.
+        errmsg.clear();
+    } else {
+        logger.printfln("Other partition destroyed");
+    }
+#endif
+
+    if (reboot_immediately) {
+        logger.printfln("Bootloader updated, rebooting into it");
+        esp_restart();
+    } else {
+        trigger_reboot("bootloader update", 1_s);
+    }
+
+    return true;
 }
 #endif
 
@@ -865,6 +922,8 @@ void Debug::register_urls()
     });
 
     server.on_HTTPThread("/debug/bootloader", HTTP_GET, [](WebServerRequest req) {
+        constexpr size_t BOOTLOADER_SIZE = CONFIG_PARTITION_TABLE_OFFSET - CONFIG_BOOTLOADER_OFFSET_IN_FLASH;
+
         uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(BOOTLOADER_SIZE, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
 
         if (buf == nullptr) {
@@ -874,7 +933,7 @@ void Debug::register_urls()
         // Use unique_ptr to auto-free buffer.
         std::unique_ptr<uint8_t> buf_u{buf};
 
-        const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, BOOTLOADER_SIZE);
+        const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, CONFIG_BOOTLOADER_OFFSET_IN_FLASH, BOOTLOADER_SIZE);
 
         if (err != ESP_OK) {
             logger.printfln("esp_flash_read_failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
@@ -918,6 +977,52 @@ void Debug::register_urls()
         char msg[128];
         const size_t len = snprintf_u(msg, std::size(msg), "Write failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
         return req.send_plain(500, msg, len);
+    });
+
+    server.on_HTTPThread("/debug/partition_table_check", HTTP_GET, [](WebServerRequest req) {
+        const esp_err_t err = write_and_verify_partition_table(BootloaderAccess::VerifyOnly);
+
+        if (err == ESP_ERR_NOT_SUPPORTED) {
+            return req.send_plain(500, "No embedded partition table");
+        }
+        if (err == ESP_OK) {
+            return req.send_bytes(200, "Partition table match");
+        }
+        if (err == ESP_FAIL) {
+            return req.send_bytes(200, "Partition table mismatch");
+        }
+
+        char msg[128];
+        const size_t len = snprintf_u(msg, std::size(msg), "Check failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+        return req.send_plain(500, msg, len);
+    });
+
+    server.on_HTTPThread("/debug/partition_table_write", HTTP_GET, [](WebServerRequest req) {
+        const esp_err_t err = write_and_verify_partition_table(BootloaderAccess::WriteVerify);
+
+        if (err == ESP_ERR_NOT_SUPPORTED) {
+            return req.send_plain(500, "No embedded partition table");
+        }
+        if (err == ESP_ERR_INVALID_STATE) {
+            return req.send_bytes(200, "Partition table already up to date");
+        }
+        if (err == ESP_OK) {
+            return req.send_bytes(200, "Partition table update OK");
+        }
+
+        char msg[128];
+        const size_t len = snprintf_u(msg, std::size(msg), "Write failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+        return req.send_plain(500, msg, len);
+    });
+
+    server.on_HTTPThread("/debug/repartition", HTTP_GET, [](WebServerRequest req) {
+        String errmsg;
+
+        if (repartition(errmsg, false)) {
+            return req.send_plain(200, "Repartitioning OK");
+        } else {
+            return req.send_plain(500, errmsg);
+        }
     });
 #endif
 }
