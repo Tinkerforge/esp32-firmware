@@ -20,7 +20,7 @@
 #include "coredump.h"
 
 #include <esp_core_dump.h>
-#include <esp_flash.h>
+#include <esp_partition.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -28,6 +28,9 @@
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
+
+// Function missing from esp_core_dump.h
+extern "C" esp_err_t esp_core_dump_partition_and_size_get(const esp_partition_t **partition, uint32_t* size);
 
 // Pre- and postfix take up 54 characters.
 COREDUMP_RTC_DATA_ATTR char tf_coredump_info[512];
@@ -207,9 +210,11 @@ void Coredump::register_urls()
             return request.send_plain(503, sw);
         }
 
-        size_t addr;
-        size_t size;
-        ret = esp_core_dump_image_get(&addr, &size);
+        const esp_partition_t *core_part;
+        uint32_t size_u32;
+
+        ret = esp_core_dump_partition_and_size_get(&core_part, &size_u32);
+
         if (ret != ESP_OK) {
             StringWriter sw(buffer, BUFFER_SIZE);
             sw.printf("Failed to get core dump image: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
@@ -218,12 +223,15 @@ void Coredump::register_urls()
 
         request.beginChunkedResponse_bytes(200);
 
+        const size_t size = static_cast<size_t>(size_u32);
+
         for (size_t i = 0; i < size; i += BUFFER_SIZE) {
             size_t to_send = std::min(BUFFER_SIZE, size - i);
-            ret = esp_flash_read(NULL, buffer, addr + i, to_send);
+
+            ret = esp_partition_read(core_part, i, buffer, to_send);
 
             if (ret != ESP_OK) {
-                logger.printfln("esp_flash_read failed: %s (0x%04x)", esp_err_to_name(ret), static_cast<unsigned>(ret));
+                logger.printfln("esp_partition_read failed: %s (0x%04x)", esp_err_to_name(ret), static_cast<unsigned>(ret));
                 return WebServerRequestReturnProtect{.error = ESP_FAIL};
             }
 
