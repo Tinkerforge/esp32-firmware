@@ -249,7 +249,7 @@ bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, Fe
 SpineConnection *EEBusUseCases::get_spine_connection(const FeatureAddressType &spine_address)
 {
     for (auto &ship_connection : eebus.ship.ship_connections) {
-        if (ship_connection && ship_connection->spine->check_known_address(spine_address)) {
+        if (ship_connection && ship_connection->spine && ship_connection->spine->check_known_address(spine_address)) {
             return ship_connection->spine.get();
         }
     }
