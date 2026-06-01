@@ -139,10 +139,13 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     // If its a result, no further processing. If the result is an error, log it
     // TODO: send the results back to the usecase that sent the original command?
     if (data->last_cmd == SpineDataTypeHandler::Function::resultData) {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("Usecases: Received resultData, no further processing");
+#endif
         ResultDataType result_data = data->resultdatatype.get();
         if (result_data.errorNumber.get() != static_cast<uint8_t>(EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError)) {
-            logger.printfln("Usecases: An error was received from the communication Partner. Error Number: %s, Description: %s. Error refers to Message: %d", EEBUS_USECASE_HELPERS::get_result_error_number_string(result_data.errorNumber.get()).c_str(), result_data.description.get().c_str(), header.msgCounterReference.get());
+            logger.printfln("An error was reported from a communication partner. See tracelog for more details");
+            eebus.trace_fmtln("Usecases: Error received from communication Partner. Error Number: %s, Description: %s. Error refers to Message: %d", EEBUS_USECASE_HELPERS::get_result_error_number_string(result_data.errorNumber.get()).c_str(), result_data.description.get().c_str(), header.msgCounterReference.get());
         }
         data->reset();
         return;
@@ -156,7 +159,9 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
             send_response = entity->handle_message(header, data, responseObj);
             if (send_response.is_handled) {
                 found_dest_entity = true;
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
                 eebus.trace_fmtln("Usecases: Found entity: %s", get_usecases_name(entity->get_usecase_type()));
+#endif
             } else {
                 eebus.trace_fmtln("Usecases: Entity %s could not handle the message", get_usecases_name(entity->get_usecase_type()));
             }
@@ -174,7 +179,9 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     }
     // Do we need to send a response
     if (send_response.send_response) {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("Usecases: Sending response");
+#endif
         if (header.ackRequest.has_value() && header.ackRequest.get() && send_response.cmd_classifier != CmdClassifierType::result && header.cmdClassifier != CmdClassifierType::read) {
 
             eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response.cmd_classifier));
@@ -187,7 +194,9 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
         if (header.ackRequest.has_value() && header.ackRequest.get()) {
             eebus.trace_fmtln("Usecases: ERROR: Header requested an ack, but no response was generated");
         }
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
+#endif
     }
     data->reset();
 }

@@ -98,7 +98,9 @@ MessageReturn EebusHeartBeat::handle_message(HeaderType &header, SpineDataTypeHa
     }
     switch (header.cmdClassifier.get()) {
         case CmdClassifierType::read:
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
             eebus.trace_fmtln("EebusHeartBeat: Command identified as DeviceDiagnosisHeartbeatData with a read command");
+#endif
             response["deviceDiagnosisHeartbeatData"] = read_heartbeat();
             return {true, true, CmdClassifierType::reply};
         case CmdClassifierType::notify:
@@ -140,9 +142,11 @@ void EebusHeartBeat::send_heartbeat_to_subs()
 {
     DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
     auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     if (subs > 0) {
         eebus.trace_fmtln("heartbeat_sent to %d subscribers", subs);
     }
+#endif
 }
 
 void EebusHeartBeat::emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data)

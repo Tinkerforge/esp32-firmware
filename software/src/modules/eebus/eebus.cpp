@@ -548,7 +548,9 @@ void EEBus::setup()
     update_peers_config();
 
     initialized = true;
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("EEBUS initialized");
+#endif
 
     // Schedule development tests if enabled
 #ifdef EEBUS_DEV_TEST_ENABLE
@@ -771,7 +773,7 @@ void EEBus::register_meter_events()
         }
     }
     if (!found) {
-        logger.printfln("No grid meter found for MGCP usecase.");
+        logger.printfln("No grid meter found for MGCP usecase. The Usecase will not work properly.");
         return;
     }
 #endif
@@ -779,7 +781,7 @@ void EEBus::register_meter_events()
     // First, wait for value IDs to be published
     event.registerEvent(meters.get_path(meter_slot, Meters::PathType::ValueIDs), {}, [meter_slot](const Config *value_ids) {
         if (value_ids->count() == 0) {
-            logger.printfln("Ignoring blank value IDs from meter");
+            eebus.trace_fmtln("Ignoring blank value IDs from meter");
             return EventResult::OK;
         }
 
@@ -1014,7 +1016,7 @@ void EEBus::sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node
             new_peer->get("model_type")->updateString(node->txt_type);
             api.writeConfig("eebus/config", &config);
         } else {
-            logger.printfln("Cannot add persistent peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
+            logger.printfln("Cannot add peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
         }
     }
 }

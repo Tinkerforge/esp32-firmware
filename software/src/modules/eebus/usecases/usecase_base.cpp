@@ -30,7 +30,9 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     sender.entity = this->entity_address;
     sender.feature = sending_feature;
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("%s sent read of %s to target device %s", EEBUS_USECASE_HELPERS::spine_address_to_string(sender).c_str(), function_name.c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
+#endif
     ElementTagType data{};
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
     JsonObject dst = message.to<JsonObject>();

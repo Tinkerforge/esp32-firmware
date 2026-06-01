@@ -52,8 +52,10 @@ SpineConnection::~SpineConnection()
 }
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("SPINE: Processing datagram:");
     eebus.trace_jsonln(datagram);
+#endif
     last_received_time = millis();
 
     received_header = datagram["datagram"]["header"];
@@ -73,10 +75,16 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {
-        eebus.trace_fmtln("SPINE: No function found for the received payload:");
+        eebus.trace_fmtln("SPINE: No function found for the received payload");
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_jsonln(received_payload);
+#endif
         return false;
     }
+    eebus.trace_fmtln("SPINE: Received %s %s from %s",
+        convertToString(received_header.cmdClassifier.get()).c_str(),
+        SpineDataTypeHandler::function_to_string(called_function).c_str(),
+        EEBUS_USECASE_HELPERS::spine_address_to_string(received_header.addressSource.get()).c_str());
     initial_peer_discovery();
     eebus.usecases->process_spine_message(received_header, eebus.data_handler.get(), this);
     return true;
@@ -84,8 +92,20 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 
 void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, const bool require_ack)
 {
-    eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %s, Content:", convertToString(cmd_classifier).c_str());
+    const char *function_name = "unknown";
+    if (payload.is<JsonObjectConst>()) {
+        JsonObjectConst obj = payload.as<JsonObjectConst>();
+        if (obj.begin() != obj.end()) {
+            function_name = obj.begin()->key().c_str();
+        }
+    }
+    eebus.trace_fmtln("SPINE: Sending %s %s to %s",
+        convertToString(cmd_classifier).c_str(),
+        function_name,
+        EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_jsonln(payload);
+#endif
     if (require_ack) {
         ack_waiting[msg_counter] = millis();
     }

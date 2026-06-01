@@ -315,7 +315,9 @@ bool LoadPowerLimitUsecase::update_limit(bool limit, int current_limit_w, const 
 
 void LoadPowerLimitUsecase::update_state()
 {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("Updating state. Current state: %s. Heartbeat received: %d, Limit received: %d, Limit active: %d, Limit expired: %d", get_loadcontrol_state_name(state_), heartbeat_received, limit_received, limit_active, limit_expired);
+#endif
 
     switch (state_) {
         case LoadcontrolState::Startup:

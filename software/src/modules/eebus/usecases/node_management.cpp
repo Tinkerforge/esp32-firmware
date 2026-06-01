@@ -53,7 +53,9 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
     data->function_to_string(data->last_cmd);
     switch (data->last_cmd) {
         case SpineDataTypeHandler::Function::nodeManagementUseCaseData:
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData with a %s command", cmd_classifier.c_str());
+#endif
             switch (header.cmdClassifier.get()) {
                 case CmdClassifierType::read:
                     response["nodeManagementUseCaseData"] = get_usecase_data();
@@ -70,14 +72,18 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
                     return {true, false};
             }
         case SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData:
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData with a %s command", cmd_classifier.c_str());
+#endif
             switch (header.cmdClassifier.get()) {
                 case CmdClassifierType::read:
                     response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
                     return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::reply:
                 case CmdClassifierType::notify:
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
+#endif
                     if (const auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
                         conn->update_detailed_discovery_data(data->nodemanagementdetaileddiscoverydatatype.get());
                     }
@@ -96,13 +102,14 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
                 }
                 return {true, false};
             }
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
             return handle_subscription(header, data, response);
 
         case SpineDataTypeHandler::Function::nodeManagementBindingData:
         case SpineDataTypeHandler::Function::nodeManagementBindingRequestCall:
         case SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall:
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Binding handling");
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
+            eebus.trace_fmtln("NodeManagementUsecase: Binding handling");
+#endif
             return handle_binding(header, data, response);
         default:
             return {false};
@@ -125,11 +132,15 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     target.feature = 0;
     target.entity = {0};
     target.device = target_feature.device;
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("NodeManagementUsecase: subscribe_to_feature");
+#endif
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
     JsonObject dst = message.to<JsonObject>();
     if (dst["nodeManagementSubscriptionRequestCall"].set(subscription_request)) {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("NodeManagementUsecase: Built subscription request message successfully");
+#endif
     } else {
         eebus.trace_fmtln("NodeManagementUsecase: Failed to build subscription request message");
     }
@@ -443,9 +454,14 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
             }
         }
     }
-    if (sent_count > 0 || error_count > 0) {
-        eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
+    if (error_count > 0) {
+        eebus.trace_fmtln("EEBUS: Errors while informing subscribers of %s: %d sent, %d errors", function_name, sent_count, error_count);
     }
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
+    else if (sent_count > 0) {
+        eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s", sent_count, function_name);
+    }
+#endif
     return sent_count;
 }
 

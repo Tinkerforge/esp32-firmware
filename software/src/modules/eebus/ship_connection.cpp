@@ -99,7 +99,9 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         conn->start_client_confirm();
         break;
     default:
-        //eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
+        eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
+#endif
         return; // Ignore other events for now
     }
 }
@@ -154,9 +156,11 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         eebus.trace_fmtln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
         return;
     }
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     if (state != ShipConnectionState::Done) {
-        eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_node->node_name().c_str());
+        eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment", peer_node->node_name().c_str());
     }
+#endif
 
     // Copy new message, await further parts if its not final and trigger next SHIP state machine step
     if (message_incoming->multipart_index == SIZE_MAX) {
@@ -179,8 +183,6 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         message_incoming->multipart_index = SIZE_MAX;
         ws_mode = WebsocketMode::HttpThreadCb;
         state_machine_next_step();
-    } else {
-        eebus.trace_fmtln("Non-final ws_pkt received. Awaiting further parts");
     }
     if (ws_mode == WebsocketMode::HttpThreadCbFail) {
         // TODO: Provide return value to indicate failure
@@ -255,7 +257,9 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 
 void ShipConnection::send_current_outgoing_message()
 {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("Sending Websocket message");
+#endif
     if (message_outgoing->length == 0) {
         return;
     }
@@ -292,8 +296,10 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
         message_outgoing = make_unique_psram<Message>();
         eebus.trace_fmtln("ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
     }
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
     eebus.trace_strln(str, length);
+#endif
 
     char *buffer = static_cast<char *>(ps_malloc(length + 1));
 
@@ -1211,7 +1217,14 @@ void ShipConnection::state_done()
 
     auto protocol_state = get_protocol_state();
 
+    // protocol_state logged only for non-Data states to reduce noise
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
+#else
+    if (protocol_state != ProtocolState::Data) {
+        eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
+    }
+#endif
     if (!spine)
     {
         spine = make_unique_psram<SpineConnection>(this);
@@ -1238,11 +1251,15 @@ void ShipConnection::state_done()
             // SHIP 13.4.4.3: Peer's pin state received. We already sent ours
             // during the initial SmePinCheckInit transition, so just consume
             // this message without replying to avoid an infinite ping-pong loop.
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
             eebus.trace_fmtln("SHIP: Received peer pin state in Done state (no reply needed)");
+#endif
             break;
         }
         case ProtocolState::AccessMethodsRequest: {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
             eebus.trace_fmtln("AccessMethodsRequest received");
+#endif
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
             access_methods.id = eebus.get_eebus_name();
             String json = access_methods.type_to_json();
@@ -1272,7 +1289,13 @@ void ShipConnection::state_done()
         default:
             break;
     }
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("SHIP: After state done state: %s", get_ship_connection_state_name(state));
+#else
+    if (state != ShipConnectionState::Done) {
+        eebus.trace_fmtln("SHIP: After state done state: %s", get_ship_connection_state_name(state));
+    }
+#endif
 }
 
 void ShipConnection::state_is_not_implemented()
@@ -1309,7 +1332,9 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
             }
         }
 
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'", static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase), connection_hello->waiting, connection_hello->waiting_valid, connection_hello->prolongation_request, connection_hello->prolongation_request_valid);
+#endif
     }
 }
 
@@ -1335,12 +1360,16 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("T2J ConnectionHello json: %s", &message_outgoing->data[1]);
+#endif
 }
 
 void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshake_type)
 {
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
+#endif
     incoming_json_doc.clear();
     DeserializationError error = deserializeJson(incoming_json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
@@ -1388,7 +1417,9 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
+#endif
 }
 
 void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
@@ -1431,13 +1462,17 @@ void ShipConnection::to_json_access_methods_type()
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-    eebus.trace_fmtln("T2J AccessMethods json: %s", &message_outgoing->data[1]);
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
+    eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", &message_outgoing->data[1]);
+#endif
 }
 
 void ShipConnection::log_message(const String &state_prefix, Message *msg)
 {
-    eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %d)", state_prefix.c_str(), reinterpret_cast<uint8_t>(msg->data[0]), msg->length);
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
+    eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %d)", state_prefix.c_str(), static_cast<int>(msg->data[0]), msg->length);
     eebus.trace_strln(reinterpret_cast<const char *>(&msg->data[1]), msg->length - 1);
+#endif
 }
 
 void ShipConnection::common_procedure_enable_data_exchange()

@@ -77,13 +77,14 @@
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define MAX_PEER_REMEMBERED 4           // How many ship peers configured to be remembered
 #define MAX_PEER_DISCOVERED 4           // How many ship peers can be discovered via mDNS
-#define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 #define EEBUS_NO_VALUE INT32_MIN
 
 #define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
 #define EEBUS_SHIP_AUTOCONNECT_INTERVAL 300_s //
+
+//#define EEBUS_TRACE_SUPER_VERBOSE // If enabled, will log much more information to the tracelog which may help in debugging SHIP/SPINE/EEBUS issues. Off by default as it fills up the tracelog very quickly
 
 // Forward declarations (so we don't have to include spine_types.h here)
 class EEBusUseCases;
