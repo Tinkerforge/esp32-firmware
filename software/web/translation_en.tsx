@@ -123,7 +123,7 @@ let x = {
         },
         "uplot": {
             "fullscreen": "Full screen",
-            "fullscreen_chart": "Full screen Chart"
+            "fullscreen_chart": "Full screen chart"
         },
         "header_status": {
             "status": "Status",
