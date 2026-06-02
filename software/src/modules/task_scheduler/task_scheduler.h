@@ -132,7 +132,8 @@ public:
     enum class AwaitResult {
         Done,
         Timeout,
-        Error
+        Error,
+        Rebooting,
     };
 
     AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());

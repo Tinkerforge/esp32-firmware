@@ -327,7 +327,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
     }
 
     if (this->rebooting)
-        return TaskScheduler::AwaitResult::Timeout;
+        return TaskScheduler::AwaitResult::Rebooting;
 
     if (millis_to_wait == 0_us) {
         logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0_us is not allowed. This is not scheduleOnce!");
@@ -356,7 +356,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
             task = tasks.findByTaskID(task_id);
 
         if (task == nullptr)
-            return TaskScheduler::AwaitResult::Done;
+            return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
 
         if (!task->once) {
             logger.printfln("Calling TaskScheduler::await is not allowed for a non-single-shot task");
@@ -380,11 +380,11 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
             case TaskScheduler::CancelResult::Cancelled:
                 return TaskScheduler::AwaitResult::Timeout;
             case TaskScheduler::CancelResult::NotFound:
-                return TaskScheduler::AwaitResult::Done;
+                return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
         }
     }
 
-    return TaskScheduler::AwaitResult::Done;
+    return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
 }
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
