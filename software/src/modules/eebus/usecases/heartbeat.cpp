@@ -141,11 +141,13 @@ void EebusHeartBeat::emit_timeout() const
 void EebusHeartBeat::send_heartbeat_to_subs()
 {
     DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
-    auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
+    auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
     if (subs > 0) {
         eebus.trace_fmtln("heartbeat_sent to %d subscribers", subs);
     }
+#else
+     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
 #endif
 }
 
