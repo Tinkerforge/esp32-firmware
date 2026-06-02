@@ -42,6 +42,21 @@ charge_mode_names_en = [
     "Min + PV",
 ]
 
+charger_state_names_de = [
+    "Nicht verbunden",
+    "Warte auf Freigabe",
+    "Ladebereit",
+    "Lädt",
+    "Fehler",
+]
+charger_state_names_en = [
+    "Not connected",
+    "Waiting for release",
+    "Ready to charge",
+    "Charging",
+    "Error",
+]
+
 
 def command_template_for_select(names):
     """Generate a Jinja command_template that maps a selected option name back to a JSON mode payload."""
@@ -450,108 +465,6 @@ topic_template = """    {{
     }}"""
 
 entities = [
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER,
-    #     object_id="powernow",
-    #     path="meter/values",
-    #     name_de="Leistungsaufnahme",
-    #     name_en="Power draw",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json.power | round(0)}}",
-    #         "unit_of_measurement": "W",
-    #         "device_class": "power",
-    #         "state_class": "measurement",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER,
-    #     object_id="energyabs",
-    #     path="meter/values",
-    #     name_de="Stromverbrauch absolut",
-    #     name_en="Energy consumption (absolute)",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json.energy_abs | round(3)}}",
-    #         "unit_of_measurement": "kWh",
-    #         "device_class": "energy",
-    #         "state_class": "total",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER,
-    #     object_id="energyrel",
-    #     path="meter/values",
-    #     name_de="Stromverbrauch relativ",
-    #     name_en="Energy consumption (relative)",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json.energy_rel | round(3)}}",
-    #         "unit_of_measurement": "kWh",
-    #         "device_class": "energy",
-    #         "state_class": "total",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER_PHASES,
-    #     object_id="current_l1",
-    #     path="meter/all_values",
-    #     name_de="Strom L1",
-    #     name_en="Current L1",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json[3] | round(3)}}",
-    #         "unit_of_measurement": "A",
-    #         "device_class": "current",
-    #         "state_class": "measurement",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER_PHASES,
-    #     object_id="current_l2",
-    #     path="meter/all_values",
-    #     name_de="Strom L2",
-    #     name_en="Current L2",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json[4] | round(3)}}",
-    #         "unit_of_measurement": "A",
-    #         "device_class": "current",
-    #         "state_class": "measurement",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
-    # Entity(
-    #     include_generic=True,
-    #     component=Component.SENSOR,
-    #     feature=Feature.METER_PHASES,
-    #     object_id="current_l3",
-    #     path="meter/all_values",
-    #     name_de="Strom L3",
-    #     name_en="Current L3",
-    #     availability=[],
-    #     static_info_generic={
-    #         "value_template": "{{value_json[5] | round(3)}}",
-    #         "unit_of_measurement": "A",
-    #         "device_class": "current",
-    #         "state_class": "measurement",
-    #     },
-    #     static_info_homeassistant={},
-    # ),
     Entity(
         include_generic=True,
         component=Component.SENSOR,
@@ -562,10 +475,17 @@ entities = [
         name_en="Charge state",
         availability=[],
         static_info_generic={
-            "value_template": "{{value_json.charger_state}}",
             "icon": "mdi:ev-plug-type2",
+            "device_class": "enum",
         },
-        static_info_homeassistant={},
+        static_info_homeassistant={
+            "value_template": enum_value_template("charger_state", charger_state_names_de),
+            "options": charger_state_names_de,
+        },
+        static_info_homeassistant_en={
+            "value_template": enum_value_template("charger_state", charger_state_names_en),
+            "options": charger_state_names_en,
+        },
     ),
     Entity(
         include_generic=False,
