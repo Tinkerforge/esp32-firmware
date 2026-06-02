@@ -6,6 +6,7 @@ let x = {
             "meter_class": "PV Faker",
 
             "config_display_name": "Anzeigename",
+            "config_location": "Messort",
             "topic": "Lichtintensitäts-MQTT-Topic",
             "limiter_topic": "Limit-MQTT-Topic",
             "peak_power": "PV-Spitzenleistung",

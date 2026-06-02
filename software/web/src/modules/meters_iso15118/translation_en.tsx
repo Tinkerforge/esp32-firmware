@@ -5,10 +5,11 @@ let x = {
         "content": {
             "meter_class": "Vehicle (ISO 15118)",
             "config_display_name": "Display name",
+            "config_location": "Location",
             "protocol": "Protocol"
         },
         "script": {
-            "protocol_no_ev": "No EV connected",
+            "protocol_no_ev": "No vehicle connected",
             "protocol_0": "IEC 61851",
             "protocol_1": "DIN 70121",
             "protocol_2": "ISO 15118-2",

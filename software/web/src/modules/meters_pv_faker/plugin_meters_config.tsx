@@ -24,6 +24,7 @@ import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
+import { translate_meter_location } from "../meters/meter_location";
 import { MeterConfig  } from "../meters/types";
 import { FormRow     } from "../../ts/components/form_row";
 import { InputText   } from "../../ts/components/input_text";
@@ -59,6 +60,9 @@ export function pre_init() {
                             value={config[1].display_name}
                             onValue={(v) => {on_config(util.get_updated_union(config, {display_name: v}));}}
                         />
+                    </FormRow>,
+                    <FormRow label={__("meters_pv_faker.content.config_location")}>
+                        <InputText value={translate_meter_location(config[1].location)} />
                     </FormRow>,
 //#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
                     <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
