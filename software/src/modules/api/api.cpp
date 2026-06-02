@@ -546,7 +546,7 @@ bool API::dump_all_registrations(WebServerRequest &request, StringWriter &sw, co
             produced_output = dump_registration(i);
         });
 
-        if (result != TaskScheduler::AwaitResult::Done) {
+        if (!result) {
             return false;
         }
 
@@ -613,8 +613,8 @@ static bool print_regs_to_debug_report(std::span<T> regs, StringWriter &sw, WebS
             done = true;
         });
 
-        if (result != TaskScheduler::AwaitResult::Done) {
-            if (request.sendChunk("Failed to generate debug report: task timed out") != ESP_OK) {
+        if (!result) {
+            if (request.sendChunk("Failed to generate debug report: await failed") != ESP_OK) {
                 return false;
             }
             request.endChunkedResponse();
@@ -956,11 +956,11 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
             reg.callback(language, result);
         });
 
-    if (await_result == TaskScheduler::AwaitResult::Timeout) {
+    if (!await_result) {
         const char *task_name = pcTaskGetName(xTaskGetCurrentTaskHandle());
-        logger.printfln("callCommand timed out. This may affect the stack of task '%s'.", task_name);
+        logger.printfln("callCommand await failed. This may affect the stack of task '%s'.", task_name);
 
-        return "Failed to execute command: Timeout reached.";
+        return "Failed to execute command: Await failed.";
     }
 
     return result;

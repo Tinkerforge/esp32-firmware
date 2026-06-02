@@ -1435,7 +1435,7 @@ bool GenerationParams::init() {
 #endif
         });
 
-        return result == TaskScheduler::AwaitResult::Done && this->display_name_cache != nullptr && this->charger_display_name_cache != nullptr;
+        return result && this->display_name_cache != nullptr && this->charger_display_name_cache != nullptr;
     }
 
 bool GenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {

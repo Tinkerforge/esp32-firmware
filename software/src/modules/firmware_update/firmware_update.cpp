@@ -845,7 +845,7 @@ void FirmwareUpdate::register_urls()
                     }
                 });
 
-                if (result != TaskScheduler::AwaitResult::Done) {
+                if (!result) {
                     return false;
                 }
 
@@ -904,7 +904,7 @@ void FirmwareUpdate::register_urls()
                     }
                 });
 
-                if (result != TaskScheduler::AwaitResult::Done) {
+                if (!result) {
                     return false;
                 }
 

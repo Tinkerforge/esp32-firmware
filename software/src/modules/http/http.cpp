@@ -296,9 +296,9 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest &req, const
                 response = cfg->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
             });
 
-            if (result == TaskScheduler::AwaitResult::Timeout) {
+            if (!result) {
                 status_code = 500;
-                response = "Failed to get config. Task timed out.";
+                response = "Failed to get config. Await failed.";
             }
 
             if (status_code == 200) {

@@ -130,20 +130,17 @@ public:
 
     uint64_t scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync, const std::source_location &src_location = std::source_location::current());
 
-    enum class AwaitResult {
-        Done,
-        Timeout,
-        Error,
-        Rebooting,
-    };
-
-    AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
+    // Returns true if the passed function was executed in the main thread.
+    // Returns false if not, or when a reboot was requested while awaiting.
+    // It is guaranteed that fn will not continue to be executed once await returns.
+    // When the timeout is exceeded and fn is still being executed, esp_system_abort is called.
+    bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
 
     bool rescheduleNow(uint64_t task_id);
     bool updateDelay(uint64_t task_id, micros_t new_delay);
 
 private:
-    AwaitResult await(uint64_t task_id, millis_t millis_to_wait = 10_s);
+    bool await(uint64_t task_id, millis_t millis_to_wait = 10_s);
 
     std::mutex task_mutex;
     TaskQueue tasks;

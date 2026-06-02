@@ -102,7 +102,8 @@ void WS::register_urls()
                 done = true;
             });
 
-            if (result != TaskScheduler::AwaitResult::Done) {
+            if (!result) {
+                client->close_HTTPThread();
                 return false;
             }
 

@@ -2439,8 +2439,8 @@ int RemoteAccess::begin_charge_log_send(
         uint8_t dummy[128];
         while (recvfrom(inner_socket, dummy, sizeof(dummy), 0, nullptr, nullptr) > 0) {}
     });
-    if (await_ret != TaskScheduler::AwaitResult::Done) {
-        logger.printfln("Cannot send charge log: task scheduler timeout");
+    if (!await_ret) {
+        logger.printfln("Cannot send charge log: await failed");
         return -4;
     }
 

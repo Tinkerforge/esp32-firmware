@@ -377,7 +377,9 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
                 const auto await_result = task_scheduler.await([&closure, error_code]() {
                     closure.handler->uploadErrorCallback(*closure.request, error_code);
                 });
-                assert(await_result == TaskScheduler::AwaitResult::Done);
+                if (!await_result) {
+                    return ESP_FAIL;
+                }
             }
             else {
                 handler->uploadErrorCallback(*request, error_code);
@@ -395,7 +397,9 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
             const auto await_result = task_scheduler.await([&closure, &result]() {
                 result = closure.handler->uploadCallback(*closure.request, "not implemented", closure.offset, closure.scratch_buf, closure.received, closure.remaining);
             });
-            assert(await_result == TaskScheduler::AwaitResult::Done);
+            if (!await_result) {
+                return ESP_FAIL;
+            }
         } else {
             result = handler->uploadCallback(*request, "not implemented", closure.offset, closure.scratch_buf, closure.received, closure.remaining);
         }
@@ -412,7 +416,7 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 [[gnu::noinline]]
-static bool check_remote_access_connection(WebServerRequest &request)
+static TristateBool check_remote_access_connection(WebServerRequest &request)
 {
     struct {
         const IPAddress local;
@@ -427,9 +431,11 @@ static bool check_remote_access_connection(WebServerRequest &request)
     const auto await_result = task_scheduler.await([&closure]() {
         closure.is_ra = remote_access.is_connected_local_ip(closure.local, closure.remote);
     });
-    assert(await_result == TaskScheduler::AwaitResult::Done);
+    if (!await_result) {
+        return TristateBool::Undefined;
+    }
 
-    return closure.is_ra;
+    return static_cast<TristateBool>(closure.is_ra);
 }
 #endif
 
@@ -459,14 +465,20 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 
     if (listen_port_index == 0 && port_handlers->listen_index_0_ra_only) {
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-        const bool is_ra = check_remote_access_connection(request);
+        const TristateBool is_ra = check_remote_access_connection(request);
 
-        if (!is_ra) {
-            const WebServerRequestReturnProtect ret = request.send_plain(403, "HTTP disabled; use HTTPS instead");
-            return ret.error;
+        switch (is_ra) {
+            case TristateBool::False:
+                return request.send_plain(403, "HTTP disabled; use HTTPS instead").error;
+            case TristateBool::True:
+                cached_is_remote_access_connection = is_ra;
+                break;
+            case TristateBool::Undefined:
+            default:
+                // check_remote_access_connection returns undefined on error
+                return ESP_FAIL;
+
         }
-
-        cached_is_remote_access_connection = static_cast<TristateBool>(is_ra);
 #endif
     }
 
@@ -475,9 +487,18 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
         if (cached_is_remote_access_connection == TristateBool::Undefined) {
-            auth_by_remote_access = check_remote_access_connection(request);
-        } else {
-            auth_by_remote_access = static_cast<bool>(cached_is_remote_access_connection);
+            cached_is_remote_access_connection = check_remote_access_connection(request);
+        }
+
+        switch (cached_is_remote_access_connection) {
+            case TristateBool::False:
+            case TristateBool::True:
+                auth_by_remote_access = static_cast<bool>(cached_is_remote_access_connection);
+                break;
+            case TristateBool::Undefined:
+            default:
+                // check_remote_access_connection returns undefined on error
+                return ESP_FAIL;
         }
 #endif
 
@@ -527,7 +548,9 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
                     const auto await_result = task_scheduler.await([handler, &request]() {
                         handler->uploadErrorCallback(request, EBADMSG);
                     });
-                    assert(await_result == TaskScheduler::AwaitResult::Done);
+                    if (!await_result) {
+                        return ESP_FAIL;
+                    }
                 }
                 else {
                     handler->uploadErrorCallback(request, EBADMSG);
@@ -547,7 +570,9 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
                     const auto await_result = task_scheduler.await([handler, &rq]() {
                         rq.result = handler->uploadCallback(*rq.req, "not implemented", 0, nullptr, 0, 0);
                     });
-                    assert(await_result == TaskScheduler::AwaitResult::Done);
+                    if (!await_result) {
+                        return ESP_FAIL;
+                    }
                 } else {
                     rq.result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
                 }
@@ -579,7 +604,9 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
             const WebServerRequestReturnProtect ret = handler->callback(*rq.req);
             rq.error = ret.error;
         });
-        assert(await_result == TaskScheduler::AwaitResult::Done);
+        if (!await_result) {
+            return ESP_FAIL;
+        }
 
         return rq.error;
     } else {

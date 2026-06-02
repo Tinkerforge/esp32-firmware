@@ -161,7 +161,7 @@ static void pre_reboot()
         pre_reboot_helper();
     }
     else {
-        if (task_scheduler.await(pre_reboot_helper, PRE_REBOOT_MAX_DURATION) == TaskScheduler::AwaitResult::Timeout) {
+        if (!task_scheduler.await(pre_reboot_helper, PRE_REBOOT_MAX_DURATION)) {
             esp_system_abort(pre_reboot_message);
         }
     }

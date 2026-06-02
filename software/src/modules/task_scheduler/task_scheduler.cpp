@@ -319,26 +319,27 @@ uint64_t TaskScheduler::currentTaskId()
     return 0;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
+bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 {
     if (task_id == 0) {
         logger.printfln("Attempted to await task 0");
-        return TaskScheduler::AwaitResult::Error;
+        return false;
     }
 
-    if (this->rebooting)
-        return TaskScheduler::AwaitResult::Rebooting;
+    if (this->rebooting) {
+        return false;
+    }
 
     if (millis_to_wait == 0_us) {
         logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0_us is not allowed. This is not scheduleOnce!");
-        return TaskScheduler::AwaitResult::Error;
+        return false;
     }
 
     TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
 
     if (mainTaskHandle == thisThread) {
         logger.printfln("Calling TaskScheduler::await is not allowed in the main thread!");
-        return TaskScheduler::AwaitResult::Error;
+        return false;
     }
 
     {
@@ -355,17 +356,18 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
         else
             task = tasks.findByTaskID(task_id);
 
-        if (task == nullptr)
-            return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
+        if (task == nullptr) {
+            return !this->rebooting;
+        }
 
         if (!task->once) {
             logger.printfln("Calling TaskScheduler::await is not allowed for a non-single-shot task");
-            return TaskScheduler::AwaitResult::Error;
+            return false;
         }
 
         if (task->awaited_by != nullptr) {
             logger.printfln("Task is already awaited by another thread!");
-            return TaskScheduler::AwaitResult::Error;
+            return false;
         }
 
         xTaskNotifyStateClear(thisThread);
@@ -376,18 +378,17 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
         switch (this->cancel(task_id)) {
             case TaskScheduler::CancelResult::WillBeCancelled:
                 esp_system_abort("Awaited task timed out and can't be cancelled. Giving up.");
-                return TaskScheduler::AwaitResult::Timeout;
             case TaskScheduler::CancelResult::Cancelled:
-                return TaskScheduler::AwaitResult::Timeout;
+                return false;
             case TaskScheduler::CancelResult::NotFound:
-                return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
+                return !this->rebooting;
         }
     }
 
-    return this->rebooting ? TaskScheduler::AwaitResult::Rebooting : TaskScheduler::AwaitResult::Done;
+    return !this->rebooting;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
+bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
 #ifdef DEBUG_FS_ENABLE
     if (strcmp(pcTaskGetName(nullptr), "tiT") == 0) {
