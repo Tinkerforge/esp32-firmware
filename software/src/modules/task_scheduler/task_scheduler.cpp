@@ -21,6 +21,10 @@
 
 #include <algorithm>
 
+#ifdef DEBUG_FS_ENABLE
+#include <lwipopts.h>
+#endif
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
@@ -391,7 +395,7 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
 #ifdef DEBUG_FS_ENABLE
-    if (strcmp(pcTaskGetName(nullptr), "tiT") == 0) {
+    if (strcmp(pcTaskGetName(nullptr), TCPIP_THREAD_NAME) == 0) {
         esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
     }
 #endif
