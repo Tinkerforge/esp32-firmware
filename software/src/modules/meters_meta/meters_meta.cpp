@@ -30,6 +30,7 @@ void MetersMeta::pre_setup()
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},
+        {"excluded",       Config::Bool(false)},
         {"mode",           Config::Uint(0, 0, 4)},
         {"source_meter_a", Config::Uint(0, 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"source_meter_b", Config::Uint(1, 0, OPTIONS_METERS_MAX_SLOTS() - 1)},

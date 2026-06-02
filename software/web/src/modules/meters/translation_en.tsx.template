@@ -90,7 +90,11 @@ let x = {
             "location_grid": "Grid",
             "location_battery": "Battery",
             "location_load": "Load",
-            "location_pv": "PV"
+            "location_pv": "PV",
+
+            "config_excluded": "Excluded from summaries",
+            "config_excluded_desc": "Exclude meter from location-based summaries, e.g. the power summary on the status page.",
+            "config_excluded_help": "For some reasons it might be necessary to collect certain meter values multiple times. But this also results in erroneously including those meter values multiple times in location-based summaries, which distords the summaries. In these cases meters that collect meter values a second time can be excluded from location-based summaries."
         },
         "automation": {
             "meter_reset": "Reset energy meter",

@@ -90,7 +90,11 @@ let x = {
             "location_grid": "Netzanschluss",
             "location_battery": "Speicher",
             "location_load": "Last",
-            "location_pv": "PV"
+            "location_pv": "PV",
+
+            "config_excluded": "Ausgenommen von Zusammenfassungen",
+            "config_excluded_desc": "Zähler von Messort-basierten Zusammenfassungen, z.B. der Leistungsübersicht auf der Statusseite, ausnehmen.",
+            "config_excluded_help": "Es kann aus verschiedenen Gründen notwendig sein, gewisse Zählerwerte mehrfach zu erfassen. Dadurch werden diese Zählerwerte aber auch fälschlicherweise mehrfach in Messort-basierten Zusammenfassungen eingerechnet, wodurch die Zusammenfassung verfälscht wird. In diesem Fall können die Zähler, die Zählerwerte ein weiteres Mal erfassen, von der Messort-basierten Zusammenfassungen ausgenommen werden."
         },
         "automation": {
             "meter_reset": "Stromzähler zurücksetzen",

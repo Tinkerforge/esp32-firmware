@@ -1203,6 +1203,14 @@ function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, 
     return MeterLocation.Unknown;
 }
 
+function get_meter_excluded(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        return meter_configs[meter_slot][1].excluded;
+    }
+
+    return undefined;
+}
+
 export class MetersStatus extends Component<{}, MetersStatusState> {
     on_mount: () => void;
     on_mount_pending = false;
@@ -1408,6 +1416,10 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let battery_socs: number[] = [];
 
             for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
+                if (get_meter_excluded(this.state.meter_configs, meter_slot) === true) { // compare expicitly to true, because get_meter_excluded can return undefined
+                    continue;
+                }
+
                 let location = get_meter_location(this.state.meter_configs, meter_slot);
 
                 if (this.state.meter_configs[meter_slot][0] != MeterClassID.None && location == MeterLocation.Unknown) {

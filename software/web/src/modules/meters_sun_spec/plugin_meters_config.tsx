@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren, VNode } from "preact";
@@ -31,6 +33,7 @@ import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
@@ -46,6 +49,7 @@ export type SunSpecMetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         host: string;
         port: number;
         device_address: number;
@@ -638,7 +642,16 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                                     this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
                                 }} /> :
                             <InputText value={translate_meter_location(fixed_location)} />))}
-            </FormRow>);
+            </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+            <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                <Switch
+                    desc={__("meters.content.config_excluded_desc")}
+                    checked={this.props.config[1].excluded}
+                    onClick={() => this.props.on_config(util.get_updated_union(this.props.config, {excluded: !this.props.config[1].excluded}))}/>
+            </FormRow>
+//#endif
+        );
 
         return edit_children;
     }
@@ -648,7 +661,7 @@ export function pre_init() {
     return {
         [MeterClassID.SunSpec]: {
             name: () => __("meters_sun_spec.content.meter_class"),
-            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null, model_instance: null, dc_port_type: DCPortType.NotImplemented}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, excluded: false, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null, model_instance: null, dc_port_type: DCPortType.NotImplemented}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 return <EditChildren config={config} on_config={on_config} />;

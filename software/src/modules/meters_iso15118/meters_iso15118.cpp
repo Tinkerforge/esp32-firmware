@@ -32,6 +32,7 @@ void MetersISO15118::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"location", Config::Enum(MeterLocation::EV)},
+        {"excluded", Config::Bool(false)},
     });
 
     state_prototype = Config::Object({

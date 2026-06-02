@@ -30,6 +30,7 @@ void MetersPvFaker::pre_setup()
     config_prototype = Config::Object({
         {"display_name",  Config::Str("", 0, 32)},
         {"location",      Config::Enum(MeterLocation::Inverter)},
+        {"excluded",      Config::Bool(false)},
         {"topic",         Config::Str("", 0, 128)},
         {"limiter_topic", Config::Str("", 0, 128)},
         {"peak_power",    Config::Uint32(30*1000)},  // watt

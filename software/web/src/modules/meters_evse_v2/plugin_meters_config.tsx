@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -26,6 +28,7 @@ import { translate_meter_location } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import * as API from "../../ts/api";
 
 export type EVSEV2MetersConfig = [
@@ -33,6 +36,7 @@ export type EVSEV2MetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
     },
 ];
 
@@ -40,7 +44,7 @@ export function pre_init() {
     return {
         [MeterClassID.EVSEV2]: {
             name: () => __("meters_evse_v2.content.meter_class"),
-            new_config: () => [MeterClassID.EVSEV2, {display_name: "", location: MeterLocation.Charger}] as MeterConfig,
+            new_config: () => [MeterClassID.EVSEV2, {display_name: "", location: MeterLocation.Charger, excluded: false}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EVSEV2MetersConfig, on_config: (config: EVSEV2MetersConfig) => void): ComponentChildren => {
                 return [
@@ -57,6 +61,14 @@ export function pre_init() {
                     <FormRow label={__("meters_evse_v2.content.config_location")}>
                         <InputText value={translate_meter_location(config[1].location)} />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                 ];
             },
             get_extra_rows: (meter_slot: number) => {

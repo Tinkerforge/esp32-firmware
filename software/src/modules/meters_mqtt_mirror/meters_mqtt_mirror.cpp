@@ -30,6 +30,7 @@ void MetersMqttMirror::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"location",     Config::Enum(MeterLocation::Unknown)},
+        {"excluded",     Config::Bool(false)},
         {"auto",         Config::Bool(true)},
         {"meter_path",   Config::Str("", 3, 64)},
         {"value_ids",    Config::Str("", 0, 64)},

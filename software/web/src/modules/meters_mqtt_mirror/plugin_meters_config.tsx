@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -35,6 +37,7 @@ export type MqttMirrorMetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         auto: boolean;
         meter_path: string;
         value_ids: string;
@@ -45,7 +48,7 @@ export function pre_init() {
     return {
         [MeterClassID.MqttMirror]: {
             name: () => __("meters_mqtt_mirror.content.meter_class"),
-            new_config: () => [MeterClassID.MqttMirror, {display_name: "", location: MeterLocation.Unknown, auto: true, meter_path: "source/abc/meters/0", value_ids: ""}] as MeterConfig,
+            new_config: () => [MeterClassID.MqttMirror, {display_name: "", location: MeterLocation.Unknown, excluded: false, auto: true, meter_path: "source/abc/meters/0", value_ids: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MqttMirrorMetersConfig, on_config: (config: MqttMirrorMetersConfig) => void): ComponentChildren => {
                 return [
@@ -69,6 +72,14 @@ export function pre_init() {
                                 on_config(util.get_updated_union(config, {location: parseInt(v)}));
                             }} />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                     <FormRow label={__("meters_mqtt_mirror.content.auto")}>
                         <Switch desc={__("meters_mqtt_mirror.content.auto_desc")}
                             checked={config[1].auto}

@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -29,6 +31,7 @@ import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import { VirtualMeter } from "./generated/virtual_meter.enum";
 
 export type RCTPowerMetersConfig = [
@@ -36,6 +39,7 @@ export type RCTPowerMetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         host: string;
         port: number;
         virtual_meter: number;
@@ -60,7 +64,7 @@ export function pre_init() {
     return {
         [MeterClassID.RCTPower]: {
             name: () => __("meters_rct_power.content.meter_class"),
-            new_config: () => [MeterClassID.RCTPower, {display_name: "", location: MeterLocation.Unknown, host: "", port: 8899, virtual_meter: null}] as MeterConfig,
+            new_config: () => [MeterClassID.RCTPower, {display_name: "", location: MeterLocation.Unknown, excluded: false, host: "", port: 8899, virtual_meter: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RCTPowerMetersConfig, on_config: (config: RCTPowerMetersConfig) => void): ComponentChildren => {
                 let virtual_meter_items: [string, string][] = [
@@ -141,7 +145,16 @@ export function pre_init() {
                                         on_config(util.get_updated_union(config, {location: parseInt(v)}));
                                     }} /> :
                                 <InputText value={translate_meter_location(fixed_location)} />)}
-                    </FormRow>);
+                    </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>
+//#endif
+                );
 
                 return edit_children;
             },

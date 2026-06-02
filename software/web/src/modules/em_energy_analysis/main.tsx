@@ -244,6 +244,14 @@ function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, 
     return MeterLocation.Unknown;
 }
 
+function get_meter_excluded(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        return meter_configs[meter_slot][1].excluded;
+    }
+
+    return undefined;
+}
+
 function get_wallbox_state(flags: number) {
     let state = flags & 0b111;
 
@@ -570,10 +578,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         if (power !== null) {
                             data.power_empty[meter_slot] = false;
 
-                            let location = get_meter_location(this.state.meter_configs, meter_slot);
+                            if (get_meter_excluded(this.state.meter_configs, meter_slot) === false) { // compare expicitly to false, because get_meter_excluded can return undefined
+                                let location = get_meter_location(this.state.meter_configs, meter_slot);
 
-                            data.power_sum[location][timestamp_slot] += power;
-                            data.power_sum_empty[location] = false;
+                                data.power_sum[location][timestamp_slot] += power;
+                                data.power_sum_empty[location] = false;
+                            }
                         }
                     }
 
@@ -1836,6 +1846,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     data.power[meter_slot] = new Array(timestamp_slot_count);
 
                     let location = get_meter_location(this.state.meter_configs, meter_slot);
+                    let excluded = get_meter_excluded(this.state.meter_configs, meter_slot);
 
                     for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
                         let power = payload[timestamp_slot * 9 + 1 + meter_slot];
@@ -1845,8 +1856,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         if (power !== null) {
                             data.power_empty[meter_slot] = false;
 
-                            data.power_sum[location][timestamp_slot] += power;
-                            data.power_sum_empty[location] = false;
+                            if (excluded === false) { // compare expicitly to false, because get_meter_excluded can return undefined
+                                data.power_sum[location][timestamp_slot] += power;
+                                data.power_sum_empty[location] = false;
+                            }
                         }
                     }
                 }

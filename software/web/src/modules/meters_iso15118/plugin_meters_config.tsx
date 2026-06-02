@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -25,6 +27,7 @@ import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import { EVDataProtocol } from "./generated/ev_data_protocol.enum";
 import * as API from "../../ts/api";
 
@@ -33,6 +36,7 @@ export type ISO15118MetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
     },
 ];
 
@@ -40,7 +44,7 @@ export function pre_init() {
     return {
         [MeterClassID.ISO15118]: {
             name: () => __("meters_iso15118.content.meter_class"),
-            new_config: () => [MeterClassID.ISO15118, {display_name: "", location: MeterLocation.EV}] as MeterConfig,
+            new_config: () => [MeterClassID.ISO15118, {display_name: "", location: MeterLocation.EV, excluded: false}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ISO15118MetersConfig, on_config: (config: ISO15118MetersConfig) => void): ComponentChildren => {
                 return [
@@ -54,6 +58,14 @@ export function pre_init() {
                             }}
                         />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                 ];
             },
             get_extra_rows: (meter_slot: number) => {

@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -27,12 +29,14 @@ import { MeterConfig } from "../meters/types";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 
 export type SMASpeedwireMetersConfig = [
     MeterClassID.SMASpeedwire,
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         serial_number: number;
     },
 ];
@@ -41,7 +45,7 @@ export function pre_init() {
     return {
         [MeterClassID.SMASpeedwire]: {
             name: () => __("meters_sma_speedwire.content.meter_class"),
-            new_config: () => [MeterClassID.SMASpeedwire, {display_name: "", location: MeterLocation.Unknown, serial_number: 0}] as MeterConfig,
+            new_config: () => [MeterClassID.SMASpeedwire, {display_name: "", location: MeterLocation.Unknown, excluded: false, serial_number: 0}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SMASpeedwireMetersConfig, on_config: (config: SMASpeedwireMetersConfig) => void): ComponentChildren => {
                 return [
@@ -85,6 +89,14 @@ export function pre_init() {
                                 on_config(util.get_updated_union(config, {location: parseInt(v)}));
                             }} />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                 ];
             },
         },

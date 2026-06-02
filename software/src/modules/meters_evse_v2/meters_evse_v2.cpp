@@ -32,6 +32,7 @@ void MetersEVSEV2::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str(OPTIONS_LOCAL_METER_DEFAULT_DISPLAY_NAME(), 0, 32)},
         {"location", Config::Enum(MeterLocation::Charger)},
+        {"excluded", Config::Bool(false)},
     });
 
     state_prototype = Config::Object({

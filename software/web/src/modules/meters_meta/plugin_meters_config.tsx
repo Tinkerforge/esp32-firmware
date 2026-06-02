@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import * as options from "../../options";
@@ -33,12 +35,14 @@ import { FormRow     } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputText   } from "../../ts/components/input_text";
+import { Switch      } from "../../ts/components/switch";
 
 export type MetaMetersConfig = [
     MeterClassID.Meta,
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         mode: number;
         source_meter_a: number;
         source_meter_b: number;
@@ -50,7 +54,7 @@ export function pre_init() {
     return {
         [MeterClassID.Meta]: {
             name: () => __("meters_meta.content.meter_class"),
-            new_config: () => [MeterClassID.Meta, {display_name: "Meta", location: MeterLocation.Unknown, mode: 0, source_meter_a: 0, source_meter_b: 1, constant: 0}] as MeterConfig,
+            new_config: () => [MeterClassID.Meta, {display_name: "Meta", location: MeterLocation.Unknown, excluded: false, mode: 0, source_meter_a: 0, source_meter_b: 1, constant: 0}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MetaMetersConfig, on_config: (config: MetaMetersConfig) => void): ComponentChildren => {
                 let meter_names: [string, string][] = [];
@@ -80,6 +84,14 @@ export function pre_init() {
                                 on_config(util.get_updated_union(config, {location: parseInt(v)}));
                             }} />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                     <FormRow label={__("meters_meta.content.mode")}>
                         <InputSelect
                             items={[

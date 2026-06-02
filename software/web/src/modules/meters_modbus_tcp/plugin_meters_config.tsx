@@ -18,6 +18,7 @@
  */
 
 //#include "../../options.inc"
+//#include "generated/module_available.inc"
 
 import * as options from "../../options";
 import * as util from "../../ts/util";
@@ -43,6 +44,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import { Table, TableRow } from "../../ts/components/table";
 
 export type ModbusTCPMetersConfig = [
@@ -50,6 +52,7 @@ export type ModbusTCPMetersConfig = [
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         host: string;
         port: number;
         table: TableConfig;
@@ -235,7 +238,7 @@ export function pre_init() {
     return {
         [MeterClassID.ModbusTCP]: {
             name: () => __("meters_modbus_tcp.content.meter_class"),
-            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, table: null}] as MeterConfig,
+            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", location: MeterLocation.Unknown, excluded: false, host: "", port: 502, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
                 let table_items: [string, string][] = [
@@ -383,7 +386,16 @@ export function pre_init() {
                                             on_config(util.get_updated_union(config, {location: parseInt(v)}));
                                         }} /> :
                                     <InputText value={translate_meter_location(fixed_location)} />)}
-                        </FormRow>);
+                        </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                        <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                            <Switch
+                                desc={__("meters.content.config_excluded_desc")}
+                                checked={config[1].excluded}
+                                onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                        </FormRow>
+//#endif
+                    );
 
                     if (config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM) {
                         edit_children.push(
@@ -493,6 +505,14 @@ export function pre_init() {
                                     on_config(util.get_updated_union(config, {location: parseInt(v)}));
                                 }} />
                         </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                        <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                            <Switch
+                                desc={__("meters.content.config_excluded_desc")}
+                                checked={config[1].excluded}
+                                onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                        </FormRow>,
+//#endif
                         <FormRow label={__("meters_modbus_tcp.content.register_address_mode")}>
                             <InputSelect
                                 required

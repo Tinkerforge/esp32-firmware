@@ -31,6 +31,7 @@ void MetersAPI::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"location", Config::Enum(MeterLocation::Unknown)},
+        {"excluded", Config::Bool(false)},
         {"value_ids", Config::Array({},
             Config::get_prototype_uint16_0(),
             0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfUint>()

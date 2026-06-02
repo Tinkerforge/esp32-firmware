@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -26,12 +28,14 @@ import { MeterConfig  } from "../meters/types";
 import { FormRow     } from "../../ts/components/form_row";
 import { InputText   } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
+import { Switch      } from "../../ts/components/switch";
 
 export type PvFakerMetersConfig = [
     MeterClassID.PvFaker,
     {
         display_name: string;
         location: number;
+        excluded: boolean;
         topic: string;
         limiter_topic: string;
         peak_power: number;
@@ -44,7 +48,7 @@ export function pre_init() {
     return {
         [MeterClassID.PvFaker]: {
             name: () => __("meters_pv_faker.content.meter_class"),
-            new_config: () => [MeterClassID.PvFaker, {display_name: "PV Faker", location: MeterLocation.Inverter, topic: "esp32/UKK/ambient_light/state", limiter_topic: "", peak_power: 30000, zero_at_lux: 100, peak_at_lux: 105000}] as MeterConfig,
+            new_config: () => [MeterClassID.PvFaker, {display_name: "PV Faker", location: MeterLocation.Inverter, excluded: false, topic: "esp32/UKK/ambient_light/state", limiter_topic: "", peak_power: 30000, zero_at_lux: 100, peak_at_lux: 105000}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: PvFakerMetersConfig, on_config: (config: PvFakerMetersConfig) => void): ComponentChildren => {
                 return [
@@ -56,6 +60,14 @@ export function pre_init() {
                             onValue={(v) => {on_config(util.get_updated_union(config, {display_name: v}));}}
                         />
                     </FormRow>,
+//#if MODULE_EM_ENERGY_ANALYSIS_AVAILABLE
+                    <FormRow label={__("meters.content.config_excluded")} help={__("meters.content.config_excluded_help")}>
+                        <Switch
+                            desc={__("meters.content.config_excluded_desc")}
+                            checked={config[1].excluded}
+                            onClick={() => on_config(util.get_updated_union(config, {excluded: !config[1].excluded}))}/>
+                    </FormRow>,
+//#endif
                     <FormRow label={__("meters_pv_faker.content.topic")}>
                         <InputText
                             required
