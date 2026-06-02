@@ -3,7 +3,7 @@ import { h } from "preact";
 let x = {
     "meters_iso15118": {
         "content": {
-            "meter_class": "Elektrofahrzeug (ISO 15118)",
+            "meter_class": "Fahrzeug (ISO 15118)",
             "config_display_name": "Anzeigename",
             "protocol": "Protokoll"
         },
