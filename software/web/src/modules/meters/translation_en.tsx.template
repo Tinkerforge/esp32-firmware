@@ -91,6 +91,7 @@ let x = {
             "location_battery": "Battery",
             "location_load": "Load",
             "location_pv": "PV",
+            "location_ev": "Vehicle",
 
             "config_excluded": "Excluded from summaries",
             "config_excluded_desc": "Exclude meter from location-based summaries, e.g. the power summary on the status page.",

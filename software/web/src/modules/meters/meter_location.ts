@@ -29,6 +29,7 @@ export function translate_meter_location(location: MeterLocation): string {
     case MeterLocation.Battery:  return __("meters.content.location_battery");
     case MeterLocation.Load:     return __("meters.content.location_load");
     case MeterLocation.PV:       return __("meters.content.location_pv");
+    case MeterLocation.EV:       return __("meters.content.location_ev");
     }
 
     return "<unknown>";
@@ -36,7 +37,6 @@ export function translate_meter_location(location: MeterLocation): string {
 
 export function get_meter_location_items(): [string, string][] {
     return [
-        //[MeterLocation.Charger.toString(), translate_meter_location(MeterLocation.Charger)],
         [MeterLocation.Inverter.toString(), translate_meter_location(MeterLocation.Inverter)],
         [MeterLocation.Grid.toString(), translate_meter_location(MeterLocation.Grid)],
         [MeterLocation.Battery.toString(), translate_meter_location(MeterLocation.Battery)],

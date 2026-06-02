@@ -91,6 +91,7 @@ let x = {
             "location_battery": "Speicher",
             "location_load": "Last",
             "location_pv": "PV",
+            "location_ev": "Fahrzeug",
 
             "config_excluded": "Ausgenommen von Zusammenfassungen",
             "config_excluded_desc": "Zähler von Messort-basierten Zusammenfassungen, z.B. der Leistungsübersicht auf der Statusseite, ausnehmen.",
