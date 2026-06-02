@@ -23,6 +23,7 @@
 #include <queue>
 #include <functional>
 #include <mutex>
+#include <atomic>
 #include <source_location>
 #include <time.h>
 #include <iostream>
@@ -151,7 +152,7 @@ private:
     std::vector<WallClockTask> wall_clock_tasks;
     bool wall_clock_worker_started = false;
 
-    bool rebooting = false;
+    std::atomic<bool> rebooting = false;
 
     void wall_clock_worker();
     void run_wall_clock_task(uint64_t task_id);
