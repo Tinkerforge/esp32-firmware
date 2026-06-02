@@ -42,7 +42,7 @@ let x = {
             "loading": "Lade Daten...",
             "last_update": "Letzte Aktualisierung",
             "next_update": "Nächste Aktualisierung",
-            "no_data": "Keine Daten verfügbar",
+            "no_data": "Keine Daten vorhanden",
             "not_configured": "Standort nicht konfiguriert",
             "unknown": "Unbekannt"
         },

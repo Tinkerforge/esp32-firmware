@@ -41,7 +41,7 @@ let x = {
             "history_6": "History (6 h)",
             "history_3": "History (3 h)",
             "live": "Live (6 min)",
-            "no_data": "No data available!",
+            "no_data": "No data available",
             "loading": "Loading data...",
             "detailed_values": "Details",
             "detailed_values_none": "No values are available yet.",
