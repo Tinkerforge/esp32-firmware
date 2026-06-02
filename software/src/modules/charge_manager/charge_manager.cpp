@@ -350,7 +350,7 @@ static bool is_packet_stale(
         logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
             get_charger_name(client_id), hosts[client_id],
             v1->evse_uptime);
-        if (now < (target.last_update + 10_s)) {
+        if ((target.last_update + 10_s) < now) {
             target_alloc.state = CASState::Error;
             target_alloc.error = CASError::EVSEUnreachable;
         }
