@@ -806,7 +806,7 @@ void Wifi::register_sta_event_handlers()
                 if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
                     String last_ip{};
 
-                    task_scheduler.await([this, &last_ip](){
+                    (void)task_scheduler.await([this, &last_ip](){
                         last_ip = state.get("sta_ip")->asString();
                     });
 

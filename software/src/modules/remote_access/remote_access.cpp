@@ -2404,9 +2404,7 @@ int RemoteAccess::poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reas
 
 void RemoteAccess::release_inner_socket()
 {
-    task_scheduler.await([this]() {
-        this->charge_log_sending = false;
-    });
+    this->charge_log_sending = false;
 }
 
 int RemoteAccess::begin_charge_log_send(

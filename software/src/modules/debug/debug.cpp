@@ -839,11 +839,13 @@ void Debug::register_urls()
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
         char buf[3072]; // on httpd stack, which is large enough
         StringWriter sw(buf, sizeof(buf));
-        task_scheduler.await([&sw]() {
+        auto result = task_scheduler.await([&sw]() {
             for (const auto &reg : api.states) {
                 sw.printf("%4u %s\n", reg.config->string_length(), reg.path);
             }
         });
+        if (!result)
+            return req.send_plain(500, "await failed");
         return req.send_plain(200, sw);
     });
 

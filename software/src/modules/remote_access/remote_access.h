@@ -23,6 +23,7 @@
 #include <esp_http_client.h>
 #include <queue>
 #include <memory>
+#include <atomic>
 
 #include "module.h"
 #include "config.h"
@@ -126,7 +127,7 @@ private:
     bool management_request_failed = false;
     bool management_request_allowed = true;
     bool management_auth_failed = false;
-    bool charge_log_sending = false;
+    std::atomic<bool> charge_log_sending = false;
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
     uint64_t management_task_id = 0;

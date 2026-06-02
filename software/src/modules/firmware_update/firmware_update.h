@@ -25,6 +25,7 @@
 #include <esp_partition.h>
 #include <esp_ota_ops.h>
 #include <sodium.h>
+#include <atomic>
 
 #include "module.h"
 #include "config.h"
@@ -103,8 +104,8 @@ private:
     ConfigRoot install_firmware_config;
     ConfigRoot override_signature;
 
-    bool check_firmware_in_progress = false;
-    bool flash_firmware_in_progress = false;
+    std::atomic<bool> check_firmware_in_progress = false;
+    std::atomic<bool> flash_firmware_in_progress = false;
     InstallState flash_firmware_state = InstallState::Idle;
     InstallState flash_firmware_state_last_reported = InstallState::Idle;
     uint32_t flash_firmware_progress = 0;

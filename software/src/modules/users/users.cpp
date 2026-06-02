@@ -444,7 +444,7 @@ void Users::setup()
             bool result = false;
 
             // If this times out, result stays false.
-            task_scheduler.await([this, &req, &fields, &result]() {
+            (void)task_scheduler.await([this, &req, &fields, &result]() {
                 for (size_t i = 0; i < config.get("users")->count(); ++i) {
                     if (config.get("users")->get(i)->get("username")->asString().equals(fields.username)) {
                         result = checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok

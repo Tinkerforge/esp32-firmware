@@ -134,7 +134,10 @@ public:
     // Returns false if not, or when a reboot was requested while awaiting.
     // It is guaranteed that fn will not continue to be executed once await returns.
     // When the timeout is exceeded and fn is still being executed, esp_system_abort is called.
-    bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
+    [[nodiscard]] bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
+
+    // Same as await, but calls esp_system_abort if await would return false.
+    void await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
 
     bool rescheduleNow(uint64_t task_id);
     bool updateDelay(uint64_t task_id, micros_t new_delay);

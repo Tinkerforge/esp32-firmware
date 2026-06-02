@@ -434,6 +434,6 @@ void ensure_running_in_main_task(std::function<void(void)> &&fn) {
     if (running_in_main_task()) {
         fn();
     } else {
-        task_scheduler.await(std::move(fn));
+        task_scheduler.await_or_die(std::move(fn));
     }
 }

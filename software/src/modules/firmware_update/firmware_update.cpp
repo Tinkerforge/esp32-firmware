@@ -555,7 +555,11 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     }
 
     if (mark_update_partition_invalid) {
-        task_scheduler.await([this](){ this->change_update_partition_to_invalid(); });
+        // Even if we don't fail to mark the partition as invalid,
+        // we will probably overwrite the first 16 bytes soon.
+        // This only fixes a confusing event log message, so it's
+        // fine to ignore await errors here.
+        (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid(); });
         mark_update_partition_invalid = false;
     }
 
@@ -809,7 +813,7 @@ void FirmwareUpdate::register_urls()
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
         InstallState result = check_firmware_info(true, false, &json);
 
-        task_scheduler.await([this](){check_firmware_in_progress = false;});
+        check_firmware_in_progress = false;
 
         if (result != InstallState::InProgress) {
             if (json_buf[0] == '\0') {
@@ -861,7 +865,7 @@ void FirmwareUpdate::register_urls()
 
             install_state_to_json_error(InstallState::FirmwareInfoTooBig, &json);
             request.send_json(400, json);
-            task_scheduler.await([this](){check_firmware_in_progress = false;});
+            check_firmware_in_progress = false;
             return false;
         }
 
@@ -870,7 +874,7 @@ void FirmwareUpdate::register_urls()
     },
     [this](WebServerRequest request, int error_code) {
         logger.printfln("File reception failed: %s (%d)", strerror(error_code), error_code);
-        task_scheduler.await([this](){check_firmware_in_progress = false;});
+        check_firmware_in_progress = false;
         return request.send_plain(500, "Failed to receive file");
     });
 
@@ -881,7 +885,8 @@ void FirmwareUpdate::register_urls()
 
         report_flash_firmware_progress_http_thread();
 
-        task_scheduler.await([this]() {
+        // Discarding the result is fine: We are rebooting directly afterwards.
+        (void)task_scheduler.await([this]() {
             flash_firmware_in_progress = false;
             update_install_state();
         });
@@ -932,10 +937,8 @@ void FirmwareUpdate::register_urls()
                 install_state_to_json_error(flash_firmware_state, &json);
             }
 
-            task_scheduler.await([this]() {
-                flash_firmware_in_progress = false;
-                update_install_state();
-            });
+            flash_firmware_in_progress = false;
+            (void)task_scheduler.await([this]() { update_install_state(); });
 
             request.send_json(400, json);
             return false;
@@ -954,10 +957,8 @@ void FirmwareUpdate::register_urls()
 
         report_flash_firmware_progress_http_thread();
 
-        task_scheduler.await([this](){
-            flash_firmware_in_progress = false;
-            update_install_state();
-        });
+        flash_firmware_in_progress = false;
+        (void)task_scheduler.await([this]() { update_install_state(); });
 
         return request.send_plain(500, "Failed to receive file");
     });

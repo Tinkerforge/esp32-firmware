@@ -820,7 +820,9 @@ void API::register_urls()
                 json.endObject();
             }
 
-            task_scheduler.await([&json](){
+            // Ignore await results here:
+            // Half a debug report is better than nothing.
+            (void)task_scheduler.await([&json](){
                 uint16_t i = 0;
                 char uid_str[7] = {0};
                 // We need a string below. tf_hal_get_device_info will only write the first char.
@@ -842,7 +844,7 @@ void API::register_urls()
                 json.endArray();
             });
 
-            task_scheduler.await([&json](){
+            (void)task_scheduler.await([&json](){
                 json.addMemberArray("error_counters");
                 for (char c = 'A'; c <= 'F'; ++c) {
                     uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
@@ -864,7 +866,7 @@ void API::register_urls()
                 json.endArray();
             });
 
-            task_scheduler.await([&json](){
+            (void)task_scheduler.await([&json](){
                 json.addMemberArray("modified");
                 File dir = LittleFS.open("/config");
                 if (!dir)

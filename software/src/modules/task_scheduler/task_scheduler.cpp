@@ -325,6 +325,11 @@ uint64_t TaskScheduler::currentTaskId()
 
 bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 {
+#ifdef DEBUG_FS_ENABLE
+    if (strcmp(pcTaskGetName(nullptr), TCPIP_THREAD_NAME) == 0) {
+        esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
+    }
+#endif
     if (task_id == 0) {
         logger.printfln("Attempted to await task 0");
         return false;
@@ -394,12 +399,13 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 
 bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
-#ifdef DEBUG_FS_ENABLE
-    if (strcmp(pcTaskGetName(nullptr), TCPIP_THREAD_NAME) == 0) {
-        esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
-    }
-#endif
     return await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait);
+}
+
+void TaskScheduler::await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
+{
+    if (!await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait))
+        esp_system_abort("await failed");
 }
 
 void TaskScheduler::wall_clock_worker() {
