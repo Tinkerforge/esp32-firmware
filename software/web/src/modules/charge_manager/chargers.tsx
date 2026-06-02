@@ -18,6 +18,7 @@
  */
 
 //#include "generated/module_available.inc"
+//#include "../../options.inc"
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -225,7 +226,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             enable_charge_manager: cfg.enable_charge_manager,
             chargers: cfg.chargers,
             maximum_available_current: cfg.maximum_available_current,
-            enable_central_management: cfg.enable_central_management}
+//#ifn OPTIONS_PRODUCT_ID_IS_WARP
+            enable_central_management: cfg.enable_central_management,
+//#endif
+        }
 
         // Only set the default available current if it was equal to the old maximum (the user has probably not changed it)
         if ((API.get('charge_manager/config').default_available_current == API.get('charge_manager/config').maximum_available_current)
@@ -521,11 +525,13 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         let enable_central_management = null;
 //#if MODULE_NFC_AVAILABLE
+//#ifn OPTIONS_PRODUCT_ID_IS_WARP
         enable_central_management = <FormRow label={__("charge_manager.content.enable_central_management")}>
                 <Switch desc={__("charge_manager.content.enable_central_management_desc")}
                         checked={state.enable_central_management}
                         onClick={this.toggle("enable_central_management")}/>
             </FormRow>;
+//#endif
 //#endif
 
 
