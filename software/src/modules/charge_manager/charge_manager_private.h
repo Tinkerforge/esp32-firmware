@@ -99,11 +99,6 @@ struct ChargerState {
     // maximum current allowed for this user
     uint16_t user_current;
 
-    // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-    //uint8_t state;
-
-    // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
-    //uint8_t error;
     uint8_t charger_state;
     bool wants_to_charge;
     bool wants_to_charge_low_priority;
