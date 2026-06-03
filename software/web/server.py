@@ -3,6 +3,8 @@
 import sys
 import os
 import argparse
+import secrets
+from functools import wraps
 from flask import Flask, Response, request
 from flask_sock import Sock  # pip install flask-sock
 import websocket  # pip install websocket-client
@@ -17,6 +19,18 @@ import time
 app = Flask(__name__)
 sock = Sock(app)
 host = None
+auth_password = None
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if auth_password is not None:
+            auth = request.authorization
+            if not auth or not secrets.compare_digest(auth.password or '', auth_password):
+                return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="ESP32 Proxy"'})
+        return f(*args, **kwargs)
+    return decorated
 
 ws_cache_lock = threading.RLock()
 ws_cache = {}
