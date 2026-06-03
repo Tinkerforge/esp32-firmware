@@ -871,7 +871,11 @@ void ChargeManager::setup()
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
     ca_config->requested_current_margin = config.get("requested_current_margin")->asUint();
     ca_config->requested_current_threshold = config.get("requested_current_threshold")->asUint();
+#if OPTIONS_PRODUCT_ID_IS_WARP
+    ca_config->enable_central_management = false;
+#else
     ca_config->enable_central_management = config.get("enable_central_management")->asBool();
+#endif
 
     this->ca_state = new CurrentAllocatorState();
 
