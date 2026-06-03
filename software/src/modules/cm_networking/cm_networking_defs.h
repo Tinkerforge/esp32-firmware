@@ -27,7 +27,6 @@
 #include "generated/config_charge_mode.enum.h"
 #include "generated/cm_auth_feedback.enum.h"
 #include "generated/cm_auth_type.enum.h"
-#include "generated/cm_blocking_reason.enum.h"
 
 #if defined(BOARD_HAS_PSRAM)
 // Also change charge_tracker_max_tracked_charges when changing this!
@@ -40,7 +39,7 @@
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
 // Increment when changing packet structs
-#define CM_COMMAND_VERSION 5
+#define CM_COMMAND_VERSION 4
 #define CM_STATE_VERSION 5
 
 // Minimum protocol version supported
@@ -106,10 +105,7 @@ struct cm_command_v4 {
     uint8_t _padding[3];
 };
 
-struct cm_command_v5 {
-    CMBlockingReason blocking_reason;
-    uint8_t _padding[3];
-};
+// Before adding cm_command_v4: Check whether more (supported) charge modes are to be added in the foreseeable future!
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
 static_assert(CM_COMMAND_V1_LENGTH == 4, "Unexpected CM_COMMAND_V1_LENGTH");
@@ -127,9 +123,6 @@ static_assert(to_underlying(ConfigChargeMode::_max) == 9);
 #define CM_COMMAND_V4_LENGTH (sizeof(cm_command_v4))
 static_assert(CM_COMMAND_V4_LENGTH == 4, "Unexpected CM_COMMAND_V4_LENGTH");
 
-#define CM_COMMAND_V5_LENGTH (sizeof(cm_command_v5))
-static_assert(CM_COMMAND_V5_LENGTH == 4, "Unexpected CM_COMMAND_V5_LENGTH");
-
 struct cm_command_packet {
     cm_packet_header header;
     union {
@@ -138,11 +131,10 @@ struct cm_command_packet {
     };
     cm_command_v3 v3;
     cm_command_v4 v4;
-    cm_command_v5 v5;
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
-static_assert(CM_COMMAND_PACKET_LENGTH == 24, "Unexpected CM_COMMAND_PACKET_LENGTH");
+static_assert(CM_COMMAND_PACKET_LENGTH == 20, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
 #define CM_FEATURE_FLAGS_URGENT_BIT_POS 31
 #define CM_FEATURE_FLAGS_URGENT_MASK (1u << CM_FEATURE_FLAGS_URGENT_BIT_POS)

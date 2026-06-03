@@ -84,7 +84,6 @@ export interface management_enabled {
 export interface management_state {
     central_user_management_enabled: boolean;
     manager_ip: string;
-    blocking_reason: number;
 }
 
 export interface user_enabled {

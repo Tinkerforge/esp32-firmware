@@ -10,29 +10,6 @@ let x = {
             "evse": "Ladestatus",
             "not_connected": "Getrennt",
             "waiting_for_charge_release": "Warte auf Freigabe",
-            "blocking_reason": "Blockierungsgrund",
-            "blocking_reason_text": /*SFN*/ (reason: number) => {
-                switch (reason) {
-                    case 0:
-                        return "Keiner";
-                    case 1:
-                        return "Lademodus aus";
-                    case 2:
-                        return "Warte auf Rotation";
-                    case 3:
-                        return "Für anderen Ladepunkt rotiert";
-                    case 4:
-                        return "Phasenstromlimit überschritten";
-                    case 5:
-                        return "Unzureichender PV-Überschuss";
-                    case 6:
-                        return "Anderer Ladepunkt nicht erreichbar";
-                    case 7:
-                        return "Nicht autorisiert";
-                    default:
-                        return "Unbekannt";
-                }
-            } /*NF*/,
             "ready_to_charge": "Ladebereit",
             "charging": "Lädt",
             "error": "Fehler",
