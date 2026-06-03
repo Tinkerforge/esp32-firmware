@@ -25,6 +25,7 @@
 #include <freertos/task.h>
 #include <esp_log.h>
 #include <soc/efuse_reg.h>
+#include <lwip/inet_chksum.h>
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
@@ -228,17 +229,9 @@ void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off
     led_write(led_pin, led);
 }
 
-uint16_t internet_checksum_u16(const uint16_t *data, size_t word_count)
+uint16_t internet_checksum(const void *data, size_t len)
 {
-    uint32_t checksum = 0xffff;
-
-    for (size_t i = 0; i < word_count; i++) {
-        checksum += data[i];
-    }
-
-    uint32_t carry = checksum >> 16;
-    checksum = (checksum & 0xFFFF) + carry;
-    return ~checksum;
+    return inet_chksum(data, len);
 }
 
 void trigger_reboot(const char *initiator, millis_t delay_ms)

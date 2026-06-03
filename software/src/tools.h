@@ -56,7 +56,7 @@ void ensure_running_in_main_task(std::function<void(void)> &&fn);
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write);
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
-uint16_t internet_checksum_u16(const uint16_t *data, size_t word_count);
+uint16_t internet_checksum(const void *data, size_t len);
 
 void trigger_reboot(const char *initiator, millis_t delay_ms = 0_ms);
 

@@ -75,26 +75,6 @@ struct UserSlotInfo {
     float meter_start;
 };
 
-static uint16_t calc_checksum(const UserSlotInfo &info)
-{
-    uint32_t float_buf = 0;
-    memcpy(&float_buf, &info.meter_start, sizeof(float_buf));
-
-    uint32_t checksum = info.checksum
-                      + ((((uint32_t)info.version) << 8) | info.user_id)
-                      + (info.evse_uptime_on_start >> 16)
-                      + (info.evse_uptime_on_start & 0xFF)
-                      + (info.timestamp_minutes >> 16)
-                      + (info.timestamp_minutes & 0xFF)
-                      + (float_buf >> 16)
-                      + (float_buf & 0xFF);
-
-    uint32_t carry = checksum >> 16;
-    checksum = (checksum & 0xFFFF) + carry;
-    checksum = ~checksum;
-    return checksum;
-}
-
 static void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t timestamp_minutes, float meter_start)
 {
     UserSlotInfo info;
@@ -105,7 +85,7 @@ static void write_user_slot_info(uint8_t user_id, uint32_t evse_uptime, uint32_t
     info.timestamp_minutes = timestamp_minutes;
     info.meter_start = meter_start;
 
-    info.checksum = calc_checksum(info);
+    info.checksum = internet_checksum(&info, sizeof(UserSlotInfo));
 
     uint8_t buf[63] = {0};
     memcpy(buf, &info, sizeof(info));
@@ -118,7 +98,7 @@ static bool read_user_slot_info(UserSlotInfo *result)
     get_data_storage(buf);
 
     memcpy(result, buf, sizeof(UserSlotInfo));
-    if (calc_checksum(*result) != 0) {
+    if (internet_checksum(result, sizeof(UserSlotInfo)) != 0) {
         logger.printfln("Checksum mismatch!");
         return false;
     }

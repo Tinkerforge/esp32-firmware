@@ -50,7 +50,7 @@ void UptimeTracker::setup()
 {
     old_uptime = data;
 
-    verified = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data), sizeof(data) / sizeof(uint16_t)) == 0;
+    verified = internet_checksum(&data, sizeof(data)) == 0;
 
     if (!verified)
         data.boot_count = 0;
@@ -64,7 +64,7 @@ void UptimeTracker::setup()
 
     task_scheduler.scheduleUncancelable([this]() {
             data.uptime = now_us().to<millis_t>().as<uint64_t>();
-            data.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data), (sizeof(data) - sizeof(data.checksum)) / sizeof(uint16_t));
+            data.checksum = internet_checksum(&data, sizeof(data) - sizeof(data.checksum));
     }, 10_s);
 
     if (!verified)
