@@ -1,0 +1,12 @@
+CompileFlags:
+  Add: [
+    -D__UINT32_TYPE__=long unsigned int,
+    -D__INT32_TYPE__=long int,
+    -D__GLIBC_USE(...)=0
+  ]
+  Remove: [
+    -fno-tree-switch-conversion,
+    -fstrict-volatile-bitfields,
+    -mdisable-hardware-atomics,
+    -mlongcalls
+  ]
