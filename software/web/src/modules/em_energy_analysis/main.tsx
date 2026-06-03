@@ -1160,8 +1160,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     em_sg_ready1_fills = em_sg_ready1_fills_active_open;
                 }
 
-                uplot_data.keys.push(`em_sg_ready1`);
-                uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_sg_ready1`));
+                uplot_data.keys.push("em_sg_ready1");
+                uplot_data.names.push(__("em_energy_analysis.content.state_sg_ready1"));
                 uplot_data.values.push(ios[4]);
                 uplot_data.paths.push(UplotPath.Line);
                 uplot_data.value_names.push(em_sg_ready1_names);
@@ -1188,8 +1188,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     em_sg_ready2_fills = em_sg_ready2_fills_active_open;
                 }
 
-                uplot_data.keys.push(`em_sg_ready2`);
-                uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_sg_ready2`));
+                uplot_data.keys.push("em_sg_ready2");
+                uplot_data.names.push(__("em_energy_analysis.content.state_sg_ready2"));
                 uplot_data.values.push(ios[5]);
                 uplot_data.paths.push(UplotPath.Line);
                 uplot_data.value_names.push(em_sg_ready2_names);

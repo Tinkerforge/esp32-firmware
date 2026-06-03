@@ -194,7 +194,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             return;
 
         if (API.hasModule("evse_common"))
-            await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, () => translate_unchecked("charge_manager.script.save_failed"));
+            await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, () => __("charge_manager.script.save_failed"));
 
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
         let emCharger_copy = this.state.emCharger;
