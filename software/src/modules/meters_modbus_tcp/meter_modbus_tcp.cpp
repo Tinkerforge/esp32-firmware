@@ -1756,55 +1756,67 @@ bool MeterModbusTCP::parse_next()
         }
     }
     else if (is_solaredge_inverter_battery_meter()) {
-        if (register_start_address == SolaredgeInverterBatteryAddress::Battery1AverageTemperature) {
-            solaredge_inverter.battery_1_temperature = value;
+        if (register_start_address == SolaredgeInverterBatteryAddress::Battery1Status) {
+            solaredge_inverter.battery_1_status = c32.u;
+        }
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1AverageTemperature) {
+            solaredge_inverter.battery_1_temperature = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousVoltage) {
-            solaredge_inverter.battery_1_voltage = value;
+            solaredge_inverter.battery_1_voltage = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousCurrent) {
-            solaredge_inverter.battery_1_current = value;
+            solaredge_inverter.battery_1_current = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousPower) {
-            solaredge_inverter.battery_1_power = value;
+            solaredge_inverter.battery_1_power = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1LifetimeExportEnergyCounter) {
-            solaredge_inverter.battery_1_export_energy = value;
+            solaredge_inverter.battery_1_export_energy = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1LifetimeImportEnergyCounter) {
-            solaredge_inverter.battery_1_import_energy = value;
+            solaredge_inverter.battery_1_import_energy = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1StateOfEnergy) {
-            solaredge_inverter.battery_1_state_of_charge = value;
+            solaredge_inverter.battery_1_state_of_charge = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
+        }
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2Status) {
+            solaredge_inverter.battery_2_status = c32.u;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2AverageTemperature) {
-            value = nan_safe_avg(solaredge_inverter.battery_1_temperature, value);
+            value = nan_safe_avg(solaredge_inverter.battery_1_temperature, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousVoltage) {
-            value = nan_safe_avg(solaredge_inverter.battery_1_voltage, value);
+            value = nan_safe_avg(solaredge_inverter.battery_1_voltage, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousCurrent) {
-            value = nan_safe_sum(solaredge_inverter.battery_1_current, value);
+            value = nan_safe_sum(solaredge_inverter.battery_1_current, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousPower) {
-            value = nan_safe_sum(solaredge_inverter.battery_1_power, value);
+            value = nan_safe_sum(solaredge_inverter.battery_1_power, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2LifetimeExportEnergyCounter) {
-            value = nan_safe_sum(solaredge_inverter.battery_1_export_energy, value);
+            value = nan_safe_sum(solaredge_inverter.battery_1_export_energy, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2LifetimeImportEnergyCounter) {
-            value = nan_safe_sum(solaredge_inverter.battery_1_import_energy, value);
+            value = nan_safe_sum(solaredge_inverter.battery_1_import_energy, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2StateOfEnergy) {
-            value = nan_safe_avg(solaredge_inverter.battery_1_state_of_charge, value);
+            value = nan_safe_avg(solaredge_inverter.battery_1_state_of_charge, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
     }
     else if (is_solaredge_inverter_pv_meter()) {
-        if (register_start_address == SolaredgeInverterPVAddress::Battery1InstantaneousPower) {
-            solaredge_inverter.battery_1_power = value;
+        if (register_start_address == SolaredgeInverterPVAddress::Battery1Status) {
+            solaredge_inverter.battery_1_status = c32.u;
+        }
+        else if (register_start_address == SolaredgeInverterPVAddress::Battery1InstantaneousPower) {
+            solaredge_inverter.battery_1_power = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
+        }
+        else if (register_start_address == SolaredgeInverterPVAddress::Battery2Status) {
+            solaredge_inverter.battery_2_status = c32.u;
         }
         else if (register_start_address == SolaredgeInverterPVAddress::Battery2InstantaneousPower) {
-            solaredge_inverter.battery_2_power = value;
+            solaredge_inverter.battery_2_power = solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value;
         }
         else if (register_start_address == SolaredgeInverterPVAddress::DCPower) {
             solaredge_inverter.dc_power = value;
