@@ -607,6 +607,7 @@ bool ChargeTracker::removeOldRecords()
                     uint8_t user_id = x;
                     users_to_delete[user_id / 32] &= ~(1 << (user_id % 32));
                 }
+                vTaskDelay(1);
             }
         };
 
@@ -617,7 +618,6 @@ bool ChargeTracker::removeOldRecords()
                 if (is_dir) {
                     clear_users_in_use(name);
                 }
-                vTaskDelay(1);
                 return true;
             });
     }
@@ -2970,8 +2970,8 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
                 if (getChargerChargeRecords(name, &first_record, &last_record)) {
                     total_files += (last_record - first_record + 1);
                 }
+                vTaskDelay(1); // After every directory, give other tasks a chance to run and reset their watchdogs.
             }
-            vTaskDelay(1); // After every directory, give other tasks a chance to run and reset their watchdogs.
             return true;
         });
 
@@ -3061,7 +3061,6 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
 
                 read_directory_charges(name);
             }
-            vTaskDelay(1);
             return true;
         });
 
