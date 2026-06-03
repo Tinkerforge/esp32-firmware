@@ -68,7 +68,7 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
     full_input = None
 
     if protection == 'token':
-        full_args += ['-q', '--no-password', '-y', f'2:{preset[prefix + "_token"]}']
+        full_args += ['--no-password', '-y', f'2:{preset[prefix + "_token"]}']
     elif protection == 'keyfile':
         full_args += ['-q', '--no-password', '-k', make_keys_path(preset[prefix + '_keyfile'])]
         full_kwargs['stderr'] = subprocess.DEVNULL
