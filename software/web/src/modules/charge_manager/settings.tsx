@@ -72,15 +72,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
             console.log("charge_manager save failed because of power_manager/dynamic_load_config", e);
         }
 
-        let new_cfg: ChargeManagerConfig = {
-            ...API.get("charge_manager/config"),
-            enable_charge_manager: cfg.enable_charge_manager,
-            chargers: cfg.chargers,
-            maximum_available_current: cfg.maximum_available_current,
-//#ifn OPTIONS_PRODUCT_ID_IS_WARP
-            enable_central_management: cfg.enable_central_management,
-//#endif
-        };
+        let {enable_charge_manager, chargers, maximum_available_current,enable_central_management,...new_values} = cfg;
+        let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), ...new_values};
 
         await super.sendSave(topic, new_cfg);
     }
