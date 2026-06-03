@@ -416,20 +416,10 @@ function NfcTagsSection({
                                                 }}
                                             >
                                                 <div>
-                                                    {translate_unchecked(
-                                                        `nfc.content.type_${t.tag_type}`,
-                                                    )}
+                                                    {translate_unchecked(`nfc.content.type_${t.tag_type}`)}
                                                 </div>
                                                 <div class="text-muted small">
-                                                    {translate_unchecked(
-                                                        "nfc.content.last_seen",
-                                                    ) +
-                                                        util.format_timespan_ms(
-                                                            t.last_seen,
-                                                        ) +
-                                                        translate_unchecked(
-                                                            "nfc.content.last_seen_suffix",
-                                                        )}
+                                                    {__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}
                                                 </div>
                                             </DiscoveryResultItem>
                                         );
@@ -460,12 +450,8 @@ function NfcTagsSection({
                                 minLength={8}
                                 maxLength={29}
                                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                                placeholder={__(
-                                    "users.content.nfc_tag_id_placeholder",
-                                )}
-                                invalidFeedback={__(
-                                    "users.content.nfc_tag_id_invalid",
-                                )}
+                                placeholder={__("users.content.nfc_tag_id_placeholder")}
+                                invalidFeedback={__("users.content.nfc_tag_id_invalid")}
                             />
                         </FormRow>
                         <FormRow label={__("users.content.nfc_tag_type")}>
@@ -1203,9 +1189,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 >
                     <FormRow label={__("users.content.enable_authentication")}>
                         <Switch
-                            desc={__(
-                                "users.content.enable_authentication_desc",
-                            )}
+                            desc={__("users.content.enable_authentication_desc")}
                             checked={auth_allowed && state.http_auth_enabled}
                             onClick={this.toggle("http_auth_enabled")}
                             disabled={!auth_allowed}
@@ -1292,15 +1276,11 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             this.get_password_replacement(user)
                                         ) : (
                                             <span class="text-muted">
-                                                {__(
-                                                    "users.script.login_disabled",
-                                                )}
+                                                {__("users.script.login_disabled")}
                                             </span>
                                         ),
                                     ],
-                                    editTitle: __(
-                                        "users.content.edit_user_title",
-                                    ),
+                                    editTitle: __("users.content.edit_user_title"),
                                     onEditShow: async () => {
                                         let nfcTags: NfcTagRef[] = [];
                                         //#if MODULE_NFC_AVAILABLE
@@ -1459,9 +1439,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             // One user slot is always taken by the unknown user, so display MAX_ACTIVE_USERS - 1 as the maximum number of users that can be added.
                             addMessage={
                                 API.get("users/config").next_user_id == 0
-                                    ? __(
-                                          "users.content.add_user_user_ids_exhausted",
-                                      )
+                                    ? __("users.content.add_user_user_ids_exhausted")
                                     : __("users.content.add_user_message")(
                                           state.users.length - 1,
                                           MAX_ACTIVE_USERS - 1,

@@ -76,9 +76,7 @@ function get_nfc_inject_tag_edit_children(
                 <h5 class="mb-1 pe-2">{t.tag_id}</h5>
                 <div class="d-flex w-100 justify-content-between">
                     <span class="text-start">
-                        {translate_unchecked(
-                            `nfc.automation.type_${t.tag_type}`,
-                        )}
+                        {translate_unchecked(`nfc.automation.type_${t.tag_type}`)}
                     </span>
                     <span class="text-end">
                         {__("nfc.automation.last_seen") +

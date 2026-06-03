@@ -944,34 +944,18 @@ export class RemoteAccess extends ConfigComponent<
                                         authToken: "",
                                     });
                                 }}
-                                addMessage={__(
-                                    "remote_access.content.user_add_message",
-                                )(
+                                addMessage={__("remote_access.content.user_add_message")(
                                     users.length,
                                     options.REMOTE_ACCESS_MAX_USERS,
                                 )}
                                 onAddGetChildren={() => {
                                     return (
                                         <>
-                                            <FormRow
-                                                label={__(
-                                                    "remote_access.content.auth_method",
-                                                )}
-                                            >
+                                            <FormRow label={__("remote_access.content.auth_method")}>
                                                 <InputSelect
                                                     items={[
-                                                        [
-                                                            "password",
-                                                            __(
-                                                                "remote_access.content.password",
-                                                            ),
-                                                        ],
-                                                        [
-                                                            "token",
-                                                            __(
-                                                                "remote_access.content.auth_token",
-                                                            ),
-                                                        ],
+                                                        ["password", __("remote_access.content.password")],
+                                                        ["token", __("remote_access.content.auth_token")],
                                                     ]}
                                                     value={
                                                         this.state.authMethod
@@ -992,18 +976,9 @@ export class RemoteAccess extends ConfigComponent<
                                                     }}
                                                 />
                                             </FormRow>
-                                            <Collapse
-                                                in={
-                                                    this.state.authMethod ===
-                                                    "token"
-                                                }
-                                            >
+                                            <Collapse in={this.state.authMethod ==="token"}>
                                                 <div>
-                                                    <FormRow
-                                                        label={__(
-                                                            "remote_access.content.auth_token",
-                                                        )}
-                                                    >
+                                                    <FormRow label={__("remote_access.content.auth_token")}>
                                                         <InputText
                                                             required={
                                                                 this.state
@@ -1071,9 +1046,7 @@ export class RemoteAccess extends ConfigComponent<
                                                         />
                                                     </FormRow>
                                                     <FormRow
-                                                        label={__(
-                                                            "remote_access.content.email",
-                                                        )}
+                                                        label={__("remote_access.content.email")}
                                                     >
                                                         <InputText
                                                             value={
@@ -1094,9 +1067,7 @@ export class RemoteAccess extends ConfigComponent<
                                             >
                                                 <div>
                                                     <FormRow
-                                                        label={__(
-                                                            "remote_access.content.email",
-                                                        )}
+                                                        label={__("remote_access.content.email")}
                                                     >
                                                         <InputText
                                                             value={
@@ -1116,9 +1087,7 @@ export class RemoteAccess extends ConfigComponent<
                                                                     ? "is-invalid"
                                                                     : undefined
                                                             }
-                                                            invalidFeedback={__(
-                                                                "remote_access.content.user_exists",
-                                                            )}
+                                                            invalidFeedback={__("remote_access.content.user_exists")}
                                                             onValue={(v) => {
                                                                 this.setState({
                                                                     addUser: {
@@ -1131,14 +1100,7 @@ export class RemoteAccess extends ConfigComponent<
                                                             }}
                                                         />
                                                     </FormRow>
-                                                    <FormRow
-                                                        label={__(
-                                                            "remote_access.content.password",
-                                                        )}
-                                                        label_muted={__(
-                                                            "remote_access.content.password_muted",
-                                                        )}
-                                                    >
+                                                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
                                                         <InputPassword
                                                             required={
                                                                 this.state
@@ -1170,12 +1132,8 @@ export class RemoteAccess extends ConfigComponent<
                                                 </div>
                                             </Collapse>
                                             <FormRow
-                                                label={__(
-                                                    "remote_access.content.note",
-                                                )}
-                                                label_muted={__(
-                                                    "remote_access.content.note_muted",
-                                                )(this.state.relay_host)}
+                                                label={__("remote_access.content.note")}
+                                                label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}
                                             >
                                                 <textarea
                                                     class="form-control"
@@ -1219,17 +1177,8 @@ export class RemoteAccess extends ConfigComponent<
                                 }}
                             />
                         </FormRow>
-                        <CollapsedSection
-                            heading={__(
-                                "remote_access.content.advanced_settings",
-                            )}
-                        >
-                            <FormRow
-                                label={__("remote_access.content.relay_host")}
-                                label_muted={__(
-                                    "remote_access.content.relay_host_muted",
-                                )}
-                            >
+                        <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
+                            <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
                                 <InputHost
                                     required
                                     maxLength={64}
@@ -1239,9 +1188,7 @@ export class RemoteAccess extends ConfigComponent<
                                     }
                                 />
                             </FormRow>
-                            <FormRow
-                                label={__("remote_access.content.relay_port")}
-                            >
+                            <FormRow label={__("remote_access.content.relay_port")}>
                                 <InputNumber
                                     required
                                     min={1}
@@ -1261,12 +1208,7 @@ export class RemoteAccess extends ConfigComponent<
                                     }}
                                 />
                             </FormRow>
-                            <FormRow
-                                label={__("remote_access.content.mtu")}
-                                label_muted={__(
-                                    "remote_access.content.mtu_desc",
-                                )}
-                            >
+                            <FormRow label={__("remote_access.content.mtu")} label_muted={__("remote_access.content.mtu_desc")} >
                                 <InputNumber
                                     required
                                     min={576}
@@ -1278,72 +1220,25 @@ export class RemoteAccess extends ConfigComponent<
                             <FormRow label={__("remote_access.content.ping")}>
                                 <div class="row g-2">
                                     <div class="col">
-                                        <Button
-                                            className="w-100"
-                                            onClick={() => {
-                                                API.call(
-                                                    "remote_access/start_ping",
-                                                    {},
-                                                    () =>
-                                                        __(
-                                                            "remote_access.content.start_ping_failed",
-                                                        ),
-                                                );
-                                            }}
-                                        >
-                                            {__(
-                                                "remote_access.content.start_ping",
-                                            )}
+                                        <Button className="w-100" onClick={() => API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"))}>
+                                            {__("remote_access.content.start_ping")}
                                         </Button>
                                     </div>
                                     <div class="col">
-                                        <Button
-                                            className="w-100"
-                                            onClick={() => {
-                                                API.call(
-                                                    "remote_access/stop_ping",
-                                                    {},
-                                                    () =>
-                                                        __(
-                                                            "remote_access.content.stop_ping_failed",
-                                                        ),
-                                                );
-                                            }}
-                                        >
-                                            {__(
-                                                "remote_access.content.stop_ping",
-                                            )}
+                                        <Button className="w-100" onClick={() => API.call("remote_access/stop_ping", {}, () =>  __("remote_access.content.stop_ping_failed"))}>
+                                            {__("remote_access.content.stop_ping")}
                                         </Button>
                                     </div>
                                 </div>
                             </FormRow>
-                            <FormRow
-                                label={__("remote_access.content.packets_sent")}
-                            >
-                                <InputNumber
-                                    value={this.state.pingState.packets_sent}
-                                />
+                            <FormRow label={__("remote_access.content.packets_sent")}>
+                                <InputNumber value={this.state.pingState.packets_sent} />
                             </FormRow>
-                            <FormRow
-                                label={__(
-                                    "remote_access.content.packets_received",
-                                )}
-                            >
-                                <InputNumber
-                                    value={
-                                        this.state.pingState.packets_received
-                                    }
-                                />
+                            <FormRow label={__("remote_access.content.packets_received")}>
+                                <InputNumber value={this.state.pingState.packets_received} />
                             </FormRow>
-                            <FormRow
-                                label={__("remote_access.content.time_elapsed")}
-                            >
-                                <InputNumber
-                                    value={Math.floor(
-                                        this.state.pingState.time_elapsed_ms /
-                                            1000,
-                                    )}
-                                />
+                            <FormRow label={__("remote_access.content.time_elapsed")} >
+                                <InputNumber value={Math.floor(this.state.pingState.time_elapsed_ms / 1000)} />
                             </FormRow>
                         </CollapsedSection>
                     </ConfigForm>
