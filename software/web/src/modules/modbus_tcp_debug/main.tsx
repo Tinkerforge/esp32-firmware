@@ -235,12 +235,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             let s32be = u32be >> 0;
                             let s32le = u32le >> 0;
 
-                            let view = new DataView(new ArrayBuffer(4));
+                            let u32be_view = new DataView(new ArrayBuffer(4));
+                            let u32le_view = new DataView(new ArrayBuffer(4));
 
-                            view.setUint32(0, u32be);
+                            u32be_view.setUint32(0, u32be);
+                            u32le_view.setUint32(0, u32le);
 
-                            let f32be = Math.fround(view.getFloat32(0));
-                            let f32le = Math.fround(view.getFloat32(0, true));
+                            let f32be = Math.fround(u32be_view.getFloat32(0));
+                            let f32le = Math.fround(u32le_view.getFloat32(0));
 
                             u32be_s = u32be.toString();
                             u32le_s = u32le.toString();
@@ -266,12 +268,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             let s64be = BigInt.asIntN(64, u64be);
                             let s64le = BigInt.asIntN(64, u64le);
 
-                            let view = new DataView(new ArrayBuffer(8));
+                            let s64be_view = new DataView(new ArrayBuffer(8));
+                            let s64le_view = new DataView(new ArrayBuffer(8));
 
-                            view.setBigUint64(0, s64be);
+                            s64be_view.setBigUint64(0, s64be);
+                            s64le_view.setBigUint64(0, s64le);
 
-                            let f64be = view.getFloat64(0);
-                            let f64le = view.getFloat64(0, true);
+                            let f64be = s64be_view.getFloat64(0);
+                            let f64le = s64le_view.getFloat64(0);
 
                             u64be_s = u64be.toString();
                             u64le_s = u64le.toString();
