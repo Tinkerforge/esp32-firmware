@@ -639,6 +639,7 @@ function CMStatusCharger(props: {
                                 : null}{c_state}
                             </h5>
                         </div>
+                        {user_dropdown}
                     </div>
                     <Collapse in={!showDetails}>
                         <div>
