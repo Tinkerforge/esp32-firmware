@@ -255,9 +255,9 @@ function NfcTagsSection({
                 (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
             );
             const lastSeenText = seen
-                ? translate_unchecked("nfc.content.last_seen") +
+                ? __("nfc.content.last_seen") +
                   util.format_timespan_ms(seen.last_seen) +
-                  translate_unchecked("nfc.content.last_seen_suffix")
+                  __("nfc.content.last_seen_suffix")
                 : "";
             return {
                 columnValues: [
@@ -471,36 +471,11 @@ function NfcTagsSection({
                         <FormRow label={__("users.content.nfc_tag_type")}>
                             <InputSelect
                                 items={[
-                                    [
-                                        "0",
-                                        translate_unchecked(
-                                            "nfc.content.type_0",
-                                        ),
-                                    ],
-                                    [
-                                        "1",
-                                        translate_unchecked(
-                                            "nfc.content.type_1",
-                                        ),
-                                    ],
-                                    [
-                                        "2",
-                                        translate_unchecked(
-                                            "nfc.content.type_2",
-                                        ),
-                                    ],
-                                    [
-                                        "3",
-                                        translate_unchecked(
-                                            "nfc.content.type_3",
-                                        ),
-                                    ],
-                                    [
-                                        "4",
-                                        translate_unchecked(
-                                            "nfc.content.type_4",
-                                        ),
-                                    ],
+                                    ["0", __("nfc.content.type_0")],
+                                    ["1", __("nfc.content.type_1")],
+                                    ["2", __("nfc.content.type_2")],
+                                    ["3", __("nfc.content.type_3")],
+                                    ["4", __("nfc.content.type_4")],
                                 ]}
                                 value={editTagType.toString()}
                                 onValue={(v) =>

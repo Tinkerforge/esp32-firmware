@@ -80,7 +80,7 @@ export function pre_init() {
                 } else if (protocol == EVDataProtocol.None) {
                     let charger_state = API.get("evse/state").charger_state;
                     protocol_string = charger_state == 0
-                        ? translate_unchecked("meters_iso15118.script.protocol_no_ev")
+                        ? __("meters_iso15118.script.protocol_no_ev")
                         : translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
                 } else {
                     protocol_string = translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
