@@ -2285,6 +2285,7 @@ int allocate_current(
                 charger_error < CASError::ClientErrorOK) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("%s (%s) reports error %u.", get_charger_name(i), hosts[i], static_cast<uint8_t>(charger_error));
+                trace("%d CASError %u", i, static_cast<uint8_t>(charger_error));
 
                 print_local_log = !ca_state->last_print_local_log_was_error;
                 ca_state->last_print_local_log_was_error = true;
@@ -2302,8 +2303,10 @@ int allocate_current(
                     // it will shut down after 30 seconds.
                     charger.off = true;
 
-                    if (charger_alloc.error != CASError::ChargerUnreachable)
+                    if (charger_alloc.error != CASError::ChargerUnreachable) {
                         LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
+                        trace("%d unreachable %lld", i, last_update_age.to<seconds_t>().as<int64_t>());
+                    }
 
                     bool state_was_not_error = charger_alloc.state != CASState::Error;
                     charger_alloc.state = CASState::Error;
@@ -2317,6 +2320,7 @@ int allocate_current(
             } else if (charger_alloc.error == CASError::ChargerUnreachable) {
                 charger_alloc.error = CASError::OK;
                 LOCAL_LOG("EVSE of %s (%s) reachable again.", get_charger_name(i), hosts[i]);
+                trace("%d reachable", i);
             }
 
             // Charger did not update the charging current or phases in time.
@@ -2335,6 +2339,12 @@ int allocate_current(
                           charger_alloc.allocated_phases,
                           charger.allowed_current,
                           charger.phases);
+                trace("%d nonreactive %d@%d > %d@%d",
+                      i,
+                      charger.allowed_current,
+                      charger.phases,
+                      charger_alloc.allocated_current,
+                      charger_alloc.allocated_phases);
 
                 bool state_was_not_error = charger_alloc.state != CASState::Error;
                 charger_alloc.state = CASState::Error;
@@ -2360,6 +2370,7 @@ int allocate_current(
                 charger_state[i].off = true;
             }
             LOCAL_LOG("%s", "Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
+            trace("set all to Off");
             result = 2;
 
             // Any unreachable EVSE will block a firmware update.
