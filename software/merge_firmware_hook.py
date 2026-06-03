@@ -13,6 +13,9 @@ env = None
 
 Import('env')
 
+if 'compiledb' in COMMAND_LINE_TARGETS:
+    sys.exit(0)
+
 with open(env.subst(f'$BUILD_DIR{os.sep}metadata.json'), 'r', encoding='utf-8') as f:
     metadata = json.loads(f.read())
 
