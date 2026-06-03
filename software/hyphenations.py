@@ -1476,6 +1476,31 @@ de_hyph = [
     "Be-stan-den",
     "Takt-ra-ten",
     "Bench-mark",
+    "Aus-ge-nom-men",
+    "ba-sier-ten",
+    "Leis-tungs-über-sicht",
+    "aus-neh-men",
+    "ver-schie-de-nen",
+    "fälsch-li-cher-wei-se",
+    "ein-ge-rech-net",
+    "Zu-sam-men-fas-sung",
+    "ver-fälscht",
+    "aus-ge-nom-men",
+    "Ein-rich-ten",
+    "PLEN-TI-CORE",
+    "Re-ak-ti-ons-zeit",
+    "Ver-hal-ten",
+    "Wech-sel-rich-tern",
+    "ver-zö-gert",
+    "Rei-hen-fol-ge",
+    "Wech-sel-rich-ters",
+    "ver-mut-lich",
+    "Kom-mu-ni-ka-ti-ons-pro-blem",
+    "Ver-wal-tung",
+    "Nut-zer-li-mit",
+    "ver-wal-tet",
+    "hin-ter-legt",
+
 ]
 
 en_hyph = [
@@ -1972,6 +1997,13 @@ en_hyph = [
     "in-tegri-ty",
     "In-tegri-ty",
     "bench-mark",
+    "er-ro-neous-ly",
+    "PLEN-TI-CORE",
+    "be-hav-iour",
+    "in-vert-ers",
+    "Dis-cov-er-ing",
+    "sep-a-rate-ly",
+    "au-tho-rize",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -2099,5 +2131,6 @@ allowed_missing = set([
     "departure",
     "contactor",
     "connected",
-    "secp384r1"
+    "secp384r1",
+    "Unauthorized"
 ])
