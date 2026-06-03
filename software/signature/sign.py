@@ -64,14 +64,16 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
     path = make_keys_path(preset[prefix + '_path'])
     protection = preset[prefix + '_protection']
     full_args = ['keepassxc-cli', action]
-    full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
+    full_kwargs = {'encoding': 'utf-8'}
     full_input = None
 
     if protection == 'token':
         full_args += ['-q', '--no-password', '-y', f'2:{preset[prefix + "_token"]}']
     elif protection == 'keyfile':
         full_args += ['-q', '--no-password', '-k', make_keys_path(preset[prefix + '_keyfile'])]
+        full_kwargs['stderr'] = subprocess.DEVNULL
     elif protection == 'password':
+        full_kwargs['stderr'] = subprocess.DEVNULL
         assert password != None
         full_input = password + '\n'
     else:
