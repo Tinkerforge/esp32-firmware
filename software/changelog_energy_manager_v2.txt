@@ -323,7 +323,7 @@
 - Fix Iskra WM3M4C's non-resettable energy values being marked as resettable
 - Support Iskra WM3M4
 
-2026-06-03: 1.6.0 (<unknown>)
+2026-06-03: 1.6.0 (0db9f975)
 - Add "central management": Allows charge manager to track charges and manage users/NFC tags of all managed chargers
 - Replace authentication with users module
 - Improve charge manager responsiveness on vehicle plug in/out

@@ -167,7 +167,7 @@
 - Disallow overriding known meter locations
 - Support Iskra WM3M4 (through EVSE 2.0 Bricklet firmware 2.2.23)
 
-2026-06-03: 2.11.0 (<unknown>)
+2026-06-03: 2.11.0 (0db9f975)
 - Add "central management": Allows charge manager to track charges and manage users/NFC tags of all managed chargers
 - Move NFC tag configuration to user management
 - Improve charge manager responsiveness on vehicle plug in/out
