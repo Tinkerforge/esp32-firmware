@@ -18,6 +18,7 @@
  */
 
 //#include "generated/module_available.inc"
+//#include "../../options.inc"
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -436,6 +437,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         items={user_filter_items}
                     />
             </FormRow>
+{/*#ifn OPTIONS_PRODUCT_ID_IS_WARP*/}
             <FormRow label={__("charge_tracker.content.device_filter_label")}>
                     <InputSelect
                         value={this.state.new_remote_upload_config.device_filter.toString()}
@@ -455,6 +457,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         ]}
                     />
             </FormRow>
+{/*#endif*/}
             <FormRow label={__("charge_tracker.content.file_type_label")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.file_type.toString()}
@@ -576,10 +579,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         user_filter_items.unshift(["-3",  __("charge_tracker.script.configured_users")]);
         user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
 
+//#ifn OPTIONS_PRODUCT_ID_IS_WARP
         let device_filter_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.uid.toString(), x.n]);
         device_filter_items.unshift(["-1", __("charge_tracker.script.deleted_chargers")]);
         device_filter_items.unshift(["-3", __("charge_tracker.script.configured_chargers")]);
         device_filter_items.unshift(["-2", __("charge_tracker.script.all_chargers")]);
+//#endif
 
         // TODO show hint that day ahead prices are not used here!
 
@@ -700,7 +705,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         items={user_filter_items ?? []}
                     />
                 </FormRow>
-
+{/*#ifn OPTIONS_PRODUCT_ID_IS_WARP*/}
                 <FormRow label={__("charge_tracker.content.device_filter")} label_muted={__("charge_tracker.content.device_filter_muted")}>
                     <InputSelect
                         value={state.device_filter}
@@ -708,7 +713,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         items={device_filter_items ?? []}
                     />
                 </FormRow>
-
+{/*#endif*/}
                 <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
                     <div class="row gx-0 gy-1">
                         <div class="col-md-6">
