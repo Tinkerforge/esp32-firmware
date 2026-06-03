@@ -75,7 +75,7 @@ let x = {
                 max: number,
                 haveForUser: number
             ) =>
-                `${have} von ${max} Tags konfiguriert (${haveForUser} diesem Benutzer zugeordnet)` /*NF*/,
+                `${haveForUser} von ${max} Tags diesem Benutzer zugeordnet (${have} von ${max} Tags konfiguriert)` /*NF*/,
             "nfc_seen_tags": "Erkannte Tags",
             "nfc_last_seen": "Zuletzt erkannt",
             "nfc_add_tag_manually": "Tag manuell hinzuf\u00fcgen",
