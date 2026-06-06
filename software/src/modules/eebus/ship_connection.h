@@ -158,6 +158,7 @@ public:
     ShipConnectionState previous_state = ShipConnectionState::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
+    uint64_t state_machine_task = 0;
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
 

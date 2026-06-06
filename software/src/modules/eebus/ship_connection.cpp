@@ -33,6 +33,7 @@
 // for DeleterAny.
 ShipConnection::~ShipConnection()
 {
+    task_scheduler.cancel(state_machine_task);
     task_scheduler.cancel(timeout_task);
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
@@ -143,7 +144,8 @@ void ShipConnection::start_client()
 
 void ShipConnection::start_client_confirm()
 {
-    task_scheduler.scheduleOnce(
+    task_scheduler.cancel(state_machine_task);
+    state_machine_task = task_scheduler.scheduleOnce(
             [this]() {
                 state_machine_next_step();
             },
@@ -202,6 +204,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
     else {
         logger.printfln("Close requested for SHIP Connection");
     }*/
+    task_scheduler.cancel(state_machine_task);
     task_scheduler.cancel(timeout_task);
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
@@ -209,11 +212,15 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
     task_scheduler.cancel(hello_trust_check_timer);
     task_scheduler.cancel(protocol_handshake_timer);
 
-    peer_node->state = NodeState::Disconnected;
+    // peer_node should always be set on a live connection, but guard defensively
+    if (peer_node) {
+        peer_node->state = NodeState::Disconnected;
+    }
+
     task_scheduler.scheduleOnce(
         [this, reason]() {
-            logger.printfln("Closing connection to %s", peer_node->node_name().c_str());
-            eebus.trace_fmtln("Closing connection to %s. Reason: ", peer_node->node_name().c_str(), reason.c_str());
+            logger.printfln("Closing connection to %s", peer_node ? peer_node->node_name().c_str() : "<unknown>");
+            eebus.trace_fmtln("Closing connection to %s. Reason: ", peer_node ? peer_node->node_name().c_str() : "<unknown>", reason.c_str());
             // Close socket and
             if (role == Role::Server) {
                 if (ws_client != nullptr) {
@@ -399,7 +406,8 @@ void ShipConnection::set_and_schedule_state(ShipConnectionState state)
 
 void ShipConnection::set_and_schedule_state(ShipConnectionState state, millis_t delay_ms)
 {
-    task_scheduler.scheduleOnce(
+    task_scheduler.cancel(state_machine_task);
+    state_machine_task = task_scheduler.scheduleOnce(
         [this, state]() {
             this->set_and_schedule_state(state);
         },
@@ -408,7 +416,8 @@ void ShipConnection::set_and_schedule_state(ShipConnectionState state, millis_t 
 
 void ShipConnection::schedule_state_machine_next_step()
 {
-    task_scheduler.scheduleOnce(
+    task_scheduler.cancel(state_machine_task);
+    state_machine_task = task_scheduler.scheduleOnce(
         [this]() {
             this->state_machine_next_step();
         },
