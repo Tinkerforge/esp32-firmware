@@ -810,6 +810,23 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                 id_len++;
             }
             ai.tag_id_len = id_len;
+        } else if (auth_method == CMAuthType::EV || auth_method == CMAuthType::InjectedEV) {
+            ai.auth_method = auth_method;
+            ai.last_seen_s = last_seen.to<seconds_t>().as<uint16_t>();
+            if (ai.last_seen_s == 0) {
+                ai.last_seen_s = 1;
+            }
+
+            const String &mac_str = entry->get("auth_info")->get()->get("mac")->asString();
+            const char *str = mac_str.c_str();
+            const size_t str_len = mac_str.length();
+            uint8_t id_len = 0;
+            memset(ai.tag_id, 0, sizeof(ai.tag_id));
+            for (size_t b = 0; b * 3 < str_len && b < sizeof(ai.tag_id); b++) {
+                ai.tag_id[b] = static_cast<uint8_t>((to_nibble(str[b * 3]) << 4) | to_nibble(str[b * 3 + 1]));
+                id_len++;
+            }
+            ai.tag_id_len = id_len;
         }
     }
 #endif

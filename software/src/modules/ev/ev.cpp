@@ -24,8 +24,6 @@
 
 #include "gcc_warnings.h"
 
-#define EV_MAC_STRING_LENGTH 17
-
 // Parse a MAC string "AA:BB:CC:DD:EE:FF" or pattern "AA:BB:CC:xx:xx:xx" into a byte array.
 // If out_mask is not nullptr, "xx" bytes are accepted as wildcards (mac=0x00, mask=0x00).
 // Returns false on invalid format.
@@ -84,7 +82,8 @@ void Ev::pre_setup()
         {"name",                Config::Str("", 0, 16)},
         {"mac",                 Config::Str("", 0, EV_MAC_STRING_LENGTH)},
         {"capacity",            Config::Float(0.0f)},
-        {"charging_efficiency", Config::Float(EV_DEFAULT_CHARGING_EFFICIENCY)}
+        {"charging_efficiency", Config::Float(EV_DEFAULT_CHARGING_EFFICIENCY)},
+        {"user_id",             Config::Uint8(0)}
     });
 
     config = ConfigRoot{Config::Object({
@@ -120,6 +119,15 @@ void Ev::pre_setup()
                     return String("Duplicate MAC address at index ") + static_cast<int>(i) + " and " + static_cast<int>(j);
                 }
             }
+
+#if MODULE_USERS_AVAILABLE()
+            uint8_t user_id = evs->get(i)->get("user_id")->asUint8();
+            if (user_id != 0 && !users.is_user_configured(user_id)) {
+                return String("Unknown user_id at index ") + static_cast<int>(i);
+            }
+#else
+            (void)source;
+#endif
         }
 
         return "";
@@ -149,6 +157,10 @@ void Ev::pre_setup()
         0, EV_SEEN_MAC_COUNT,
         Config::type_id<Config::ConfObject>()
     );
+
+    auth_info = Config::Object({
+        {"mac", Config::Str("", 0, EV_MAC_STRING_LENGTH)}
+    });
 
     inject_ev = ConfigRoot{Config::Object({
         {"mac", Config::Str("", 0, EV_MAC_STRING_LENGTH)}
@@ -198,7 +210,7 @@ void Ev::register_urls()
             errmsg = "Invalid MAC address format. Expected format: AA:BB:CC:DD:EE:FF";
             return;
         }
-        on_ev_connected(mac);
+        on_ev_connected(mac, true /*injected*/);
 
 #if MODULE_ISO15118_AVAILABLE()
         if (iso15118.is_enabled() && !iso15118.iec_temporary_active) {
@@ -231,7 +243,7 @@ void Ev::register_events()
     });
 }
 
-void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
+void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected)
 {
     active_ev_index = -1;
     clear_session();
@@ -241,33 +253,7 @@ void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
 
     // Find matching profile from config
     Config *evs = static_cast<Config *>(config.get("evs"));
-    size_t count = evs->count();
-
-    for (size_t i = 0; i < count; i++) {
-        const String &mac_str = evs->get(i)->get("mac")->asString();
-        if (mac_str.length() == 0) {
-            continue;
-        }
-
-        uint8_t profile_mac[EV_MAC_ADDRESS_LENGTH];
-        uint8_t profile_mask[EV_MAC_ADDRESS_LENGTH];
-        if (!parse_mac(mac_str.c_str(), profile_mac, profile_mask)) {
-            logger.printfln("Invalid MAC pattern in config at index %zu: '%s'", i, mac_str.c_str());
-            continue;
-        }
-
-        bool match = true;
-        for (int j = 0; j < EV_MAC_ADDRESS_LENGTH; j++) {
-            if ((mac[j] & profile_mask[j]) != (profile_mac[j] & profile_mask[j])) {
-                match = false;
-                break;
-            }
-        }
-        if (match) {
-            active_ev_index = static_cast<int>(i);
-            break;
-        }
-    }
+    active_ev_index = find_matching_ev_index(mac);
 
     // Apply profile config to session
     if (active_ev_index >= 0) {
@@ -300,6 +286,23 @@ void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
     state.get("soc")->updateFloat(session.soc);
     state.get("capacity")->updateFloat(session.capacity);
     state.get("charging_efficiency")->updateFloat(session.charging_efficiency);
+
+    // If autocharge is enabled, an EV that identified itself via SLAC (or was
+    // injected) acts as an authentication source.
+#if MODULE_ISO15118_AVAILABLE() && MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
+    if (iso15118.is_autocharge()) {
+        auth_info.get("mac")->updateString(mac_fmt);
+
+        charge_authorization.notify_auth(
+            get_user_id(mac), // matched profile's user, 0 (anonymous) if unassigned, or -1 if not a configured EV
+            0_ms, // just connected
+            injected ? CMAuthType::InjectedEV : CMAuthType::EV,
+            0, // TRIGGER_CHARGE_ANY (users.h, not pulled in here)
+            auth_info.value);
+    }
+#else
+    (void)injected;
+#endif
 }
 
 void Ev::on_ev_disconnected()
@@ -319,6 +322,68 @@ void Ev::on_ev_disconnected()
 #if MODULE_METERS_ISO15118_AVAILABLE()
     meters_iso15118.clear_values();
 #endif
+}
+
+int Ev::find_matching_ev_index(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
+{
+    size_t count = config.get("evs")->count();
+
+    for (size_t i = 0; i < count; i++) {
+        const String &mac_str = config.get("evs")->get(i)->get("mac")->asString();
+        if (mac_str.length() == 0) {
+            continue;
+        }
+
+        uint8_t profile_mac[EV_MAC_ADDRESS_LENGTH];
+        uint8_t profile_mask[EV_MAC_ADDRESS_LENGTH];
+        if (!parse_mac(mac_str.c_str(), profile_mac, profile_mask)) {
+            logger.printfln("Invalid MAC pattern in config at index %zu: '%s'", i, mac_str.c_str());
+            continue;
+        }
+
+        bool match = true;
+        for (int j = 0; j < EV_MAC_ADDRESS_LENGTH; j++) {
+            if ((mac[j] & profile_mask[j]) != (profile_mac[j] & profile_mask[j])) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            return static_cast<int>(i);
+        }
+    }
+
+    return -1;
+}
+
+int16_t Ev::get_user_id(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
+{
+    int index = find_matching_ev_index(mac);
+    if (index < 0) {
+        return -1; // NOT_AUTHORIZED
+    }
+
+    return static_cast<int16_t>(config.get("evs")->get(index)->get("user_id")->asUint());
+}
+
+void Ev::remove_user(uint8_t user_id)
+{
+    if (user_id == 0) {
+        return;
+    }
+
+    bool changed = false;
+
+    for (size_t i = 0; i < config.get("evs")->count(); i++) {
+        if (config.get("evs")->get(i)->get("user_id")->asUint() == user_id) {
+            config.get("evs")->get(i)->get("user_id")->updateUint(0);
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        API::writeConfig("ev/config", &config);
+    }
 }
 
 void Ev::set_soc(float soc)
@@ -378,7 +443,7 @@ void Ev::session_updated(EVDataProtocol protocol)
 
 float Ev::get_session_energy_kwh()
 {
-#if MODULE_CHARGE_TRACKER_AVAILABLE()
+#if MODULE_CHARGE_TRACKER_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
     float energy_now;
     if (evse_common.get_charger_meter_energy(&energy_now) == MeterValueAvailability::Unavailable) {
         return 0.0f;
@@ -392,7 +457,8 @@ float Ev::get_session_energy_kwh()
     float session_energy = energy_now - meter_start;
     return std::max(0.0f, session_energy);
 #else
-    return 0.0f;
+    // TODO: Implement energy tracking for energy manager (without charge_tracker)
+    return this->session.energy_at_soc_reading; // Returns 0 initially; uses 'this' to avoid -Wsuggest-attribute=const
 #endif
 }
 

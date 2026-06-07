@@ -96,6 +96,8 @@ public:
                !config.get("charge_via_iso15118")->asBool();
     }
 
+    bool is_autocharge() const { return config.get("autocharge")->asBool(); }
+
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
 

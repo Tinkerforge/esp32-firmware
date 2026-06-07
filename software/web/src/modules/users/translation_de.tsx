@@ -81,7 +81,19 @@ let x = {
             "nfc_add_tag_manually": "Tag manuell hinzuf\u00fcgen",
             "nfc_tag_id_placeholder": "z.B. 01:23:45:67",
             "nfc_tag_id_invalid":
-                "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB"
+                "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
+
+            "ev_macs": "Elektrofahrzeuge",
+            "ev_name": "Name",
+            "ev_mac": "MAC-Adresse",
+            "ev_mac_already_assigned": /*SFN*/ (other_name: string) => `Bereits Benutzer "${other_name}" zugeordnet` /*NF*/,
+            "ev_add_mac": "Elektrofahrzeug hinzufügen",
+            "ev_add_mac_message": /*SFN*/ (
+                haveForUser: number,
+                numConfigured: number
+            ) => `${haveForUser} von ${numConfigured} Elektrofahrzeugen diesem Benutzer zugeordnet` /*NF*/,
+            "ev_available_evs": "Elektrofahrzeuge",
+            "ev_no_evs": <>Es sind keine Elektrofahrzeuge konfiguriert. Konfiguriere Elektrofahrzeuge auf der <a href="#ev">Elektrofahrzeuge</a>-Unterseite, um sie Benutzern zuordnen zu können.</>
         },
         "script": {
             "reboot_content_changed": "Benutzereinstellungen",

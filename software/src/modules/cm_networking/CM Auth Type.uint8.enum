@@ -2,3 +2,5 @@ None = 0
 Lost = 1
 NFC = 2
 Injected NFC = 3
+EV = 4
+Injected EV = 5
