@@ -43,7 +43,7 @@ public:
     ConfigRoot last_seen_authentications;
 
 private:
-    ConfUnionPrototype<CMAuthType> auth_prototypes[4];
+    ConfUnionPrototype<CMAuthType> auth_prototypes[6];
 };
 
 #include "generated/module_available_end.h"

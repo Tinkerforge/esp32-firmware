@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -74,6 +75,7 @@ export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
                         ti: string;
                         tt: number;
                         ts: number;
+                        am?: number;
                     }[][] = await response.json();
                     for (
                         let charger_idx = 0;
@@ -84,6 +86,8 @@ export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
                         const charger_name = cm_state.chargers[charger_idx].n;
                         for (const auth_info of auth_info_data[charger_idx]) {
                             if (!auth_info.ti || auth_info.ti === "") continue;
+                            // Skip EV MACs
+                            if (auth_info.am === 4 || auth_info.am === 5) continue;
                             // Check if tag already exists
                             const idx = all_tags.findIndex(
                                 (t) =>
@@ -150,6 +154,16 @@ interface NfcTagChange {
     tags: NfcTagRef[];
 }
 
+interface EvRef {
+    mac: string;
+}
+
+interface EvChange {
+    user_id: number;
+    username: string;
+    evs: EvRef[];
+}
+
 interface UsersState {
     userSlotEnabled: boolean;
     addUser: User;
@@ -161,6 +175,9 @@ interface UsersState {
     allSeenTags: NFCSeenTag[];
     editTagId: string;
     editTagType: number;
+    addUserEvs: EvRef[];
+    editUserEvs: EvRef[];
+    evChanges: EvChange[];
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
@@ -491,6 +508,148 @@ function NfcTagsSection({
 }
 //#endif
 
+//#if MODULE_EV_AVAILABLE
+interface EvsSectionProps {
+    assignedEvs: EvRef[];
+    evs: API.getType["ev/config"]["evs"];
+    pendingEvChanges: EvChange[];
+    users: User[];
+    currentUserId: number;
+    currentUsername: string;
+    onRemoveEv: (index: number) => void;
+    onAddEv: (ev: EvRef) => void;
+}
+
+function EvsSection({
+    assignedEvs,
+    evs,
+    pendingEvChanges,
+    users,
+    currentUserId,
+    currentUsername,
+    onRemoveEv,
+    onAddEv,
+}: EvsSectionProps) {
+    // Look up the configured name of an EV by its MAC. Falls back to the MAC itself.
+    const ev_name = (mac: string): string => {
+        const ev = evs.find((e) => e.mac === mac);
+        return ev ? ev.name : mac;
+    };
+
+    const getRows = (): TableRow[] => {
+        return assignedEvs.map((ev, j) => {
+            return {
+                columnValues: [ev_name(ev.mac), ev.mac],
+                fieldNames: [
+                    __("users.content.ev_name"),
+                    __("users.content.ev_mac"),
+                ],
+                fieldValues: [ev_name(ev.mac), ev.mac],
+                hideRemoveButton: false,
+                onRemoveClick: async () => {
+                    onRemoveEv(j);
+                    return true;
+                },
+            };
+        });
+    };
+
+    const assignedSet = new Set(assignedEvs.map((m) => m.mac));
+
+    // Determine which user (display name) an EV is currently assigned to,
+    // taking pending (unsaved) changes into account. Returns undefined if the
+    // EV is unassigned or assigned to the user that is currently being edited.
+    const getEvOwnerName = (mac: string): string | undefined => {
+        // A pending change of another user takes precedence over the saved state.
+        const pendingUser = pendingEvChanges.find(
+            (c) => ((currentUserId > 0) ? (c.user_id !== currentUserId) : (c.username !== currentUsername)) && (c.evs.some((m) => (m.mac === mac))),
+        );
+
+        if (pendingUser) {
+            const u = users.find((u) => (pendingUser.user_id > 0) ? (u.id === pendingUser.user_id) : (u.username === pendingUser.username));
+            return u ? u.display_name : pendingUser.username;
+        }
+
+        // Otherwise fall back to the assignment saved on the EV profile, unless
+        // that owner has a pending change (which would already be handled above).
+        const ev = evs.find((e) => e.mac === mac);
+        if (ev && (ev.user_id !== 0) && (currentUserId <= 0 || ev.user_id !== currentUserId)) {
+            const ownerHasPendingChange = pendingEvChanges.some((c) => (c.user_id > 0) && (c.user_id === ev.user_id));
+            if (!ownerHasPendingChange) {
+                const u = users.find((u) => (u.id === ev.user_id));
+                if (u) return u.display_name;
+            }
+        }
+
+        return undefined;
+    };
+
+    return (
+        <FormRow label={__("users.content.ev_macs")}>
+            <Table
+                columnNames={[
+                    __("users.content.ev_name"),
+                    __("users.content.ev_mac"),
+                ]}
+                nestingDepth={2}
+                rows={getRows()}
+                tableTill="md"
+                addMessage={__("users.content.ev_add_mac_message")(
+                    assignedEvs.length,
+                    evs.length,
+                )}
+                addEnabled={true}
+                addTitle={__("users.content.ev_add_mac")}
+                hideSubmitButton={true}
+                onAddShow={async () => {}}
+                onAddGetChildren={() => {
+                    // Offer all configured EVs that are not already assigned to
+                    // this user. EVs assigned to another user are shown disabled.
+                    const selectable = evs.filter((ev) => ev.mac !== "" && !assignedSet.has(ev.mac));
+
+                    let items =
+                        selectable.length > 0 ? (
+                            selectable.map((ev) => {
+                                const ownerName = getEvOwnerName(ev.mac);
+                                const error = ownerName ? (__("users.content.ev_mac_already_assigned")(ownerName) as string) : undefined;
+                                return (
+                                    <DiscoveryResultItem
+                                        key={ev.mac}
+                                        type="submit"
+                                        title={<div class="h5">{ev.name}</div>}
+                                        labelAdd={<Plus />}
+                                        error={error}
+                                        onClick={() => {
+                                            onAddEv({ mac: ev.mac });
+                                        }}
+                                    >
+                                        <div class="text-muted small font-monospace">
+                                            {ev.mac}
+                                        </div>
+                                    </DiscoveryResultItem>
+                                );
+                            })
+                        ) : (
+                            <DiscoveryResultItem
+                                key="-1"
+                                title=""
+                                error={__("users.content.ev_no_evs")}
+                                labelAdd=""
+                            ></DiscoveryResultItem>
+                        );
+
+                    return (
+                        <FormRow label={__("users.content.ev_available_evs")}>
+                            <DiscoveryResultGroup>{items}</DiscoveryResultGroup>
+                        </FormRow>
+                    );
+                }}
+            />
+        </FormRow>
+    );
+}
+//#endif
+
 interface EditUserFormContentProps {
     user: User;
     errorMessage: string | undefined;
@@ -505,6 +664,13 @@ interface EditUserFormContentProps {
     onEditTagIdChange: (value: string) => void;
     onEditTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
+    //#endif
+    //#if MODULE_EV_AVAILABLE
+    evs: EvRef[];
+    evConfig: API.getType["ev/config"];
+    pendingEvChanges: EvChange[];
+    evUsers: User[];
+    onEvsChange: (evs: EvRef[]) => void;
     //#endif
     onUserChange: (changes: Partial<User>) => void;
 }
@@ -523,6 +689,13 @@ function EditUserFormContent({
     onEditTagIdChange,
     onEditTagTypeChange,
     onNfcTagsChange,
+    //#endif
+    //#if MODULE_EV_AVAILABLE
+    evs,
+    evConfig,
+    pendingEvChanges,
+    evUsers,
+    onEvsChange,
     //#endif
     onUserChange,
 }: EditUserFormContentProps) {
@@ -608,6 +781,20 @@ function EditUserFormContent({
                 onAddTag={(tag) => onNfcTagsChange(nfcTags.concat(tag))}
             />
             {/*#endif*/}
+            {/*#if MODULE_EV_AVAILABLE*/}
+            <EvsSection
+                assignedEvs={evs}
+                evs={evConfig.evs}
+                pendingEvChanges={pendingEvChanges}
+                users={evUsers}
+                currentUserId={user.id}
+                currentUsername={user.username}
+                onRemoveEv={(j) =>
+                    onEvsChange(evs.filter((_, k) => k !== j))
+                }
+                onAddEv={(ev) => onEvsChange(evs.concat(ev))}
+            />
+            {/*#endif*/}
         </>
     );
 }
@@ -626,6 +813,13 @@ interface AddUserFormContentProps {
     onEditTagTypeChange: (value: number) => void;
     onNfcTagsChange: (tags: NfcTagRef[]) => void;
     //#endif
+    //#if MODULE_EV_AVAILABLE
+    evs: EvRef[];
+    evConfig: API.getType["ev/config"];
+    pendingEvChanges: EvChange[];
+    evUsers: User[];
+    onEvsChange: (evs: EvRef[]) => void;
+    //#endif
     onUserChange: (changes: Partial<User>) => void;
 }
 
@@ -642,6 +836,13 @@ function AddUserFormContent({
     onEditTagIdChange,
     onEditTagTypeChange,
     onNfcTagsChange,
+    //#endif
+    //#if MODULE_EV_AVAILABLE
+    evs,
+    evConfig,
+    pendingEvChanges,
+    evUsers,
+    onEvsChange,
     //#endif
     onUserChange,
 }: AddUserFormContentProps) {
@@ -722,6 +923,20 @@ function AddUserFormContent({
                 onAddTag={(tag) => onNfcTagsChange(nfcTags.concat(tag))}
             />
             {/*#endif*/}
+            {/*#if MODULE_EV_AVAILABLE*/}
+            <EvsSection
+                assignedEvs={evs}
+                evs={evConfig.evs}
+                pendingEvChanges={pendingEvChanges}
+                users={evUsers}
+                currentUserId={-1}
+                currentUsername={user.username}
+                onRemoveEv={(j) =>
+                    onEvsChange(evs.filter((_, k) => k !== j))
+                }
+                onAddEv={(ev) => onEvsChange(evs.concat(ev))}
+            />
+            {/*#endif*/}
         </>
     );
 }
@@ -761,6 +976,9 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 allSeenTags: [],
                 editTagId: "",
                 editTagType: 0,
+                addUserEvs: [],
+                editUserEvs: [],
+                evChanges: [],
             },
         );
 
@@ -783,6 +1001,12 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             this.setState({
                 nfcDeadtime: API.get("nfc/config").deadtime_post_start,
             });
+        });
+        //#endif
+
+        //#if MODULE_EV_AVAILABLE
+        util.addApiEventListener("ev/config", () => {
+            this.forceUpdate();
         });
         //#endif
     }
@@ -1053,6 +1277,64 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         }
         //#endif
 
+        //#if MODULE_EV_AVAILABLE
+        if ((this.state.evChanges && this.state.evChanges.length > 0) || (ids_to_remove.length > 0)) {
+            let ev_config = API.get("ev/config");
+            // Work on a copy of the EV profiles; the user assignment is stored
+            // directly on each profile via its user_id.
+            let evs = ev_config.evs.map((e) => ({ ...e }));
+
+            // Clear the assignment of EVs that belonged to deleted users.
+            for (const id of ids_to_remove) {
+                for (const ev of evs) {
+                    if (ev.user_id === id) ev.user_id = 0;
+                }
+            }
+
+            // Apply pending EV assignment changes.
+            for (const change of this.state.evChanges) {
+                let userId = change.user_id;
+                const remove_idx = ids_to_remove.find((v) => (v === userId));
+                // Skip changes for users that are being deleted
+                if (remove_idx !== undefined && remove_idx !== -1) {
+                    continue;
+                }
+
+                // For new users, find the real ID by username
+                if (userId <= 0) {
+                    let currentUsers = API.get("users/config").users;
+                    let found = currentUsers.find((u) => (u.username === change.username));
+                    if (found) {
+                        userId = found.id;
+                    } else {
+                        continue;
+                    }
+                }
+
+                // Clear this user's previous assignments, then assign the EVs
+                // that are now selected for the user.
+                const wanted = new Set(change.evs.map((m) => m.mac));
+                for (const ev of evs) {
+                    if (ev.user_id === userId && !wanted.has(ev.mac)) {
+                        ev.user_id = 0;
+                    }
+                }
+                for (const ev of evs) {
+                    if (wanted.has(ev.mac)) {
+                        ev.user_id = userId;
+                    }
+                }
+            }
+
+            await API.save(
+                "ev/config",
+                { evs: evs },
+                () => __("users.script.save_failed"),
+            );
+            this.setState({ evChanges: [] });
+        }
+        //#endif
+
         // This is the last API call to be done. Show reboot modal here.
         await API.call_unchecked(
             "users/http_auth_update",
@@ -1148,6 +1430,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
 //#if MODULE_NFC_AVAILABLE
         let seen_tags = state.allSeenTags;
         let nfc_config = API.get("nfc/config");
+//#endif
+
+//#if MODULE_EV_AVAILABLE
+        let ev_config = API.get("ev/config");
 //#endif
 
         let evse_user_component = null;
@@ -1309,6 +1595,15 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                                 }));
                                         }
                                         //#endif
+                                        let evs: EvRef[] = [];
+                                        //#if MODULE_EV_AVAILABLE
+                                        let pendingEvChange = state.evChanges.find((c) =>(user.id > 0 && (c.user_id === user.id)) || (user.id <= 0 && c.username === user.username));
+                                        if (pendingEvChange) {
+                                            evs = pendingEvChange.evs.slice();
+                                        } else if (user.id > 0) {
+                                            evs = ev_config.evs.filter((e) => (e.user_id === user.id)).map((e) => ({ mac: e.mac }));
+                                        }
+                                        //#endif
                                         this.setState({
                                             editUser: {
                                                 id: user.id,
@@ -1321,6 +1616,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                                 is_invalid: user.is_invalid,
                                             },
                                             editUserNfcTags: nfcTags,
+                                            editUserEvs: evs,
                                         });
                                     },
                                     onEditGetChildren: () => [
@@ -1354,6 +1650,17 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             onNfcTagsChange={(tags) =>
                                                 this.setState({
                                                     editUserNfcTags: tags,
+                                                })
+                                            }
+                                            //#endif
+                                            //#if MODULE_EV_AVAILABLE
+                                            evs={state.editUserEvs}
+                                            evConfig={ev_config}
+                                            pendingEvChanges={state.evChanges}
+                                            evUsers={state.users}
+                                            onEvsChange={(evs) =>
+                                                this.setState({
+                                                    editUserEvs: evs,
                                                 })
                                             }
                                             //#endif
@@ -1418,6 +1725,23 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             nfcTagChanges: nfcTagChanges,
                                         });
                                         //#endif
+                                        //#if MODULE_EV_AVAILABLE
+                                        let evChanges =
+                                            state.evChanges.filter((c) => {
+                                                if (state.editUser.id > 0) {
+                                                    return c.user_id !== state.editUser.id;
+                                                }
+                                                return c.username !== state.editUser.username;
+                                            });
+                                        evChanges.push({
+                                            user_id: state.editUser.id,
+                                            username: state.editUser.username,
+                                            evs: state.editUserEvs.slice(),
+                                        });
+                                        this.setState({
+                                            evChanges: evChanges,
+                                        });
+                                        //#endif
                                         this.setDirty(true);
                                     },
                                     onRemoveClick: async () => {
@@ -1458,6 +1782,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                         is_invalid: 0,
                                     },
                                     addUserNfcTags: [],
+                                    addUserEvs: [],
                                 })
                             }
                             onAddGetChildren={() => [
@@ -1482,6 +1807,17 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     onNfcTagsChange={(tags) =>
                                         this.setState({
                                             addUserNfcTags: tags,
+                                        })
+                                    }
+                                    //#endif
+                                    //#if MODULE_EV_AVAILABLE
+                                    evs={state.addUserEvs}
+                                    evConfig={ev_config}
+                                    pendingEvChanges={state.evChanges}
+                                    evUsers={state.users}
+                                    onEvsChange={(evs) =>
+                                        this.setState({
+                                            addUserEvs: evs,
                                         })
                                     }
                                     //#endif
@@ -1536,6 +1872,19 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     });
                                     this.setState({
                                         nfcTagChanges: nfcTagChanges,
+                                    });
+                                }
+                                //#endif
+                                //#if MODULE_EV_AVAILABLE
+                                if (state.addUserEvs.length > 0) {
+                                    let evChanges = state.evChanges.slice();
+                                    evChanges.push({
+                                        user_id: -1,
+                                        username: state.addUser.username,
+                                        evs: state.addUserEvs.slice(),
+                                    });
+                                    this.setState({
+                                        evChanges: evChanges,
                                     });
                                 }
                                 //#endif

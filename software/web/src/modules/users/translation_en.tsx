@@ -79,7 +79,19 @@ let x = {
             "nfc_add_tag_manually": "Add tag manually",
             "nfc_tag_id_placeholder": "e.g. 01:23:45:67",
             "nfc_tag_id_invalid":
-                "The tag ID must have four to ten groups separated by colons, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
+                "The tag ID must have four to ten groups separated by colons, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
+
+            "ev_macs": "EVs",
+            "ev_name": "Name",
+            "ev_mac": "MAC address",
+            "ev_mac_already_assigned": /*SFN*/ (other_name: string) => `Already assigned to user "${other_name}"` /*NF*/,
+            "ev_add_mac": "Add EV",
+            "ev_add_mac_message": /*SFN*/ (
+                haveForUser: number,
+                numConfigured: number
+            ) => `${haveForUser} of ${numConfigured} EVs assigned to this user` /*NF*/,
+            "ev_available_evs": "EVs",
+            "ev_no_evs": <>No EVs are configured. Configure EVs on the <a href="#ev">Electric Vehicles</a> page to be able to assign them to users.</>
         },
         "script": {
             "reboot_content_changed": "user settings",

@@ -1446,10 +1446,12 @@ void ChargeManager::register_urls()
                     json.addMemberString("ti", tag_id_str);
                     json.addMemberNumber("tt", info.tag_type);
                     json.addMemberNumber("ts", static_cast<uint32_t>(info.last_seen_s * 1000));
+                    json.addMemberNumber("am", static_cast<uint8_t>(info.auth_method));
                 } else {
                     json.addMemberString("ti", "");
                     json.addMemberNumber("tt", static_cast<uint8_t>(0));
                     json.addMemberNumber("ts", static_cast<uint32_t>(0));
+                    json.addMemberNumber("am", static_cast<uint8_t>(0));
                 }
 
                 json.endObject();

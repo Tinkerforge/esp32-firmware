@@ -67,6 +67,7 @@ export interface TableProps {
     onAddSubmit?: () => Promise<void>;
     onAddHide?: () => Promise<void>;
     addAdditionalFooterButtons?: ComponentChildren;
+    hideSubmitButton?: boolean;
     tableTill?: "xs" | "sm" | "md" | "lg" | "xl";
     nestingDepth?: number;
     onAddStart?: never;
@@ -343,10 +344,10 @@ export class Table extends Component<TableProps, TableState> {
                     onExport={props.onAddExport ? async () => {return await props.onAddExport();} : undefined}
                     show={state.showAddModal}
                     no_variant="secondary"
-                    yes_variant="primary"
+                    yes_variant={props.hideSubmitButton ? undefined : "primary"}
                     title={props.addTitle}
                     no_text={__("component.table.abort")}
-                    yes_text={__("component.table.add")}
+                    yes_text={props.hideSubmitButton ? undefined : __("component.table.add")}
                     additionalFooterButtons={props.addAdditionalFooterButtons}
                     export_basename={props.addExportBasename}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}

@@ -623,6 +623,10 @@ void Users::register_urls()
         nfc.remove_user(remove.get("id")->asUint());
 #endif
 
+#if MODULE_EV_AVAILABLE()
+        ev.remove_user(remove.get("id")->asUint());
+#endif
+
         if (!charge_tracker.is_user_tracked(remove.get("id")->asUint()))
         {
             this->rename_user(remove.get("id")->asUint(), "", "");

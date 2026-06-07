@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2026 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +33,12 @@ void ChargeAuthorization::pre_setup()
     auth_prototypes[3] = {CMAuthType::InjectedNFC, Config::Object({
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
         {"tag_type", Config::Uint8(0)}
+    })};
+    auth_prototypes[4] = {CMAuthType::EV, Config::Object({
+        {"mac", Config::Str("", 0, 17)}
+    })};
+    auth_prototypes[5] = {CMAuthType::InjectedEV, Config::Object({
+        {"mac", Config::Str("", 0, 17)}
     })};
 
 
@@ -127,6 +134,20 @@ int16_t ChargeAuthorization::find_user(const cm_auth_info &info)
             memcpy(tag.id_bytes, info.tag_id, sizeof(info.tag_id));
 
             return nfc.get_user_id(tag);
+        }
+        case CMAuthType::EV:
+        case CMAuthType::InjectedEV: {
+#if MODULE_EV_AVAILABLE()
+            if (info.tag_id_len != EV_MAC_ADDRESS_LENGTH) {
+                // Invalid MAC length, treat as not authorized.
+                return -1;
+            }
+
+            return ev.get_user_id(info.tag_id);
+#else
+            // Without the EV module there is no EV profile list -> not authorized.
+            return -1;
+#endif
         }
         case CMAuthType::None:
         case CMAuthType::Lost:
