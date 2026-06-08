@@ -127,7 +127,7 @@ let x = {
                     energy_limit = <> leave the energy limit unchanged</>
                 } else {
                     const energy_limit_value = energy === 0 ? <b>unlimited</b> : <b>{toLocaleFixed(energy / 1000, 3)} kWh</b>;
-                    energy_limit = <> set the energy_limit to {energy_limit_value}</>
+                    energy_limit = <> set the energy limit to {energy_limit_value}</>
                 }
 
                 let soc_part = <></>;
