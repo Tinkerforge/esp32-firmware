@@ -632,8 +632,7 @@ function EvsSection({
                         ) : (
                             <DiscoveryResultItem
                                 key="-1"
-                                title=""
-                                error={__("users.content.ev_no_evs")}
+                                title={__("users.content.ev_no_evs")}
                                 labelAdd=""
                             ></DiscoveryResultItem>
                         );
