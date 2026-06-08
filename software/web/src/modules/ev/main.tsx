@@ -305,12 +305,12 @@ export class Ev extends Component<{}, EvState> {
                                 <InputText value={ev_state.mac} />
                             </FormRow>
                         }
-                        {!isNaN(ev_state.soc) &&
+                        {Number.isFinite(ev_state.soc) &&
                             <FormRow label={__("ev.content.active_ev_soc")}>
                                 <InputText value={util.toLocaleFixed(ev_state.soc, 1) + " %"} />
                             </FormRow>
                         }
-                        {is_known_ev && !isNaN(ev_state.capacity) &&
+                        {is_known_ev && Number.isFinite(ev_state.capacity) &&
                             <FormRow label={__("ev.content.active_ev_capacity")}>
                                 <InputText value={util.toLocaleFixed(ev_state.capacity, 1) + " kWh"} />
                             </FormRow>
