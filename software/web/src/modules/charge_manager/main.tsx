@@ -18,7 +18,7 @@
  */
 
 //#include "generated/module_available.inc"
-// //#include "../../options.inc"
+//#include "../../options.inc"
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
