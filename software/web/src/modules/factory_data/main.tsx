@@ -56,20 +56,14 @@ export class FactoryData extends ConfigComponent<'factory_data/config'> {
                     <FormRow label="SKU product">
                         <InputText value={factory_data_state.sku_product} />
                     </FormRow>
-                    <FormRow label="SKU generation">
-                        <InputText value={factory_data_state.sku_generation} />
-                    </FormRow>
                     <FormRow label="SKU model">
                         <InputText value={factory_data_state.sku_model} />
                     </FormRow>
                     <FormRow label="SKU material">
                         <InputText value={factory_data_state.sku_material} />
                     </FormRow>
-                    <FormRow label="SKU type-2 power">
-                        <InputText value={factory_data_state.sku_type2_power} />
-                    </FormRow>
-                    <FormRow label="SKU type-2 length">
-                        <InputText value={factory_data_state.sku_type2_length} />
+                    <FormRow label="SKU type2">
+                        <InputText value={factory_data_state.sku_type2} />
                     </FormRow>
                     <FormRow label="SKU engraving">
                         <InputText value={factory_data_state.sku_engraving} />

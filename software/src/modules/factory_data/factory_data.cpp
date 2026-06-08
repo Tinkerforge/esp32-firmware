@@ -61,11 +61,9 @@ void FactoryData::pre_setup()
     state = Config::Object({
         {"sku", Config::Str("", 0, SKU_STR_LEN)},
         {"sku_product", Config::Enum(SKUProduct::Unknown)},
-        {"sku_generation", Config::Enum(SKUGeneration::Unknown)},
         {"sku_model", Config::Enum(SKUModel::Unknown)},
         {"sku_material", Config::Enum(SKUMaterial::Unknown)},
-        {"sku_type2_power", Config::Enum(SKUType2Power::Unknown)},
-        {"sku_type2_length", Config::Enum(SKUType2Length::Unknown)},
+        {"sku_type2", Config::Enum(SKUType2::Unknown)},
         {"sku_engraving", Config::Enum(SKUEngraving::Unknown)},
     });
 }
@@ -121,27 +119,19 @@ void FactoryData::register_urls()
 
 bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
 {
-    // product generation   model   material   type2-power type2-length   engraving
+    // product   model   material   type2   engraving
     //
-    //    WARP          4 -    CS -       SS -          11           50 -         W
-    //                         CP         PC            11           75           C
-    //                         CE                       22           50
-    //                                                  22           75
-    //                                                   C            C
+    //   WARP4 -    CS -       SS -  1150 -         W
+    //              CP         PC    1175           C
+    //              CE               2250
+    //                               2275
+    //                                 CC
 
     const char *p = sku_str;
 
-    if (strncmp(p, "WARP", 4) == 0) {
-        sku->product = SKUProduct::WARP;
-        p += 4;
-    }
-    else {
-        return false;
-    }
-
-    if (*p == '4') {
-        sku->generation = SKUGeneration::Fourth;
-        p += 1;
+    if (strncmp(p, "WARP4", 5) == 0) {
+        sku->product = SKUProduct::WARP4;
+        p += 5;
     }
     else {
         return false;
@@ -188,27 +178,23 @@ bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
     }
 
     if (strncmp(p, "1150", 4) == 0) {
-        sku->type2_power = SKUType2Power::KW11;
-        sku->type2_length = SKUType2Length::M5p0;
+        sku->type2 = SKUType2::KW11M5p0Cable;
         p += 4;
     }
     else if (strncmp(p, "1175", 4) == 0) {
-        sku->type2_power = SKUType2Power::KW11;
-        sku->type2_length = SKUType2Length::M7p5;
+        sku->type2 = SKUType2::KW11M7p5Cable;
         p += 4;
     }
     else if (strncmp(p, "2250", 4) == 0) {
-        sku->type2_power = SKUType2Power::KW22;
-        sku->type2_length = SKUType2Length::M5p0;
+        sku->type2 = SKUType2::KW22M5p0Cable;
         p += 4;
     }
     else if (strncmp(p, "2275", 4) == 0) {
-        sku->type2_power = SKUType2Power::KW22;
-        sku->type2_length = SKUType2Length::M7p5;
+        sku->type2 = SKUType2::KW22M7p5Cable;
         p += 4;
     }
     else if (strncmp(p, "CC", 2) == 0) {
-        sku->type2_power = SKUType2Power::Custom;
+        sku->type2 = SKUType2::CustomCable;
         p += 2;
     }
     else {
@@ -245,10 +231,8 @@ void FactoryData::update_sku(const char *sku_str, SKU *sku)
 
     state.get("sku")->updateString(data->sku_str);
     state.get("sku_product")->updateEnum(data->sku.product);
-    state.get("sku_generation")->updateEnum(data->sku.generation);
     state.get("sku_model")->updateEnum(data->sku.model);
     state.get("sku_material")->updateEnum(data->sku.material);
-    state.get("sku_type2_power")->updateEnum(data->sku.type2_power);
-    state.get("sku_type2_length")->updateEnum(data->sku.type2_length);
+    state.get("sku_type2")->updateEnum(data->sku.type2);
     state.get("sku_engraving")->updateEnum(data->sku.engraving);
 }
