@@ -22,11 +22,9 @@
 #include "module.h"
 #include "config.h"
 #include "generated/sku_product.enum.h"
-#include "generated/sku_generation.enum.h"
 #include "generated/sku_model.enum.h"
 #include "generated/sku_material.enum.h"
-#include "generated/sku_type2_power.enum.h"
-#include "generated/sku_type2_length.enum.h"
+#include "generated/sku_type2.enum.h"
 #include "generated/sku_engraving.enum.h"
 
 #define SKU_STR_LEN 18 // WARP4-XX-XX-XXXX-X
@@ -41,21 +39,17 @@ public:
 
     inline const char *get_sku() const { return data->sku_str; }
     inline SKUProduct get_sku_product() const { return data->sku.product; }
-    inline SKUGeneration get_sku_generation() const { return data->sku.generation; }
     inline SKUModel get_sku_model() const { return data->sku.model; }
     inline SKUMaterial get_sku_material() const { return data->sku.material; }
-    inline SKUType2Power get_sku_type2_power() const { return data->sku.type2_power; }
-    inline SKUType2Length get_sku_type2_length() const { return data->sku.type2_length; }
+    inline SKUType2 get_sku_type2() const { return data->sku.type2; }
     inline SKUEngraving get_sku_engraving() const { return data->sku.engraving; }
 
 private:
     struct SKU {
         SKUProduct product = SKUProduct::Unknown;
-        SKUGeneration generation = SKUGeneration::Unknown;
         SKUModel model = SKUModel::Unknown;
         SKUMaterial material = SKUMaterial::Unknown;
-        SKUType2Power type2_power = SKUType2Power::Unknown;
-        SKUType2Length type2_length = SKUType2Length::Unknown;
+        SKUType2 type2 = SKUType2::Unknown;
         SKUEngraving engraving = SKUEngraving::Unknown;
     };
 
