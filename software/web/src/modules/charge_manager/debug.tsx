@@ -40,7 +40,7 @@ function Charger (props: {i: number,
 
     return <>
         <Card>
-            <Card.Header as="h5">{`${props.i} - ${props.state.n} (${props.state.u})`}</Card.Header>
+            <Card.Header as="h5">{`${props.i} - ${props.state.n} (${props.state.uid})`}</Card.Header>
             <Card.Body className="pb-0">
                 <FormRow label="State">
                     <CMDCardOutFloat value={props.state.s} digits={0} scale={0} unit=""/>
