@@ -173,7 +173,7 @@ uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
         iso15118.trace_packet(data, available);
         return available;
     } else {
-        logger.printfln("read_burst error: available %u > max length %u", available, length);
+        iso15118.trace("read_burst error: available %u > max length %u", available, length);
     }
 
     return 0;
@@ -196,7 +196,7 @@ void QCA700x::flush_receive_buffer()
     }
 
     if (total_flushed > 0) {
-        logger.printfln("QCA700x: Flushed %u bytes from hardware buffer", total_flushed);
+        iso15118.trace("QCA700x: Flushed %u bytes from hardware buffer", total_flushed);
     }
 }
 
@@ -207,7 +207,7 @@ void QCA700x::flush_all_buffers()
 
     // Flush local SPI buffer
     if (spi_buffer_length > 0) {
-        logger.printfln("QCA700x: Discarding %u bytes from local buffer", spi_buffer_length);
+        iso15118.trace("QCA700x: Discarding %u bytes from local buffer", spi_buffer_length);
         spi_buffer_length = 0;
     }
 
@@ -267,22 +267,22 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length,
     if (packet_length > QCA700X_BUFFER_SIZE) {
         // Log diagnostic info for SPI corruption debugging
         const uint16_t rdbuf_byte_ava = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA);
-        logger.printfln("QCA700x: Packet length too long: %lu > %d (RDBUF_BYTE_AVA=%u, buf_len=%u)",
+        iso15118.trace("QCA700x: Packet length too long: %lu > %d (RDBUF_BYTE_AVA=%u, buf_len=%u)",
                         packet_length, QCA700X_BUFFER_SIZE, rdbuf_byte_ava, length);
-        logger.printfln("QCA700x: First 16 bytes: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+        iso15118.trace("QCA700x: First 16 bytes: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
                         data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
                         data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
         return -1;
     }
 
     if (packet_length < (QCA700X_RECV_BUFFER_MIN_SIZE - QCA700X_HW_PKT_SIZE)) {
-        logger.printfln("QCA700x: Packet length too short: %lu < %d", packet_length, QCA700X_RECV_BUFFER_MIN_SIZE);
+        iso15118.trace("QCA700x: Packet length too short: %lu < %d", packet_length, QCA700X_RECV_BUFFER_MIN_SIZE);
         return -2;
     }
 
     // Check SOF (start of frame)
     if ((data[4] != 0xAA) || (data[5] != 0xAA) || (data[6] != 0xAA) || (data[7] != 0xAA)) {
-        logger.printfln("QCA700x: Header mismatch");
+        iso15118.trace("QCA700x: Header mismatch");
         return -3;
     }
 
@@ -300,19 +300,19 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length,
     // We have enough data: Check EOF (end of frame)
     // EOF is at packet_length + 2 and packet_length + 3 (i.e., total_frame_length - 2 and - 1)
     if ((data[total_frame_length - 2] != 0x55) || (data[total_frame_length - 1] != 0x55)) {
-        logger.printfln("QCA700x: Footer mismatch at offset %d (found 0x%02x 0x%02x)",
+        iso15118.trace("QCA700x: Footer mismatch at offset %d (found 0x%02x 0x%02x)",
                         total_frame_length - 2, data[total_frame_length - 2], data[total_frame_length - 1]);
         return -5;
     }
 
     const uint32_t ethernet_frame_length = static_cast<uint32_t>(data[8]) | (static_cast<uint32_t>(data[9]) << 8);
     if (ethernet_frame_length < QCA700X_ETHERNET_FRAME_MIN_SIZE) {
-        logger.printfln("QCA700x: Ethernet frame length too short: %lu < %d", ethernet_frame_length, QCA700X_ETHERNET_FRAME_MIN_SIZE);
+        iso15118.trace("QCA700x: Ethernet frame length too short: %lu < %d", ethernet_frame_length, QCA700X_ETHERNET_FRAME_MIN_SIZE);
         return -6;
     }
 
     if (ethernet_frame_length > QCA700X_BUFFER_SIZE) {
-        logger.printfln("QCA700x: Ethernet frame length too long: %lu > %d", ethernet_frame_length, QCA700X_BUFFER_SIZE);
+        iso15118.trace("QCA700x: Ethernet frame length too long: %lu > %d", ethernet_frame_length, QCA700X_BUFFER_SIZE);
         return -7;
     }
 
@@ -320,7 +320,7 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length,
     // (SOF:4 + eth_len:2 + reserved:2 + ethernet_frame_length + EOF:2 = eth_frame + 10)
     const uint32_t expected_packet_length = ethernet_frame_length + 10;
     if (packet_length != expected_packet_length) {
-        logger.printfln("QCA700x: Length mismatch! packet_length=%lu, expected=%lu (eth_frame_len=%lu)",
+        iso15118.trace("QCA700x: Length mismatch! packet_length=%lu, expected=%lu (eth_frame_len=%lu)",
                         packet_length, expected_packet_length, ethernet_frame_length);
         // We use the packet length here (hardware value) as authoritative and accept it,
         // but still log this for debugging for now.
@@ -339,20 +339,20 @@ void QCA700x::setup_l2tap()
 {
     esp_err_t err = esp_vfs_l2tap_intf_register(NULL);
     if (err != ESP_OK) {
-        logger.printfln("Failed to register l2tap VFS: %s", esp_err_to_name(err));
+        iso15118.trace("Failed to register l2tap VFS: %s", esp_err_to_name(err));
         return;
     }
 
     tap = open("/dev/net/tap", O_NONBLOCK);
     if (tap < 0) {
-        logger.printfln("Failed to open /dev/net/tap: errno %d", errno);
+        iso15118.trace("Failed to open /dev/net/tap: errno %d", errno);
         return;
     }
 
     // Bind l2tap to our custom netif using IO driver handle
     int ret = ioctl(tap, L2TAP_S_DEVICE_DRV_HNDL, &driver);
     if (ret < 0) {
-        logger.printfln("Failed to bind l2tap to device driver handle: errno %d", errno);
+        iso15118.trace("Failed to bind l2tap to device driver handle: errno %d", errno);
         close(tap);
         tap = -1;
         iso15118.set_poll_fd(FDS_TAP_INDEX, -1);
@@ -363,7 +363,7 @@ void QCA700x::setup_l2tap()
     uint16_t eth_type_filter_homeplug = SLAC_ETHERNET_TYPE_HOMEPLUG;
     ret = ioctl(tap, L2TAP_S_RCV_FILTER, &eth_type_filter_homeplug);
     if (ret < 0) {
-        logger.printfln("Failed to set l2tap receive filter: errno %d", errno);
+        iso15118.trace("Failed to set l2tap receive filter: errno %d", errno);
         close(tap);
         tap = -1;
         iso15118.set_poll_fd(FDS_TAP_INDEX, -1);
@@ -373,7 +373,7 @@ void QCA700x::setup_l2tap()
     // Register tap in central poll array
     iso15118.set_poll_fd(FDS_TAP_INDEX, tap);
 
-    logger.printfln("l2tap initialized successfully (fd=%d, filter=0x%04X)", tap, eth_type_filter_homeplug);
+    iso15118.trace("l2tap initialized successfully (fd=%d, filter=0x%04X)", tap, eth_type_filter_homeplug);
 }
 
 void QCA700x::setup_netif()
@@ -401,7 +401,7 @@ void QCA700x::setup_netif()
         .transmit = [](void *h, void *buf, size_t len) -> esp_err_t {
             void *data_copy = malloc(len);
             if (data_copy == NULL) {
-                logger.printfln("QCA700x: Failed to allocate memory for transmit data");
+                iso15118.trace("QCA700x: Failed to allocate memory for transmit data");
                 return ESP_OK;
             }
             memcpy(data_copy, buf, len);
@@ -414,7 +414,7 @@ void QCA700x::setup_netif()
         .transmit_wrap = [](void *h, void *buf, size_t len, void *netstack_buf) -> esp_err_t {
             void *data_copy = malloc(len);
             if (data_copy == NULL) {
-                logger.printfln("QCA700x: Failed to allocate memory for transmit data");
+                iso15118.trace("QCA700x: Failed to allocate memory for transmit data");
                 return ESP_OK;
             }
             memcpy(data_copy, buf, len);
@@ -448,7 +448,7 @@ void QCA700x::setup_netif()
 
     netif = esp_netif_new(&netif_config);
     if (netif == NULL) {
-        logger.printfln("Failed to create QCA700x netif");
+        iso15118.trace("Failed to create QCA700x netif");
         return;
     }
 
@@ -469,7 +469,7 @@ void QCA700x::setup_netif()
 void QCA700x::link_up()
 {
     if (netif == nullptr) {
-        logger.printfln("QCA700x: link_up called but netif is not initialized");
+        iso15118.trace("QCA700x: link_up called but netif is not initialized");
         return;
     }
 
@@ -477,18 +477,18 @@ void QCA700x::link_up()
         esp_netif_action_start(netif, nullptr, 0, nullptr);
         ESP_ERROR_CHECK(esp_netif_create_ip6_linklocal(netif));
     } else {
-        logger.printfln("QCA700x netif already up");
+        iso15118.trace("QCA700x netif already up");
     }
 
     if (!esp_netif_is_netif_up(netif)) {
-        logger.printfln("Failed to start QCA700x netif");
+        iso15118.trace("Failed to start QCA700x netif");
     }
 }
 
 void QCA700x::link_down()
 {
     if (netif == nullptr) {
-        logger.printfln("QCA700x: link_down called but netif is not initialized");
+        iso15118.trace("QCA700x: link_down called but netif is not initialized");
         return;
     }
 
@@ -510,7 +510,7 @@ void QCA700x::received_data_to_netif(const uint8_t *data, const uint16_t length)
     // The buffer will be freed by driver_free_rx_buffer function.
     void *data_copy = malloc(length);
     if (data_copy == NULL) {
-        logger.printfln("QCA700x: Failed to allocate memory for received data");
+        iso15118.trace("QCA700x: Failed to allocate memory for received data");
         return;
     }
     memcpy(data_copy, data, length);
@@ -531,21 +531,21 @@ bool QCA700x::get_ip6_linklocal(esp_ip6_addr_t *if_ip6)
             if (err == ESP_OK) {
                 return true;
             }
-            logger.printfln("get_ip6_linklocal: esp_netif_get_ip6_linklocal failed: %s", esp_err_to_name(err));
+            iso15118.trace("get_ip6_linklocal: esp_netif_get_ip6_linklocal failed: %s", esp_err_to_name(err));
             return false;
         }
-        logger.printfln("get_ip6_linklocal: Debug mode but ETH_DEF not found");
+        iso15118.trace("get_ip6_linklocal: Debug mode but ETH_DEF not found");
         return false;
     }
 
     if (netif == NULL) {
-        logger.printfln("get_ip6_linklocal: netif not setup");
+        iso15118.trace("get_ip6_linklocal: netif not setup");
         return false;
     }
 
     esp_err_t err = esp_netif_get_ip6_linklocal(netif, if_ip6);
     if (err != ESP_OK) {
-        logger.printfln("get_ip6_linklocal: esp_netif_get_ip6_linklocal failed: %s", esp_err_to_name(err));
+        iso15118.trace("get_ip6_linklocal: esp_netif_get_ip6_linklocal failed: %s", esp_err_to_name(err));
         return false;
     }
     return true;
@@ -563,7 +563,7 @@ void QCA700x::state_machine_loop()
     if (spi_buffer == nullptr) {
         spi_buffer = static_cast<uint8_t *>(calloc_psram_or_dram(QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE + 1, sizeof(uint8_t)));
         if (spi_buffer == nullptr) {
-            logger.printfln("QCA700x: Failed to allocate SPI buffer");
+            iso15118.trace("QCA700x: Failed to allocate SPI buffer");
             return;
         }
     }
@@ -593,18 +593,18 @@ void QCA700x::state_machine_loop()
 
         if (ethernet_frame_length < 0) {
             // Log detailed diagnostics including previous frame info
-            logger.printfln("QCA700x: Frame error %d, buf_len=%u, attempting recovery...",
+            iso15118.trace("QCA700x: Frame error %d, buf_len=%u, attempting recovery...",
                             ethernet_frame_length, spi_buffer_length);
-            logger.printfln("QCA700x: Previous frame: len=%u, eth_type=0x%04X",
+            iso15118.trace("QCA700x: Previous frame: len=%u, eth_type=0x%04X",
                             prev_frame_length, prev_frame_eth_type);
-            logger.printfln("QCA700x: Previous buffer state: buf_before=%u, total_frame=%u, remaining=%ld",
+            iso15118.trace("QCA700x: Previous buffer state: buf_before=%u, total_frame=%u, remaining=%ld",
                             prev_buf_len_before, prev_total_frame_length, static_cast<long>(prev_remaining_length));
-            logger.printfln("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+            iso15118.trace("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
                             prev_frame_header[0], prev_frame_header[1], prev_frame_header[2], prev_frame_header[3],
                             prev_frame_header[4], prev_frame_header[5], prev_frame_header[6], prev_frame_header[7],
                             prev_frame_header[8], prev_frame_header[9], prev_frame_header[10], prev_frame_header[11],
                             prev_frame_header[12], prev_frame_header[13], prev_frame_header[14], prev_frame_header[15]);
-            logger.printfln("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+            iso15118.trace("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
                             prev_frame_header[16], prev_frame_header[17], prev_frame_header[18], prev_frame_header[19],
                             prev_frame_header[20], prev_frame_header[21], prev_frame_header[22], prev_frame_header[23],
                             prev_frame_header[24], prev_frame_header[25], prev_frame_header[26], prev_frame_header[27],
@@ -615,7 +615,7 @@ void QCA700x::state_machine_loop()
 
             if (sof_offset > 0) {
                 // Found SOF - shift buffer and continue
-                logger.printfln("QCA700x: Found SOF at offset %d, skipping %d corrupted bytes",
+                iso15118.trace("QCA700x: Found SOF at offset %d, skipping %d corrupted bytes",
                                 sof_offset, sof_offset);
                 memmove(spi_buffer, spi_buffer + sof_offset, static_cast<size_t>(spi_buffer_length - static_cast<uint16_t>(sof_offset)));
                 spi_buffer_length -= static_cast<uint16_t>(sof_offset);
@@ -623,7 +623,7 @@ void QCA700x::state_machine_loop()
                 continue;
             } else {
                 // No SOF found - flush hardware buffer and discard local buffer
-                logger.printfln("QCA700x: No SOF found in %u bytes, flushing buffers", spi_buffer_length);
+                iso15118.trace("QCA700x: No SOF found in %u bytes, flushing buffers", spi_buffer_length);
                 flush_receive_buffer();
                 spi_buffer_length = 0;
                 break;
@@ -647,7 +647,7 @@ void QCA700x::state_machine_loop()
                         size_t size = static_cast<size_t>(ethernet_frame_length);
                         esp_vfs_l2tap_eth_filter_frame(&driver, frame_copy, &size, nullptr);
                     } else {
-                        logger.printfln("QCA700x: Failed to allocate memory for HomePlug frame");
+                        iso15118.trace("QCA700x: Failed to allocate memory for HomePlug frame");
                     }
                 }
                 break;
@@ -662,12 +662,12 @@ void QCA700x::state_machine_loop()
             }
 
             case SLAC_ETHERNET_TYPE_IPV4: {
-                logger.printfln("QCA700x: Received IPv4 packet (len=%d), not supported in ISO15118", ethernet_frame_length);
+                iso15118.trace("QCA700x: Received IPv4 packet (len=%d), not supported in ISO15118", ethernet_frame_length);
                 break;
             }
 
             default: {
-                logger.printfln("QCA700x: Unknown EtherType: 0x%04X", eth_type);
+                iso15118.trace("QCA700x: Unknown EtherType: 0x%04X", eth_type);
                 break;
             }
         }
@@ -688,9 +688,9 @@ void QCA700x::state_machine_loop()
 
         // This should never happen if check_receive_frame() works correctly
         if (remaining_length < 0) {
-            logger.printfln("QCA700x: CRITICAL BUG - negative remaining! buf_len=%u, total_frame=%u, remaining=%ld",
+            iso15118.trace("QCA700x: CRITICAL BUG - negative remaining! buf_len=%u, total_frame=%u, remaining=%ld",
                             spi_buffer_length, total_frame_length, static_cast<long>(remaining_length));
-            logger.printfln("QCA700x: This indicates check_receive_frame() approved a frame larger than buffer!");
+            iso15118.trace("QCA700x: This indicates check_receive_frame() approved a frame larger than buffer!");
             // Recovery: discard everything and start fresh
             flush_receive_buffer();
             spi_buffer_length = 0;

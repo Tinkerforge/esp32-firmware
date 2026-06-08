@@ -153,7 +153,7 @@ static int tls_net_send(void *ctx, const unsigned char *buf, size_t len)
         if (saved_errno == EWOULDBLOCK || saved_errno == EAGAIN) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        logger.printfln("ISOTLS: send() failed on fd %d: errno %d (%s), len=%zu",
+        iso15118.trace("ISOTLS: send() failed on fd %d: errno %d (%s), len=%zu",
                         fd, saved_errno, strerror(saved_errno), len);
         return MBEDTLS_ERR_NET_SEND_FAILED;
     }
@@ -171,12 +171,12 @@ static int tls_net_recv(void *ctx, unsigned char *buf, size_t len)
         if (saved_errno == EWOULDBLOCK || saved_errno == EAGAIN) {
             return MBEDTLS_ERR_SSL_WANT_READ;
         }
-        logger.printfln("ISOTLS: recv() failed on fd %d: errno %d (%s), len=%zu",
+        iso15118.trace("ISOTLS: recv() failed on fd %d: errno %d (%s), len=%zu",
                         fd, saved_errno, strerror(saved_errno), len);
         return MBEDTLS_ERR_NET_RECV_FAILED;
     }
     if (ret == 0) {
-        logger.printfln("ISOTLS: recv() returned 0 on fd %d (peer closed)", fd);
+        iso15118.trace("ISOTLS: recv() returned 0 on fd %d (peer closed)", fd);
         return MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY;
     }
     return static_cast<int>(ret);
@@ -187,13 +187,13 @@ static int tls_net_recv(void *ctx, unsigned char *buf, size_t len)
 bool ISOTLS::load_certificates()
 {
 #ifdef USE_EMBEDDED_TLS_CERTS
-    logger.printfln("ISOTLS: Using embedded dev certificates");
+    iso15118.trace("ISOTLS: Using embedded dev certificates");
 
     // Load ISO 15118-2 certificates (secp256r1)
     cert_chain_pem_len_iso2 = strlen(dev_cert_chain_pem_iso2) + 1;
     cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
     if (cert_chain_pem_iso2 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
         return false;
     }
     memcpy(cert_chain_pem_iso2, dev_cert_chain_pem_iso2, cert_chain_pem_len_iso2);
@@ -201,18 +201,18 @@ bool ISOTLS::load_certificates()
     private_key_pem_len_iso2 = strlen(dev_private_key_pem_iso2) + 1;
     private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
     if (private_key_pem_iso2 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO2 private key");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 private key");
         return false;
     }
     memcpy(private_key_pem_iso2, dev_private_key_pem_iso2, private_key_pem_len_iso2);
-    logger.printfln("ISOTLS: Loaded ISO 15118-2 certs (secp256r1): chain=%zu bytes, key=%zu bytes",
+    iso15118.trace("ISOTLS: Loaded ISO 15118-2 certs (secp256r1): chain=%zu bytes, key=%zu bytes",
                     cert_chain_pem_len_iso2 - 1, private_key_pem_len_iso2 - 1);
 
     // Load ISO 15118-20 certificates (secp521r1)
     cert_chain_pem_len_iso20 = strlen(dev_cert_chain_pem_iso20) + 1;
     cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
     if (cert_chain_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
         return false;
     }
     memcpy(cert_chain_pem_iso20, dev_cert_chain_pem_iso20, cert_chain_pem_len_iso20);
@@ -220,11 +220,11 @@ bool ISOTLS::load_certificates()
     private_key_pem_len_iso20 = strlen(dev_private_key_pem_iso20) + 1;
     private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
     if (private_key_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 private key");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 private key");
         return false;
     }
     memcpy(private_key_pem_iso20, dev_private_key_pem_iso20, private_key_pem_len_iso20);
-    logger.printfln("ISOTLS: Loaded ISO 15118-20 certs (secp521r1): chain=%zu bytes, key=%zu bytes",
+    iso15118.trace("ISOTLS: Loaded ISO 15118-20 certs (secp521r1): chain=%zu bytes, key=%zu bytes",
                     cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
 
     // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
@@ -233,7 +233,7 @@ bool ISOTLS::load_certificates()
     oem_root_ca_pem_len_iso20 = strlen(dev_oem_root_ca_pem_iso20) + 1;
     oem_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(oem_root_ca_pem_len_iso20, 1));
     if (oem_root_ca_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 OEM Root CA");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 OEM Root CA");
         return false;
     }
     memcpy(oem_root_ca_pem_iso20, dev_oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
@@ -241,12 +241,12 @@ bool ISOTLS::load_certificates()
     v2g_root_ca_pem_len_iso20 = strlen(dev_v2g_root_ca_pem_iso20) + 1;
     v2g_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(v2g_root_ca_pem_len_iso20, 1));
     if (v2g_root_ca_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 V2G Root CA");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 V2G Root CA");
         return false;
     }
     memcpy(v2g_root_ca_pem_iso20, dev_v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20);
 
-    logger.printfln("ISOTLS: Loaded trusted root CAs for ISO 15118-20 mutual TLS: OEM=%zu bytes, V2G=%zu bytes",
+    iso15118.trace("ISOTLS: Loaded trusted root CAs for ISO 15118-20 mutual TLS: OEM=%zu bytes, V2G=%zu bytes",
                     oem_root_ca_pem_len_iso20 - 1, v2g_root_ca_pem_len_iso20 - 1);
 
     return true;
@@ -254,20 +254,20 @@ bool ISOTLS::load_certificates()
 #else // !USE_EMBEDDED_TLS_CERTS
     // Load ISO 15118-2 certificate chain from LittleFS
     if (!LittleFS.exists(ISO15118_2_CERT_CHAIN_PATH)) {
-        logger.printfln("ISOTLS: ISO2 certificate chain file not found: %s", ISO15118_2_CERT_CHAIN_PATH);
+        iso15118.trace("ISOTLS: ISO2 certificate chain file not found: %s", ISO15118_2_CERT_CHAIN_PATH);
         return false;
     }
 
     File cert_file = LittleFS.open(ISO15118_2_CERT_CHAIN_PATH, "r");
     if (!cert_file) {
-        logger.printfln("ISOTLS: Failed to open ISO2 certificate chain file");
+        iso15118.trace("ISOTLS: Failed to open ISO2 certificate chain file");
         return false;
     }
 
     cert_chain_pem_len_iso2 = cert_file.size() + 1;
     cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
     if (cert_chain_pem_iso2 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
         cert_file.close();
         return false;
     }
@@ -277,20 +277,20 @@ bool ISOTLS::load_certificates()
     cert_file.close();
 
     if (!LittleFS.exists(ISO15118_2_PRIVATE_KEY_PATH)) {
-        logger.printfln("ISOTLS: ISO2 private key file not found: %s", ISO15118_2_PRIVATE_KEY_PATH);
+        iso15118.trace("ISOTLS: ISO2 private key file not found: %s", ISO15118_2_PRIVATE_KEY_PATH);
         return false;
     }
 
     File key_file = LittleFS.open(ISO15118_2_PRIVATE_KEY_PATH, "r");
     if (!key_file) {
-        logger.printfln("ISOTLS: Failed to open ISO2 private key file");
+        iso15118.trace("ISOTLS: Failed to open ISO2 private key file");
         return false;
     }
 
     private_key_pem_len_iso2 = key_file.size() + 1;
     private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
     if (private_key_pem_iso2 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO2 private key");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 private key");
         key_file.close();
         return false;
     }
@@ -299,24 +299,24 @@ bool ISOTLS::load_certificates()
     private_key_pem_iso2[bytes_read] = 0;
     key_file.close();
 
-    logger.printfln("ISOTLS: Loaded ISO 15118-2 certs from LittleFS");
+    iso15118.trace("ISOTLS: Loaded ISO 15118-2 certs from LittleFS");
 
     // Load ISO 15118-20 certificate chain from LittleFS
     if (!LittleFS.exists(ISO15118_20_CERT_CHAIN_PATH)) {
-        logger.printfln("ISOTLS: ISO20 certificate chain file not found: %s", ISO15118_20_CERT_CHAIN_PATH);
+        iso15118.trace("ISOTLS: ISO20 certificate chain file not found: %s", ISO15118_20_CERT_CHAIN_PATH);
         return false;
     }
 
     cert_file = LittleFS.open(ISO15118_20_CERT_CHAIN_PATH, "r");
     if (!cert_file) {
-        logger.printfln("ISOTLS: Failed to open ISO20 certificate chain file");
+        iso15118.trace("ISOTLS: Failed to open ISO20 certificate chain file");
         return false;
     }
 
     cert_chain_pem_len_iso20 = cert_file.size() + 1;
     cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
     if (cert_chain_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
         cert_file.close();
         return false;
     }
@@ -326,20 +326,20 @@ bool ISOTLS::load_certificates()
     cert_file.close();
 
     if (!LittleFS.exists(ISO15118_20_PRIVATE_KEY_PATH)) {
-        logger.printfln("ISOTLS: ISO20 private key file not found: %s", ISO15118_20_PRIVATE_KEY_PATH);
+        iso15118.trace("ISOTLS: ISO20 private key file not found: %s", ISO15118_20_PRIVATE_KEY_PATH);
         return false;
     }
 
     key_file = LittleFS.open(ISO15118_20_PRIVATE_KEY_PATH, "r");
     if (!key_file) {
-        logger.printfln("ISOTLS: Failed to open ISO20 private key file");
+        iso15118.trace("ISOTLS: Failed to open ISO20 private key file");
         return false;
     }
 
     private_key_pem_len_iso20 = key_file.size() + 1;
     private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
     if (private_key_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 private key");
+        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 private key");
         key_file.close();
         return false;
     }
@@ -348,7 +348,7 @@ bool ISOTLS::load_certificates()
     private_key_pem_iso20[bytes_read] = 0;
     key_file.close();
 
-    logger.printfln("ISOTLS: Loaded ISO 15118-20 certs from LittleFS");
+    iso15118.trace("ISOTLS: Loaded ISO 15118-20 certs from LittleFS");
 
     // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
     // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
@@ -361,12 +361,12 @@ bool ISOTLS::load_certificates()
             if (oem_root_ca_pem_iso20 != nullptr) {
                 bytes_read = ca_file.read(oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20 - 1);
                 oem_root_ca_pem_iso20[bytes_read] = 0;
-                logger.printfln("ISOTLS: Loaded OEM Root CA from LittleFS");
+                iso15118.trace("ISOTLS: Loaded OEM Root CA from LittleFS");
             }
             ca_file.close();
         }
     } else {
-        logger.printfln("ISOTLS: OEM Root CA not found at %s (mutual TLS will use V2G Root CA only)", ISO15118_20_OEM_ROOT_CA_PATH);
+        iso15118.trace("ISOTLS: OEM Root CA not found at %s (mutual TLS will use V2G Root CA only)", ISO15118_20_OEM_ROOT_CA_PATH);
     }
 
     if (LittleFS.exists(ISO15118_20_V2G_ROOT_CA_PATH)) {
@@ -377,16 +377,16 @@ bool ISOTLS::load_certificates()
             if (v2g_root_ca_pem_iso20 != nullptr) {
                 bytes_read = ca_file.read(v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20 - 1);
                 v2g_root_ca_pem_iso20[bytes_read] = 0;
-                logger.printfln("ISOTLS: Loaded V2G Root CA from LittleFS");
+                iso15118.trace("ISOTLS: Loaded V2G Root CA from LittleFS");
             }
             ca_file.close();
         }
     } else {
-        logger.printfln("ISOTLS: V2G Root CA not found at %s (mutual TLS will use OEM Root CA only)", ISO15118_20_V2G_ROOT_CA_PATH);
+        iso15118.trace("ISOTLS: V2G Root CA not found at %s (mutual TLS will use OEM Root CA only)", ISO15118_20_V2G_ROOT_CA_PATH);
     }
 
     if (oem_root_ca_pem_iso20 == nullptr && v2g_root_ca_pem_iso20 == nullptr) {
-        logger.printfln("ISOTLS: WARNING: No trusted root CAs found for ISO 15118-20 mutual TLS");
+        iso15118.trace("ISOTLS: WARNING: No trusted root CAs found for ISO 15118-20 mutual TLS");
     }
 
     return true;
@@ -399,11 +399,11 @@ bool ISOTLS::setup()
         return true;
     }
 
-    logger.printfln("ISOTLS: Setting up TLS for ISO 15118 (TLS 1.2 + 1.3)");
+    iso15118.trace("ISOTLS: Setting up TLS for ISO 15118 (TLS 1.2 + 1.3)");
 
     // Load certificates first
     if (!load_certificates()) {
-        logger.printfln("ISOTLS: Failed to load certificates");
+        iso15118.trace("ISOTLS: Failed to load certificates");
         return false;
     }
 
@@ -420,7 +420,7 @@ bool ISOTLS::setup()
     if (ssl == nullptr || ssl_conf == nullptr || entropy == nullptr || ctr_drbg == nullptr ||
         cert_chain_iso2 == nullptr || private_key_iso2 == nullptr ||
         cert_chain_iso20 == nullptr || private_key_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate mbedTLS contexts");
+        iso15118.trace("ISOTLS: Failed to allocate mbedTLS contexts");
         cleanup();
         return false;
     }
@@ -442,7 +442,7 @@ bool ISOTLS::setup()
     ret = mbedtls_ctr_drbg_seed(ctr_drbg, mbedtls_entropy_func, entropy,
                                 reinterpret_cast<const unsigned char *>(pers), strlen(pers));
     if (ret != 0) {
-        logger.printfln("ISOTLS: mbedtls_ctr_drbg_seed failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: mbedtls_ctr_drbg_seed failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
@@ -450,7 +450,7 @@ bool ISOTLS::setup()
     // Parse ISO 15118-2 certificates (secp256r1)
     ret = mbedtls_x509_crt_parse(cert_chain_iso2, cert_chain_pem_iso2, cert_chain_pem_len_iso2);
     if (ret != 0) {
-        logger.printfln("ISOTLS: ISO2 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: ISO2 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
@@ -458,16 +458,16 @@ bool ISOTLS::setup()
     ret = mbedtls_pk_parse_key(private_key_iso2, private_key_pem_iso2, private_key_pem_len_iso2,
                                nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
     if (ret != 0) {
-        logger.printfln("ISOTLS: ISO2 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: ISO2 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
-    logger.printfln("ISOTLS: ISO 15118-2 certificates parsed successfully (secp256r1)");
+    iso15118.trace("ISOTLS: ISO 15118-2 certificates parsed successfully (secp256r1)");
 
     // Parse ISO 15118-20 certificates (secp521r1)
     ret = mbedtls_x509_crt_parse(cert_chain_iso20, cert_chain_pem_iso20, cert_chain_pem_len_iso20);
     if (ret != 0) {
-        logger.printfln("ISOTLS: ISO20 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: ISO20 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
@@ -475,18 +475,18 @@ bool ISOTLS::setup()
     ret = mbedtls_pk_parse_key(private_key_iso20, private_key_pem_iso20, private_key_pem_len_iso20,
                                nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
     if (ret != 0) {
-        logger.printfln("ISOTLS: ISO20 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: ISO20 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
-    logger.printfln("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
+    iso15118.trace("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
 
     // Parse trusted root CA certificates for mutual TLS (ISO 15118-20)
     // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
     // [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
     trusted_ca_iso20 = static_cast<mbedtls_x509_crt*>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
     if (trusted_ca_iso20 == nullptr) {
-        logger.printfln("ISOTLS: Failed to allocate trusted CA context");
+        iso15118.trace("ISOTLS: Failed to allocate trusted CA context");
         cleanup();
         return false;
     }
@@ -496,27 +496,27 @@ bool ISOTLS::setup()
     if (oem_root_ca_pem_iso20 != nullptr) {
         ret = mbedtls_x509_crt_parse(trusted_ca_iso20, oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
         if (ret != 0) {
-            logger.printfln("ISOTLS: OEM Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
+            iso15118.trace("ISOTLS: OEM Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
         } else {
             trusted_ca_count++;
-            logger.printfln("ISOTLS: OEM Root CA parsed successfully");
+            iso15118.trace("ISOTLS: OEM Root CA parsed successfully");
         }
     }
 
     if (v2g_root_ca_pem_iso20 != nullptr) {
         ret = mbedtls_x509_crt_parse(trusted_ca_iso20, v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20);
         if (ret != 0) {
-            logger.printfln("ISOTLS: V2G Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
+            iso15118.trace("ISOTLS: V2G Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
         } else {
             trusted_ca_count++;
-            logger.printfln("ISOTLS: V2G Root CA parsed successfully");
+            iso15118.trace("ISOTLS: V2G Root CA parsed successfully");
         }
     }
 
     if (trusted_ca_count > 0) {
-        logger.printfln("ISOTLS: %d trusted root CA(s) loaded for ISO 15118-20 mutual TLS", trusted_ca_count);
+        iso15118.trace("ISOTLS: %d trusted root CA(s) loaded for ISO 15118-20 mutual TLS", trusted_ca_count);
     } else {
-        logger.printfln("ISOTLS: WARNING: No trusted root CAs loaded - mutual TLS authentication disabled");
+        iso15118.trace("ISOTLS: WARNING: No trusted root CAs loaded - mutual TLS authentication disabled");
         mbedtls_x509_crt_free(trusted_ca_iso20);
         free_any(trusted_ca_iso20);
         trusted_ca_iso20 = nullptr;
@@ -528,7 +528,7 @@ bool ISOTLS::setup()
                                       MBEDTLS_SSL_TRANSPORT_STREAM,
                                       MBEDTLS_SSL_PRESET_DEFAULT);
     if (ret != 0) {
-        logger.printfln("ISOTLS: mbedtls_ssl_config_defaults failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: mbedtls_ssl_config_defaults failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
@@ -570,18 +570,18 @@ bool ISOTLS::setup()
     // This is deterministic and independent of client signature_algorithms ordering.
     s_isotls_instance = this;
     mbedtls_ssl_conf_cert_cb(ssl_conf, tls_cert_selection_callback);
-    logger.printfln("ISOTLS: Registered certificate selection callback");
+    iso15118.trace("ISOTLS: Registered certificate selection callback");
 
     // Setup SSL context with configuration
     ret = mbedtls_ssl_setup(ssl, ssl_conf);
     if (ret != 0) {
-        logger.printfln("ISOTLS: mbedtls_ssl_setup failed: -0x%04x", static_cast<unsigned>(-ret));
+        iso15118.trace("ISOTLS: mbedtls_ssl_setup failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();
         return false;
     }
 
     initialized = true;
-    logger.printfln("ISOTLS: TLS setup complete");
+    iso15118.trace("ISOTLS: TLS setup complete");
     return true;
 }
 
@@ -689,7 +689,7 @@ void ISOTLS::cleanup()
 bool ISOTLS::start_session(int fd)
 {
     if (!initialized || ssl == nullptr) {
-        logger.printfln("ISOTLS: Cannot start session - not initialized");
+        iso15118.trace("ISOTLS: Cannot start session - not initialized");
         return false;
     }
 
@@ -703,7 +703,7 @@ bool ISOTLS::start_session(int fd)
     handshake_state = TlsHandshakeState::IN_PROGRESS;
     session_active = false;
 
-    logger.printfln("ISOTLS: Starting TLS session on socket %d", fd);
+    iso15118.trace("ISOTLS: Starting TLS session on socket %d", fd);
     return true;
 }
 
@@ -725,13 +725,13 @@ static void log_mbedtls_error(int error, const char *msg)
 {
     char error_buf[128];
     mbedtls_strerror(error, error_buf, sizeof(error_buf));
-    logger.printfln("ISOTLS: %s: -0x%04x (%s)", msg, static_cast<unsigned>(-error), error_buf);
+    iso15118.trace("ISOTLS: %s: -0x%04x (%s)", msg, static_cast<unsigned>(-error), error_buf);
 }
 
 bool ISOTLS::do_handshake()
 {
     if (!initialized || ssl == nullptr) {
-        logger.printfln("ISOTLS: TLS not initialized");
+        iso15118.trace("ISOTLS: TLS not initialized");
         return false;
     }
 
@@ -756,7 +756,7 @@ bool ISOTLS::do_handshake()
             const char *tls_version = get_tls_version_string();
             const char *cipher = get_cipher_suite();
 
-            logger.printfln("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
+            iso15118.trace("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
 
             if (!verification_context->leaf_cert_cached) {
                 cache_leaf_cert();
@@ -764,26 +764,26 @@ bool ISOTLS::do_handshake()
 
             // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
             if (is_tls13_active()) {
-                logger.printfln("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
+                iso15118.trace("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
 
                 // Log mutual authentication result
                 if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
                     uint32_t verify_flags = mbedtls_ssl_get_verify_result(ssl);
                     if (verify_flags == 0) {
-                        logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
+                        iso15118.trace("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
                     } else {
                         // This should not happen with VERIFY_REQUIRED (handshake would have failed),
                         // but log it for completeness
                         char vrfy_buf[256];
                         mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", verify_flags);
-                        logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
+                        iso15118.trace("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
                     }
                 }
             } else {
-                logger.printfln("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
+                iso15118.trace("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
             }
         } else {
-            logger.printfln("Intermediate certificate validation failed");
+            iso15118.trace("Intermediate certificate validation failed");
             ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
 
             // end_session() won't send a session close alert because the session isn't marked as active, so send an appropriate alert here.
@@ -887,7 +887,7 @@ bool ISOTLS::leaf_cert_is_cached()
     for (cert_cache_entry *entry = peer_cert_cache; entry != nullptr; entry = entry->next) {
         if (memcmp(verification_context->leaf_sha256, entry->sha256, sizeof(entry->sha256)) == 0) {
             entry->last_seen = now_us();
-            logger.printfln("ISOTLS: Found cached certificate of peer '%s'", entry->dn);
+            iso15118.trace("ISOTLS: Found cached certificate of peer '%s'", entry->dn);
 
             return true;
         }
@@ -945,7 +945,7 @@ void ISOTLS::cache_leaf_cert()
     memcpy(entry->dn, subject.p, subject_len);
     entry->dn[subject_len] = 0;
 
-    logger.printfln("ISOTLS: Caching certificate of peer '%s'", entry->dn);
+    iso15118.trace("ISOTLS: Caching certificate of peer '%s'", entry->dn);
 }
 
 static bool cert_signature_is_valid(const mbedtls_x509_crt *child, mbedtls_x509_crt *parent)
@@ -976,7 +976,7 @@ void ISOTLS::verify_intermediate_certs()
         }
 
         if (!cert_signature_is_valid(child, parent)) {
-            logger.printfln("ISOTLS: Intermediate certificate %zu failed verification", i);
+            iso15118.trace("ISOTLS: Intermediate certificate %zu failed verification", i);
             success = false;
             break;
         }
@@ -1004,12 +1004,12 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
     }
 
     if (static_cast<size_t>(index) > CERTS_MAX_VERIFY - 1) {
-        logger.printfln("Too many certificates in chain: %i/%zu", index + 1, CERTS_MAX_VERIFY);
+        iso15118.trace("Too many certificates in chain: %i/%zu", index + 1, CERTS_MAX_VERIFY);
         return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
     }
 
     // Log peer certificate issuer -> subject for debugging
-    logger.printfln("ISOTLS: EVCC certificate: %.*s -> %.*s", static_cast<int>(cert->issuer.val.len), cert->issuer.val.p, static_cast<int>(cert->subject.val.len), cert->subject.val.p);
+    iso15118.trace("ISOTLS: EVCC certificate: %.*s -> %.*s", static_cast<int>(cert->issuer.val.len), cert->issuer.val.p, static_cast<int>(cert->subject.val.len), cert->subject.val.p);
 
     ISOTLS *isotls = static_cast<ISOTLS *>(ctx);
     verification_context_t *verify_ctx = isotls->verification_context;
@@ -1026,7 +1026,7 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
     mbedtls_x509_crt *ca_cert   = verify_ctx->certs[1];
 
     if (ca_cert == nullptr) {
-        logger.printfln("ISOTLS: Rejecting self-signed peer certificate");
+        iso15118.trace("ISOTLS: Rejecting self-signed peer certificate");
         *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
 
         return 0; // No error; verification failure is not an error
@@ -1048,7 +1048,7 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
         if (ret == pdPASS_nowarn) {
             verify_ctx->async_started = true;
         } else {
-            logger.printfln("ISOTLS: verify_certs task could not be created");
+            iso15118.trace("ISOTLS: verify_certs task could not be created");
 
             // Verify certs now. This will probably cause the peer to time out.
             isotls->verify_intermediate_certs();
@@ -1057,7 +1057,7 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
 
     // Verify leaf certificate
     if (!cert_signature_is_valid(leaf_cert, ca_cert)) {
-        logger.printfln("ISOTLS: Leaf certificate failed verification");
+        iso15118.trace("ISOTLS: Leaf certificate failed verification");
         *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
     }
 
@@ -1070,18 +1070,18 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
     const unsigned char *sni = mbedtls_ssl_get_hs_sni(ssl_ctx, &sni_len);
 
     if (sni_len > 0) {
-        logger.printfln("ISOTLS: cert_cb: EVCC thinks we are '%.*s'", static_cast<int>(sni_len), sni);
+        iso15118.trace("ISOTLS: cert_cb: EVCC thinks we are '%.*s'", static_cast<int>(sni_len), sni);
     } else {
-        logger.printfln("ISOTLS: cert_cb: No SNI from EVCC");
+        iso15118.trace("ISOTLS: cert_cb: No SNI from EVCC");
     }
 
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
 
     if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
-        logger.printfln("ISOTLS: cert_cb: TLS 1.3 negotiated, selecting ISO 15118-20 cert (secp521r1)");
+        iso15118.trace("ISOTLS: cert_cb: TLS 1.3 negotiated, selecting ISO 15118-20 cert (secp521r1)");
         int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso20, private_key_iso20);
         if (ret != 0) {
-            logger.printfln("ISOTLS: cert_cb: Failed to set own cert: -0x%04x", static_cast<unsigned>(-ret));
+            iso15118.trace("ISOTLS: cert_cb: Failed to set own cert: -0x%04x", static_cast<unsigned>(-ret));
             return ret;
         }
 
@@ -1111,24 +1111,24 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
                 mbedtls_ssl_set_verify(ssl_ctx, &cert_verify, this);
 
-                logger.printfln("ISOTLS: cert_cb: Mutual TLS enabled - EVCC certificate will be verified");
+                iso15118.trace("ISOTLS: cert_cb: Mutual TLS enabled - EVCC certificate will be verified");
             } else {
-                logger.printfln("ISOTLS: cert_cb: WARNING: No trusted CAs loaded, mutual TLS disabled");
+                iso15118.trace("ISOTLS: cert_cb: WARNING: No trusted CAs loaded, mutual TLS disabled");
             }
         } else {
             mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
-            logger.printfln("ISOTLS: cert_cb: Mutual TLS disabled by configuration");
+            iso15118.trace("ISOTLS: cert_cb: Mutual TLS disabled by configuration");
         }
 
         return 0;
     } else if (cert_chain_iso2 != nullptr && private_key_iso2 != nullptr) {
-        logger.printfln("ISOTLS: cert_cb: TLS 1.2 negotiated, selecting ISO 15118-2 cert (secp256r1)");
+        iso15118.trace("ISOTLS: cert_cb: TLS 1.2 negotiated, selecting ISO 15118-2 cert (secp256r1)");
         // ISO 15118-2: Unilateral authentication only (no client cert)
         mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
         return mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso2, private_key_iso2);
     }
 
-    logger.printfln("ISOTLS: cert_cb: No matching certificate available for TLS version 0x%04x",
+    iso15118.trace("ISOTLS: cert_cb: No matching certificate available for TLS version 0x%04x",
                     static_cast<unsigned>(ver));
     return -1;
 }
@@ -1136,7 +1136,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 void ISOTLS::set_mutual_auth_enabled(bool enabled)
 {
     mutual_auth_enabled = enabled;
-    logger.printfln("ISOTLS: Mutual TLS authentication %s", enabled ? "enabled" : "disabled");
+    iso15118.trace("ISOTLS: Mutual TLS authentication %s", enabled ? "enabled" : "disabled");
 }
 
 bool ISOTLS::is_mutual_auth_enabled() const

@@ -73,12 +73,12 @@ void Common::setup_socket()
 
     listen_socket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if(listen_socket < 0) {
-        logger.printfln("Common: Failed to create socket: %d (errno %d)", listen_socket, errno);
+        iso15118.trace("Common: Failed to create socket: %d (errno %d)", listen_socket, errno);
         return;
     }
 
     if(fcntl(listen_socket, F_SETFL, fcntl(listen_socket, F_GETFL) | O_NONBLOCK) < 0) {
-        logger.printfln("Common: Failed to set non-blocking mode (listen socket)");
+        iso15118.trace("Common: Failed to set non-blocking mode (listen socket)");
         reset_active_socket();
         return;
     }
@@ -95,13 +95,13 @@ void Common::setup_socket()
 
     int err = bind(listen_socket, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
     if(err < 0) {
-        logger.printfln("Common: Failed to bind socket: %d (errno %d)", err, errno);
+        iso15118.trace("Common: Failed to bind socket: %d (errno %d)", err, errno);
         return;
     }
 
     err = listen(listen_socket, 1);
     if(err < 0) {
-        logger.printfln("Common: Failed to listen on socket: %d (errno %d)", err, errno);
+        iso15118.trace("Common: Failed to listen on socket: %d (errno %d)", err, errno);
         return;
     }
 
@@ -126,7 +126,7 @@ void Common::handle_socket()
         // We only support one socket connection at a time. If there is a new connection and one is currently open we close the old one.
         // Usually this means the EV has reconnected. There can't be multiple EVs connected at the same time.
         if ((active_socket > 0) && (new_socket > 0)) {
-            logger.printfln("Common: Replacing socket %d with %d", active_socket, new_socket);
+            iso15118.trace("Common: Replacing socket %d with %d", active_socket, new_socket);
         }
 
         // Save tls_requested_by_ev before reset (it was set by SDP)
@@ -145,16 +145,16 @@ void Common::handle_socket()
                 // No connection available, non-blocking mode
                 return;
             }
-            logger.printfln("Common: Failed to accept connection: %d (errno %d [%s])", active_socket, errno, strerror(errno));
+            iso15118.trace("Common: Failed to accept connection: %d (errno %d [%s])", active_socket, errno, strerror(errno));
             return;
         }
 
         char addr_str[INET6_ADDRSTRLEN];
         tf_ip6addr_ntoa(&source_addr, addr_str, sizeof(addr_str));
-        logger.printfln("Common: Accepted connection from %s", addr_str);
+        iso15118.trace("Common: Accepted connection from %s", addr_str);
 
         if(fcntl(active_socket, F_SETFL, fcntl(active_socket, F_GETFL) | O_NONBLOCK) < 0) {
-            logger.printfln("Common: Failed to set non-blocking mode (active socket)");
+            iso15118.trace("Common: Failed to set non-blocking mode (active socket)");
             reset_active_socket();
             return;
         }
@@ -164,12 +164,12 @@ void Common::handle_socket()
 
         // Check if TLS should be used for this connection
         if (tls_requested_by_ev) {
-            logger.printfln("Common: TLS requested, starting handshake");
+            iso15118.trace("Common: TLS requested, starting handshake");
 
             // Setup TLS if not already done
             if (!tls.is_initialized()) {
                 if (!tls.setup()) {
-                    logger.printfln("Common: TLS setup failed, closing connection");
+                    iso15118.trace("Common: TLS setup failed, closing connection");
                     reset_active_socket();
                     return;
                 }
@@ -177,7 +177,7 @@ void Common::handle_socket()
 
             // Start TLS session for this connection
             if (!tls.start_session(active_socket)) {
-                logger.printfln("Common: Failed to start TLS session, closing connection");
+                iso15118.trace("Common: Failed to start TLS session, closing connection");
                 reset_active_socket();
                 return;
             }
@@ -192,9 +192,9 @@ void Common::handle_socket()
                 } else {
                     api_state.get("encryption")->updateEnum(Encryption::TLS12);
                 }
-                logger.printfln("Common: TLS handshake completed, ready for V2G communication");
+                iso15118.trace("Common: TLS handshake completed, ready for V2G communication");
             } else if (tls.get_handshake_state() == TlsHandshakeState::FAILED) {
-                logger.printfln("Common: TLS handshake failed, closing connection");
+                iso15118.trace("Common: TLS handshake failed, closing connection");
                 reset_active_socket();
             }
             // If still IN_PROGRESS, just return and try again next loop
@@ -214,14 +214,14 @@ void Common::handle_socket()
                 // No data available, non-blocking mode
                 return;
             } else if(errno == ECONNRESET) {
-                logger.printfln("Common: Connection reset by peer");
+                iso15118.trace("Common: Connection reset by peer");
                 reset_active_socket();
                 return;
             }
-            logger.printfln("Common: Failed to receive data: %zd (errno %d [%s])", length, errno, strerror(errno));
+            iso15118.trace("Common: Failed to receive data: %zd (errno %d [%s])", length, errno, strerror(errno));
             reset_active_socket();
         } else if(length == 0) {
-            logger.printfln("Common: Connection closed");
+            iso15118.trace("Common: Connection closed");
             reset_active_socket();
         } else {
             decode(exi_data, static_cast<size_t>(length));
@@ -303,7 +303,7 @@ void Common::send_exi(ExiType type)
     }
 
     if (ret != 0) {
-        logger.printfln("Common: Failed to encode EXI document: %d", ret);
+        iso15118.trace("Common: Failed to encode EXI document: %d", ret);
         return;
     }
 
@@ -333,7 +333,7 @@ void Common::send_exi(ExiType type)
     }
 
     if(send_ret < 0) {
-        logger.printfln("Common: Failed to send data: %zd (errno %d)", send_ret, errno);
+        iso15118.trace("Common: Failed to send data: %zd (errno %d)", send_ret, errno);
         reset_active_socket();
         return;
     }
@@ -343,11 +343,11 @@ void Common::decode(uint8_t *data, const size_t length)
 {
     V2GTP_Header *header = reinterpret_cast<V2GTP_Header*>(data);
     if(header->protocol_version != 0x01) {
-        logger.printfln("Common: Invalid protocol version: %d", header->protocol_version);
+        iso15118.trace("Common: Invalid protocol version: %d", header->protocol_version);
         return;
     }
     if(header->inverse_protocol_version != 0xFE) {
-        logger.printfln("Common: Invalid inverse protocol version: %d", header->inverse_protocol_version);
+        iso15118.trace("Common: Invalid inverse protocol version: %d", header->inverse_protocol_version);
         return;
     }
 
@@ -355,7 +355,7 @@ void Common::decode(uint8_t *data, const size_t length)
     if (payload_type != V2GTPPayloadType::SAP &&
         payload_type != V2GTPPayloadType::ISO20Common &&
         payload_type != V2GTPPayloadType::ISO20AC) {
-        logger.printfln("Common: Invalid payload type: 0x%04x", static_cast<uint16_t>(payload_type));
+        iso15118.trace("Common: Invalid payload type: 0x%04x", static_cast<uint16_t>(payload_type));
         return;
     }
 
@@ -374,12 +374,12 @@ void Common::decode(uint8_t *data, const size_t length)
         memset(appHandEnc, 0, sizeof(struct appHand_exiDocument));
         int ret = decode_appHand_exiDocument(&exi, appHandDec);
         if (ret != 0) {
-            logger.printfln("Common: Failed to decode EXI document: %d", ret);
+            iso15118.trace("Common: Failed to decode EXI document: %d", ret);
             return;
         }
 
         if (appHandDec->supportedAppProtocolReq_isUsed) {
-            iso15118.trace("Common: SupportedAppProtocolReq received");
+            trace_iso("Common: SupportedAppProtocolReq received");
             handle_supported_app_protocol_req();
             appHandDec->supportedAppProtocolReq_isUsed = 0;
         }
@@ -400,7 +400,7 @@ void Common::handle_supported_app_protocol_req()
     struct appHand_supportedAppProtocolRes *res = &appHandEnc->supportedAppProtocolRes;
 
     // check all schemas for DIN, ISO2 and ISO20
-    logger.printfln("EV supports %u protocols", req->AppProtocol.arrayLen);
+    iso15118.trace("EV supports %u protocols", req->AppProtocol.arrayLen);
     api_state.get("supported_protocols")->removeAll();
 
     uint8_t din70121_schema_id = UINT8_MAX;
@@ -424,13 +424,13 @@ void Common::handle_supported_app_protocol_req()
             iso20_index     = i;
         }
 
-        logger.printfln_continue("%d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
-        iso15118.trace(" found %d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
+        iso15118.trace("%d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
+        trace_iso(" found %d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
     }
 
     if ((din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX)) {
-        logger.printfln("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
+        iso15118.trace("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
         api_state.get("protocol")->updateString("-");
         return;
     } else {
@@ -441,17 +441,17 @@ void Common::handle_supported_app_protocol_req()
             schema_id  = iso2_schema_id;
             index      = iso2_index;
             exi_in_use = ExiType::Iso2;
-            logger.printfln("Using ISO 15118-2");
+            iso15118.trace("Using ISO 15118-2");
         } else if (din70121_schema_id != UINT8_MAX) {
             schema_id  = din70121_schema_id;
             index      = din70121_index;
             exi_in_use = ExiType::Din;
-            logger.printfln("Using DIN 70121");
+            iso15118.trace("Using DIN 70121");
         } else {
             schema_id  = iso20_schema_id;
             index      = iso20_index;
             exi_in_use = ExiType::Iso20;
-            logger.printfln("Using ISO 15118-20:AC");
+            iso15118.trace("Using ISO 15118-20:AC");
         }
         api_state.get("protocol")->updateString(req->AppProtocol.array[index].ProtocolNamespace.characters);
 
@@ -466,8 +466,8 @@ void Common::handle_supported_app_protocol_req()
 
         evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
-        iso15118.trace("SupportedAppProtocolRes sent");
-        iso15118.trace(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);
+        trace_iso("SupportedAppProtocolRes sent");
+        trace_iso(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);
     }
 }
 
@@ -484,7 +484,7 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
     next_timeout = task_scheduler.scheduleOnce([&next_timeout, protocol_name]() {
         iso15118.qca700x.link_down();
         iso15118.slac.state = SLACState::ModemReset;
-        logger.printfln("%s Timeout: Link down, SLAC reset", protocol_name);
+        iso15118.trace("%s Timeout: Link down, SLAC reset", protocol_name);
         next_timeout = 0;
     }, timeout);
 }

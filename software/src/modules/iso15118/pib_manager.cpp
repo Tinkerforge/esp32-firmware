@@ -84,7 +84,7 @@ const char *PibManager::validate_pib_size(size_t size)
 void PibManager::set_error(const char *msg)
 {
     error_message = msg;
-    logger.printfln("PibManager: %s", msg);
+    iso15118.trace("PibManager: %s", msg);
 }
 
 bool PibManager::start_read()
@@ -227,7 +227,7 @@ void PibManager::send_read_request()
     req.module_length = PIB_MODULE_SIZE;
     req.module_offset = static_cast<uint32_t>(transfer_offset);
 
-    logger.printfln("PIB: Sending read request (offset=%u, frame_size=%zu)",
+    iso15118.trace("PIB: Sending read request (offset=%u, frame_size=%zu)",
                     static_cast<unsigned>(transfer_offset), sizeof(req));
     iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t *>(&req), sizeof(req));
 
@@ -297,7 +297,7 @@ void PibManager::send_reset_request()
 
     // The modem resets immediately upon receiving this command and will not
     // send a confirmation back over SPI.
-    logger.printfln("PIB write complete (modem reset sent)");
+    iso15118.trace("PIB write complete (modem reset sent)");
     state = PibState::WriteComplete;
 }
 
@@ -306,11 +306,11 @@ void PibManager::handle_confirmation(const uint8_t *data, size_t length)
     // Minimum size: header(14) + mmv(1) + mmtype(2) + oui(3) + mstatus(2) = 22
     // For read CNF we need the mod_op field to distinguish, which is at OUI+9
     if (length < 22) {
-        logger.printfln("PIB: Confirmation too short (%u bytes)", static_cast<unsigned>(length));
+        iso15118.trace("PIB: Confirmation too short (%u bytes)", static_cast<unsigned>(length));
         return;
     }
 
-    logger.printfln("PIB: Received confirmation (%u bytes, state=%u)",
+    iso15118.trace("PIB: Received confirmation (%u bytes, state=%u)",
                     static_cast<unsigned>(length), static_cast<unsigned>(state));
 
     // The mod_op field tells us which sub-operation this confirms.
@@ -386,7 +386,7 @@ void PibManager::handle_read_confirmation(const uint8_t *data, size_t length)
 
     if (frag_len < PIB_MODULE_SIZE) {
         // Last fragment, read complete
-        logger.printfln("PIB read complete: %u bytes", static_cast<unsigned>(pib_length));
+        iso15118.trace("PIB read complete: %u bytes", static_cast<unsigned>(pib_length));
         state = PibState::ReadComplete;
     } else {
         // More data to read
@@ -422,7 +422,7 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
         return;
     }
 
-    logger.printfln("PIB write session started (session_id=%08lx)", session_id);
+    iso15118.trace("PIB write session started (session_id=%08lx)", session_id);
 
     // Start writing fragments
     transfer_offset = 0;
@@ -455,7 +455,7 @@ void PibManager::handle_write_confirmation(const uint8_t *data, size_t length)
 
     if (transfer_offset >= pib_length) {
         // All fragments written, commit
-        logger.printfln("PIB write fragments complete (%u bytes), committing", static_cast<unsigned>(pib_length));
+        iso15118.trace("PIB write fragments complete (%u bytes), committing", static_cast<unsigned>(pib_length));
         state = PibState::WriteCommitSendRequest;
     } else {
         // More fragments to write
@@ -474,7 +474,7 @@ void PibManager::handle_commit_confirmation(const uint8_t *data, size_t length)
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationCommitConfirmation *>(data);
 
     if (cnf->mstatus != 0) {
-        logger.printfln("PIB: Commit failed: mstatus=0x%04X, err_rec_code=0x%04X",
+        iso15118.trace("PIB: Commit failed: mstatus=0x%04X, err_rec_code=0x%04X",
                         static_cast<unsigned>(cnf->mstatus), static_cast<unsigned>(cnf->err_rec_code));
         set_error("Commit failed: modem returned error");
         state = PibState::WriteError;
@@ -487,7 +487,7 @@ void PibManager::handle_commit_confirmation(const uint8_t *data, size_t length)
         return;
     }
 
-    logger.printfln("PIB commit successful, resetting modem");
+    iso15118.trace("PIB commit successful, resetting modem");
 
     // Reset the QCA modem after successful commit
     state = PibState::WriteResetSendRequest;

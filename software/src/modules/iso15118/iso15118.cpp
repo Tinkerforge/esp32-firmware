@@ -389,7 +389,7 @@ void ISO15118::setup()
     }
     evseid_din_len = encode_din_evseid(din_str, evseid_din, sizeof(evseid_din));
 
-    logger.printfln("ISO15118: EVSEID ISO: %s, DIN: %s", evseid_iso, din_str);
+    iso15118.trace("ISO15118: EVSEID ISO: %s, DIN: %s", evseid_iso, din_str);
 
     initialized = true;
 
@@ -547,7 +547,7 @@ void ISO15118::register_events()
         if (charger_state->asUint() == 0) {
             // EV disconnected (State A)
             if (iec_temporary_active) {
-                logger.printfln("ISO15118: EV disconnected (State A), cleaning up");
+                iso15118.trace("ISO15118: EV disconnected (State A), cleaning up");
                 common.reset_active_socket();
                 qca700x.link_down();
                 slac.state = SLACState::ModemReset;
@@ -604,7 +604,7 @@ void ISO15118::state_machines_loop()
 
     if (ret < 0) {
         if (errno != EINTR) {
-            logger.printfln("ISO15118: poll() failed: errno %d [%s]", errno, strerror(errno));
+            iso15118.trace("ISO15118: poll() failed: errno %d [%s]", errno, strerror(errno));
         }
         return;
     }
@@ -617,7 +617,7 @@ void ISO15118::state_machines_loop()
     // Handle L2TAP (HomePlug/SLAC)
     if (fds[FDS_TAP_INDEX].fd >= 0) {
         if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
-            logger.printfln("ISO15118: L2TAP error (revents=0x%x)", static_cast<unsigned>(fds[FDS_TAP_INDEX].revents));
+            iso15118.trace("ISO15118: L2TAP error (revents=0x%x)", static_cast<unsigned>(fds[FDS_TAP_INDEX].revents));
             // L2TAP error likely means modem issue, trigger SLAC reset
             slac.state = SLACState::ModemReset;
         } else if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & POLLIN) {
@@ -628,7 +628,7 @@ void ISO15118::state_machines_loop()
     // Handle SDP UDP socket
     if (fds[FDS_SDP_INDEX].fd >= 0) {
         if (static_cast<unsigned short>(fds[FDS_SDP_INDEX].revents) & (POLLERR | POLLNVAL)) {
-            logger.printfln("ISO15118: SDP socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_SDP_INDEX].revents));
+            iso15118.trace("ISO15118: SDP socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_SDP_INDEX].revents));
             sdp.close_socket();
             sdp.setup_socket();
         } else if (static_cast<unsigned short>(fds[FDS_SDP_INDEX].revents) & POLLIN) {
@@ -639,7 +639,7 @@ void ISO15118::state_machines_loop()
     // Handle DIN/ISO2/ISO20 TCP listen socket
     if (fds[FDS_LISTEN_INDEX].fd >= 0) {
         if (static_cast<unsigned short>(fds[FDS_LISTEN_INDEX].revents) & (POLLERR | POLLNVAL)) {
-            logger.printfln("ISO15118: TCP listen socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_LISTEN_INDEX].revents));
+            iso15118.trace("ISO15118: TCP listen socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_LISTEN_INDEX].revents));
             common.close_socket();
             common.setup_socket();
         } else if (static_cast<unsigned short>(fds[FDS_LISTEN_INDEX].revents) & POLLIN) {
@@ -652,7 +652,7 @@ void ISO15118::state_machines_loop()
         bool connection_closed = false;
 
         if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
-            logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
+            iso15118.trace("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
             common.reset_active_socket();
             connection_closed = true;
         } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
@@ -672,7 +672,7 @@ void ISO15118::state_machines_loop()
             // delay. The 200ms gives the TCP stack time to complete the FIN/ACK
             // exchange before we kill the PLC link.
             if (plc_modem_off_task != 0) {
-                logger.printfln("ISO15118: EV closed TCP, cancelling 5s timer, disabling modem in 200ms");
+                iso15118.trace("ISO15118: EV closed TCP, cancelling 5s timer, disabling modem in 200ms");
                 task_scheduler.cancel(plc_modem_off_task);
                 plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
                     disable_plc_modem();
@@ -682,7 +682,7 @@ void ISO15118::state_machines_loop()
             // If the EV closes the socket unexpectedly (e.g. after FAILED response),
             // begin IEC transition.
             if (!iec_temporary_active && is_read_soc_only()) {
-                logger.printfln("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
+                iso15118.trace("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
                 begin_iec_transition();
             }
         }
@@ -691,7 +691,7 @@ void ISO15118::state_machines_loop()
 
 void ISO15118::switch_to_iec_temporary()
 {
-    logger.printfln("Switching to IEC 61851 temporary mode");
+    iso15118.trace("Switching to IEC 61851 temporary mode");
 
     // Switch EVSE to IEC 61851 temporary mode.
     // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect.
@@ -721,7 +721,7 @@ void ISO15118::check_ef_reset()
 
     uint32_t charger_state = evse_common.get_state().get("charger_state")->asUint();
     if (charger_state >= 3) {
-        logger.printfln("ISO15118: EV charging (charger_state %lu), E/F reset not needed", charger_state);
+        iso15118.trace("ISO15118: EV charging (charger_state %lu), E/F reset not needed", charger_state);
         return; // EV already charging
     }
     if (charger_state == 0) {
@@ -729,12 +729,12 @@ void ISO15118::check_ef_reset()
     }
 
     if (ef_retry_count >= 3) { // C_sequ_retry = 3 per ISO 15118-3 Table 3
-        logger.printfln("ISO15118: E/F reset retries exhausted (%u), giving up", ef_retry_count);
+        iso15118.trace("ISO15118: E/F reset retries exhausted (%u), giving up", ef_retry_count);
         return;
     }
 
     ef_retry_count++;
-    logger.printfln("ISO15118: EV still in State B after IEC temporary switch, triggering E/F reset (attempt %u/3)", ef_retry_count);
+    iso15118.trace("ISO15118: EV still in State B after IEC temporary switch, triggering E/F reset (attempt %u/3)", ef_retry_count);
 
     // Set 0% duty cycle on CP (-12V), which signals State E/F to the EV.
     // Per ISO 15118-3 Table 3: T_step_EF >= 4 seconds, C_sequ_retry = 3.
@@ -763,7 +763,7 @@ void ISO15118::disable_plc_modem()
 {
     plc_modem_off_task = 0;
 
-    logger.printfln("ISO15118: Disabling PLC modem");
+    iso15118.trace("ISO15118: Disabling PLC modem");
     evse_v2.set_plc_modem(false);
     slac.state = SLACState::ModemDisabled;
 
@@ -775,7 +775,7 @@ void ISO15118::disable_plc_modem()
 
 void ISO15118::begin_iec_transition()
 {
-    logger.printfln("ISO15118: Stopping PWM (100%% duty) before IEC transition");
+    iso15118.trace("ISO15118: Stopping PWM (100%% duty) before IEC transition");
 
     // Set CP to 100% duty. This gives the EV a clean break from the ISO 15118 signal
     // before we offer IEC 61851 PWM charging. Some EVs (e.g. Cupra Born and ID.Buzz)

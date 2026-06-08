@@ -155,7 +155,7 @@ void SLAC::handle_modem_initialization(void)
 
         // Log once at 200 tries and give up
         if (modem_initialization_tries == 200) {
-            logger.printfln("No PLC modem detected");
+            iso15118.trace("No PLC modem detected");
         }
         return;
     }
@@ -163,7 +163,7 @@ void SLAC::handle_modem_initialization(void)
 
     const uint16_t write_space = iso15118.qca700x.read_register(QCA700X_SPI_REG_WRBUF_SPC_AVA);
     if (write_space != QCA700X_BUFFER_SIZE) {
-        logger.printfln("QCA700X modem not ready: Write space is %d (expected %d)", write_space, QCA700X_BUFFER_SIZE);
+        iso15118.trace("QCA700X modem not ready: Write space is %d (expected %d)", write_space, QCA700X_BUFFER_SIZE);
         state = SLACState::ModemReset;
         return;
     }
@@ -190,7 +190,7 @@ void SLAC::handle_modem_initialization(void)
         buffer = static_cast<uint8_t *>(calloc_psram_or_dram(SLAC_ETHERNET_FRAME_LENGTH_MAX + 1, sizeof(uint8_t)));
     }
 
-    logger.printfln("QCA700X modem found and initialized");
+    iso15118.trace("QCA700X modem found and initialized");
 
     state = SLACState::CMSetKeyRequest;
 }
@@ -221,7 +221,7 @@ void SLAC::handle_cm_set_key_request(void)
 void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_key_confirmation)
 {
     if (cm_set_key_confirmation.result != 0x01) {
-        logger.printfln("CM_SET_KEY.CNF result unexpected: %02x", cm_set_key_confirmation.result);
+        iso15118.trace("CM_SET_KEY.CNF result unexpected: %02x", cm_set_key_confirmation.result);
         state = SLACState::ModemReset;
         return;
     }
@@ -248,7 +248,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     // Per [V2G3-M06-11], SLAC matching requires a prior transition from State A to Bx/Cx/Dx.
     uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
     if (iec_state == 0) { // State A
-        logger.printfln("CM_SLAC_PARM.REQ ignored: no EV connected (IEC 61851 State A)");
+        iso15118.trace("CM_SLAC_PARM.REQ ignored: no EV connected (IEC 61851 State A)");
         return;
     }
 
@@ -266,7 +266,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // EV sent CM_SLAC_PARM.REQ during the E/F retry cycle.
             // This is an ISO EV that was slow to start SLAC. Restore 5% duty
             // and accept the request.
-            logger.printfln("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
+            iso15118.trace("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             slac_init_retry_count = 0;
             break;
@@ -279,7 +279,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // retry CM_SLAC_PARM.REQ (e.g. if it didn't receive our CNF).
             // Accept retries from the same PEV, ignore crosstalk from others.
             if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-                logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
+                iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
                                 cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
                                 cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
                                 cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
@@ -294,7 +294,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // Link is established or being established.
             // Reject crosstalk from different EVs.
             if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-                logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
+                iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
                     cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
                     cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
                     cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
@@ -304,16 +304,16 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // In autocharge mode, the EV retries SLAC because we didn't send
             // CM_SLAC_MATCH.CNF. Ignore these retries.
             if (iso15118.iec_temporary_active) {
-                logger.printfln("CM_SLAC_PARM.REQ ignored: IEC transition already active in state %s", get_slac_state_name(state));
+                iso15118.trace("CM_SLAC_PARM.REQ ignored: IEC transition already active in state %s", get_slac_state_name(state));
                 return;
             }
             // Same EV restarting SLAC without IEC transition active means it
             // considers the link dead. Accept and restart the SLAC process.
-            logger.printfln("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
+            iso15118.trace("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
             break;
 
         default:
-            logger.printfln("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
+            iso15118.trace("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
             return;
     }
 #pragma GCC diagnostic pop
@@ -352,24 +352,24 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
 void SLAC::handle_cm_start_atten_char_indication(const CM_StartAttenCharIndication &cm_start_atten_char_indication)
 {
     if (state != SLACState::WaitForStartAttenCharIndication && state != SLACState::WaitForMNBCSound) {
-        logger.printfln("CM_START_ATTEN_CHAR.IND ignored in state %s", get_slac_state_name(state));
+        iso15118.trace("CM_START_ATTEN_CHAR.IND ignored in state %s", get_slac_state_name(state));
         return;
     }
 
     if (cm_start_atten_char_indication.application_type != 0x00) {
-        logger.printfln("CM_START_ATTEN_CHAR.IND application_type mismatch");
+        iso15118.trace("CM_START_ATTEN_CHAR.IND application_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-41]
         return;
     }
 
     if (cm_start_atten_char_indication.security_type != 0x00) {
-        logger.printfln("CM_START_ATTEN_CHAR.IND security_type mismatch");
+        iso15118.trace("CM_START_ATTEN_CHAR.IND security_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-41]
         return;
     }
 
     if (cm_start_atten_char_indication.resp_type != 0x01) {
-        logger.printfln("CM_START_ATTEN_CHAR.IND resp_type mismatch");
+        iso15118.trace("CM_START_ATTEN_CHAR.IND resp_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-41]
         return;
     }
@@ -418,13 +418,13 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
     }
 
     if (memcmp(cm_atten_profile_indication.pev_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-        logger.printfln("CM_ATTEN_PROFILE.IND pev_mac mismatch");
+        iso15118.trace("CM_ATTEN_PROFILE.IND pev_mac mismatch");
         // Ignore profile indication from other EVs
         return;
     }
 
     if (cm_atten_profile_indication.num_groups != SLAC_AAG_LIST_LENGTH) {
-        logger.printfln("CM_ATTEN_PROFILE.IND num_groups mismatch: %d vs %d", cm_atten_profile_indication.num_groups, SLAC_AAG_LIST_LENGTH);
+        iso15118.trace("CM_ATTEN_PROFILE.IND num_groups mismatch: %d vs %d", cm_atten_profile_indication.num_groups, SLAC_AAG_LIST_LENGTH);
         // This should be a fixed value of SLAC_AAG_LIST_LENGTH
         return;
     }
@@ -465,41 +465,41 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
 void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_response)
 {
     if (state != SLACState::WaitForAttenChar) {
-        logger.printfln("CM_ATTEN_CHAR.RSP ignored in state %s", get_slac_state_name(state));
+        iso15118.trace("CM_ATTEN_CHAR.RSP ignored in state %s", get_slac_state_name(state));
         return;
     }
 
     if (cm_atten_char_response.application_type != 0x00) {
-        logger.printfln("CM_ATTEN_CHAR.RSP application_type mismatch");
+        iso15118.trace("CM_ATTEN_CHAR.RSP application_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
         return;
     }
 
     if (cm_atten_char_response.security_type != 0x00) {
-        logger.printfln("CM_ATTEN_CHAR.RSP security_type mismatch");
+        iso15118.trace("CM_ATTEN_CHAR.RSP security_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
         return;
     }
 
     if (cm_atten_char_response.result != 0x00) {
-        logger.printfln("CM_ATTEN_CHAR.RSP result mismatch");
+        iso15118.trace("CM_ATTEN_CHAR.RSP result mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
         return;
     }
 
     if (memcmp(pev_mac, cm_atten_char_response.source_address, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-        logger.printfln("CM_ATTEN_CHAR.RSP source_address mismatch");
+        iso15118.trace("CM_ATTEN_CHAR.RSP source_address mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
         return;
     }
 
     if (memcmp(pev_run_id, cm_atten_char_response.run_id, SLAC_RUN_ID_LENGTH) != 0) {
-        logger.printfln("CM_ATTEN_CHAR.RSP run_id mismatch");
+        iso15118.trace("CM_ATTEN_CHAR.RSP run_id mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
         return;
     }
 
-    logger.printfln("SLAC process successful");
+    iso15118.trace("SLAC process successful");
     next_timeout = now_us() + SLAC_TT_EVSE_MATCH_SESSION;
     state = SLACState::WaitForSlacMatch;
 
@@ -515,20 +515,20 @@ void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_ch
 void SLAC::handle_cm_validate_request(const CM_ValidateRequest &cm_validate_request)
 {
     if (state != SLACState::WaitForSlacMatch) {
-        logger.printfln("CM_VALIDATE.REQ received in unexpected state %s", get_slac_state_name(state));
+        iso15118.trace("CM_VALIDATE.REQ received in unexpected state %s", get_slac_state_name(state));
         return;
     }
 
     // ISO 15118-3 A.9.3.2 Table A.5 [V2G3-A09-56]: signal_type must be 0x00
     if (cm_validate_request.signal_type != 0x00) {
-        logger.printfln("CM_VALIDATE.REQ signal_type invalid: %02x", cm_validate_request.signal_type);
+        iso15118.trace("CM_VALIDATE.REQ signal_type invalid: %02x", cm_validate_request.signal_type);
         // [V2G3-A09-77]: invalid content shall be ignored
         return;
     }
 
     // ISO 15118-3 A.9.3.2 [V2G3-A09-85]: result field other than "ready" -> FAILED
     if (cm_validate_request.result != 0x01) {
-        logger.printfln("CM_VALIDATE.REQ result invalid: %02x (expected 0x01 = ready)", cm_validate_request.result);
+        iso15118.trace("CM_VALIDATE.REQ result invalid: %02x (expected 0x01 = ready)", cm_validate_request.result);
         return;
     }
 
@@ -554,18 +554,18 @@ void SLAC::handle_cm_validate_request(const CM_ValidateRequest &cm_validate_requ
 void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request)
 {
     if ((state != SLACState::WaitForSlacMatch) && (state != SLACState::WaitForSDP)) {
-        logger.printfln("CM_SLAC_MATCH.REQ ignored in state %s", get_slac_state_name(state));
+        iso15118.trace("CM_SLAC_MATCH.REQ ignored in state %s", get_slac_state_name(state));
         return;
     }
 
     if (memcmp(pev_mac, cm_slac_match_request.header.source_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-        logger.printfln("CM_SLAC_MATCH.REQ source_mac mismatch");
+        iso15118.trace("CM_SLAC_MATCH.REQ source_mac mismatch");
         // ISO 15118-3 A.9.3.3 [V2G3-A09-98]
         return;
     }
 
     if (memcmp(pev_run_id, cm_slac_match_request.run_id, SLAC_RUN_ID_LENGTH) != 0) {
-        logger.printfln("CM_SLAC_MATCH.REQ run_id mismatch");
+        iso15118.trace("CM_SLAC_MATCH.REQ run_id mismatch");
         // ISO 15118-3 A.9.3.3 [V2G3-A09-98]
         return;
     }
@@ -574,7 +574,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     // The CM_SLAC_MATCH.REQ contains the EVSE MAC the EV selected.
     // Per [V2G3-A09-98], if it doesn't match our MAC, reject.
     if (memcmp(evse_mac, cm_slac_match_request.evse_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-        logger.printfln("CM_SLAC_MATCH.REQ evse_mac mismatch: EV chose different EVSE (%02x:%02x:%02x:%02x:%02x:%02x, ours %02x:%02x:%02x:%02x:%02x:%02x)",
+        iso15118.trace("CM_SLAC_MATCH.REQ evse_mac mismatch: EV chose different EVSE (%02x:%02x:%02x:%02x:%02x:%02x, ours %02x:%02x:%02x:%02x:%02x:%02x)",
             cm_slac_match_request.evse_mac[0], cm_slac_match_request.evse_mac[1],
             cm_slac_match_request.evse_mac[2], cm_slac_match_request.evse_mac[3],
             cm_slac_match_request.evse_mac[4], cm_slac_match_request.evse_mac[5],
@@ -593,7 +593,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     // network and tries SDP/V2G, which times out after ~90-100s before falling back to IEC.
     // By not confirming, the EV's TT_MATCH_RESPONSE expires immediately after 200ms.
     if (iso15118.is_autocharge_only()) {
-        logger.printfln("Autocharge-only mode: SLAC complete, NOT sending CM_SLAC_MATCH.CNF");
+        iso15118.trace("Autocharge-only mode: SLAC complete, NOT sending CM_SLAC_MATCH.CNF");
         next_timeout = {};
         state = SLACState::LinkDetected;  // Mark SLAC as done
 
@@ -626,7 +626,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     // (or couldn't process) our original CNF. We re-sent the CNF above and reset the
     // timeout to give the EV a fresh window to join the PLC network.
     if (state == SLACState::WaitForSDP) {
-        logger.printfln("CM_SLAC_MATCH.REQ retry in WaitForSDP, re-sent CNF");
+        iso15118.trace("CM_SLAC_MATCH.REQ retry in WaitForSDP, re-sent CNF");
         next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFICATION_MAX;
         return;
     }
@@ -697,7 +697,7 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
 
 void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &ind)
 {
-    iso15118.trace("VS_HOST_ACTION.IND: action=%u, version=%u.%u, from %02x:%02x:%02x:%02x:%02x:%02x",
+    trace_iso("VS_HOST_ACTION.IND: action=%u, version=%u.%u, from %02x:%02x:%02x:%02x:%02x:%02x",
                    ind.maction, ind.major_version, ind.minor_version,
                    ind.header.source_mac[0], ind.header.source_mac[1], ind.header.source_mac[2],
                    ind.header.source_mac[3], ind.header.source_mac[4], ind.header.source_mac[5]);
@@ -720,7 +720,7 @@ void SLAC::handle_tap(void)
     ssize_t length = read(iso15118.qca700x.tap, buffer, SLAC_ETHERNET_FRAME_LENGTH_MAX);
     if (length < 0) {
         if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            logger.printfln("SLAC: L2TAP read error: errno %d [%s]", errno, strerror(errno));
+            iso15118.trace("SLAC: L2TAP read error: errno %d [%s]", errno, strerror(errno));
         }
         return;
     }
@@ -747,7 +747,7 @@ void SLAC::handle_tap(void)
         case SLAC_MMTYPE_QUALCOMM_HOST_ACTION | SLAC_MMTYPE_MODE_INDICATION:   handle_cm_qualcomm_host_action_indication(*reinterpret_cast<const CM_QualcommHostActionIndication*>(buffer));     break;
         case SLAC_MMTYPE_QUALCOMM_MODULE_OP   | SLAC_MMTYPE_MODE_CONFIRMATION: handle_vs_module_operation_confirmation(buffer, static_cast<size_t>(length)); break;
 
-        default: logger.printfln("Unhandled mm_type: %04x", mm_type); break;
+        default: iso15118.trace("Unhandled mm_type: %04x", mm_type); break;
     }
 }
 
@@ -771,7 +771,7 @@ void SLAC::state_machine_loop()
     if (state == SLACState::WaitForSlacParamRequest && next_timeout.is_none()) {
         uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
         if (iec_state != 0) { // Not State A: EV is connected
-            logger.printfln("SLAC: EV connected (IEC state %lu), starting TT_EVSE_SLAC_init timeout (50s)",
+            iso15118.trace("SLAC: EV connected (IEC state %lu), starting TT_EVSE_SLAC_init timeout (50s)",
                             iec_state);
             next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT_MAX;
         }
@@ -783,7 +783,7 @@ void SLAC::state_machine_loop()
         (state == SLACState::WaitForSlacParamRequest && next_timeout.is_some()))) {
         uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
         if (iec_state == 0) { // State A: EV disconnected
-            logger.printfln("SLAC: EV disconnected during SLAC init retry cycle, resetting");
+            iso15118.trace("SLAC: EV disconnected during SLAC init retry cycle, resetting");
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             next_timeout = {};
             slac_init_retry_count = 0;
@@ -795,7 +795,7 @@ void SLAC::state_machine_loop()
     // When we receive an IPv6 packet (SDP), the link is established.
     if (state == SLACState::WaitForSDP) {
         if (iso15118.qca700x.check_and_clear_ipv6_received()) {
-            logger.printfln("IPv6/SDP packet received, link established");
+            iso15118.trace("IPv6/SDP packet received, link established");
             next_timeout = {};
             state = SLACState::LinkDetected;
         }
@@ -821,7 +821,7 @@ void SLAC::state_machine_loop()
 
     // Handle timeouts of expected responses
     if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
-        logger.printfln("SLAC: Timeout in state %s", get_slac_state_name(state));
+        iso15118.trace("SLAC: Timeout in state %s", get_slac_state_name(state));
         // As long as we have received some sounds we will do the average attenuation profile calculation
         // and move on to the next state, even after timeout. ISO 15118-3 A.9.2.3.3 [V2G3-A09-43].
         const uint8_t received_aag_lists          = api_state.get("received_aag_lists")->asUint8();
@@ -864,7 +864,7 @@ void SLAC::state_machine_loop()
             // retry up to C_SEQU_RETRY times before falling back to IEC.
             slac_init_retry_count++;
             if (slac_init_retry_count > SLAC_C_SEQU_RETRY) {
-                logger.printfln("SLAC: TT_EVSE_SLAC_init retries exhausted (%u/%u), falling back to IEC",
+                iso15118.trace("SLAC: TT_EVSE_SLAC_init retries exhausted (%u/%u), falling back to IEC",
                                 static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(SLAC_C_SEQU_RETRY));
                 next_timeout = {};
                 state = SLACState::SlacInitFailed;
@@ -873,7 +873,7 @@ void SLAC::state_machine_loop()
                 iso15118.begin_iec_transition();
                 iso15118.disable_plc_modem();
             } else {
-                logger.printfln("SLAC: TT_EVSE_SLAC_init expired, entering State E/F (attempt %u/%u)",
+                iso15118.trace("SLAC: TT_EVSE_SLAC_init expired, entering State E/F (attempt %u/%u)",
                                 static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(SLAC_C_SEQU_RETRY));
                 // Set CP to 0% duty cycle (-12V = State E/F)
                 evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
@@ -882,7 +882,7 @@ void SLAC::state_machine_loop()
             }
         } else if (state == SLACState::SlacInitEF) {
             // T_step_EF expired: return to 5% duty and restart TT_EVSE_SLAC_init.
-            logger.printfln("SLAC: T_step_EF expired, returning to 5%% duty cycle");
+            iso15118.trace("SLAC: T_step_EF expired, returning to 5%% duty cycle");
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT_MAX;
             state = SLACState::WaitForSlacParamRequest;
@@ -911,268 +911,268 @@ void SLAC::uint8_to_printable_string(const uint8_t *data, const uint16_t length,
 
 void SLAC::log_homeplug_message_header_v0(const SLAC_HomeplugMessageHeaderV0 &header)
 {
-    iso15118.trace("  Ethernet Header:");
-    iso15118.trace("    destination_mac: %02x %02x %02x %02x %02x %02x", header.destination_mac[0], header.destination_mac[1], header.destination_mac[2], header.destination_mac[3], header.destination_mac[4], header.destination_mac[5]);
-    iso15118.trace("    source_mac:      %02x %02x %02x %02x %02x %02x", header.source_mac[0], header.source_mac[1], header.source_mac[2], header.source_mac[3], header.source_mac[4], header.source_mac[5]);
-    iso15118.trace("    ethernet_type:   %04x", header.ethernet_type);
-    iso15118.trace("  Homeplug Message Header:");
-    iso15118.trace("    mm_version: %02x", header.mm_version);
-    iso15118.trace("    mm_type:    %04x", header.mm_type);
+    trace_iso("  Ethernet Header:");
+    trace_iso("    destination_mac: %02x %02x %02x %02x %02x %02x", header.destination_mac[0], header.destination_mac[1], header.destination_mac[2], header.destination_mac[3], header.destination_mac[4], header.destination_mac[5]);
+    trace_iso("    source_mac:      %02x %02x %02x %02x %02x %02x", header.source_mac[0], header.source_mac[1], header.source_mac[2], header.source_mac[3], header.source_mac[4], header.source_mac[5]);
+    trace_iso("    ethernet_type:   %04x", header.ethernet_type);
+    trace_iso("  Homeplug Message Header:");
+    trace_iso("    mm_version: %02x", header.mm_version);
+    trace_iso("    mm_type:    %04x", header.mm_type);
 }
 
 void SLAC::log_homeplug_message_header(const SLAC_HomeplugMessageHeader &header)
 {
-    iso15118.trace("  Ethernet Header:");
-    iso15118.trace("    destination_mac: %02x %02x %02x %02x %02x %02x", header.destination_mac[0], header.destination_mac[1], header.destination_mac[2], header.destination_mac[3], header.destination_mac[4], header.destination_mac[5]);
-    iso15118.trace("    source_mac:      %02x %02x %02x %02x %02x %02x", header.source_mac[0], header.source_mac[1], header.source_mac[2], header.source_mac[3], header.source_mac[4], header.source_mac[5]);
-    iso15118.trace("    ethernet_type:   %04x", header.ethernet_type);
-    iso15118.trace("  Homeplug Message Header:");
-    iso15118.trace("    mm_version: %02x", header.mm_version);
-    iso15118.trace("    mm_type:    %04x", header.mm_type);
-    iso15118.trace("    fmni:       %02x", header.fmni);
-    iso15118.trace("    fmsn:       %02x", header.fmsn);
+    trace_iso("  Ethernet Header:");
+    trace_iso("    destination_mac: %02x %02x %02x %02x %02x %02x", header.destination_mac[0], header.destination_mac[1], header.destination_mac[2], header.destination_mac[3], header.destination_mac[4], header.destination_mac[5]);
+    trace_iso("    source_mac:      %02x %02x %02x %02x %02x %02x", header.source_mac[0], header.source_mac[1], header.source_mac[2], header.source_mac[3], header.source_mac[4], header.source_mac[5]);
+    trace_iso("    ethernet_type:   %04x", header.ethernet_type);
+    trace_iso("  Homeplug Message Header:");
+    trace_iso("    mm_version: %02x", header.mm_version);
+    trace_iso("    mm_type:    %04x", header.mm_type);
+    trace_iso("    fmni:       %02x", header.fmni);
+    trace_iso("    fmsn:       %02x", header.fmsn);
 }
 
 void SLAC::log_cm_set_key_request(const CM_SetKeyRequest &cm_set_key_request)
 {
-    iso15118.trace("CM_SET_KEY.REQ:");
+    trace_iso("CM_SET_KEY.REQ:");
     log_homeplug_message_header(cm_set_key_request.header);
-    iso15118.trace("  key_type:       %02x", cm_set_key_request.key_type);
-    iso15118.trace("  my_nonce:       %08lx", cm_set_key_request.my_nonce);
-    iso15118.trace("  your_nonce:     %08lx", cm_set_key_request.your_nonce);
-    iso15118.trace("  pid:            %02x", cm_set_key_request.pid);
-    iso15118.trace("  prn:            %04x", cm_set_key_request.prn);
-    iso15118.trace("  pmn:            %02x", cm_set_key_request.pmn);
-    iso15118.trace("  cco_capability: %02x", cm_set_key_request.cco_capability);
-    iso15118.trace("  nid:            %02x %02x %02x %02x %02x %02x %02x", cm_set_key_request.nid[0], cm_set_key_request.nid[1], cm_set_key_request.nid[2], cm_set_key_request.nid[3], cm_set_key_request.nid[4], cm_set_key_request.nid[5], cm_set_key_request.nid[6]);
-    iso15118.trace("  new_eks:        %02x", cm_set_key_request.new_eks);
-    iso15118.trace("  nmk:            %02x %02x %02x %02x %02x %02x %02x %02x...", cm_set_key_request.nmk[0], cm_set_key_request.nmk[1], cm_set_key_request.nmk[2], cm_set_key_request.nmk[3], cm_set_key_request.nmk[4], cm_set_key_request.nmk[5], cm_set_key_request.nmk[6], cm_set_key_request.nmk[7]);
+    trace_iso("  key_type:       %02x", cm_set_key_request.key_type);
+    trace_iso("  my_nonce:       %08lx", cm_set_key_request.my_nonce);
+    trace_iso("  your_nonce:     %08lx", cm_set_key_request.your_nonce);
+    trace_iso("  pid:            %02x", cm_set_key_request.pid);
+    trace_iso("  prn:            %04x", cm_set_key_request.prn);
+    trace_iso("  pmn:            %02x", cm_set_key_request.pmn);
+    trace_iso("  cco_capability: %02x", cm_set_key_request.cco_capability);
+    trace_iso("  nid:            %02x %02x %02x %02x %02x %02x %02x", cm_set_key_request.nid[0], cm_set_key_request.nid[1], cm_set_key_request.nid[2], cm_set_key_request.nid[3], cm_set_key_request.nid[4], cm_set_key_request.nid[5], cm_set_key_request.nid[6]);
+    trace_iso("  new_eks:        %02x", cm_set_key_request.new_eks);
+    trace_iso("  nmk:            %02x %02x %02x %02x %02x %02x %02x %02x...", cm_set_key_request.nmk[0], cm_set_key_request.nmk[1], cm_set_key_request.nmk[2], cm_set_key_request.nmk[3], cm_set_key_request.nmk[4], cm_set_key_request.nmk[5], cm_set_key_request.nmk[6], cm_set_key_request.nmk[7]);
 }
 
 void SLAC::log_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_key_confirmation)
 {
-    iso15118.trace("CM_SET_KEY.CNF:");
+    trace_iso("CM_SET_KEY.CNF:");
     log_homeplug_message_header(cm_set_key_confirmation.header);
-    iso15118.trace("  result:      %02x", cm_set_key_confirmation.result);
-    iso15118.trace("  my_nonce:    %08lx", cm_set_key_confirmation.my_nonce);
-    iso15118.trace("  your_nonce:  %08lx", cm_set_key_confirmation.your_nonce);
-    iso15118.trace("  pid:         %02x", cm_set_key_confirmation.pid);
-    iso15118.trace("  prn:         %04x", cm_set_key_confirmation.prn);
-    iso15118.trace("  pmn:         %02x", cm_set_key_confirmation.pmn);
-    iso15118.trace("  cco_capability: %02x", cm_set_key_confirmation.cco_capability);
+    trace_iso("  result:      %02x", cm_set_key_confirmation.result);
+    trace_iso("  my_nonce:    %08lx", cm_set_key_confirmation.my_nonce);
+    trace_iso("  your_nonce:  %08lx", cm_set_key_confirmation.your_nonce);
+    trace_iso("  pid:         %02x", cm_set_key_confirmation.pid);
+    trace_iso("  prn:         %04x", cm_set_key_confirmation.prn);
+    trace_iso("  pmn:         %02x", cm_set_key_confirmation.pmn);
+    trace_iso("  cco_capability: %02x", cm_set_key_confirmation.cco_capability);
 }
 
 void SLAC::log_cm_slac_parm_confirmation(const CM_SLACParmConfirmation &cm_slac_parm_confirmation)
 {
-    iso15118.trace("CM_SLAC_PARM.CNF:");
+    trace_iso("CM_SLAC_PARM.CNF:");
     log_homeplug_message_header(cm_slac_parm_confirmation.header);
-    iso15118.trace("  m_sound_target:   %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.m_sound_target[0], cm_slac_parm_confirmation.m_sound_target[1], cm_slac_parm_confirmation.m_sound_target[2], cm_slac_parm_confirmation.m_sound_target[3], cm_slac_parm_confirmation.m_sound_target[4], cm_slac_parm_confirmation.m_sound_target[5]);
-    iso15118.trace("  num_sounds:       %02x", cm_slac_parm_confirmation.num_sounds);
-    iso15118.trace("  timeout:          %02x", cm_slac_parm_confirmation.timeout);
-    iso15118.trace("  resp_type:        %02x", cm_slac_parm_confirmation.resp_type);
-    iso15118.trace("  forwarding_sta:   %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.forwarding_sta[0], cm_slac_parm_confirmation.forwarding_sta[1], cm_slac_parm_confirmation.forwarding_sta[2], cm_slac_parm_confirmation.forwarding_sta[3], cm_slac_parm_confirmation.forwarding_sta[4], cm_slac_parm_confirmation.forwarding_sta[5]);
-    iso15118.trace("  application_type: %02x", cm_slac_parm_confirmation.application_type);
-    iso15118.trace("  security_type:    %02x", cm_slac_parm_confirmation.security_type);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.run_id[0], cm_slac_parm_confirmation.run_id[1], cm_slac_parm_confirmation.run_id[2], cm_slac_parm_confirmation.run_id[3], cm_slac_parm_confirmation.run_id[4], cm_slac_parm_confirmation.run_id[5], cm_slac_parm_confirmation.run_id[6], cm_slac_parm_confirmation.run_id[7]);
+    trace_iso("  m_sound_target:   %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.m_sound_target[0], cm_slac_parm_confirmation.m_sound_target[1], cm_slac_parm_confirmation.m_sound_target[2], cm_slac_parm_confirmation.m_sound_target[3], cm_slac_parm_confirmation.m_sound_target[4], cm_slac_parm_confirmation.m_sound_target[5]);
+    trace_iso("  num_sounds:       %02x", cm_slac_parm_confirmation.num_sounds);
+    trace_iso("  timeout:          %02x", cm_slac_parm_confirmation.timeout);
+    trace_iso("  resp_type:        %02x", cm_slac_parm_confirmation.resp_type);
+    trace_iso("  forwarding_sta:   %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.forwarding_sta[0], cm_slac_parm_confirmation.forwarding_sta[1], cm_slac_parm_confirmation.forwarding_sta[2], cm_slac_parm_confirmation.forwarding_sta[3], cm_slac_parm_confirmation.forwarding_sta[4], cm_slac_parm_confirmation.forwarding_sta[5]);
+    trace_iso("  application_type: %02x", cm_slac_parm_confirmation.application_type);
+    trace_iso("  security_type:    %02x", cm_slac_parm_confirmation.security_type);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_slac_parm_confirmation.run_id[0], cm_slac_parm_confirmation.run_id[1], cm_slac_parm_confirmation.run_id[2], cm_slac_parm_confirmation.run_id[3], cm_slac_parm_confirmation.run_id[4], cm_slac_parm_confirmation.run_id[5], cm_slac_parm_confirmation.run_id[6], cm_slac_parm_confirmation.run_id[7]);
 }
 void SLAC::log_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_request)
 {
-    iso15118.trace("CM_SLAC_PARM.REQ:");
+    trace_iso("CM_SLAC_PARM.REQ:");
     log_homeplug_message_header(cm_slac_parm_request.header);
-    iso15118.trace("  application_type: %02x", cm_slac_parm_request.application_type);
-    iso15118.trace("  security_type:    %02x", cm_slac_parm_request.security_type);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_slac_parm_request.run_id[0], cm_slac_parm_request.run_id[1], cm_slac_parm_request.run_id[2], cm_slac_parm_request.run_id[3], cm_slac_parm_request.run_id[4], cm_slac_parm_request.run_id[5], cm_slac_parm_request.run_id[6], cm_slac_parm_request.run_id[7]);
+    trace_iso("  application_type: %02x", cm_slac_parm_request.application_type);
+    trace_iso("  security_type:    %02x", cm_slac_parm_request.security_type);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_slac_parm_request.run_id[0], cm_slac_parm_request.run_id[1], cm_slac_parm_request.run_id[2], cm_slac_parm_request.run_id[3], cm_slac_parm_request.run_id[4], cm_slac_parm_request.run_id[5], cm_slac_parm_request.run_id[6], cm_slac_parm_request.run_id[7]);
 }
 
 void SLAC::log_cm_start_atten_char_indication(const CM_StartAttenCharIndication &cm_start_atten_char_indication)
 {
-    iso15118.trace("CM_START_ATTEN_CHAR.IND:");
+    trace_iso("CM_START_ATTEN_CHAR.IND:");
     log_homeplug_message_header(cm_start_atten_char_indication.header);
-    iso15118.trace("  application_type: %02x", cm_start_atten_char_indication.application_type);
-    iso15118.trace("  security_type:    %02x", cm_start_atten_char_indication.security_type);
-    iso15118.trace("  num_sounds:       %02x", cm_start_atten_char_indication.num_sounds);
-    iso15118.trace("  timeout:          %02x", cm_start_atten_char_indication.timeout);
-    iso15118.trace("  resp_type:        %02x", cm_start_atten_char_indication.resp_type);
-    iso15118.trace("  forwarding_sta:   %02x %02x %02x %02x %02x %02x", cm_start_atten_char_indication.forwarding_sta[0], cm_start_atten_char_indication.forwarding_sta[1], cm_start_atten_char_indication.forwarding_sta[2], cm_start_atten_char_indication.forwarding_sta[3], cm_start_atten_char_indication.forwarding_sta[4], cm_start_atten_char_indication.forwarding_sta[5]);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_start_atten_char_indication.run_id[0], cm_start_atten_char_indication.run_id[1], cm_start_atten_char_indication.run_id[2], cm_start_atten_char_indication.run_id[3], cm_start_atten_char_indication.run_id[4], cm_start_atten_char_indication.run_id[5], cm_start_atten_char_indication.run_id[6], cm_start_atten_char_indication.run_id[7]);
+    trace_iso("  application_type: %02x", cm_start_atten_char_indication.application_type);
+    trace_iso("  security_type:    %02x", cm_start_atten_char_indication.security_type);
+    trace_iso("  num_sounds:       %02x", cm_start_atten_char_indication.num_sounds);
+    trace_iso("  timeout:          %02x", cm_start_atten_char_indication.timeout);
+    trace_iso("  resp_type:        %02x", cm_start_atten_char_indication.resp_type);
+    trace_iso("  forwarding_sta:   %02x %02x %02x %02x %02x %02x", cm_start_atten_char_indication.forwarding_sta[0], cm_start_atten_char_indication.forwarding_sta[1], cm_start_atten_char_indication.forwarding_sta[2], cm_start_atten_char_indication.forwarding_sta[3], cm_start_atten_char_indication.forwarding_sta[4], cm_start_atten_char_indication.forwarding_sta[5]);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_start_atten_char_indication.run_id[0], cm_start_atten_char_indication.run_id[1], cm_start_atten_char_indication.run_id[2], cm_start_atten_char_indication.run_id[3], cm_start_atten_char_indication.run_id[4], cm_start_atten_char_indication.run_id[5], cm_start_atten_char_indication.run_id[6], cm_start_atten_char_indication.run_id[7]);
 }
 
 void SLAC::log_cm_mnbc_sound_indication(const CM_MNBCSoundIndication &cm_mnbc_sound_indication)
 {
-    iso15118.trace("CM_MNBC_SOUND.IND:");
+    trace_iso("CM_MNBC_SOUND.IND:");
     log_homeplug_message_header(cm_mnbc_sound_indication.header);
-    iso15118.trace("  application_type:      %02x", cm_mnbc_sound_indication.application_type);
-    iso15118.trace("  security_type:         %02x", cm_mnbc_sound_indication.security_type);
-    iso15118.trace("  sender_id:             %02x %02x %02x %02x %02x %02x %02x %02x", cm_mnbc_sound_indication.sender_id[0], cm_mnbc_sound_indication.sender_id[1], cm_mnbc_sound_indication.sender_id[2], cm_mnbc_sound_indication.sender_id[3], cm_mnbc_sound_indication.sender_id[4], cm_mnbc_sound_indication.sender_id[5], cm_mnbc_sound_indication.sender_id[6], cm_mnbc_sound_indication.sender_id[7]);
-    iso15118.trace("  remaining_sound_count: %02x", cm_mnbc_sound_indication.remaining_sound_count);
-    iso15118.trace("  run_id:                %02x %02x %02x %02x %02x %02x %02x %02x", cm_mnbc_sound_indication.run_id[0], cm_mnbc_sound_indication.run_id[1], cm_mnbc_sound_indication.run_id[2], cm_mnbc_sound_indication.run_id[3], cm_mnbc_sound_indication.run_id[4], cm_mnbc_sound_indication.run_id[5], cm_mnbc_sound_indication.run_id[6], cm_mnbc_sound_indication.run_id[7]);
-    iso15118.trace("  random:                %02x %02x %02x %02x %02x %02x %02x %02x...", cm_mnbc_sound_indication.random[0], cm_mnbc_sound_indication.random[1], cm_mnbc_sound_indication.random[2], cm_mnbc_sound_indication.random[3], cm_mnbc_sound_indication.random[4], cm_mnbc_sound_indication.random[5], cm_mnbc_sound_indication.random[6], cm_mnbc_sound_indication.random[7]);
+    trace_iso("  application_type:      %02x", cm_mnbc_sound_indication.application_type);
+    trace_iso("  security_type:         %02x", cm_mnbc_sound_indication.security_type);
+    trace_iso("  sender_id:             %02x %02x %02x %02x %02x %02x %02x %02x", cm_mnbc_sound_indication.sender_id[0], cm_mnbc_sound_indication.sender_id[1], cm_mnbc_sound_indication.sender_id[2], cm_mnbc_sound_indication.sender_id[3], cm_mnbc_sound_indication.sender_id[4], cm_mnbc_sound_indication.sender_id[5], cm_mnbc_sound_indication.sender_id[6], cm_mnbc_sound_indication.sender_id[7]);
+    trace_iso("  remaining_sound_count: %02x", cm_mnbc_sound_indication.remaining_sound_count);
+    trace_iso("  run_id:                %02x %02x %02x %02x %02x %02x %02x %02x", cm_mnbc_sound_indication.run_id[0], cm_mnbc_sound_indication.run_id[1], cm_mnbc_sound_indication.run_id[2], cm_mnbc_sound_indication.run_id[3], cm_mnbc_sound_indication.run_id[4], cm_mnbc_sound_indication.run_id[5], cm_mnbc_sound_indication.run_id[6], cm_mnbc_sound_indication.run_id[7]);
+    trace_iso("  random:                %02x %02x %02x %02x %02x %02x %02x %02x...", cm_mnbc_sound_indication.random[0], cm_mnbc_sound_indication.random[1], cm_mnbc_sound_indication.random[2], cm_mnbc_sound_indication.random[3], cm_mnbc_sound_indication.random[4], cm_mnbc_sound_indication.random[5], cm_mnbc_sound_indication.random[6], cm_mnbc_sound_indication.random[7]);
 
 }
 
 void SLAC::log_cm_atten_char_indication(const CM_AttenCharIndication &cm_atten_char_indication)
 {
-    iso15118.trace("CM_ATTEN_CHAR.IND:");
+    trace_iso("CM_ATTEN_CHAR.IND:");
     log_homeplug_message_header(cm_atten_char_indication.header);
-    iso15118.trace("  application_type: %02x", cm_atten_char_indication.application_type);
-    iso15118.trace("  security_type:    %02x", cm_atten_char_indication.security_type);
-    iso15118.trace("  source_address:   %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.source_address[0], cm_atten_char_indication.source_address[1], cm_atten_char_indication.source_address[2], cm_atten_char_indication.source_address[3], cm_atten_char_indication.source_address[4], cm_atten_char_indication.source_address[5]);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.run_id[0], cm_atten_char_indication.run_id[1], cm_atten_char_indication.run_id[2], cm_atten_char_indication.run_id[3], cm_atten_char_indication.run_id[4], cm_atten_char_indication.run_id[5], cm_atten_char_indication.run_id[6], cm_atten_char_indication.run_id[7]);
-    iso15118.trace("  source_id:        %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_indication.source_id[0], cm_atten_char_indication.source_id[1], cm_atten_char_indication.source_id[2], cm_atten_char_indication.source_id[3], cm_atten_char_indication.source_id[4], cm_atten_char_indication.source_id[5], cm_atten_char_indication.source_id[6], cm_atten_char_indication.source_id[7]);
-    iso15118.trace("  resp_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_indication.resp_id[0], cm_atten_char_indication.resp_id[1], cm_atten_char_indication.resp_id[2], cm_atten_char_indication.resp_id[3], cm_atten_char_indication.resp_id[4], cm_atten_char_indication.resp_id[5], cm_atten_char_indication.resp_id[6], cm_atten_char_indication.resp_id[7]);
-    iso15118.trace("  num_sounds:       %02x", cm_atten_char_indication.num_sounds);
-    iso15118.trace("  attenuation_profile:");
-    iso15118.trace("    num_groups: %02x", cm_atten_char_indication.attenuation_profile.num_groups);
+    trace_iso("  application_type: %02x", cm_atten_char_indication.application_type);
+    trace_iso("  security_type:    %02x", cm_atten_char_indication.security_type);
+    trace_iso("  source_address:   %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.source_address[0], cm_atten_char_indication.source_address[1], cm_atten_char_indication.source_address[2], cm_atten_char_indication.source_address[3], cm_atten_char_indication.source_address[4], cm_atten_char_indication.source_address[5]);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.run_id[0], cm_atten_char_indication.run_id[1], cm_atten_char_indication.run_id[2], cm_atten_char_indication.run_id[3], cm_atten_char_indication.run_id[4], cm_atten_char_indication.run_id[5], cm_atten_char_indication.run_id[6], cm_atten_char_indication.run_id[7]);
+    trace_iso("  source_id:        %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_indication.source_id[0], cm_atten_char_indication.source_id[1], cm_atten_char_indication.source_id[2], cm_atten_char_indication.source_id[3], cm_atten_char_indication.source_id[4], cm_atten_char_indication.source_id[5], cm_atten_char_indication.source_id[6], cm_atten_char_indication.source_id[7]);
+    trace_iso("  resp_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_indication.resp_id[0], cm_atten_char_indication.resp_id[1], cm_atten_char_indication.resp_id[2], cm_atten_char_indication.resp_id[3], cm_atten_char_indication.resp_id[4], cm_atten_char_indication.resp_id[5], cm_atten_char_indication.resp_id[6], cm_atten_char_indication.resp_id[7]);
+    trace_iso("  num_sounds:       %02x", cm_atten_char_indication.num_sounds);
+    trace_iso("  attenuation_profile:");
+    trace_iso("    num_groups: %02x", cm_atten_char_indication.attenuation_profile.num_groups);
     for (uint8_t i = 0; i < SLAC_AAG_LIST_LENGTH-2; i+=8) {
-        iso15118.trace("    %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.attenuation_profile.aag[i+0], cm_atten_char_indication.attenuation_profile.aag[i+1], cm_atten_char_indication.attenuation_profile.aag[i+2], cm_atten_char_indication.attenuation_profile.aag[i+3], cm_atten_char_indication.attenuation_profile.aag[i+4], cm_atten_char_indication.attenuation_profile.aag[i+5], cm_atten_char_indication.attenuation_profile.aag[i+6], cm_atten_char_indication.attenuation_profile.aag[i+7]);
+        trace_iso("    %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_indication.attenuation_profile.aag[i+0], cm_atten_char_indication.attenuation_profile.aag[i+1], cm_atten_char_indication.attenuation_profile.aag[i+2], cm_atten_char_indication.attenuation_profile.aag[i+3], cm_atten_char_indication.attenuation_profile.aag[i+4], cm_atten_char_indication.attenuation_profile.aag[i+5], cm_atten_char_indication.attenuation_profile.aag[i+6], cm_atten_char_indication.attenuation_profile.aag[i+7]);
     }
-    iso15118.trace("    %02x %02x", cm_atten_char_indication.attenuation_profile.aag[SLAC_AAG_LIST_LENGTH-2], cm_atten_char_indication.attenuation_profile.aag[SLAC_AAG_LIST_LENGTH-1]);
+    trace_iso("    %02x %02x", cm_atten_char_indication.attenuation_profile.aag[SLAC_AAG_LIST_LENGTH-2], cm_atten_char_indication.attenuation_profile.aag[SLAC_AAG_LIST_LENGTH-1]);
 }
 
 void SLAC::log_cm_atten_profile_indication(const CM_AttenProfileIndication &cm_atten_profile_indication)
 {
-    iso15118.trace("CM_ATTEN_PROFILE.IND:");
+    trace_iso("CM_ATTEN_PROFILE.IND:");
     log_homeplug_message_header(cm_atten_profile_indication.header);
-    iso15118.trace("  pev_mac:    %02x %02x %02x %02x %02x %02x", cm_atten_profile_indication.pev_mac[0], cm_atten_profile_indication.pev_mac[1], cm_atten_profile_indication.pev_mac[2], cm_atten_profile_indication.pev_mac[3], cm_atten_profile_indication.pev_mac[4], cm_atten_profile_indication.pev_mac[5]);
-    iso15118.trace("  num_groups: %02x", cm_atten_profile_indication.num_groups);
+    trace_iso("  pev_mac:    %02x %02x %02x %02x %02x %02x", cm_atten_profile_indication.pev_mac[0], cm_atten_profile_indication.pev_mac[1], cm_atten_profile_indication.pev_mac[2], cm_atten_profile_indication.pev_mac[3], cm_atten_profile_indication.pev_mac[4], cm_atten_profile_indication.pev_mac[5]);
+    trace_iso("  num_groups: %02x", cm_atten_profile_indication.num_groups);
     for (uint8_t i = 0; i < SLAC_AAG_LIST_LENGTH-2; i+=8) {
-        iso15118.trace("  %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_profile_indication.aag[i+0], cm_atten_profile_indication.aag[i+1], cm_atten_profile_indication.aag[i+2], cm_atten_profile_indication.aag[i+3], cm_atten_profile_indication.aag[i+4], cm_atten_profile_indication.aag[i+5], cm_atten_profile_indication.aag[i+6], cm_atten_profile_indication.aag[i+7]);
+        trace_iso("  %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_profile_indication.aag[i+0], cm_atten_profile_indication.aag[i+1], cm_atten_profile_indication.aag[i+2], cm_atten_profile_indication.aag[i+3], cm_atten_profile_indication.aag[i+4], cm_atten_profile_indication.aag[i+5], cm_atten_profile_indication.aag[i+6], cm_atten_profile_indication.aag[i+7]);
     }
-    iso15118.trace("  %02x %02x", cm_atten_profile_indication.aag[SLAC_AAG_LIST_LENGTH-2], cm_atten_profile_indication.aag[SLAC_AAG_LIST_LENGTH-1]);
+    trace_iso("  %02x %02x", cm_atten_profile_indication.aag[SLAC_AAG_LIST_LENGTH-2], cm_atten_profile_indication.aag[SLAC_AAG_LIST_LENGTH-1]);
 }
 
 void SLAC::log_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_response)
 {
-    iso15118.trace("CM_ATTEN_CHAR.RSP:");
+    trace_iso("CM_ATTEN_CHAR.RSP:");
     log_homeplug_message_header(cm_atten_char_response.header);
-    iso15118.trace("  application_type: %02x", cm_atten_char_response.application_type);
-    iso15118.trace("  security_type:    %02x", cm_atten_char_response.security_type);
-    iso15118.trace("  source_address:   %02x %02x %02x %02x %02x %02x", cm_atten_char_response.source_address[0], cm_atten_char_response.source_address[1], cm_atten_char_response.source_address[2], cm_atten_char_response.source_address[3], cm_atten_char_response.source_address[4], cm_atten_char_response.source_address[5]);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_response.run_id[0], cm_atten_char_response.run_id[1], cm_atten_char_response.run_id[2], cm_atten_char_response.run_id[3], cm_atten_char_response.run_id[4], cm_atten_char_response.run_id[5], cm_atten_char_response.run_id[6], cm_atten_char_response.run_id[7]);
-    iso15118.trace("  source_id:        %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.source_id[0], cm_atten_char_response.source_id[1], cm_atten_char_response.source_id[2], cm_atten_char_response.source_id[3], cm_atten_char_response.source_id[4], cm_atten_char_response.source_id[5], cm_atten_char_response.source_id[6], cm_atten_char_response.source_id[7]);
-    iso15118.trace("  resp_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.resp_id[0], cm_atten_char_response.resp_id[1], cm_atten_char_response.resp_id[2], cm_atten_char_response.resp_id[3], cm_atten_char_response.resp_id[4], cm_atten_char_response.resp_id[5], cm_atten_char_response.resp_id[6], cm_atten_char_response.resp_id[7]);
+    trace_iso("  application_type: %02x", cm_atten_char_response.application_type);
+    trace_iso("  security_type:    %02x", cm_atten_char_response.security_type);
+    trace_iso("  source_address:   %02x %02x %02x %02x %02x %02x", cm_atten_char_response.source_address[0], cm_atten_char_response.source_address[1], cm_atten_char_response.source_address[2], cm_atten_char_response.source_address[3], cm_atten_char_response.source_address[4], cm_atten_char_response.source_address[5]);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_response.run_id[0], cm_atten_char_response.run_id[1], cm_atten_char_response.run_id[2], cm_atten_char_response.run_id[3], cm_atten_char_response.run_id[4], cm_atten_char_response.run_id[5], cm_atten_char_response.run_id[6], cm_atten_char_response.run_id[7]);
+    trace_iso("  source_id:        %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.source_id[0], cm_atten_char_response.source_id[1], cm_atten_char_response.source_id[2], cm_atten_char_response.source_id[3], cm_atten_char_response.source_id[4], cm_atten_char_response.source_id[5], cm_atten_char_response.source_id[6], cm_atten_char_response.source_id[7]);
+    trace_iso("  resp_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.resp_id[0], cm_atten_char_response.resp_id[1], cm_atten_char_response.resp_id[2], cm_atten_char_response.resp_id[3], cm_atten_char_response.resp_id[4], cm_atten_char_response.resp_id[5], cm_atten_char_response.resp_id[6], cm_atten_char_response.resp_id[7]);
 }
 
 void SLAC::log_cm_validate_request(const CM_ValidateRequest &cm_validate_request)
 {
-    iso15118.trace("CM_VALIDATE.REQ:");
+    trace_iso("CM_VALIDATE.REQ:");
     log_homeplug_message_header(cm_validate_request.header);
-    iso15118.trace("  signal_type: %02x", cm_validate_request.signal_type);
-    iso15118.trace("  timer:       %02x", cm_validate_request.timer);
-    iso15118.trace("  result:      %02x", cm_validate_request.result);
+    trace_iso("  signal_type: %02x", cm_validate_request.signal_type);
+    trace_iso("  timer:       %02x", cm_validate_request.timer);
+    trace_iso("  result:      %02x", cm_validate_request.result);
 }
 
 void SLAC::log_cm_validate_confirmation(const CM_ValidateConfirmation &cm_validate_confirmation)
 {
-    iso15118.trace("CM_VALIDATE.CNF:");
+    trace_iso("CM_VALIDATE.CNF:");
     log_homeplug_message_header(cm_validate_confirmation.header);
-    iso15118.trace("  signal_type: %02x", cm_validate_confirmation.signal_type);
-    iso15118.trace("  toggle_num:  %02x", cm_validate_confirmation.toggle_num);
-    iso15118.trace("  result:      %02x", cm_validate_confirmation.result);
+    trace_iso("  signal_type: %02x", cm_validate_confirmation.signal_type);
+    trace_iso("  toggle_num:  %02x", cm_validate_confirmation.toggle_num);
+    trace_iso("  result:      %02x", cm_validate_confirmation.result);
 }
 
 void SLAC::log_cm_slac_match_confirmation(const CM_SLACMatchConfirmation &cm_slac_match_confirmation)
 {
-    iso15118.trace("CM_SLAC_MATCH.CNF:");
+    trace_iso("CM_SLAC_MATCH.CNF:");
     log_homeplug_message_header(cm_slac_match_confirmation.header);
-    iso15118.trace("  application_type: %02x", cm_slac_match_confirmation.application_type);
-    iso15118.trace("  security_type:    %02x", cm_slac_match_confirmation.security_type);
-    iso15118.trace("  mvf_length:       %04x", cm_slac_match_confirmation.mvf_length);
-    iso15118.trace("  pev_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.pev_id[0], cm_slac_match_confirmation.pev_id[1], cm_slac_match_confirmation.pev_id[2], cm_slac_match_confirmation.pev_id[3], cm_slac_match_confirmation.pev_id[4], cm_slac_match_confirmation.pev_id[5], cm_slac_match_confirmation.pev_id[6], cm_slac_match_confirmation.pev_id[7]);
-    iso15118.trace("  pev_mac:          %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.pev_mac[0], cm_slac_match_confirmation.pev_mac[1], cm_slac_match_confirmation.pev_mac[2], cm_slac_match_confirmation.pev_mac[3], cm_slac_match_confirmation.pev_mac[4], cm_slac_match_confirmation.pev_mac[5]);
-    iso15118.trace("  evse_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.evse_id[0], cm_slac_match_confirmation.evse_id[1], cm_slac_match_confirmation.evse_id[2], cm_slac_match_confirmation.evse_id[3], cm_slac_match_confirmation.evse_id[4], cm_slac_match_confirmation.evse_id[5], cm_slac_match_confirmation.evse_id[6], cm_slac_match_confirmation.evse_id[7]);
-    iso15118.trace("  evse_mac:         %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.evse_mac[0], cm_slac_match_confirmation.evse_mac[1], cm_slac_match_confirmation.evse_mac[2], cm_slac_match_confirmation.evse_mac[3], cm_slac_match_confirmation.evse_mac[4], cm_slac_match_confirmation.evse_mac[5]);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.run_id[0], cm_slac_match_confirmation.run_id[1], cm_slac_match_confirmation.run_id[2], cm_slac_match_confirmation.run_id[3], cm_slac_match_confirmation.run_id[4], cm_slac_match_confirmation.run_id[5], cm_slac_match_confirmation.run_id[6], cm_slac_match_confirmation.run_id[7]);
-    iso15118.trace("  nid:              %02x %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.nid[0], cm_slac_match_confirmation.nid[1], cm_slac_match_confirmation.nid[2], cm_slac_match_confirmation.nid[3], cm_slac_match_confirmation.nid[4], cm_slac_match_confirmation.nid[5], cm_slac_match_confirmation.nid[6]);
-    iso15118.trace("  nmk:              %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.nmk[0], cm_slac_match_confirmation.nmk[1], cm_slac_match_confirmation.nmk[2], cm_slac_match_confirmation.nmk[3], cm_slac_match_confirmation.nmk[4], cm_slac_match_confirmation.nmk[5], cm_slac_match_confirmation.nmk[6], cm_slac_match_confirmation.nmk[7]);
+    trace_iso("  application_type: %02x", cm_slac_match_confirmation.application_type);
+    trace_iso("  security_type:    %02x", cm_slac_match_confirmation.security_type);
+    trace_iso("  mvf_length:       %04x", cm_slac_match_confirmation.mvf_length);
+    trace_iso("  pev_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.pev_id[0], cm_slac_match_confirmation.pev_id[1], cm_slac_match_confirmation.pev_id[2], cm_slac_match_confirmation.pev_id[3], cm_slac_match_confirmation.pev_id[4], cm_slac_match_confirmation.pev_id[5], cm_slac_match_confirmation.pev_id[6], cm_slac_match_confirmation.pev_id[7]);
+    trace_iso("  pev_mac:          %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.pev_mac[0], cm_slac_match_confirmation.pev_mac[1], cm_slac_match_confirmation.pev_mac[2], cm_slac_match_confirmation.pev_mac[3], cm_slac_match_confirmation.pev_mac[4], cm_slac_match_confirmation.pev_mac[5]);
+    trace_iso("  evse_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.evse_id[0], cm_slac_match_confirmation.evse_id[1], cm_slac_match_confirmation.evse_id[2], cm_slac_match_confirmation.evse_id[3], cm_slac_match_confirmation.evse_id[4], cm_slac_match_confirmation.evse_id[5], cm_slac_match_confirmation.evse_id[6], cm_slac_match_confirmation.evse_id[7]);
+    trace_iso("  evse_mac:         %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.evse_mac[0], cm_slac_match_confirmation.evse_mac[1], cm_slac_match_confirmation.evse_mac[2], cm_slac_match_confirmation.evse_mac[3], cm_slac_match_confirmation.evse_mac[4], cm_slac_match_confirmation.evse_mac[5]);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.run_id[0], cm_slac_match_confirmation.run_id[1], cm_slac_match_confirmation.run_id[2], cm_slac_match_confirmation.run_id[3], cm_slac_match_confirmation.run_id[4], cm_slac_match_confirmation.run_id[5], cm_slac_match_confirmation.run_id[6], cm_slac_match_confirmation.run_id[7]);
+    trace_iso("  nid:              %02x %02x %02x %02x %02x %02x %02x", cm_slac_match_confirmation.nid[0], cm_slac_match_confirmation.nid[1], cm_slac_match_confirmation.nid[2], cm_slac_match_confirmation.nid[3], cm_slac_match_confirmation.nid[4], cm_slac_match_confirmation.nid[5], cm_slac_match_confirmation.nid[6]);
+    trace_iso("  nmk:              %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_confirmation.nmk[0], cm_slac_match_confirmation.nmk[1], cm_slac_match_confirmation.nmk[2], cm_slac_match_confirmation.nmk[3], cm_slac_match_confirmation.nmk[4], cm_slac_match_confirmation.nmk[5], cm_slac_match_confirmation.nmk[6], cm_slac_match_confirmation.nmk[7]);
 }
 
 void SLAC::log_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request)
 {
-    iso15118.trace("CM_SLAC_MATCH.REQ:");
+    trace_iso("CM_SLAC_MATCH.REQ:");
     log_homeplug_message_header(cm_slac_match_request.header);
-    iso15118.trace("  application_type: %02x", cm_slac_match_request.application_type);
-    iso15118.trace("  security_type:    %02x", cm_slac_match_request.security_type);
-    iso15118.trace("  mvf_length:       %04x", cm_slac_match_request.mvf_length);
-    iso15118.trace("  pev_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.pev_id[0], cm_slac_match_request.pev_id[1], cm_slac_match_request.pev_id[2], cm_slac_match_request.pev_id[3], cm_slac_match_request.pev_id[4], cm_slac_match_request.pev_id[5], cm_slac_match_request.pev_id[6], cm_slac_match_request.pev_id[7]);
-    iso15118.trace("  pev_mac:          %02x %02x %02x %02x %02x %02x", cm_slac_match_request.pev_mac[0], cm_slac_match_request.pev_mac[1], cm_slac_match_request.pev_mac[2], cm_slac_match_request.pev_mac[3], cm_slac_match_request.pev_mac[4], cm_slac_match_request.pev_mac[5]);
-    iso15118.trace("  evse_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.evse_id[0], cm_slac_match_request.evse_id[1], cm_slac_match_request.evse_id[2], cm_slac_match_request.evse_id[3], cm_slac_match_request.evse_id[4], cm_slac_match_request.evse_id[5], cm_slac_match_request.evse_id[6], cm_slac_match_request.evse_id[7]);
-    iso15118.trace("  evse_mac:         %02x %02x %02x %02x %02x %02x", cm_slac_match_request.evse_mac[0], cm_slac_match_request.evse_mac[1], cm_slac_match_request.evse_mac[2], cm_slac_match_request.evse_mac[3], cm_slac_match_request.evse_mac[4], cm_slac_match_request.evse_mac[5]);
-    iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.run_id[0], cm_slac_match_request.run_id[1], cm_slac_match_request.run_id[2], cm_slac_match_request.run_id[3], cm_slac_match_request.run_id[4], cm_slac_match_request.run_id[5], cm_slac_match_request.run_id[6], cm_slac_match_request.run_id[7]);
+    trace_iso("  application_type: %02x", cm_slac_match_request.application_type);
+    trace_iso("  security_type:    %02x", cm_slac_match_request.security_type);
+    trace_iso("  mvf_length:       %04x", cm_slac_match_request.mvf_length);
+    trace_iso("  pev_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.pev_id[0], cm_slac_match_request.pev_id[1], cm_slac_match_request.pev_id[2], cm_slac_match_request.pev_id[3], cm_slac_match_request.pev_id[4], cm_slac_match_request.pev_id[5], cm_slac_match_request.pev_id[6], cm_slac_match_request.pev_id[7]);
+    trace_iso("  pev_mac:          %02x %02x %02x %02x %02x %02x", cm_slac_match_request.pev_mac[0], cm_slac_match_request.pev_mac[1], cm_slac_match_request.pev_mac[2], cm_slac_match_request.pev_mac[3], cm_slac_match_request.pev_mac[4], cm_slac_match_request.pev_mac[5]);
+    trace_iso("  evse_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.evse_id[0], cm_slac_match_request.evse_id[1], cm_slac_match_request.evse_id[2], cm_slac_match_request.evse_id[3], cm_slac_match_request.evse_id[4], cm_slac_match_request.evse_id[5], cm_slac_match_request.evse_id[6], cm_slac_match_request.evse_id[7]);
+    trace_iso("  evse_mac:         %02x %02x %02x %02x %02x %02x", cm_slac_match_request.evse_mac[0], cm_slac_match_request.evse_mac[1], cm_slac_match_request.evse_mac[2], cm_slac_match_request.evse_mac[3], cm_slac_match_request.evse_mac[4], cm_slac_match_request.evse_mac[5]);
+    trace_iso("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x...", cm_slac_match_request.run_id[0], cm_slac_match_request.run_id[1], cm_slac_match_request.run_id[2], cm_slac_match_request.run_id[3], cm_slac_match_request.run_id[4], cm_slac_match_request.run_id[5], cm_slac_match_request.run_id[6], cm_slac_match_request.run_id[7]);
 }
 
 void SLAC::log_cm_qualcomm_get_sw_request(const CM_QualcommGetSwRequest &cm_qualcomm_get_sw_request)
 {
-    iso15118.trace("CM_QUALCOMM_GET_SW.REQ:");
+    trace_iso("CM_QUALCOMM_GET_SW.REQ:");
     log_homeplug_message_header_v0(cm_qualcomm_get_sw_request.header);
-    iso15118.trace("  vendor_mme: %02x %02x %02x", cm_qualcomm_get_sw_request.vendor_mme[0], cm_qualcomm_get_sw_request.vendor_mme[1], cm_qualcomm_get_sw_request.vendor_mme[2]);
+    trace_iso("  vendor_mme: %02x %02x %02x", cm_qualcomm_get_sw_request.vendor_mme[0], cm_qualcomm_get_sw_request.vendor_mme[1], cm_qualcomm_get_sw_request.vendor_mme[2]);
 }
 
 void SLAC::log_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirmation &log_cm_qualcomm_get_sw_confirmation)
 {
-    iso15118.trace("CM_QUALCOMM_GET_SW.CNF:");
+    trace_iso("CM_QUALCOMM_GET_SW.CNF:");
     log_homeplug_message_header_v0(log_cm_qualcomm_get_sw_confirmation.header);
-    iso15118.trace("  vendor_mme:     %02x %02x %02x", log_cm_qualcomm_get_sw_confirmation.vendor_mme[0], log_cm_qualcomm_get_sw_confirmation.vendor_mme[1], log_cm_qualcomm_get_sw_confirmation.vendor_mme[2]);
-    iso15118.trace("  status:         %02x", log_cm_qualcomm_get_sw_confirmation.status);
-    iso15118.trace("  device:         %02x", log_cm_qualcomm_get_sw_confirmation.device);
-    iso15118.trace("  version_length: %02x", log_cm_qualcomm_get_sw_confirmation.version_length);
+    trace_iso("  vendor_mme:     %02x %02x %02x", log_cm_qualcomm_get_sw_confirmation.vendor_mme[0], log_cm_qualcomm_get_sw_confirmation.vendor_mme[1], log_cm_qualcomm_get_sw_confirmation.vendor_mme[2]);
+    trace_iso("  status:         %02x", log_cm_qualcomm_get_sw_confirmation.status);
+    trace_iso("  device:         %02x", log_cm_qualcomm_get_sw_confirmation.device);
+    trace_iso("  version_length: %02x", log_cm_qualcomm_get_sw_confirmation.version_length);
     char version_str[sizeof(log_cm_qualcomm_get_sw_confirmation.version)+1] = "\0";
     uint8_to_printable_string(log_cm_qualcomm_get_sw_confirmation.version, sizeof(log_cm_qualcomm_get_sw_confirmation.version), version_str, sizeof(version_str));
-    iso15118.trace("  version:        %s", version_str);
+    trace_iso("  version:        %s", version_str);
 }
 
 void SLAC::log_cm_qualcomm_link_status_request(const CM_QualcommLinkStatusRequest &cm_qualcomm_link_status_request)
 {
-    iso15118.trace("CM_QUALCOMM_LINK_STATUS.REQ:");
+    trace_iso("CM_QUALCOMM_LINK_STATUS.REQ:");
     log_homeplug_message_header_v0(cm_qualcomm_link_status_request.header);
-    iso15118.trace("  vendor_mme: %02x %02x %02x", cm_qualcomm_link_status_request.vendor_mme[0], cm_qualcomm_link_status_request.vendor_mme[1], cm_qualcomm_link_status_request.vendor_mme[2]);
+    trace_iso("  vendor_mme: %02x %02x %02x", cm_qualcomm_link_status_request.vendor_mme[0], cm_qualcomm_link_status_request.vendor_mme[1], cm_qualcomm_link_status_request.vendor_mme[2]);
 }
 
 void SLAC::log_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation)
 {
-    iso15118.trace("CM_QUALCOMM_LINK_STATUS.CNF:");
+    trace_iso("CM_QUALCOMM_LINK_STATUS.CNF:");
     log_homeplug_message_header_v0(cm_qualcomm_link_status_confirmation.header);
-    iso15118.trace("  vendor_mme: %02x %02x %02x", cm_qualcomm_link_status_confirmation.vendor_mme[0], cm_qualcomm_link_status_confirmation.vendor_mme[1], cm_qualcomm_link_status_confirmation.vendor_mme[2]);
-    iso15118.trace("  link_status: %02x", cm_qualcomm_link_status_confirmation.link_status);
+    trace_iso("  vendor_mme: %02x %02x %02x", cm_qualcomm_link_status_confirmation.vendor_mme[0], cm_qualcomm_link_status_confirmation.vendor_mme[1], cm_qualcomm_link_status_confirmation.vendor_mme[2]);
+    trace_iso("  link_status: %02x", cm_qualcomm_link_status_confirmation.link_status);
 }
 
 void SLAC::log_cm_qualcomm_op_attr_request(const CM_QualcommOpAttrRequest &cm_qualcomm_op_attr_request)
 {
-    iso15118.trace("CM_QUALCOMM_OP_ATTR.REQ:");
+    trace_iso("CM_QUALCOMM_OP_ATTR.REQ:");
     log_homeplug_message_header_v0(cm_qualcomm_op_attr_request.header);
-    iso15118.trace("  vendor_mme: %02x %02x %02x", cm_qualcomm_op_attr_request.vendor_mme[0], cm_qualcomm_op_attr_request.vendor_mme[1], cm_qualcomm_op_attr_request.vendor_mme[2]);
-    iso15118.trace("  cookie:     %08lx", cm_qualcomm_op_attr_request.cookie);
-    iso15118.trace("  report_type: %02x", cm_qualcomm_op_attr_request.report_type);
+    trace_iso("  vendor_mme: %02x %02x %02x", cm_qualcomm_op_attr_request.vendor_mme[0], cm_qualcomm_op_attr_request.vendor_mme[1], cm_qualcomm_op_attr_request.vendor_mme[2]);
+    trace_iso("  cookie:     %08lx", cm_qualcomm_op_attr_request.cookie);
+    trace_iso("  report_type: %02x", cm_qualcomm_op_attr_request.report_type);
 }
 
 void SLAC::log_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation)
 {
-    iso15118.trace("CM_QUALCOMM_OP_ATTR.CNF:");
+    trace_iso("CM_QUALCOMM_OP_ATTR.CNF:");
     log_homeplug_message_header_v0(cm_qualcomm_op_attr_confirmation.header);
-    iso15118.trace("  success:            %04x", cm_qualcomm_op_attr_confirmation.success);
-    iso15118.trace("  cookie:             %08lx", cm_qualcomm_op_attr_confirmation.cookie);
-    iso15118.trace("  report_type:        %02x", cm_qualcomm_op_attr_confirmation.report_type);
-    iso15118.trace("  size:               %04x", cm_qualcomm_op_attr_confirmation.size);
+    trace_iso("  success:            %04x", cm_qualcomm_op_attr_confirmation.success);
+    trace_iso("  cookie:             %08lx", cm_qualcomm_op_attr_confirmation.cookie);
+    trace_iso("  report_type:        %02x", cm_qualcomm_op_attr_confirmation.report_type);
+    trace_iso("  size:               %04x", cm_qualcomm_op_attr_confirmation.size);
     char hw_platform_str[sizeof(cm_qualcomm_op_attr_confirmation.hw_platform)+1] = "\0";
     uint8_to_printable_string(cm_qualcomm_op_attr_confirmation.hw_platform, sizeof(cm_qualcomm_op_attr_confirmation.hw_platform), hw_platform_str, sizeof(hw_platform_str));
-    iso15118.trace("  hw_platform:        %s", hw_platform_str);
+    trace_iso("  hw_platform:        %s", hw_platform_str);
     char sw_platform_str[sizeof(cm_qualcomm_op_attr_confirmation.sw_platform)+1] = "\0";
     uint8_to_printable_string(cm_qualcomm_op_attr_confirmation.sw_platform, sizeof(cm_qualcomm_op_attr_confirmation.sw_platform), sw_platform_str, sizeof(sw_platform_str));
-    iso15118.trace("  sw_platform:        %s", sw_platform_str);
-    iso15118.trace("  version_major:      %08lx", cm_qualcomm_op_attr_confirmation.version_major);
-    iso15118.trace("  version_minor:      %08lx", cm_qualcomm_op_attr_confirmation.version_minor);
-    iso15118.trace("  version_pib:        %08lx", cm_qualcomm_op_attr_confirmation.version_pib);
-    iso15118.trace("  version_build:      %08lx", cm_qualcomm_op_attr_confirmation.version_build);
-    iso15118.trace("  reserved:           %08lx", cm_qualcomm_op_attr_confirmation.reserved);
+    trace_iso("  sw_platform:        %s", sw_platform_str);
+    trace_iso("  version_major:      %08lx", cm_qualcomm_op_attr_confirmation.version_major);
+    trace_iso("  version_minor:      %08lx", cm_qualcomm_op_attr_confirmation.version_minor);
+    trace_iso("  version_pib:        %08lx", cm_qualcomm_op_attr_confirmation.version_pib);
+    trace_iso("  version_build:      %08lx", cm_qualcomm_op_attr_confirmation.version_build);
+    trace_iso("  reserved:           %08lx", cm_qualcomm_op_attr_confirmation.reserved);
     char build_date_str[sizeof(cm_qualcomm_op_attr_confirmation.build_date)+1] = "\0";
     uint8_to_printable_string(cm_qualcomm_op_attr_confirmation.build_date, sizeof(cm_qualcomm_op_attr_confirmation.build_date), build_date_str, sizeof(build_date_str));
-    iso15118.trace("  build_date:         %s", build_date_str);
+    trace_iso("  build_date:         %s", build_date_str);
     char release_type_str[sizeof(cm_qualcomm_op_attr_confirmation.release_type)+1] = "\0";
     uint8_to_printable_string(cm_qualcomm_op_attr_confirmation.release_type, sizeof(cm_qualcomm_op_attr_confirmation.release_type), release_type_str, sizeof(release_type_str));
-    iso15118.trace("  release_type:       %s", release_type_str);
-    iso15118.trace("  sdram_type:         %02x", cm_qualcomm_op_attr_confirmation.sdram_type);
-    iso15118.trace("  reserved2:          %02x", cm_qualcomm_op_attr_confirmation.reserved2);
-    iso15118.trace("  line_freq_zc:       %02x", cm_qualcomm_op_attr_confirmation.line_freq_zc);
-    iso15118.trace("  sdram_size:         %08lx", cm_qualcomm_op_attr_confirmation.sdram_size);
-    iso15118.trace("  authorization_mode: %02x", cm_qualcomm_op_attr_confirmation.authorization_mode);
+    trace_iso("  release_type:       %s", release_type_str);
+    trace_iso("  sdram_type:         %02x", cm_qualcomm_op_attr_confirmation.sdram_type);
+    trace_iso("  reserved2:          %02x", cm_qualcomm_op_attr_confirmation.reserved2);
+    trace_iso("  line_freq_zc:       %02x", cm_qualcomm_op_attr_confirmation.line_freq_zc);
+    trace_iso("  sdram_size:         %08lx", cm_qualcomm_op_attr_confirmation.sdram_size);
+    trace_iso("  authorization_mode: %02x", cm_qualcomm_op_attr_confirmation.authorization_mode);
 }

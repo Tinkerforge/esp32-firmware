@@ -59,7 +59,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     memset(iso2DocEnc, 0, sizeof(struct iso2_exiDocument));
     int ret = decode_iso2_exiDocument(exi, iso2DocDec);
     if (ret != 0) {
-        logger.printfln("ISO2: Could not decode EXI document: %d", ret);
+        iso15118.trace("ISO2: Could not decode EXI document: %d", ret);
         return;
     }
 
@@ -67,7 +67,9 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
 
     dispatch_messages();
 
+#ifdef ISO15118_TRACE_MESSAGES
     trace_request_response();
+#endif
 
     api_state.get("state")->updateEnum(state);
 
@@ -97,7 +99,7 @@ void ISO2::dispatch_messages()
                              iso2DocDec->V2G_Message.Header.SessionID.bytesLen,
                              iso15118.common.session_id,
                              SESSION_ID_LENGTH)) {
-        logger.printfln("ISO2: Session ID mismatch, sending FAILED_UnknownSession");
+        iso15118.trace("ISO2: Session ID mismatch, sending FAILED_UnknownSession");
         send_failed_unknown_session();
         return;
     }
@@ -153,7 +155,7 @@ void ISO2::send_failed_unknown_session()
         return;
     }
 
-    logger.printfln("ISO2: Unknown message type for FAILED_UnknownSession");
+    iso15118.trace("ISO2: Unknown message type for FAILED_UnknownSession");
 }
 
 void ISO2::handle_session_setup_req()
@@ -223,16 +225,16 @@ void ISO2::handle_service_discovery_req()
             case iso2_serviceCategoryType_EVCharging:
                 break;
             case iso2_serviceCategoryType_Internet:
-                logger.printfln("ISO2: ServiceCategory Internet unsupported");
+                iso15118.trace("ISO2: ServiceCategory Internet unsupported");
                 break;
             case iso2_serviceCategoryType_ContractCertificate:
-                logger.printfln("ISO2: ServiceCategory ContractCertificate unsupported");
+                iso15118.trace("ISO2: ServiceCategory ContractCertificate unsupported");
                 break;
             case iso2_serviceCategoryType_OtherCustom:
-                logger.printfln("ISO2: ServiceCategory OtherCustom unsupported");
+                iso15118.trace("ISO2: ServiceCategory OtherCustom unsupported");
                 break;
             default:
-                logger.printfln("ISO2: ServiceCategory Unknown");
+                iso15118.trace("ISO2: ServiceCategory Unknown");
                 break;
         }
     }
@@ -335,7 +337,7 @@ void ISO2::handle_charge_parameter_discovery_req()
     // TODO: Check if EnergyTransferMode is as configured
 
     if (req->DC_EVChargeParameter_isUsed) {
-        logger.printfln("ISO2: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+        iso15118.trace("ISO2: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
     }
 
     // Update EV data
@@ -434,7 +436,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             // and keep polling for ~90 seconds. After 10 retries (~1-2s), send FAILED to
             // force the EV to terminate the session immediately.
             if (soc_shutdown_retries > 10) {
-                logger.printfln("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
+                iso15118.trace("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
                 res->ResponseCode = iso2_responseCodeType_FAILED;
                 res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
 
@@ -447,13 +449,13 @@ void ISO2::handle_charge_parameter_discovery_req()
                     task_scheduler.cancel(iso15118.plc_modem_off_task);
                 }
                 iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
-                    logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
+                    iso15118.trace("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
                     iso15118.disable_plc_modem();
                 }, 5_s);
                 return;
             }
 
-            logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
+            iso15118.trace("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
             return;
@@ -617,7 +619,7 @@ void ISO2::handle_power_delivery_req()
 
     // Verify SAScheduleTupleID matches what we offered.
     if (req->SAScheduleTupleID != V2G_SA_SCHEDULE_TUPLE_ID) {
-        logger.printfln("ISO2: Unexpected SAScheduleTupleID %d", req->SAScheduleTupleID);
+        iso15118.trace("ISO2: Unexpected SAScheduleTupleID %d", req->SAScheduleTupleID);
     }
 
 
@@ -693,7 +695,7 @@ void ISO2::handle_cable_check_req()
     res->DC_EVSEStatus.NotificationMaxDelay = 0;
     res->DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
 
-    logger.printfln("ISO2: CableCheckReq received in SoC-read flow, sending FAILED to terminate");
+    iso15118.trace("ISO2: CableCheckReq received in SoC-read flow, sending FAILED to terminate");
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = ISO2State::CableCheck;
@@ -706,7 +708,7 @@ void ISO2::handle_cable_check_req()
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle;
-        logger.printfln("ISO2: DC SoC session complete (via CableCheck), waiting for AC session");
+        iso15118.trace("ISO2: DC SoC session complete (via CableCheck), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
         // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
@@ -735,7 +737,7 @@ void ISO2::handle_pre_charge_req()
     res->EVSEPresentVoltage.Value = 0;
     res->EVSEPresentVoltage.Multiplier = 0;
 
-    logger.printfln("ISO2: PreChargeReq received in SoC-read flow, sending FAILED to terminate");
+    iso15118.trace("ISO2: PreChargeReq received in SoC-read flow, sending FAILED to terminate");
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
@@ -746,7 +748,7 @@ void ISO2::handle_pre_charge_req()
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle;
-        logger.printfln("ISO2: DC SoC session complete (via PreCharge FAILED), waiting for AC session");
+        iso15118.trace("ISO2: DC SoC session complete (via PreCharge FAILED), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
         // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
@@ -791,7 +793,7 @@ void ISO2::handle_current_demand_req()
     res->MeterInfo_isUsed = 0;
     res->ReceiptRequired_isUsed = 0;
 
-    logger.printfln("ISO2: CurrentDemandReq received in SoC-read flow, sending FAILED to terminate");
+    iso15118.trace("ISO2: CurrentDemandReq received in SoC-read flow, sending FAILED to terminate");
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
@@ -802,7 +804,7 @@ void ISO2::handle_current_demand_req()
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle;
-        logger.printfln("ISO2: DC SoC session complete (via CurrentDemand FAILED), waiting for AC session");
+        iso15118.trace("ISO2: DC SoC session complete (via CurrentDemand FAILED), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
         // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
@@ -840,7 +842,7 @@ void ISO2::handle_session_stop_req()
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle; // Reset state machine for next session
-        logger.printfln("ISO2: DC SoC session complete, waiting for AC session");
+        iso15118.trace("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
         // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
         iso15118.begin_iec_transition();
@@ -851,7 +853,7 @@ void ISO2::handle_session_stop_req()
             task_scheduler.cancel(iso15118.plc_modem_off_task);
         }
         iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
-            logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
+            iso15118.trace("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
             iso15118.disable_plc_modem();
         }, 5_s);
 
@@ -873,54 +875,54 @@ void ISO2::handle_session_stop_req()
 
 void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char *name)
 {
-    iso15118.trace("V2G_Message (%s)", name);
-    iso15118.trace(" Header");
-    iso15118.trace("  SessionID.bytes: %02x%02x%02x%02x", header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3]);
-    iso15118.trace("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
-    iso15118.trace("  Notification_isUsed: %d", header->Notification_isUsed);
+    trace_iso("V2G_Message (%s)", name);
+    trace_iso(" Header");
+    trace_iso("  SessionID.bytes: %02x%02x%02x%02x", header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3]);
+    trace_iso("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
+    trace_iso("  Notification_isUsed: %d", header->Notification_isUsed);
     if (header->Notification_isUsed) {
-        iso15118.trace("  Notification.FaultCode: %d", header->Notification.FaultCode);
-        iso15118.trace("  Notification.FaultMsg_isUsed: %d", header->Notification.FaultMsg_isUsed);
+        trace_iso("  Notification.FaultCode: %d", header->Notification.FaultCode);
+        trace_iso("  Notification.FaultMsg_isUsed: %d", header->Notification.FaultMsg_isUsed);
         if (header->Notification.FaultMsg_isUsed) {
-            iso15118.trace("  Notification.FaultMsg.characters: %s", header->Notification.FaultMsg.characters);
-            iso15118.trace("  Notification.FaultMsg.charactersLen: %d", header->Notification.FaultMsg.charactersLen);
+            trace_iso("  Notification.FaultMsg.characters: %s", header->Notification.FaultMsg.characters);
+            trace_iso("  Notification.FaultMsg.charactersLen: %d", header->Notification.FaultMsg.charactersLen);
         }
     }
-    iso15118.trace("  Signature_isUsed: %d", header->Signature_isUsed);
+    trace_iso("  Signature_isUsed: %d", header->Signature_isUsed);
     if (header->Signature_isUsed) {
-        iso15118.trace("  Signature.Id_isUsed: %d", header->Signature.Id_isUsed);
+        trace_iso("  Signature.Id_isUsed: %d", header->Signature.Id_isUsed);
         if (header->Signature.Id_isUsed) {
-            iso15118.trace("  Signature.Id.characters: %s", header->Signature.Id.characters);
-            iso15118.trace("  Signature.Id.charactersLen: %d", header->Signature.Id.charactersLen);
+            trace_iso("  Signature.Id.characters: %s", header->Signature.Id.characters);
+            trace_iso("  Signature.Id.charactersLen: %d", header->Signature.Id.charactersLen);
         }
-        iso15118.trace("  Signature.SignatureValue.Id_isUsed: %d", header->Signature.SignatureValue.Id_isUsed);
+        trace_iso("  Signature.SignatureValue.Id_isUsed: %d", header->Signature.SignatureValue.Id_isUsed);
         if (header->Signature.SignatureValue.Id_isUsed) {
-            iso15118.trace("  Signature.SignatureValue.Id.characters: %s", header->Signature.SignatureValue.Id.characters);
-            iso15118.trace("  Signature.SignatureValue.Id.charactersLen: %d", header->Signature.SignatureValue.Id.charactersLen);
+            trace_iso("  Signature.SignatureValue.Id.characters: %s", header->Signature.SignatureValue.Id.characters);
+            trace_iso("  Signature.SignatureValue.Id.charactersLen: %d", header->Signature.SignatureValue.Id.charactersLen);
         }
-        iso15118.trace("  Signature.KeyInfo_isUsed: %d", header->Signature.KeyInfo_isUsed);
+        trace_iso("  Signature.KeyInfo_isUsed: %d", header->Signature.KeyInfo_isUsed);
         if (header->Signature.KeyInfo_isUsed) {
-            iso15118.trace("  Signature.KeyInfo.Id_isUsed: %d", header->Signature.KeyInfo.Id_isUsed);
+            trace_iso("  Signature.KeyInfo.Id_isUsed: %d", header->Signature.KeyInfo.Id_isUsed);
             if (header->Signature.KeyInfo.Id_isUsed) {
-                iso15118.trace("  Signature.KeyInfo.Id.characters: %s", header->Signature.KeyInfo.Id.characters);
-                iso15118.trace("  Signature.KeyInfo.Id.charactersLen: %d", header->Signature.KeyInfo.Id.charactersLen);
+                trace_iso("  Signature.KeyInfo.Id.characters: %s", header->Signature.KeyInfo.Id.characters);
+                trace_iso("  Signature.KeyInfo.Id.charactersLen: %d", header->Signature.KeyInfo.Id.charactersLen);
             }
-            iso15118.trace("  Signature.KeyInfo.KeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue_isUsed);
+            trace_iso("  Signature.KeyInfo.KeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue_isUsed);
             if (header->Signature.KeyInfo.KeyValue_isUsed) {
-                iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed);
+                trace_iso("  Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed);
                 if (header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed) {
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes: %02x%02x%02x%02x...",
+                    trace_iso("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes: %02x%02x%02x%02x...",
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[0],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[1],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[2],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[3]);
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen);
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes: %02x%02x%02x%02x...",
+                    trace_iso("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen);
+                    trace_iso("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes: %02x%02x%02x%02x...",
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[0],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[1],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[2],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[3]);
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen);
+                    trace_iso("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen);
                 }
             }
         }
@@ -933,399 +935,399 @@ void ISO2::trace_request_response()
         iso2_SessionSetupReqType *req = &iso2DocDec->V2G_Message.Body.SessionSetupReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "SessionSetup Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  SessionSetupReq");
-        iso15118.trace("   EVCCID: %02x%02x%02x%02x%02x%02x", req->EVCCID.bytes[0], req->EVCCID.bytes[1], req->EVCCID.bytes[2], req->EVCCID.bytes[3], req->EVCCID.bytes[4], req->EVCCID.bytes[5]);
-        iso15118.trace("   EVCCID.bytesLen: %d", req->EVCCID.bytesLen);
+        trace_iso(" Body");
+        trace_iso("  SessionSetupReq");
+        trace_iso("   EVCCID: %02x%02x%02x%02x%02x%02x", req->EVCCID.bytes[0], req->EVCCID.bytes[1], req->EVCCID.bytes[2], req->EVCCID.bytes[3], req->EVCCID.bytes[4], req->EVCCID.bytes[5]);
+        trace_iso("   EVCCID.bytesLen: %d", req->EVCCID.bytesLen);
     } else if (iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
         iso2_ServiceDiscoveryReqType *req = &iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "ServiceDiscovery Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  ServiceDiscoveryReq");
-        iso15118.trace("   ServiceCategory_isUsed: %d", req->ServiceCategory_isUsed);
+        trace_iso(" Body");
+        trace_iso("  ServiceDiscoveryReq");
+        trace_iso("   ServiceCategory_isUsed: %d", req->ServiceCategory_isUsed);
         if (req->ServiceCategory_isUsed) {
-            iso15118.trace("   ServiceCategory: %d", req->ServiceCategory);
+            trace_iso("   ServiceCategory: %d", req->ServiceCategory);
         }
-        iso15118.trace("   ServiceScope_isUsed: %d", req->ServiceScope_isUsed);
+        trace_iso("   ServiceScope_isUsed: %d", req->ServiceScope_isUsed);
         if (req->ServiceScope_isUsed) {
-            iso15118.trace("   ServiceScope: %s", req->ServiceScope.characters);
+            trace_iso("   ServiceScope: %s", req->ServiceScope.characters);
         }
     } else if (iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq_isUsed) {
         iso2_PaymentServiceSelectionReqType *req = &iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "PaymentServiceSelection Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  PaymentServiceSelectionReq");
-        iso15118.trace("   SelectedPaymentOption: %d", req->SelectedPaymentOption);
+        trace_iso(" Body");
+        trace_iso("  PaymentServiceSelectionReq");
+        trace_iso("   SelectedPaymentOption: %d", req->SelectedPaymentOption);
         for (int i = 0; i < req->SelectedServiceList.SelectedService.arrayLen; i++) {
-            iso15118.trace("    SelectedService[%d]", i);
-            iso15118.trace("     ServiceID: %d", req->SelectedServiceList.SelectedService.array[i].ServiceID);
-            iso15118.trace("     ParameterSetID_isUsed: %d", req->SelectedServiceList.SelectedService.array[i].ParameterSetID_isUsed);
+            trace_iso("    SelectedService[%d]", i);
+            trace_iso("     ServiceID: %d", req->SelectedServiceList.SelectedService.array[i].ServiceID);
+            trace_iso("     ParameterSetID_isUsed: %d", req->SelectedServiceList.SelectedService.array[i].ParameterSetID_isUsed);
             if (req->SelectedServiceList.SelectedService.array[i].ParameterSetID_isUsed) {
-                iso15118.trace("      ParameterSetID: %d", req->SelectedServiceList.SelectedService.array[i].ParameterSetID);
+                trace_iso("      ParameterSetID: %d", req->SelectedServiceList.SelectedService.array[i].ParameterSetID);
             }
         }
     } else if (iso2DocDec->V2G_Message.Body.AuthorizationReq_isUsed) {
         iso2_AuthorizationReqType *req = &iso2DocDec->V2G_Message.Body.AuthorizationReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "Authorization Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  AuthorizationReq");
-        iso15118.trace("  GenChallenge_isUsed: %d", req->GenChallenge_isUsed);
+        trace_iso(" Body");
+        trace_iso("  AuthorizationReq");
+        trace_iso("  GenChallenge_isUsed: %d", req->GenChallenge_isUsed);
         if (req->GenChallenge_isUsed) {
-            iso15118.trace("   GenChallenge: %02x%02x%02x%02x...", req->GenChallenge.bytes[0], req->GenChallenge.bytes[1], req->GenChallenge.bytes[2], req->GenChallenge.bytes[3]);
+            trace_iso("   GenChallenge: %02x%02x%02x%02x...", req->GenChallenge.bytes[0], req->GenChallenge.bytes[1], req->GenChallenge.bytes[2], req->GenChallenge.bytes[3]);
         }
-        iso15118.trace("   Id_isUsed: %d", req->Id_isUsed);
+        trace_iso("   Id_isUsed: %d", req->Id_isUsed);
         if (req->Id_isUsed) {
-            iso15118.trace("   Id: %s", req->Id.characters);
+            trace_iso("   Id: %s", req->Id.characters);
         }
     } else if (iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
         iso2_ChargeParameterDiscoveryReqType *req = &iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "ChargeParameterDiscovery Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  ChargeParameterDiscoveryReq");
-        iso15118.trace("   MaxEntriesSAScheduleTuple_isUsed: %d", req->MaxEntriesSAScheduleTuple_isUsed);
+        trace_iso(" Body");
+        trace_iso("  ChargeParameterDiscoveryReq");
+        trace_iso("   MaxEntriesSAScheduleTuple_isUsed: %d", req->MaxEntriesSAScheduleTuple_isUsed);
         if (req->MaxEntriesSAScheduleTuple_isUsed) {
-            iso15118.trace("   MaxEntriesSAScheduleTuple: %d", req->MaxEntriesSAScheduleTuple);
+            trace_iso("   MaxEntriesSAScheduleTuple: %d", req->MaxEntriesSAScheduleTuple);
         }
-        iso15118.trace("   RequestedEnergyTransferMode: %d", req->RequestedEnergyTransferMode);
-        iso15118.trace("   AC_EVChargeParameter_isUsed: %d", req->AC_EVChargeParameter_isUsed);
+        trace_iso("   RequestedEnergyTransferMode: %d", req->RequestedEnergyTransferMode);
+        trace_iso("   AC_EVChargeParameter_isUsed: %d", req->AC_EVChargeParameter_isUsed);
         if (req->AC_EVChargeParameter_isUsed) {
-            iso15118.trace("    DepartureTime: %lu", req->AC_EVChargeParameter.DepartureTime);
-            iso15118.trace("    DepartureTime_isUsed: %d", req->AC_EVChargeParameter.DepartureTime_isUsed);
-            iso15118.trace("    EAmount.Value: %d", req->AC_EVChargeParameter.EAmount.Value);
-            iso15118.trace("    EAmount.Multiplier: %d", req->AC_EVChargeParameter.EAmount.Multiplier);
-            iso15118.trace("    EVMaxVoltage.Value: %d", req->AC_EVChargeParameter.EVMaxVoltage.Value);
-            iso15118.trace("    EVMaxVoltage.Multiplier: %d", req->AC_EVChargeParameter.EVMaxVoltage.Multiplier);
-            iso15118.trace("    EVMaxCurrent.Value: %d", req->AC_EVChargeParameter.EVMaxCurrent.Value);
-            iso15118.trace("    EVMaxCurrent.Multiplier: %d", req->AC_EVChargeParameter.EVMaxCurrent.Multiplier);
-            iso15118.trace("    EVMinCurrent.Value: %d", req->AC_EVChargeParameter.EVMinCurrent.Value);
-            iso15118.trace("    EVMinCurrent.Multiplier: %d", req->AC_EVChargeParameter.EVMinCurrent.Multiplier);
+            trace_iso("    DepartureTime: %lu", req->AC_EVChargeParameter.DepartureTime);
+            trace_iso("    DepartureTime_isUsed: %d", req->AC_EVChargeParameter.DepartureTime_isUsed);
+            trace_iso("    EAmount.Value: %d", req->AC_EVChargeParameter.EAmount.Value);
+            trace_iso("    EAmount.Multiplier: %d", req->AC_EVChargeParameter.EAmount.Multiplier);
+            trace_iso("    EVMaxVoltage.Value: %d", req->AC_EVChargeParameter.EVMaxVoltage.Value);
+            trace_iso("    EVMaxVoltage.Multiplier: %d", req->AC_EVChargeParameter.EVMaxVoltage.Multiplier);
+            trace_iso("    EVMaxCurrent.Value: %d", req->AC_EVChargeParameter.EVMaxCurrent.Value);
+            trace_iso("    EVMaxCurrent.Multiplier: %d", req->AC_EVChargeParameter.EVMaxCurrent.Multiplier);
+            trace_iso("    EVMinCurrent.Value: %d", req->AC_EVChargeParameter.EVMinCurrent.Value);
+            trace_iso("    EVMinCurrent.Multiplier: %d", req->AC_EVChargeParameter.EVMinCurrent.Multiplier);
         }
 
-        iso15118.trace("   DC_EVChargeParameter_isUsed: %d", req->DC_EVChargeParameter_isUsed);
+        trace_iso("   DC_EVChargeParameter_isUsed: %d", req->DC_EVChargeParameter_isUsed);
         if (req->DC_EVChargeParameter_isUsed) {
-            iso15118.trace("    DepartureTime: %lu", req->DC_EVChargeParameter.DepartureTime);
-            iso15118.trace("    DepartureTime_isUsed: %d", req->DC_EVChargeParameter.DepartureTime_isUsed);
-            iso15118.trace("    DC_EVStatus.EVRESSSOC: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
-            iso15118.trace("    DC_EVStatus.EVReady: %d", req->DC_EVChargeParameter.DC_EVStatus.EVReady);
-            iso15118.trace("    DC_EVStatus.EVErrorCode: %d", req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
-            iso15118.trace("    EVMaximumCurrentLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
-            iso15118.trace("    EVMaximumCurrentLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
-            iso15118.trace("    EVMaximumPowerLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
-            iso15118.trace("    EVMaximumPowerLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
-            iso15118.trace("    EVMaximumPowerLimit_isUsed: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
-            iso15118.trace("    EVMaximumVoltageLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
-            iso15118.trace("    EVMaximumVoltageLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
-            iso15118.trace("    EVEnergyCapacity.Value: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Value);
-            iso15118.trace("    EVEnergyCapacity.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
-            iso15118.trace("    EVEnergyCapacity_isUsed: %d", req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
-            iso15118.trace("    EVEnergyRequest.Value: %d", req->DC_EVChargeParameter.EVEnergyRequest.Value);
-            iso15118.trace("    EVEnergyRequest.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
-            iso15118.trace("    EVEnergyRequest_isUsed: %d", req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
-            iso15118.trace("    FullSOC: %d", req->DC_EVChargeParameter.FullSOC);
-            iso15118.trace("    FullSOC_isUsed: %d", req->DC_EVChargeParameter.FullSOC_isUsed);
-            iso15118.trace("    BulkSOC: %d", req->DC_EVChargeParameter.BulkSOC);
-            iso15118.trace("    BulkSOC_isUsed: %d", req->DC_EVChargeParameter.BulkSOC_isUsed);
+            trace_iso("    DepartureTime: %lu", req->DC_EVChargeParameter.DepartureTime);
+            trace_iso("    DepartureTime_isUsed: %d", req->DC_EVChargeParameter.DepartureTime_isUsed);
+            trace_iso("    DC_EVStatus.EVRESSSOC: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+            trace_iso("    DC_EVStatus.EVReady: %d", req->DC_EVChargeParameter.DC_EVStatus.EVReady);
+            trace_iso("    DC_EVStatus.EVErrorCode: %d", req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
+            trace_iso("    EVMaximumCurrentLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
+            trace_iso("    EVMaximumCurrentLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
+            trace_iso("    EVMaximumPowerLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
+            trace_iso("    EVMaximumPowerLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
+            trace_iso("    EVMaximumPowerLimit_isUsed: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
+            trace_iso("    EVMaximumVoltageLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
+            trace_iso("    EVMaximumVoltageLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
+            trace_iso("    EVEnergyCapacity.Value: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Value);
+            trace_iso("    EVEnergyCapacity.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
+            trace_iso("    EVEnergyCapacity_isUsed: %d", req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
+            trace_iso("    EVEnergyRequest.Value: %d", req->DC_EVChargeParameter.EVEnergyRequest.Value);
+            trace_iso("    EVEnergyRequest.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
+            trace_iso("    EVEnergyRequest_isUsed: %d", req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
+            trace_iso("    FullSOC: %d", req->DC_EVChargeParameter.FullSOC);
+            trace_iso("    FullSOC_isUsed: %d", req->DC_EVChargeParameter.FullSOC_isUsed);
+            trace_iso("    BulkSOC: %d", req->DC_EVChargeParameter.BulkSOC);
+            trace_iso("    BulkSOC_isUsed: %d", req->DC_EVChargeParameter.BulkSOC_isUsed);
         }
     } else if (iso2DocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
         iso2_PowerDeliveryReqType *req = &iso2DocDec->V2G_Message.Body.PowerDeliveryReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "PowerDelivery Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  PowerDeliveryReq");
-        iso15118.trace("   ChargeProgress: %d", req->ChargeProgress);
-        iso15118.trace("   SAScheduleTupleID: %d", req->SAScheduleTupleID);
-        iso15118.trace("   ChargingProfile_isUsed: %d", req->ChargingProfile_isUsed);
+        trace_iso(" Body");
+        trace_iso("  PowerDeliveryReq");
+        trace_iso("   ChargeProgress: %d", req->ChargeProgress);
+        trace_iso("   SAScheduleTupleID: %d", req->SAScheduleTupleID);
+        trace_iso("   ChargingProfile_isUsed: %d", req->ChargingProfile_isUsed);
         if (req->ChargingProfile_isUsed) {
             for (int i = 0; i < req->ChargingProfile.ProfileEntry.arrayLen; i++) {
-                iso15118.trace("    ProfileEntry[%d]", i);
-                iso15118.trace("     ChargingProfileEntryMaxNumberOfPhasesInUse: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxNumberOfPhasesInUse);
-                iso15118.trace("     ChargingProfileEntryMaxNumberOfPhasesInUse_isUsed: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxNumberOfPhasesInUse_isUsed);
-                iso15118.trace("     ChargingProfileEntryMaxPower.Value: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Value);
-                iso15118.trace("     ChargingProfileEntryMaxPower.Multiplier: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Multiplier);
-                iso15118.trace("     ChargingProfileEntryMaxPower.Unit: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Unit);
-                iso15118.trace("     ChargingProfileEntryStart: %lu", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryStart);
+                trace_iso("    ProfileEntry[%d]", i);
+                trace_iso("     ChargingProfileEntryMaxNumberOfPhasesInUse: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxNumberOfPhasesInUse);
+                trace_iso("     ChargingProfileEntryMaxNumberOfPhasesInUse_isUsed: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxNumberOfPhasesInUse_isUsed);
+                trace_iso("     ChargingProfileEntryMaxPower.Value: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Value);
+                trace_iso("     ChargingProfileEntryMaxPower.Multiplier: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Multiplier);
+                trace_iso("     ChargingProfileEntryMaxPower.Unit: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Unit);
+                trace_iso("     ChargingProfileEntryStart: %lu", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryStart);
             }
         }
 
-        iso15118.trace("   DC_EVPowerDeliveryParameter_isUsed: %d", req->DC_EVPowerDeliveryParameter_isUsed);
+        trace_iso("   DC_EVPowerDeliveryParameter_isUsed: %d", req->DC_EVPowerDeliveryParameter_isUsed);
         if (req->DC_EVPowerDeliveryParameter_isUsed) {
-            iso15118.trace("    DC_EVStatus");
-            iso15118.trace("     EVRESSSOC: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVRESSSOC);
-            iso15118.trace("     EVReady: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVReady);
-            iso15118.trace("     EVErrorCode: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVErrorCode);
-            iso15118.trace("    BulkChargingComplete: %d", req->DC_EVPowerDeliveryParameter.BulkChargingComplete);
-            iso15118.trace("    BulkChargingComplete_isUsed: %d", req->DC_EVPowerDeliveryParameter.BulkChargingComplete_isUsed);
-            iso15118.trace("    ChargingComplete: %d", req->DC_EVPowerDeliveryParameter.ChargingComplete);
+            trace_iso("    DC_EVStatus");
+            trace_iso("     EVRESSSOC: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVRESSSOC);
+            trace_iso("     EVReady: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVReady);
+            trace_iso("     EVErrorCode: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVErrorCode);
+            trace_iso("    BulkChargingComplete: %d", req->DC_EVPowerDeliveryParameter.BulkChargingComplete);
+            trace_iso("    BulkChargingComplete_isUsed: %d", req->DC_EVPowerDeliveryParameter.BulkChargingComplete_isUsed);
+            trace_iso("    ChargingComplete: %d", req->DC_EVPowerDeliveryParameter.ChargingComplete);
         }
     } else if (iso2DocDec->V2G_Message.Body.ChargingStatusReq_isUsed) {
         trace_header(&iso2DocDec->V2G_Message.Header, "ChargingStatus Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  ChargingStatusReq");
+        trace_iso(" Body");
+        trace_iso("  ChargingStatusReq");
 
     } else if (iso2DocDec->V2G_Message.Body.CableCheckReq_isUsed) {
         iso2_CableCheckReqType *req = &iso2DocDec->V2G_Message.Body.CableCheckReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "CableCheck Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  CableCheckReq");
-        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
-        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
-        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+        trace_iso(" Body");
+        trace_iso("  CableCheckReq");
+        trace_iso("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        trace_iso("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        trace_iso("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
 
     } else if (iso2DocDec->V2G_Message.Body.PreChargeReq_isUsed) {
         iso2_PreChargeReqType *req = &iso2DocDec->V2G_Message.Body.PreChargeReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "PreCharge Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  PreChargeReq");
-        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
-        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
-        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
-        iso15118.trace("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
-        iso15118.trace("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
-        iso15118.trace("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
-        iso15118.trace("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
+        trace_iso(" Body");
+        trace_iso("  PreChargeReq");
+        trace_iso("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        trace_iso("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        trace_iso("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+        trace_iso("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
+        trace_iso("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
+        trace_iso("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
+        trace_iso("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
 
     } else if (iso2DocDec->V2G_Message.Body.CurrentDemandReq_isUsed) {
         iso2_CurrentDemandReqType *req = &iso2DocDec->V2G_Message.Body.CurrentDemandReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "CurrentDemand Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  CurrentDemandReq");
-        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
-        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
-        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
-        iso15118.trace("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
-        iso15118.trace("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
-        iso15118.trace("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
-        iso15118.trace("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
-        iso15118.trace("   ChargingComplete: %d", req->ChargingComplete);
+        trace_iso(" Body");
+        trace_iso("  CurrentDemandReq");
+        trace_iso("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        trace_iso("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        trace_iso("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+        trace_iso("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
+        trace_iso("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
+        trace_iso("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
+        trace_iso("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
+        trace_iso("   ChargingComplete: %d", req->ChargingComplete);
 
     } else if (iso2DocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
 
         trace_header(&iso2DocDec->V2G_Message.Header, "SessionStop Request");
-        iso15118.trace(" Body");
-        iso15118.trace("  SessionStopReq");
-        iso15118.trace("   ChargingSession: %d", req->ChargingSession);
+        trace_iso(" Body");
+        trace_iso("  SessionStopReq");
+        trace_iso("   ChargingSession: %d", req->ChargingSession);
     }
 
     if (iso2DocEnc->V2G_Message.Body.SessionSetupRes_isUsed) {
         iso2_SessionSetupResType *res = &iso2DocEnc->V2G_Message.Body.SessionSetupRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "SessionSetup Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  SessionSetupRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   EVSEID: %s", res->EVSEID.characters);
-        iso15118.trace("   EVSEID.charactersLen: %d", res->EVSEID.charactersLen);
-        iso15118.trace("   EVSETimeStamp: %lld", res->EVSETimeStamp);
-        iso15118.trace("   EVSETimeStamp_isUsed: %d", res->EVSETimeStamp_isUsed);
+        trace_iso(" Body");
+        trace_iso("  SessionSetupRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   EVSEID: %s", res->EVSEID.characters);
+        trace_iso("   EVSEID.charactersLen: %d", res->EVSEID.charactersLen);
+        trace_iso("   EVSETimeStamp: %lld", res->EVSETimeStamp);
+        trace_iso("   EVSETimeStamp_isUsed: %d", res->EVSETimeStamp_isUsed);
     } else if (iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed) {
         iso2_ServiceDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "ServiceDiscovery Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  ServiceDiscoveryRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   PaymentOptionList: %d", res->PaymentOptionList.PaymentOption.array[0]);
-        iso15118.trace("   ChargeService.ServiceID: %d", res->ChargeService.ServiceID);
+        trace_iso(" Body");
+        trace_iso("  ServiceDiscoveryRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   PaymentOptionList: %d", res->PaymentOptionList.PaymentOption.array[0]);
+        trace_iso("   ChargeService.ServiceID: %d", res->ChargeService.ServiceID);
     } else if (iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes_isUsed) {
         iso2_PaymentServiceSelectionResType *res = &iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "PaymentServiceSelection Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  PaymentServiceSelectionRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        trace_iso(" Body");
+        trace_iso("  PaymentServiceSelectionRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
     } else if (iso2DocEnc->V2G_Message.Body.AuthorizationRes_isUsed) {
         iso2_AuthorizationResType *res = &iso2DocEnc->V2G_Message.Body.AuthorizationRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "Authorization Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  AuthorizationRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   EVSEProcessing: %d", res->EVSEProcessing);
+        trace_iso(" Body");
+        trace_iso("  AuthorizationRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   EVSEProcessing: %d", res->EVSEProcessing);
     } else if (iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed) {
         iso2_ChargeParameterDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "ChargeParameterDiscovery Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  ChargeParameterDiscoveryRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   EVSEProcessing: %d", res->EVSEProcessing);
-        iso15118.trace("   SAScheduleList_isUsed: %d", res->SAScheduleList_isUsed);
+        trace_iso(" Body");
+        trace_iso("  ChargeParameterDiscoveryRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   EVSEProcessing: %d", res->EVSEProcessing);
+        trace_iso("   SAScheduleList_isUsed: %d", res->SAScheduleList_isUsed);
         if (res->SAScheduleList_isUsed) {
-            iso15118.trace("   SAScheduleList");
+            trace_iso("   SAScheduleList");
             for (int i = 0; i < res->SAScheduleList.SAScheduleTuple.arrayLen; i++) {
-                iso15118.trace("    SAScheduleTuple[%d]", i);
-                iso15118.trace("     SAScheduleTupleID: %d", res->SAScheduleList.SAScheduleTuple.array[i].SAScheduleTupleID);
+                trace_iso("    SAScheduleTuple[%d]", i);
+                trace_iso("     SAScheduleTupleID: %d", res->SAScheduleList.SAScheduleTuple.array[i].SAScheduleTupleID);
 
                 if (res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.arrayLen > 0) {
-                    iso15118.trace("     PMaxSchedule");
+                    trace_iso("     PMaxSchedule");
                     for (int j = 0; j < res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.arrayLen; j++) {
-                        iso15118.trace("      PMaxScheduleEntry[%d]", j);
-                        iso15118.trace("       PMax.Value: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Value);
-                        iso15118.trace("       PMax.Multiplier: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Multiplier);
-                        iso15118.trace("       PMax.Unit: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Unit);
+                        trace_iso("      PMaxScheduleEntry[%d]", j);
+                        trace_iso("       PMax.Value: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Value);
+                        trace_iso("       PMax.Multiplier: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Multiplier);
+                        trace_iso("       PMax.Unit: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Unit);
 
-                        iso15118.trace("       RelativeTimeInterval_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed);
+                        trace_iso("       RelativeTimeInterval_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed);
                         if (res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed) {
-                            iso15118.trace("       RelativeTimeInterval");
-                            iso15118.trace("        start: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.start);
-                            iso15118.trace("        duration: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.duration);
+                            trace_iso("       RelativeTimeInterval");
+                            trace_iso("        start: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.start);
+                            trace_iso("        duration: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.duration);
                         }
                     }
                 }
-                iso15118.trace("     SalesTariff_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].SalesTariff_isUsed);
+                trace_iso("     SalesTariff_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].SalesTariff_isUsed);
             }
         }
 
-        iso15118.trace("   AC_EVSEChargeParameter_isUsed: %d", res->AC_EVSEChargeParameter_isUsed);
+        trace_iso("   AC_EVSEChargeParameter_isUsed: %d", res->AC_EVSEChargeParameter_isUsed);
         if (res->AC_EVSEChargeParameter_isUsed) {
-            iso15118.trace("    EVSEMaxCurrent.Value: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value);
-            iso15118.trace("    EVSEMaxCurrent.Multiplier: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier);
-            iso15118.trace("    EVSEMaxCurrent.Unit: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit);
-            iso15118.trace("    EVSENominalVoltage.Value: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Value);
-            iso15118.trace("    EVSENominalVoltage.Multiplier: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier);
-            iso15118.trace("    EVSENominalVoltage.Unit: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit);
-            iso15118.trace("    AC_EVSEStatus");
-            iso15118.trace("     RCD: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.RCD);
-            iso15118.trace("     NotificationMaxDelay: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.NotificationMaxDelay);
-            iso15118.trace("     EVSENotification: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.EVSENotification);
+            trace_iso("    EVSEMaxCurrent.Value: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value);
+            trace_iso("    EVSEMaxCurrent.Multiplier: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier);
+            trace_iso("    EVSEMaxCurrent.Unit: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit);
+            trace_iso("    EVSENominalVoltage.Value: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Value);
+            trace_iso("    EVSENominalVoltage.Multiplier: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier);
+            trace_iso("    EVSENominalVoltage.Unit: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit);
+            trace_iso("    AC_EVSEStatus");
+            trace_iso("     RCD: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.RCD);
+            trace_iso("     NotificationMaxDelay: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.NotificationMaxDelay);
+            trace_iso("     EVSENotification: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.EVSENotification);
         }
 
-        iso15118.trace("   DC_EVSEChargeParameter_isUsed: %d", res->DC_EVSEChargeParameter_isUsed);
+        trace_iso("   DC_EVSEChargeParameter_isUsed: %d", res->DC_EVSEChargeParameter_isUsed);
         if (res->DC_EVSEChargeParameter_isUsed) {
-            iso15118.trace("    EVSEMaximumCurrentLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value);
-            iso15118.trace("    EVSEMaximumCurrentLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier);
-            iso15118.trace("    EVSEMaximumCurrentLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit);
-            iso15118.trace("    EVSEMaximumVoltageLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value);
-            iso15118.trace("    EVSEMaximumVoltageLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier);
-            iso15118.trace("    EVSEMaximumVoltageLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit);
-            iso15118.trace("    EVSEMinimumCurrentLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value);
-            iso15118.trace("    EVSEMinimumCurrentLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier);
-            iso15118.trace("    EVSEMinimumCurrentLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit);
-            iso15118.trace("    EVSEMinimumVoltageLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value);
-            iso15118.trace("    EVSEMinimumVoltageLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier);
-            iso15118.trace("    EVSEMinimumVoltageLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit);
-            iso15118.trace("    EVSEPeakCurrentRipple.Value: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value);
-            iso15118.trace("    EVSEPeakCurrentRipple.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier);
-            iso15118.trace("    EVSEPeakCurrentRipple.Unit: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit);
-            iso15118.trace("    EVSEMaximumPowerLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value);
-            iso15118.trace("    EVSEMaximumPowerLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier);
-            iso15118.trace("    EVSEMaximumPowerLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit);
-            iso15118.trace("    DC_EVSEStatus");
-            iso15118.trace("     EVSEIsolationStatus_isUsed: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+            trace_iso("    EVSEMaximumCurrentLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value);
+            trace_iso("    EVSEMaximumCurrentLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier);
+            trace_iso("    EVSEMaximumCurrentLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit);
+            trace_iso("    EVSEMaximumVoltageLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value);
+            trace_iso("    EVSEMaximumVoltageLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier);
+            trace_iso("    EVSEMaximumVoltageLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit);
+            trace_iso("    EVSEMinimumCurrentLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value);
+            trace_iso("    EVSEMinimumCurrentLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier);
+            trace_iso("    EVSEMinimumCurrentLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit);
+            trace_iso("    EVSEMinimumVoltageLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value);
+            trace_iso("    EVSEMinimumVoltageLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier);
+            trace_iso("    EVSEMinimumVoltageLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit);
+            trace_iso("    EVSEPeakCurrentRipple.Value: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value);
+            trace_iso("    EVSEPeakCurrentRipple.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier);
+            trace_iso("    EVSEPeakCurrentRipple.Unit: %d", res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit);
+            trace_iso("    EVSEMaximumPowerLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value);
+            trace_iso("    EVSEMaximumPowerLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier);
+            trace_iso("    EVSEMaximumPowerLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit);
+            trace_iso("    DC_EVSEStatus");
+            trace_iso("     EVSEIsolationStatus_isUsed: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed);
             if (res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
-                iso15118.trace("      EVSEIsolationStatus: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus);
+                trace_iso("      EVSEIsolationStatus: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus);
             }
-            iso15118.trace("      EVSENotification: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification);
-            iso15118.trace("      NotificationMaxDelay: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay);
-            iso15118.trace("      EVSEStatusCode: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode);
+            trace_iso("      EVSENotification: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification);
+            trace_iso("      NotificationMaxDelay: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay);
+            trace_iso("      EVSEStatusCode: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode);
         }
     } else if (iso2DocEnc->V2G_Message.Body.CableCheckRes_isUsed) {
         iso2_CableCheckResType *res = &iso2DocEnc->V2G_Message.Body.CableCheckRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "CableCheck Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  CableCheckRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   EVSEProcessing: %d", res->EVSEProcessing);
-        iso15118.trace("   DC_EVSEStatus");
-        iso15118.trace("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+        trace_iso(" Body");
+        trace_iso("  CableCheckRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   EVSEProcessing: %d", res->EVSEProcessing);
+        trace_iso("   DC_EVSEStatus");
+        trace_iso("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
         if (res->DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
-            iso15118.trace("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+            trace_iso("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
         }
-        iso15118.trace("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
-        iso15118.trace("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
-        iso15118.trace("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+        trace_iso("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        trace_iso("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
+        trace_iso("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
     } else if (iso2DocEnc->V2G_Message.Body.PreChargeRes_isUsed) {
         iso2_PreChargeResType *res = &iso2DocEnc->V2G_Message.Body.PreChargeRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "PreCharge Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  PreChargeRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   DC_EVSEStatus");
-        iso15118.trace("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+        trace_iso(" Body");
+        trace_iso("  PreChargeRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   DC_EVSEStatus");
+        trace_iso("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
         if (res->DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
-            iso15118.trace("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+            trace_iso("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
         }
-        iso15118.trace("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
-        iso15118.trace("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
-        iso15118.trace("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
-        iso15118.trace("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
-        iso15118.trace("   EVSEPresentVoltage.Multiplier: %d", res->EVSEPresentVoltage.Multiplier);
+        trace_iso("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        trace_iso("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
+        trace_iso("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+        trace_iso("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
+        trace_iso("   EVSEPresentVoltage.Multiplier: %d", res->EVSEPresentVoltage.Multiplier);
     } else if (iso2DocEnc->V2G_Message.Body.CurrentDemandRes_isUsed) {
         iso2_CurrentDemandResType *res = &iso2DocEnc->V2G_Message.Body.CurrentDemandRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "CurrentDemand Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  CurrentDemandRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   DC_EVSEStatus");
-        iso15118.trace("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+        trace_iso(" Body");
+        trace_iso("  CurrentDemandRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   DC_EVSEStatus");
+        trace_iso("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
         if (res->DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
-            iso15118.trace("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+            trace_iso("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
         }
-        iso15118.trace("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
-        iso15118.trace("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
-        iso15118.trace("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
-        iso15118.trace("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
-        iso15118.trace("   EVSEPresentVoltage.Multiplier: %d", res->EVSEPresentVoltage.Multiplier);
-        iso15118.trace("   EVSEPresentCurrent.Value: %d", res->EVSEPresentCurrent.Value);
-        iso15118.trace("   EVSEPresentCurrent.Multiplier: %d", res->EVSEPresentCurrent.Multiplier);
+        trace_iso("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        trace_iso("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
+        trace_iso("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+        trace_iso("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
+        trace_iso("   EVSEPresentVoltage.Multiplier: %d", res->EVSEPresentVoltage.Multiplier);
+        trace_iso("   EVSEPresentCurrent.Value: %d", res->EVSEPresentCurrent.Value);
+        trace_iso("   EVSEPresentCurrent.Multiplier: %d", res->EVSEPresentCurrent.Multiplier);
     } else if (iso2DocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed) {
         iso2_PowerDeliveryResType *res = &iso2DocEnc->V2G_Message.Body.PowerDeliveryRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "PowerDelivery Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  PowerDeliveryRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   AC_EVSEStatus_isUsed: %d", res->AC_EVSEStatus_isUsed);
+        trace_iso(" Body");
+        trace_iso("  PowerDeliveryRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   AC_EVSEStatus_isUsed: %d", res->AC_EVSEStatus_isUsed);
         if (res->AC_EVSEStatus_isUsed) {
-            iso15118.trace("   AC_EVSEStatus");
-            iso15118.trace("    RCD: %d", res->AC_EVSEStatus.RCD);
-            iso15118.trace("    NotificationMaxDelay: %d", res->AC_EVSEStatus.NotificationMaxDelay);
-            iso15118.trace("    EVSENotification: %d", res->AC_EVSEStatus.EVSENotification);
+            trace_iso("   AC_EVSEStatus");
+            trace_iso("    RCD: %d", res->AC_EVSEStatus.RCD);
+            trace_iso("    NotificationMaxDelay: %d", res->AC_EVSEStatus.NotificationMaxDelay);
+            trace_iso("    EVSENotification: %d", res->AC_EVSEStatus.EVSENotification);
         }
 
-        iso15118.trace("   DC_EVSEStatus_isUsed: %d", res->DC_EVSEStatus_isUsed);
+        trace_iso("   DC_EVSEStatus_isUsed: %d", res->DC_EVSEStatus_isUsed);
         if (res->DC_EVSEStatus_isUsed) {
-            iso15118.trace("   DC_EVSEStatus");
-            iso15118.trace("    EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
-            iso15118.trace("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
-            iso15118.trace("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
-            iso15118.trace("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+            trace_iso("   DC_EVSEStatus");
+            trace_iso("    EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+            trace_iso("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+            trace_iso("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
+            trace_iso("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
         }
     } else if (iso2DocEnc->V2G_Message.Body.ChargingStatusRes_isUsed) {
         iso2_ChargingStatusResType *res = &iso2DocEnc->V2G_Message.Body.ChargingStatusRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "ChargingStatus Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  ChargingStatusRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
-        iso15118.trace("   EVSEID.characters: %s", res->EVSEID.characters);
-        iso15118.trace("   EVSEID.charactersLen: %d", res->EVSEID.charactersLen);
-        iso15118.trace("   SAScheduleTupleID: %d", res->SAScheduleTupleID);
-        iso15118.trace("   EVSEMaxCurrent.Value: %d", res->EVSEMaxCurrent.Value);
-        iso15118.trace("   EVSEMaxCurrent.Multiplier: %d", res->EVSEMaxCurrent.Multiplier);
-        iso15118.trace("   EVSEMaxCurrent.Unit: %d", res->EVSEMaxCurrent.Unit);
-        iso15118.trace("   AC_EVSEStatus.RCD: %d", res->AC_EVSEStatus.RCD);
-        iso15118.trace("   AC_EVSEStatus.NotificationMaxDelay: %d", res->AC_EVSEStatus.NotificationMaxDelay);
-        iso15118.trace("   AC_EVSEStatus.EVSENotification: %d", res->AC_EVSEStatus.EVSENotification);
-        iso15118.trace("   MeterInfo_isUsed: %d", res->MeterInfo_isUsed);
-        iso15118.trace("   ReceiptRequired_isUsed: %d", res->ReceiptRequired_isUsed);
+        trace_iso(" Body");
+        trace_iso("  ChargingStatusRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
+        trace_iso("   EVSEID.characters: %s", res->EVSEID.characters);
+        trace_iso("   EVSEID.charactersLen: %d", res->EVSEID.charactersLen);
+        trace_iso("   SAScheduleTupleID: %d", res->SAScheduleTupleID);
+        trace_iso("   EVSEMaxCurrent.Value: %d", res->EVSEMaxCurrent.Value);
+        trace_iso("   EVSEMaxCurrent.Multiplier: %d", res->EVSEMaxCurrent.Multiplier);
+        trace_iso("   EVSEMaxCurrent.Unit: %d", res->EVSEMaxCurrent.Unit);
+        trace_iso("   AC_EVSEStatus.RCD: %d", res->AC_EVSEStatus.RCD);
+        trace_iso("   AC_EVSEStatus.NotificationMaxDelay: %d", res->AC_EVSEStatus.NotificationMaxDelay);
+        trace_iso("   AC_EVSEStatus.EVSENotification: %d", res->AC_EVSEStatus.EVSENotification);
+        trace_iso("   MeterInfo_isUsed: %d", res->MeterInfo_isUsed);
+        trace_iso("   ReceiptRequired_isUsed: %d", res->ReceiptRequired_isUsed);
     } else if (iso2DocEnc->V2G_Message.Body.SessionStopRes_isUsed) {
         iso2_SessionStopResType *res = &iso2DocEnc->V2G_Message.Body.SessionStopRes;
 
         trace_header(&iso2DocEnc->V2G_Message.Header, "SessionStop Response");
-        iso15118.trace(" Body");
-        iso15118.trace("  SessionStopRes");
-        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        trace_iso(" Body");
+        trace_iso("  SessionStopRes");
+        trace_iso("   ResponseCode: %d", res->ResponseCode);
     }
 }

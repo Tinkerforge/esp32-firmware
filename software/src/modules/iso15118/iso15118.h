@@ -32,6 +32,17 @@
 #include "debug_mode.h"
 #include "pib_manager.h"
 
+// If defined, the iso15118 module logs verbose, per-message protocol decode dumps
+// (DIN70121 / ISO15118-2 / ISO15118-20 / SLAC / SDP) to the "iso15118" tracelog via trace_iso().
+//#define ISO15118_TRACE_MESSAGES
+
+#ifdef ISO15118_TRACE_MESSAGES
+#define trace_iso(...) iso15118.trace(__VA_ARGS__)
+#else
+// Disabled: Compiles to a no-op while keeping printf-style format checking
+#define trace_iso(...) do { if (false) iso15118.trace(__VA_ARGS__); } while (0)
+#endif
+
 // Poll file descriptor indices (fixed positions in fds array)
 static constexpr int FDS_TAP_INDEX    = 0;  // L2TAP for HomePlug/SLAC
 static constexpr int FDS_SDP_INDEX    = 1;  // SDP UDP socket

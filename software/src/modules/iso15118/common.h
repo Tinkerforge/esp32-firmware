@@ -77,7 +77,7 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
 
 #define V2G_NOT_IMPL(prefix, doc_path, msg) \
     if (doc_path.msg##_isUsed) { \
-        logger.printfln(prefix ": " #msg " received but not implemented"); \
+        iso15118.trace(prefix ": " #msg " received but not implemented"); \
     }
 
 // Macro to send FAILED_UnknownSession error response for DIN/ISO2

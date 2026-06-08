@@ -43,7 +43,7 @@ void DebugMode::handle_update(Language /*language*/, String &/*error*/)
 {
     const bool will_be_enabled = api_state.get("enable")->asBool();
 
-    logger.printfln("Debug: handle_update called, will_be_enabled=%d, enabled=%d", will_be_enabled, enabled);
+    iso15118.trace("Debug: handle_update called, will_be_enabled=%d, enabled=%d", will_be_enabled, enabled);
 
     if (will_be_enabled && !enabled) {
         enabled = true;
@@ -70,21 +70,21 @@ ChargingInformation DebugMode::get_charging_information() const
 
 void DebugMode::start()
 {
-    logger.printfln("Debug: Enabling debug mode");
+    iso15118.trace("Debug: Enabling debug mode");
 
     // Create IPv6 link-local address on the Ethernet interface
     esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
     if (eth_netif != NULL) {
         esp_err_t err = esp_netif_create_ip6_linklocal(eth_netif);
         if (err == ESP_OK) {
-            logger.printfln("Debug: Created IPv6 link-local address on Ethernet");
+            iso15118.trace("Debug: Created IPv6 link-local address on Ethernet");
         } else if (err == ESP_ERR_INVALID_STATE) {
-            logger.printfln("Debug: IPv6 link-local address already exists on Ethernet");
+            iso15118.trace("Debug: IPv6 link-local address already exists on Ethernet");
         } else {
-            logger.printfln("Debug: Failed to create IPv6 link-local address: %d", err);
+            iso15118.trace("Debug: Failed to create IPv6 link-local address: %d", err);
         }
     } else {
-        logger.printfln("Debug: Ethernet interface not found, disabling debug mode");
+        iso15118.trace("Debug: Ethernet interface not found, disabling debug mode");
         api_state.get("enable")->updateBool(false);
         enabled = false;
         return;
@@ -107,12 +107,12 @@ void DebugMode::start()
     iso15118.slac.state = SLACState::WaitForSDP;
     iso15118.slac.api_state.get("state")->updateEnum(SLACState::WaitForSDP);
 
-    logger.printfln("Debug: Debug mode enabled, waiting for SDP on Ethernet interface");
+    iso15118.trace("Debug: Debug mode enabled, waiting for SDP on Ethernet interface");
 }
 
 void DebugMode::stop()
 {
-    logger.printfln("Debug: Disabling debug mode");
+    iso15118.trace("Debug: Disabling debug mode");
 
     // Close sockets
     iso15118.sdp.close_socket();
@@ -123,5 +123,5 @@ void DebugMode::stop()
     iso15118.slac.api_state.get("state")->updateEnum(SLACState::ModemInitialization);
     iso15118.slac.api_state.get("modem_found")->updateBool(false);
 
-    logger.printfln("Debug: Debug mode disabled");
+    iso15118.trace("Debug: Debug mode disabled");
 }

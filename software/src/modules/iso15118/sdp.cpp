@@ -71,7 +71,7 @@ void SDP::setup_socket()
 
     sdp_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (sdp_socket < 0) {
-        logger.printfln("SDP: Failed to create socket: (errno %i [%s])", errno, strerror(errno));
+        iso15118.trace("SDP: Failed to create socket: (errno %i [%s])", errno, strerror(errno));
         return;
     }
 
@@ -79,7 +79,7 @@ void SDP::setup_socket()
     setsockopt(sdp_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     if (bind(sdp_socket, reinterpret_cast<struct sockaddr *>(&server_addr), sizeof(server_addr)) < 0) {
-        logger.printfln("SDP: Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
+        iso15118.trace("SDP: Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
@@ -104,22 +104,22 @@ void SDP::setup_socket()
             mreq.ipv6mr_interface = static_cast<unsigned int>(if_index);
 
             if (setsockopt(sdp_socket, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq)) < 0) {
-                logger.printfln("SDP: Failed to join IPv6 multicast group ff02::1: (errno %i [%s])", errno, strerror(errno));
+                iso15118.trace("SDP: Failed to join IPv6 multicast group ff02::1: (errno %i [%s])", errno, strerror(errno));
             } else {
-                logger.printfln("SDP: Joined IPv6 multicast group ff02::1 on interface %d", if_index);
+                iso15118.trace("SDP: Joined IPv6 multicast group ff02::1 on interface %d", if_index);
             }
         } else {
-            logger.printfln("SDP: Could not get Ethernet interface for multicast join");
+            iso15118.trace("SDP: Could not get Ethernet interface for multicast join");
         }
 #else
-        logger.printfln("SDP: LWIP_IPV6_MLD not enabled, cannot join multicast group");
+        iso15118.trace("SDP: LWIP_IPV6_MLD not enabled, cannot join multicast group");
 #endif
     }
 
     const int flags = fcntl(sdp_socket, F_GETFL, 0);
     int ret = fcntl(sdp_socket, F_SETFL, flags | O_NONBLOCK);
     if (ret < 0) {
-        logger.printfln("SDP: Failed to set non-blocking mode: (errno %i [%s])", errno, strerror(errno));
+        iso15118.trace("SDP: Failed to set non-blocking mode: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
@@ -159,7 +159,7 @@ void SDP::handle_socket()
             // No data available, non-blocking mode
             return;
         } else {
-            logger.printfln("SDP recv failed: (errno %i [%s])", errno, strerror(errno));
+            iso15118.trace("SDP recv failed: (errno %i [%s])", errno, strerror(errno));
             close(sdp_socket);
             sdp_socket = -1;
             setup_socket();
@@ -172,35 +172,35 @@ void SDP::handle_socket()
         tf_ip6addr_ntoa(&recv_addr.sin6_addr, straddr, INET6_ADDRSTRLEN);
 
         if (length != sizeof(SDP_DiscoveryRequest)) {
-            logger.printfln("Invalid SDP_DiscoveryRequest length: %d", length);
+            iso15118.trace("Invalid SDP_DiscoveryRequest length: %d", length);
             return;
         }
 
         SDP_DiscoveryRequest *request = reinterpret_cast<SDP_DiscoveryRequest*>(buffer);
         if (request->v2gtp.protocol_version != 0x01 || request->v2gtp.inverse_protocol_version != 0xFE) {
-            logger.printfln("Invalid V2GTP protocol version: %02x, %02x", request->v2gtp.protocol_version, request->v2gtp.inverse_protocol_version);
+            iso15118.trace("Invalid V2GTP protocol version: %02x, %02x", request->v2gtp.protocol_version, request->v2gtp.inverse_protocol_version);
             return;
         }
 
         if (request->v2gtp.payload_type != htons(static_cast<uint16_t>(V2GTPPayloadType::SDPRequest))) {
-            logger.printfln("Invalid V2GTP payload type: %04x", htons(request->v2gtp.payload_type));
+            iso15118.trace("Invalid V2GTP payload type: %04x", htons(request->v2gtp.payload_type));
             return;
         }
 
         if (request->v2gtp.payload_length != htonl((sizeof(SDP_DiscoveryRequest) - sizeof(V2GTP_Header)))) {
-            logger.printfln("Invalid V2GTP payload length: %lu", htonl(request->v2gtp.payload_length));
+            iso15118.trace("Invalid V2GTP payload length: %lu", htonl(request->v2gtp.payload_length));
             return;
         }
 
         // Security 0x00 = TLS, 0x10 = no security
         // Transport Protocol 0x00 = TCP, 0x10 = UDP (only TCP allowed here)
-        iso15118.trace("Got SDP Discovery Request with security %02x, transport_protocol %02x", request->security, request->tranport_protocol);
+        trace_iso("Got SDP Discovery Request with security %02x, transport_protocol %02x", request->security, request->tranport_protocol);
         api_state.get("ev_security")->updateInt(request->security);
         api_state.get("ev_tranport_protocol")->updateInt(request->tranport_protocol);
 
         esp_ip6_addr_t ip6;
         if (!iso15118.qca700x.get_ip6_linklocal(&ip6)) {
-            logger.printfln("SDP: Failed to get link-local IPv6 address, cannot send response");
+            iso15118.trace("SDP: Failed to get link-local IPv6 address, cannot send response");
             return;
         }
 
@@ -232,11 +232,11 @@ void SDP::handle_socket()
             .security = response_security,
             .tranport_protocol = SDP_TRANSPORT_TCP
         };
-        iso15118.trace("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.tranport_protocol);
+        trace_iso("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.tranport_protocol);
 
         int ret = sendto(sdp_socket, &response, sizeof(response), 0, reinterpret_cast<struct sockaddr*>(&recv_addr), recv_addr_length);
         if (ret < 0) {
-            logger.printfln("SDP sendto failed: (%i)%s", errno, strerror(errno));
+            iso15118.trace("SDP sendto failed: (%i)%s", errno, strerror(errno));
             close(sdp_socket);
             sdp_socket = -1;
             setup_socket();
