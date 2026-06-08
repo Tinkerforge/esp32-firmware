@@ -82,7 +82,6 @@ let x = {
                             glue = <> and </>;
                         }
 
-
                         let energy_limit = <></>;
                         if (energy === -1) {
                             energy_limit = <>allow the current energy limit again</>
@@ -117,9 +116,9 @@ let x = {
 
                 let glue = <></>;
                 if (duration !== undefined && energy !== -1) {
-                    glue = <>and</>;
+                    glue = <> and </>;
                 } else {
-                    glue = <>and set</>;
+                    glue = <> and set </>;
                 }
 
                 let energy_limit = <></>;
@@ -141,7 +140,7 @@ let x = {
 
                 return (
                   <>
-                    {duration_limit} {glue} {energy_limit}{soc_part}.
+                    {duration_limit}{glue}{energy_limit}{soc_part}.
                   </>
                 );
             }/*NF*/
