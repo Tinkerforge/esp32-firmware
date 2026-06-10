@@ -51,77 +51,77 @@ import { InputSelect } from "../../ts/components/input_select";
 import { useEffect, useRef } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 //#endif
+import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
+import { ChargeAuth } from "../charge_authorization/api";
 
+//#if MODULE_CHARGE_MANAGER_AVAILABLE
+export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType[]): Promise<(ChargeAuth & {charger_name: string})[]> {
+    let cm_state = API.get("charge_manager/state");
+    let auths:(ChargeAuth & {charger_name?: string})[][] = [];
+    try {
+        auths = JSON.parse(await util.download("/charge_manager/auth_info", false).then(x => x.text()));
+    } catch (e) {
+        console.error("Failed to fetch charge_manager/auth_info:", e);
+        return []
+    }
 
-// Get NFC tags from managed chargers, merged with local seen tags.
-// Returns all seen tags (local + remote), deduplicated.
-export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
-export async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
-    let all_tags: NFCSeenTag[] = API.get('nfc/seen_tags')?.map(t => {
-        const tag: NFCSeenTag = {...t, charger_name: null};
-        return tag;
-    });
+    let chargers = Math.min(auths.length, cm_state.chargers.length);
 
-    if (
-        API.hasModule("charge_manager") &&
-        API.get("charge_manager/config").enable_central_management
-    ) {
-        let cm_state = API.get_unchecked("charge_manager/state");
-        if (cm_state && cm_state.chargers) {
-            try {
-                const response = await fetch("/charge_manager/auth_info");
-                if (response.ok) {
-                    const auth_info_data: {
-                        ti: string;
-                        tt: number;
-                        ts: number;
-                        am?: number;
-                    }[][] = await response.json();
-                    for (
-                        let charger_idx = 0;
-                        charger_idx < auth_info_data.length &&
-                        charger_idx < cm_state.chargers.length;
-                        charger_idx++
-                    ) {
-                        const charger_name = cm_state.chargers[charger_idx].n;
-                        for (const auth_info of auth_info_data[charger_idx]) {
-                            if (!auth_info.ti || auth_info.ti === "") continue;
-                            // Skip EV MACs
-                            if (auth_info.am === 4 || auth_info.am === 5) continue;
-                            // Check if tag already exists
-                            const idx = all_tags.findIndex(
-                                (t) =>
-                                    t.tag_id === auth_info.ti &&
-                                    t.tag_type === auth_info.tt,
-                            );
-                            if (idx !== -1) {
-                                // If remote tag is newer, update last_seen
-                                if (all_tags[idx].last_seen > auth_info.ts) {
-                                    all_tags[idx] = {
-                                        charger_name: charger_name,
-                                        tag_id: auth_info.ti,
-                                        tag_type: auth_info.tt,
-                                        last_seen: auth_info.ts,
-                                    };
-                                }
-                                continue;
-                            }
-                            all_tags.push({
-                                tag_id: auth_info.ti,
-                                tag_type: auth_info.tt,
-                                last_seen: auth_info.ts,
-                                charger_name: charger_name,
-                            });
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to fetch charge_manager/auth_info:", e);
+    let result = [] as (ChargeAuth & {charger_name: string})[];
+    let result_json_cache: string[] = [];
+
+    for (let charger_idx = 0; charger_idx < chargers; charger_idx++) {
+        const charger_name = cm_state.chargers[charger_idx].n;
+
+        for (let auth of auths[charger_idx]) {
+            if (auth.seen_at == 0)
+                continue;
+
+            if (auth_type_filter && auth_type_filter.indexOf(auth.auth_info[0]) == -1)
+                continue;
+
+            auth.charger_name = charger_name;
+
+            const info_json = JSON.stringify(auth.auth_info);
+
+            let idx = result_json_cache.indexOf(info_json);
+            if (idx == -1) {
+                result.push(auth as (ChargeAuth & {charger_name: string}));
+                result_json_cache.push(info_json);
+            } else if (auth.seen_at < result[idx].seen_at) {
+                result[idx] = auth as (ChargeAuth & {charger_name: string});
             }
         }
     }
 
-    return all_tags;
+    return result;
+}
+//#endif
+
+// Get NFC tags from managed chargers, merged with local seen tags.
+// Returns all seen tags (local + remote), deduplicated.
+type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
+
+async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
+    let central_management_enabled = API.hasModule("charge_manager") &&
+        API.get("charge_manager/config").enable_charge_manager &&
+        API.get("charge_manager/config").enable_central_management;
+
+    let now = API.get("info/keep_alive").uptime;
+
+    if (!central_management_enabled) {
+        return API.get('nfc/seen_tags')?.map(t => {
+            const tag: NFCSeenTag = {...t, charger_name: null};
+            return tag;
+        });
+    } else {
+        return (await get_charge_manager_auth_info([CMAuthType.NFC, CMAuthType.InjectedNFC])).map(x => ({
+                tag_id: (x.auth_info[1] as any).tag_id,
+                tag_type: (x.auth_info[1] as any).tag_type,
+                last_seen: now - x.seen_at,
+                charger_name: x.charger_name,
+            } as NFCSeenTag));
+    }
 }
 
 export function UsersNavbar() {

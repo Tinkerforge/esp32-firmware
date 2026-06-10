@@ -37,6 +37,7 @@
 #include "options.h"
 #include "tools.h"
 #include "tools/malloc.h"
+#include "tools/hexdump.h"
 #include "generated/cm_phase_rotation.enum.h"
 #include "modules/cm_networking/generated/client_error.enum.h"
 #include "modules/cm_networking/cm_networking_defs.h"
@@ -1404,7 +1405,8 @@ void ChargeManager::register_urls()
     });
 
     server.on_HTTPThread("/charge_manager/auth_info", HTTP_GET, [this](WebServerRequest request) {
-        constexpr size_t BUF_SIZE = 16384;
+        auto now = now_us();
+        constexpr size_t BUF_SIZE = 20480;
         auto buf = heap_alloc_array<char>(BUF_SIZE);
         if (buf == nullptr) {
             return request.send_plain(507);
@@ -1418,29 +1420,41 @@ void ChargeManager::register_urls()
             for (int i = 0; i < 3; ++i) {
                 const auto &info = this->charger_state[idx].auth_info[i];
                 json.addObject();
+                json.addMemberNumber("seen_at", (now - seconds_t{info.last_seen_s}).to<millis_t>().as<int64_t>());
+                json.addMemberArray("auth_info");
+                json.addNumber(static_cast<uint8_t>(info.auth_method));
 
-                if (info.tag_id_len > 0) {
-                    static const char *hex_lookup = "0123456789ABCDEF";
-                    char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
-                    size_t chars = info.tag_id_len * 3;
-                    for (size_t c = 0; c < chars; c += 3) {
-                        uint8_t byte = info.tag_id[c / 3];
-                        tag_id_str[c]     = hex_lookup[byte >> 4];
-                        tag_id_str[c + 1] = hex_lookup[byte & 0x0F];
-                        tag_id_str[c + 2] = ':';
-                    }
-                    tag_id_str[chars - 1] = '\0';
+                switch (info.auth_method) {
+                    case CMAuthType::NFC:
+                    case CMAuthType::InjectedNFC: {
+                            char tag_id_str[CM_AUTH_INFO_TAG_ID_STRING_LEN + 1];
+                            hexdump(info.nfc.tag_id, info.nfc.tag_id_len, tag_id_str, ARRAY_SIZE(tag_id_str), HexdumpCase::Upper, ':');
+                            json.addObject();
+                            json.addMemberString("tag_id", tag_id_str);
+                            json.addMemberNumber("tag_type", info.nfc.tag_type);
+                            json.endObject();
+                        }
+                        break;
 
-                    json.addMemberString("ti", tag_id_str);
-                    json.addMemberNumber("tt", info.tag_type);
-                    json.addMemberNumber("ts", static_cast<uint32_t>(info.last_seen_s * 1000));
-                    json.addMemberNumber("am", static_cast<uint8_t>(info.auth_method));
-                } else {
-                    json.addMemberString("ti", "");
-                    json.addMemberNumber("tt", static_cast<uint8_t>(0));
-                    json.addMemberNumber("ts", static_cast<uint32_t>(0));
-                    json.addMemberNumber("am", static_cast<uint8_t>(0));
+                    case CMAuthType::EV:
+                    case CMAuthType::InjectedEV:{
+                            char mac_str[ARRAY_SIZE(info.ev.mac) * 3];
+                            hexdump(info.ev.mac, ARRAY_SIZE(info.ev.mac), mac_str, ARRAY_SIZE(mac_str), HexdumpCase::Upper, ':');
+
+                            json.addObject();
+                            json.addMemberString("mac", mac_str);
+                            json.endObject();
+
+                        }
+                        break;
+
+                    case CMAuthType::None:
+                    case CMAuthType::Lost:
+                    default:
+                        json.addNull();
+                        break;
                 }
+                json.endArray();
 
                 json.endObject();
             }

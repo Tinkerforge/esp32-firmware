@@ -127,23 +127,18 @@ int16_t ChargeAuthorization::find_user(const cm_auth_info &info)
         case CMAuthType::NFC:
         case CMAuthType::InjectedNFC: {
             NFC::tag_t tag;
-            tag.type = info.tag_type;
-            tag.id_length = info.tag_id_len;
+            tag.type = info.nfc.tag_type;
+            tag.id_length = info.nfc.tag_id_len;
 
-            static_assert(sizeof(tag.id_bytes) == sizeof(info.tag_id), "Tag ID size mismatch");
-            memcpy(tag.id_bytes, info.tag_id, sizeof(info.tag_id));
+            static_assert(sizeof(tag.id_bytes) == sizeof(info.nfc.tag_id), "Tag ID size mismatch");
+            memcpy(tag.id_bytes, info.nfc.tag_id, sizeof(info.nfc.tag_id));
 
             return nfc.get_user_id(tag);
         }
         case CMAuthType::EV:
         case CMAuthType::InjectedEV: {
 #if MODULE_EV_AVAILABLE()
-            if (info.tag_id_len != EV_MAC_ADDRESS_LENGTH) {
-                // Invalid MAC length, treat as not authorized.
-                return -1;
-            }
-
-            return ev.get_user_id(info.tag_id);
+            return ev.get_user_id(info.ev.mac);
 #else
             // Without the EV module there is no EV profile list -> not authorized.
             return -1;

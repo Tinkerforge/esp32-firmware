@@ -287,9 +287,18 @@ struct cm_auth_info {
     uint8_t _padding; // in use for cm_state_v4 requested_charge_mode
     CMAuthType auth_method;
     uint16_t last_seen_s;
-    uint8_t tag_type;
-    uint8_t tag_id_len;
-    uint8_t tag_id[10];
+
+    // Tagged by auth_method
+    union {
+        struct {
+            uint8_t tag_type;
+            uint8_t tag_id_len;
+            uint8_t tag_id[10];
+        } nfc;
+        struct {
+            uint8_t mac[6];
+        } ev;
+    };
 };
 #define CM_AUTH_INFO_LENGTH (sizeof(cm_auth_info))
 static_assert(CM_AUTH_INFO_LENGTH == 16, "Unexpected CM_AUTH_INFO_LENGTH");

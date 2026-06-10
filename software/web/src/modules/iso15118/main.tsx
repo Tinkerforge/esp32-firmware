@@ -279,6 +279,8 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
             }
         };
 
+        const uptime = API.get("info/keep_alive").uptime;
+
         return (
             <SubPage name="iso15118" title="ISO 15118">
                 <SubPage.Status>
@@ -304,14 +306,14 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                             <div class="row gx-2 gy-1">
                                 {seen_macs
                                     .slice()
-                                    .sort((a, b) => b.last_seen - a.last_seen)
+                                    .sort((a, b) => b.seen_at - a.seen_at)
                                     .map((entry, i) =>
                                         <Fragment key={i}>
                                             <div class="col-6">
                                                 <InputText value={entry.mac}/>
                                             </div>
                                             <div class="col-6">
-                                                <InputText value={util.timestamp_sec_to_date(entry.last_seen, "Unknown")}/>
+                                                <InputText value={util.format_timespan_ms(uptime - entry.seen_at)}/>
                                             </div>
                                         </Fragment>
                                     )

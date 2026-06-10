@@ -6,6 +6,7 @@ import { CSVFlavor } from "./generated/csv_flavor.enum";
 //#endif
 import { Language } from "../../ts/language";
 import { GenerationState } from "./generated/generation_state.enum";
+import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 
 interface Charge {
     timestamp_minutes: number;
@@ -89,7 +90,7 @@ interface current_charge_base {
 }
 
 interface current_charge_nfc {
-    authorization_type: 2;
+    authorization_type: CMAuthType.NFC;
     authorization_info?: {
         tag_type: number;
         tag_id: string;
@@ -97,7 +98,23 @@ interface current_charge_nfc {
 }
 
 interface current_charge_nfc_inject {
-    authorization_type: 3;
+    authorization_type: CMAuthType.InjectedNFC;
+    authorization_info?: {
+        tag_type: number;
+        tag_id: string;
+    };
+}
+
+interface current_charge_ev {
+    authorization_type: CMAuthType.EV;
+    authorization_info?: {
+        tag_type: number;
+        tag_id: string;
+    };
+}
+
+interface current_charge_ev_inject {
+    authorization_type: CMAuthType.InjectedEV;
     authorization_info?: {
         tag_type: number;
         tag_id: string;
@@ -105,17 +122,19 @@ interface current_charge_nfc_inject {
 }
 
 interface current_charge_lost {
-    authorization_type: 1;
+    authorization_type: CMAuthType.Lost;
     authorization_info: null
 }
 
 interface current_charge_none {
-    authorization_type: 0;
+    authorization_type: CMAuthType.None;
     authorization_info: null
 }
 
 export type current_charge = current_charge_base & (current_charge_nfc
                                                     | current_charge_nfc_inject
+                                                    | current_charge_ev
+                                                    | current_charge_ev_inject
                                                     | current_charge_lost
                                                     | current_charge_none);
 

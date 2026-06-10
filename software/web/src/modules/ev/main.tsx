@@ -31,6 +31,8 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { DiscoveryResultItem, DiscoveryResultGroup } from "../../ts/components/discovery_result";
 import { Plus } from "react-feather";
+import { get_charge_manager_auth_info } from "../users/main"
+import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 
 export function EvNavbar() {
     return <NavbarItem
@@ -87,59 +89,29 @@ type EvProfile = API.getType["ev/config"]["evs"][0];
 
 // A seen EV MAC, optionally annotated with the name of the charger that saw it
 // (when it was received through central user management).
-export type EvSeenMac = API.getType['ev/seen_macs'][0] & { charger_name?: string | null };
+type EvSeenMac = API.getType['ev/seen_macs'][0] & { charger_name?: string | null };
 
 // Get EV MACs seen locally, merged with the EV MACs received from other chargers
 // through central user management. Returns all MACs deduplicated.
-export async function get_all_seen_macs(): Promise<EvSeenMac[]> {
-    let all_macs: EvSeenMac[] = (API.get('ev/seen_macs') ?? []).map(m => {
-        const seen_mac: EvSeenMac = {...m, charger_name: null};
-        return seen_mac;
-    });
+async function get_all_seen_macs(): Promise<EvSeenMac[]> {
+    let central_management_enabled = API.hasModule("charge_manager") &&
+        API.get("charge_manager/config").enable_charge_manager &&
+        API.get("charge_manager/config").enable_central_management;
 
-    if (API.hasModule("charge_manager") && API.get("charge_manager/config").enable_central_management) {
-        let cm_state = API.get_unchecked("charge_manager/state");
-        if (cm_state && cm_state.chargers) {
-            try {
-                const response = await fetch("/charge_manager/auth_info");
-                if (response.ok) {
-                    const auth_info_data: {
-                        ti: string;
-                        tt: number;
-                        ts: number;
-                        am?: number;
-                    }[][] = await response.json();
-                    for (let charger_index = 0; (charger_index < auth_info_data.length) && (charger_index < cm_state.chargers.length); charger_index++) {
-                        const charger_name = cm_state.chargers[charger_index].n;
-                        for (const auth_info of auth_info_data[charger_index]) {
-                            if (!auth_info.ti || (auth_info.ti === "")) continue;
-                            if ((auth_info.am !== 4) && (auth_info.am !== 5)) continue;
+    let now = API.get("info/keep_alive").uptime;
 
-                            const mac = auth_info.ti;
-                            const ts = Math.floor(Date.now() / 1000) - Math.floor(auth_info.ts / 1000);
-                            const index = all_macs.findIndex((m) => m.mac === mac);
-                            if (index !== -1) {
-                                if (all_macs[index].last_seen < ts) {
-                                    all_macs[index].charger_name = charger_name;
-                                    all_macs[index].last_seen = ts;
-                                }
-                                continue;
-                            }
-                            all_macs.push({
-                                mac: mac,
-                                last_seen: ts,
-                                charger_name: charger_name,
-                            });
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to fetch charge_manager/auth_info:", e);
-            }
-        }
+    if (!central_management_enabled) {
+        return (API.get('ev/seen_macs') ?? []).map(m => {
+            const seen_mac: EvSeenMac = {...m, charger_name: null};
+            return seen_mac;
+        });
+    } else {
+        return (await get_charge_manager_auth_info([CMAuthType.EV, CMAuthType.InjectedEV])).map(x => ({
+                mac: (x.auth_info[1] as any).mac,
+                seen_at: x.seen_at,
+                charger_name: x.charger_name,
+            } as EvSeenMac));
     }
-
-    return all_macs;
 }
 
 interface EvState {
@@ -385,6 +357,7 @@ export class Ev extends Component<{}, EvState> {
                         const visible_macs = seen_macs.filter(m => m.mac !== "");
                         const unauth_macs = visible_macs.filter(m => find_matching_ev(ev_config.evs, m.mac) < 0);
                         const auth_macs = visible_macs.filter(m => find_matching_ev(ev_config.evs, m.mac) >= 0);
+                        const uptime = API.get("info/keep_alive").uptime;
 
                         return [<>
                             <FormRow label={__("ev.content.add_ev_seen_macs")}>
@@ -395,7 +368,7 @@ export class Ev extends Component<{}, EvState> {
                                             title={<h5 class="font-monospace">{m.mac}</h5>}
                                             labelAdd={<Plus />}
                                             onClick={() => this.setState({addEv: {...state.addEv, mac: m.mac}})}>
-                                            <div>{__("ev.content.seen_mac_last_seen")(util.format_timespan(Math.floor(Date.now() / 1000) - m.last_seen))}</div>
+                                            <div>{__("ev.content.seen_mac_last_seen")(util.format_timespan_ms(uptime - m.seen_at))}</div>
                                             {m.charger_name ? <div class="text-muted small">{__("ev.content.seen_mac_charger")(m.charger_name)}</div> : null}
                                         </DiscoveryResultItem>).concat(
                                         auth_macs.map(m => {
@@ -406,7 +379,7 @@ export class Ev extends Component<{}, EvState> {
                                                 labelAdd={<Plus />}
                                                 error={__("ev.content.mac_already_configured")(ev_config.evs[index].name)}
                                                 onClick={() => this.setState({addEv: {...state.addEv, mac: m.mac}})}>
-                                                <div>{__("ev.content.seen_mac_last_seen")(util.format_timespan(Math.floor(Date.now() / 1000) - m.last_seen))}</div>
+                                                <div>{__("ev.content.seen_mac_last_seen")(util.format_timespan_ms(uptime - m.seen_at))}</div>
                                                 {m.charger_name ? <div class="text-muted small">{__("ev.content.seen_mac_charger")(m.charger_name)}</div> : null}
                                             </DiscoveryResultItem>;
                                         }))
