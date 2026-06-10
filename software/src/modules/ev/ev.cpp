@@ -147,8 +147,8 @@ void Ev::pre_setup()
     });
 
     seen_macs_prototype = Config::Object({
-        {"mac",       Config::Str("", 0, EV_MAC_STRING_LENGTH)},
-        {"last_seen", Config::Uint32(0)}
+        {"mac",     Config::Str("", 0, EV_MAC_STRING_LENGTH)},
+        {"seen_at", Config::Uptime()}
     });
 
     seen_macs = Config::Array(
@@ -472,18 +472,13 @@ void Ev::add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
     char mac_str[EV_MAC_STRING_LENGTH+1];
     format_mac_string(mac, mac_str, sizeof(mac_str));
 
-    struct timeval tv;
-    const uint32_t now =
-#if MODULE_RTC_AVAILABLE()
-        rtc.clock_synced(&tv) ? static_cast<uint32_t>(tv.tv_sec) :
-#endif
-        0;
+    const micros_t now = now_us();
 
     // Check if MAC already exists
     for (size_t i = 0; i < seen_macs.count(); i++) {
         if (seen_macs.get(i)->get("mac")->asString() == mac_str) {
             // MAC exists, update timestamp
-            seen_macs.get(i)->get("last_seen")->updateUint(now);
+            seen_macs.get(i)->get("seen_at")->updateUptime(now);
             return;
         }
     }
@@ -497,10 +492,10 @@ void Ev::add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
     } else {
         // Array full, find oldest entry to replace
         target_idx = 0;
-        uint32_t oldest_time = UINT32_MAX;
+        micros_t oldest_time = micros_t{INT64_MAX};
 
         for (size_t i = 0; i < seen_macs.count(); i++) {
-            uint32_t entry_time = seen_macs.get(i)->get("last_seen")->asUint();
+            micros_t entry_time = seen_macs.get(i)->get("seen_at")->asUptime();
             if (entry_time < oldest_time) {
                 oldest_time = entry_time;
                 target_idx = i;
@@ -509,5 +504,5 @@ void Ev::add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
     }
 
     seen_macs.get(target_idx)->get("mac")->updateString(mac_str);
-    seen_macs.get(target_idx)->get("last_seen")->updateUint(now);
+    seen_macs.get(target_idx)->get("seen_at")->updateUptime(now);
 }

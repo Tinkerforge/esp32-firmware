@@ -19,7 +19,7 @@ export interface state {
 
 export type seen_macs = {
     mac: string;
-    last_seen: number;
+    seen_at: number;
 }[];
 
 export interface inject_ev {
