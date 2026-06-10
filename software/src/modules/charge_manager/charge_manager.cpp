@@ -375,7 +375,6 @@ static constexpr int16_t AUTHD_ANONYMOUSLY = 0;
 static void update_charge_tracking(
     uint8_t client_id,
     cm_state_v1 *v1,
-    cm_state_v5 *v5,
     const CurrentAllocatorConfig *cfg,
     ChargerState *charger_state)
 {
@@ -487,6 +486,12 @@ static void update_authentication(
     // TODO: bounds check
     auto &target = charger_state[client_id];
 
+    if (v5 == nullptr) {
+        memset(target.auth_info, 0, sizeof(target.auth_info));
+    } else {
+        memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
+    }
+
     micros_t deadtime = 30_s;
 #if MODULE_NFC_AVAILABLE()
     deadtime = nfc.get_deadtime_post_start();
@@ -544,22 +549,6 @@ static void update_authentication(
     if (latest_auth_fail != 0_us) {
         target.last_auth_fail_timestamp = latest_auth_fail;
     }
-}
-
-static void update_nfc_tag_info(
-    uint8_t client_id,
-    cm_state_v1 *v1,
-    cm_state_v5 *v5,
-    ChargerState *charger_state)
-{
-    auto &target = charger_state[client_id];
-
-    if (v5 == nullptr || !CM_FEATURE_FLAGS_NFC_IS_SET(v1->feature_flags)) {
-        memset(target.auth_info, 0, sizeof(target.auth_info));
-        return;
-    }
-
-    memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
 }
 
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
@@ -655,10 +644,9 @@ void ChargeManager::start_manager_task()
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
 
-            update_nfc_tag_info(client_id, v1, v5, this->charger_state);
             update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
 
-            update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
+            update_charge_tracking(client_id, v1, this->ca_config, this->charger_state);
 
             update_from_client_packet(
                     client_id,
