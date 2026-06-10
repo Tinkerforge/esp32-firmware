@@ -1,0 +1,34 @@
+From 76091d3804510317b0bf6ddcae41f59413ffba79 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 9 Jun 2026 18:48:36 +0200
+Subject: [PATCH] ota: Fix esp_ota_get_running_partition
+
+Correctly return NULL when running partition cannot be found, instead of aborting.
+---
+ components/app_update/esp_ota_ops.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/components/app_update/esp_ota_ops.c b/components/app_update/esp_ota_ops.c
+index f77d54b545..e4398eff7f 100644
+--- a/components/app_update/esp_ota_ops.c
++++ b/components/app_update/esp_ota_ops.c
+@@ -718,7 +718,6 @@ const esp_partition_t* esp_ota_get_running_partition(void)
+     esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP,
+                                                      ESP_PARTITION_SUBTYPE_ANY,
+                                                      NULL);
+-    assert(it != NULL); /* has to be at least one app partition */
+ 
+     while (it != NULL) {
+         const esp_partition_t *p = esp_partition_get(it);
+@@ -730,7 +729,7 @@ const esp_partition_t* esp_ota_get_running_partition(void)
+         it = esp_partition_next(it);
+     }
+ 
+-    abort(); /* Partition table is invalid or corrupt */
++    return NULL;
+ }
+ 
+ 
+-- 
+2.47.3
+

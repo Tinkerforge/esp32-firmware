@@ -1,0 +1,64 @@
+From 82c78ddeb09172c0216d9e2f1ec21b3b411305aa Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 9 Jun 2026 18:54:53 +0200
+Subject: [PATCH] Support optional Secure Boot v2
+
+Support running with SBv2 enabled or disabled.
+---
+ .../bootloader_support/src/bootloader_utility.c      |  2 +-
+ components/bootloader_support/src/esp_image_format.c | 12 ++++++++++++
+ components/bootloader_support/src/secure_boot.c      |  2 --
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/components/bootloader_support/src/bootloader_utility.c b/components/bootloader_support/src/bootloader_utility.c
+index 1fae580e65..d484025430 100644
+--- a/components/bootloader_support/src/bootloader_utility.c
++++ b/components/bootloader_support/src/bootloader_utility.c
+@@ -691,7 +691,7 @@ static void load_image(const esp_image_metadata_t *image_data)
+ #endif // CONFIG_SECURE_BOOT_FLASH_ENC_KEYS_BURN_TOGETHER
+ 
+ #ifdef CONFIG_SECURE_BOOT_V2_ENABLED
+-    err = esp_secure_boot_v2_permanently_enable(image_data);
++    err = ESP_OK; //esp_secure_boot_v2_permanently_enable(image_data); // Never force-enable Secure Boot. Leave it to the application to enable Secure Boot when desired.
+     if (err != ESP_OK) {
+         ESP_LOGE(TAG, "Secure Boot v2 failed (%d)", err);
+         return;
+diff --git a/components/bootloader_support/src/esp_image_format.c b/components/bootloader_support/src/esp_image_format.c
+index 96fc88967a..b15c9ed4d2 100644
+--- a/components/bootloader_support/src/esp_image_format.c
++++ b/components/bootloader_support/src/esp_image_format.c
+@@ -1096,6 +1096,18 @@ static esp_err_t verify_signature_and_adjust_image_len(esp_image_metadata_t *dat
+ static esp_err_t verify_secure_boot_signature(bootloader_sha256_handle_t sha_handle, esp_image_metadata_t *data, uint8_t *image_digest, uint8_t *verified_digest)
+ {
+ #if (SECURE_BOOT_CHECK_SIGNATURE == 1)
++    // Make Secure Boot check resistant to fault-injection. Stolen from the ESP_FAULT_ASSERT macro.
++    asm volatile ("" ::: "memory");
++    if (!esp_secure_boot_enabled()) {
++        asm volatile ("" ::: "memory");
++        if (!esp_secure_boot_enabled()) {
++            asm volatile ("" ::: "memory");
++            if (!esp_secure_boot_enabled()) {
++                return ESP_OK;
++            }
++        }
++    }
++
+     uint32_t end = data->start_addr + data->image_len;
+ 
+     ESP_LOGI(TAG, "Verifying image signature...");
+diff --git a/components/bootloader_support/src/secure_boot.c b/components/bootloader_support/src/secure_boot.c
+index 6ac98a20a5..5fab8801f3 100644
+--- a/components/bootloader_support/src/secure_boot.c
++++ b/components/bootloader_support/src/secure_boot.c
+@@ -182,8 +182,6 @@ void esp_secure_boot_init_checks(void)
+         esp_err_t err = secure_boot_v2_check(&need_fix);
+ #endif
+         update_efuses(need_fix, err);
+-    } else {
+-        ESP_LOGE(TAG, "Mismatch in secure boot settings: the app config is enabled but eFuse not");
+     }
+ #endif // CONFIG_SECURE_BOOT
+ 
+-- 
+2.47.3
+
