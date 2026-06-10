@@ -118,7 +118,7 @@ void ChargeAuthorization::notify_auth(int16_t user_id, millis_t last_seen, CMAut
 
 void ChargeAuthorization::register_urls()
 {
-    api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"tag_id"});
+    api.addState("charge_authorization/last_seen", &last_seen_authentications, {}, {"tag_id", "mac"});
 }
 
 int16_t ChargeAuthorization::find_user(const cm_auth_info &info)

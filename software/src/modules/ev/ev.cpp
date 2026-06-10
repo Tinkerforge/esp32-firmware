@@ -190,9 +190,9 @@ void Ev::setup()
 
 void Ev::register_urls()
 {
-    api.addPersistentConfig("ev/config", &config);
-    api.addState("ev/state", &state);
-    api.addState("ev/seen_macs", &seen_macs);
+    api.addPersistentConfig("ev/config", &config, {}, {"mac"});
+    api.addState("ev/state", &state, {}, {"mac"});
+    api.addState("ev/seen_macs", &seen_macs, {}, {"mac"});
 
     api.addCommand("ev/inject_soc", &inject_soc, {}, [this](Language /*language*/, String &errmsg) {
         float soc = inject_soc.get("soc")->asFloat();
