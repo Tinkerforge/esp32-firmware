@@ -285,10 +285,6 @@ static_assert(CM_STATE_V4_LENGTH == 4, "Unexpected CM_STATE_V4_LENGTH");
 
 struct cm_auth_info {
     uint8_t _padding; // in use for cm_state_v4 requested_charge_mode
-    /**
-     * 0 = no authentication
-     * 1 = NFC
-     */
     CMAuthType auth_method;
     uint16_t last_seen_s;
     uint8_t tag_type;
