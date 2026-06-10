@@ -178,23 +178,23 @@ bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
     }
 
     if (strncmp(p, "1150", 4) == 0) {
-        sku->type2 = SKUType2::KW11M5p0Cable;
+        sku->type2 = SKUType2::Cable1150;
         p += 4;
     }
     else if (strncmp(p, "1175", 4) == 0) {
-        sku->type2 = SKUType2::KW11M7p5Cable;
+        sku->type2 = SKUType2::Cable1175;
         p += 4;
     }
     else if (strncmp(p, "2250", 4) == 0) {
-        sku->type2 = SKUType2::KW22M5p0Cable;
+        sku->type2 = SKUType2::Cable2250;
         p += 4;
     }
     else if (strncmp(p, "2275", 4) == 0) {
-        sku->type2 = SKUType2::KW22M7p5Cable;
+        sku->type2 = SKUType2::Cable2275;
         p += 4;
     }
     else if (strncmp(p, "CC", 2) == 0) {
-        sku->type2 = SKUType2::CustomCable;
+        sku->type2 = SKUType2::CableCustom;
         p += 2;
     }
     else {
