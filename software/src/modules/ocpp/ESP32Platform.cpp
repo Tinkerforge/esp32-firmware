@@ -919,5 +919,5 @@ void platform_update_config_state(ConfigKey key,
 
 bool platform_supports_signed_meter_values(void *_ctx, int32_t connectorId) {
     // We will use an eFuse later to identify "Eichrecht"-conforming chargers. For now, accept all WARP4 hardware.
-    return OPTIONS_PRODUCT_ID_IS_WARP4();
+    return false; //OPTIONS_PRODUCT_ID_IS_WARP4();
 }
