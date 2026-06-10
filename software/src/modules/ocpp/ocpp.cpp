@@ -97,7 +97,7 @@ void Ocpp::pre_setup()
     state = Config::Object({
         {"charge_point_state", Config::Uint8(0)},
         {"charge_point_status", Config::Uint8(0)},
-        {"next_profile_eval", Config::Int52(0)},
+        {"next_profile_eval", Config::Uptime()},
 
         {"connector_state", Config::Uint8(0)},
         {"connector_status", Config::Uint8(0)},
@@ -109,7 +109,7 @@ void Ocpp::pre_setup()
         {"last_rejected_tag", Config::Str("", 0, 21)},
         {"last_rejected_tag_reason", Config::Uint8(0)},
         {"txn_id", Config::Int32(INT32_MAX)},
-        {"txn_start_time", Config::Int52(0)},
+        {"txn_start_time", Config::Uptime()},
         {"current", Config::Uint32(0)},
         {"txn_with_invalid_id", Config::Bool(false)},
         {"unavailable_requested", Config::Bool(false)},
@@ -124,7 +124,7 @@ void Ocpp::pre_setup()
         {"status_queue_depth", Config::Uint8(0)},
         {"txn_msg_queue_depth", Config::Uint8(0)},
         {"connected", Config::Bool(false)},
-        {"connected_change_time", Config::Int52(0)},
+        {"connected_change_time", Config::Uptime()},
         {"last_ping_sent", Config::Uint32(0)},
         {"pong_timeout", Config::Uint32(0)},
     });
