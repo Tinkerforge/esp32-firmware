@@ -46,7 +46,11 @@ import { Language } from "../../ts/language";
 import { GenerationState } from "./generated/generation_state.enum";
 import { FileType } from "./generated/file_type.enum";
 import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
+//#if MODULE_EV_AVAILABLE
 import { EvSymbol } from "../ev/main";
+//#else
+const EvSymbol = <></>
+//#endif
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
