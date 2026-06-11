@@ -1500,7 +1500,10 @@ de_hyph = [
     "Nut-zer-li-mit",
     "ver-wal-tet",
     "hin-ter-legt",
-
+    "Dif-fe-renz",
+    "Kon-stan-te",
+    "Mul-ti-pli-ka-ti-on",
+    "Ge-rich-te-ter",
 ]
 
 en_hyph = [
@@ -2004,6 +2007,8 @@ en_hyph = [
     "Dis-cov-er-ing",
     "sep-a-rate-ly",
     "au-tho-rize",
+    "Dif-fer-ence",
+    "Mul-ti-pli-ca-tion",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
