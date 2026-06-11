@@ -135,7 +135,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <div class="col px-0" />
                 {props.ev_soc ?
                     <div class="col-auto ps-2 mb-2">
-                        <span class="align-middle">{util.toLocaleFixed(props.ev_soc, 2)} %</span>
+                        <span class="align-middle">{util.toLocaleFixed(props.ev_soc, 0)} %</span>
                         <span class="ps-2"><Battery/></span>
                     </div> : undefined}
             </div> : undefined}
