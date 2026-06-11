@@ -54,6 +54,7 @@ let x = {
 
             "table_display_name": "Display name",
             "table_power": "Power",
+            "table_state_of_charge": "State of charge",
             "table_energy_import": "Energy draw",
             "table_energy_export": "Energy feed",
             "table_phases": "Phases",

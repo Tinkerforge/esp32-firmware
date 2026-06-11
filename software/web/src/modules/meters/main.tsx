@@ -688,12 +688,13 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                     <div class="form-group">
                         <Table
                             tableTill="lg"
-                            columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy_import"), __("meters.content.table_energy_export"), __("meters.content.table_phases")]}
+                            columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_state_of_charge"), __("meters.content.table_energy_import"), __("meters.content.table_energy_export"), __("meters.content.table_phases")]}
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
                                 let config = this.state.configs_table[meter_slot];
                                 let values_by_id = this.state.values_by_id[meter_slot];
                                 let power: number = null;
+                                let state_of_charge: number = null;
                                 let energy_import: number = null;
                                 let energy_export: number = null;
                                 let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
@@ -707,6 +708,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                         highlighted_value_ids.push(this.value_ids[meter_slot][power_idx]);
                                     }
 
+                                    state_of_charge = values_by_id[MeterValueID.StateOfCharge];
                                     energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
 
                                     if (util.hasValue(energy_import)) {
@@ -960,6 +962,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     columnValues: [
                                         get_meter_name(this.state.configs_table, meter_slot),
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
+                                        util.hasValue(state_of_charge) ? util.toLocaleFixed(state_of_charge, 1) + " %" : undefined,
                                         util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
                                         util.hasValue(energy_export) ? util.toLocaleFixed(energy_export, 3) + " kWh" : undefined,
                                         util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
@@ -972,7 +975,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     ],
                                     extraFieldName: __("meters.content.detailed_values"),
                                     extraValue: extraValue,
-                                    fieldWithBox: [true, true, true, true, false],
+                                    fieldWithBox: [true, true, true, true, true, false],
                                     editTitle: __("meters.content.edit_meter_title"),
                                     onEditShow: async () => {
                                         let config_plugin = config_plugins[config[0]];

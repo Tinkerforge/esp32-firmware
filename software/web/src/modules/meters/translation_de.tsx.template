@@ -54,6 +54,7 @@ let x = {
 
             "table_display_name": "Anzeigename",
             "table_power": "Leistung",
+            "table_state_of_charge": "Ladestand",
             "table_energy_import": "Energiebezug",
             "table_energy_export": "Energieeinspeisung",
             "table_phases": "Phasen",
