@@ -449,6 +449,13 @@ float Ev::get_session_energy_kwh()
         return 0.0f;
     }
 
+    // No charge currently running: session energy is 0. charge_tracker uses
+    // user_id == -1 as the "no active charge" sentinel (anonymous charges use
+    // user_id == 0).
+    if (charge_tracker.current_charge.get("user_id")->asInt() < 0) {
+        return 0.0f;
+    }
+
     float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
     if (isnan(meter_start)) {
         return 0.0f;
