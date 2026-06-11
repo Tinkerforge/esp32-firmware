@@ -265,6 +265,31 @@ void ChargeTracker::pre_setup()
 // #endif
 }
 
+
+static String get_charger_display_name_from_host(const char *directory)
+{
+    if (directory == nullptr || directory[0] == '\0') {
+        directory = local_uid_str;
+    }
+
+    uint32_t uid = 0;
+    if (tf_base58_decode(directory, &uid) != 0) {
+        return String(directory);
+    }
+
+    const char *name = charge_manager.get_charger_name_by_uid(uid);
+    if (name != nullptr) {
+        return String(name);
+    }
+
+    return String(directory);
+}
+
+static bool charged_invalid(ChargeStart cs, ChargeEnd ce)
+{
+    return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
+}
+
 bool ChargeTracker::repair_last(float meter_start, const char *directory)
 {
     Charge charges[3];
@@ -828,11 +853,6 @@ void ChargeTracker::update_first_charge_timestamp() {
     state.get("first_charge_timestamp")->updateUint(first_charge_timestamp == UINT32_MAX ? 0 : first_charge_timestamp);
 }
 
-bool charged_invalid(ChargeStart cs, ChargeEnd ce)
-{
-    return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
-}
-
 // Returns true if the charger (identified by its directory) is present in the charge manager configuration.
 // For the local charger (directory == nullptr), this checks if the local UID is in the config.
 // For remote chargers, the directory name is the base58-encoded UID.
@@ -859,24 +879,6 @@ static bool is_charger_in_config(const char *directory)
     }
 
     return false;
-}
-
-static String get_charger_display_name_from_host(const char *directory)
-{
-    if (directory == nullptr)
-        return String();
-
-    uint32_t uid = 0;
-    if (tf_base58_decode(directory, &uid) != 0) {
-        return String(directory);
-    }
-
-    const char *name = charge_manager.get_charger_name_by_uid(uid);
-    if (name != nullptr) {
-        return String(name);
-    }
-
-    return String(directory);
 }
 
 void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *directory)
