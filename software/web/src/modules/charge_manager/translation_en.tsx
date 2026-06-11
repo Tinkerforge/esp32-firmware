@@ -196,7 +196,7 @@ let x = {
                     case CASState.NoVehicle: return "No vehicle connected";
                     case CASState.UserBlocked: return "Waiting for local release";
                     case CASState.ManagerBlocked: return "Waiting for manager release";
-                    case CASState.CarBlocked: return "Charging cleared";
+                    case CASState.CarBlocked: return "Ready";
                     case CASState.Charging: return "Charging";
                     case CASState.Error: return "Error";
                     case CASState.Charged: return "Charging done";

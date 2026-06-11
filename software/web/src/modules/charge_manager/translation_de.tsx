@@ -172,7 +172,7 @@ let x = {
                     case CASState.NoVehicle: return "Kein Fahrzeug angeschlossen";
                     case CASState.UserBlocked: return "Warte auf lokale Freigabe";
                     case CASState.ManagerBlocked: return "Warte auf Manager-Freigabe";
-                    case CASState.CarBlocked: return "Laden freigegeben";
+                    case CASState.CarBlocked: return "Ladebereit";
                     case CASState.Charging: return "Lädt";
                     case CASState.Error: return "Fehler";
                     case CASState.Charged: return "Laden abgeschlossen";
