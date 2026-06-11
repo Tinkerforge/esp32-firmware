@@ -1199,25 +1199,28 @@ void ChargeTracker::repair_charges()
             bool file_needs_repair = false;
             memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
 
-            File f = LittleFS.open(chargeRecordFilename(i, directory));
-            if (i < last_record) {
-                File next_f = LittleFS.open(chargeRecordFilename(i + 1, directory));
-                int read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
-                if (read != sizeof(Charge))
+            int read;
+            {
+                File f = LittleFS.open(chargeRecordFilename(i, directory));
+                if (i < last_record) {
+                    File next_f = LittleFS.open(chargeRecordFilename(i + 1, directory));
+                    read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
+                    if (read != sizeof(Charge))
+                        buf[257].cs.meter_start = NAN;
+                }
+                else
                     buf[257].cs.meter_start = NAN;
-            }
-            else
-                buf[257].cs.meter_start = NAN;
 
-            int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
-            if (read == -1 || read == 0) {
-                break;
-            }
+                read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
+                if (read == -1 || read == 0) {
+                    break;
+                }
 
-            for (int a = 1; a < read / sizeof(Charge); a++) {
-                if (repair_logic(&buf[a])) {
-                    file_needs_repair = true;
-                    num_repaired++;
+                for (int a = 1; a < read / sizeof(Charge); a++) {
+                    if (repair_logic(&buf[a])) {
+                        file_needs_repair = true;
+                        num_repaired++;
+                    }
                 }
             }
             if (file_needs_repair) {
