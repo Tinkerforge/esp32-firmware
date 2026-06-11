@@ -462,7 +462,7 @@ void Ship::setup_mdns()
         return;
     }
     // Optional Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
+    mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER());
     mdns_service_txt_item_set("_ship", "_tcp", "model", OPTIONS_PRODUCT_NAME());
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
