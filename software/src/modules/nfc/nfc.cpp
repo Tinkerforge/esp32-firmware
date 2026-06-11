@@ -397,8 +397,10 @@ void NFC::setup_auth_tags()
 {
     const auto *auth_tags_cfg = (Config *)config.get("authorized_tags");
     auth_tag_count = auth_tags_cfg->count();
-    if (auth_tag_count == 0)
+    if (auth_tag_count == 0) {
+        auth_tags = nullptr;
         return;
+    }
 
     auth_tags = heap_alloc_array<auth_tag_t>(auth_tag_count);
     memset(auth_tags.get(), 0, sizeof(auth_tag_t) * auth_tag_count);
