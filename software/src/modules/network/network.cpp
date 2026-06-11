@@ -162,6 +162,30 @@ void Network::register_urls()
         return;
     }
 
+    ret = mdns_service_txt_item_set("_http", "_tcp", "firmware_version", build_version_full_str());
+    if (ret != ESP_OK) {
+        logger.printfln("mDNS setup failed");
+        return;
+    }
+
+    ret = mdns_service_txt_item_set("_http", "_tcp", "txtvers", "1");
+    if (ret != ESP_OK) {
+        logger.printfln("mDNS setup failed");
+        return;
+    }
+
+    ret = mdns_service_txt_item_set("_http", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
+    if (ret != ESP_OK) {
+        logger.printfln("mDNS setup failed");
+        return;
+    }
+
+    ret = mdns_service_txt_item_set("_http", "_tcp", "model", OPTIONS_PRODUCT_NAME());
+    if (ret != ESP_OK) {
+        logger.printfln("mDNS setup failed");
+        return;
+    }
+
     mdns_started = true;
     logger.printfln("mDNS responder started");
 
