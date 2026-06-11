@@ -174,7 +174,7 @@ void Network::register_urls()
         return;
     }
 
-    ret = mdns_service_txt_item_set("_http", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
+    ret = mdns_service_txt_item_set("_http", "_tcp", "brand", OPTIONS_MANUFACTURER());
     if (ret != ESP_OK) {
         logger.printfln("mDNS setup failed");
         return;
