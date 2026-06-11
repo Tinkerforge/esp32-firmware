@@ -336,8 +336,18 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
         }
     }
 
-    if (repaired)
-        this->updateLastCharges();
+    if (repaired) {
+        auto repaired_entry_charger_name = get_charger_display_name_from_host(directory);
+        for (int i = this->last_charges.count() - 1; i >= 0; --i) {
+            auto charge = this->last_charges.get(i);
+            if (charge->get("timestamp_minutes")->asUint32() == charges[1].cs.timestamp_minutes
+                    && charge->get("charge_duration")->asUint32() == charges[1].ce.charge_duration
+                    && charge->get("user_id")->asUint8() == charges[1].cs.user_id
+                    && charge->get("charger_name")->asString() == repaired_entry_charger_name) {
+                charge->get("energy_charged")->updateFloat(charged_invalid(charges[1].cs, charges[1].ce) ? NAN : charges[1].ce.meter_end - charges[1].cs.meter_start);
+            }
+        }
+    }
 
     return true;
 }
@@ -853,34 +863,6 @@ void ChargeTracker::update_first_charge_timestamp() {
     state.get("first_charge_timestamp")->updateUint(first_charge_timestamp == UINT32_MAX ? 0 : first_charge_timestamp);
 }
 
-// Returns true if the charger (identified by its directory) is present in the charge manager configuration.
-// For the local charger (directory == nullptr), this checks if the local UID is in the config.
-// For remote chargers, the directory name is the base58-encoded UID.
-static bool is_charger_in_config(const char *directory)
-{
-    const char *b58 = directory == nullptr ? local_uid_str : directory;
-
-    uint32_t uid = 0;
-    if (tf_base58_decode(b58, &uid) != 0) {
-        // Failed to decode; assume not in config
-        return false;
-    }
-
-    const char *name = charge_manager.get_charger_name_by_uid(uid);
-    if (name != nullptr) {
-        return true;
-    }
-
-    if (directory == nullptr) {
-        // Charger not found but this is the local charger.
-        // We are probably not a charge manager.
-        // Include local charger in this case.
-        return true;
-    }
-
-    return false;
-}
-
 void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *directory)
 {
     uint8_t buf[CHARGE_RECORD_SIZE];
@@ -1188,7 +1170,7 @@ void ChargeTracker::repair_charges()
     all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 2);
 
     // Helper lambda to repair charges in a specific directory
-    auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory, bool include_in_last_charges) {
+    auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory) {
         uint32_t first_record = 0;
         uint32_t last_record = 0;
 
@@ -1236,21 +1218,17 @@ void ChargeTracker::repair_charges()
             buf[0] = buf[256];
         }
 
-        // After repairing, get last charges from this directory and merge
-        // Only include charges from chargers that are in the charge manager config
-        if (include_in_last_charges) {
-            std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(directory);
-            merge_charge_vectors(all_charges, dir_charges);
-        }
+        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(directory);
+        merge_charge_vectors(all_charges, dir_charges);
     };
 
-    repair_directory(nullptr, is_charger_in_config(nullptr));
+    repair_directory(nullptr);
 
     // Scan all subdirectories
     for_filename_in(CHARGE_RECORD_FOLDER,
         [&repair_directory](const char *name, size_t name_len, bool is_dir) {
             if (is_dir) {
-                repair_directory(name, is_charger_in_config(name));
+                repair_directory(name);
             }
             return true;
         });
@@ -1283,18 +1261,6 @@ void ChargeTracker::repair_charges()
         String charger_display_name = get_charger_display_name_from_host(charge.directory.c_str());
         last_charge->get("charger_name")->updateString(charger_display_name);
     }
-}
-
-void ChargeTracker::register_events()
-{
-    event.registerEvent("charge_manager/config", {"chargers"}, [this](const Config *chargers_cfg) {
-        std::lock_guard<std::mutex> lock{records_mutex};
-
-        // TODO: Discuss if we are able to identify charges by charger and update them selectively.
-        this->updateLastCharges();
-
-        return EventResult::OK;
-    });
 }
 
 bool GenerationParams::init() {
@@ -2897,52 +2863,6 @@ search_done:
 #endif
 
     return rc;
-}
-
-void ChargeTracker::updateLastCharges()
-{
-    std::vector<ChargeWithLocation> all_charges;
-    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
-
-    auto get_charges_from_directory = [this, &all_charges](const char *dir) {
-        if (!is_charger_in_config(dir)) {
-            return;
-        }
-        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(dir);
-        merge_charge_vectors(all_charges, dir_charges);
-    };
-
-    get_charges_from_directory(nullptr);
-
-    for_filename_in(CHARGE_RECORD_FOLDER,
-        [&get_charges_from_directory](const char *name, size_t name_len, bool is_dir) {
-            if (is_dir) {
-                get_charges_from_directory(name);
-            }
-            return true;
-        });
-
-    while (last_charges.count() > 0) {
-        last_charges.remove(0);
-    }
-
-    size_t charges_to_add = std::min(all_charges.size(), static_cast<size_t>(CHARGE_RECORD_LAST_CHARGES_SIZE));
-    for (int i = static_cast<int>(charges_to_add) - 1; i >= 0; --i) {
-        const auto &charge_with_loc = all_charges[i];
-
-        auto last_charge = last_charges.add();
-        last_charge->get("timestamp_minutes")->updateUint(charge_with_loc.charge.cs.timestamp_minutes);
-        last_charge->get("charge_duration")->updateUint(charge_with_loc.charge.ce.charge_duration);
-        last_charge->get("user_id")->updateUint(charge_with_loc.charge.cs.user_id);
-
-        float energy_charged = charged_invalid(charge_with_loc.charge.cs, charge_with_loc.charge.ce)
-            ? NAN
-            : charge_with_loc.charge.ce.meter_end - charge_with_loc.charge.cs.meter_start;
-        last_charge->get("energy_charged")->updateFloat(energy_charged);
-
-        String charger_display_name = get_charger_display_name_from_host(charge_with_loc.directory.c_str());
-        last_charge->get("charger_name")->updateString(charger_display_name);
-    }
 }
 
 ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, size_t *out_count)

@@ -76,7 +76,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void register_events() override;
 
     bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
