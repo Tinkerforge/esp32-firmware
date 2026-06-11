@@ -40,11 +40,13 @@ import { Table, TableRow } from "../../ts/components/table";
 import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
+import { Battery, BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
 import { CSVFlavor } from "./generated/csv_flavor.enum";
 import { Language } from "../../ts/language";
 import { GenerationState } from "./generated/generation_state.enum";
 import { FileType } from "./generated/file_type.enum";
+import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
+import { EvSymbol } from "../ev/main";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -85,7 +87,7 @@ let wallet_icon = <svg width="24" height="24" fill="none" stroke="currentColor" 
 
 let wallbox_icon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="feather feather-type2"><path d="M23 10.846c0 6.022-4.925 10.904-11 10.904S1 16.868 1 10.846c0-1.506.308-2.94.864-4.244C2.143 5.95 2.88 4.75 2.88 4.75h18.243s.736 1.2 1.014 1.852c.556 1.304.864 2.738.864 4.244z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="8.5" r="1.5"/><circle cx="15" cy="8.5" r="1.5"/><circle cx="9" cy="16.75" r="2"/><circle cx="15" cy="16.75" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
 
-function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number, local_device_name: string}) {
+function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number, local_device_name: string, ev_name?: string, ev_soc?: number}) {
     const display_name = useMemo(
         () => {
             let result = __("charge_tracker.script.unknown_user");
@@ -117,6 +119,22 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
+        {props.ev_name || props.ev_soc ?
+            <div class="row justify-content-end">
+                {props.ev_name ?
+                    <div class="col-auto pe-2 mb-2">
+                        <span class="pe-2">
+                        {EvSymbol}
+                        </span>
+                        <span class="align-middle">{props.ev_name}</span>
+                    </div> : undefined}
+                <div class="col px-0" />
+                {props.ev_soc ?
+                    <div class="col-auto ps-2 mb-2">
+                        <span class="align-middle">{util.toLocaleFixed(props.ev_soc, 2)} %</span>
+                        <span class="ps-2"><Battery/></span>
+                    </div> : undefined}
+            </div> : undefined}
         <div class={"row justify-content-end" + (show_charger_name || have_charge_cost ? "" : " mb-n2")}>
             <div class="col-auto pe-2 mb-2">
                 <span class="pe-2"><Calendar/></span>
@@ -881,6 +899,17 @@ export class ChargeTrackerStatus extends Component {
 
         let current_charge = <></>;
 
+        let ev_name = undefined;
+        let ev_soc = undefined;
+//#if MODULE_EV_AVAILABLE
+        let ev_state = API.get("ev/state");
+        let evs = API.get("ev/config").evs;
+        if (ev_state.mac != "" && ev_state.active_ev_index >= 0 && ev_state.active_ev_index < evs.length ) {
+            ev_name = evs[ev_state.active_ev_index].name;
+            ev_soc = ev_state.soc;
+        }
+//#endif
+
 //#if MODULE_EVSE_COMMON_AVAILABLE
         let evse_uptime = API.get('evse/low_level_state').uptime;
         let energy_abs = API.get('meter/values').energy_abs;
@@ -906,6 +935,8 @@ export class ChargeTrackerStatus extends Component {
                                     users={users}
                                     electricity_price={electricity_price}
                                     local_device_name={API.get('info/display_name').display_name}
+                                    ev_name={ev_name}
+                                    ev_soc={ev_soc}
                                     />
                 </ListGroup>
             </FormRow>;
