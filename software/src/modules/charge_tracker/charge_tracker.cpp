@@ -1183,7 +1183,7 @@ void ChargeTracker::repair_charges()
     uint32_t num_repaired = 0;
 
     std::vector<ChargeWithLocation> all_charges;
-    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
+    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 2);
 
     // Helper lambda to repair charges in a specific directory
     auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory, bool include_in_last_charges) {
