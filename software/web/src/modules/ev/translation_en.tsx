@@ -16,7 +16,7 @@ let x = {
         "content": {
             "ev": "Vehicles",
             "ev_profiles": "Vehicle profiles",
-            "ev_profiles_desc": "Configure known electric vehicles by their MAC address for Autocharge. Their battery capacity and charging efficiency are used to estimate the state of charge.",
+            "ev_profiles_desc": "Configure known vehicles by their MAC address for Autocharge. Their battery capacity and charging efficiency are used to estimate the state of charge.",
             "table_name": "Name",
             "table_mac": "MAC address",
             "table_capacity": "Capacity",

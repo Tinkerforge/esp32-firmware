@@ -56,9 +56,9 @@ let x = {
                 "At least one user is required for the charge release.",
             "evse_user_enable_central_management_warning": /*FFN*/(manager_ip: string) => <>{__("This_device")} is managed by {manager_ip}. The (local) charge release can be used in parallel, but users and NFC tags have to be configured here as well as on the charge manager.</>/*NF*/,
 
-            "nfc_tags": "NFC Tags",
+            "nfc_tags": "NFC tags",
             "nfc_tag_id": "Tag ID",
-            "nfc_tag_type": "Tag Type",
+            "nfc_tag_type": "Tag type",
             "nfc_no_tags_assigned": "No NFC tags assigned",
             "nfc_no_seen_tags":  /*FFN*/(central_management: boolean) =>
                 central_management ?
@@ -67,31 +67,31 @@ let x = {
                  /*NF*/,
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Already assigned to user "${other_name}"` /*NF*/,
-            "nfc_add_tag": "Add NFC Tag",
+            "nfc_add_tag": "Add NFC tag",
             "nfc_add_tag_message": /*SFN*/ (
                 have: number,
                 max: number,
                 haveForUser: number
             ) =>
                 `${haveForUser} of ${max} tags assigned to this user (${have} of ${max} tags configured)` /*NF*/,
-            "nfc_seen_tags": "Seen Tags",
+            "nfc_seen_tags": "Seen tags",
             "nfc_last_seen": "Last seen",
             "nfc_add_tag_manually": "Add tag manually",
             "nfc_tag_id_placeholder": "e.g. 01:23:45:67",
             "nfc_tag_id_invalid":
                 "The tag ID must have four to ten groups separated by colons, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
 
-            "ev_macs": "EVs",
+            "ev_macs": "Vehicles",
             "ev_name": "Name",
             "ev_mac": "MAC address",
             "ev_mac_already_assigned": /*SFN*/ (other_name: string) => `Already assigned to user "${other_name}"` /*NF*/,
-            "ev_add_mac": "Add EV",
+            "ev_add_mac": "Add vehicle",
             "ev_add_mac_message": /*SFN*/ (
                 haveForUser: number,
                 numConfigured: number
-            ) => `${haveForUser} of ${numConfigured} EVs assigned to this user` /*NF*/,
-            "ev_available_evs": "EVs",
-            "ev_no_evs": <>No EVs are configured. Configure EVs on the <a href="#ev">Electric Vehicles</a> page to be able to assign them to users.</>
+            ) => `${haveForUser} of ${numConfigured} vehicles assigned to this user` /*NF*/,
+            "ev_available_evs": "Vehicles",
+            "ev_no_evs": <>No vehicles are configured. First configure <a href="#ev">Vehicles</a> to be able to assign them to users.</>
         },
         "script": {
             "reboot_content_changed": "user settings",
