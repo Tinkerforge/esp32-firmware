@@ -109,18 +109,19 @@ static const char *pre_reboot_message = "Pre-reboot stage lasted longer than fiv
 
 #if !MODULE_WATCHDOG_AVAILABLE()
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
 static void pre_reboot_task(void *arg)
 {
     vTaskDelay_ms(static_cast<millis_t>(PRE_REBOOT_MAX_DURATION).as<uint32_t>());
     esp_system_abort(pre_reboot_message);
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
 static void task_creation_failed(int error_code)
 {
-    char msg[48];
-    msg[0] = 0;
-    snprintf(msg, ARRAY_SIZE(msg), "Failed to create pre-reboot task: %i", error_code);
-    esp_system_abort(msg);
+    esp_system_abortf<48>("Failed to create pre-reboot task: %i", error_code);
 }
 
 #endif

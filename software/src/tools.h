@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <time.h>
 #include <new>
 #include <mutex>
@@ -241,4 +242,20 @@ private:
 template<class Enum>
 constexpr std::underlying_type_t<Enum> to_underlying( Enum e ) noexcept {
     return static_cast<std::underlying_type_t<Enum>>(e);
+}
+
+template<size_t msg_size>
+[[gnu::noinline]]
+[[gnu::noreturn]]
+[[gnu::format(__printf__, 1, 2)]]
+void esp_system_abortf(const char *fmt, ...)
+{
+    char msg[msg_size]; // message buffer must be on the stack to be included in a coredump
+    va_list args;
+
+    va_start(args, fmt);
+    vsnprintf(msg, msg_size, fmt, args);
+    va_end(args);
+
+    esp_system_abort(msg);
 }

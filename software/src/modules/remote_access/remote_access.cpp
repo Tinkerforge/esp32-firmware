@@ -2479,7 +2479,7 @@ int RemoteAccess::begin_charge_log_send(
             case NackReason::Unauthorized: reason_str = "unauthorized"; break;
             case NackReason::InternalError: reason_str = "internal error"; break;
             case NackReason::AlreadySent: reason_str = "already sent"; break;
-            default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+            default: esp_system_abort("How did we end here? The switch statement should be exhaustive!");
         }
         logger.printfln("Charge log request was rejected: %s", reason_str);
         release_inner_socket();
@@ -2499,8 +2499,8 @@ int RemoteAccess::begin_charge_log_send(
     switch (language) {
         case Language::German:  lang_str = "de"; break;
         case Language::English: lang_str = "en"; break;
-        case Language::Default: esp_system_abort("BUG: this function should not be called with Language::Default");
-        default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+        case Language::Default: esp_system_abort("This function should not be called with Language::Default");
+        default: esp_system_abort("How did we end here? The switch statement should be exhaustive!");
     }
     uint8_t lang[2] = {static_cast<uint8_t>(lang_str[0]), static_cast<uint8_t>(lang_str[1])};
 
@@ -2724,9 +2724,9 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
             lang_str = "en";
             break;
         case Language::Default:
-             esp_system_abort("BUG: this function should not be called with Language::Default");
+             esp_system_abort("This function should not be called with Language::Default");
         default:
-            esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+            esp_system_abort("How did we end here? The switch statement should be exhaustive!");
     }
 
     uint8_t lang[2];

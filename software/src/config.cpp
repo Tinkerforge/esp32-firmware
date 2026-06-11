@@ -290,9 +290,7 @@ const Config::ConstWrap Config::get() const
 [[gnu::noreturn]]
 static void abort_on_object_get_failure(const Config *conf, const char *key)
 {
-    char msg[64];
-    snprintf(msg, ARRAY_SIZE(msg), "%s is not a ConfObject! Tried to get '%s'.", conf->value.getVariantName(), key);
-    esp_system_abort(msg);
+    esp_system_abortf<64>("%s is not a ConfObject! Tried to get '%s'.", conf->value.getVariantName(), key);
 }
 
 Config::Wrap Config::get(const char *s, size_t s_len)
@@ -344,18 +342,14 @@ const Config::ConstWrap Config::get(const String &s) const
 [[gnu::noreturn]]
 static void abort_on_array_get_failure(const Config *conf, size_t i)
 {
-    char msg[48];
-    snprintf(msg, ARRAY_SIZE(msg), "%s not a ConfArray! Tried to get %zu.", conf->value.getVariantName(), i);
-    esp_system_abort(msg);
+    esp_system_abortf<48>("%s not a ConfArray! Tried to get %zu.", conf->value.getVariantName(), i);
 }
 
 [[gnu::noinline]]
 [[gnu::noreturn]]
 static void abort_on_union_out_of_range(size_t i)
 {
-    char msg[48];
-    snprintf(msg, ARRAY_SIZE(msg), "Tried to get %zu of ConfUnion: Out of range.", i);
-    esp_system_abort(msg);
+    esp_system_abortf<48>("Tried to get %zu of ConfUnion: Out of range.", i);
 }
 
 Config::Wrap Config::get(size_t i)
@@ -422,9 +416,7 @@ const Config::ConstWrap Config::get(size_t i) const
 [[gnu::noreturn]]
 static void abort_on_array_add_max_failure(size_t max_elements)
 {
-    char msg[96];
-    snprintf(msg, ARRAY_SIZE(msg), "Tried to add to an ConfArray that already has the max allowed number of elements (%zu).", max_elements);
-    esp_system_abort(msg);
+    esp_system_abortf<96>("Tried to add to an ConfArray that already has the max allowed number of elements (%zu).", max_elements);
 }
 
 Config::Wrap Config::add()

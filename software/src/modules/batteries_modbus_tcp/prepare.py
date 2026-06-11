@@ -447,7 +447,7 @@ for group, modes in all_modes.items():
         specs_cpp.append(f'{indent}    switch (mode) {{\n'
                          f'{indent}    case BatteryMode::Discover:\n'
                          f'{indent}    case BatteryMode::None:\n'
-                         f'{indent}        esp_system_abort("Invalid battery mode for loading table");')
+                         f'{indent}        esp_system_abortf<64>("Invalid battery mode for loading table: %d", static_cast<int>(mode));')
 
         expected_modes = [util.FlavoredName(x).get() for x in ['Block', 'Normal', 'Block Discharge', 'Force Charge', 'Block Charge', 'Force Discharge']]
 
@@ -479,7 +479,7 @@ for group, modes in all_modes.items():
                              f'{indent}        break;')
 
         specs_cpp.append(f'{indent}    default:\n'
-                         f'{indent}        esp_system_abort("Unknown battery mode in loading table call");\n'
+                         f'{indent}        esp_system_abortf<64>("Unknown battery mode in loading table call: %d", static_cast<int>(mode));\n'
                          f'{indent}    }}\r')
 
         if variant != None:

@@ -659,6 +659,6 @@ void MeterSunSpec::scan_next()
             break;
 
         default:
-            esp_system_abort("Invalid state during scan");
+            esp_system_abortf<48>("Invalid state during scan: %d", static_cast<int>(scan_state));
     }
 }

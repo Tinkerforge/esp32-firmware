@@ -44,9 +44,7 @@ Config::ConfTuple::Slot *Config::ConfTuple::allocSlotBuf(size_t elements)
 [[gnu::noreturn]]
 static void abort_on_index_oob(size_t index, size_t len)
 {
-    char msg[96];
-    snprintf(msg, ARRAY_SIZE(msg), "Config index %zu out of bounds (tuple size %zu)!", index, len);
-    esp_system_abort(msg);
+    esp_system_abortf<96>("Config index %zu out of bounds (tuple size %zu)!", index, len);
 }
 
 Config *Config::ConfTuple::get(size_t i)

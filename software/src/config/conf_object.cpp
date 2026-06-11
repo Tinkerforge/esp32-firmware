@@ -45,9 +45,7 @@ Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 [[gnu::noreturn]]
 static void abort_on_key_not_found(const char *needle)
 {
-    char msg[64];
-    snprintf(msg, ARRAY_SIZE(msg), "Config key %s not found!", needle);
-    esp_system_abort(msg);
+    esp_system_abortf<64>("Config key %s not found!", needle);
 }
 
 Config *Config::ConfObject::get(const char *needle, size_t needle_len)

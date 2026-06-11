@@ -67,9 +67,7 @@ void Event::setup()
 [[gnu::noreturn]]
 static void registerEvent_stage_abort(const String &path)
 {
-    char msg[128];
-    snprintf(msg, ARRAY_SIZE(msg), "Attempted to register event for %s before the REGISTER_EVENTS BootStage!", path.c_str());
-    esp_system_abort(msg);
+    esp_system_abortf<128>("Attempted to register event for %s before the REGISTER_EVENTS BootStage!", path.c_str());
 }
 
 int64_t Event::registerEvent(const String &path, const std::vector<Config::Key> values, std::function<EventResult(const Config *)> &&callback)
@@ -222,9 +220,7 @@ reg_slot_found:
 [[gnu::noreturn]]
 static void deregisterEvent_concurrent_abort(int64_t eventID)
 {
-    char msg[128];
-    snprintf(msg, ARRAY_SIZE(msg), "Tried to deregister an event handler for eventID %llu from within an event handler.", eventID);
-    esp_system_abort(msg);
+    esp_system_abortf<128>("Tried to deregister an event handler for eventID %llu from within an event handler.", eventID);
 }
 
 [[gnu::noinline]]
@@ -275,9 +271,7 @@ void Event::deregisterEvent(int64_t eventID)
 [[gnu::noreturn]]
 static void pushStateUpdate_ConfPath_abort(const char *state_path)
 {
-    char msg[128];
-    snprintf(msg, ARRAY_SIZE(msg), "Reached end of nested config in %s before reaching end of Config::Key", state_path);
-    esp_system_abort(msg);
+    esp_system_abortf<128>("Reached end of nested config in %s before reaching end of Config::Key", state_path);
 }
 
 bool Event::pushStateUpdate(size_t stateIdx, const String &/*payload*/, const String &path)

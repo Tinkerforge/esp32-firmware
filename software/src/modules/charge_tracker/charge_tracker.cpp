@@ -1414,8 +1414,7 @@ bool GenerationParams::init() {
                     }
 
                     if (idx == -1)
-                        esp_system_abort("charger display name cache too small");
-
+                        esp_system_abort("Charger display name cache too small");
 
                     this->charger_display_name_cache[idx].set(uid, length, buf);
                 }

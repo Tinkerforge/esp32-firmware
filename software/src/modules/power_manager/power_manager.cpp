@@ -554,12 +554,11 @@ void PowerManager::zero_limits()
     cm_limits->max_pv = 0;
 }
 
-[[gnu::noinline]] // Don't put msg buffer on calling function's stack.
+[[gnu::noinline]]
+[[gnu::noreturn]]
 static void abort_on_invalid_history_length(int32_t history_length)
 {
-    char msg[52]; // Message buffer must be on the stack to be included in a coredump.
-    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %li", history_length);
-    esp_system_abort(msg);
+    esp_system_abortf<52>("Invalid minmax filter history length %li", history_length);
 }
 
 static micros_t calculate_minmax_filter_expiration_timestamp(int32_t value_pos, int32_t current_pos, int32_t history_length)

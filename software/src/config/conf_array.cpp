@@ -44,10 +44,8 @@ Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 [[gnu::noreturn]]
 static void abort_on_index_oob(size_t index, const std::vector<Config> *val, const Config::ConfArray *this_arr)
 {
-    char msg[96];
     auto slot = this_arr->getSlot();
-    snprintf(msg, ARRAY_SIZE(msg), "Config index %zu out of bounds (vector size %zu, minElements %u, maxElements %u)!", index, val->size(), slot->minElements, slot->maxElements);
-    esp_system_abort(msg);
+    esp_system_abortf<96>("Config index %zu out of bounds (vector size %zu, minElements %u, maxElements %u)!", index, val->size(), slot->minElements, slot->maxElements);
 }
 
 Config *Config::ConfArray::get(size_t i)

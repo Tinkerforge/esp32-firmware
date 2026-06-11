@@ -98,9 +98,7 @@ void GenericModbusTCPClient::start_generic_read()
 [[gnu::noreturn]]
 void GenericModbusTCPClient::esp_system_abort_prefixed(const char *message)
 {
-    char buf[128];
-    snprintf(buf, ARRAY_SIZE(buf), "%s%s", event_log_message_prefix, message);
-    esp_system_abort(buf);
+    esp_system_abortf<128>("%s%s", event_log_message_prefix, message);
 }
 
 void GenericModbusTCPClient::read_next()
