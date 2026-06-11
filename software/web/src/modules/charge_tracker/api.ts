@@ -108,16 +108,14 @@ interface current_charge_nfc_inject {
 interface current_charge_ev {
     authorization_type: CMAuthType.EV;
     authorization_info?: {
-        tag_type: number;
-        tag_id: string;
+        mac: string
     };
 }
 
 interface current_charge_ev_inject {
     authorization_type: CMAuthType.InjectedEV;
     authorization_info?: {
-        tag_type: number;
-        tag_id: string;
+        mac: string
     };
 }
 
