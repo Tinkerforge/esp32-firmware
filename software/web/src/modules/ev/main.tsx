@@ -218,37 +218,11 @@ export class Ev extends Component<{}, EvState> {
             editEv: {name: "", mac: "", capacity: 60, charging_efficiency: 0.92, user_id: 0},
             seenMacs: [],
         };
-
-        util.addApiEventListener('ev/config', () => {
-            this.forceUpdate();
-        });
-
-        util.addApiEventListener('ev/state', () => {
-            this.forceUpdate();
-        });
-
-        util.addApiEventListener('ev/seen_macs', () => {
-            this.refreshSeenMacs();
-        });
     }
 
     refreshSeenMacs = () => {
         get_all_seen_macs().then((macs) => this.setState({seenMacs: macs}));
     };
-
-    override componentDidMount() {
-        this.refreshSeenMacs();
-        this.interval = window.setInterval(() => {
-            this.refreshSeenMacs();
-            this.forceUpdate();
-        }, 1000);
-    }
-
-    override componentWillUnmount() {
-        if (this.interval !== null) {
-            clearInterval(this.interval);
-        }
-    }
 
     checkMacDuplicate(mac: string, ignoreIndex?: number): boolean {
         return find_matching_ev(API.get("ev/config").evs, mac, ignoreIndex) >= 0;
@@ -350,9 +324,15 @@ export class Ev extends Component<{}, EvState> {
                     addEnabled={ev_config.evs.length < EV_MAX_EVS}
                     addTitle={__("ev.content.add_ev_title")}
                     addMessage={__("ev.content.add_ev_message")(ev_config.evs.length, EV_MAX_EVS)}
-                    onAddShow={async () => this.setState({
-                        addEv: {name: "", mac: "", capacity: 60, charging_efficiency: 0.92, user_id: 0},
-                    })}
+                    onAddShow={async () => {
+                        if (this.interval == null) {
+                            this.refreshSeenMacs();
+                            this.interval = window.setInterval(() => {
+                                this.refreshSeenMacs();
+                            }, 1000);
+                        }
+                        this.setState({addEv: {name: "", mac: "", capacity: 60, charging_efficiency: 0.92, user_id: 0},
+                    })}}
                     onAddGetChildren={() => {
                         const visible_macs = seen_macs.filter(m => m.mac !== "");
                         const unauth_macs = visible_macs.filter(m => find_matching_ev(ev_config.evs, m.mac) < 0);
@@ -399,6 +379,12 @@ export class Ev extends Component<{}, EvState> {
                     }}
                     onAddSubmit={async () => {
                         await saveConfig(ev_config.evs.concat(state.addEv));
+                    }}
+                    onAddHide={async () => {
+                        if (this.interval !== null) {
+                            clearInterval(this.interval);
+                            this.interval = null;
+                        }
                     }}
                     />
                 </FormRow>
