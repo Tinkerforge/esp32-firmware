@@ -297,7 +297,7 @@ void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected
             get_user_id(mac), // matched profile's user, 0 (anonymous) if unassigned, or -1 if not a configured EV
             0_ms, // just connected
             injected ? CMAuthType::InjectedEV : CMAuthType::EV,
-            0, // TRIGGER_CHARGE_ANY (users.h, not pulled in here)
+            1, // TRIGGER_CHARGE_START
             auth_info.value);
     }
 #else
