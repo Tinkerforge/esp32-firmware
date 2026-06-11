@@ -138,7 +138,7 @@ void Mqtt::pre_setup()
             if (!valid) {
                 return String("Invalid use of wildcards in topic.");
             }
-            return String("");
+            return String();
         },
         false
     );
@@ -167,7 +167,7 @@ void Mqtt::pre_setup()
             if (topic.indexOf('#') != -1 || topic.indexOf('+') != -1) {
                 return String("MQTT topic must not contain wildcards.");
             }
-            return String("");
+            return String();
         },
         false
     );

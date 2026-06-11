@@ -976,7 +976,7 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
             ChargeWithLocation charge;
             charge.charge.cs = cs;
             charge.charge.ce = ce;
-            charge.directory = directory ? String(directory) : String("");
+            charge.directory = directory ? String(directory) : String();
             charge.prev_known_timestamp_minutes = prev_known_timestamp;
 
             charges.push_back(charge);
