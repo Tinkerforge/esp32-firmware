@@ -4,19 +4,19 @@ import { __ } from "../../ts/translation";
 let x = {
     "ev": {
         "navbar": {
-            "ev": "Elektrofahrzeuge"
+            "ev": "Fahrzeuge"
         },
         "status": {
-            "ev": "Elektrofahrzeug",
+            "ev": "Fahrzeug",
             "no_ev": "Kein Fahrzeug verbunden",
-            "soc": "Ladezustand",
+            "soc": "Ladestand",
             "capacity": "Batteriekapazität",
             "efficiency": "Ladeeffizienz"
         },
         "content": {
-            "ev": "Elektrofahrzeuge",
+            "ev": "Fahrzeuge",
             "ev_profiles": "Fahrzeug-Profile",
-            "ev_profiles_desc": "Bekannte Elektrofahrzeuge anhand ihrer MAC-Adresse für Autocharge konfigurieren. Batteriekapazität und Ladeeffizienz werden zur Schätzung des Ladezustands verwendet.",
+            "ev_profiles_desc": "Bekannte Fahrzeuge anhand ihrer MAC-Adresse für Autocharge konfigurieren. Batteriekapazität und Ladeeffizienz werden zur Schätzung des Ladestands verwendet.",
             "table_name": "Name",
             "table_mac": "MAC-Adresse",
             "table_capacity": "Kapazität",
@@ -39,15 +39,15 @@ let x = {
             "currently_connected": "Aktuell verbunden",
             "active_ev_name": "Name",
             "active_ev_mac": "MAC-Adresse",
-            "active_ev_soc": "Ladezustand",
+            "active_ev_soc": "Ladestand",
             "active_ev_capacity": "Batteriekapazität",
             "active_ev_efficiency": "Ladeeffizienz",
-            "no_active_ev": "Kein Fahrzeug derzeit verbunden.",
+            "no_active_ev": "Derzeit kein Fahrzeug verbunden.",
             "seen_macs": "Zuletzt gesehene Fahrzeug-MACs",
             "seen_macs_desc": "MAC-Adressen von kürzlich verbundenen Fahrzeugen.",
             "no_seen_macs": "Noch keine MAC-Adressen gesehen.",
             "seen_mac_last_seen": /*SFN*/(time: string) => `Zuletzt gesehen vor ${time}`/*NF*/,
-            "seen_mac_charger": /*SFN*/(charger: string) => `Gesehen an Ladecontroller „${charger}“`/*NF*/,
+            "seen_mac_charger": /*SFN*/(charger: string) => `Gesehen an Ladecontroller: ${charger}`/*NF*/,
             "mac_duplicate": "Diese MAC-Adresse wird bereits von einem anderen Profil verwendet.",
             "mac_already_configured": /*SFN*/(name: string) => `Bereits konfiguriert: ${name}`/*NF*/,
             "add_ev_seen_macs": "Zuletzt gesehene MACs"
