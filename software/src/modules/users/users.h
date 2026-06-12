@@ -85,6 +85,9 @@ private:
     Config config_users_prototype;
 
     micros_t last_charge_action_triggered = 0_us;
+
+    void disable_http_auth();
+    void enable_http_auth();
 };
 
 void set_led(int16_t mode);

@@ -110,6 +110,46 @@ static bool read_user_slot_info(UserSlotInfo *result)
 }
 #endif
 
+static bool check_http_auth(WebServerRequest req) {
+    String auth = req.header("Authorization");
+    if (auth.isEmpty()) {
+        return false;
+    }
+
+    if (!auth.startsWith("Digest ")) {
+        return false;
+    }
+
+    auth = auth.substring(7);
+    AuthFields fields = parseDigestAuth(auth.c_str());
+
+    bool result = false;
+    bool user_with_password_found = false;
+
+    // If this times out, result stays false.
+    (void)task_scheduler.await([&req, &fields, &result, &user_with_password_found]() {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            auto user = users.config.get("users")->get(i);
+            if (user->get("digest_hash")->asString().isEmpty())
+                continue;
+
+            user_with_password_found = true;
+
+            if (user->get("username")->asString().equals(fields.username)) {
+                result = checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
+                break;
+            }
+        }
+    });
+
+    if (!result && !user_with_password_found) {
+        logger.printfln("Web interface authentication enabled, but no user with set password found! Allowing unauthenticated access to prevent lock-out!");
+        return true;
+    }
+
+    return result;
+}
+
 void Users::pre_setup()
 {
     config_users_prototype = Config::Object({
@@ -408,33 +448,10 @@ void Users::setup()
             return;
         }
 
-        server.onAuthenticate_HTTPThread([this](WebServerRequest req) -> bool {
-            String auth = req.header("Authorization");
-            if (auth.isEmpty()) {
-                return false;
-            }
-
-            if (!auth.startsWith("Digest ")) {
-                return false;
-            }
-
-            auth = auth.substring(7);
-            AuthFields fields = parseDigestAuth(auth.c_str());
-
-            bool result = false;
-
-            // If this times out, result stays false.
-            (void)task_scheduler.await([this, &req, &fields, &result]() {
-                for (size_t i = 0; i < config.get("users")->count(); ++i) {
-                    if (config.get("users")->get(i)->get("username")->asString().equals(fields.username)) {
-                        result = checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
-                        break;
-                    }
-                }
-            });
-
-            return result;
-        });
+        // During setup(), httpd is not running yet (it starts in web_server's post_setup()).
+        // It's safe to call onAuthenticate_HTTPThread directly here since no HTTP requests
+        // can arrive before httpd starts.
+        server.onAuthenticate_HTTPThread(check_http_auth);
 
         logger.printfln("Web interface authentication enabled.");
     }
@@ -643,11 +660,10 @@ void Users::register_urls()
 
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enable = http_auth_update.get("enabled")->asBool();
-        if (!enable) {
-            server.runInHTTPThread([](void *arg) {
-                server.onAuthenticate_HTTPThread([](WebServerRequest req){return true;});
-            }, nullptr);
-        }
+        if (enable)
+            this->enable_http_auth();
+        else
+            this->disable_http_auth();
 
         config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &config);
@@ -823,3 +839,15 @@ bool Users::stop_charging(uint8_t user_id, bool force, float meter_abs)
     return true;
 }
 #endif
+
+void Users::disable_http_auth() {
+    server.runInHTTPThread([](void *arg) {
+        server.onAuthenticate_HTTPThread(nullptr);
+    }, nullptr);
+}
+
+void Users::enable_http_auth() {
+    server.runInHTTPThread([](void *arg) {
+        server.onAuthenticate_HTTPThread(check_http_auth);
+    }, nullptr);
+}
