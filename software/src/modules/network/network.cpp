@@ -61,8 +61,8 @@ void Network::pre_setup()
         {"hostname", Config::Str("hostname", 1, 32)}, // Will be replaced with stored config or sensible default. Cannot be empty.
         {"enable_mdns", Config::Bool(true)},
         {"transport_mode", Config::Enum<TransportMode>(default_transport_mode)},
-        {"web_server_port", Config::Uint16(80)},
-        {"web_server_port_secure", Config::Uint16(443)},
+        {"web_server_port", Config::Uint16(OPTIONS_NETWORK_WEB_SERVER_PORT())},
+        {"web_server_port_secure", Config::Uint16(OPTIONS_NETWORK_WEB_SERVER_PORT_SECURE())},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
