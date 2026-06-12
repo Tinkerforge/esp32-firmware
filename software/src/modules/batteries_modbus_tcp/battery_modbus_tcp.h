@@ -136,7 +136,6 @@ private:
     BatteryMode requested_mode = BatteryMode::None;
     bool discover = false;
     bool paused = false;
-    bool finished = false;
     BatteryMode active_mode = BatteryMode::None;
     TableWriter *active_writer = nullptr;
     Config *discover_table_config = nullptr; // FIXME: leaking this, because as of right now battery instances don't get destroyed

@@ -835,7 +835,6 @@ void BatteryModbusTCP::set_mode(BatteryMode mode)
     }
 
     requested_mode = mode;
-    finished = false;
 
     update_active_mode();
 }
@@ -930,13 +929,7 @@ void BatteryModbusTCP::update_active_mode()
             effective_mode = BatteryMode::None;
         }
         else {
-            if (finished) {
-                next_mode = BatteryMode::None;
-            }
-            else {
-                next_mode = requested_mode;
-            }
-
+            next_mode = requested_mode;
             effective_mode = table->effective_mode;
         }
     }
@@ -953,12 +946,11 @@ void BatteryModbusTCP::update_active_mode()
     destroy_table_writer(active_writer);
     active_writer = nullptr;
 
-    trace("b%lu t0 %s r%c%s%s m%c->%c em%c",
+    trace("b%lu t0 %s r%c%s m%c->%c em%c",
           slot,
           connected_client != nullptr ? "ce" : "nc",
           get_battery_mode_as_char(requested_mode),
           paused ? " p" : "",
-          finished ? " f" : "",
           get_battery_mode_as_char(active_mode),
           get_battery_mode_as_char(next_mode),
           get_battery_mode_as_char(effective_mode));
@@ -1042,8 +1034,6 @@ void BatteryModbusTCP::update_active_mode()
             logger.printfln_battery("%s", message);
         },
         [this]() {
-            finished = true;
-
             update_active_mode();
         });
 #if defined(__GNUC__)
