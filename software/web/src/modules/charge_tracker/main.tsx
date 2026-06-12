@@ -926,7 +926,7 @@ export class ChargeTrackerStatus extends Component {
                 energy_charged: (energy_abs === null || cc.meter_start === null) ? null : (energy_abs - cc.meter_start),
                 timestamp_minutes: cc.timestamp_minutes,
                 user_id: cc.user_id,
-                charger_name: "",
+                charger_name: cc.charger_name,
             };
 
             current_charge = <FormRow label={__("charge_tracker.status.current_charge")}>

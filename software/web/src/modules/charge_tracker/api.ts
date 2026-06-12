@@ -87,6 +87,7 @@ interface current_charge_base {
     meter_start: number;
     evse_uptime_start: number;
     timestamp_minutes: number;
+    charger_name: string;
 }
 
 interface current_charge_nfc {

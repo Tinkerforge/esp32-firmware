@@ -214,7 +214,8 @@ void ChargeTracker::pre_setup()
         {"evse_uptime_start", Config::Uint32(0)},
         {"timestamp_minutes", Config::Uint32(0)},
         {"authorization_type", Config::Enum<CMAuthType>(CMAuthType::None)},
-        {"authorization_info", Config{Config::ConfVariant()}}
+        {"authorization_info", Config{Config::ConfVariant()}},
+        {"charger_name", Config::Str("", 0, 32)}
     });
 
     state = Config::Object({
@@ -409,6 +410,7 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     current_charge.get("authorization_type")->updateEnum(auth_method);
     current_charge.get("authorization_info")->value = auth_info;
     current_charge.get("authorization_info")->value.updated = 0xFF;
+    current_charge.get("charger_name")->updateString(get_charger_display_name_from_host(directory));
     return true;
 }
 
