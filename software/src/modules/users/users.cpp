@@ -121,33 +121,38 @@ static bool check_http_auth(WebServerRequest req) {
     }
 
     auth = auth.substring(7);
-    AuthFields fields = parseDigestAuth(auth.c_str());
 
-    bool result = false;
-    bool user_with_password_found = false;
+    struct {
+        WebServerRequest req;
+        const AuthFields fields;
+        bool result = false;
+        bool user_with_password_found = false;
+    } closure {
+        req, parseDigestAuth(auth.c_str())
+    };
 
     // If this times out, result stays false.
-    (void)task_scheduler.await([&req, &fields, &result, &user_with_password_found]() {
+    (void)task_scheduler.await([&closure]() {
         for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
             auto user = users.config.get("users")->get(i);
             if (user->get("digest_hash")->asString().isEmpty())
                 continue;
 
-            user_with_password_found = true;
+            closure.user_with_password_found = true;
 
-            if (user->get("username")->asString().equals(fields.username)) {
-                result = checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), user->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
+            if (user->get("username")->asString().equals(closure.fields.username)) {
+                closure.result = checkDigestAuthentication(closure.fields, closure.req.methodString(), closure.fields.username.c_str(), user->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
                 break;
             }
         }
     });
 
-    if (!result && !user_with_password_found) {
+    if (!closure.result && !closure.user_with_password_found) {
         logger.printfln("Web interface authentication enabled, but no user with set password found! Allowing unauthenticated access to prevent lock-out!");
         return true;
     }
 
-    return result;
+    return closure.result;
 }
 
 void Users::pre_setup()
