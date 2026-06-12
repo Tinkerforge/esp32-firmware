@@ -676,11 +676,6 @@ void Users::register_urls()
 #endif
 }
 
-uint8_t Users::next_user_id()
-{
-    return this->config.get("next_user_id")->asUint();
-}
-
 void Users::rename_user(uint8_t user_id, const String &username, const String &display_name)
 {
     char buf[USERNAME_ENTRY_LENGTH] = {0};

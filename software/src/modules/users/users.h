@@ -50,10 +50,8 @@ public:
     void setup() override;
     void register_urls() override;
 
-    uint8_t next_user_id();
     void rename_user(uint8_t user_id, const String &username, const String &display_name);
     void remove_from_username_file(uint8_t user_id);
-    void search_next_free_user();
     size_t get_display_name(uint8_t user_id, char *ret_buf, Language language);
     bool is_user_configured(uint8_t user_id);
 
@@ -66,19 +64,25 @@ public:
 
     void remove_username_file();
 
-    Config config_users_prototype;
+    uint16_t get_user_current(uint8_t user_id);
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    bool start_charging(uint8_t user_id, uint16_t current_limit, CMAuthType auth_method, Config::ConfVariant auth_info);
+    bool stop_charging(uint8_t user_id, bool force, float meter_abs = 0);
+#endif
+
     ConfigRoot config;
+
+private:
+    void search_next_free_user();
+
     ConfigRoot add;
     ConfigRoot modify;
     ConfigRoot remove;
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    bool start_charging(uint8_t user_id, uint16_t current_limit, CMAuthType auth_method, Config::ConfVariant auth_info);
-    bool stop_charging(uint8_t user_id, bool force, float meter_abs = 0);
-#endif
-    uint16_t get_user_current(uint8_t user_id);
+    Config config_users_prototype;
 
     micros_t last_charge_action_triggered = 0_us;
 };
