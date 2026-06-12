@@ -74,7 +74,7 @@ static void set_auth_handler(bool enable, String user, String digest_hash)
             return checkDigestAuthentication(fields, req.methodString(), user.c_str(), digest_hash.c_str(), DEFAULT_REALM, true, nullptr, nullptr, nullptr);
         });
     } else {
-        server.onAuthenticate_HTTPThread([](WebServerRequest req) -> bool { return true; });
+        server.onAuthenticate_HTTPThread(nullptr);
     }
 }
 
