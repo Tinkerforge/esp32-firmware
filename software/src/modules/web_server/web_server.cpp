@@ -202,10 +202,10 @@ void WebServer::post_setup()
                     ssl_config->ssl_userdata = port_handler;
 
                     if (!Cert::load_and_export_external_with_internal_fallback(&extra_port->cert_info, &port_handler->own_cert, &port_handler->own_cert_key, nullptr)) {
-                        logger.printfln("Cannot listen on extra port %hu: Failed to load certificate", extra_port->port);
+                        logger.printfln("Cannot listen on extra port %hu: Failed to load certificate (leaking some memory)", extra_port->port);
 
                         listen_port_handlers[ssl_configs_used] = nullptr;
-                        free(port_handler);
+                        //free(port_handler); // Can't free permanently allocated block
                         port_handler = nullptr;
 
                         break;
