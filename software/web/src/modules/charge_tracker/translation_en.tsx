@@ -6,7 +6,9 @@ let x = {
     "charge_tracker": {
         "status": {
             "last_charges": "Last charges",
-            "current_charge": "Current charge"
+            "current_charge": "Current charge",
+            "unknown_ev_mac": /*SFN*/(mac: string) => `Unknown vehicle (${mac})`/*NF*/,
+            "unknown_ev": "Unknown vehicle"
         },
         "navbar": {
             "charge_tracker": "Charge Tracker"

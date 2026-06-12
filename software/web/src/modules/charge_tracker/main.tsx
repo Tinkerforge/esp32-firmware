@@ -40,7 +40,7 @@ import { Table, TableRow } from "../../ts/components/table";
 import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { Battery, BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
+import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail, Zap } from "react-feather";
 import { CSVFlavor } from "./generated/csv_flavor.enum";
 import { Language } from "../../ts/language";
 import { GenerationState } from "./generated/generation_state.enum";
@@ -91,6 +91,11 @@ let wallet_icon = <svg width="24" height="24" fill="none" stroke="currentColor" 
 
 let wallbox_icon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="feather feather-type2"><path d="M23 10.846c0 6.022-4.925 10.904-11 10.904S1 16.868 1 10.846c0-1.506.308-2.94.864-4.244C2.143 5.95 2.88 4.75 2.88 4.75h18.243s.736 1.2 1.014 1.852c.556 1.304.864 2.738.864 4.244z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="8.5" r="1.5"/><circle cx="15" cy="8.5" r="1.5"/><circle cx="9" cy="16.75" r="2"/><circle cx="15" cy="16.75" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
 
+function BatteryFilled(props:{percent: number}) {
+    let pct = `${props.percent}%`;
+    return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-battery"><defs><linearGradient id="partialFill"><stop offset={pct} stop-color="currentColor" /><stop offset={pct} stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><rect fill="url(#partialFill)" x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="13" x2="23" y2="11"></line></svg>
+}
+
 function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number, ev_name?: string, ev_soc?: number}) {
     const display_name = useMemo(
         () => {
@@ -119,7 +124,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
             <div class="col px-0" />
             <div class="col-auto ps-2 mb-2">
                 <span class="align-middle">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
-                <span class="ps-2"><BatteryCharging/></span>
+                <span class="ps-2"><Zap/></span>
             </div>
         </div>
         {props.ev_name || props.ev_soc ?
@@ -135,7 +140,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 {props.ev_soc ?
                     <div class="col-auto ps-2 mb-2">
                         <span class="align-middle">{util.toLocaleFixed(props.ev_soc, 0)} %</span>
-                        <span class="ps-2"><Battery/></span>
+                        <span class="ps-2"><BatteryFilled percent={props.ev_soc}/></span>
                     </div> : undefined}
             </div> : undefined}
         <div class="row justify-content-end">
@@ -904,10 +909,15 @@ export class ChargeTrackerStatus extends Component {
 //#if MODULE_EV_AVAILABLE
         let ev_state = API.get("ev/state");
         let evs = API.get("ev/config").evs;
-        if (ev_state.mac != "" && ev_state.active_ev_index >= 0 && ev_state.active_ev_index < evs.length ) {
-            ev_name = evs[ev_state.active_ev_index].name;
-            ev_soc = ev_state.soc;
+        if (ev_state.mac != "") {
+            if (ev_state.active_ev_index >= 0 && ev_state.active_ev_index < evs.length)
+                ev_name = evs[ev_state.active_ev_index].name;
+            else
+                ev_name = __("charge_tracker.status.unknown_ev_mac")(ev_state.mac);
+        } else if (ev_state.soc != null) {
+            ev_name = __("charge_tracker.status.unknown_ev")
         }
+        ev_soc = ev_state.soc;
 //#endif
 
 //#if MODULE_EVSE_COMMON_AVAILABLE

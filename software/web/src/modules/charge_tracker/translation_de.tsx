@@ -6,7 +6,9 @@ let x = {
     "charge_tracker": {
         "status": {
             "last_charges": "Letzte Ladevorgänge",
-            "current_charge": "Laufender Ladevorgang"
+            "current_charge": "Laufender Ladevorgang",
+            "unknown_ev_mac": /*SFN*/(mac: string) => `Unbekanntes Fahrzeug (${mac})`/*NF*/,
+            "unknown_ev": "Unbekanntes Fahrzeug"
         },
         "navbar": {
             "charge_tracker": "Ladetracker"
