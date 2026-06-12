@@ -669,7 +669,7 @@ void Users::register_urls()
         API::writeConfig("users/config", &config);
     }, false);
 
-    server.on_HTTPThread("/users/all_usernames", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/users/all_usernames", HTTP_GET, [](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{records_mutex};
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
         auto buf = heap_alloc_array<char>(len);
