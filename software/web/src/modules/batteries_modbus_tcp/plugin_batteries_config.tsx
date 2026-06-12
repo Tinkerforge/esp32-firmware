@@ -39,6 +39,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Table, TableRow } from "../../ts/components/table";
+import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 
 export type ModbusTCPBatteriesConfig = [
     BatteryClassID.ModbusTCP,
@@ -421,6 +422,7 @@ interface TestRunnerProps {
     table_id: number;
     device_address: number;
     repeat_interval?: number;
+    effective_mode?: number; // BatteryMode
     register_blocks?: RegisterBlock[];
     modes: [number, string][];
     extra_values?: {[key: string]: number};
@@ -567,6 +569,10 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                 (table[1] as any)["repeat_interval"] = this.props.repeat_interval;
             }
 
+            if (util.hasValue(this.props.effective_mode)) {
+                (table[1] as any)["effective_mode"] = this.props.effective_mode;
+            }
+
             if (util.hasValue(this.props.register_blocks)) {
                 (table[1] as any)["register_blocks"] = this.props.register_blocks;
             }
@@ -658,6 +664,11 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
 
 function import_custom_table(table: RegisterTable)
 {
+    if (typeof table.effective_mode != "number") {
+        console.log("Batteries Modbus/TCP: Imported config effective_mode is not a number");
+        return null;
+    }
+
     if (!util.isNonNullObject(table.register_blocks)) {
         console.log("Batteries Modbus/TCP: Imported config register_blocks is not an object");
         return null;
@@ -720,7 +731,7 @@ function import_custom_table(table: RegisterTable)
         });
     }
 
-    return {register_blocks: register_blocks};
+    return {effective_mode: table.effective_mode, register_blocks: register_blocks};
 }
 
 export function pre_init() {
@@ -1421,8 +1432,17 @@ export function pre_init() {
                                 }} />
                         </FormRow>);
 
+                    let effective_mode_items: [string, string][] = []
+
                     for (let i = 0; i < 6; ++i) {
                         let mode = battery_mode_order[i];
+
+                        effective_mode_items.push([mode.toString(), `${battery_mode_names[mode]} (${battery_mode_long_names[mode]})`]);
+                    }
+
+                    for (let i = 0; i < 6; ++i) {
+                        let mode = battery_mode_order[i];
+                        let effective_mode_differs = config[1].table[1].battery_modes[mode].effective_mode !== mode;
 
                         edit_children.push(
                             <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode], battery_mode_long_names[mode])} modal>
@@ -1431,7 +1451,19 @@ export function pre_init() {
                                         register_address_mode={config[1].table[1].register_address_mode}
                                         other_total_values_count={total_values_count - get_total_values_count(config[1].table[1].battery_modes[mode])}
                                         table={config[1].table[1].battery_modes[mode]}
-                                        on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {battery_modes:(config[1].table as TableConfigCustom)[1].battery_modes.map((battery_mode, k) => k == mode ? table : battery_mode)})}))} />
+                                        on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {battery_modes: (config[1].table as TableConfigCustom)[1].battery_modes.map((battery_mode, k) => k == mode ? table : battery_mode)})}))} />
+                                </FormRow>
+                                <FormRow label={__("batteries_modbus_tcp.content.register_effective_mode")} help={__("batteries_modbus_tcp.content.register_effective_mode_help")}>
+                                    <SwitchableInputSelect
+                                        required
+                                        items={effective_mode_items}
+                                        placeholder={__("select")}
+                                        value={config[1].table[1].battery_modes[mode].effective_mode.toString()}
+                                        onValue={(v) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {battery_modes: (config[1].table as TableConfigCustom)[1].battery_modes.map((battery_mode, k) => k == mode ? {...battery_mode, effective_mode: parseInt(v)} : battery_mode)})}))}
+                                        checked={effective_mode_differs}
+                                        onSwitch={() => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {battery_modes: (config[1].table as TableConfigCustom)[1].battery_modes.map((battery_mode, k) => k == mode ? {...battery_mode, effective_mode: effective_mode_differs ? mode : BatteryMode.None} : battery_mode)})}))}
+                                        switch_label_active={__("batteries_modbus_tcp.content.register_effective_mode_different")}
+                                        switch_label_inactive={__("batteries_modbus_tcp.content.register_effective_mode_matching")} />
                                 </FormRow>
                                 <TestRunner
                                     slot={battery_slot}
@@ -1441,6 +1473,7 @@ export function pre_init() {
                                     device_address={config[1].table[1].device_address}
                                     modes={[[mode, battery_mode_names[mode]]]}
                                     repeat_interval={config[1].table[1].repeat_interval}
+                                    effective_mode={config[1].table[1].battery_modes[mode].effective_mode}
                                     register_blocks={config[1].table[1].battery_modes[mode].register_blocks} />
                             </CollapsedSection>);
                     }
@@ -1469,6 +1502,11 @@ export function pre_init() {
                 else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
                     if (effective_mode == BatteryMode.Discover) {
                         return __("batteries_modbus_tcp.content.kostal_plenticore_discover_warning");
+                    }
+                }
+                else if (config[1].table[0] == BatteryModbusTCPTableID.Custom) {
+                    if (effective_mode != BatteryMode.None) {
+                        return __("batteries_modbus_tcp.content.custom_mode_degradation_warning");
                     }
                 }
 

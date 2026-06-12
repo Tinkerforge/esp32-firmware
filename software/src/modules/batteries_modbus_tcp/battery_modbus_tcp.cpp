@@ -21,6 +21,7 @@
 
 #include "battery_modbus_tcp.h"
 
+#include <stdio.h>
 #include <TFModbusTCPClient.h>
 
 #include "event_log_prefix.h"
@@ -49,19 +50,36 @@ static char get_battery_mode_as_char(BatteryMode mode)
     }
 }
 
-[[gnu::const]]
-const char *BatteryModbusTCP::get_battery_mode_display_name(BatteryMode value, Language language)
+static const char *get_battery_mode_description(BatteryMode mode, BatteryMode effective_mode, Language language, char *buf, size_t buf_len)
 {
-    switch (value) {
+    if (mode == effective_mode) {
+        snprintf(buf, buf_len, "\"%s\"", BatteryModbusTCP::get_battery_mode_display_name(mode, language));
+    }
+    else {
+        snprintf(buf, buf_len,
+                 language == Language::English
+                 ? "\"%s\", effective \"%s\""
+                 : "\"%s\", effektiv \"%s\"",
+                 BatteryModbusTCP::get_battery_mode_display_name(mode, language),
+                 BatteryModbusTCP::get_battery_mode_display_name(effective_mode, language));
+    }
+
+    return buf;
+}
+
+[[gnu::const]]
+const char *BatteryModbusTCP::get_battery_mode_display_name(BatteryMode mode, Language language)
+{
+    switch (mode) {
     case BatteryMode::Discover:
-    case BatteryMode::None:           esp_system_abortf<64>("Invalid battery mode for display name lookup: %d", static_cast<int>(value));
+    case BatteryMode::None:           esp_system_abortf<64>("Invalid battery mode for display name lookup: %d", static_cast<int>(mode));
     case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
     case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
     case BatteryMode::BlockDischarge: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
     case BatteryMode::ForceCharge:    return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
     case BatteryMode::BlockCharge:    return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
     case BatteryMode::ForceDischarge: return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
-    default:                          esp_system_abortf<64>("Unknown battery mode for display name lookup: %d", static_cast<int>(value));
+    default:                          esp_system_abortf<64>("Unknown battery mode for display name lookup: %d", static_cast<int>(mode));
     }
 }
 
@@ -71,6 +89,7 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
     size_t register_blocks_count         = register_blocks_config->count();
     BatteryModbusTCP::TableSpec *table   = static_cast<BatteryModbusTCP::TableSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::TableSpec)));
 
+    table->effective_mode        = config->get("effective_mode")->asEnum<BatteryMode>();
     table->register_blocks       = static_cast<BatteryModbusTCP::RegisterBlockSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::RegisterBlockSpec) * register_blocks_count));
     table->register_blocks_count = register_blocks_count;
 
@@ -200,17 +219,22 @@ static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool s
         ++writer->repeat_count;
         writer->index = 0;
 
-        trace("b%lu t%d ww m%c r%zu",
+        trace("b%lu t%d ww m%c em%c r%zu",
               writer->slot,
               writer->test ? 1 : 0,
               get_battery_mode_as_char(writer->mode),
+              get_battery_mode_as_char(writer->table->effective_mode),
               writer->repeat_count);
+
+        char description[128];
 
         table_writer_logfln(writer, false,
                             writer->language == Language::English
-                            ? "Setting mode \"%s\" (repeat %zu)"
-                            : "Setze Modus \"%s\" (Wiederholung %zu)",
-                            BatteryModbusTCP::get_battery_mode_display_name(writer->mode, writer->language), writer->repeat_count);
+                            ? "Setting mode %s (repeat %zu)"
+                            : "Setze Modus %s (Wiederholung %zu)",
+                            get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
+                            writer->repeat_count);
+
         next_table_writer_step(writer);
     }, delay);
 }
@@ -315,10 +339,11 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                       || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            trace("b%lu t%d ww m%c i%zu/%zu%s e%d%s%s",
+            trace("b%lu t%d ww m%c em%c i%zu/%zu%s e%d%s%s",
                   writer->slot,
                   writer->test ? 1 : 0,
                   get_battery_mode_as_char(writer->mode),
+                  get_battery_mode_as_char(writer->table->effective_mode),
                   writer->index + 1,
                   writer->table->register_blocks_count,
                   has_step2 ? " s1/2" : "",
@@ -326,12 +351,14 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                   error_message != nullptr ? " / " : "",
                   error_message != nullptr ? error_message : "");
 
+            char description[128];
+
             table_writer_logfln(writer,
                                 true,
                                 writer->language == Language::English
-                                ? "Setting mode \"%s\" failed at %zu of %zu: %s (%d)%s%s"
-                                : "Setzen des Modus \"%s\" schlug fehl bei %zu von %zu: %s (%d)%s%s",
-                                BatteryModbusTCP::get_battery_mode_display_name(writer->mode, writer->language),
+                                ? "Setting mode %s failed at %zu of %zu: %s (%d)%s%s"
+                                : "Setzen des Modus %s schlug fehl bei %zu von %zu: %s (%d)%s%s",
+                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
                                 writer->index + 1, writer->table->register_blocks_count,
                                 get_tf_modbus_tcp_client_transaction_result_name(result),
                                 static_cast<int>(result),
@@ -376,22 +403,25 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                 }
 
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    trace("b%lu t%d ww m%c i%zu/%zu s2/2 e%d%s%s",
+                    trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 e%d%s%s",
                           writer->slot,
                           writer->test ? 1 : 0,
                           get_battery_mode_as_char(writer->mode),
+                          get_battery_mode_as_char(writer->table->effective_mode),
                           writer->index + 1,
                           writer->table->register_blocks_count,
                           static_cast<int>(step2_result),
                           step2_error_message != nullptr ? " / " : "",
                           step2_error_message != nullptr ? step2_error_message : "");
 
+                    char description[128];
+
                     table_writer_logfln(writer,
                                         true,
                                         writer->language == Language::English
-                                        ? "Setting mode \"%s\" failed at %zu of %zu: %s (%d)%s%s"
-                                        : "Setzen des Modus \"%s\" (Schritt 2) schlug fehl bei %zu von %zu: %s (%d)%s%s",
-                                        BatteryModbusTCP::get_battery_mode_display_name(writer->mode, writer->language),
+                                        ? "Setting mode %s failed at %zu of %zu: %s (%d)%s%s"
+                                        : "Setzen des Modus %s (Schritt 2) schlug fehl bei %zu von %zu: %s (%d)%s%s",
+                                        get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
                                         writer->index + 1, writer->table->register_blocks_count,
                                         get_tf_modbus_tcp_client_transaction_result_name(step2_result),
                                         static_cast<int>(step2_result),
@@ -436,10 +466,11 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
                                                                      TableWriterFinishedFunction &&finished,
                                                                      Language language /*= Language::English*/)
 {
-    trace("b%lu t%d wc m%c",
+    trace("b%lu t%d wc m%c em%c",
           slot,
           test ? 1 : 0,
-          get_battery_mode_as_char(mode));
+          get_battery_mode_as_char(mode),
+          table != nullptr ? get_battery_mode_as_char(table->effective_mode) : '?');
 
     TableWriter *writer = new TableWriter;
 
@@ -472,27 +503,30 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
             return;
         }
 
-        trace("b%lu t%d ww m%c %c",
+        trace("b%lu t%d ww m%c em%c %c",
               writer->slot,
               writer->test ? 1 : 0,
               get_battery_mode_as_char(writer->mode),
+              get_battery_mode_as_char(writer->table->effective_mode),
               writer->repeat_interval > 0 ? 'f' : 'o');
+
+        char description[128];
 
         if (writer->repeat_interval > 0) {
             table_writer_logfln(writer, false,
                                 writer->language == Language::English
-                                ? "Setting mode \"%s\" (will repeat in %u second%s)"
-                                : "Setze Modus \"%s\" (Wiederholung in %u Sekunde%s)",
-                                get_battery_mode_display_name(writer->mode, writer->language),
+                                ? "Setting mode %s (will repeat in %u second%s)"
+                                : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
                                 writer->repeat_interval,
                                 writer->repeat_interval > 1 ? (writer->language == Language::English ? "s" : "n") : "");
         }
         else {
             table_writer_logfln(writer, false,
                                 writer->language == Language::English
-                                ? "Setting mode \"%s\" (once)"
-                                : "Setze Modus \"%s\" (einmalig)",
-                                get_battery_mode_display_name(writer->mode, writer->language));
+                                ? "Setting mode %s (once)"
+                                : "Setze Modus %s (einmalig)",
+                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)));
         }
 
         next_table_writer_step(writer);
@@ -507,10 +541,11 @@ void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *write
         return;
     }
 
-    trace("b%lu t%d wd m%c",
+    trace("b%lu t%d wd m%c em%c",
           writer->slot,
           writer->test ? 1 : 0,
-          get_battery_mode_as_char(writer->mode));
+          get_battery_mode_as_char(writer->mode),
+          writer->table != nullptr ? get_battery_mode_as_char(writer->table->effective_mode) : '?');
 
     if (writer->transact_pending) {
         writer->destroy_requested = true;
@@ -918,14 +953,15 @@ void BatteryModbusTCP::update_active_mode()
     destroy_table_writer(active_writer);
     active_writer = nullptr;
 
-    trace("b%lu t0 %s r%c%s%s m%c->%c",
+    trace("b%lu t0 %s r%c%s%s m%c->%c em%c",
           slot,
           connected_client != nullptr ? "ce" : "nc",
           get_battery_mode_as_char(requested_mode),
           paused ? " p" : "",
           finished ? " f" : "",
           get_battery_mode_as_char(active_mode),
-          get_battery_mode_as_char(next_mode));
+          get_battery_mode_as_char(next_mode),
+          get_battery_mode_as_char(effective_mode));
 
     active_mode = next_mode;
 

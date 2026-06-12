@@ -31,6 +31,7 @@ let x = {
             "kostal_plenticore_discover_warning": <><p>Discovering the Modbus/TCP byte order of the KOSTAL inverter. If this status persist longer than a few seconds then most likely there is a Modbus/TCP communication problem with the inverter.</p></>,
             "kostal_plenticore_plus_g2_degradation_warning": <><p>Due to the specific battery control behaviour of KOSTAL PLENTICORE plus G2 inverters, it is not possible to block charge and discharge separately. Instead charge and discharge are always blocked together.</p></>,
             "kostal_plenticore_g3_firmware_warning": <><p>Please ensure that software version 03.05.xxxxx or newer is installed on the inverter.</p></>,
+            "custom_mode_degradation_warning": <><p>The effective state differs from the active state due to explicit selection the in custom register table for this battery storage.</p></>,
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "repeat_interval": "Repeat interval",
@@ -104,7 +105,12 @@ let x = {
                 }
 
                 return "Set " + (values.indexOf(",") >= 0 ? "from" : "") + " " + rtyp + " " + addr + " to " + values;
-            }/*NF*/
+            }/*NF*/,
+            "register_effective_mode": "Effective mode",
+            "register_effective_mode_matching": "Matching",
+            "register_effective_mode_different": "Different",
+            "register_effective_mode_help": <><p>If it is not possible to realize certain battery modes completely, then the battery mode should be approximated as closely as possible and the battery mode that got effectively realized should be configured as the effective mode.</p>
+                                              <p>For example, if it is not possible for the mode "block charge" to block the charging alone while leaving the discharging as normal at the same time, but charging and discharging can only be blocked together, then the effective mode should be configured as "block" in this case.</p></>
         },
         "script": {
         }

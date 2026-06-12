@@ -64,14 +64,62 @@ void BatteriesModbusTCP::pre_setup()
         {"device_address", Config::Uint8(1)},
         {"repeat_interval", Config::Uint16(60)},
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
-        {"battery_modes", Config::Tuple(6, Config::Object({
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        }))},
+        {"battery_modes", Config::Tuple({
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::Block, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            }),
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::Normal, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            }),
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::BlockDischarge, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            }),
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::ForceCharge, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            }),
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::BlockCharge, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            }),
+            Config::Object({
+                {"effective_mode", Config::Enum(BatteryMode::ForceDischarge, BatteryMode::Block, BatteryMode::ForceDischarge)},
+                {"register_blocks", Config::Array({},
+                    &table_custom_register_block_prototype,
+                    0,
+                    OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
+                    Config::type_id<Config::ConfObject>()
+                )},
+            })
+        })},
     })});
 
     get_battery_modbus_tcp_table_prototypes(&table_prototypes);
@@ -101,6 +149,7 @@ void BatteriesModbusTCP::pre_setup()
         {"mode", Config::Enum(BatteryMode::Block)},
         {"device_address", Config::Uint8(1)},
         {"repeat_interval", Config::Uint16(60)},
+        {"effective_mode", Config::Enum(BatteryMode::Normal, BatteryMode::Block, BatteryMode::ForceDischarge)},
         {"register_blocks", Config::Array({},
             &table_custom_register_block_prototype,
             0,

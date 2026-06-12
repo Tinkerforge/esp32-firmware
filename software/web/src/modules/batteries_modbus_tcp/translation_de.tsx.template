@@ -31,6 +31,7 @@ let x = {
             "kostal_plenticore_discover_warning": <><p>Die Modbus/TCP-Byte-Reihenfolge des KOSTAL Wechselrichters wird ermittelt. Sollte dieser Zustand mehr als ein paar Sekunden anhalten, dann liegt vermutlich ein Kommunikationsproblem mit dem Wechselrichter vor.</p></>,
             "kostal_plenticore_plus_g2_degradation_warning": <><p>Bedingt durch das Verhalten der externen Batteriesteuerung von KOSTAL PLENTICORE plus G2 Wechselrichtern, können aktuell das Laden und Entladen nicht unabhängig von einander blockiert werden. Stattdessen werden das Laden und Entladen immer zusammen blockiert.</p></>,
             "kostal_plenticore_g3_firmware_warning": <><p>Bitte sicherstellen, das mindestens Software Version 03.05.xxxxx auf dem Wechselrichter installiert ist.</p></>,
+            "custom_mode_degradation_warning": <><p>Der effektive Zustand weicht vom aktiven Zustand ab, bedingt durch explizite Auswahl in der benutzerdefinierten Registertabelle für diesen Batteriespeicher.</p></>,
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
@@ -104,7 +105,12 @@ let x = {
                 }
 
                 return "Setze " + (values.indexOf(",") >= 0 ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
-            }/*NF*/
+            }/*NF*/,
+            "register_effective_mode": "Effektiver Modus",
+            "register_effective_mode_matching": "Übereinstimmend",
+            "register_effective_mode_different": "Abweichend",
+            "register_effective_mode_help": <><p>Falls es nicht möglich ist den jeweiligen Speichermodus vollständig umzusetzen, dann sollte der Speichermodus so gut wie möglich angenähert werden und der Speichermodus, der dann wirklich effektiv umgesetzt wurde, als effektiver Modus gesetzt werden.</p>
+                                              <p>Wenn es also z.B. nicht möglich ist für den Modus "Laden blockieren", das Laden alleine zu blockieren und gleichzeitig das Entladen normal zu belassen, sondern Laden und Entladen nur zusammen blockiert werden können, dann sollte der effektive Modus in diesem Fall auf "Blockieren" gesetzt werden.</p></>
         },
         "script": {
         }

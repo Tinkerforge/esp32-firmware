@@ -1504,6 +1504,15 @@ de_hyph = [
     "Kon-stan-te",
     "Mul-ti-pli-ka-ti-on",
     "Ge-rich-te-ter",
+    "ef-fek-ti-ve",
+    "ex-pli-zi-te",
+    "be-nut-zer-de-fi-nier-ten",
+    "Ef-fek-ti-ver",
+    "je-wei-li-gen",
+    "um-zu-set-zen",
+    "an-ge-nä-hert",
+    "um-ge-setzt",
+    "ef-fek-ti-ver",
 ]
 
 en_hyph = [
@@ -2009,6 +2018,11 @@ en_hyph = [
     "au-tho-rize",
     "Dif-fer-ence",
     "Mul-ti-pli-ca-tion",
+    "ef-fec-tive",
+    "se-lec-tion",
+    "Ef-fec-tive",
+    "ap-prox-i-mat-ed",
+    "ef-fec-tive-ly",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
