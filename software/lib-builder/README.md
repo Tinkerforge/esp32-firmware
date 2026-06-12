@@ -92,7 +92,7 @@ platform_packages = platformio/framework-arduinoespressif32-libs @ symlink://pac
 # to
 platform_packages = platformio/framework-arduinoespressif32-libs @ symlink:///home/[user]/esp32-arduino-lib-builder/out/tools/esp32-arduino-libs
 # Then rebuild the firmware as usual
-pio run -e warp
+uv run pio run -e warp
 ```
 
 ### Add built libs to arduino-esp32 Repo:
