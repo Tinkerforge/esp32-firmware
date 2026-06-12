@@ -196,9 +196,11 @@ void BatteryControl::register_events()
                 return EventResult::OK;
             }
 
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
             task_scheduler.scheduleUncancelable([this]() {
                 this->fast_charge_update();
             }, 5_s, 1_s);
+#endif
 
             return EventResult::Deregister;
         });
@@ -804,6 +806,8 @@ void BatteryControl::set_mode(BatteryMode new_mode)
     }
 }
 
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+
 void BatteryControl::fast_charge_update()
 {
     const TristateBool fast_charger_in_c_cm = static_cast<TristateBool>(charge_manager.fast_charger_in_c);
@@ -816,3 +820,5 @@ void BatteryControl::fast_charge_update()
         schedule_evaluation();
     }
 }
+
+#endif
