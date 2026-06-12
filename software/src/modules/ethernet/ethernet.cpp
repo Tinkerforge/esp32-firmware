@@ -20,6 +20,8 @@
 
 #include "ethernet.h"
 
+// #define ETH_PHY_TYPE  ETH_PHY_OPENETH
+// #define ETH_PHY_ADDR  1
 #define ETH_PHY_TYPE  ETH_PHY_KSZ8081
 #define ETH_PHY_ADDR  0
 #define ETH_PHY_MDC   23
