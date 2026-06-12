@@ -1063,29 +1063,27 @@ def main():
     web_only = env.GetProjectOption("custom_web_only") == "true"
     prepare_only = "-DPREPARE_ONLY" in build_flags
     signature_preset = env.GetProjectOption("custom_signature_preset")
+    split_esptool_ota = env.GetProjectOption("custom_split_esptool_ota") == "true"
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
     if build:
-        try:
-            os.remove(f'build/{product_id}_firmware_latest.elf')
-        except FileNotFoundError:
-            pass
+        symlinks_to_remove = [
+            f'build/{product_id}_firmware_latest.elf',
+            f'build/{product_id}_firmware_latest_merged.bin',
+            f'build/{product_id}_firmware_latest_esptool.bin',
+            f'build/{product_id}_firmware_latest_ota.bin',
+            'build/firmware_latest.elf',
+            'build/firmware_latest_merged.bin',
+            'build/firmware_latest_esptool.bin',
+            'build/firmware_latest_ota.bin',
+        ]
 
-        try:
-            os.remove(f'build/{product_id}_firmware_latest_merged.bin')
-        except FileNotFoundError:
-            pass
-
-        try:
-            os.remove('build/firmware_latest.elf')
-        except FileNotFoundError:
-            pass
-
-        try:
-            os.remove('build/firmware_latest_merged.bin')
-        except FileNotFoundError:
-            pass
+        for symlink in symlinks_to_remove:
+            try:
+                os.remove(symlink)
+            except FileNotFoundError:
+                pass
 
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
     is_dirty = len(subprocess.run(["git", "diff", "HEAD"], check=True, capture_output=True).stdout) > 0
@@ -1707,6 +1705,7 @@ def main():
         'build_dir': env.subst('$BUILD_DIR'),
         'firmware_basename': firmware_basename,
         'signature_preset': signature_preset,
+        'split_esptool_ota': split_esptool_ota,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
         'branding_mod_path': os.path.abspath(branding_mod_path),
         'options': options_dict,

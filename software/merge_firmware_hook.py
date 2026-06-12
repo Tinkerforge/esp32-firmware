@@ -7,6 +7,7 @@ import traceback
 import pathlib
 import json
 import hashlib
+import csv
 from zlib import crc32
 
 env = None
@@ -22,6 +23,7 @@ with open(env.subst(f'$BUILD_DIR{os.sep}metadata.json'), 'r', encoding='utf-8') 
 product_id = metadata['product_id']
 signature_preset = metadata['signature_preset']
 firmware_basename = metadata['firmware_basename']
+split_esptool_ota = metadata['split_esptool_ota']
 
 if sys.platform == 'win32':
     def symlink(src, dst):
@@ -106,28 +108,74 @@ def write_firmware_info():
     pathlib.Path(env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin')).write_bytes(buf)
 
 
-def merge_firmware():
-    write_firmware_info()
+partitions = {}
 
-    subprocess.check_call([
-        'uv',
-        'run',
-        'pio',
-        'pkg',
-        'exec',
-        '-p', 'tool-esptoolpy',
-        '--',
-        'esptool',
-        '--chip', 'esp32',
-        'merge-bin',
+with open(env.GetProjectOption('board_build.partitions'), newline='') as csvfile:
+    reader = csv.DictReader(csvfile, fieldnames=['Name', 'Type', 'SubType', 'Offset', 'Size', 'Flags'], skipinitialspace=True)
+    for row in reader:
+        partitions[row['Name']] = row
+
+app_offset = partitions['app0']['Offset']
+otadata_offset = partitions['otadata']['Offset']
+
+if split_esptool_ota:
+    partition_table_offset = '0xe000'
+else:
+    partition_table_offset = '0x8000'
+
+merge_cmd_base = [
+    'uv',
+    'run',
+    'pio',
+    'pkg',
+    'exec',
+    '-p', 'tool-esptoolpy',
+    '--',
+    'esptool',
+    '--chip', 'esp32',
+    'merge-bin',
+    '--target-offset', '0x1000',
+    app_offset, env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
+]
+
+def merge_firmware_merged():
+    global merge_cmd_base
+    global partition_table_offset
+    global otadata_offset
+
+    cmd = merge_cmd_base + [
         '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
-        '--target-offset', '0x1000',
-        '0x1000', env.subst(f'$BUILD_DIR{os.sep}bootloader.bin'),
-        '0x8000', env.subst(f'$BUILD_DIR{os.sep}partitions.bin'),
+        '0x1000',               env.subst(f'$BUILD_DIR{os.sep}bootloader.bin'),
+        partition_table_offset, env.subst(f'$BUILD_DIR{os.sep}partitions.bin'),
+        '0xd000',               env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin'),
+        otadata_offset,         'boot_app0.bin',
+    ]
+
+    subprocess.check_call(cmd)
+
+def merge_firmware_esptool():
+    global merge_cmd_base
+    global partition_table_offset
+    global otadata_offset
+
+    cmd = merge_cmd_base + [
+        '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_esptool.bin'),
+        '0x1000',               env.subst(f'$BUILD_DIR{os.sep}bootloader.bin'),
+        partition_table_offset, env.subst(f'$BUILD_DIR{os.sep}partitions.bin'),
+        otadata_offset,         'boot_app0.bin',
+    ]
+
+    subprocess.check_call(cmd)
+
+def merge_firmware_ota():
+    global merge_cmd_base
+
+    cmd = merge_cmd_base + [
+        '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_ota.bin'),
         '0xd000', env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin'),
-        '0xe000', 'boot_app0.bin',
-        '0x10000', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
-    ])
+    ]
+
+    subprocess.check_call(cmd)
 
 
 add_post_action_elf('Ensuring build directory exists',
@@ -152,33 +200,53 @@ add_post_action_elf(f'Symlinking build{os.sep}{firmware_basename}.elf -> build{o
                     lambda: symlink(f'{firmware_basename}.elf',
                                     f'build{os.sep}firmware_latest.elf'))
 
-add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_merged.bin', merge_firmware)
+add_post_action_bin(f'Writing firmware info', write_firmware_info)
 
-if len(signature_preset) > 0:
-    add_post_action_bin(f'Signing $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin',
-                        lambda: subprocess.check_call([
+if split_esptool_ota:
+    add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_esptool.bin', merge_firmware_esptool)
+    add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_ota.bin', merge_firmware_ota)
+else:
+    add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_merged.bin', merge_firmware_merged)
+
+if split_esptool_ota:
+    unsigned_suffixes = ['esptool']
+    signed_suffixes = ['ota']
+else:
+    unsigned_suffixes = []
+    signed_suffixes = ['merged']
+
+if len(signature_preset) == 0:
+    unsigned_suffixes += signed_suffixes
+    signed_suffixes = []
+
+all_suffixes = unsigned_suffixes + signed_suffixes
+
+for suffix in signed_suffixes:
+    add_post_action_bin(f'Signing $BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin -> build{os.sep}{firmware_basename}_{suffix}.bin',
+                        lambda suffix=suffix: subprocess.check_call([
                             'uv',
                             'run',
                             env.subst(f'$PROJECT_DIR{os.sep}signature{os.sep}sign.py'),
                             signature_preset,
-                            env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
-                            f'build{os.sep}{firmware_basename}_merged.bin'
+                            env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin'),
+                            f'build{os.sep}{firmware_basename}_{suffix}.bin'
                         ], env=os.environ | {'PYTHONUNBUFFERED': '1'}))
 
-else:
-    add_post_action_bin(f'Copying $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin',
-                        lambda: shutil.copy2(env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
-                                             f'build{os.sep}{firmware_basename}_merged.bin'))
+for suffix in unsigned_suffixes:
+    add_post_action_bin(f'Copying $BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin -> build{os.sep}{firmware_basename}_{suffix}.bin',
+                        lambda suffix=suffix: shutil.copy2(env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin'),
+                                            f'build{os.sep}{firmware_basename}_{suffix}.bin'))
 
-add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_merged.bin -> build_latest{os.sep}{firmware_basename}_merged.bin',
-                    lambda: remove_and_symlink(f'build_latest{os.sep}{product_id}_firmware*_merged.bin',
-                                               f'..{os.sep}build{os.sep}{firmware_basename}_merged.bin',
-                                               f'build_latest{os.sep}{firmware_basename}_merged.bin'))
+for suffix in all_suffixes:
+    add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_{suffix}.bin -> build_latest{os.sep}{firmware_basename}_{suffix}.bin',
+                        lambda suffix=suffix: remove_and_symlink(f'build_latest{os.sep}{product_id}_firmware*_{suffix}.bin',
+                                                                 f'..{os.sep}build{os.sep}{firmware_basename}_{suffix}.bin',
+                                                                 f'build_latest{os.sep}{firmware_basename}_{suffix}.bin'))
 
-add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}{product_id}_firmware_latest_merged.bin',
-                    lambda: symlink(f'{firmware_basename}_merged.bin',
-                                    f'build{os.sep}{product_id}_firmware_latest_merged.bin'))
+    add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_{suffix}.bin -> build{os.sep}{product_id}_firmware_latest_{suffix}.bin',
+                        lambda suffix=suffix: symlink(f'{firmware_basename}_{suffix}.bin',
+                                                      f'build{os.sep}{product_id}_firmware_latest_{suffix}.bin'))
 
-add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}firmware_latest_merged.bin',
-                    lambda: symlink(f'{firmware_basename}_merged.bin',
-                                    f'build{os.sep}firmware_latest_merged.bin'))
+    add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_{suffix}.bin -> build{os.sep}firmware_latest_{suffix}.bin',
+                        lambda suffix=suffix: symlink(f'{firmware_basename}_{suffix}.bin',
+                                                      f'build{os.sep}firmware_latest_{suffix}.bin'))
