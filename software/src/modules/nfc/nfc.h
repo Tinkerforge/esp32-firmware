@@ -74,15 +74,8 @@ public:
         tag_t tag;
     };
 
-    struct auth_tag_t {
-        uint8_t user_id;
-        tag_t tag;
-    };
-
     void register_backend(INfcBackend *backend);
 
-    void update_seen_tags();
-    void tag_seen(tag_info_t *info, bool injected);
     int16_t get_user_id(const tag_t &tag);
 
     void remove_user(uint8_t user_id);
@@ -92,12 +85,6 @@ public:
 #if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
 #endif
-
-    void reset()
-    {
-        if (backend)
-            backend->reset();
-    }
 
     micros_t get_deadtime_post_start() const { return this->deadtime_post_start; }
 
@@ -110,8 +97,17 @@ private:
 
     micros_t deadtime_post_start = 0_us;
     size_t auth_tag_count = 0;
+
+    struct auth_tag_t {
+        uint8_t user_id;
+        tag_t tag;
+    };
+
     std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
     void setup_auth_tags();
+
+    void update_seen_tags();
+    void tag_seen(tag_info_t *info, bool injected);
 
 public:
     ConfigRoot seen_tags;
