@@ -30,8 +30,6 @@
 
 #include "ocpp/Configuration.h"
 
-extern char local_uid_str[32];
-
 static void reset_state(Config *state) {
     state->get("charge_point_state")->updateUint(0);
     state->get("charge_point_status")->updateUint(0);
@@ -226,7 +224,7 @@ void Ocpp::setup()
 {
     initialized = true;
     if (!api.restorePersistentConfig("ocpp/config", &config)) {
-        config.get("identity")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
+        config.get("identity")->updateString(esp32_common.get_default_name());
     }
 
     // Should we use on_network_connected here?

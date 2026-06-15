@@ -45,8 +45,6 @@
 
 #include "gcc_warnings.h"
 
-extern char local_uid_str[32];
-
 static constexpr uint8_t IGMP_MAC[6] = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x01};
 
 // Generation counter for async ETH.begin() tasks. Incremented on every
@@ -188,9 +186,7 @@ void Ethernet::setup()
 #if MODULE_NETWORK_AVAILABLE()
             const String &hostname = network.get_hostname();
 #else
-            String hostname{OPTIONS_HOSTNAME_PREFIX()};
-            hostname.concat("-", 1);
-            hostname.concat(local_uid_str);
+            const String hostname = esp32_common.get_default_name();
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
 

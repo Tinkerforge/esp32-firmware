@@ -45,8 +45,6 @@ public:
     inline int8_t get_cert_id() { return cert_id; }
     inline int8_t get_key_id() { return key_id; }
 
-    void set_default_hostname(const String &hostname);
-
     int64_t on_network_connected(std::function<EventResult(const Config *)> &&callback);
 
 
@@ -57,7 +55,6 @@ private:
     ConfigRoot state;
 
     String hostname;
-    CoolString default_hostname;
     bool enable_mdns;
     bool mdns_started = false;
     TransportMode transport_mode;

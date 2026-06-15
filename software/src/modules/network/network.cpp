@@ -53,8 +53,6 @@ static constexpr TransportMode default_transport_mode = TransportMode::Insecure;
 #error "Must enable at least one transport mode"
 #endif
 
-extern char local_uid_str[32];
-
 void Network::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -108,14 +106,9 @@ void Network::pre_setup()
 
 void Network::setup()
 {
-    if (this->default_hostname.isEmpty()) {
-        esp_system_abort("Network::set_default_hostname was not called before Network::setup");
-    }
-
     if (!api.restorePersistentConfig("network/config", &config)) {
-        config.get("hostname")->updateString(this->default_hostname);
+        config.get("hostname")->updateString(esp32_common.get_default_name());
     }
-    this->default_hostname.make_invalid();
 
     this->hostname               = config.get("hostname")->asString();
     this->enable_mdns            = config.get("enable_mdns")->asBool();
@@ -280,10 +273,6 @@ void Network::update_connected()
             logger.printfln("Network disconnected");
         }
     }
-}
-
-void Network::set_default_hostname(const String &hostname) {
-    this->default_hostname = hostname;
 }
 
 int64_t Network::on_network_connected(std::function<EventResult(const Config *)> &&callback)

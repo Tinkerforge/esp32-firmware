@@ -40,9 +40,6 @@
 // worst case length ~140
 #define MAX_SCAN_RESULT_LENGTH 145
 
-extern char local_uid_str[32];
-extern char passphrase[20];
-
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
 #endif
@@ -1101,16 +1098,26 @@ void Wifi::setup()
 #ifdef DEFAULT_WIFI_AP_SSID
         ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
 #else
-        String default_ap_ssid{OPTIONS_HOSTNAME_PREFIX()};
-        default_ap_ssid.concat("-", 1);
-        default_ap_ssid.concat(local_uid_str);
-        ap_config.get("ssid")->updateString(default_ap_ssid);
+        ap_config.get("ssid")->updateString(esp32_common.get_default_name());
 #endif
 #ifdef DEFAULT_WIFI_AP_PASSPHRASE
-        ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
+        String passphrase{DEFAULT_WIFI_AP_PASSPHRASE};
 #else
-        ap_config.get("passphrase")->updateString(passphrase); // Default AP passphrase
+        String passphrase = esp32_common.get_default_wifi_passphrase();
 #endif
+        if (passphrase.isEmpty()) {
+            // Prevent accidentally starting the AP with no passphrase
+            logger.printfln("No default passphrase set. Disabling AP.");
+            ap_config.get("enable_ap")->updateBool(false);
+        } else {
+            ap_config.get("passphrase")->updateString(passphrase);
+
+            // Best-effort clearing of temporary passphrase String
+            const size_t len = passphrase.length();
+            for (size_t i = 0; i < len; i++) {
+                passphrase.setCharAt(i, 'x');
+            }
+        }
     }
 
     if (ap_config.get("enable_ap")->asBool()) {
@@ -1161,13 +1168,14 @@ void Wifi::setup()
         },
         ARDUINO_EVENT_WIFI_SCAN_DONE);
 
-    // For some reason WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
+    // For some reason, WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
     // As we have the same hostname for STA and AP, it is sufficient to set the hostname here once and never call WiFi.softAPsetHostname.
 #if MODULE_NETWORK_AVAILABLE()
-    WiFi.setHostname(network.get_hostname().c_str());
+    const String &hostname = network.get_hostname();
 #else
-    WiFi.setHostname((String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str).c_str());
+    const String hostname = esp32_common.get_default_name();
 #endif
+    WiFi.setHostname(hostname.c_str());
 
     WiFi.persistent(false);
     WiFi.disableSTA11b(runtime_sta == nullptr || !runtime_sta->enable_11b);

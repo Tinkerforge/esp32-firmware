@@ -45,9 +45,6 @@
 
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
 
-extern char local_uid_str[32];
-extern uint32_t local_uid_num;
-
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
 // Forward declarations of static functions for charger names file
@@ -389,10 +386,14 @@ static void update_charge_tracking(
 
     // Populate first and last tracked charge when we first see this charger
     if (target.last_update == 0_us) {
-        char uid_str[32];
-        tf_base58_encode(target.uid, uid_str);
+        char uid_str[15];
+        bool is_local_charger = false;
+        if (target.uid == esp32_common.get_uid_num()) {
+            is_local_charger = true;
+        } else {
+            tf_base58_encode(target.uid, uid_str);
+        }
 
-        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
         ChargeStart cs;
 
         if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str, &cs)) {
@@ -413,16 +414,16 @@ static void update_charge_tracking(
 
     // If tracking, a vehicle is plugged in and we are authenticated, track a start if not done already.
     if (v1->charger_state != 0 && target.authenticated_user_id != NOT_AUTHORIZED && target.authenticated_user_id != UNKNOWN_NFC_TAG) {
-        char uid_str[32];
-        bool local_charger = false;
-        if (target.uid != local_uid_num) {
-            tf_base58_encode(target.uid, uid_str);
+        char uid_str[15];
+        bool is_local_charger = false;
+        if (target.uid == esp32_common.get_uid_num()) {
+            is_local_charger = true;
         } else {
-            local_charger = true;
+            tf_base58_encode(target.uid, uid_str);
         }
 
         // TODO: optimize this!
-        if (!charge_tracker.currentlyCharging(local_charger ? nullptr : uid_str)) {
+        if (!charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
             uint32_t charge_start = 0;
             timeval _timeval;
             if (rtc.clock_synced(&_timeval))
@@ -434,16 +435,20 @@ static void update_charge_tracking(
                                        v1->evse_uptime,
                                        CMAuthType::None,
                                        Config::ConfVariant(),
-                                       local_charger ? nullptr : uid_str);
+                                       is_local_charger ? nullptr : uid_str);
         }
     }
 
     // If tracking and no vehicle is plugged in track a stop if not done already.
     if (v1->charger_state == 0) {
-        char uid_str[32];
-        tf_base58_encode(target.uid, uid_str);
+        char uid_str[15];
+        bool is_local_charger = false;
+        if (target.uid == esp32_common.get_uid_num()) {
+            is_local_charger = true;
+        } else {
+            tf_base58_encode(target.uid, uid_str);
+        }
 
-        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
         if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
             charge_tracker.endCharge(
                 (now - target.last_plug_in).to<seconds_t>().as<uint32_t>(),

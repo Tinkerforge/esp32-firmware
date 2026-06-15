@@ -35,8 +35,6 @@
 
 #include "gcc_warnings.h"
 
-extern char local_uid_str[32];
-
 [[gnu::noinline]]
 static void log_mbedtls_error(int error, const char *msg)
 {
@@ -919,7 +917,7 @@ bool Cert::default_cert_fill_fn(mbedtls_x509write_cert *mbed_cert)
 #if MODULE_NETWORK_AVAILABLE()
     const String &hostname = network.get_hostname();
 #else
-    const String hostname = String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str;
+    const String hostname = esp32_common.get_default_name();
 #endif
 
     if (!cert_set_subject_issuer(mbed_cert, hostname)) {

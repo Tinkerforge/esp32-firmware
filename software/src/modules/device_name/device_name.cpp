@@ -24,17 +24,20 @@
 
 #include "gcc_warnings.h"
 
-extern char local_uid_str[32];
-
 static const size_t options_hostname_prefix_length = constexpr_strlen(OPTIONS_HOSTNAME_PREFIX());
 
 void DeviceName::pre_setup()
 {
+    const String name_str = esp32_common.get_default_name();
+    const String &uid = esp32_common.get_uid_str();
+    const uint16_t name_length = static_cast<uint16_t>(name_str.length());
+    const uint16_t uid_length = static_cast<uint16_t>(uid.length());
+
     name = Config::Object({
-        {"name", Config::Str("", 0, options_hostname_prefix_length + 1 + ARRAY_SIZE(local_uid_str))},
-        {"type", Config::Str(OPTIONS_HOSTNAME_PREFIX(), 0, options_hostname_prefix_length)},
+        {"name", Config::Str(name_str, name_length, name_length)},
+        {"type", Config::Str(OPTIONS_HOSTNAME_PREFIX(), options_hostname_prefix_length, options_hostname_prefix_length)},
         {"display_type", Config::Str("", 0, 64)},
-        {"uid", Config::Str("", 0, 32)}
+        {"uid", Config::Str(uid, uid_length, uid_length)}
     });
 
     display_name = Config::Object({
@@ -109,12 +112,6 @@ void DeviceName::updateDisplayType()
 
 void DeviceName::setup()
 {
-    name.get("name")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
-    name.get("uid")->updateString(String(local_uid_str));
-
-    // We intentionally don't use the display_name_in_use = display_name construction here:
-    // We want to be able to change the display_name without a reboot, because in the web interface
-    // we don't use the usual save + reboot modal code-path.
     if (!api.restorePersistentConfig("info/display_name", &display_name)) {
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }

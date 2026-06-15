@@ -30,8 +30,6 @@
 #include "tools/net.h"
 #endif
 
-extern uint32_t local_uid_num;
-
 static constexpr auto CHARGE_MODE_REQUEST_TIMEOUT = 10_s;
 
 EvseCommon::EvseCommon()
@@ -446,7 +444,7 @@ void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
     const uint32_t phases = backend->get_phases();
 
     cm_networking.send_client_update(
-        local_uid_num,
+        esp32_common.get_uid_num(),
         state.get("iec61851_state")->asUint(),
         state.get("charger_state")->asUint(),
         low_level_state.get("time_since_state_change")->asUint(),

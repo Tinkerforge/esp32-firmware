@@ -19,17 +19,14 @@
 
 #include "tools.h"
 
-#include <esp_efuse.h>
 #include <esp_system.h>
 #include <esp_timer.h>
 #include <freertos/task.h>
 #include <esp_log.h>
-#include <soc/efuse_reg.h>
 #include <lwip/inet_chksum.h>
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
-#include "bindings/base58.h"
 
 void vTaskDelay_ms(uint32_t delay_ms)
 {
@@ -117,71 +114,6 @@ micros_t now_us()
 [[gnu::noreturn]] void system_abort(const char *message)
 {
     esp_system_abort(message);
-}
-
-void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
-{
-    uint32_t blocks[8] = {0};
-
-    for (int32_t block3Address = EFUSE_BLK3_RDATA0_REG, i = 0; block3Address <= EFUSE_BLK3_RDATA7_REG; block3Address += 4, ++i) {
-        blocks[i] = esp_efuse_read_reg(EFUSE_BLK3, i);
-    }
-
-    uint32_t passphrase[4] = {0};
-
-    /*
-    EFUSE_BLK_3 is 256 bit (32 byte, 8 blocks) long and organized as follows:
-    block 0:
-        Custom MAC CRC + MAC bytes 0 to 2
-    block 1:
-        Custom MAC bytes 3 to 5
-        byte 3 - Wifi passphrase chunk 0 byte 0
-    block 2:
-        byte 0 - Wifi passphrase chunk 0 byte 1
-        byte 1 - Wifi passphrase chunk 0 byte 2
-        byte 2 - Wifi passphrase chunk 1 byte 0
-        byte 3 - Wifi passphrase chunk 1 byte 1
-    block 3:
-        ADC 1 calibration data
-    block 4:
-        ADC 2 calibration data
-    block 5:
-        byte 0 - Wifi passphrase chunk 1 byte 2
-        byte 1 - Wifi passphrase chunk 2 byte 0
-        byte 2 - Wifi passphrase chunk 2 byte 1
-        byte 3 - Custom MAC Version
-    block 6:
-        byte 0 - Wifi passphrase chunk 2 byte 2
-        byte 1 - Wifi passphrase chunk 3 byte 0
-        byte 2 - Wifi passphrase chunk 3 byte 1
-        byte 3 - Wifi passphrase chunk 3 byte 2
-    block 7:
-        UID
-    */
-
-    passphrase[0] = ((blocks[1] & 0xFF000000) >> 24) | ((blocks[2] & 0x0000FFFF) << 8);
-    passphrase[1] = ((blocks[2] & 0xFFFF0000) >> 16) | ((blocks[5] & 0x000000FF) << 16);
-    passphrase[2] = ((blocks[5] & 0x00FFFF00) >> 8)  | ((blocks[6] & 0x000000FF) << 16);
-    passphrase[3] =  (blocks[6] & 0xFFFFFF00) >> 8;
-    *ret_uid_num = blocks[7];
-
-    char buf[7] = {0};
-
-    for (int i = 0; i < 4; ++i) {
-        if (i != 0) {
-            ret_passphrase[i * 5 - 1] = '-';
-        }
-
-        tf_base58_encode(passphrase[i], buf);
-
-        if (strnlen(buf, ARRAY_SIZE(buf)) != 4) {
-            logger.printfln("efuse error: malformed passphrase!");
-        } else {
-            memcpy(ret_passphrase + i * 5, buf, 4);
-        }
-    }
-
-    tf_base58_encode(*ret_uid_num, ret_uid_str);
 }
 
 static int vprintf_dev_null(const char *fmt, va_list args)

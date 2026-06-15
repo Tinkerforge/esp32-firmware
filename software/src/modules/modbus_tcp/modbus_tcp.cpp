@@ -30,8 +30,6 @@
 #include "tools/string_builder.h"
 #include "tools/net.h"
 
-extern uint32_t local_uid_num;
-
 // MODBUS TABLE CHANGELOG
 // 1 - Initial release
 // 2 - Add coils 1000, 1001
@@ -220,7 +218,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInp
         case 4: val.u = BUILD_VERSION_MINOR; break;
         case 6: val.u = BUILD_VERSION_PATCH; break;
         case 8: val.u = build_timestamp(); break;
-        case 10: val.u = local_uid_num; break;
+        case 10: val.u = esp32_common.get_uid_num(); break;
         case 12: val.u = now_us().to<seconds_t>().as<uint32_t>(); break;
 
         case 1000: REQUIRE(evse); val.u = cache->evse_state->get("iec61851_state")->asUint(); break;
@@ -1023,7 +1021,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
         case 1008: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000); break;
         case 1010: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L2_A)->asFloat() * 1000); break;
         case 1012: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L3_A)->asFloat() * 1000); break;
-        case 1014: val.u = local_uid_num; break;
+        case 1014: val.u = esp32_common.get_uid_num(); break;
         case 1016: val.u = keba_get_features(); break;
         case 1018: val.u = 0x30A1B00; break;  //3.10.27 is the last firmware version without support for the failsafe registers. We don't implement those, so report .27.
         case 1020: REQUIRE(meter); val.u = (uint32_t)(cache->meter_values->get("power")->asFloat() * 1000); break;

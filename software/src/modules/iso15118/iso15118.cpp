@@ -213,8 +213,6 @@
 
 #include "gcc_warnings.h"
 
-extern uint32_t local_uid_num;
-
 // RFC 4648 Base32 alphabet: A-Z (0-25), 2-7 (26-31)
 static const char base32_alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
@@ -373,6 +371,7 @@ void ISO15118::setup()
     // Format: "DEWRPE" + base32(local_uid_num)
     // "DE" = country code (Germany), "WRP" = EVSE operator ID, "E" = ID type (EVSE)
     // base32 encoding uses RFC 4648 alphabet (A-Z, 2-7) for an unambiguous 7-char outlet ID.
+    const uint32_t local_uid_num = esp32_common.get_uid_num();
     strcpy(evseid_iso, "DEWRPE");
     encode_iso_evseid(local_uid_num, evseid_iso + 6);
     evseid_iso_len = 13;

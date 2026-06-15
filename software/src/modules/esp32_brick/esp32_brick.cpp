@@ -49,9 +49,6 @@
 #define BUTTON 0
 
 TF_HAL hal;
-extern uint32_t local_uid_num;
-extern char local_uid_str[32];
-extern char passphrase[20];
 extern int8_t blue_led_pin;
 extern int8_t green_led_pin;
 extern int8_t button_pin;
@@ -77,12 +74,7 @@ bool ESP32Brick::destroyHAL() {
 
 void ESP32Brick::setup()
 {
-    read_efuses(&local_uid_num, local_uid_str, passphrase);
-    logger.printfln("ESP32 Brick UID: %s", local_uid_str);
-
-#if MODULE_NETWORK_AVAILABLE()
-    network.set_default_hostname(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
-#endif
+    logger.printfln("ESP32 Brick UID: %s", esp32_common.get_uid_cstr());
 
     initHAL();
 
@@ -90,7 +82,7 @@ void ESP32Brick::setup()
     uint8_t hw_version[3] = {1, 0, 0};
     uint8_t fw_version[3] = {BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH};
 
-    check(tf_local_create(&local, local_uid_str, '0', hw_version, fw_version, TF_ESP32_DEVICE_IDENTIFIER, &hal), "local create");
+    check(tf_local_create(&local, esp32_common.get_base58_uid_str().c_str(), '0', hw_version, fw_version, TF_ESP32_DEVICE_IDENTIFIER, &hal), "local create");
 
     tf_hal_set_local(&hal, &local);
 #endif

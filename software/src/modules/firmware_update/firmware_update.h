@@ -100,6 +100,7 @@ private:
     void read_app_partition_state();
     void report_flash_firmware_progress_http_thread(bool force = false);
     void update_install_state();
+    bool sbv2_sign_app(uint8_t *scratch_buffer, size_t scratch_buffer_len);
 
     ConfigRoot config;
     ConfigRoot state;

@@ -43,8 +43,6 @@ const char *tf_reset_reason(uint32_t *numeric_reason_out = nullptr);
 
 bool a_after_b(uint32_t a, uint32_t b);
 
-void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
-
 extern TaskHandle_t mainTaskHandle;
 void set_main_task_handle();
 inline bool running_in_main_task()

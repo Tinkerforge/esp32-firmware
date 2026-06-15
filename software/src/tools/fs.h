@@ -26,7 +26,8 @@
 #include "stdint.h"
 
 extern bool should_factory_reset_bricklets;
-bool mount_or_format_spiffs();
+bool mount_or_format_data_partition();
+bool rewrite_data_partition(const std::function<bool(void)> &unmounted_task_fn);
 
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 bool for_filename_in(const char *dir, std::function<bool(const char *, size_t, bool)> callback);

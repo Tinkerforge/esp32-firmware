@@ -30,6 +30,7 @@
 #include "tools.h"
 #include "options.h"
 #include "build.h"
+#include "modules/esp32_common/secure_boot.h"
 #include "rollback_timing.h"
 #include "tools/hexdump.h"
 #include "tools/string_builder.h"
@@ -488,6 +489,11 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         application_len = complete_len - APPLICATION_OFFSET;
         padded_application_len = (application_len + 4095) & ~static_cast<size_t>(4095); // pad to a multiple of 4096
 
+        size_t total_application_len = padded_application_len;
+#ifdef CONFIG_SECURE_BOOT
+        total_application_len += sizeof(ets_secure_boot_sig_block_t);
+#endif
+
 #if signature_sodium_public_key_length != 0
         if (signature_override_cookie != 0) {
             signature_override_cookie = 0;
@@ -495,7 +501,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         }
 #endif
 
-        if (!Update.begin(padded_application_len, U_FLASH)) {
+        if (!Update.begin(total_application_len, U_FLASH)) {
             logger.printfln("Failed to update: Could not initialize flash writer: %s", Update.errorString());
             Update.abort();
             return InstallState::FlashBeginFailed;
@@ -667,6 +673,12 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         }
 
         logger.printfln("Update signature is valid, published by %s", signature_info.block.publisher);
+#endif
+
+#ifdef CONFIG_SECURE_BOOT
+        if (!sbv2_sign_app(chunk_data, chunk_len)) {
+            return InstallState::SecureBootSignatureGenerationFailed;
+        }
 #endif
 
         if (!Update.end(true) || Update.hasError()) {
@@ -902,6 +914,13 @@ void FirmwareUpdate::register_urls()
         logger.printfln("Overriding failed signature verification");
 
         signature_override_cookie = 0;
+
+#ifdef CONFIG_SECURE_BOOT
+        if (!sbv2_sign_app(nullptr, 0)) {
+            errmsg = "Failed to sign update";
+            return;
+        }
+#endif
 
         if (!Update.end(true) || Update.hasError()) {
             errmsg = "Failed to apply update";
@@ -1933,3 +1952,39 @@ void FirmwareUpdate::update_install_state()
     progress->updateEnum(flash_firmware_progress);
     progress->set_updated(0xFF);
 }
+
+#ifdef CONFIG_SECURE_BOOT
+
+static_assert(alignof(ets_secure_boot_sig_block_t) <= 4);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+
+bool FirmwareUpdate::sbv2_sign_app(uint8_t *scratch_buffer, size_t scratch_buffer_len)
+{
+    const constexpr size_t SIG_BLOCK_LEN = sizeof(ets_secure_boot_sig_block_t);
+    uint8_t *sig_block;
+    std::unique_ptr<uint8_t[]> local_buffer;
+
+    if (scratch_buffer_len >= SIG_BLOCK_LEN) {
+        sig_block = scratch_buffer;
+    } else {
+        local_buffer = heap_alloc_array<uint8_t>(SIG_BLOCK_LEN);
+        sig_block = local_buffer.get();
+    }
+
+    if (!ESP32CommonSecureBoot::sb_sign_image_or_skip(reinterpret_cast<ets_secure_boot_sig_block_t *>(sig_block), firmware_info.block.padded_application_sha256sum)) {
+        return false;
+    }
+
+    const size_t written = Update.write(sig_block, SIG_BLOCK_LEN);
+
+    if (written != SIG_BLOCK_LEN) {
+        logger.printfln("Failed to append SBv2 signature: %zu/%zu", written, SIG_BLOCK_LEN);
+        return false;
+    }
+
+    return true;
+}
+
+#pragma GCC diagnostic pop
+#endif

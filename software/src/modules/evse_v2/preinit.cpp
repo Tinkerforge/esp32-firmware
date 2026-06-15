@@ -158,7 +158,7 @@ void evse_v2_button_recovery_handler()
         case 0:
             logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
 
-            mount_or_format_spiffs();
+            mount_or_format_data_partition();
 #if MODULE_USERS_AVAILABLE()
             {
                 // We can't use api.restorePersistent config here,
@@ -199,7 +199,7 @@ void evse_v2_button_recovery_handler()
         // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration
         case 1:
             logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
-            mount_or_format_spiffs();
+            mount_or_format_data_partition();
             api.removeAllConfig();
             LittleFS.end();
             logger.printfln("Stage 1 done");
@@ -208,7 +208,7 @@ void evse_v2_button_recovery_handler()
         case 2:
 #if MODULE_SYSTEM_AVAILABLE()
             logger.printfln("Running stage 2: Formatting data partition");
-            mount_or_format_spiffs();
+            mount_or_format_data_partition();
             system_.factory_reset(false);
             logger.printfln("Stage 2 done");
 #endif

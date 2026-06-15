@@ -61,8 +61,6 @@ static constexpr BaseType_t pdPASS_safe = pdPASS;
     #pragma GCC diagnostic pop
 #endif
 
-extern char local_uid_str[32];
-
 static bool repair_logic(Charge *);
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
@@ -270,7 +268,7 @@ void ChargeTracker::pre_setup()
 static String get_charger_display_name_from_host(const char *directory)
 {
     if (directory == nullptr || directory[0] == '\0') {
-        directory = local_uid_str;
+        directory = esp32_common.get_uid_cstr();
     }
 
     uint32_t uid = 0;
@@ -671,7 +669,16 @@ bool ChargeTracker::removeOldRecords()
     // If not, remove it from the charger names file.
     if (!getChargerChargeRecords(oldest_dir, nullptr, nullptr)) {
         uint32_t uid = 0;
-        if (tf_base58_decode(oldest_dir == nullptr ? local_uid_str : oldest_dir, &uid) == 0 && uid != 0) {
+
+        if (oldest_dir == nullptr) {
+            uid = esp32_common.get_uid_num();
+        } else {
+            if (tf_base58_decode(oldest_dir, &uid) != 0) {
+                uid = 0;
+            }
+        }
+
+        if (uid != 0) {
             charge_manager.remove_from_charger_names_file(uid);
         }
     }
@@ -1550,9 +1557,15 @@ bool GenerationParams::include_charge(const Charge *charge) const {
 
 bool GenerationParams::include_device(const char *directory) const {
     uint32_t uid = 0;
-    if (tf_base58_decode(directory == nullptr ? local_uid_str : directory, &uid) != 0) {
-        return false;
+
+    if (directory == nullptr) {
+        uid = esp32_common.get_uid_num();
+    } else {
+        if (tf_base58_decode(directory, &uid) != 0) {
+            return false;
+        }
     }
+
     return this->include_device(uid);
 }
 
@@ -2924,11 +2937,15 @@ ExportCharge *ChargeTracker::getFilteredCharges(const GenerationParams &params, 
         }
 
         // Get charger UID from directory name
-        const char *b58 = directory == nullptr ? local_uid_str : directory;
         uint32_t charger_uid = 0;
-        if (tf_base58_decode(b58, &charger_uid) != 0) {
-            logger.printfln("Directory '%s' has invalid charger UID", directory == nullptr ? "main" : directory);
-            return;
+
+        if (directory == nullptr) {
+            charger_uid = esp32_common.get_uid_num();
+        } else {
+            if (tf_base58_decode(directory, &charger_uid) != 0) {
+                logger.printfln("Directory '%s' has invalid charger UID", directory == nullptr ? "main" : directory);
+                return;
+            }
         }
 
         uint32_t prev_known_timestamp = 0;

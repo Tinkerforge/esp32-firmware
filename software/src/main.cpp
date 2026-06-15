@@ -69,9 +69,6 @@ static bool is_module_loop_overridden(const IModule *imodule) {
 extern TF_HAL hal;
 
 // initialized by board module
-uint32_t local_uid_num = 0;
-char local_uid_str[32] = {0};
-char passphrase[20] = {0};
 int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
 int8_t button_pin = -1;
@@ -241,8 +238,8 @@ void setup()
         (*imodules[i].imodule)->pre_init();
     }
 
-    if (!mount_or_format_spiffs()) {
-        logger.printfln("Failed to mount SPIFFS.");
+    if (!mount_or_format_data_partition()) {
+        logger.printfln("Failed to mount data partition");
     }
 
     check_memory_assumptions();

@@ -89,6 +89,7 @@ let x = {
             "install_state_28": "Error occurred while receiving data",
             "install_state_29": "Signature info in firmware file is corrupted (checksum error)",
             "install_state_30": "Application in firmware file is corrupted (checksum error)",
+            "install_state_31": "Secure Boot signature generation failed",
             "build_time": /*SFN*/(build_time: string) => `created ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `by ${publisher}`/*NF*/,
             "install_failed": "Install failed"

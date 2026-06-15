@@ -48,8 +48,6 @@
 #include "gcc_warnings.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
-extern char local_uid_str[32];
-extern uint32_t local_uid_num;
 
 #define WG_KEY_LENGTH 44
 #define KEY_SIZE (3 * WG_KEY_LENGTH)
@@ -622,7 +620,7 @@ void RemoteAccess::register_urls()
         serializer.addMemberObject("charger");
 
         serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
-        serializer.addMemberString("uid", local_uid_str);
+        serializer.addMemberString("uid", esp32_common.get_uid_cstr());
         serializer.addMemberString("wg_charger_ip", "10.123.123.2");
         serializer.addMemberString("wg_server_ip", "10.123.123.3");
         serializer.addMemberString("psk", doc["mgmt_psk"]);
@@ -1543,7 +1541,7 @@ void RemoteAccess::resolve_management()
     bool old_api;
     if (uuid.length() == 0) {
         old_api = true;
-        serializer.addMemberNumber("id", local_uid_num);
+        serializer.addMemberNumber("id", esp32_common.get_uid_num());
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberObject("data");
         serializer.addMemberObject("V1");
@@ -2143,7 +2141,7 @@ void RemoteAccess::run_management()
 
             uint16_t local_port = 51821;
             port_discovery_packet response;
-            response.charger_id = local_uid_num;
+            response.charger_id = esp32_common.get_uid_num();
             response.connection_no = command->connection_no;
             memcpy(&response.connection_uuid, &command->connection_uuid, 16);
 

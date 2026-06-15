@@ -29,8 +29,6 @@
 #include "tools.h"
 #include "matchTopicFilter.h"
 
-extern char local_uid_str[32];
-
 // MQTT over WSS takes ~ 3.4k only for the connection
 // + ~ 1.2k for publishing/subscribing.
 // 6144 byte is the default value.
@@ -657,8 +655,8 @@ void Mqtt::setup()
     initialized = true;
 
     if (!api.restorePersistentConfig("mqtt/config", &config)) {
-        config.get("global_topic_prefix")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "/" + local_uid_str);
-        config.get("client_name")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
+        config.get("global_topic_prefix")->updateString(esp32_common.get_default_name('/'));
+        config.get("client_name"        )->updateString(esp32_common.get_default_name('-'));
 
 #ifdef DEFAULT_MQTT_ENABLE
         config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
