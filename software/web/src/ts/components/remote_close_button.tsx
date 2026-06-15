@@ -7,8 +7,12 @@ import { X } from "react-feather";
 
 
 export function RemoteCloseButton() {
-    return <Nav.Item as="li" hidden={!util.remoteAccessMode}>
-            <Nav.Link className="row gx-2 d-flex-ni align-items-center text-danger" role="button" onClick={util.closeRemoteConnection}>
+    let closeFn = util.closeRemoteConnection;
+    if (util.is_warp_app() && window.tinkerforge_devices) {
+      closeFn = () => window.tinkerforge_devices.resetToDevices();
+    }
+    return <Nav.Item as="li" hidden={!util.remoteAccessMode && !util.is_warp_app()}>
+            <Nav.Link className="row gx-2 d-flex-ni align-items-center text-danger" role="button" onClick={closeFn}>
                 <span class="col-auto"><X/></span><span class="col">{__("component.remote_close_button.close")}</span>
             </Nav.Link>
         </Nav.Item>
