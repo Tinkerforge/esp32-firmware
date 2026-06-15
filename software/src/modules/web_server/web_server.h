@@ -25,7 +25,6 @@
 #include <IPAddress.h>
 #include <WString.h>
 #include <esp_http_server.h>
-#include <esp_https_server.h>
 #include <TFJson.h>
 
 #include "cert.h"

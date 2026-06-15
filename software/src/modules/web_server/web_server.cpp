@@ -36,9 +36,6 @@
 #ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
 #define CONFIG_ESP_HTTPS_SERVER_ENABLE 0
 #endif
-#ifndef MODULE_CERTS_AVAILABLE
-#define MODULE_CERTS_AVAILABLE() 0
-#endif
 
 #if CONFIG_ESP_HTTPS_SERVER_ENABLE
 #define HTTPS_AVAILABLE() 1
@@ -99,9 +96,6 @@ void WebServer::post_setup()
 
     default_handlers->supports_user_authentication = true;
     default_handlers->supports_http_api = true;
-
-    // Certificate buffers must live until httpd has started.
-    Cert certificates[WEB_SERVER_MAX_PORTS] = {};
 
 #if HTTPS_AVAILABLE()
     httpd_ssl_config_t ssl_configs[WEB_SERVER_MAX_PORTS] = {
