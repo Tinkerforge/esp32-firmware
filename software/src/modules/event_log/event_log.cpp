@@ -578,42 +578,6 @@ size_t EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const 
     return written;
 }
 
-size_t EventLog::get_trace_buffer_idx(const char *name) {
-#if defined(BOARD_HAS_PSRAM)
-    for (size_t i = 0; i < trace_buffers_in_use; ++i) {
-        if (trace_buffers[i].name != name) // TODO rodata check
-            continue;
-        return i;
-    }
-#else
-    (void)name;
-#endif
-    return std::numeric_limits<size_t>::max();
-}
-
-void EventLog::trace_drop(size_t trace_buf_idx, size_t count)
-{
-#if defined(BOARD_HAS_PSRAM)
-    if (trace_buf_idx >= trace_buffers_in_use)
-        return;
-
-    char c = '\n';
-
-    auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
-
-    for (size_t i = 0; i < count; ++i) {
-        trace_buffer->buf.pop(&c);
-    }
-
-    while (trace_buffer->buf.used() > 0 && c != '\n') {
-        trace_buffer->buf.pop(&c);
-    }
-#else
-    (void)trace_buf_idx;
-    (void)count;
-#endif
-}
-
 void EventLog::trace_timestamp(size_t trace_buf_idx)
 {
 #if defined(BOARD_HAS_PSRAM)

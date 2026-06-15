@@ -55,7 +55,6 @@ public:
     [[gnu::format(__printf__, 4, 0)]] size_t vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] size_t printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
 
-    void trace_drop(size_t trace_buf_idx, size_t count);
     void trace_timestamp(size_t trace_buf_idx);
     size_t trace_plain(size_t trace_buf_idx, const char *buf, size_t len);
 
@@ -80,7 +79,6 @@ public:
 
     // Returns id of allocated buffer
     size_t alloc_trace_buffer(const char *name, size_t size);
-    size_t get_trace_buffer_idx(const char *name);
 
 private:
     std::mutex event_buf_mutex;
@@ -102,8 +100,6 @@ private:
                       malloc_psram,
                       free_any> buf;
     };
-
-    TraceBuffer *find_trace_buffer(const char *prefix);
 
 #if defined(BOARD_HAS_PSRAM)
     std::array<TraceBuffer, 16> trace_buffers;
