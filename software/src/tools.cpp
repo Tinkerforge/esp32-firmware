@@ -184,7 +184,7 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
     tf_base58_encode(*ret_uid_num, ret_uid_str);
 }
 
-int vprintf_dev_null(const char *fmt, va_list args)
+static int vprintf_dev_null(const char *fmt, va_list args)
 {
     return 0;
 }
