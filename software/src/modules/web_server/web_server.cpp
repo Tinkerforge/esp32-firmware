@@ -307,6 +307,7 @@ void WebServer::pre_reboot() {
     httpd_stop(this->httpd);
 }
 
+#if HTTPS_AVAILABLE()
 int WebServer::custom_tls_handshake_callback(mbedtls_ssl_context *ssl)
 {
     const listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(mbedtls_ssl_conf_get_user_data_p(const_cast<mbedtls_ssl_config *>(ssl->private_conf))); // The const_cast should be safe because this is a trivial getter.
@@ -328,6 +329,7 @@ int WebServer::custom_tls_handshake_callback(mbedtls_ssl_context *ssl)
 
     return mbedtls_ssl_set_hs_own_cert(ssl, port_handler->own_cert, port_handler->own_cert_key);
 }
+#endif
 
 void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
 {
