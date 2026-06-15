@@ -124,6 +124,20 @@ static void base58_encode_fixed_width(uint32_t value, size_t digits, char *out_s
     }
 }
 
+extern "C"
+{
+    static void esp32_set_uid_str_default(uint32_t uid_num, String *uid_str)
+    {
+        if (uid_num <= LAST_BASE58_ID) {
+            base58_encode(uid_num, uid_str);
+        } else {
+            zbase32_encode(uid_num, uid_str);
+        }
+    }
+
+    // Weakly-linked function to allow overriding the UID string generation.
+    void esp32_set_uid_str(uint32_t uid_num, String *uid_str) __attribute__((weak, alias("esp32_set_uid_str_default")));
+}
 
 void ESP32Common::pre_init()
 {
@@ -144,12 +158,7 @@ void ESP32Common::pre_setup()
     uid_num = EFUSE.blk3_rdata7.val;
 
     uid_str = perm_new_prefer<String>(RAM::PSRAM, RAM::DRAM, RAM::_NONE);
-
-    if (uid_num <= LAST_BASE58_ID) {
-        base58_encode(uid_num, uid_str);
-    } else {
-        zbase32_encode(uid_num, uid_str);
-    }
+    esp32_set_uid_str(uid_num, uid_str);
 }
 
 void ESP32Common::setup()

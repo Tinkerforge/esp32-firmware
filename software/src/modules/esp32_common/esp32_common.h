@@ -42,7 +42,7 @@ public:
 
     [[gnu::const]] inline uint32_t get_uid_num() {return uid_num;};
     [[gnu::const]] const char *get_uid_cstr() {return uid_str->c_str();};
-    [[gnu::const]] const String &get_uid_str() {return *uid_str;};
+    [[gnu::const]] inline const String &get_uid_str() {return *uid_str;};
     [[gnu::const]] String get_base58_uid_str();
     [[gnu::const]] String get_default_name(char separator = '-');
     [[gnu::const]] String get_default_wifi_passphrase();
