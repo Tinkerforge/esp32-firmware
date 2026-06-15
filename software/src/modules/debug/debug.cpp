@@ -1049,7 +1049,7 @@ void Debug::register_events()
 
     register_task(TCPIP_THREAD_NAME,TCPIP_THREAD_STACKSIZE);
     register_task("emac_rx",        2304, Optional); // stack size set by us in ethernet.cpp
-    register_task("wifi",           6656, Optional); // stack size observed at runtime from task creation
+    register_task("wifi",           6656, ExpectPresent); // stack size observed at runtime from task creation
     register_task("sys_evt",        ESP_TASKD_EVENT_STACK); // created in WiFiGeneric.cpp
     register_task("arduino_events", 4096); // stack size from WiFiGeneric.cpp
 
