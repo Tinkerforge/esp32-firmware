@@ -303,6 +303,10 @@ if (remoteAccessMode) {
     }, iframe_timeout_ms);
 }
 
+export function is_warp_app(): boolean {
+    return /warpapp-(android|ios)/.test(navigator.userAgent);
+}
+
 export function closeRemoteConnection() {
     window.parent.postMessage("close");
 }
