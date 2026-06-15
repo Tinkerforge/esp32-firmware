@@ -268,7 +268,7 @@ void WebServer::post_setup()
         }
     } else {
 #endif
-        logger.printfln("Starting single-port server on port %hhu", httpd_config.server_port);
+        logger.printfln("Starting single-port server on port %hu", httpd_config.server_port);
 
         esp_err_t result_http = httpd_start(&this->httpd, &httpd_config);
         if (result_http != ESP_OK) {
