@@ -231,7 +231,11 @@ void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off
 
 uint16_t internet_checksum(const void *data, size_t len)
 {
-    return inet_chksum(data, len);
+    if (len > UINT16_MAX) {
+        esp_system_abortf<96>("internet_checksum: length of %zu > %d not supported", len, UINT16_MAX);
+    }
+
+    return inet_chksum(data, static_cast<uint16_t>(len));
 }
 
 void trigger_reboot(const char *initiator, millis_t delay_ms)
