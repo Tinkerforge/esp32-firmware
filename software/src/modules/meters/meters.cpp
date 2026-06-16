@@ -270,6 +270,9 @@ void Meters::setup()
         if (slot == 0) {
             meter_class = OPTIONS_METERS_SLOT_0_DEFAULT_CLASS();
         }
+        else if (slot == 1) {
+            meter_class = OPTIONS_METERS_SLOT_1_DEFAULT_CLASS();
+        }
 
         // Initialize config.
         meter_slot.config_union = Config::Union(
