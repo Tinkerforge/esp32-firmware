@@ -385,6 +385,7 @@ void Ship::connect_trusted_peers()
         websocket_cfg.subprotocol = "ship"; // SHIP 10.2
         websocket_cfg.disable_auto_reconnect = true;
         websocket_cfg.crt_bundle_attach = eebus_client_crt_bundle_attach;
+        websocket_cfg.task_stack = 8192;
 
 
         eebus.trace_fmtln("Connecting to trusted peer %s at %s:%d%s", node->node_name().c_str(), ip.c_str(), node->port, wss_path.c_str());
