@@ -1008,14 +1008,23 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
+        #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
+        2,7,1,
+        #else
         1, 5, 0,
+        #endif
         // Changes
         // - Removed authentication/config; replaced with users/config
         [](){
             DynamicJsonDocument json{4096};
             DynamicJsonDocument users_json{1024};
+
+            // users config already exists, so dont overwrite it.
+            if (read_config_file("user/config", json)) {
+                return;
+            }
 
             users_json.to<JsonObject>();
             auto users = users_json.createNestedArray("users");
