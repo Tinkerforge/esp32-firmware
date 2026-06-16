@@ -157,25 +157,34 @@ void Network::register_urls()
 
     ret = mdns_service_txt_item_set("_http", "_tcp", "firmware_version", build_version_full_str());
     if (ret != ESP_OK) {
-        logger.printfln("mDNS setup failed");
+        logger.printfln("Failed to set mDNS txt firmware_version: %s", esp_err_to_name(ret));
         return;
     }
 
     ret = mdns_service_txt_item_set("_http", "_tcp", "txtvers", "1");
     if (ret != ESP_OK) {
-        logger.printfln("mDNS setup failed");
+        logger.printfln("Failed to set mDNS txt txtvers: %s", esp_err_to_name(ret));
         return;
     }
 
     ret = mdns_service_txt_item_set("_http", "_tcp", "brand", OPTIONS_MANUFACTURER());
     if (ret != ESP_OK) {
-        logger.printfln("mDNS setup failed");
+        logger.printfln("Failed to set mDNS txt brand: %s", esp_err_to_name(ret));
         return;
     }
 
     ret = mdns_service_txt_item_set("_http", "_tcp", "model", OPTIONS_PRODUCT_NAME());
     if (ret != ESP_OK) {
-        logger.printfln("mDNS setup failed");
+        logger.printfln("Failed to set mDNS txt model: %s", esp_err_to_name(ret));
+        return;
+    }
+
+    // The remote access frontend expects the UID to be in numerical format
+    char uid_buf[32];
+    snprintf(uid_buf, 32, "%lu", esp32_common.get_uid_num());
+    ret = mdns_service_txt_item_set("_http", "_tcp", "uid", uid_buf);
+    if (ret != ESP_OK) {
+        logger.printfln("Failed to set mDNS txt uid: %s", esp_err_to_name(ret));
         return;
     }
 
