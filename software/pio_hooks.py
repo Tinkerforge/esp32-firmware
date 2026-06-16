@@ -1513,7 +1513,7 @@ def main():
     options_value = {}
     options_origin = {}
 
-    def collect_options(module_type, mod_path_prefix, module):
+    def collect_module_options(module_type, mod_path_prefix, module):
         mod_path = os.path.join(mod_path_prefix, module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
@@ -1527,6 +1527,10 @@ def main():
 
                 if config.has_section('Options'):
                     for key in config['Options']:
+                        if not key.startswith(f'{module.under}_'):
+                            print(f"{module_type.capitalize()} module {module.under} option {key} does not have module name prefix", file=sys.stderr)
+                            sys.exit(1)
+
                         value = config['Options'][key]
 
                         if key in options_origin:
@@ -1537,10 +1541,10 @@ def main():
                         options_origin[key] = f'{module_type} module {module.under}'
 
     for backend_module in backend_modules:
-        collect_options('backend', 'src/modules', backend_module)
+        collect_module_options('backend', 'src/modules', backend_module)
 
     for frontend_module in frontend_modules:
-        collect_options('frontend', 'web/src/modules', frontend_module)
+        collect_module_options('frontend', 'web/src/modules', frontend_module)
 
     if len(options) > 0:
         for key_value in options.split('\n'):

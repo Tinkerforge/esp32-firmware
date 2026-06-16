@@ -207,7 +207,7 @@ void ESP32Common::register_urls()
     });
 #endif
 
-#if OPTIONS_EXPORT_PRIVATE_KEYS()
+#if OPTIONS_ESP32_COMMON_EXPORT_PRIVATE_KEYS()
     server.on_HTTPThread("/esp32/dump_wifi_passphrase", HTTP_GET, [this](WebServerRequest req) {
         // Don't attempt to clear the passphrase from memory.
         // If you use this endpoint, you have other issues.
@@ -215,7 +215,7 @@ void ESP32Common::register_urls()
     });
 #endif
 
-#if OPTIONS_EXPORT_PRIVATE_KEYS() && defined(DEBUG_FS_ENABLE)
+#if OPTIONS_ESP32_COMMON_EXPORT_PRIVATE_KEYS() && defined(DEBUG_FS_ENABLE)
     server.on_HTTPThread("/esp32/create_complete_master_key", HTTP_GET, [this](WebServerRequest req) {
         const bool success = this->create_complete_master_key();
         return req.send_plain(200, success ? "Success" : "Fail");
@@ -228,7 +228,7 @@ void ESP32Common::register_urls()
 #endif
 
     // Only allow encryption and Secure Boot if there is enough space for a suitable bootloader.
-#if OPTIONS_ENABLE_SECURE_BOOT_API() && defined(CONFIG_SECURE_BOOT) && ESP_PRIMARY_PARTITION_TABLE_OFFSET == 0xe000
+#if OPTIONS_ESP32_COMMON_ENABLE_SECURE_BOOT_API() && defined(CONFIG_SECURE_BOOT) && ESP_PRIMARY_PARTITION_TABLE_OFFSET == 0xe000
     if (!ESP32CommonSecureBoot::is_secure_boot_enabled()) {
         logger.printfln("Secure Boot not enabled");
 
@@ -562,7 +562,7 @@ String ESP32Common::get_default_wifi_passphrase()
 
     sodium_memzero(passphrase_blocks, sizeof(passphrase_blocks));
 
-#if OPTIONS_DUMP_DEFAULT_WIFI_PASSPHRASE()
+#if OPTIONS_ESP32_COMMON_DUMP_DEFAULT_WIFI_PASSPHRASE()
     Serial.write("WiFi passphrase: ");
     Serial.write(pass.getPtr(), pass.getLength());
     Serial.write(static_cast<uint8_t>('\n'));
