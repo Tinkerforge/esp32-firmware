@@ -727,7 +727,13 @@ static esp_err_t write_and_verify_boot_data(BootloaderAccess access_type, const 
         }
 
         if (access_type == BootloaderAccess::VerifyOnly || !force_write) {
-            const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, address, length);
+            esp_err_t err;
+
+            if (esp32_common.is_encrypted()) {
+                err = esp_flash_read_encrypted(esp_flash_default_chip, address, buf, length);
+            } else {
+                err = esp_flash_read(esp_flash_default_chip, buf, address, length);
+            }
 
             if (err != ESP_OK) {
                 return err;
@@ -939,7 +945,13 @@ void Debug::register_urls()
         // Use unique_ptr to auto-free buffer.
         std::unique_ptr<uint8_t> buf_u{buf};
 
-        const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, CONFIG_BOOTLOADER_OFFSET_IN_FLASH, BOOTLOADER_SIZE);
+        esp_err_t err;
+
+        if (esp32_common.is_encrypted()) {
+            err = esp_flash_read_encrypted(esp_flash_default_chip, CONFIG_BOOTLOADER_OFFSET_IN_FLASH, buf, BOOTLOADER_SIZE);
+        } else {
+            err = esp_flash_read(esp_flash_default_chip, buf, CONFIG_BOOTLOADER_OFFSET_IN_FLASH, BOOTLOADER_SIZE);
+        }
 
         if (err != ESP_OK) {
             logger.printfln("esp_flash_read_failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
