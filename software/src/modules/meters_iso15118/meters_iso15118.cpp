@@ -55,7 +55,7 @@ MeterClassID MetersISO15118::get_class() const
 IMeter *MetersISO15118::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (meter_instance) {
-        logger.printfln("Meter %lu: Cannot create more than one meter of class ISO15118", slot);
+        logger.printfln_meter("Cannot create more than one meter of class ISO15118", slot);
         return nullptr;
     }
     meter_instance = new MeterISO15118(slot, state, errors);
