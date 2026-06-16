@@ -119,7 +119,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
 
         const data: UplotData = {
             keys: [null, 'index'],
-            names: [null, 'Attenuation'],
+            names: [null, __("iso15118.content.attenuation")],
             values: [[], []],
             stacked: [null, true],
             paths: [null, UplotPath.Bar],
@@ -154,90 +154,90 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
         const seen_macs      = API.get('ev/seen_macs');
 
         const sdp_state_names: {[key: number]: string} = {
-            0: "Idle",
-            1: "Listening",
-            2: "Discovery Completed",
+            0: __("iso15118.content.sdp_state_idle"),
+            1: __("iso15118.content.sdp_state_listening"),
+            2: __("iso15118.content.sdp_state_discovery_completed"),
         };
 
         const common_state_names: {[key: number]: string} = {
-            0: "Idle",
-            1: "Protocol Negotiated",
+            0: __("iso15118.content.common_state_idle"),
+            1: __("iso15118.content.common_state_protocol_negotiated"),
         };
 
         const encryption_names: {[key: number]: string} = {
-            0: "Unencrypted",
-            1: "TLS 1.2",
-            2: "TLS 1.3",
+            0: __("iso15118.content.encryption_unencrypted"),
+            1: __("iso15118.content.encryption_tls_1_2"),
+            2: __("iso15118.content.encryption_tls_1_3"),
         };
 
         const slac_state_names: {[key: number]: string} = {
-            0: "Modem Reset",
-            1: "Modem Initialization",
-            2: "CM Set Key Request",
-            3: "Wait For CM Set Key Confirmation",
-            4: "CM Qualcomm Get Sw Request",
-            5: "Wait For CM Qualcomm Get Sw Response",
-            6: "CM Qualcomm Link Status Request",
-            7: "Wait For CM Qualcomm Link Status Response",
-            8: "CM Qualcomm Op Attr Request",
-            9: "Wait For CM Qualcomm Op Attr Response",
-            10: "Wait For Slac Param Request",
-            11: "Wait For Start Atten Char Indication",
-            12: "Wait For MNBC Sound",
-            13: "Wait For Atten Char",
-            14: "Wait For Slac Match",
-            15: "Wait For SDP",
-            16: "Link Detected",
-            17: "Modem Disabled",
-            18: "SLAC Init E/F",
-            19: "SLAC Init Failed",
+            0: __("iso15118.content.slac_state_modem_reset"),
+            1: __("iso15118.content.slac_state_modem_initialization"),
+            2: __("iso15118.content.slac_state_cm_set_key_request"),
+            3: __("iso15118.content.slac_state_wait_for_cm_set_key_confirmation"),
+            4: __("iso15118.content.slac_state_cm_qualcomm_get_sw_request"),
+            5: __("iso15118.content.slac_state_wait_for_cm_qualcomm_get_sw_response"),
+            6: __("iso15118.content.slac_state_cm_qualcomm_link_status_request"),
+            7: __("iso15118.content.slac_state_wait_for_cm_qualcomm_link_status_response"),
+            8: __("iso15118.content.slac_state_cm_qualcomm_op_attr_request"),
+            9: __("iso15118.content.slac_state_wait_for_cm_qualcomm_op_attr_response"),
+            10: __("iso15118.content.slac_state_wait_for_slac_param_request"),
+            11: __("iso15118.content.slac_state_wait_for_start_atten_char_indication"),
+            12: __("iso15118.content.slac_state_wait_for_mnbc_sound"),
+            13: __("iso15118.content.slac_state_wait_for_atten_char"),
+            14: __("iso15118.content.slac_state_wait_for_slac_match"),
+            15: __("iso15118.content.slac_state_wait_for_sdp"),
+            16: __("iso15118.content.slac_state_link_detected"),
+            17: __("iso15118.content.slac_state_modem_disabled"),
+            18: __("iso15118.content.slac_state_slac_init_ef"),
+            19: __("iso15118.content.slac_state_slac_init_failed"),
         };
 
         const din70121_state_names: {[key: number]: string} = {
-            0: "Idle",
-            1: "Bitstream Received",
-            2: "Session Setup",
-            3: "Service Discovery",
-            4: "Service Payment Selection",
-            5: "Contract Authentication",
-            6: "Charge Parameter Discovery",
-            7: "Session Stop",
-            8: "Cable Check",
-            9: "Power Delivery",
-            10: "Pre Charge",
-            11: "Current Demand",
+            0: __("iso15118.content.din70121_state_idle"),
+            1: __("iso15118.content.din70121_state_bitstream_received"),
+            2: __("iso15118.content.din70121_state_session_setup"),
+            3: __("iso15118.content.din70121_state_service_discovery"),
+            4: __("iso15118.content.din70121_state_service_payment_selection"),
+            5: __("iso15118.content.din70121_state_contract_authentication"),
+            6: __("iso15118.content.din70121_state_charge_parameter_discovery"),
+            7: __("iso15118.content.din70121_state_session_stop"),
+            8: __("iso15118.content.din70121_state_cable_check"),
+            9: __("iso15118.content.din70121_state_power_delivery"),
+            10: __("iso15118.content.din70121_state_pre_charge"),
+            11: __("iso15118.content.din70121_state_current_demand"),
         };
 
         const iso2_state_names: {[key: number]: string} = {
-            0: "Idle",
-            1: "Bitstream Received",
-            2: "Session Setup",
-            3: "Service Discovery",
-            4: "Payment Service Selection",
-            5: "Authorization",
-            6: "Charge Parameter Discovery",
-            7: "Power Delivery",
-            8: "Charging Status",
-            9: "Session Stop",
-            10: "Cable Check",
+            0: __("iso15118.content.iso2_state_idle"),
+            1: __("iso15118.content.iso2_state_bitstream_received"),
+            2: __("iso15118.content.iso2_state_session_setup"),
+            3: __("iso15118.content.iso2_state_service_discovery"),
+            4: __("iso15118.content.iso2_state_payment_service_selection"),
+            5: __("iso15118.content.iso2_state_authorization"),
+            6: __("iso15118.content.iso2_state_charge_parameter_discovery"),
+            7: __("iso15118.content.iso2_state_power_delivery"),
+            8: __("iso15118.content.iso2_state_charging_status"),
+            9: __("iso15118.content.iso2_state_session_stop"),
+            10: __("iso15118.content.iso2_state_cable_check"),
         };
 
         const iso20_state_names: {[key: number]: string} = {
-            0: "Idle",
-            1: "Bitstream Received",
-            2: "Session Setup",
-            3: "Authorization Setup",
-            4: "Authorization",
-            5: "Service Discovery",
-            6: "Service Detail",
-            7: "Service Selection",
-            8: "Schedule Exchange",
-            9: "Power Delivery Start",
-            10: "Power Delivery Stop",
-            11: "Session Stop Terminate",
-            12: "Session Stop Pause",
-            13: "AC Charge Parameter Discovery",
-            14: "AC Charge Loop",
+            0: __("iso15118.content.iso20_state_idle"),
+            1: __("iso15118.content.iso20_state_bitstream_received"),
+            2: __("iso15118.content.iso20_state_session_setup"),
+            3: __("iso15118.content.iso20_state_authorization_setup"),
+            4: __("iso15118.content.iso20_state_authorization"),
+            5: __("iso15118.content.iso20_state_service_discovery"),
+            6: __("iso15118.content.iso20_state_service_detail"),
+            7: __("iso15118.content.iso20_state_service_selection"),
+            8: __("iso15118.content.iso20_state_schedule_exchange"),
+            9: __("iso15118.content.iso20_state_power_delivery_start"),
+            10: __("iso15118.content.iso20_state_power_delivery_stop"),
+            11: __("iso15118.content.iso20_state_session_stop_terminate"),
+            12: __("iso15118.content.iso20_state_session_stop_pause"),
+            13: __("iso15118.content.iso20_state_ac_charge_parameter_discovery"),
+            14: __("iso15118.content.iso20_state_ac_charge_loop"),
         };
 
         const array8_to_hexstring = (array8: number[], separator: string) => {
@@ -257,25 +257,25 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
 
         const security_value_to_string = (value: number) => {
             if (value == 0x00) {
-                return "TLS";
+                return __("iso15118.content.security_tls");
             } else if (value == 0x10) {
-                return "No transport layer security";
+                return __("iso15118.content.security_none");
             }  else if (value < 0) {
                 return "-";
             } else {
-                return "Unknown";
+                return __("iso15118.content.unknown");
             }
         };
 
         const transport_protocol_to_string = (value: number) => {
             if (value == 0x00) {
-                return "TCP";
+                return __("iso15118.content.transport_tcp");
             } else if (value == 0x10) {
-                return "UDP";
+                return __("iso15118.content.transport_udp");
             } else if (value < 0) {
                 return "-";
             } else {
-                return "Unknown";
+                return __("iso15118.content.unknown");
             }
         };
 
@@ -284,10 +284,10 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
         return (
             <SubPage name="iso15118" title="ISO 15118">
                 <SubPage.Status>
-                    <FormRow label="SLAC State" label_muted="Signal Level Attenuation Characterisation">
+                    <FormRow label={__("iso15118.content.slac_state")} label_muted={__("iso15118.content.slac_state_muted")}>
                         <InputText value={slac_state_names[state_slac.state] ?? state_slac.state.toString()}/>
                     </FormRow>
-                    <FormRow label="Protocol State" label_muted={
+                    <FormRow label={__("iso15118.content.protocol_state")} label_muted={
                             state_din70121.state !== 0 ? "DIN 70121" :
                             state_iso2.state !== 0 ? "ISO 15118-2" :
                             state_iso20.state !== 0 ? "ISO 15118-20" :
@@ -302,7 +302,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     </FormRow>
 
                     {seen_macs.length > 0 &&
-                        <FormRow label="Seen MACs">
+                        <FormRow label={__("iso15118.content.seen_macs")}>
                             <div class="row gx-2 gy-1">
                                 {seen_macs
                                     .slice()
@@ -323,33 +323,33 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     }
 
                     <CollapsedSection>
-                        <FormSeparator heading="Signal Level Attenuation Characterisation (SLAC)" first/>
-                        <FormRow label="State">
+                        <FormSeparator heading={__("iso15118.content.slac_section")} first/>
+                        <FormRow label={__("iso15118.content.state")}>
                             <InputText value={slac_state_names[state_slac.state] ?? state_slac.state.toString()}/>
                         </FormRow>
-                        <FormRow label="Modem Found">
-                            <InputText value={state_slac.modem_found ? "Yes" : "No" }/>
+                        <FormRow label={__("iso15118.content.modem_found")}>
+                            <InputText value={state_slac.modem_found ? __("iso15118.content.yes") : __("iso15118.content.no") }/>
                         </FormRow>
-                        <FormRow label="Modem Initialization Tries">
+                        <FormRow label={__("iso15118.content.modem_initialization_tries")}>
                             <InputNumber value={state_slac.modem_initialization_tries}/>
                         </FormRow>
-                        <FormRow label="Atten Char Indication Tries">
+                        <FormRow label={__("iso15118.content.atten_char_indication_tries")}>
                             <InputNumber value={state_slac.atten_char_indication_tries}/>
                         </FormRow>
-                        <FormRow label="Received Sounds">
+                        <FormRow label={__("iso15118.content.received_sounds")}>
                             <InputNumber value={state_slac.received_sounds}/>
                         </FormRow>
-                        <FormRow label="Received AAG Lists">
+                        <FormRow label={__("iso15118.content.received_aag_lists")}>
                             <InputNumber value={state_slac.received_aag_lists}/>
                         </FormRow>
-                        <FormRow label="Attenuation Profile">
+                        <FormRow label={__("iso15118.content.attenuation_profile")}>
                             <div style="position: relative;">
                                 <UplotLoader
                                     ref={this.uplot_loader_ref}
                                     show
                                     marker_class="h4"
-                                    no_data="No Data"
-                                    loading="Loading">
+                                    no_data={__("iso15118.content.no_data")}
+                                    loading={__("iso15118.content.loading")}>
                                     <UplotWrapperB
                                         ref={this.uplot_wrapper_ref}
                                         class="attenuation-profile-chart"
@@ -357,7 +357,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                         color_cache_group="iso15118.default"
                                         show
                                         on_mount={() => this.update_uplot()}
-                                        legend_time_label="Index"
+                                        legend_time_label={__("iso15118.content.index")}
                                         legend_time_with_minutes={false}
                                         legend_show={false}
                                         aspect_ratio={3}
@@ -365,7 +365,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                         x_padding_factor={0}
                                         x_include_date={false}
                                         y_min={0}
-                                        y_label="Attenuation (dB)"
+                                        y_label={__("iso15118.content.attenuation_db")}
                                         y_unit="dB"
                                         y_digits={2}
                                         padding={[null, null, null, null]}
@@ -381,65 +381,65 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                 <div class="col-12"><InputText value={state_slac.attenuation_profile.slice(48, 58).toString()}/></div>
                             </div>
                         </FormRow>
-                        <FormRow label="NMK">
+                        <FormRow label={__("iso15118.content.nmk")}>
                             <InputText value={array8_to_hexstring(state_slac.nmk, '')}/>
                         </FormRow>
-                        <FormRow label="NID">
+                        <FormRow label={__("iso15118.content.nid")}>
                             <InputText value={array8_to_hexstring(state_slac.nid, '')}/>
                         </FormRow>
-                        <FormRow label="EVSE MAC">
+                        <FormRow label={__("iso15118.content.evse_mac")}>
                             <InputText value={array8_to_hexstring(state_slac.evse_mac, ':')}/>
                         </FormRow>
-                        <FormRow label="EVSE MAC Modem">
+                        <FormRow label={__("iso15118.content.evse_mac_modem")}>
                             <InputText value={array8_to_hexstring(state_slac.evse_mac_modem, ':')}/>
                         </FormRow>
-                        <FormRow label="PEV MAC">
+                        <FormRow label={__("iso15118.content.pev_mac")}>
                             <InputText value={array8_to_hexstring(state_slac.pev_mac, ':')}/>
                         </FormRow>
-                        <FormRow label="PEV MAC Modem">
+                        <FormRow label={__("iso15118.content.pev_mac_modem")}>
                             <InputText value={array8_to_hexstring(state_slac.pev_mac_modem, ':')}/>
                         </FormRow>
-                        <FormRow label="PEV Run ID">
+                        <FormRow label={__("iso15118.content.pev_run_id")}>
                             <InputText value={array8_to_hexstring(state_slac.pev_run_id, '')}/>
                         </FormRow>
 
-                        <FormSeparator heading="SECC Discovery Protocol (SDP)"/>
-                        <FormRow label="State">
+                        <FormSeparator heading={__("iso15118.content.sdp_section")}/>
+                        <FormRow label={__("iso15118.content.state")}>
                             <InputText value={sdp_state_names[state_sdp.state] ?? state_sdp.state.toString()}/>
                         </FormRow>
-                        <FormRow label="EVSE IP Address">
+                        <FormRow label={__("iso15118.content.evse_ip_address")}>
                             <InputText value={array32_to_ipv6string(state_sdp.evse_ip_address)}/>
                         </FormRow>
-                        <FormRow label="EVSE Port">
+                        <FormRow label={__("iso15118.content.evse_port")}>
                             <InputNumber value={state_sdp.evse_port}/>
                         </FormRow>
-                        <FormRow label="EVSE Security">
+                        <FormRow label={__("iso15118.content.evse_security")}>
                             <InputText value={security_value_to_string(state_sdp.evse_security)}/>
                         </FormRow>
-                        <FormRow label="EVSE Transport Protocol">
+                        <FormRow label={__("iso15118.content.evse_transport_protocol")}>
                             <InputText value={transport_protocol_to_string(state_sdp.evse_tranport_protocol)}/>
                         </FormRow>
-                        <FormRow label="EV Security">
+                        <FormRow label={__("iso15118.content.ev_security")}>
                             <InputText value={security_value_to_string(state_sdp.ev_security)}/>
                         </FormRow>
-                        <FormRow label="EV Transport Protocol">
+                        <FormRow label={__("iso15118.content.ev_transport_protocol")}>
                             <InputText value={transport_protocol_to_string(state_sdp.ev_tranport_protocol)}/>
                         </FormRow>
 
-                        <FormSeparator heading="DIN 70121 / ISO 15118-2 / ISO 15118-20"/>
-                        <FormRow label="State">
+                        <FormSeparator heading={__("iso15118.content.din_iso_section")}/>
+                        <FormRow label={__("iso15118.content.state")}>
                             <InputText value={common_state_names[state_common.state] ?? state_common.state.toString()}/>
                         </FormRow>
-                        <FormRow label="Supported Protocols">
-                            <InputText value={state_common.supported_protocols.join(' and ')}/>
+                        <FormRow label={__("iso15118.content.supported_protocols")}>
+                            <InputText value={state_common.supported_protocols.join(__("iso15118.content.protocol_separator"))}/>
                         </FormRow>
-                        <FormRow label="Protocol">
+                        <FormRow label={__("iso15118.content.protocol")}>
                             <InputText value={state_common.protocol}/>
                         </FormRow>
-                        <FormRow label="Encryption">
+                        <FormRow label={__("iso15118.content.encryption")}>
                             <InputText value={encryption_names[state_common.encryption] ?? state_common.encryption.toString()}/>
                         </FormRow>
-                        <FormRow label="Protocol State">
+                        <FormRow label={__("iso15118.content.protocol_state")}>
                             <InputText value={
                                 state_din70121.state !== 0 ? (din70121_state_names[state_din70121.state] ?? state_din70121.state.toString()) :
                                 state_iso2.state !== 0 ? (iso2_state_names[state_iso2.state] ?? state_iso2.state.toString()) :
@@ -447,7 +447,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                 "-"
                             }/>
                         </FormRow>
-                        <FormRow label="Session ID">
+                        <FormRow label={__("iso15118.content.session_id")}>
                             <InputText value={
                                 state_din70121.state !== 0 ? array8_to_hexstring(state_din70121.session_id, '') :
                                 state_iso2.state !== 0 ? array8_to_hexstring(state_iso2.session_id, '') :
@@ -455,7 +455,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                 "-"
                             }/>
                         </FormRow>
-                        <FormRow label="EVCC ID">
+                        <FormRow label={__("iso15118.content.evcc_id")}>
                             <InputText value={
                                 state_din70121.state !== 0 ? array8_to_hexstring(state_din70121.evcc_id, '') :
                                 state_iso2.state !== 0 ? array8_to_hexstring(state_iso2.evcc_id, '') :
@@ -463,7 +463,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                 "-"
                             }/>
                         </FormRow>
-                        <FormRow label="State Of Charge">
+                        <FormRow label={__("iso15118.content.state_of_charge")}>
                             <InputText value={
                                 state_din70121.state !== 0 ? state_din70121.soc + "%" :
                                 state_iso2.state !== 0 ? (state_iso2.soc < 0 ? "-" : state_iso2.soc + "%") :
@@ -471,14 +471,14 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                                 "-"
                             }/>
                         </FormRow>
-                        <FormRow label="Energy Capacity">
+                        <FormRow label={__("iso15118.content.energy_capacity")}>
                             <InputText value={
                                 state_iso2.state !== 0 ? (state_iso2.energy_capacity < 0 ? "-" : state_iso2.energy_capacity + " Wh") :
                                 state_iso20.state !== 0 ? (state_iso20.energy_capacity < 0 ? "-" : state_iso20.energy_capacity + " Wh") :
                                 "-"
                             }/>
                         </FormRow>
-                        <FormRow label="Active Power">
+                        <FormRow label={__("iso15118.content.active_power")}>
                             <InputText value={
                                 state_iso20.state !== 0 ? (state_iso20.active_power < 0 ? "-" : state_iso20.active_power + " W") :
                                 "-"
