@@ -55,8 +55,8 @@
 
 #include "gcc_warnings.h"
 
-static constexpr uint32_t LAST_BASE58_ID = 1000000; // Comment UID as base58 and zbase32 here
-static constexpr uint32_t LAST_DIRECT_WIFI_PASSPHRASE_ID = LAST_BASE58_ID;
+static constexpr uint32_t LAST_BASE58_UID_NUM = 1000000; // Comment UID as base58 and zbase32 here
+static constexpr uint32_t LAST_DIRECT_WIFI_PASSPHRASE_UID_NUM = LAST_BASE58_UID_NUM;
 
 // TF_HAL hal;
 // extern int8_t blue_led_pin;
@@ -128,7 +128,7 @@ extern "C"
 {
     static void esp32_set_uid_str_default(uint32_t uid_num, String *uid_str)
     {
-        if (uid_num <= LAST_BASE58_ID) {
+        if (uid_num <= LAST_BASE58_UID_NUM) {
             base58_encode(uid_num, uid_str);
         } else {
             zbase32_encode(uid_num, uid_str);
@@ -404,7 +404,7 @@ bool ESP32Common::get_subkey(uint8_t *subkey, size_t subkey_len, uint64_t subkey
         return false;
     }
 
-    if (uid_num <= LAST_DIRECT_WIFI_PASSPHRASE_ID) {
+    if (uid_num <= LAST_DIRECT_WIFI_PASSPHRASE_UID_NUM) {
         if (!fill_missing_master_key()) {
             return false;
         }
@@ -455,7 +455,7 @@ bool ESP32Common::get_subkey(uint8_t *subkey, size_t subkey_len, uint64_t subkey
 
 String ESP32Common::get_base58_uid_str()
 {
-    if (uid_num <= LAST_BASE58_ID) {
+    if (uid_num <= LAST_BASE58_UID_NUM) {
         return *uid_str;
     } else {
         char str[7]; // TF_BASE58_MAX_STR_SIZE is 7 but not exported
@@ -537,7 +537,7 @@ String ESP32Common::get_default_wifi_passphrase()
     uint32_t passphrase_blocks[4];
     bool passphrase_success;
 
-    if (uid_num <= LAST_DIRECT_WIFI_PASSPHRASE_ID) {
+    if (uid_num <= LAST_DIRECT_WIFI_PASSPHRASE_UID_NUM) {
         passphrase_success = get_wifi_passphrase_blocks_direct(passphrase_blocks);
     } else {
         passphrase_success = get_wifi_passphrase_blocks_derived(passphrase_blocks);
