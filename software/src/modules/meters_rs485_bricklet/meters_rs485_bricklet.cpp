@@ -41,7 +41,7 @@ void MetersRS485Bricklet::pre_setup()
     this->DeviceModule::pre_setup();
 
     config_prototype = Config::Object({
-        {"display_name", Config::Str(OPTIONS_LOCAL_METER_DEFAULT_DISPLAY_NAME(), 0, 32)},
+        {"display_name", Config::Str(OPTIONS_METERS_RS485_BRICKLET_DEFAULT_DISPLAY_NAME(), 0, 32)},
         {"location", Config::Enum(MeterLocation::Charger)},
         {"excluded", Config::Bool(false)},
         {"type_override", Config::Uint8(METER_TYPE_AUTO_DETECT)}

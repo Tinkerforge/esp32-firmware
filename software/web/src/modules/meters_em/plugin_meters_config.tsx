@@ -22,6 +22,7 @@
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
@@ -45,7 +46,7 @@ export function pre_init() {
     return {
         [MeterClassID.EnergyManager]: {
             name: () => __("meters_em.content.meter_class"),
-            new_config: () => [MeterClassID.EnergyManager, {display_name: "", location: MeterLocation.Grid, excluded: false}] as MeterConfig,
+            new_config: () => [MeterClassID.EnergyManager, {display_name: options.METERS_EM_DEFAULT_DISPLAY_NAME, location: MeterLocation.Grid, excluded: false}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EMMetersConfig, on_config: (config: EMMetersConfig) => void): ComponentChildren => {
                 return [

@@ -29,7 +29,7 @@
 void MetersEM::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str(OPTIONS_LOCAL_METER_DEFAULT_DISPLAY_NAME(), 0, 32)},
+        {"display_name", Config::Str(OPTIONS_METERS_EM_DEFAULT_DISPLAY_NAME(), 0, 32)},
         {"location", Config::Enum(MeterLocation::Grid)},
         {"excluded", Config::Bool(false)},
     });

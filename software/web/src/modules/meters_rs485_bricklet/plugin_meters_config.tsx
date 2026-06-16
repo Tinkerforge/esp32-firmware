@@ -22,6 +22,7 @@
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { translate_meter_location } from "../meters/meter_location";
@@ -46,7 +47,7 @@ export function pre_init() {
     return {
         [MeterClassID.RS485Bricklet]: {
             name: () => __("meters_rs485_bricklet.content.meter_class"),
-            new_config: () => [MeterClassID.RS485Bricklet, {display_name: "", location: MeterLocation.Charger, excluded: false, type_override: 255}] as MeterConfig,
+            new_config: () => [MeterClassID.RS485Bricklet, {display_name: options.METERS_RS485_BRICKLET_DEFAULT_DISPLAY_NAME, location: MeterLocation.Charger, excluded: false, type_override: 255}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RS485BrickletMetersConfig, on_config: (config: RS485BrickletMetersConfig) => void): ComponentChildren => {
                 return [

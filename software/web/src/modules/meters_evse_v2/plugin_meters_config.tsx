@@ -22,6 +22,7 @@
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { translate_meter_location } from "../meters/meter_location";
@@ -44,7 +45,7 @@ export function pre_init() {
     return {
         [MeterClassID.EVSEV2]: {
             name: () => __("meters_evse_v2.content.meter_class"),
-            new_config: () => [MeterClassID.EVSEV2, {display_name: "", location: MeterLocation.Charger, excluded: false}] as MeterConfig,
+            new_config: () => [MeterClassID.EVSEV2, {display_name: options.METERS_EVSE_V2_DEFAULT_DISPLAY_NAME, location: MeterLocation.Charger, excluded: false}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EVSEV2MetersConfig, on_config: (config: EVSEV2MetersConfig) => void): ComponentChildren => {
                 return [

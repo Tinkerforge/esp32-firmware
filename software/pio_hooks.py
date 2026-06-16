@@ -972,7 +972,7 @@ def main():
 
     for key in ['name', 'manufacturer', 'manufacturer_full', 'manufacturer_user_agent', 'config_type', 'host_prefix', 'display_name', 'display_name_user_agent_override',
                 'manual_url', 'apidoc_url', 'doc_base_url', 'firmware_url', 'firmware_update_url', 'remote_access_host', 'support_email', 'day_ahead_price_api_url',
-                'solar_forecast_api_url', 'require_firmware_info', 'local_meter_default_display_name']:
+                'solar_forecast_api_url', 'require_firmware_info']:
         value = env.GetProjectOption('custom_' + key, None)
 
         if value != None:
@@ -1522,16 +1522,12 @@ def main():
             info_path = os.path.join(mod_path, 'module.ini')
 
             if os.path.exists(info_path):
-                config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
+                config = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
                 config.read(info_path)
 
                 if config.has_section('Options'):
                     for key in config['Options']:
                         value = config['Options'][key]
-
-                        if len(value) == 0:
-                            print(f"Option {key} in {module_type} module {module.under} has empty value", file=sys.stderr)
-                            sys.exit(1)
 
                         if key in options_origin:
                             print(f"{module_type.capitalize()} module {module.under} redefines option {key} already defined in {options_origin[key]}", file=sys.stderr)
@@ -1561,10 +1557,6 @@ def main():
 
             if len(key) == 0:
                 print(f"Option {key} in environment has empty key", file=sys.stderr)
-                sys.exit(1)
-
-            if len(value) == 0:
-                print(f"Option {key} in environment has empty value", file=sys.stderr)
                 sys.exit(1)
 
             options_value[key] = value
@@ -1613,6 +1605,11 @@ def main():
 
     options_value['product_name_user_agent'] = json.dumps(product_name_user_agent)
     options_origin['product_name_user_agent'] = 'pio_hooks.py'
+
+    for key, value in sorted(options_value.items()):
+        if len(value) == 0:
+            print(f"Option {key} in {options_origin[key]} has no value", file=sys.stderr)
+            sys.exit(1)
 
     options_h = []
     options_ts = []
