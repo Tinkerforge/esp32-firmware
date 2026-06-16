@@ -47,6 +47,8 @@ public:
     [[gnu::const]] String get_default_name(char separator = '-');
     [[gnu::const]] String get_default_wifi_passphrase();
 
+    [[gnu::const]] static bool is_encrypted();
+
     bool initHAL();
     bool destroyHAL();
 

@@ -28,6 +28,7 @@
 #include <esp_ota_ops.h>
 #include <esp_random.h>
 #include <esp_secure_boot.h>
+#include <hal/efuse_hal.h>
 #include <mbedtls/sha256.h>
 #include <soc/efuse_struct.h>
 #include <sodium.h>
@@ -701,6 +702,12 @@ bool ESP32Common::fill_missing_master_key()
 
     logger.printfln("Master key completed");
     return true;
+}
+
+[[gnu::const]]
+bool ESP32Common::is_encrypted()
+{
+    return efuse_hal_flash_encryption_enabled();
 }
 
 [[gnu::const]]

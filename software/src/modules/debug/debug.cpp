@@ -768,16 +768,22 @@ static esp_err_t write_and_verify_boot_data(BootloaderAccess access_type, const 
         const esp_err_t err_erase = esp_flash_erase_region(esp_flash_default_chip, address, erase_length);
 
         if (err_erase != ESP_OK) {
-            logger.printfln("Bootloader erase failed: %s (0x%04X)", esp_err_to_name(err_erase), static_cast<unsigned>(err_erase));
+            logger.printfln("Boot data erase failed: %s (0x%04X)", esp_err_to_name(err_erase), static_cast<unsigned>(err_erase));
             continue;
         }
 
         const micros_t t_mid = now_us();
 
-        const esp_err_t err_write = esp_flash_write(esp_flash_default_chip, buf, address, length);
+        esp_err_t err_write;
+
+        if (esp32_common.is_encrypted()) {
+            err_write = esp_flash_write_encrypted(esp_flash_default_chip, address, buf, length);
+        } else {
+            err_write = esp_flash_write(esp_flash_default_chip, buf, address, length);
+        }
 
         if (err_write != ESP_OK) {
-            logger.printfln("Bootloader write failed: %s (0x%04X)", esp_err_to_name(err_write), static_cast<unsigned>(err_write));
+            logger.printfln("Boot data write failed: %s (0x%04X)", esp_err_to_name(err_write), static_cast<unsigned>(err_write));
             continue;
         }
 
@@ -795,7 +801,7 @@ static esp_err_t write_and_verify_boot_data(BootloaderAccess access_type, const 
             logger.printfln("Not locking flash chip");
         }
 
-        logger.printfln("Erase %lums, write %lums", (t_mid - t_start).as<uint32_t>() / 1000, (t_end - t_mid  ).as<uint32_t>() / 1000);
+        logger.printfln("Address 0x%lx: Erase %lums, write %lums", address, (t_mid - t_start).as<uint32_t>() / 1000, (t_end - t_mid  ).as<uint32_t>() / 1000);
 
         return ESP_OK;
     };
