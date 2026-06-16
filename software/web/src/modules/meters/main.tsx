@@ -507,7 +507,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
             for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 if (this.live_data.samples[meter_slot].length > 0) {
                     live_data.keys.push('meter_' + meter_slot);
-                    live_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                    live_data.names.push(get_meter_display_name(this.state.configs_plot, meter_slot));
                     live_data.values.push(this.live_data.samples[meter_slot]);
                 }
             }
@@ -543,7 +543,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
             for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 if (this.history_data.samples[meter_slot].length > 0) {
                     history_data.keys.push('meter_' + meter_slot);
-                    history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                    history_data.names.push(get_meter_display_name(this.state.configs_plot, meter_slot));
                     history_data.values.push(this.history_data.samples[meter_slot].slice(-history_tail));
                 }
             }
@@ -565,7 +565,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
             if (this.history_data.samples[meter_slot].length > 0) {
                 status_data.keys.push('meter_' + meter_slot);
-                status_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                status_data.names.push(get_meter_display_name(this.state.configs_plot, meter_slot));
                 status_data.values.push(this.history_data.samples[meter_slot]);
             }
 
@@ -901,7 +901,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                     const modal = util.async_modal_ref.current;
                                                     if (!await modal.show({
                                                             title: () => __("meters.content.reset_modal"),
-                                                            body: () => __("meters.content.reset_modal_body")(get_meter_name(this.state.configs_table, meter_slot)),
+                                                            body: () => __("meters.content.reset_modal_body")(get_meter_display_name(this.state.configs_table, meter_slot)),
                                                             no_text: () => __("meters.content.reset_modal_abort"),
                                                             yes_text: () => __("meters.content.reset_modal_confirm"),
                                                             no_variant: "secondary",
@@ -960,7 +960,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
                                 return {
                                     columnValues: [
-                                        get_meter_name(this.state.configs_table, meter_slot),
+                                        get_meter_display_name(this.state.configs_table, meter_slot),
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(state_of_charge) ? util.toLocaleFixed(state_of_charge, 1) + " %" : undefined,
                                         util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
@@ -1188,17 +1188,25 @@ interface MetersStatusState {
     power_sum_min_width: {[key: string]: number};
 }
 
-function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
-    let meter_name = __("meters.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
-
-    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
-        meter_name = meter_configs[meter_slot][1].display_name;
+export function translate_meter_display_name(meter_class: MeterClassID, display_name: string) {
+    if (config_plugins[meter_class].translate_display_name) {
+        display_name = config_plugins[meter_class].translate_display_name(display_name);
     }
 
-    return meter_name;
+    return display_name;
 }
 
-function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+export function get_meter_display_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    let display_name = __("meters.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
+
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        display_name = translate_meter_display_name(meter_configs[meter_slot][0], meter_configs[meter_slot][1].display_name);
+    }
+
+    return display_name;
+}
+
+export function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
     if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
         return meter_configs[meter_slot][1].location;
     }
@@ -1206,7 +1214,7 @@ function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, 
     return MeterLocation.Unknown;
 }
 
-function get_meter_excluded(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+export function get_meter_excluded(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
     if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
         return meter_configs[meter_slot][1].excluded;
     }
@@ -1405,7 +1413,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                             </div>
                         </div>
                     </FormRow>,
-                    <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.status_meter_slot)}>
+                    <FormRow label={__("meters.status.current_power")} label_muted={get_meter_display_name(this.state.meter_configs, this.state.status_meter_slot)}>
                         <OutputFloat value={values[power_idx]} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                     </FormRow>);
             }
@@ -1426,7 +1434,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 let location = get_meter_location(this.state.meter_configs, meter_slot);
 
                 if (this.state.meter_configs[meter_slot][0] != MeterClassID.None && location == MeterLocation.Unknown) {
-                    meters_without_location.push(this.state.meter_configs[meter_slot][1].display_name);
+                    meters_without_location.push(get_meter_display_name(this.state.meter_configs, meter_slot));
                 }
 
                 const value_ids = API.get_unchecked(`meters/${meter_slot}/value_ids`);

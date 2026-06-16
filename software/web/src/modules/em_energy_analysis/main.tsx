@@ -33,6 +33,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
+import { get_meter_display_name, get_meter_location, get_meter_excluded } from "../meters/main";
 import { translate_meter_location } from "../meters/meter_location";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapperB, UplotData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
@@ -224,32 +225,6 @@ function resolve_translation(names: {[id: number]: () => string}) {
 
 interface EMEnergyAnalysisStatusState {
     force_render: number,
-}
-
-function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
-    let meter_name = __("em_energy_analysis.script.meter")(util.hasValue(meter_slot) ? meter_slot : '?');
-
-    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
-        meter_name = meter_configs[meter_slot][1].display_name;
-    }
-
-    return meter_name;
-}
-
-function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
-    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
-        return meter_configs[meter_slot][1].location;
-    }
-
-    return MeterLocation.Unknown;
-}
-
-function get_meter_excluded(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
-    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
-        return meter_configs[meter_slot][1].excluded;
-    }
-
-    return undefined;
 }
 
 function get_wallbox_state(flags: number) {
@@ -852,7 +827,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length);
 
                     uplot_data.keys.push('em_power_' + meter_slot);
-                    uplot_data.names.push(get_meter_name(this.state.meter_configs, meter_slot));
+                    uplot_data.names.push(get_meter_display_name(this.state.meter_configs, meter_slot));
                     uplot_data.values.push(energy_manager_data.power[meter_slot]);
                     uplot_data.extras.push(null);
                     uplot_data.stacked.push(false);
@@ -1467,7 +1442,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_import_' + meter_slot);
-                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")})`);
+                    uplot_data.names.push(`${get_meter_display_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")})`);
                     uplot_data.values.push(energy_import);
                     uplot_data.stacked.push(false);
                     uplot_data.filled.push(true);
@@ -1512,7 +1487,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 //        meters. they would have to be shown side by side, but there is no space
                 if (meter_slot == 0) {
                     uplot_data.keys.push('em_energy_export_' + meter_slot);
-                    uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.export")})`);
+                    uplot_data.names.push(`${get_meter_display_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.export")})`);
                     uplot_data.values.push(energy_export);
                     uplot_data.stacked.push(false);
                     uplot_data.filled.push(true);
@@ -2399,7 +2374,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
+                            <FormRow label={`${get_meter_display_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
                                 <div class="row gx-2 gy-1">
                                     <div class="col-md-6">
                                         {has_import ?
@@ -2453,7 +2428,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                     if (has_import || has_export) {
                         rows.push(
-                            <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
+                            <FormRow label={`${get_meter_display_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
                                 <div class="row gx-2 gy-1">
                                     <div class="col-md-6">
                                         {has_import ?

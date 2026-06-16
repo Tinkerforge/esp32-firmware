@@ -230,7 +230,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
             for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
                 try {
                     const meter_config = API.get_unchecked(`meters/${i}/config`);
-                    if (meter_config[1]?.location !== MeterLocation.EV)
+                    if (meter_config[1]?.location !== MeterLocation.Vehicle)
                         continue;
                     const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
                     let ev_soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge)

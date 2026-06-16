@@ -6,7 +6,8 @@ let x = {
             "meter_class": "Fahrzeug (ISO 15118)",
             "config_display_name": "Anzeigename",
             "config_location": "Messort",
-            "protocol": "Protokoll"
+            "protocol": "Protokoll",
+            "vehicle_display_name": "Fahrzeug"
         },
         "script": {
             "protocol_no_ev": "Kein Fahrzeug verbunden",

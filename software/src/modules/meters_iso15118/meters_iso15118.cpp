@@ -17,21 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meters_iso15118.h"
 #include "meter_iso15118.h"
-#include "generated/ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#include "generated/ev_data_protocol.enum.h"
 #include "modules/meters/generated/meter_location.enum.h"
+#include "meters_iso15118.h"
 
 #include "gcc_warnings.h"
 
 void MetersISO15118::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("", 0, 32)},
-        {"location", Config::Enum(MeterLocation::EV)},
+        {"display_name", Config::Str("Vehicle", 0, 32)},
+        {"location", Config::Enum(MeterLocation::Vehicle)},
         {"excluded", Config::Bool(false)},
     });
 

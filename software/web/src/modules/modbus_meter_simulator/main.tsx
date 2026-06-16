@@ -28,6 +28,7 @@ import { FormRow         } from "../../ts/components/form_row";
 import { InputSelect     } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { translate_meter_display_name } from "../meters/main";
 import { LogOut } from "react-feather";
 
 export function ModbusMeterSimulatorNavbar() {
@@ -47,9 +48,9 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
 
         let meter_names: [string, string][] = [];
         for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
-            const meter = API.get_unchecked(`meters/${i}/config`);
-            if (meter[1]) {
-                meter_names.push([i.toString(), meter[1].display_name]);
+            const meter_config = API.get_unchecked(`meters/${i}/config`);
+            if (meter_config[1]) {
+                meter_names.push([i.toString(), translate_meter_display_name(meter_config[0], meter_config[1].display_name)]);
             }
         }
 

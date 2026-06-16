@@ -29,4 +29,5 @@ export type MeterConfigPlugin = {
     get_edit_children: (config: MeterConfig, on_config: (config: MeterConfig) => void) => ComponentChildren
     get_extra_rows?: (meter_slot: number) => ComponentChildren
     hide?: () => Promise<void>
+    translate_display_name?: (display_name: string) => string
 };

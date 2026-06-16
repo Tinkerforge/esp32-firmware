@@ -29,7 +29,7 @@ export function translate_meter_location(location: MeterLocation): string {
     case MeterLocation.Battery:  return __("meters.content.location_battery");
     case MeterLocation.Load:     return __("meters.content.location_load");
     case MeterLocation.PV:       return __("meters.content.location_pv");
-    case MeterLocation.EV:       return __("meters.content.location_ev");
+    case MeterLocation.Vehicle:  return __("meters.content.location_vehicle");
     }
 
     return "<unknown>";

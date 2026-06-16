@@ -358,7 +358,7 @@ void ChargeLimits::setup_ev_meter_soc(uint32_t slot)
 void ChargeLimits::register_events()
 {
     for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-        if (meters.get_meter_location(slot) == MeterLocation::EV) {
+        if (meters.get_meter_location(slot) == MeterLocation::Vehicle) {
             setup_ev_meter_soc(slot);
             break;
         }

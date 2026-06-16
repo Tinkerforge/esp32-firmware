@@ -106,7 +106,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
         for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
             try {
                 const meter_config = API.get_unchecked(`meters/${i}/config`);
-                if (meter_config[1]?.location !== MeterLocation.EV)
+                if (meter_config[1]?.location !== MeterLocation.Vehicle)
                     continue;
                 const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
                 if (Array.isArray(value_ids) && value_ids.indexOf(MeterValueID.StateOfCharge) >= 0) {

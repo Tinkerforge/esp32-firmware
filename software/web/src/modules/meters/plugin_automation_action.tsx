@@ -26,6 +26,7 @@ import { AutomationAction } from "../automation/types";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
+import { translate_meter_display_name } from "./main";
 
 export type MeterAutomationAction = [
     AutomationActionID.MeterReset,
@@ -35,19 +36,19 @@ export type MeterAutomationAction = [
 ]
 
 function get_meter_reset_table_children(action: MeterAutomationAction) {
-    const meter = API.get_unchecked(`meters/${action[1].meter_slot}/config`);
-    if (!meter[1]) {
+    const meter_config = API.get_unchecked(`meters/${action[1].meter_slot}/config`);
+    if (!meter_config[1]) {
         return __("meters.content.unknown_slot")(action[1].meter_slot);
     }
-    return __("meters.automation.automation_action_text")(meter[1].display_name);
+    return __("meters.automation.automation_action_text")(translate_meter_display_name(meter_config[0], meter_config[1].display_name));
 }
 
 function get_meter_reset_edit_children(action: MeterAutomationAction, on_action: (action: AutomationAction) => void) {
     let items: [string, string][] = [];
     for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
-        const meter = API.get_unchecked(`meters/${i}/config`);
-        if (meter[1]) {
-            items.push([i.toString(), meter[1].display_name]);
+        const meter_config = API.get_unchecked(`meters/${i}/config`);
+        if (meter_config[1]) {
+            items.push([i.toString(), translate_meter_display_name(meter_config[0], meter_config[1].display_name)]);
         }
     }
 

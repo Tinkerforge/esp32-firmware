@@ -41,23 +41,20 @@ export type ISO15118MetersConfig = [
     },
 ];
 
+function translate_display_name(display_name: string) {
+    return display_name == "Vehicle" ? __("meters_iso15118.content.vehicle_display_name") : display_name;
+}
+
 export function pre_init() {
     return {
         [MeterClassID.ISO15118]: {
             name: () => __("meters_iso15118.content.meter_class"),
-            new_config: () => [MeterClassID.ISO15118, {display_name: "", location: MeterLocation.EV, excluded: false}] as MeterConfig,
+            new_config: () => [MeterClassID.ISO15118, {display_name: "Vehicle", location: MeterLocation.Vehicle, excluded: false}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ISO15118MetersConfig, on_config: (config: ISO15118MetersConfig) => void): ComponentChildren => {
                 return [
                     <FormRow label={__("meters_iso15118.content.config_display_name")}>
-                        <InputText
-                            required
-                            maxLength={32}
-                            value={config[1].display_name}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {display_name: v}));
-                            }}
-                        />
+                        <InputText value={translate_display_name(config[1].display_name)} />
                     </FormRow>,
                     <FormRow label={__("meters_iso15118.content.config_location")}>
                         <InputText value={translate_meter_location(config[1].location)} />
@@ -94,6 +91,7 @@ export function pre_init() {
                     </div>
                 </FormRow>
             },
+            translate_display_name: translate_display_name,
         },
     };
 }
