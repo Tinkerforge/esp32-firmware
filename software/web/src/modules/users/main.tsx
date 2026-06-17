@@ -1118,6 +1118,55 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             }}
                         />
                     </FormRow>
+
+
+                    <FormRow label={__("users.content.nfc_tags")}>
+                        <Table
+                            columnNames={[
+                                __("users.content.nfc_tag_id"),
+                                __("users.content.nfc_tag_type"),
+                                __("users.content.nfc_table_assigned_user"),
+                                __("users.content.nfc_last_seen"),
+                            ]}
+                            rows={API.get("nfc/config").authorized_tags.map(tag => {
+                                const ownerName = tag.user_id == 0 ? "" : API.get("users/config").users.find(u => u.id == tag.user_id).display_name;
+
+                                const seen = API.get("nfc/seen_tags").find(
+                                    (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
+                                );
+                                const lastSeenText = seen
+                                    ? __("nfc.content.last_seen") +
+                                    util.format_timespan_ms(seen.last_seen) +
+                                    __("nfc.content.last_seen_suffix")
+                                    : "";
+
+                                return {
+                                    columnValues: [
+                                        tag.tag_id,
+                                        translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+                                        ownerName,
+                                        lastSeenText,
+                                    ],
+                                    fieldNames: [
+                                        __("users.content.nfc_tag_id"),
+                                        __("users.content.nfc_tag_type"),
+                                        __("users.content.nfc_table_assigned_user"),
+                                        __("users.content.nfc_last_seen"),
+                                    ],
+                                    fieldValues: [
+                                        tag.tag_id,
+                                        translate_unchecked(`nfc.content.type_${tag.tag_type}`),
+                                        ownerName,
+                                        lastSeenText,
+                                    ],
+                                    hideRemoveButton: true
+                                };
+                            })}
+                            addMessage={__("users.content.nfc_add_tag_message")(
+                                    API.get("nfc/config").authorized_tags.length,
+                                    MAX_TAGS)}
+                        />
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );

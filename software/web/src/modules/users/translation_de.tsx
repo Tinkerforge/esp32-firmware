@@ -25,6 +25,8 @@ let x = {
             "table_current": "Maximaler Ladestrom",
             "table_password": "Passwort",
 
+            "nfc_table_assigned_user": "Zugeordneter Benutzer",
+
             "add_user_title": "Benutzer hinzufügen",
             "add_user_message": /*SFN*/ (have: number, max: number) =>
                 `${have} von ${max} Benutzern konfiguriert` /*NF*/,
@@ -64,10 +66,9 @@ let x = {
             "nfc_add_tag": "NFC-Tag hinzufügen",
             "nfc_add_tag_message": /*SFN*/ (
                 have: number,
-                max: number,
-                haveForUser: number
+                max: number
             ) =>
-                `${haveForUser} von ${max} Tags diesem Benutzer zugeordnet (${have} von ${max} Tags konfiguriert)` /*NF*/,
+                `${have} von ${max} Tags konfiguriert` /*NF*/,
             "nfc_seen_tags": "Erkannte Tags",
             "nfc_last_seen": "Zuletzt erkannt",
             "nfc_add_tag_manually": "Tag manuell hinzuf\u00fcgen",

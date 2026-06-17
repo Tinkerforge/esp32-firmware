@@ -25,6 +25,8 @@ let x = {
             "table_current": "Maximum charge current",
             "table_password": "Password",
 
+            "nfc_table_assigned_user": "Assigned user",
+
             "add_user_title": "Add user",
             "add_user_message": /*SFN*/ (have: number, max: number) =>
                 `${have} of ${max} users configured` /*NF*/,
@@ -63,10 +65,9 @@ let x = {
             "nfc_add_tag": "Add NFC tag",
             "nfc_add_tag_message": /*SFN*/ (
                 have: number,
-                max: number,
-                haveForUser: number
+                max: number
             ) =>
-                `${haveForUser} of ${max} tags assigned to this user (${have} of ${max} tags configured)` /*NF*/,
+                `${have} of ${max} tags configured` /*NF*/,
             "nfc_seen_tags": "Seen tags",
             "nfc_last_seen": "Last seen",
             "nfc_add_tag_manually": "Add tag manually",
