@@ -50,6 +50,21 @@ AsyncHTTPSClient::~AsyncHTTPSClient() {
 esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 {
     AsyncHTTPSClient *that = static_cast<AsyncHTTPSClient *>(event->user_data);
+
+    if (that->abort_requested || !that->in_progress) {
+        // esp_http_client_perform might call this callback multiple times even if we already
+        // decided that we are already done handling this request. this might happen in case of
+        // a 404 error when esp_http_client_perform wants to deliver the whole response body,
+        // while the complete response is bigger than te configured buffer size. in this case
+        // esp_http_client_perform calls this callback multiple times until the whole response
+        // body got delivered using our receive buffer. ignore calls to this callback in case
+        // we decided that it is not in progress anymore. this restricts the size of visible
+        // response body in case of a 404 error, but the only consumer of a 404 response body
+        // currently is the day ahead prices module that checks for a 25 bytes long response
+        // body whlie the receive buffer currently is 1024 bytes long, no issue here.
+        return ESP_OK;
+    }
+
     AsyncHTTPSClientEvent async_event;
     int http_status;
 
