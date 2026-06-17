@@ -325,35 +325,74 @@ def reset_evse():
 class Scanner:
     def __init__(self):
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-        pattern = r'^T:WARP(2|3|4)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        pattern_4 = r'^T:WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        pattern_3_2 = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+
         self.qr_charger_code = my_input("Scan the charger QR code:")
-        m = re.match(pattern, self.qr_charger_code)
+        m_4 = re.match(pattern_4, self.qr_charger_code)
+        if m_4 == None:
+            m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
 
-        while not m:
+        while not m_4 and not m_3_2:
             self.qr_charger_code = my_input("Scan the charger QR code:", red)
-            m = re.match(pattern, self.qr_charger_code)
+            m_4 = re.match(pattern_4, self.qr_charger_code)
+            if m_4 == None:
+                m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
 
-        self.qr_gen = m.group(1)
-        self.qr_variant = m.group(2)
-        self.qr_power = m.group(3)
-        self.qr_cable_len = m.group(4)
-        self.qr_hw_version = m.group(5)
-        self.qr_serial = m.group(6)
-        self.qr_built = m.group(7)
-        self.qr_accessories = m.group(8)
+        if m_4 != None:
+            self.qr_gen = m_4.group(1)
+            self.qr_variant = m_4.group(2)
+
+            if m_4.group(4).startswith('11'):
+                self.qr_power = '11'
+            elif m_4.group(4).startswith('22'):
+                self.qr_power = '22'
+            elif m_4.group(4) == 'CC':
+                self.qr_power = 'CC'
+
+            if m_4.group(4).endswith('50'):
+                self.qr_cable_len = '50'
+            elif m_4.group(4).endswith('75'):
+                self.qr_cable_len = '75'
+            elif m_4.group(4) == 'CC':
+                self.qr_cable_len = 'CC'
+
+            self.qr_material = m_4.group(3)
+            self.qr_custom_engraving = m_4.group(5) == 'C'
+            self.qr_hw_version = m_4.group(6)
+            self.qr_serial = m_4.group(7)
+            self.qr_built = m_4.group(8)
+            self.qr_accessories = m_4.group(9)
+        else:
+            self.qr_gen = m_3_2.group(1)
+            self.qr_variant = m_3_2.group(2)
+            self.qr_power = m_3_2.group(3)
+            self.qr_cable_len = m_3_2.group(4)
+            self.qr_material = m_3_2.group(5) if m_3_2.group(5) != None else 'SS'
+            self.qr_custom_engraving = '?'
+            self.qr_hw_version = m_3_2.group(6)
+            self.qr_serial = m_3_2.group(7)
+            self.qr_built = m_3_2.group(8)
+            self.qr_accessories = m_3_2.group(9)
 
         if self.qr_accessories == None:
             self.qr_accessories = '0'
 
         print("Charger QR code data:")
-        print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro"}[self.qr_variant]))
-        print("    {} kW".format(self.qr_power))
+        print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
 
-        if self.qr_cable_len == 'CC':
+        if self.qr_power == 'CC' and self.qr_cable_len == 'CC':
             print("    Custom Cable")
         else:
-            print("    {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+            print("    {} kW".format(self.qr_power))
 
+            if self.qr_cable_len == 'CC':
+                print("    Custom Cable")
+            else:
+                print("    {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+
+        print("    Material: {}".format(self.qr_material))
+        print("    Custom Engraving: {}".format(self.qr_custom_engraving))
         print("    HW Version: {}".format(self.qr_hw_version))
         print("    Serial: {}".format(self.qr_serial))
         print("    Build month: {}".format(self.qr_built))
@@ -366,11 +405,11 @@ class Scanner:
             self.qr_stand_lock = False
             self.qr_supply_cable = 0.0
             self.qr_cee = False
-            self.qr_custom_front_panel = False
+            self.qr_custom_engraving = False
             self.qr_custom_type2_cable = False
         else:
             # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
-            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1|M\d+|T\d+);)?;;*$'
+            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
             self.qr_accessories_code = my_input("Scan the accessories QR code:")
             m = re.match(pattern, self.qr_accessories_code)
 
@@ -383,12 +422,14 @@ class Scanner:
             self.qr_stand_lock = bool(int(m.group(3) if m.group(3) != None else '0'))
             self.qr_supply_cable = float(m.group(4))
             self.qr_cee = bool(int(m.group(5)))
-            self.qr_custom_front_panel = bool(int(m.group(6) if m.group(6) != None else '0'))
+            self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
 
             if m.group(7) != None and m.group(7) != '0':
-                self.qr_custom_type2_cable = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ')
+                parts = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ').replace('C', 'Custom ').replace('H', '11kW ').replace('F', '22kW ').split(' ')
+                parts[-1] = str(round(int(parts[-1]) / 10, 1))
+                self.qr_custom_type2_cable = ' '.join(parts) + ' m'
             else:
-                self.qr_custom_type2_cable = 'no'
+                self.qr_custom_type2_cable = False
 
             print("Accessories QR code data:")
             print("    Stand: {}".format(self.qr_stand))
@@ -396,11 +437,11 @@ class Scanner:
             print("    Stand Lock: {}".format(self.qr_stand_lock))
             print("    Supply Cable: {} m".format(self.qr_supply_cable))
             print("    CEE: {}".format(self.qr_cee))
-            print("    Custom Front Panel: {}".format(self.qr_custom_front_panel))
+            print("    Custom Engraving: {}".format(self.qr_custom_engraving))
             print("    Custom Type 2 Cable: {}".format(self.qr_custom_type2_cable))
 
         if self.qr_variant != "B":
-            pattern = r"^WIFI:S:(warp{gen})-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58, gen=self.qr_gen)
+            pattern = rf"^WIFI:S:(warp{self.qr_gen})-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
             self.qr_esp_code = getpass.getpass(green("Scan the ESP Brick QR code: "))
             m = re.match(pattern, self.qr_esp_code)
 
@@ -477,6 +518,7 @@ def led_wrap():
 
 blink_start = None
 blink_count = 0
+
 def start_blink(count):
     global blink_start, blink_count
     assert count in [3, 2, 1, 0], count
