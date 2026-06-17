@@ -19,94 +19,83 @@
 
 #include "factory_data.h"
 
+#include <LittleFS.h>
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#include "options.h"
 #include "tools/malloc.h"
-
-static const char *factory_sku_str = "WARP4-CP-SS-2275-W"; // FIXME: read this from the actual factorydata partition
 
 void FactoryData::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"sku_override", Config::Str("", 0, SKU_STR_LEN)},
+        {"sku_override", Config::Str("", 0, SKU_STR_MAX_LEN)},
     }), [this](Config &update, ConfigSource source) -> String {
         const char *sku_str = update.get("sku_override")->asEphemeralCStr();
         SKU sku;
 
-        if (strlen(sku_str) > 0) {
-            if (!parse_sku(sku_str, &sku)) {
-                return "SKU override is malformed";
-            }
-
-            if (source != ConfigSource::File) {
-                logger.printfln("Using SKU override: %s", sku_str);
-            }
-        }
-        else {
-            sku_str = factory_sku_str;
-
-            if (!parse_sku(sku_str, &sku)) {
-                return "Factory SKU is malformed";
-            }
-
-            if (source != ConfigSource::File) {
-                logger.printfln("Using factory SKU: %s", sku_str);
-            }
+        if (strlen(sku_str) > 0 && !parse_sku(sku_str, &sku)) {
+            return "SKU override is malformed";
         }
 
-        update_sku(sku_str, &sku);
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                apply_config();
+            });
+        }
+
         return "";
     }};
 
     state = Config::Object({
-        {"sku", Config::Str("", 0, SKU_STR_LEN)},
+        {"sku", Config::Str("", 0, SKU_STR_MAX_LEN)},
         {"sku_product", Config::Enum(SKUProduct::Unknown)},
         {"sku_model", Config::Enum(SKUModel::Unknown)},
         {"sku_material", Config::Enum(SKUMaterial::Unknown)},
         {"sku_type2", Config::Enum(SKUType2::Unknown)},
         {"sku_engraving", Config::Enum(SKUEngraving::Unknown)},
     });
+
+    write_sku_config = ConfigRoot{Config::Object({
+        {"sku", Config::Str("", 0, SKU_STR_MAX_LEN)},
+    }), [this](Config &update, ConfigSource source) -> String {
+        const char *sku_str = update.get("sku")->asEphemeralCStr();
+        SKU sku;
+
+        if (!parse_sku(sku_str, &sku)) {
+            return "SKU is malformed";
+        }
+
+        return "";
+    }};
 }
 
 void FactoryData::setup()
 {
     data = perm_new_prefer<Data>(PSRAM, DRAM, _NONE);
 
-    api.restorePersistentConfig("factory_data/config", &config);
+    fs::LittleFSFS factorydata;
 
-    SKU sku;
-    const char *sku_str = config.get("sku_override")->asEphemeralCStr();
-    bool sku_valid = false;
-
-    if (strlen(sku_str) > 0) {
-        sku_valid = parse_sku(sku_str, &sku);
-
-        if (!sku_valid) {
-            logger.printfln("Ignoring malformed SKU override: %s", sku_str);
-        }
-        else {
-            logger.printfln("Using SKU override: %s", sku_str);
-        }
-    }
-
-    if (!sku_valid) {
-        sku_str = factory_sku_str;
-        sku_valid = parse_sku(sku_str, &sku);
-
-        if (!sku_valid) {
-            logger.printfln("Factory SKU is malformed: %s", sku_str);
-        }
-        else {
-            logger.printfln("Using factory SKU: %s", sku_str);
-        }
-    }
-
-    if (!sku_valid) {
-        logger.printfln("No valid SKU available");
+    if (!factorydata.begin(false, "/factorydata", 10, "factorydata")) {
+        logger.printfln("Could not mount factorydata partition");
     }
     else {
-        update_sku(sku_str, &sku);
+        File sku = factorydata.open("/sku");
+        size_t read = sku.read(reinterpret_cast<uint8_t *>(data->factory_sku_str), std::size(data->factory_sku_str));
+
+        sku.close();
+        factorydata.end();
+
+        if (read == 0) {
+            logger.printfln("Could not read factory SKU");
+        }
+
+        data->factory_sku_str[read] = '\0';
     }
+
+    api.restorePersistentConfig("factory_data/config", &config);
+
+    apply_config();
 
     initialized = true;
 }
@@ -115,6 +104,34 @@ void FactoryData::register_urls()
 {
     api.addPersistentConfig("factory_data/config", &config);
     api.addState("factory_data/state", &state);
+
+#if OPTIONS_FACTORY_DATA_ENABLE_WRITE_API()
+    api.addCommand("factory_data/write_sku", &write_sku_config, {}, [this](Language language, String &errmsg) {
+        const char *sku_str = write_sku_config.get("sku")->asEphemeralCStr();
+        size_t sku_str_len = strlen(sku_str);
+
+        fs::LittleFSFS factorydata;
+
+        if (!factorydata.begin(true, "/factorydata", 10, "factorydata")) {
+            errmsg = "Could not mount factorydata partition";
+        }
+        else {
+            File sku = factorydata.open("/sku", FILE_WRITE);
+            size_t written = sku.write(reinterpret_cast<const uint8_t *>(sku_str), sku_str_len);
+
+            sku.close();
+            factorydata.end();
+
+            if (written != sku_str_len) {
+                errmsg = "Could not write factory SKU";
+            }
+            else {
+                snprintf(data->factory_sku_str, std::size(data->factory_sku_str), "%s", sku_str);
+                apply_config();
+            }
+        }
+    }, true);
+#endif
 }
 
 bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
@@ -224,10 +241,50 @@ bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
     return true;
 }
 
-void FactoryData::update_sku(const char *sku_str, SKU *sku)
+void FactoryData::apply_config()
 {
+    SKU sku;
+    const char *sku_str = config.get("sku_override")->asEphemeralCStr();
+    bool sku_valid = false;
+
+    if (strlen(sku_str) > 0) {
+        sku_valid = parse_sku(sku_str, &sku);
+
+        if (!sku_valid) {
+            logger.printfln("Ignoring malformed SKU override: %s", sku_str);
+        }
+        else {
+            logger.printfln("Using SKU override: %s", sku_str);
+        }
+    }
+
+    if (!sku_valid) {
+        sku_str = data->factory_sku_str;
+
+        if (strlen(sku_str) == 0) {
+            logger.printfln("Factory SKU is empty");
+        }
+        else {
+            sku_valid = parse_sku(sku_str, &sku);
+
+            if (!sku_valid) {
+                logger.printfln("Factory SKU is malformed: %s", sku_str);
+            }
+            else {
+                logger.printfln("Using factory SKU: %s", sku_str);
+            }
+        }
+    }
+
+    if (!sku_valid) {
+        logger.printfln("No valid SKU available");
+
+        sku_str = "";
+        sku = SKU();
+    }
+
     snprintf(data->sku_str, std::size(data->sku_str), "%s", sku_str);
-    data->sku = *sku;
+    data->sku = sku;
 
     state.get("sku")->updateString(data->sku_str);
     state.get("sku_product")->updateEnum(data->sku.product);

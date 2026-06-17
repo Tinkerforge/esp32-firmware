@@ -27,7 +27,7 @@
 #include "generated/sku_type2.enum.h"
 #include "generated/sku_engraving.enum.h"
 
-#define SKU_STR_LEN 18 // WARP4-XX-XX-XXXX-X
+#define SKU_STR_MAX_LEN 18 // WARP4-XX-XX-XXXX-X
 
 class FactoryData final : public IModule
 {
@@ -54,15 +54,17 @@ private:
     };
 
     struct Data {
-        char sku_str[SKU_STR_LEN + 1] = "";
+        char factory_sku_str[SKU_STR_MAX_LEN + 1] = "";
+        char sku_str[SKU_STR_MAX_LEN + 1] = "";
         SKU sku;
     };
 
     bool parse_sku(const char *sku_str, SKU *sku);
-    void update_sku(const char *sku_str, SKU *sku);
+    void apply_config();
 
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot write_sku_config;
 
     Data *data = nullptr;
 };
