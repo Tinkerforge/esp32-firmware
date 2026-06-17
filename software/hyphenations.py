@@ -1562,6 +1562,9 @@ de_hyph = [
     "ge-spei-cher-ter",
     "ver-brauch-ter",
     "ver-bun-de-nen",
+    "ne-go-tia-ted",
+    "pa-ra-me-ter",
+    "ter-mi-na-te",
 ]
 
 en_hyph = [
@@ -2096,6 +2099,10 @@ en_hyph = [
     "Ter-mi-nate",
     "re-set-ting",
     "Ef-fi-cien-cy",
+    "pro-to-cols",
+    "ne-go-ti-at-ed",
+    "pa-ram-e-ter",
+    "ter-mi-nate",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
