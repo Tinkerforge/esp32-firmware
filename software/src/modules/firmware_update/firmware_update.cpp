@@ -694,7 +694,13 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
 static const char *firmware_url_infix = "_firmware_";
 static size_t firmware_url_infix_len = strlen(firmware_url_infix);
 static size_t firmware_url_version_len = strlen("MAJ_MIN_PAT_beta_BET_TIMESTAM");
+#if OPTIONS_FIRMWARE_UPDATE_INDEX_VERSION() == 1
 static const char *firmware_url_suffix = "_merged.bin";
+#elif OPTIONS_FIRMWARE_UPDATE_INDEX_VERSION() == 3
+static const char *firmware_url_suffix = "_ota.bin";
+#else
+#error "Unknown index version"
+#endif
 static size_t firmware_url_suffix_len = strlen(firmware_url_suffix);
 #endif
 
@@ -1318,7 +1324,14 @@ bool FirmwareUpdate::is_vehicle_blocking_update() const
     return block_firmware_update_with_vehicle_connected && vehicle_connected;
 }
 
+#if OPTIONS_FIRMWARE_UPDATE_INDEX_VERSION() == 1
 static const char *index_url_suffix = "_firmware_v1.txt";
+#elif OPTIONS_FIRMWARE_UPDATE_INDEX_VERSION() == 3
+static const char *index_url_suffix = "_firmware_v3.txt";
+#else
+#error "Unknown index version"
+#endif
+
 static size_t index_url_suffix_len = strlen(index_url_suffix);
 
 // index files are not signed to allow customer fleet update managment, firmwares are signed
