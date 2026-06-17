@@ -21,8 +21,7 @@ let x = {
             "pib_download_desc": "Parameter Information Block herunterladen",
             "pib_upload": "PIB hochladen",
             "pib_upload_desc": "PIB-Datei auf das PLC-Modem hochladen",
-            "pib_upload_button": "PIB flashen",
-            "pib_uploading": "PIB wird geflasht...",
+            "pib_upload_button": "PIB hochladen",
 
             "slac_state": "SLAC-Status",
             "slac_state_muted": "Signal Level Attenuation Characterisation",
@@ -152,7 +151,7 @@ let x = {
             "reboot_content_changed": "ISO15118-Einstellungen",
             "pib_download_failed": "PIB-Download fehlgeschlagen",
             "pib_upload_failed": "PIB-Upload fehlgeschlagen",
-            "pib_upload_success": "PIB erfolgreich geflasht. Das PLC-Modem wird zurückgesetzt.",
+            "pib_upload_success": "PIB erfolgreich hochgeladen. Das PLC-Modem wird zurückgesetzt.",
             "pib_write_failed": "PIB-Schreibvorgang fehlgeschlagen"
         }
     }

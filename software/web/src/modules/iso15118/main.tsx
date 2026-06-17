@@ -534,7 +534,6 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                             <InputFile
                                 url="/iso15118/pib_write"
                                 upload={__("iso15118.content.pib_upload_button")}
-                                uploading={__("iso15118.content.pib_uploading")}
                                 accept=".pib,.bin"
                                 timeout_ms={30 * 1000}
                                 contentType="application/octet-stream"
