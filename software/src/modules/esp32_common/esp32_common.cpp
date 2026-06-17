@@ -288,7 +288,7 @@ void ESP32Common::register_urls()
         if (!ESP32CommonSecureBoot::is_locked_down()) {
             logger.printfln("Not locked down");
 
-            server.on("/esp32/lockdown", HTTP_GET, [this](WebServerRequest req) {
+            server.on_HTTPThread("/esp32/lockdown", HTTP_GET, [this](WebServerRequest req) {
                 micros_t t_start = now_us();
                 const bool success = ESP32CommonSecureBoot::lockdown();
                 uint32_t runtime = (now_us() - t_start).as<uint32_t>();
