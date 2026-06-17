@@ -56,6 +56,8 @@ IEC_STATE_CHECK_INTERVAL = 0.01 # seconds
 
 PHASE_SWITCH_SETTLE_DURATION = 10.0 # seconds
 
+ISO15118_CONNECT_DURATION = 3 # seconds
+
 STACK_MASTER_UIDS = {
     '0': '61SMKP',
     '2': '6DY5kB',
@@ -110,6 +112,7 @@ print = tprint
 
 class Stage3:
     def __init__(self,
+                 qr_gen,
                  is_front_panel_button_pressed_function,
                  has_evse_error_function,
                  get_iec_state_function,
@@ -119,7 +122,12 @@ class Stage3:
                  get_evse_uptime_function,
                  reset_evse_function,
                  get_cp_pwm_function,
-                 get_meter_voltages_function):
+                 get_meter_voltages_function,
+                 set_iso15118_enabled_function,
+                 get_iso15118_ev_mac_function,
+                 get_iso15118_attenuation_profile_function
+                 ):
+        self.generation = int(qr_gen)
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
@@ -130,6 +138,11 @@ class Stage3:
         self.reset_evse_function = reset_evse_function
         self.get_cp_pwm_function = get_cp_pwm_function
         self.get_meter_voltages_function = get_meter_voltages_function
+
+        self.set_iso15118_enabled_function = set_iso15118_enabled_function
+        self.get_iso15118_ev_mac_function = get_iso15118_ev_mac_function
+        self.get_iso15118_attenuation_profile_function = get_iso15118_attenuation_profile_function
+
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -924,6 +937,34 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
+        if self.generation >= 4:
+            self.set_iso15118_enabled_function(True)
+
+            self.change_cp_pe_state('B')
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            time.sleep(ISO15118_CONNECT_DURATION)
+            ev_mac = self.get_iso15118_ev_mac_function()
+            report['iso15118_ev_mac'] = ev_mac
+
+            if ev_mac == '00:00:00:00:00:00':
+                fatal_error(f"Failed to connect to simulated car via ISO15118 {ev_mac=}")
+
+            ap = self.get_iso15118_attenuation_profile_function()
+            report['iso15118_attenuation_profile'] = ap
+
+            for i, v in enumerate(ap[:-1]):
+                if v >= 40:
+                    fatal_error(f"ISO15118 attenuation profile entry {i} out of range: {v} >= 40!\nProfile: {",".join(ap)}")
+
+            if ap[-1] >= 60:
+                fatal_error(f"Last ISO15118 attenuation profile entry out of range: {v} >= 60!\nProfile: {",".join(ap)}")
+
+            self.change_cp_pe_state('A')
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            self.set_iso15118_enabled_function(False)
+
         # step 01: test phase separation
         self.change_cp_pe_state('C')
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
@@ -1150,7 +1191,8 @@ class Stage3:
         return report
 
 def main():
-    stage3 = Stage3(is_front_panel_button_pressed_function=lambda: False,
+    stage3 = Stage3('3',
+                    is_front_panel_button_pressed_function=lambda: False,
                     has_evse_error_function=lambda: False,
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
@@ -1159,7 +1201,10 @@ def main():
                     get_evse_uptime_function=lambda: None,
                     reset_evse_function=lambda: None,
                     get_cp_pwm_function=lambda: 1000,
-                    get_meter_voltages_function=lambda: None)
+                    get_meter_voltages_function=lambda: None,
+                    set_iso15118_enabled_function=lambda: None,
+                    get_iso15118_ev_mac_function=lambda: None,
+                    get_iso15118_attenuation_profile_function=lambda: None)
 
     stage3.setup()
 

@@ -10,6 +10,7 @@ import time
 import urllib.request
 import csv
 import traceback
+from pathlib import Path
 from selenium import webdriver
 from tinkerforge_util.colored import red, green, blink
 import tinkerforge_util as tfutil
@@ -23,6 +24,7 @@ from provisioning.provision_common.provision_common import *
 from provisioning.provision_stage_3_warp2 import Stage3
 
 evse = None
+host = None
 power_off_on_error = True
 generation = None
 sys_print = print
@@ -458,6 +460,74 @@ class Scanner:
             print("    UID: {}".format(self.qr_esp_uid))
 
 
+def set_iso15118_enabled(enable: bool):
+    req = urllib.request.Request("http://{}/iso15118/config".format(host), data=json.dumps({
+        "autocharge": False,
+        "read_soc": enable,
+        "charge_via_iso15118": False,
+        "min_charge_current": 1000
+        }).encode('utf-8'))
+    try:
+        with urllib.request.urlopen(req, timeout=6) as f:
+            f.read()
+    except urllib.error.HTTPError as e:
+        fatal_error("Failed to set iso15118 enable: {} {}".format(e, e.read()))
+    except Exception as e:
+        fatal_error("Failed to set iso15118 enable: {}".format(e))
+
+
+def get_iso15118_ev_mac():
+    try:
+        with urllib.request.urlopen("http://{}/iso15118/state_slac/pev_mac".format(host), timeout=5) as f:
+            return ":".join([hex(x)[2:] for x in json.loads(f.read())])
+    except urllib.error.HTTPError as e:
+        fatal_error("Failed to get iso15118 EV mac: {} {}".format(e, e.read()))
+    except Exception as e:
+        fatal_error("Failed to get iso15118 EV mac: {}".format(e))
+
+
+def get_iso15118_attenuation_profile():
+    try:
+        with urllib.request.urlopen("http://{}/iso15118/state_slac/attenuation_profile".format(host), timeout=5) as f:
+            return json.loads(f.read())
+    except urllib.error.HTTPError as e:
+        fatal_error("Failed to get iso15118 attenuation profile: {} {}".format(e, e.read()))
+    except Exception as e:
+        fatal_error("Failed to get iso15118 attenuation profile: {}".format(e))
+
+def upload_iso15118_pib():
+    pib = Path("qca7000_lab_x2.pib").read_bytes()
+    req = urllib.request.Request("http://{}/iso15118/pib_write".format(host), data=pib)
+    try:
+        with urllib.request.urlopen(req, timeout=6) as f:
+            f.read()
+    except urllib.error.HTTPError as e:
+        fatal_error("Failed to upload iso15118 pib: {} {}".format(e, e.read()))
+    except Exception as e:
+        fatal_error("Failed to upload iso15118 pib: {}".format(e))
+
+    start = time.time()
+    ex = None
+    while time.time() - start < 10:
+        time.sleep(0.1)
+        req = urllib.request.Request("http://{}/iso15118/pib_read".format(host))
+        try:
+            with urllib.request.urlopen(req, timeout=2) as f:
+                result = f.read()
+                if result != pib:
+                    print(result, pib)
+                    fatal_error("Iso15118 pib not applied!")
+                ex = None
+                break
+        except urllib.error.HTTPError as e:
+            ex = str(e) + e.read().decode('utf-8')
+            #fatal_error("Failed to read back iso15118 pib: {} {}".format(e, e.read()))
+        except Exception as e:
+            ex = e
+            #fatal_error("Failed to read back iso15118 pib: {}".format(e))
+    if ex is not None:
+        fatal_error("Failed to read back iso15118 pib: {}".format(e))
+
 def led_wrap():
     dprint("pre scanner")
 
@@ -465,7 +535,8 @@ def led_wrap():
 
     dprint("post scanner")
 
-    stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed,
+    stage3 = Stage3(scanner.qr_gen,
+                    is_front_panel_button_pressed_function=is_front_panel_button_pressed,
                     has_evse_error_function=has_evse_error,
                     get_iec_state_function=get_iec_state,
                     reset_dc_fault_function=reset_dc_fault,
@@ -474,7 +545,10 @@ def led_wrap():
                     get_evse_uptime_function=get_evse_uptime,
                     reset_evse_function=reset_evse,
                     get_cp_pwm_function=get_cp_pwm,
-                    get_meter_voltages_function=get_meter_voltages)
+                    get_meter_voltages_function=get_meter_voltages,
+                    set_iso15118_enabled_function=set_iso15118_enabled,
+                    get_iso15118_ev_mac_function=get_iso15118_ev_mac,
+                    get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile)
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
@@ -622,6 +696,8 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     return seen_tags
 
 def main(stage3, scanner, result):
+    global host
+
     result["start"] = now()
 
     dprint("main")
@@ -744,6 +820,9 @@ def main(stage3, scanner, result):
         seen_tags2 = run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
 
         dprint("post bricklet tests")
+        if generation >= 4:
+            upload_iso15118_pib()
+            dprint("post iso15118 pib")
 
         if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
             seen_tags = seen_tags2
