@@ -10,7 +10,7 @@ let x = {
         },
         "content": {
             "em_energy_analysis": "Energiebilanz",
-            "no_data": "Keine Daten vorhanden!",
+            "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",
             "data_type_5min": "Tag",
             "data_type_daily": "Monat",
