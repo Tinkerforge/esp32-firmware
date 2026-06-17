@@ -1,0 +1,40 @@
+From 4369c49d6247aa69d5655ca2cf7c1c975e28411c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 17 Jun 2026 15:41:24 +0200
+Subject: [PATCH] esp_partition: Allow overriding Flash decryption function
+
+---
+ components/esp_partition/partition_target.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/components/esp_partition/partition_target.c b/components/esp_partition/partition_target.c
+index 04f8fdf06c..319406d197 100644
+--- a/components/esp_partition/partition_target.c
++++ b/components/esp_partition/partition_target.c
+@@ -23,6 +23,9 @@
+ 
+ #define HASH_LEN 32 /* SHA-256 digest length */
+ 
++static esp_err_t __tf_read_encrypted(esp_flash_t *chip, uint32_t address, uint8_t *data, uint32_t length) {return -1;}
++esp_err_t tf_read_encrypted(esp_flash_t *chip, uint32_t address, uint8_t *data, uint32_t length) __attribute__((weak, alias("__tf_read_encrypted")));
++
+ esp_err_t esp_partition_read(const esp_partition_t *partition,
+                              size_t src_offset, void *dst, size_t size)
+ {
+@@ -38,6 +41,13 @@ esp_err_t esp_partition_read(const esp_partition_t *partition,
+         return esp_flash_read(partition->flash_chip, dst, partition->address + src_offset, size);
+     }
+ 
++    if (size <= 4096 && &tf_read_encrypted != &__tf_read_encrypted) {
++        esp_err_t err = tf_read_encrypted(partition->flash_chip, partition->address + src_offset, dst, size);
++        if (err == ESP_OK) {
++            return ESP_OK;
++        }
++    }
++
+ #if CONFIG_SPI_FLASH_ENABLE_ENCRYPTED_READ_WRITE
+     if (partition->flash_chip != esp_flash_default_chip) {
+         return ESP_ERR_NOT_SUPPORTED;
+-- 
+2.47.3
+
