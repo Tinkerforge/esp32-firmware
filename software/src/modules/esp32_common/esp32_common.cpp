@@ -142,6 +142,13 @@ extern "C"
 
 void ESP32Common::pre_init()
 {
+#ifndef CONFIG_SECURE_BOOT
+    // Can't use esp_secure_boot_enabled() because that only checks the hardware if support is compiled in.
+    if (efuse_ll_get_secure_boot_v2_en()) {
+        esp_system_abort("Secure Boot v2 enabled but unsupported by firmware");
+    }
+#endif
+
 #if MODULE_DEBUG_AVAILABLE() && defined(DEBUG_FS_ENABLE)
     if (!esp_secure_boot_enabled()) {
         if (esp_ota_get_running_partition() == nullptr) {
