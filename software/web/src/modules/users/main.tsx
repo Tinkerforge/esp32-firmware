@@ -149,7 +149,11 @@ interface UsersState {
 
     editUser: User;
     editUserNfcTags: API.getType["nfc/config"]["authorized_tags"];
+//#if MODULE_EV_AVAILABLE
     editUserEvs: API.getType["ev/config"]["evs"];
+//#else
+    editUserEvs: {}[];
+//#endif
 }
 
 // This is a bit hacky: the user modification API can take some time because it writes the changed user/display name to flash
