@@ -26,14 +26,6 @@ let x = {
             "table_password": "Passwort",
 
             "add_user_title": "Benutzer hinzufügen",
-            "add_user_username": "Benutzername",
-            "add_user_username_desc": "zur Anmeldung beim Webinterface",
-            "add_user_display_name": "Anzeigename",
-            "add_user_display_name_desc":
-                "zur Anzeige im Ladelog und Webinterface",
-            "add_user_current": "Maximaler Ladestrom",
-            "add_user_password": "Passwort",
-            "add_user_password_desc": "Anmeldung deaktiviert",
             "add_user_message": /*SFN*/ (have: number, max: number) =>
                 `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "add_user_user_ids_exhausted":

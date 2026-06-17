@@ -26,13 +26,6 @@ let x = {
             "table_password": "Password",
 
             "add_user_title": "Add user",
-            "add_user_username": "Username",
-            "add_user_username_desc": "to log in to the web interface",
-            "add_user_display_name": "Display name",
-            "add_user_display_name_desc": "shown in web interface and charge log",
-            "add_user_current": "Maximum charge current",
-            "add_user_password": "Password",
-            "add_user_password_desc": "Login disabled",
             "add_user_message": /*SFN*/ (have: number, max: number) =>
                 `${have} of ${max} users configured` /*NF*/,
             "add_user_user_ids_exhausted":
