@@ -1,10 +1,5 @@
 #!/usr/bin/env -S uv run --active --script
 
-import tinkerforge_util as tfutil
-
-tfutil.create_parent_module(__file__, 'provisioning')
-
-from contextlib import contextmanager
 import getpass
 import json
 import os
@@ -16,6 +11,9 @@ import traceback
 import subprocess
 import datetime
 from tinkerforge_util.colored import red, green
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2

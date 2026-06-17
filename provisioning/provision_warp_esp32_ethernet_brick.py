@@ -1,36 +1,32 @@
 #!/usr/bin/env -S uv run --active --script
 
-import tinkerforge_util as tfutil
-
-tfutil.create_parent_module(__file__, 'provisioning')
-
-from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QPixmap, QColorConstants
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
-
+import shutil
 import io
 import os
 import signal
 import sys
 import time
 import traceback
-from threading import Thread, get_ident
+import threading
+import json
 from pathlib import Path
-import termios
-import fcntl
 import contextlib
 import queue
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QPixmap, QColorConstants
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
 from tinkerforge_util import colored
 from tinkerforge_util.colored import red, green
+import tinkerforge_util as tfutil
 
-from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
+tfutil.create_parent_module(__file__, 'provisioning')
+
+from provisioning.tinkerforge.ip_connection import IPConnection, Error
 from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
-
 from provisioning.provision_common.provision_common import *
-
 from provisioning.ntpserver import start_ntpserver
 
 main_thread = threading.get_ident()
@@ -654,7 +650,7 @@ def main():
     dns = config["dns"]
 
     print("Starting NTP server")
-    Thread(target=start_ntpserver,args=("0.0.0.0",1234)).start()
+    threading.Thread(target=start_ntpserver, args=("0.0.0.0", 1234)).start()
 
     print(f"Flashing {len(relay_to_serial)} ESPs...")
 

@@ -1,23 +1,16 @@
 from collections import namedtuple
-import contextlib
 from contextlib import contextmanager
 import datetime
-import io
-import json
 import os
 import re
 import secrets
-import shutil
-import socket
 import ssl
 import subprocess
 import sys
 import tempfile
 import threading
 import time
-import traceback
 import urllib.request
-import csv
 import fcntl
 from tinkerforge_util.colored import red, green
 

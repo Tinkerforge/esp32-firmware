@@ -1,10 +1,5 @@
 #!/usr/bin/env -S uv run --active --script
 
-import tinkerforge_util as tfutil
-
-tfutil.create_parent_module(__file__, 'provisioning')
-
-from contextlib import contextmanager
 import getpass
 import json
 import os
@@ -16,14 +11,15 @@ import traceback
 import subprocess
 import datetime
 from tinkerforge_util.colored import red, green
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
 from provisioning.tinkerforge.bricklet_warp_front_panel import BrickletWARPFrontPanel
-
 from provisioning.provision_common.provision_common import *
 from provisioning.provision_common.sdm_simulator import SDMSimulator
-
 from provisioning.provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
 
 WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')

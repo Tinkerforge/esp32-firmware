@@ -1,31 +1,18 @@
 #!/usr/bin/env -S uv run --active --script
 
+from contextlib import contextmanager
+import getpass
+import os
+import re
+import subprocess
+import sys
+import time
+from tinkerforge_util.colored import red, green
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
 
-import contextlib
-from contextlib import contextmanager
-import datetime
-import getpass
-import io
-import json
-import os
-import re
-import secrets
-import shutil
-import socket
-import ssl
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import urllib.request
-import csv
-from tinkerforge_util.colored import red, green
-
-from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.ip_connection import BASE58
 
 def fatal_error(*args):
     for line in args:

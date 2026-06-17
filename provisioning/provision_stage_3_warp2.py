@@ -1,9 +1,5 @@
 #!/usr/bin/env -S uv run --active --script
 
-import tinkerforge_util as tfutil
-
-tfutil.create_parent_module(__file__, 'provisioning')
-
 import datetime
 import sys
 import queue
@@ -12,9 +8,11 @@ import time
 import traceback
 import tkinter as tk
 import typing
-import subprocess
 import functools
 from tinkerforge_util.colored import red, green, blue
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
 
 from provisioning.tinkerforge.ip_connection import IPConnection
 from provisioning.tinkerforge.device_factory import create_device
@@ -28,10 +26,8 @@ from provisioning.tinkerforge.bricklet_led_strip_v2 import BrickletLEDStripV2
 from provisioning.tinkerforge.bricklet_color_v2 import BrickletColorV2
 from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
-
 from provisioning.provision_common.inventory import Inventory
-from provisioning.provision_common.provision_common import FatalError, fatal_error, my_input
-
+from provisioning.provision_common.provision_common import FatalError, fatal_error
 import provisioning.blackbox as blackbox
 
 IPCON_HOST = 'localhost'
