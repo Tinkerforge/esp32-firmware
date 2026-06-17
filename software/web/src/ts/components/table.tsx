@@ -124,6 +124,8 @@ export class Table extends Component<TableProps, TableState> {
     }
 
     render(props: TableProps, state: TableState) {
+        const show_button_column = props.onAddShow || props.rows.some(row => !row.hideRemoveButton || row.onEditShow);
+
         return (
             <>
                 <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block` + (props.invalid ? " border-danger" : "")}><Card.Body style="padding: 0; overflow-x: auto;">
@@ -135,11 +137,11 @@ export class Table extends Component<TableProps, TableState> {
                                 {props.columnNames.map((columnName) => (
                                     <th scope="col" style="vertical-align: middle;">{columnName}</th>
                                 ))}
-                                <th scope="col">
+                                {show_button_column ? <th scope="col">
                                     <Button size="sm" disabled style="visibility: hidden;">
                                         <Trash2/>
                                     </Button>
-                                </th>
+                                </th> : undefined}
                             </tr>
                         </thead>
                         : undefined}
@@ -160,6 +162,7 @@ export class Table extends Component<TableProps, TableState> {
                                                 </Button></span><span class="col">{value}</span></span> : value}
                                     </td>
                                 ))}
+                                {show_button_column ?
                                 <td class={row.extraValue ? "pb-0" : ""} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                     <Button variant="primary"
                                             size="sm"
@@ -186,6 +189,7 @@ export class Table extends Component<TableProps, TableState> {
                                         <Trash2/>
                                     </Button>
                                 </td>
+                                : undefined}
                             </tr>
                             {row.extraValue ?
                                 <tr key={row.extraKey} class="table-extra-value">
@@ -202,23 +206,27 @@ export class Table extends Component<TableProps, TableState> {
                                 </tr>
                                 : undefined}
                         </>)}
-                        {props.onAddShow ?
+                        {props.onAddShow || props.addMessage ?
                         <tr>
                             <td class="p-0"></td>
                             <td colSpan={props.columnNames.length} style={"vertical-align: middle; width: 100%;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
                                 {props.addMessage}
                             </td>
-                            <td style={"text-align: right; vertical-align: middle;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
-                                <Button variant="primary"
-                                        size="sm"
-                                        onClick={async () => {
-                                            await props.onAddShow();
-                                            this.setState({showAddModal: true});
-                                        }}
-                                        disabled={!props.addEnabled}>
-                                    <Plus/>
-                                </Button>
-                            </td>
+                            {show_button_column ?
+                                <td style={"text-align: right; vertical-align: middle;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
+                                {props.onAddShow ?
+                                    <Button variant="primary"
+                                            size="sm"
+                                            onClick={async () => {
+                                                await props.onAddShow();
+                                                this.setState({showAddModal: true});
+                                            }}
+                                            disabled={!props.addEnabled}>
+                                        <Plus/>
+                                    </Button>
+                                    : undefined}
+                                </td>
+                            : undefined}
                         </tr>
                         : undefined}
                     </tbody>
