@@ -118,8 +118,15 @@ void FactoryData::setup()
     data = perm_new_prefer<Data>(PSRAM, DRAM, _NONE);
 
     fs::LittleFSFS factorydata_fs;
+    bool factorydata_mounted;
 
-    if (!factorydata_fs.begin(false, "/factorydata", 10, "factorydata")) {
+    {
+        LogSilencer ls;
+
+        factorydata_mounted = factorydata_fs.begin(false, "/factorydata", 10, "factorydata");
+    }
+
+    if (!factorydata_mounted) {
         logger.printfln("Could not mount factorydata partition to read factory SKU");
     }
     else {
@@ -150,8 +157,15 @@ void FactoryData::register_urls()
 #if OPTIONS_FACTORY_DATA_ENABLE_WRITE_API()
     api.addCommand("factory_data/write", &write_config, {}, [this](Language language, String &errmsg) {
         fs::LittleFSFS factorydata_fs;
+        bool factorydata_mounted;
 
-        if (!factorydata_fs.begin(true, "/factorydata", 10, "factorydata")) {
+        {
+            LogSilencer ls;
+
+            factorydata_mounted = factorydata_fs.begin(true, "/factorydata", 10, "factorydata");
+        }
+
+        if (!factorydata_mounted) {
             errmsg = "Could not mount factorydata partition";
         }
         else {
@@ -201,9 +215,13 @@ size_t FactoryData::read_nfc_tags(NFCTag *nfc_tags)
 {
     fs::LittleFSFS factorydata_fs;
 
-    if (!factorydata_fs.begin(false, "/factorydata", 10, "factorydata")) {
-        logger.printfln("Could not mount factorydata partition to read factory NFC tags");
-        return 0;
+    {
+        LogSilencer ls;
+
+        if (!factorydata_fs.begin(false, "/factorydata", 10, "factorydata")) {
+            logger.printfln("Could not mount factorydata partition to read factory NFC tags");
+            return 0;
+        }
     }
 
     File nfc_tags_file = factorydata_fs.open("/nfc_tags");
