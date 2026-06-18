@@ -143,8 +143,8 @@ void Wifi::pre_setup()
     eap_config_prototypes[1] = {EapConfigID::TLS, Config::Object({
         {"ca_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"identity", Config::Str("", 0, 64)},
-        {"client_cert_id", Config::Int(0, 0, MAX_CERT_ID)},
-        {"client_key_id", Config::Int(0, 0, MAX_CERT_ID)}
+        {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)}
     })};
 
     eap_config_prototypes[2] = {EapConfigID::PEAP_TTLS, Config::Object({
@@ -212,6 +212,19 @@ void Wifi::pre_setup()
 
             if ((client_cert_id != -1 && client_key_id == -1) || (client_cert_id == -1 && client_key_id != -1)) {
                 return "Must provide both, a client certificate and a client key";
+            }
+        }
+
+        if (update.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::TLS) {
+            int client_cert_id = update.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
+            int client_key_id  = update.get("wpa_eap_config")->get()->get("client_key_id")->asInt();
+
+            if (client_cert_id == -1) {
+                return "Must provide a client certificate";
+            }
+
+            if (client_key_id == -1) {
+                return "Must provide a client key";
             }
         }
 
