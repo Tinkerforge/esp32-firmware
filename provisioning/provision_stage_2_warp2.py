@@ -21,6 +21,7 @@ from provisioning.tinkerforge.ip_connection import IPConnection, BASE58
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC, SimpleGetTagID
 from provisioning.tinkerforge.bricklet_evse_v2 import BrickletEVSEV2
 from provisioning.provision_common.provision_common import *
+from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
 
 evse = None

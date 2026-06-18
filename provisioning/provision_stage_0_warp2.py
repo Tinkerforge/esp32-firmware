@@ -23,8 +23,10 @@ def main():
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
 
     firmware_type = sys.argv[3]
-    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker", "warp3", "eltako"]:
+    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker", "warp3", "eltako", "warp4"]:
         fatal_error("Unknown firmware type {}".format(firmware_type))
+
+    secure_mode = firmware_type == "warp4"
 
     PORT = sys.argv[2]
 
@@ -41,16 +43,21 @@ def main():
     print("MAC Address is {}".format(mac_address))
     result["mac"] = mac_address
 
-    set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks()
+    if secure_mode:
+        mac_address_bytes = bytes([int(x, base=16) for x in mac_address.split(':')])
+    else:
+        mac_address_bytes = None
+
+    set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
     result["set_voltage_fuses"] = set_voltage_fuses
     result["set_block_3"] = set_block_3
 
     handle_voltage_fuses(set_voltage_fuses)
 
-    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase, offline=firmware_type == "eltako")
+    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase, offline=firmware_type == "eltako", secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
 
     print("Verifying eFuses")
-    _set_voltage_fuses, _set_block_3, _passphrase, _uid = get_espefuse_tasks()
+    _set_voltage_fuses, _set_block_3, _passphrase, _uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
     if _set_voltage_fuses:
         fatal_error("Failed to verify voltage eFuses! Are they burned in yet?")
 
@@ -83,7 +90,12 @@ def main():
         with open(os.path.join(device_dir, 'devnum'), 'r') as f:
             devnum = f.read().strip()
 
-        uid_number = base58decode(uid)
+        if secure_mode:
+            uid_number = zbase32decode(uid)
+            uid_base58 = base58encode(uid_number)
+        else:
+            uid_number = base58decode(uid)
+            uid_base58 = uid
 
         # include UID as base58 and base10 because Windows reports serial numbers as all
         # uppercase which mangles base58. only [A-Za-z0-9_] is allowed, other chars might stop
@@ -95,9 +107,9 @@ def main():
         # product name and will be capitalized and joined by a space to form the display name.
         # special care if given to "esp32" which is shown in uppercase
         if firmware_type == "esp32":
-            run(['sudo', './cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+            run(['sudo', './cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid_base58, uid_number), '-t', '0'])
         else:
-            run(['sudo', './cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+            run(['sudo', './cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid_base58, uid_number), '-t', '0'])
 
         result["cp2102n_configured"] = True
 

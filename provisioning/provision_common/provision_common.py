@@ -16,37 +16,12 @@ from tinkerforge_util.colored import red, green
 
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.provision_common.wifi_pass import calculate_passphrase
+from provisioning.provision_common.zbase32 import zbase32encode, zbase32decode, ZBASE32
 
 rnd = secrets.SystemRandom()
 
 PORT = None
-
-ZBASE32 = "ybndrfg8ejkmcpqxot1uwisza345h769"
-
-def zbase32encode(value):
-    encoded = ''
-
-    while value >= 32:
-        div, mod = divmod(value, 32)
-        encoded = ZBASE32[mod] + encoded
-        value = div
-
-    return BASE58[value] + encoded
-
-def zbase32decode(encoded):
-    value = 0
-    column_multiplier = 1
-
-    for c in encoded[::-1]:
-        try:
-            column = ZBASE32.index(c)
-        except ValueError:
-            raise Exception(f'Invalid character {repr(c)} in {repr(encoded)}')
-
-        value += column * column_multiplier
-        column_multiplier *= 32
-
-    return value
 
 def common_init(port):
     global PORT
@@ -207,7 +182,7 @@ def get_espefuse_tasks_with_two_int_format():
         fatal_error("Flash voltage efuses have unexpected value {}".format(voltage_fuses), "espefuse output was", '\n'.join(output))
 
     block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
-    passphrase, uid = block3_to_payload(block3_bytes, True)
+    passphrase, uid = block3_to_payload(block3_bytes, use_two_int_format=True)
 
     if passphrase == '1-1-1-1' and uid == '000-0000':
         have_to_set_block_3 = True
@@ -221,7 +196,9 @@ def get_espefuse_tasks_with_two_int_format():
     return have_to_set_voltage_fuses, have_to_set_block_3, passphrase, uid
 
 
-def get_espefuse_tasks(override_port=None):
+def get_espefuse_tasks(*, override_port=None, secure_mode=False, mac_address_bytes=None):
+    assert not secure_mode or mac_address_bytes != None
+
     have_to_set_voltage_fuses = False
     have_to_set_block_3 = False
 
@@ -267,37 +244,32 @@ def get_espefuse_tasks(override_port=None):
         fatal_error("Flash voltage efuses have unexpected value {}".format(voltage_fuses), "espefuse output was", '\n'.join(output))
 
     block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
-    passphrase, uid = block3_to_payload(block3_bytes)
 
-    if passphrase == '1-1-1-1' and uid == '1':
+    if secure_mode:
+        passphrase, uid = block3_to_payload_secure_mode(block3_bytes, mac_address_bytes)
+        passphrase_empty = calculate_passphrase(bytearray(32), mac_address_bytes)
+        uid_empty = 'y'
+        uid_pattern = '[{0}]{{3,7}}'.format(ZBASE32)
+    else:
+        passphrase, uid = block3_to_payload(block3_bytes)
+        passphrase_empty = '1-1-1-1'
+        uid_empty = '1'
+        uid_pattern = '[{0}]{{3,6}}'.format(BASE58)
+
+    if passphrase == passphrase_empty and uid == uid_empty:
         have_to_set_block_3 = True
     else:
         passphrase_invalid = re.match('[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}'.format(BASE58), passphrase) is None
-        uid_invalid = re.match('[{0}]{{3,6}}'.format(BASE58), uid) is None
+        uid_invalid = re.match(uid_pattern, uid) is None
         if passphrase_invalid or uid_invalid:
             fatal_error("Block 3 efuses have unexpected value {}".format(block3_bytes.hex()),
-                        "parsed passphrase and uid are {}; {}".format(passphrase, uid),
+                        "parsed values are passphrase={} and uid={}".format(passphrase, uid),
                         "espefuse output was",
                         '\n'.join(output))
 
     return have_to_set_voltage_fuses, have_to_set_block_3, passphrase, uid
 
-def payload_to_block3(passphrase, uid):
-    passphrase_bytes_list = [base58decode(chunk).to_bytes(3, byteorder='little') for chunk in passphrase.split('-')]
-
-    uid_bytes = base58decode(uid).to_bytes(4, byteorder='little')
-
-    binary = bytearray(32)
-    binary[7:10] = passphrase_bytes_list[0]
-    binary[10:12] = passphrase_bytes_list[1][0:2]
-    binary[20] = passphrase_bytes_list[1][2]
-    binary[21:23] = passphrase_bytes_list[2][0:2]
-    binary[24] = passphrase_bytes_list[2][2]
-    binary[25:28] = passphrase_bytes_list[3]
-    binary[28:32] = uid_bytes
-    return binary
-
-def block3_to_payload(block3, use_two_int_format=False):
+def block3_to_payload(block3, *, use_two_int_format=False):
     passphrase_bytes_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
     passphrase_bytes_list[0] = block3[7:10]
     passphrase_bytes_list[1][0:2] = block3[10:12]
@@ -308,14 +280,21 @@ def block3_to_payload(block3, use_two_int_format=False):
     uid_bytes = bytes(block3[28:32])
     passphrase_bytes_list = [bytes(chunk) for chunk in passphrase_bytes_list]
     passphrase = [base58encode(int.from_bytes(chunk, "little")) for chunk in passphrase_bytes_list]
+    uid_num = int.from_bytes(uid_bytes, "little")
     if use_two_int_format:
-        uid_num = int.from_bytes(uid_bytes, "little")
         uid1 = str(uid_num & 0xFF).zfill(3)
         uid2 = str((uid_num >> 8) & 0xFFFFFF).zfill(4)
         uid = uid1 + '-' + uid2
     else:
-        uid = base58encode(int.from_bytes(uid_bytes, "little"))
+        uid = base58encode(uid_num)
     passphrase = '-'.join(passphrase)
+    return passphrase, uid
+
+def block3_to_payload_secure_mode(block3, mac_address_bytes):
+    uid_bytes = bytes(block3[28:32])
+    uid_num = int.from_bytes(uid_bytes, "little")
+    uid = zbase32encode(uid_num)
+    passphrase = calculate_passphrase(block3, mac_address_bytes)
     return passphrase, uid
 
 def handle_voltage_fuses(set_voltage_fuses):
@@ -355,13 +334,22 @@ def sn_helper(next_uid_path):
 
     return sn
 
-def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
+def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_mode=False, mac_address_bytes=None):
+    assert not secure_mode or mac_address_bytes != None
+
     if not set_block_3:
         print("Block 3 eFuses already set. UID: {}, Passphrase valid".format(uid))
         return uid, passphrase
 
+    if secure_mode:
+        encode_uid = zbase32encode
+        decode_uid = zbase32decode
+    else:
+        encode_uid = base58encode
+        decode_uid = base58decode
+
     if offline:
-        uid = base58encode(sn_helper("/home/tester/next_uid.txt"))
+        uid = encode_uid(sn_helper("/home/tester/next_uid.txt"))
     else:
         print("Reading staging password")
         try:
@@ -386,36 +374,48 @@ def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
         urllib.request.install_opener(opener)
 
         print("Generating UID")
-        uid = base58encode(get_new_uid())
+        uid = encode_uid(get_new_uid())
 
-    print("Generating passphrase")
-    # smallest 4-char-base58 string is "2111" = 195112 ("ZZZ"(= 195111) + 1)
-    # largest 4-char-base58 string is "ZZZZ" = 11316495
-    # Directly selecting chars out of the BASE58 alphabet can result in numbers with leading 1s
-    # (those map to 0, so de- and reencoding will produce the same number without the leading 1)
-    wifi_passphrase = [base58encode(rnd.randint(base58decode("2111"), base58decode("ZZZZ"))) for i in range(4)]
+    if not secure_mode:
+        print("Generating passphrase")
+        # smallest 4-char-base58 string is "2111" = 195112 ("ZZZ"(= 195111) + 1)
+        # largest 4-char-base58 string is "ZZZZ" = 11316495
+        # Directly selecting chars out of the BASE58 alphabet can result in numbers with leading 1s
+        # (those map to 0, so de- and reencoding will produce the same number without the leading 1)
+        wifi_passphrase = [base58encode(rnd.randint(base58decode("2111"), base58decode("ZZZZ"))) for i in range(4)]
 
     print("UID: " + uid)
-    #print("Passphrase: {}-{}-{}-{}".format(*wifi_passphrase))
+
+    #if not secure_mode:
+    #    print("Passphrase: {}-{}-{}-{}".format(*wifi_passphrase))
 
     print("Generating efuse binary")
-    uid_bytes = base58decode(uid).to_bytes(4, byteorder='little')
-    passphrase_bytes_list = [base58decode(chunk).to_bytes(3, byteorder='little') for chunk in wifi_passphrase]
-
-    #56-95: 5 byte
-    #160-183: 3 byte
-    #192-255: 8 byte
-    # = 16 byte
-
-    # 4 byte (uid) + 3 byte * 4 (wifi_passphrase) = 16 byte
+    uid_bytes = decode_uid(uid).to_bytes(4, byteorder='little')
     binary = bytearray(32)
-    binary[7:10] = passphrase_bytes_list[0]
-    binary[10:12] = passphrase_bytes_list[1][0:2]
-    binary[20] = passphrase_bytes_list[1][2]
-    binary[21:23] = passphrase_bytes_list[2][0:2]
-    binary[24] = passphrase_bytes_list[2][2]
-    binary[25:28] = passphrase_bytes_list[3]
     binary[28:32] = uid_bytes
+
+    if not secure_mode:
+        passphrase_bytes_list = [base58decode(chunk).to_bytes(3, byteorder='little') for chunk in wifi_passphrase]
+
+        #56-95: 5 byte
+        #160-183: 3 byte
+        #192-255: 8 byte
+        # = 16 byte
+
+        # 4 byte (uid) + 3 byte * 4 (wifi_passphrase) = 16 byte
+        binary[7:10] = passphrase_bytes_list[0]
+        binary[10:12] = passphrase_bytes_list[1][0:2]
+        binary[20] = passphrase_bytes_list[1][2]
+        binary[21:23] = passphrase_bytes_list[2][0:2]
+        binary[24] = passphrase_bytes_list[2][2]
+        binary[25:28] = passphrase_bytes_list[3]
+
+        wifi_passphrase_str = '-'.join(wifi_passphrase)
+    else:
+        binary[2:23] = secrets.token_bytes(21)
+        binary[24:28] = secrets.token_bytes(4)
+
+        wifi_passphrase_str = calculate_passphrase(binary, mac_address_bytes)
 
     with temp_file() as (fd, name):
         with os.fdopen(fd, 'wb') as f:
@@ -424,7 +424,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
         print("Burning UID and Wifi passphrase eFuses")
         espefuse(["--do-not-confirm", "burn-block-data", "BLOCK3", name])
 
-    return uid, '-'.join(wifi_passphrase)
+    return uid, wifi_passphrase_str
 
 def handle_block3_fuses_with_two_int_format(set_block_3, uid):
     if not set_block_3:
