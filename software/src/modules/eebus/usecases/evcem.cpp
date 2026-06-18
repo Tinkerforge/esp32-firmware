@@ -137,8 +137,10 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
     milliamps_draw_phase[1] = amps_phase_2;
     milliamps_draw_phase[2] = amps_phase_3;
     if (power_phase_1 == EEBUS_NO_VALUE || power_phase_2 == EEBUS_NO_VALUE || power_phase_3 == EEBUS_NO_VALUE) {
-        monitorPowerSupported = false;
-        updateSupportedScenarios();
+        if (monitorPowerSupported) {
+            monitorPowerSupported = false;
+            updateSupportedScenarios();
+        }
     }else {
         if (!monitorPowerSupported) {
             monitorPowerSupported = true;
@@ -149,8 +151,10 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
     power_draw_phase[1] = power_phase_2;
     power_draw_phase[2] = power_phase_3;
     if (charged_wh == EEBUS_NO_VALUE) {
-        monitorEnergySupported = false;
-        updateSupportedScenarios();
+        if (monitorEnergySupported) {
+            monitorEnergySupported = false;
+            updateSupportedScenarios();
+        }
      } else {
         if (!monitorEnergySupported) {
             monitorEnergySupported = true;
