@@ -23,9 +23,9 @@
 #include "config.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters/imeter_generator.h"
-
-class MeterISO15118;
-enum class EVDataProtocol : uint8_t;
+#include "generated/ev_data_source.enum.h"
+#include "modules/meters/imeter.h"
+#include "meter_iso15118.h"
 
 class MetersISO15118 final : public IModule, public IMeterGenerator
 {
@@ -39,7 +39,7 @@ public:
     [[gnu::const]] const Config *get_state_prototype() override;
     [[gnu::const]] const Config *get_errors_prototype() override;
 
-    void update_values(float soc, float capacity, float power, EVDataProtocol protocol);
+    void update_values(float soc, float capacity, float power, EVDataSource source);
     void update_soc(float soc);
 
     void clear_values();

@@ -345,7 +345,7 @@ void ISO2::handle_charge_parameter_discovery_req()
     if (req->DC_EVChargeParameter_isUsed) {
         ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
     }
-    ev.session_updated(EVDataProtocol::ISO2);
+    ev.session_updated(EVDataSource::ISO2);
 #endif
 
     iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;

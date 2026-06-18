@@ -277,7 +277,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // Update EV data: only SOC, all other values would be for DC charging.
 #if MODULE_EV_AVAILABLE()
     ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
-    ev.session_updated(EVDataProtocol::DIN);
+    ev.session_updated(EVDataSource::DIN);
 #endif
 
     dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;

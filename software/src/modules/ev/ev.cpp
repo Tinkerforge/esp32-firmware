@@ -201,7 +201,7 @@ void Ev::register_urls()
             return;
         }
         set_soc(soc);
-        session_updated(EVDataProtocol::None);
+        session_updated(EVDataSource::API);
     }, true);
 
     api.addCommand("ev/inject_ev", &inject_ev, {"mac"}, [this](Language /*language*/, String &errmsg) {
@@ -425,7 +425,7 @@ void Ev::update_estimated_soc()
 #endif
 }
 
-void Ev::session_updated(EVDataProtocol protocol)
+void Ev::session_updated(EVDataSource source)
 {
     // Update API state with current session values
     state.get("soc")->updateFloat(session.soc);
@@ -436,7 +436,7 @@ void Ev::session_updated(EVDataProtocol protocol)
         session.soc,
         session.capacity,
         session.power,
-        protocol
+        source
     );
 #endif
 }

@@ -17,13 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_iso15118.h"
+#include "meters_iso15118.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "generated/ev_data_protocol.enum.h"
 #include "modules/meters/generated/meter_location.enum.h"
-#include "meters_iso15118.h"
 
 #include "gcc_warnings.h"
 
@@ -36,7 +34,7 @@ void MetersISO15118::pre_setup()
     });
 
     state_prototype = Config::Object({
-        {"protocol", Config::Enum(EVDataProtocol::None)}
+        {"source", Config::Enum(EVDataSource::None)}
     });
 
     errors_prototype = Config::Object({
@@ -80,19 +78,19 @@ const Config *MetersISO15118::get_errors_prototype()
     return &errors_prototype;
 }
 
-void MetersISO15118::update_values(float soc, float capacity, float power, EVDataProtocol protocol)
+void MetersISO15118::update_values(float soc, float capacity, float power, EVDataSource source)
 {
     if (!meter_instance) {
         return;
     }
 
-    if (protocol == EVDataProtocol::None) {
+    if (source == EVDataSource::None) {
         meter_instance->clear_all_values();
         return;
     }
 
     meter_instance->update_all_values(soc, capacity, power);
-    meter_instance->set_protocol(protocol);
+    meter_instance->set_source(source);
 }
 
 void MetersISO15118::update_soc(float soc)

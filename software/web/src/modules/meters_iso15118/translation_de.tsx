@@ -6,15 +6,16 @@ let x = {
             "meter_class": "Fahrzeug (ISO 15118)",
             "config_display_name": "Anzeigename",
             "config_location": "Messort",
-            "protocol": "Protokoll",
+            "source": "Quelle",
             "vehicle_display_name": "Fahrzeug"
         },
         "script": {
-            "protocol_no_ev": "Kein Fahrzeug verbunden",
-            "protocol_0": "IEC 61851",
-            "protocol_1": "DIN 70121",
-            "protocol_2": "ISO 15118-2",
-            "protocol_3": "ISO 15118-20"
+            "source_no_ev": "Kein Fahrzeug verbunden",
+            "source_0": "Keine Daten vorhanden",
+            "source_1": "API",
+            "source_2": "DIN 70121",
+            "source_3": "ISO 15118-2",
+            "source_4": "ISO 15118-20"
         }
     }
 }

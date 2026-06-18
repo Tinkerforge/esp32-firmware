@@ -910,7 +910,7 @@ void ISO20::handle_ac_charge_loop_req()
         ev.session.power = physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower);
     }
 
-    ev.session_updated(EVDataProtocol::ISO20);
+    ev.session_updated(EVDataSource::ISO20);
 #endif
 
     iso20AcDocEnc->AC_ChargeLoopRes_isUsed = 1;

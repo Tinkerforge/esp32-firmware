@@ -27,10 +27,10 @@
 #include "generated/module_available.h"
 
 #if MODULE_METERS_ISO15118_AVAILABLE()
-#include "modules/meters_iso15118/generated/ev_data_protocol.enum.h"
+#include "modules/meters_iso15118/generated/ev_data_source.enum.h"
 #else
 enum class EVDataProtocol : uint8_t {
-    None = 0
+    API = 1
 };
 #endif
 
@@ -68,7 +68,7 @@ public:
 
     void set_soc(float soc); // Overwrites current and initial soc
     void update_estimated_soc();
-    void session_updated(EVDataProtocol protocol); // Called after writing session fields.
+    void session_updated(EVDataSource source); // Called after writing session fields.
     void add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH]);
 
     EVSession session;

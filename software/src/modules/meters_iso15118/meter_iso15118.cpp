@@ -18,7 +18,6 @@
  */
 
 #include "meter_iso15118.h"
-#include "generated/ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -74,10 +73,10 @@ void MeterISO15118::clear_all_values()
     }
 
     meters.update_all_values(slot, values);
-    state->get("protocol")->updateEnum(EVDataProtocol::None);
+    state->get("source")->updateEnum(EVDataSource::None);
 }
 
-void MeterISO15118::set_protocol(EVDataProtocol protocol)
+void MeterISO15118::set_source(EVDataSource source)
 {
-    state->get("protocol")->updateEnum(protocol);
+    state->get("source")->updateEnum(source);
 }

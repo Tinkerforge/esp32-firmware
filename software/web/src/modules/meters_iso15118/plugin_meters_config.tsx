@@ -29,7 +29,7 @@ import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
-import { EVDataProtocol } from "./generated/ev_data_protocol.enum";
+import { EVDataSource } from "./generated/ev_data_source.enum";
 import * as API from "../../ts/api";
 
 export type ISO15118MetersConfig = [
@@ -70,23 +70,23 @@ export function pre_init() {
                 ];
             },
             get_extra_rows: (meter_slot: number) => {
-                let protocol = API.get_unchecked(`meters/${meter_slot}/state`)?.protocol;
-                let protocol_string: string;
-                if (protocol == null) {
-                    protocol_string = __("meters.script.reboot_required");
-                } else if (protocol == EVDataProtocol.None) {
+                let source = API.get_unchecked(`meters/${meter_slot}/state`)?.source;
+                let source_string: string;
+                if (source == null) {
+                    source_string = __("meters.script.reboot_required");
+                } else if (source == EVDataSource.None) {
                     let charger_state = API.get("evse/state").charger_state;
-                    protocol_string = charger_state == 0
-                        ? __("meters_iso15118.script.protocol_no_ev")
-                        : translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
+                    source_string = charger_state == 0
+                        ? __("meters_iso15118.script.source_no_ev")
+                        : translate_unchecked(`meters_iso15118.script.source_${source}`);
                 } else {
-                    protocol_string = translate_unchecked(`meters_iso15118.script.protocol_${protocol}`);
+                    source_string = translate_unchecked(`meters_iso15118.script.source_${source}`);
                 }
 
-                return <FormRow label={__("meters_iso15118.content.protocol")} small>
+                return <FormRow label={__("meters_iso15118.content.source")} small>
                     <div class="row gx-2 gy-1">
                         <div class="col-sm-4">
-                            <InputText class="form-control-sm" value={protocol_string}/>
+                            <InputText class="form-control-sm" value={source_string}/>
                         </div>
                     </div>
                 </FormRow>

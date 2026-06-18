@@ -24,7 +24,7 @@
 #include "config.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters/generated/meter_value_id.h"
-#include "generated/ev_data_protocol.enum.h"
+#include "generated/ev_data_source.enum.h"
 
 #define METER_ISO15118_VALUE_COUNT 3
 
@@ -40,7 +40,7 @@ public:
     void update_soc(float soc);
 
     void clear_all_values();
-    void set_protocol(EVDataProtocol protocol);
+    void set_source(EVDataSource source);
 
 private:
     uint32_t slot;
