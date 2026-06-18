@@ -27,7 +27,12 @@
 #include "generated/sku_type2.enum.h"
 #include "generated/sku_engraving.enum.h"
 
-#define SKU_STR_MAX_LEN 18 // WARP4-XX-XX-XXXX-X
+#define FACTORY_DATA_SKU_STR_MAX_LEN 18 // WARP4-XX-XX-XXXX-X
+
+#define FACTORY_DATA_NFC_TAG_MAX_COUNT 3
+
+#define FACTORY_DATA_NFC_TAG_ID_LENGTH 10
+#define FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH (FACTORY_DATA_NFC_TAG_ID_LENGTH * 3 - 1)
 
 class FactoryData final : public IModule
 {
@@ -44,6 +49,13 @@ public:
     inline SKUType2 get_sku_type2() const { return data->sku.type2; }
     inline SKUEngraving get_sku_engraving() const { return data->sku.engraving; }
 
+    struct NFCTag {
+        int8_t tag_type = -1;
+        char tag_id[FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH + 1] = "";
+    };
+
+    size_t read_nfc_tags(NFCTag *nfc_tags); // assumes nfc_tags to be &NFCTag[FACTORY_DATA_NFC_TAG_MAX_COUNT]
+
 private:
     struct SKU {
         SKUProduct product = SKUProduct::Unknown;
@@ -54,8 +66,8 @@ private:
     };
 
     struct Data {
-        char factory_sku_str[SKU_STR_MAX_LEN + 1] = "";
-        char sku_str[SKU_STR_MAX_LEN + 1] = "";
+        char factory_sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1] = "";
+        char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1] = "";
         SKU sku;
     };
 
@@ -63,8 +75,9 @@ private:
     void apply_config();
 
     ConfigRoot config;
+    Config nfc_tag_prototype;
     ConfigRoot state;
-    ConfigRoot write_sku_config;
+    ConfigRoot write_config;
 
     Data *data = nullptr;
 };
