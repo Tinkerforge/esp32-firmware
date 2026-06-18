@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h, Fragment } from "preact";
+import { h, Fragment, ComponentChild } from "preact";
 
 export function DeviceInfo() {
     if (!util.render_allowed())
@@ -42,10 +42,15 @@ export function DeviceInfo() {
     }
     let [version, timestamp] = API.get("info/version").firmware.split("+")
 
+    let sku: ComponentChild = API.get_unchecked("factory_data/state")?.sku
+    if (sku !== null)
+        sku = <><br/>{sku}</>
+
     return <div class="pt-2 mx-3 text-muted text-center border-top">
         <small>
         {name_and_type}
         <strong>{version}</strong>{"+" + timestamp}{uid}
+        {sku}
         </small>
     </div>;
 }
