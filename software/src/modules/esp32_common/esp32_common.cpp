@@ -265,7 +265,11 @@ void ESP32Common::register_urls()
         // Secure Boot enabled: SBv2 key can be checked/generated.
         server.on_HTTPThread("/esp32/check_sbv2", HTTP_GET, [this](WebServerRequest req) {
             const bool success = ESP32CommonSecureBoot::check_secure_boot_v2_key();
-            return req.send_plain(200, success ? "Success" : "Fail");
+            if (success) {
+                return req.send_plain(200, "Success");
+            } else {
+                return req.send_plain(500, "Fail");
+            }
         });
 
         // Flash encryption enabled (because Secure Boot is enabled) and data partition not encrypted: Data partition can be encrypted.
@@ -286,7 +290,7 @@ void ESP32Common::register_urls()
                 if (success) {
                     return req.send_plain(200, "Success");
                 } else {
-                    return req.send_plain(500, "Failure");
+                    return req.send_plain(500, "Fail");
                 }
             });
         }
@@ -306,7 +310,7 @@ void ESP32Common::register_urls()
                     return req.send_plain(200, "Success");
                 } else {
                     logger.printfln("Lockdown failed");
-                    return req.send_plain(500, "Failure");
+                    return req.send_plain(500, "Fail");
                 }
             });
         }
