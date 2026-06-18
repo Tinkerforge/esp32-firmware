@@ -218,7 +218,7 @@ void ChargeManager::pre_setup()
                                                 2 phase_switch_supported
                                                 3 phases (2)*/
         {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
-        {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
+        {"ae", Config::Uint(0, 0, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
         {"ls", Config::Uptime()},      // "last_switch_on"
         {"lp", Config::Uptime()},      // "just_plugged_in_timestamp"
         {"lw", Config::Uptime()},      // "last_wakeup"
