@@ -137,6 +137,10 @@ void evse_v2_button_recovery_handler()
 
     logger.printfln("Requested recovery stage %u.", stage);
 
+    // If this device is encrypted, don't allow access to PII without authentication.
+    bool is_encrypted = ESP32Common::is_encrypted();
+    logger.printfln("Flash is%s encrypted", is_encrypted ? "" : " not");
+
     if (stage != 3) {
         logger.printfln("Writing request for stage %u into EVSE RAM in case this boot-up fails.", stage + 1);
 
@@ -156,11 +160,11 @@ void evse_v2_button_recovery_handler()
     switch (stage) {
         // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth.
         case 0:
-            logger.printfln("Running stage 0: Resetting network configuration and disabling web interface login");
+            logger.printfln("Running stage 0: Resetting network configuration%s", is_encrypted ? "" : " and disabling web interface login");
 
             mount_or_format_data_partition();
 #if MODULE_USERS_AVAILABLE()
-            {
+            if (!is_encrypted) {
                 // We can't use api.restorePersistent config here,
                 // as we are before users module's pre_setup.
                 // users.config is not yet initialized so we can't
@@ -198,11 +202,15 @@ void evse_v2_button_recovery_handler()
             break;
         // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration
         case 1:
-            logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
-            mount_or_format_data_partition();
-            api.removeAllConfig();
-            LittleFS.end();
-            logger.printfln("Stage 1 done");
+            if (!is_encrypted) {
+                logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
+                mount_or_format_data_partition();
+                api.removeAllConfig();
+                LittleFS.end();
+                logger.printfln("Stage 1 done");
+            } else {
+                logger.printfln("Running stage 1: Encryption is enabled, doing nothing.");
+            }
             break;
         // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
         case 2:
