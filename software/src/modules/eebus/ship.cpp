@@ -743,11 +743,10 @@ ShipPeerHandler::ShipPeerHandler()
 
 std::shared_ptr<ShipNode> ShipPeerHandler::get_peer_by_ski(const String &ski)
 {
-    auto it = std::find_if(peers.begin(), peers.end(), [&ski](const std::shared_ptr<ShipNode> &n) {
-        return n->txt_ski == ski;
-    });
-    if (it != peers.end())
-        return *it;
+    for (const auto &n : peers) {
+        if (n->txt_ski.equalsIgnoreCase(ski))
+            return n;
+    }
     return nullptr;
 }
 
