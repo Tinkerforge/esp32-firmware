@@ -37,6 +37,7 @@
 #include <esp_partition.h>
 #include <esp_private/system_internal.h>
 #include <esp_secure_boot.h>
+#include <hal/efuse_hal.h>
 #include <soc/efuse_reg.h>
 #include <soc/efuse_struct.h>
 #include <spi_flash_chip_driver.h>
@@ -475,7 +476,7 @@ bool ESP32CommonEncryption::encrypt_bootloader_partition_table(const esp_partiti
         return false;
     }
 
-    const bool flash_encryption_enabled = efuse_ll_get_flash_crypt_cnt() != 0;
+    const bool flash_encryption_enabled = efuse_hal_flash_encryption_enabled();
     const uint32_t sector_size = running_partition->flash_chip->chip_drv->sector_size;
 
     const uint32_t bootloader_len_padded = align_up(bootloader_len, sector_size);
@@ -556,7 +557,7 @@ bool ESP32CommonEncryption::encrypt_bootloader_partition_table(const esp_partiti
         "app1",
         "coredump",
         //"data", // Don't mark as encrypted here. Encrypt after reboot.
-        "fdata", // TODO handle better
+        "factorydata",
     };
 
     for (size_t i = 0; i < std::size(encrypted_partition_labels); i++) {
@@ -672,17 +673,17 @@ bool ESP32CommonEncryption::burn_secure_encryption_fuses_restart()
 
 void ESP32CommonEncryption::encrypt_app_bootloader_partition_table(String *errmsg, bool deterministic)
 {
-    const uint32_t flash_crypt_cnt = efuse_ll_get_flash_crypt_cnt();
+    const bool flash_encryption_enabled = efuse_hal_flash_encryption_enabled();
     const bool secure_boot_enabled = esp_secure_boot_enabled();
 
-    if (flash_crypt_cnt != 0 || secure_boot_enabled) {
-        if (flash_crypt_cnt != 0 && secure_boot_enabled) {
-            logger.printfln("Encryption and Secure Boot already enabled? flash_crypt_cnt=%lu", flash_crypt_cnt);
+    if (flash_encryption_enabled || secure_boot_enabled) {
+        if (flash_encryption_enabled && secure_boot_enabled) {
+            logger.printfln("Encryption and Secure Boot already enabled?");
             return;
-        } else if (flash_crypt_cnt != 0 && !secure_boot_enabled) {
+        } else if (flash_encryption_enabled && !secure_boot_enabled) {
             logger.printfln("Encryption enabled but Secure Boot is not. Attempting resume.");
         } else {
-            logger.printfln("Encryption and Secure Boot inconsistent: flash_crypt_cnt=%lu secure_boot_enabled=%i", flash_crypt_cnt, secure_boot_enabled);
+            logger.printfln("Encryption and Secure Boot inconsistent: flash_encryption_enabled=%i secure_boot_enabled=%i", flash_encryption_enabled, secure_boot_enabled);
             *errmsg = "Encryption and Secure Boot inconsistent";
             return;
         }
@@ -712,18 +713,19 @@ void ESP32CommonEncryption::encrypt_app_bootloader_partition_table(String *errms
     }
 
     if (!erase_core_dump(errmsg)) {
+        *errmsg = "Failed to erase core dump partition";
         return;
     }
 
-    const bool flash_encryption_enabled = efuse_ll_get_flash_crypt_cnt() != 0;
-
     if (!flash_encryption_enabled) {
         if (!encrypt_app(errmsg, running_partition, running_app_number)) {
+            *errmsg = "Failed to encrypt app";
             return;
         }
     }
 
     if (!esp32_poke_main_thread()) {
+        *errmsg = "Failed to poke main thread";
         return;
     }
 
@@ -744,7 +746,7 @@ void ESP32CommonEncryption::encrypt_app_bootloader_partition_table(String *errms
 
 bool ESP32CommonEncryption::mark_and_erase_data_partition()
 {
-    const bool flash_encryption_enabled = efuse_ll_get_flash_crypt_cnt() != 0;
+    const bool flash_encryption_enabled = efuse_hal_flash_encryption_enabled();
 
     void *pt_buf = heap_caps_malloc(ESP_PARTITION_TABLE_SIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
