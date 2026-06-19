@@ -180,7 +180,7 @@ Abschaltzeit t   & {tests["zauto_L1"]["parameters"]["Fuse_t"].replace(".", ",")}
 
 \end{{multicols}}
 
-\vspace{{2mm}}
+\vspace{{{"1" if "iso15118_attenuation_profile" in report else "2"}mm}}
 \section*{{Messergebnis: RCD I}}
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
@@ -227,7 +227,7 @@ Erdungssystem                & {tests["rcdi_positive"]["parameters"]["Earthing_S
 
 \end{{multicols}}
 
-\vspace{{2mm}}
+\vspace{{{"1" if "iso15118_attenuation_profile" in report else "2"}mm}}
 \section*{{Messergebnis: R iso}}
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
@@ -261,7 +261,7 @@ Uiso & {tests["riso_L1"]["parameters"]["Uiso_INST_EE"]} \\
 
 \end{{multicols}}
 
-\vspace{{2mm}}
+\vspace{{{"1" if "iso15118_attenuation_profile" in report else "2"}mm}}
 \section*{{Messergebnis: R low}}
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
@@ -300,16 +300,17 @@ Strom           & {tests["rlow"]["parameters"]["RLow_Current_type"].replace("sta
 
 \end{{multicols}}
 
-\vspace{{2mm}}
-\section*{{Funktionsprüfung EVSE}}
+\vspace{{{"1" if "iso15118_attenuation_profile" in report else "2"}mm}}
+\section*{{Funktionsprüfung}}
 
 \begin{{tabularx}}{{\textwidth}}{{l >{{\raggedleft\arraybackslash}}X}}
 \toprule
+PP Erkennung (I\textsubscript{{max}})                  & bestanden \\
 IEC 61851 Status A -- Standby                          & bestanden \\
 IEC 61851 Status B -- EV erkannt, spannungslos         & bestanden \\
 IEC 61851 Status C -- Spannung liegt an, EV lädt       & bestanden \\
 IEC 61851 Status E -- Fehler, Ladevorgang unterbrochen & bestanden \\
-PP (I\textsubscript{{max}})                            & bestanden \\
+{r"ISO 15118 Kommunikation & bestanden \\" if "iso15118_attenuation_profile" in report else ""}
 \bottomrule
 \end{{tabularx}}
 
