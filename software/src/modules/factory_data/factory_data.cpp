@@ -142,6 +142,7 @@ void FactoryData::register_urls()
         }
 
         json.addObject();
+        json.addMemberBoolean("locked", OPTIONS_FACTORY_DATA_ENABLE_WRITE_API() ? false : true);
         json.addMemberString("sku", sku_str);
 
         NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT];
