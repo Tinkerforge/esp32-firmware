@@ -24,9 +24,6 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
-#include "tools/printf.h"
-#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -71,7 +68,7 @@ void FactoryData::pre_setup()
         SKU sku;
 
         if (strlen(sku_str) > 0 && !parse_sku(sku_str, &sku)) {
-            return "SKU override is malformed";
+            return "SKU is malformed";
         }
 
         if (source != ConfigSource::File) {
@@ -97,6 +94,7 @@ void FactoryData::pre_setup()
         {"tag_id", Config::Str("", 0, FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH)}
     });
 
+#if OPTIONS_FACTORY_DATA_ENABLE_WRITE_API()
     write_config = ConfigRoot{Config::Object({
         {"sku", Config::Str("", 0, FACTORY_DATA_SKU_STR_MAX_LEN)},
         {"nfc_tags", Config::Array(
@@ -116,16 +114,11 @@ void FactoryData::pre_setup()
 
         return validate_nfc_tags(static_cast<Config *>(update.get("nfc_tags")));
     }};
+#endif
 }
 
 void FactoryData::setup()
 {
-    data = perm_new_prefer<Data>(PSRAM, DRAM, _NONE);
-
-    if (!read_sku(data->factory_sku_str)) {
-        data->factory_sku_str[0] = '\0';
-    }
-
     api.restorePersistentConfig("factory_data/config", &config);
 
     apply_config();
@@ -144,7 +137,7 @@ void FactoryData::register_urls()
 
         char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1];
 
-        if (!read_sku(sku_str)) {
+        if (!read_factory_sku(sku_str)) {
             sku_str[0] = '\0';
         }
 
@@ -152,7 +145,7 @@ void FactoryData::register_urls()
         json.addMemberString("sku", sku_str);
 
         NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT];
-        size_t nfc_tag_count = read_nfc_tags(nfc_tags);
+        size_t nfc_tag_count = read_factory_nfc_tags(nfc_tags);
 
         json.addMemberArray("nfc_tags");
 
@@ -230,15 +223,12 @@ void FactoryData::register_urls()
         }
 
         factorydata_fs.end();
-
-        // apply new factory data
-        snprintf(data->factory_sku_str, sizeof(data->factory_sku_str), "%s", sku_str);
         apply_config();
     }, true);
 #endif
 }
 
-bool FactoryData::read_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1])
+bool FactoryData::read_factory_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1])
 {
     fs::LittleFSFS factorydata_fs;
 
@@ -266,7 +256,7 @@ bool FactoryData::read_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1])
     return read > 0;
 }
 
-size_t FactoryData::read_nfc_tags(NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT])
+size_t FactoryData::read_factory_nfc_tags(NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT])
 {
     fs::LittleFSFS factorydata_fs;
 
@@ -423,9 +413,11 @@ bool FactoryData::parse_sku(const char *sku_str, SKU *sku)
 
 void FactoryData::apply_config()
 {
+    char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1];
     SKU sku;
-    const char *sku_str = config.get("sku_override")->asEphemeralCStr();
     bool sku_valid = false;
+
+    snprintf(sku_str, sizeof(sku_str), "%s", config.get("sku_override")->asEphemeralCStr());
 
     if (strlen(sku_str) > 0) {
         sku_valid = parse_sku(sku_str, &sku);
@@ -439,7 +431,9 @@ void FactoryData::apply_config()
     }
 
     if (!sku_valid) {
-        sku_str = data->factory_sku_str;
+        if (!read_factory_sku(sku_str)) {
+            sku_str[0] = '\0';
+        }
 
         if (strlen(sku_str) == 0) {
             logger.printfln("Factory SKU is empty");
@@ -459,17 +453,14 @@ void FactoryData::apply_config()
     if (!sku_valid) {
         logger.printfln("No valid SKU available");
 
-        sku_str = "";
+        sku_str[0] = '\0';
         sku = SKU();
     }
 
-    snprintf(data->sku_str, sizeof(data->sku_str), "%s", sku_str);
-    data->sku = sku;
-
-    state.get("sku")->updateString(data->sku_str);
-    state.get("sku_product")->updateEnum(data->sku.product);
-    state.get("sku_model")->updateEnum(data->sku.model);
-    state.get("sku_material")->updateEnum(data->sku.material);
-    state.get("sku_type2")->updateEnum(data->sku.type2);
-    state.get("sku_engraving")->updateEnum(data->sku.engraving);
+    state.get("sku")->updateString(sku_str);
+    state.get("sku_product")->updateEnum(sku.product);
+    state.get("sku_model")->updateEnum(sku.model);
+    state.get("sku_material")->updateEnum(sku.material);
+    state.get("sku_type2")->updateEnum(sku.type2);
+    state.get("sku_engraving")->updateEnum(sku.engraving);
 }
