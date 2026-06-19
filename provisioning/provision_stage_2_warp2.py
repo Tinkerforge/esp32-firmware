@@ -696,13 +696,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print("\r3 NFC tags seen." + " " * 20)
     return seen_tags
 
-def main(stage3, scanner, result):
-    global host
-
-    result["start"] = now()
-
-    dprint("main")
-
+def pull_firmwares_git():
     github_reachable = True
     try:
         with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
@@ -718,6 +712,13 @@ def main(stage3, scanner, result):
             run(["git", "pull"])
 
     dprint("post git pull")
+
+def main(stage3, scanner, result):
+    global host
+
+    result["start"] = now()
+
+    dprint("main")
 
     result["serial"] = scanner.qr_serial
     result["qr_code"] = scanner.qr_charger_code
@@ -760,6 +761,8 @@ def main(stage3, scanner, result):
         if '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
         else:
+            pull_firmwares_git()
+
             firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
             firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
             firmware_path = os.path.join(firmware_directory, firmware_path)
@@ -949,6 +952,8 @@ def main(stage3, scanner, result):
 
         if evse_enum is None:
             fatal_error("No EVSE Bricklet found!")
+
+        pull_firmwares_git()
 
         evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
         evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
