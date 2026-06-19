@@ -711,7 +711,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
-            fatal_error('Wallbox not in IEC state A')
+            fatal_error('Charger not in IEC state A')
 
         print('Waiting DC protect calibration')
 
@@ -723,7 +723,7 @@ class Stage3:
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
             if not self.check_iec_state(cp_pe_state):
-                fatal_error('Wallbox not in IEC state ' + cp_pe_state)
+                fatal_error('Charger not in IEC state ' + cp_pe_state)
 
     def verify_evse_not_crashed(self):
         wall_clock_now = time.time()
@@ -849,7 +849,7 @@ class Stage3:
         blackbox.bb_disable()
 
     # requires power_on
-    def test_wallbox(self, report, has_phase_switch, is_warp2):
+    def test_charger(self, report, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
@@ -899,9 +899,9 @@ class Stage3:
 
             if not self.check_iec_state(state):
                 if state == 'D' and self.get_iec_state_function() == 'E':
-                    fatal_error('Wallbox not in IEC state {0}. If the DC fault protector has triggered, please check whether the CP wire is (wronly) placed in the DC fault protector ring.'.format(state))
+                    fatal_error('Charger not in IEC state {0}. If the DC fault protector has triggered, please check whether the CP wire is (wronly) placed in the DC fault protector ring.'.format(state))
 
-                fatal_error('Wallbox not in IEC state {0}'.format(state))
+                fatal_error('Charger not in IEC state {0}'.format(state))
 
             if self.has_evse_error_function():
                 if state != 'D':
@@ -933,7 +933,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
-            fatal_error('Wallbox not in IEC state A')
+            fatal_error('Charger not in IEC state A')
 
         self.verify_evse_not_crashed()
 
@@ -970,7 +970,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
         if not self.check_iec_state('C'):
-            fatal_error('Wallbox not in IEC state C')
+            fatal_error('Charger not in IEC state C')
 
         for phases in [['L1', 'L2'],
                        ['L1'],
@@ -1022,7 +1022,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
-            fatal_error('Wallbox not in IEC state A')
+            fatal_error('Charger not in IEC state A')
 
         print('Reconnecting PE')
 
@@ -1036,7 +1036,7 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('C'):
-            fatal_error('Wallbox not in IEC state C. Check contactor!')
+            fatal_error('Charger not in IEC state C. Check contactor!')
 
         self.change_meter_state('Type2-L1')
         time.sleep(RELAY_SETTLE_DURATION)
@@ -1209,7 +1209,7 @@ def main():
     stage3.setup()
 
     root = tk.Tk()
-    root.title('WARP2 Manual Control')
+    root.title('WARP Manual Control')
 
     buttons = []
 

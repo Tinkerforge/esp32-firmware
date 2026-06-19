@@ -200,7 +200,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
     result["jumper_config_checked"] = True
     if has_lock_switch:
-        fatal_error("Wallbox has lock switch. Is the diode missing?")
+        fatal_error("Charger has lock switch. Is the diode missing?")
 
     result["diode_checked"] = True
 
@@ -782,7 +782,7 @@ def main(stage3, scanner, result):
                     except urllib.error.HTTPError as e:
                         print("HTTP error", e)
                         if e.code == 423:
-                            fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
+                            fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
                         else:
                             fatal_error(e.read().decode("utf-8"))
                     except urllib.error.URLError as e:
@@ -792,7 +792,7 @@ def main(stage3, scanner, result):
                             time.sleep(3)
                         else:
                             if isinstance(e.reason, ConnectionResetError):
-                                fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
+                                fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
                             fatal_error("Can't flash firmware!")
 
                 time.sleep(3)
@@ -982,7 +982,7 @@ def main(stage3, scanner, result):
             browser.get("http://{}/#evse".format(host))
 
         print("Performing the electrical tests")
-        stage3.test_wallbox(result["electrical_tests"], has_phase_switch=generation >= 3, is_warp2=generation == 2)
+        stage3.test_charger(result["electrical_tests"], has_phase_switch=generation >= 3, is_warp2=generation == 2)
     finally:
         if browser is not None:
             browser.quit()
