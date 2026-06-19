@@ -20,6 +20,7 @@
 #include "factory_data.h"
 
 #include <LittleFS.h>
+#include <TFJson.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -28,6 +29,37 @@
 #include "tools/malloc.h"
 
 #include "gcc_warnings.h"
+
+static const char *validate_nfc_tags(Config *nfc_tags)
+{
+    size_t nfc_tags_count = nfc_tags->count();
+
+    for (size_t i = 0; i < nfc_tags_count; ++i) {
+        String nfc_tag_id_copy = nfc_tags->get(i)->get("tag_id")->asString();
+        nfc_tag_id_copy.toUpperCase();
+        nfc_tags->get(i)->get("tag_id")->updateString(nfc_tag_id_copy);
+
+        if (nfc_tag_id_copy.length() % 3 != 2) {
+            return "NFC tag ID has unexpected length";
+        }
+
+        for (size_t k = 0; k < nfc_tag_id_copy.length(); ++k) {
+            char c = nfc_tag_id_copy.charAt(k);
+
+            if ((k % 3) != 2 && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F'))) {
+                continue;
+            }
+
+            if ((k % 3) == 2 && c == ':') {
+                continue;
+            }
+
+            return "NFC tag ID contains unexpected character";
+        }
+    }
+
+    return "";
+}
 
 void FactoryData::pre_setup()
 {
@@ -71,8 +103,8 @@ void FactoryData::pre_setup()
             {},
             &nfc_tag_prototype,
             0, FACTORY_DATA_NFC_TAG_MAX_COUNT,
-            Config::type_id<Config::ConfObject>())
-        },
+            Config::type_id<Config::ConfObject>()
+        )},
     }),
     [this](Config &update, ConfigSource source) -> String {
         const char *sku_str = update.get("sku")->asEphemeralCStr();
@@ -82,34 +114,7 @@ void FactoryData::pre_setup()
             return "SKU is malformed";
         }
 
-        Config *nfc_tags = static_cast<Config *>(update.get("nfc_tags"));
-        size_t nfc_tags_count = nfc_tags->count();
-
-        for (size_t i = 0; i < nfc_tags_count; ++i) {
-            String nfc_tag_id_copy = nfc_tags->get(i)->get("tag_id")->asString();
-            nfc_tag_id_copy.toUpperCase();
-            nfc_tags->get(i)->get("tag_id")->updateString(nfc_tag_id_copy);
-
-            if (nfc_tag_id_copy.length() % 3 != 2) {
-                return "NFC tag ID has unexpected length";
-            }
-
-            for (size_t k = 0; k < nfc_tag_id_copy.length(); ++k) {
-                char c = nfc_tag_id_copy.charAt(k);
-
-                if ((k % 3) != 2 && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F'))) {
-                    continue;
-                }
-
-                if ((k % 3) == 2 && c == ':') {
-                    continue;
-                }
-
-                return "NFC tag ID contains unexpected character";
-            }
-        }
-
-        return "";
+        return validate_nfc_tags(static_cast<Config *>(update.get("nfc_tags")));
     }};
 }
 
@@ -117,29 +122,8 @@ void FactoryData::setup()
 {
     data = perm_new_prefer<Data>(PSRAM, DRAM, _NONE);
 
-    fs::LittleFSFS factorydata_fs;
-    bool factorydata_mounted;
-
-    {
-        LogSilencer ls;
-
-        factorydata_mounted = factorydata_fs.begin(false, "/factorydata", 10, "factorydata");
-    }
-
-    if (!factorydata_mounted) {
-        logger.printfln("Could not mount factorydata partition to read factory SKU");
-    }
-    else {
-        File sku_file = factorydata_fs.open("/sku");
-        size_t read = sku_file.read(reinterpret_cast<uint8_t *>(data->factory_sku_str), std::size(data->factory_sku_str));
-        data->factory_sku_str[read] = '\0';
-        sku_file.close();
-
-        if (read == 0) {
-            logger.printfln("Could not read factory SKU");
-        }
-
-        factorydata_fs.end();
+    if (!read_sku(data->factory_sku_str)) {
+        data->factory_sku_str[0] = '\0';
     }
 
     api.restorePersistentConfig("factory_data/config", &config);
@@ -154,64 +138,135 @@ void FactoryData::register_urls()
     api.addPersistentConfig("factory_data/config", &config);
     api.addState("factory_data/state", &state);
 
+    server.on("/factory_data/read", HTTP_GET, [this](WebServerRequest request) {
+        char json_buf[256] = "";
+        TFJsonSerializer json{json_buf, sizeof(json_buf)};
+
+        char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1];
+
+        if (!read_sku(sku_str)) {
+            sku_str[0] = '\0';
+        }
+
+        json.addObject();
+        json.addMemberString("sku", sku_str);
+
+        NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT];
+        size_t nfc_tag_count = read_nfc_tags(nfc_tags);
+
+        json.addMemberArray("nfc_tags");
+
+        for (size_t i = 0; i < nfc_tag_count; ++i) {
+            json.addObject();
+            json.addMemberNumber("tag_type", nfc_tags[i].tag_type);
+            json.addMemberString("tag_id", nfc_tags[i].tag_id);
+            json.endObject();
+        }
+
+        json.endArray();
+        json.endObject();
+        json.end();
+
+        return request.send_json(200, json);
+    });
+
 #if OPTIONS_FACTORY_DATA_ENABLE_WRITE_API()
     api.addCommand("factory_data/write", &write_config, {}, [this](Language language, String &errmsg) {
         fs::LittleFSFS factorydata_fs;
-        bool factorydata_mounted;
 
         {
             LogSilencer ls;
 
-            factorydata_mounted = factorydata_fs.begin(true, "/factorydata", 10, "factorydata");
-        }
-
-        if (!factorydata_mounted) {
-            errmsg = "Could not mount factorydata partition";
-        }
-        else {
-            const char *sku_str = write_config.get("sku")->asEphemeralCStr();
-            size_t sku_str_len = strlen(sku_str);
-
-            File sku_file = factorydata_fs.open("/sku", FILE_WRITE);
-            size_t written = sku_file.write(reinterpret_cast<const uint8_t *>(sku_str), sku_str_len);
-            sku_file.close();
-
-            if (written != sku_str_len) {
-                errmsg = "Could not write factory SKU";
-                factorydata_fs.end();
+            if (!factorydata_fs.begin(true, "/factorydata", 10, "factorydata")) {
+                errmsg = "Could not mount factorydata partition to write factory data";
                 return;
             }
+        }
 
-            Config *nfc_tags = static_cast<Config *>(write_config.get("nfc_tags"));
-            size_t nfc_tags_count = nfc_tags->count();
-            char nfc_tags_str[(1 + 1 + FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH + 1) * FACTORY_DATA_NFC_TAG_MAX_COUNT + 1];
-            size_t nfc_tags_str_len = 0;
+        // SKU
+        if (factorydata_fs.exists("/sku.tmp")) {
+            factorydata_fs.remove("/sku.tmp");
+        }
 
-            for (size_t i = 0; i < nfc_tags_count; ++i) {
-                nfc_tags_str_len += snprintf_u(nfc_tags_str + nfc_tags_str_len, sizeof(nfc_tags_str) - nfc_tags_str_len, "%u %s\n",
-                                               nfc_tags->get(i)->get("tag_type")->asUint8(),
-                                               nfc_tags->get(i)->get("tag_id")->asEphemeralCStr());
-            }
+        const char *sku_str = write_config.get("sku")->asEphemeralCStr();
+        size_t sku_str_len = strlen(sku_str);
+        File sku_file = factorydata_fs.open("/sku.tmp", FILE_WRITE);
+        size_t written = sku_file.write(reinterpret_cast<const uint8_t *>(sku_str), sku_str_len);
+        sku_file.close();
 
-            File nfc_tags_file = factorydata_fs.open("/nfc_tags", FILE_WRITE);
-            written = nfc_tags_file.write(reinterpret_cast<const uint8_t *>(nfc_tags_str), nfc_tags_str_len);
-            nfc_tags_file.close();
-
-            if (written != nfc_tags_str_len) {
-                errmsg = "Could not write factory NFC tags";
-                factorydata_fs.end();
-                return;
-            }
-
-            snprintf(data->factory_sku_str, std::size(data->factory_sku_str), "%s", sku_str);
-            apply_config();
+        if (written != sku_str_len) {
+            errmsg = "Could not write factory SKU file";
             factorydata_fs.end();
+            return;
         }
+
+        if (factorydata_fs.exists("/sku")) {
+            factorydata_fs.remove("/sku");
+        }
+
+        if (!factorydata_fs.rename("/sku.tmp", "/sku")) {
+            errmsg = "Could not rename factory SKU file";
+            factorydata_fs.end();
+            return;
+        }
+
+        // NFC tags
+        if (factorydata_fs.exists("/nfc_tags.tmp")) {
+            factorydata_fs.remove("/nfc_tags.tmp");
+        }
+
+        File nfc_tags_file = factorydata_fs.open("/nfc_tags.tmp", FILE_WRITE);
+        static_cast<Config *>(write_config.get("nfc_tags"))->save_to_file(nfc_tags_file);
+        nfc_tags_file.close();
+
+        if (factorydata_fs.exists("/nfc_tags")) {
+            factorydata_fs.remove("/nfc_tags");
+        }
+
+        if (!factorydata_fs.rename("/nfc_tags.tmp", "/nfc_tags")) {
+            errmsg = "Could not rename factory NFC tags file";
+            factorydata_fs.end();
+            return;
+        }
+
+        factorydata_fs.end();
+
+        // apply new factory data
+        snprintf(data->factory_sku_str, sizeof(data->factory_sku_str), "%s", sku_str);
+        apply_config();
     }, true);
 #endif
 }
 
-size_t FactoryData::read_nfc_tags(NFCTag *nfc_tags)
+bool FactoryData::read_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1])
+{
+    fs::LittleFSFS factorydata_fs;
+
+    {
+        LogSilencer ls;
+
+        if (!factorydata_fs.begin(false, "/factorydata", 10, "factorydata")) {
+            logger.printfln("Could not mount factorydata partition to read factory SKU");
+            return false;
+        }
+    }
+
+    if (!factorydata_fs.exists("/sku")) {
+        factorydata_fs.end();
+        logger.printfln("Factory SKU is missing");
+        return false;
+    }
+
+    File sku_file = factorydata_fs.open("/sku");
+    size_t read = sku_file.read(reinterpret_cast<uint8_t *>(sku_str), FACTORY_DATA_SKU_STR_MAX_LEN);
+    sku_str[read] = '\0';
+    sku_file.close();
+    factorydata_fs.end();
+
+    return read > 0;
+}
+
+size_t FactoryData::read_nfc_tags(NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT])
 {
     fs::LittleFSFS factorydata_fs;
 
@@ -224,83 +279,36 @@ size_t FactoryData::read_nfc_tags(NFCTag *nfc_tags)
         }
     }
 
-    File nfc_tags_file = factorydata_fs.open("/nfc_tags");
-    char nfc_tags_str[(1 + 1 + FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH + 1) * FACTORY_DATA_NFC_TAG_MAX_COUNT + 1];
-    size_t read = nfc_tags_file.read(reinterpret_cast<uint8_t *>(nfc_tags_str), sizeof(nfc_tags_str));
-    nfc_tags_str[read] = '\0';
-    nfc_tags_file.close();
-    factorydata_fs.end();
-
-    if (read == 0) {
+    if (!factorydata_fs.exists("/nfc_tags")) {
+        factorydata_fs.end();
+        logger.printfln("Factory NFC tags are missing");
         return 0;
     }
 
-    size_t nfc_tags_count = 0;
-    char *p = nfc_tags_str;
+    ConfigRoot nfc_tags_config = ConfigRoot{Config::Array(
+        {},
+        &nfc_tag_prototype,
+        0, FACTORY_DATA_NFC_TAG_MAX_COUNT,
+        Config::type_id<Config::ConfObject>()
+    ),
+    [this](Config &update, ConfigSource source) -> String {
+        return validate_nfc_tags(&update);
+    }};
 
-    while (*p != '\0' && nfc_tags_count < FACTORY_DATA_NFC_TAG_MAX_COUNT) {
-        if (*p < '0' || *p > '5') {
-            logger.printfln("Factory NFC tags file is malformed, NFC tag type missing: %s", nfc_tags_str);
-            return 0;
-        }
+    String error = nfc_tags_config.update_from_file(factorydata_fs.open("/nfc_tags"));
 
-        nfc_tags[nfc_tags_count].tag_type = static_cast<int8_t>(*p - '0');
+    factorydata_fs.end();
 
-        ++p;
-
-        if (*p != ' ') {
-            logger.printfln("Factory NFC tags file is malformed, space missing: %s", nfc_tags_str);
-            return 0;
-        }
-
-        ++p;
-
-        char *n = strchr(p, '\n');
-
-        if (n == nullptr) {
-            logger.printfln("Factory NFC tags file is malformed, newline missing: %s", nfc_tags_str);
-            return 0;
-        }
-
-        size_t nfc_tag_id_len = static_cast<size_t>(n - p);
-
-        if (nfc_tag_id_len == 0) {
-            logger.printfln("Factory NFC tags file is malformed, NFC tag ID missing: %s", nfc_tags_str);
-            return 0;
-        }
-
-        if (nfc_tag_id_len % 3 != 2) {
-            logger.printfln("Factory NFC tags file is malformed, NFC tag ID has unexpected length: %s", nfc_tags_str);
-            return 0;
-        }
-
-        for (size_t i = 0; i < nfc_tag_id_len; ++i) {
-            char *q = p + i;
-
-            *q = static_cast<char>(toupper(*q));
-
-            char c = *q;
-
-            if ((i % 3) != 2 && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F'))) {
-                continue;
-            }
-
-            if ((i % 3) == 2 && c == ':') {
-                continue;
-            }
-
-            logger.printfln("Factory NFC tags file is malformed, NFC tag ID has unexpected character: %s", nfc_tags_str);
-            return 0;
-        }
-
-        snprintf(nfc_tags[nfc_tags_count].tag_id, sizeof(nfc_tags[nfc_tags_count].tag_id), "%.*s", static_cast<int>(nfc_tag_id_len), p);
-
-        p = n + 1;
-        ++nfc_tags_count;
+    if (!error.isEmpty()) {
+        logger.printfln("Could not read factory NFC tags: %s", error.c_str());
+        return 0;
     }
 
-    if (*p != '\0') {
-        logger.printfln("Factory NFC tags file has trailing data: %s", p);
+    size_t nfc_tags_count = nfc_tags_config.count();
+
+    for (size_t i = 0; i < nfc_tags_count; ++i) {
+        nfc_tags[i].tag_type = nfc_tags_config.get(i)->get("tag_type")->asUint8();
+        snprintf(nfc_tags[i].tag_id, sizeof(nfc_tags[i].tag_id), "%s", nfc_tags_config.get(i)->get("tag_id")->asEphemeralCStr());
     }
 
     return nfc_tags_count;
@@ -455,7 +463,7 @@ void FactoryData::apply_config()
         sku = SKU();
     }
 
-    snprintf(data->sku_str, std::size(data->sku_str), "%s", sku_str);
+    snprintf(data->sku_str, sizeof(data->sku_str), "%s", sku_str);
     data->sku = sku;
 
     state.get("sku")->updateString(data->sku_str);

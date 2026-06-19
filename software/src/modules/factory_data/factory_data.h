@@ -50,11 +50,12 @@ public:
     inline SKUEngraving get_sku_engraving() const { return data->sku.engraving; }
 
     struct NFCTag {
-        int8_t tag_type = -1;
+        uint8_t tag_type = 255;
         char tag_id[FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH + 1] = "";
     };
 
-    size_t read_nfc_tags(NFCTag *nfc_tags); // assumes nfc_tags to be &NFCTag[FACTORY_DATA_NFC_TAG_MAX_COUNT]
+    bool read_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1]);
+    size_t read_nfc_tags(NFCTag nfc_tags[FACTORY_DATA_NFC_TAG_MAX_COUNT]);
 
 private:
     struct SKU {
