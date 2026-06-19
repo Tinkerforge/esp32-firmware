@@ -885,7 +885,10 @@ def main(stage3, scanner, result):
                                              headers={"Content-Type": "application/json"})
                 try:
                     with urllib.request.urlopen(req, timeout=6) as f:
-                        print(f.read())
+                        response = f.read()
+
+                    if len(response) > 0:
+                        print(response)
                 except urllib.error.HTTPError as e:
                     fatal_error("Failed to configure user {}: {} {}".format(i, e, e.read()))
                 except Exception as e:
@@ -917,7 +920,10 @@ def main(stage3, scanner, result):
                                      headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=1) as f:
-                f.read()
+                response = f.read()
+
+            if len(response) > 0:
+                print(response)
         except urllib.error.HTTPError as e:
             fatal_error("Failed to configure NFC tags: {} {}".format(e, e.read()))
         except Exception as e:
