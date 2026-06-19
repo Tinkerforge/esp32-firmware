@@ -11,6 +11,7 @@ import urllib.request
 import csv
 import traceback
 from pathlib import Path
+from collections import namedtuple
 from selenium import webdriver
 from tinkerforge_util.colored import red, green, blink
 import tinkerforge_util as tfutil
@@ -142,7 +143,6 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
         result["front_panel_led_tested"] = True
 
-    seen_tags = []
     if is_smart or is_pro:
         if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
             def download_seen_tags():
@@ -159,7 +159,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
                 return local_seen_tags
 
-            seen_tags = collect_nfc_tag_ids(stage3, download_seen_tags, True)
+            collect_nfc_tag_ids(stage3, download_seen_tags, True, expected_count=1)
         else:
             with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(host), timeout=3) as f:
                 nfc_str = f.read()
@@ -171,7 +171,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
                nfc_data[0]['last_seen'] > 100:
                 fatal_error("Did not find NFC tag: {}".format(nfc_str))
 
-    d = {"P": "Pro", "S": "Smart", "B": "Basic"}
+    d = {"E": "Eichrecht", "P": "Pro", "S": "Smart", "B": "Basic"}
 
     if is_basic and scanner.qr_variant != "B":
         fatal_error("Scanned QR code implies variant {}, but detected was Basic (i.e. a Master Brick was found)".format(d[scanner.qr_variant]))
@@ -246,8 +246,6 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
             stage3.beep_notify()
             while my_input(f'Energy meter reports {meter_data["energy_abs"]:.3f} kWh. Only < 1 kWh is allowed. Check if this is okay and press y + return to continue') != "y":
                 pass
-
-    return seen_tags
 
 def exists_evse_test_report(evse_uid):
     global generation
@@ -328,8 +326,8 @@ def reset_evse():
 class Scanner:
     def __init__(self):
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-        pattern_4 = r'^T:WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
-        pattern_3_2 = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
 
         self.qr_charger_code = my_input("Scan the charger QR code:")
         m_4 = re.match(pattern_4, self.qr_charger_code)
@@ -343,40 +341,42 @@ class Scanner:
                 m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
 
         if m_4 != None:
-            self.qr_gen = m_4.group(1)
-            self.qr_variant = m_4.group(2)
+            self.qr_sku = m_4.group(1)
+            self.qr_gen = m_4.group(2)
+            self.qr_variant = m_4.group(3)
 
-            if m_4.group(4).startswith('11'):
+            if m_4.group(5).startswith('11'):
                 self.qr_power = '11'
-            elif m_4.group(4).startswith('22'):
+            elif m_4.group(5).startswith('22'):
                 self.qr_power = '22'
-            elif m_4.group(4) == 'CC':
+            elif m_4.group(5) == 'CC':
                 self.qr_power = 'CC'
 
-            if m_4.group(4).endswith('50'):
+            if m_4.group(5).endswith('50'):
                 self.qr_cable_len = '50'
-            elif m_4.group(4).endswith('75'):
+            elif m_4.group(5).endswith('75'):
                 self.qr_cable_len = '75'
-            elif m_4.group(4) == 'CC':
+            elif m_4.group(5) == 'CC':
                 self.qr_cable_len = 'CC'
 
-            self.qr_material = m_4.group(3)
-            self.qr_custom_engraving = m_4.group(5) == 'C'
-            self.qr_hw_version = m_4.group(6)
-            self.qr_serial = m_4.group(7)
-            self.qr_built = m_4.group(8)
-            self.qr_accessories = m_4.group(9)
+            self.qr_material = m_4.group(4)
+            self.qr_custom_engraving = m_4.group(6) == 'C'
+            self.qr_hw_version = m_4.group(7)
+            self.qr_serial = m_4.group(8)
+            self.qr_built = m_4.group(9)
+            self.qr_accessories = m_4.group(10)
         else:
-            self.qr_gen = m_3_2.group(1)
-            self.qr_variant = m_3_2.group(2)
-            self.qr_power = m_3_2.group(3)
-            self.qr_cable_len = m_3_2.group(4)
-            self.qr_material = m_3_2.group(5) if m_3_2.group(5) != None else 'SS'
+            self.qr_sku = m_3_2.group(1)
+            self.qr_gen = m_3_2.group(2)
+            self.qr_variant = m_3_2.group(3)
+            self.qr_power = m_3_2.group(4)
+            self.qr_cable_len = m_3_2.group(5)
+            self.qr_material = m_3_2.group(6) if m_3_2.group(6) != None else 'SS'
             self.qr_custom_engraving = '?'
-            self.qr_hw_version = m_3_2.group(6)
-            self.qr_serial = m_3_2.group(7)
-            self.qr_built = m_3_2.group(8)
-            self.qr_accessories = m_3_2.group(9)
+            self.qr_hw_version = m_3_2.group(7)
+            self.qr_serial = m_3_2.group(8)
+            self.qr_built = m_3_2.group(9)
+            self.qr_accessories = m_3_2.group(10)
 
         if self.qr_accessories == None:
             self.qr_accessories = '0'
@@ -670,31 +670,26 @@ def connect_to_ethernet(ssid, url):
     orig_print(" Connected.")
     return result, host
 
-def collect_nfc_tag_ids(stage3, getter, beep_notify):
+TagInfo = namedtuple('TagInfo', 'tag_type tag_id')
+
+def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
     print(green("Waiting for NFC tags"), end="")
     seen_tags = []
     last_len = 0
-    start_blink(3)
-    while len(seen_tags) < 3:
+    start_blink(expected_count)
+    while len(seen_tags) < expected_count:
         seen_tags = [x for x in getter() if any(y != 0 for y in x.tag_id)]
         if len(seen_tags) != last_len:
             if beep_notify:
                 stage3.beep_notify()
-            if len(seen_tags) == 0:
-                start_blink(3)
-            elif len(seen_tags) == 1:
-                start_blink(2)
-            elif len(seen_tags) == 2:
-                start_blink(1)
-            else:
-                start_blink(0)
+            start_blink(max(expected_count - len(seen_tags), 0))
             last_len = len(seen_tags)
         print("\r" + green("Waiting for NFC tags. {} seen".format(len(seen_tags))), end="")
         blink_tick(stage3)
         time.sleep(0.1)
     stop_blink(stage3)
-    print("\r3 NFC tags seen." + " " * 20)
-    return seen_tags
+    print(f"\r{expected_count} NFC tag{'s' if expected_count != 1 else ''} seen." + " " * 20)
+    return [TagInfo(x.tag_type, ":".join("{:02X}".format(i) for i in x.tag_id)) for x in seen_tags]
 
 def pull_firmwares_git():
     github_reachable = True
@@ -735,15 +730,14 @@ def main(stage3, scanner, result):
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
-        elif scanner.qr_gen in ("3", "4"):
+        elif generation >= 3:
             stage3.power_on('Smart')
         else:
-            stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
+            stage3.power_on({"S": "Smart", "P": "Pro", "E": "Eichrecht"}[scanner.qr_variant])
 
         dprint("pre nfc tags")
 
-        if scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0':
-            seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
+        tag_infos = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
         dprint("post nfc tags")
 
@@ -752,11 +746,71 @@ def main(stage3, scanner, result):
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
         host = ssid + ".local"
-
         info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
 
         dprint("post version fetch")
+
+        if generation >= 4:
+            try:
+                with urllib.request.urlopen(f"http://{host}/factory_data/read", timeout=5) as f:
+                    factory_data = json.loads(f.read())
+            except urllib.error.HTTPError as e:
+                fatal_error(f"Failed to read factory data: {e} {e.read()}")
+            except Exception as e:
+                fatal_error(f"Failed to read factory data: {e}")
+
+            if not factory_data.locked:
+                print("Writing factory data")
+                req = urllib.request.Request("http://{}/factory_data/write".format(host),
+                                            data=json.dumps({
+                                                "sku": scanner.qr_sku,
+                                                "nfc_tags": [
+                                                    {"tag_type": tag_infos[0].tag_type, "tag_id": tag_infos[0].tag_id},
+                                                    {"tag_type": tag_infos[1].tag_type, "tag_id": tag_infos[1].tag_id},
+                                                    {"tag_type": tag_infos[2].tag_type, "tag_id": tag_infos[2].tag_id},
+                                                ]
+                                            }).encode("utf-8"),
+                                            method='PUT',
+                                            headers={"Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=1) as f:
+                        response = f.read()
+
+                    if len(response) > 0:
+                        print(response)
+                except urllib.error.HTTPError as e:
+                    fatal_error(f"Failed to write factory data: {e} {e.read()}")
+                except Exception as e:
+                    fatal_error(f"Failed to write factory data: {e}")
+
+                result["factory_data_written"] = True
+                validate_factory_data = True
+
+                dprint("post factory data write")
+            else:
+                print("Factory data is already locked")
+
+                if factory_data.sku != scanner.qr_sku:
+                    fatal_error(f"Mismatch between already locked factory data SKU {factory_data.sku} and scanned SKU {scanner.qr_sku}")
+
+                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data.nfc_tags]
+
+                # FIXME: how to deal with a repaired charger that might have come back without its original NFC tags?
+                if set(factory_tag_infos) != set(tag_infos):
+                    fatal_error(f"Mismatch between already locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
+
+                # use factory_tag_infos even if they match as a set with the seen ones,
+                # but the order might be different. preserve the tag to user assignment order
+                tag_infos = factory_tag_infos
+
+                print("Already locked factory data is matching")
+
+                result["factory_data_written"] = False
+                result["factory_data_validated"] = True
+                validate_factory_data = False
+
+                dprint("post factory data validate")
 
         if '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
@@ -807,12 +861,37 @@ def main(stage3, scanner, result):
             else:
                 print("Flashed firmware is up-to-date.")
 
-        dprint("post firmware update")
-
         result["firmware_version"] = info_version['firmware']
 
-        host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
+        dprint("post firmware update")
 
+        if generation >= 4 and validate_factory_data:
+            try:
+                with urllib.request.urlopen(f"http://{host}/factory_data/read", timeout=5) as f:
+                    factory_data = json.loads(f.read())
+            except urllib.error.HTTPError as e:
+                fatal_error(f"Failed to read factory data: {e} {e.read()}")
+            except Exception as e:
+                fatal_error(f"Failed to read factory data: {e}")
+
+            if not factory_data.locked:
+                fatal_error("Factory data is not locked after flashing release firmware")
+            else:
+                if factory_data.sku != scanner.qr_sku:
+                    fatal_error(f"Mismatch between locked factory data SKU {factory_data.sku} and scanned SKU {scanner.qr_sku}")
+
+                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data.nfc_tags]
+
+                if factory_tag_infos != tag_infos:
+                    fatal_error(f"Mismatch between locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
+
+                print("Locked factory data is matching")
+
+                result["factory_data_validated"] = True
+
+            dprint("post factory data validate")
+
+        host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
         ipcon = IPConnection()
         try:
             ipcon.connect(host, 4223)
@@ -821,15 +900,12 @@ def main(stage3, scanner, result):
 
         dprint("post ipcon connect")
 
-        seen_tags2 = run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
+        run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
 
         dprint("post bricklet tests")
         if generation >= 4:
             upload_iso15118_pib()
             dprint("post iso15118 pib")
-
-        if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
-            seen_tags = seen_tags2
 
         try:
             with urllib.request.urlopen("http://{}/users/config".format(host), timeout=5) as f:
@@ -904,19 +980,9 @@ def main(stage3, scanner, result):
                                      data=json.dumps({
                                          "deadtime_post_start": None,
                                          "authorized_tags": [
-                                             {
-                                                 "user_id": 1,
-                                                 "tag_type": seen_tags[0].tag_type,
-                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[0].tag_id)
-                                             }, {
-                                                 "user_id": 2,
-                                                 "tag_type": seen_tags[1].tag_type,
-                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[1].tag_id)
-                                             }, {
-                                                 "user_id": 3,
-                                                 "tag_type": seen_tags[2].tag_type,
-                                                 "tag_id": ":".join("{:02x}".format(i) for i in seen_tags[2].tag_id)
-                                             }
+                                             {"user_id": 1, "tag_type": tag_infos[0].tag_type, "tag_id": tag_infos[0].tag_id},
+                                             {"user_id": 2, "tag_type": tag_infos[1].tag_type, "tag_id": tag_infos[1].tag_id},
+                                             {"user_id": 3, "tag_type": tag_infos[2].tag_type, "tag_id": tag_infos[2].tag_id},
                                          ]
                                      }).encode("utf-8"),
                                      method='PUT',
