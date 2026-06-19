@@ -116,7 +116,7 @@ Oberes Limit (U\textsubscript{{N-PE}})  & {tests["voltage_L1"]["limits"]["MI3155
 \toprule
 Spannungsversorgung  & {tests["voltage_L1"]["parameters"]["Voltage_system"].replace("phase", "phasig")} \\
 Grenzwerttyp         & {tests["voltage_L1"]["parameters"]["Voltage_limit_type"].replace("%25", r"\%")} \\
-Erdungssystem        & {tests["voltage_L1"]["parameters"]["Earthing_System"]} \\
+Erdungssystem        & {tests["voltage_L1"]["parameters"]["Earthing_System"].replace("/", " / ")} \\
 Nennspannung         & {tests["voltage_L1"]["parameters"]["Nominal_voltage"]} \\
 Dauer                & {tests["voltage_L1"]["parameters"]["Test_time_Voltage_INST"]} \\
 %Test                & {tests["voltage_L1"]["parameters"]["Voltage_Test"]} \\
@@ -221,7 +221,7 @@ I $\Delta$N / I $\Delta$N DC & {tests["rcdi_positive"]["parameters"]["IdN_IdnDC"
 Prüfung                      & {tests["rcdi_positive"]["parameters"]["Other_RCD_Test"].replace("d.c.", "DC")} \\
 %Prüfung zwischen            & {tests["rcdi_positive"]["parameters"]["ZLoop_Test"]} \\
 RCD Prüfnorm                 & {tests["rcdi_positive"]["parameters"]["RCD_Standard"]} \\
-Erdungssystem                & {tests["rcdi_positive"]["parameters"]["Earthing_System"]} \\
+Erdungssystem                & {tests["rcdi_positive"]["parameters"]["Earthing_System"].replace("/", " / ")} \\
 \bottomrule
 \end{{tabularx}}
 
@@ -232,11 +232,11 @@ Erdungssystem                & {tests["rcdi_positive"]["parameters"]["Earthing_S
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
 \toprule
-     & L1                                                                                  & L2                                                                                  & L3                                                                                  & N                                                                                  & \\
+     & L1                                                                                                     & L2                                                                                                     & L3                                                                                                     & N                                                                                                     & \\
 \midrule
-Riso & {tests["riso_L1"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L2"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L3"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_N"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & bestanden \\
+Riso & {tests["riso_L1"]["results"]["Riso"].replace(">", "> ").replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L2"]["results"]["Riso"].replace(">", "> ").replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L3"]["results"]["Riso"].replace(">", "> ").replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_N"]["results"]["Riso"].replace(">", "> ").replace(".", ",").replace("Ohm", r"$\Omega$")} & bestanden \\
 \midrule
-Um   & {tests["riso_L1"]["results"]["Um"]}                                                 & {tests["riso_L2"]["results"]["Um"]}                                                 & {tests["riso_L3"]["results"]["Um"]}                                                 & {tests["riso_N"]["results"]["Um"]}                                                 & \\
+Um   & {tests["riso_L1"]["results"]["Um"]}                                                                    & {tests["riso_L2"]["results"]["Um"]}                                                                    & {tests["riso_L3"]["results"]["Um"]}                                                                    & {tests["riso_N"]["results"]["Um"]}                                                                    & \\
 \bottomrule
 \end{{tabularx}}
 
