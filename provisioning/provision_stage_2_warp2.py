@@ -740,14 +740,14 @@ def main(stage3, scanner, result):
         else:
             stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
 
-        stage3.measure_front_panel_rlow(result["electrical_tests"])
-
         dprint("pre nfc tags")
 
         if scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0':
             seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
         dprint("post nfc tags")
+
+        stage3.measure_front_panel_rlow(result["electrical_tests"])
 
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
