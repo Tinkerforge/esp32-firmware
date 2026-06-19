@@ -112,7 +112,7 @@ print = tprint
 
 class Stage3:
     def __init__(self,
-                 qr_gen,
+                 generation,
                  is_front_panel_button_pressed_function,
                  has_evse_error_function,
                  get_iec_state_function,
@@ -125,9 +125,8 @@ class Stage3:
                  get_meter_voltages_function,
                  set_iso15118_enabled_function,
                  get_iso15118_ev_mac_function,
-                 get_iso15118_attenuation_profile_function
-                 ):
-        self.generation = int(qr_gen)
+                 get_iso15118_attenuation_profile_function):
+        self.generation = generation
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
@@ -1191,7 +1190,7 @@ class Stage3:
         return report
 
 def main():
-    stage3 = Stage3('3',
+    stage3 = Stage3(3,
                     is_front_panel_button_pressed_function=lambda: False,
                     has_evse_error_function=lambda: False,
                     get_iec_state_function=lambda: 'A',

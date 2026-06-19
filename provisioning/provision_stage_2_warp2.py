@@ -536,7 +536,7 @@ def led_wrap():
 
     dprint("post scanner")
 
-    stage3 = Stage3(scanner.qr_gen,
+    stage3 = Stage3(int(scanner.qr_gen),
                     is_front_panel_button_pressed_function=is_front_panel_button_pressed,
                     has_evse_error_function=has_evse_error,
                     get_iec_state_function=get_iec_state,
