@@ -1105,6 +1105,19 @@ def main(stage3, scanner, result):
             fatal_error("Failed to connect via ethernet!")
         orig_print(" Connected.")
         print("Tracked charges removed.")
+
+        print("Erasing other app partition")
+        try:
+            with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
+                response = f.read()
+
+            if len(response) > 0:
+                print(response)
+        except urllib.error.HTTPError as e:
+            fatal_error(f"Failed to erase other app partition: {e} {e.read()}")
+        except Exception as e:
+            fatal_error(f"Failed to erase other app partition: {e}")
+
     result["end"] = now()
 
     if scanner.qr_variant != "B":
