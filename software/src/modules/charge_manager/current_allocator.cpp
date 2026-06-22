@@ -169,6 +169,17 @@ void update_from_client_packet(
     if (target.charger_state != v1->charger_state && v1->charger_state == 3)
         target.last_phase_switch = now;
 
+    // If this charger just switched from C to B2 (i.e. the contactor switched off,
+    // because the car requested a charge stop), set last_phase_switch to make sure
+    // we don't switch phases before we start handling this as v1->car_stopped_charging.
+    // This assumes that the phase switch hysteresis is longer than the EVSE's
+    // car_stopped_charging timeout.
+    // This is necessary because some vehicles (for example the e-Golf)
+    // start charging for after a phase switch even if the battery is full.
+    // The vehicle stops after ~ 45 seconds.
+    if (target.charger_state == 3 && v1->charger_state == 2)
+        target.last_phase_switch = now;
+
     if (v1->charger_state == 0) {
         target.last_phase_switch = -cfg->global_hysteresis;
         target.time_in_state_c = 0_us;
