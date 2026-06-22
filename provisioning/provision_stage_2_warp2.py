@@ -943,14 +943,6 @@ def main(stage3, scanner, result):
         else:
             print("Configuring users")
             for i in range(3):
-                data = json.dumps({
-                    "id":i+1,
-                    "roles": 2**16-1,
-                    "current": 32000,
-                    "display_name": "Benutzer {}".format(i+1),
-                    "username": "user{}".format(i+1),
-                    "digest_hash": ""
-                }).encode("utf-8")
                 req = urllib.request.Request("http://{}/users/add".format(host),
                                              data=json.dumps({
                                                  "id": i + 1,
