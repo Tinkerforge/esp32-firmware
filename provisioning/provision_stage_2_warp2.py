@@ -762,17 +762,17 @@ def main(stage3, scanner, result):
 
             if not factory_data.locked:
                 print("Writing factory data")
-                req = urllib.request.Request("http://{}/factory_data/write".format(host),
-                                            data=json.dumps({
-                                                "sku": scanner.qr_sku,
-                                                "nfc_tags": [
-                                                    {"tag_type": tag_infos[0].tag_type, "tag_id": tag_infos[0].tag_id},
-                                                    {"tag_type": tag_infos[1].tag_type, "tag_id": tag_infos[1].tag_id},
-                                                    {"tag_type": tag_infos[2].tag_type, "tag_id": tag_infos[2].tag_id},
-                                                ]
-                                            }).encode("utf-8"),
-                                            method='PUT',
-                                            headers={"Content-Type": "application/json"})
+                req = urllib.request.Request(f"http://{host}/factory_data/write",
+                                             data=json.dumps({
+                                                 "sku": scanner.qr_sku,
+                                                 "nfc_tags": [
+                                                     {"tag_type": tag_infos[0].tag_type, "tag_id": tag_infos[0].tag_id},
+                                                     {"tag_type": tag_infos[1].tag_type, "tag_id": tag_infos[1].tag_id},
+                                                     {"tag_type": tag_infos[2].tag_type, "tag_id": tag_infos[2].tag_id},
+                                                 ]
+                                             }).encode("utf-8"),
+                                             method='PUT',
+                                             headers={"Content-Type": "application/json"})
                 try:
                     with urllib.request.urlopen(req, timeout=1) as f:
                         response = f.read()
