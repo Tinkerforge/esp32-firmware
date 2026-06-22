@@ -7,8 +7,6 @@
  * Commons Zero (CC0 1.0) License for more details.
  */
 
-#if TF_HAL_ESPIDF == 1
-
 #include "hal_espidf_esp32_brick.h"
 
 #include <stdio.h>
@@ -217,5 +215,3 @@ char tf_hal_get_port_name(TF_HAL *hal, uint8_t port_id) {
 TF_PortCommon *tf_hal_get_port_common(TF_HAL *hal, uint8_t port_id) {
     return &ports[port_id].port_common;
 }
-
-#endif

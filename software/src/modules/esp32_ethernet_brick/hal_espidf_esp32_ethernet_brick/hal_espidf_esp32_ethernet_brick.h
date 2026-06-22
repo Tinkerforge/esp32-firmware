@@ -7,8 +7,6 @@
  * Commons Zero (CC0 1.0) License for more details.
  */
 
-#if TF_HAL_ESPIDF == 1
-
 #ifndef TF_HAL_ESPIDF_ESP32_ETHERNET_BRICK_H
 #define TF_HAL_ESPIDF_ESP32_ETHERNET_BRICK_H
 
@@ -26,7 +24,5 @@ struct TF_HAL {
 
 int tf_hal_create(TF_HAL *hal, uint8_t max_ports=6) TF_ATTRIBUTE_NONNULL_ALL;
 int tf_hal_destroy(TF_HAL *hal) TF_ATTRIBUTE_NONNULL_ALL;
-
-#endif
 
 #endif
