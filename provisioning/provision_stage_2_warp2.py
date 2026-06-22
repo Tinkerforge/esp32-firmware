@@ -668,7 +668,7 @@ def connect_to_ethernet(ssid, url):
     else:
         fatal_error("Failed to connect via ethernet!")
     orig_print(" Connected.")
-    return result, host
+    return result
 
 TagInfo = namedtuple('TagInfo', 'tag_type tag_id')
 
@@ -708,6 +708,38 @@ def pull_firmwares_git():
 
     dprint("post git pull")
 
+def flash_firmware(firmware_path, ssid):
+    host = ssid + '.local'
+
+    with open(firmware_path, "rb") as f:
+        fw = f.read()
+
+    opener = urllib.request.build_opener(ContentTypeRemover())
+    for i in range(5):
+        try:
+            req = urllib.request.Request("http://{}/flash_firmware".format(host), fw)
+            print(opener.open(req).read().decode())
+            break
+        except urllib.error.HTTPError as e:
+            print("HTTP error", e)
+            if e.code == 423:
+                fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
+            else:
+                fatal_error(e.read().decode("utf-8"))
+        except urllib.error.URLError as e:
+            print("URL error", e)
+            if i != 4:
+                print("Failed to flash firmware. Retrying...")
+                time.sleep(3)
+            else:
+                if isinstance(e.reason, ConnectionResetError):
+                    fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
+                fatal_error("Can't flash firmware!")
+
+    time.sleep(3)
+    connect_to_ethernet(ssid, "firmware_update/validate")
+    factory_reset(ssid)
+
 def main(stage3, scanner, result):
     global host
 
@@ -746,21 +778,67 @@ def main(stage3, scanner, result):
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
         host = ssid + ".local"
-        info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
-        version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
+        provisioning_firmware_flashed = False
+        validate_factory_data = False
 
-        dprint("post version fetch")
+        result["factory_data_written"] = False
+        result["factory_data_validated"] = False
 
         if generation >= 4:
-            try:
-                with urllib.request.urlopen(f"http://{host}/factory_data/read", timeout=5) as f:
-                    factory_data = json.loads(f.read())
-            except urllib.error.HTTPError as e:
-                fatal_error(f"Failed to read factory data: {e} {e.read()}")
-            except Exception as e:
-                fatal_error(f"Failed to read factory data: {e}")
+            provisioning_firmware_names = glob.glob(f"warp{generation}_provisioning_firmware*_esptool.bin")
+
+            if len(provisioning_firmware_names) != 1:
+                fatal_error(f"Wrong number of WARP{generation} provisioning firmwares found: {len(provisioning_firmware_names)}")
+
+            latest_provisioning_version = "{}.{}.{}+{}".format(*re.search(rf"warp{generation}_provisioning_firmware(?:.*)_(\d+)_(\d+)_(\d+)_([a-f0-9]+)(?:.*)_esptool.bin", provisioning_firmware_names[0]).groups())
+
+            factory_data = json.loads(connect_to_ethernet(ssid, "factory_data/read").decode('utf-8'))
+            factory_data_write = False
 
             if not factory_data.locked:
+                print("Factory data is not locked")
+
+                info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
+
+                if latest_provisioning_version != info_version['firmware']:
+                    print(f'Flashed provisioning firmware {info_version['firmware']} is outdated! Flashing {latest_provisioning_version}...')
+                    flash_firmware(provisioning_firmware_names[0], ssid)
+                else:
+                    print("Flashed provisioning firmware is up-to-date")
+
+                factory_data_write = True
+                provisioning_firmware_flashed = True
+            else:
+                print("Factory data is already locked")
+
+                if factory_data.sku != scanner.qr_sku:
+                    print(f"Mismatch between already locked factory data SKU {factory_data.sku} and scanned SKU {scanner.qr_sku}")
+                    factory_data_write = True
+
+                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data.nfc_tags]
+
+                if set(factory_tag_infos) != set(tag_infos):
+                    print(f"Mismatch between already locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
+                    factory_data_write = True
+
+                if not factory_data_write:
+                    print("Already locked factory data is matching")
+
+                    # use factory_tag_infos even if they match as a set with the seen ones,
+                    # but the order might be different. preserve the tag to user assignment order
+                    tag_infos = factory_tag_infos
+
+                    result["factory_data_validated"] = True
+                else:
+                    print("Flashing provisioning firmware to fix factory data mismatch")
+                    flash_firmware(provisioning_firmware_names[0], ssid)
+
+                    provisioning_firmware_flashed = True
+                    validate_factory_data = True
+
+            dprint("post factory data check")
+
+            if factory_data_write:
                 print("Writing factory data")
                 req = urllib.request.Request(f"http://{host}/factory_data/write",
                                              data=json.dumps({
@@ -788,31 +866,13 @@ def main(stage3, scanner, result):
                 validate_factory_data = True
 
                 dprint("post factory data write")
-            else:
-                print("Factory data is already locked")
 
-                if factory_data.sku != scanner.qr_sku:
-                    fatal_error(f"Mismatch between already locked factory data SKU {factory_data.sku} and scanned SKU {scanner.qr_sku}")
+        info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
+        version = [int(x) for x in info_version['firmware'].split('+').split('.')]
 
-                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data.nfc_tags]
+        dprint("post version fetch")
 
-                # FIXME: how to deal with a repaired charger that might have come back without its original NFC tags?
-                if set(factory_tag_infos) != set(tag_infos):
-                    fatal_error(f"Mismatch between already locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
-
-                # use factory_tag_infos even if they match as a set with the seen ones,
-                # but the order might be different. preserve the tag to user assignment order
-                tag_infos = factory_tag_infos
-
-                print("Already locked factory data is matching")
-
-                result["factory_data_written"] = False
-                result["factory_data_validated"] = True
-                validate_factory_data = False
-
-                dprint("post factory data validate")
-
-        if '--no-firmware-update' in sys.argv:
+        if not provisioning_firmware_flashed and '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
         else:
             pull_firmwares_git()
@@ -821,61 +881,34 @@ def main(stage3, scanner, result):
             firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
             firmware_path = os.path.join(firmware_directory, firmware_path)
             latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
+            flash_latest_version = False
 
             if version > latest_version:
-                fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
+                fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest release is {}.{}.{}".format(*version, *latest_version))
+            elif provisioning_firmware_flashed:
+                flash_latest_version = True
             elif version < latest_version:
-                print("Flashed firmware {}.{}.{} is outdated! Flashing {}.{}.{}...".format(*version, *latest_version))
-
-                with open(firmware_path, "rb") as f:
-                    fw = f.read()
-
-                opener = urllib.request.build_opener(ContentTypeRemover())
-                for i in range(5):
-                    try:
-                        req = urllib.request.Request("http://{}/flash_firmware".format(host), fw)
-                        print(opener.open(req).read().decode())
-                        break
-                    except urllib.error.HTTPError as e:
-                        print("HTTP error", e)
-                        if e.code == 423:
-                            fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
-                        else:
-                            fatal_error(e.read().decode("utf-8"))
-                    except urllib.error.URLError as e:
-                        print("URL error", e)
-                        if i != 4:
-                            print("Failed to flash firmware. Retrying...")
-                            time.sleep(3)
-                        else:
-                            if isinstance(e.reason, ConnectionResetError):
-                                fatal_error("Charger blocked firmware update. Is the EVSE working correctly?")
-                            fatal_error("Can't flash firmware!")
-
-                time.sleep(3)
-                connect_to_ethernet(ssid, "firmware_update/validate")
-                factory_reset(ssid)
-
-                result["firmware_file"] = firmware_path.split("/")[-1]
-                info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
+                print("Flashed firmware {}.{}.{} is outdated!".format(*version))
+                flash_latest_version = True
             else:
                 print("Flashed firmware is up-to-date.")
+
+            if flash_latest_version:
+                print("Flashing {}.{}.{}...".format(*latest_version))
+                flash_firmware(firmware_path, ssid)
+
+                result["firmware_file"] = firmware_path.split("/")[-1]
+                info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
 
         result["firmware_version"] = info_version['firmware']
 
         dprint("post firmware update")
 
-        if generation >= 4 and validate_factory_data:
-            try:
-                with urllib.request.urlopen(f"http://{host}/factory_data/read", timeout=5) as f:
-                    factory_data = json.loads(f.read())
-            except urllib.error.HTTPError as e:
-                fatal_error(f"Failed to read factory data: {e} {e.read()}")
-            except Exception as e:
-                fatal_error(f"Failed to read factory data: {e}")
+        if validate_factory_data:
+            factory_data = json.loads(connect_to_ethernet(ssid, "factory_data/read").decode('utf-8'))
 
             if not factory_data.locked:
-                fatal_error("Factory data is not locked after flashing release firmware")
+                fatal_error("Factory data is not locked")
             else:
                 if factory_data.sku != scanner.qr_sku:
                     fatal_error(f"Mismatch between locked factory data SKU {factory_data.sku} and scanned SKU {scanner.qr_sku}")
@@ -891,8 +924,9 @@ def main(stage3, scanner, result):
 
             dprint("post factory data validate")
 
-        host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
+        connect_to_ethernet(ssid, "hidden_proxy/enable")
         ipcon = IPConnection()
+
         try:
             ipcon.connect(host, 4223)
         except Exception:
@@ -901,22 +935,16 @@ def main(stage3, scanner, result):
         dprint("post ipcon connect")
 
         run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
-
         dprint("post bricklet tests")
+
         if generation >= 4:
             upload_iso15118_pib()
             dprint("post iso15118 pib")
 
-        try:
-            with urllib.request.urlopen("http://{}/users/config".format(host), timeout=5) as f:
-                user_config = json.loads(f.read())
-        except urllib.error.HTTPError as e:
-            fatal_error("Failed to get users config: {} {}".format(e, e.read()))
-        except Exception as e:
-            fatal_error("Failed to get users config: {}".format(e))
-
+        user_config = json.loads(connect_to_ethernet(ssid, "users/config").decode('utf-8'))
         do_factory_reset = False
         do_configure_users = True
+
         if len(user_config["users"]) != 4:
             do_factory_reset = len(user_config["users"]) != 1
         else:
