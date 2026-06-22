@@ -1068,10 +1068,6 @@ def main(stage3, scanner, result):
 
     dprint("post evse test report")
 
-    if scanner.qr_variant == "B":
-        ssid = f'warp{scanner.qr_gen}-{result["evse_uid"]}'
-        host = ssid + ".local"
-
     browser = None
     try:
         if scanner.qr_variant != "B":
@@ -1089,7 +1085,6 @@ def main(stage3, scanner, result):
 
     if scanner.qr_variant != "B":
         print("Removing tracked charges")
-        host = ssid + ".local"
         print("Connecting via ethernet to {}".format(host), end="")
         for i in range(45):
             start = time.monotonic()
