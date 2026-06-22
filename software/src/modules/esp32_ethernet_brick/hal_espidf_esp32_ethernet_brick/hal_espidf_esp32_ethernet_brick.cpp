@@ -63,7 +63,11 @@ int tf_hal_create(TF_HAL *hal, uint8_t max_ports) {
 
     ports = new TF_Port[max_ports];
     for(size_t i = 0; i < max_ports; ++i) {
+#ifdef TF_HAL_PORT_NAMES
+        ports[i] = TF_Port{TF_HAL_PORT_NAMES[i], {._to_init = 0}};
+#else
         ports[i] = TF_Port{(char)('A' + i), {._to_init = 0}};
+#endif
     };
 
     // Initialize HSPI bus
