@@ -1099,7 +1099,8 @@ def main():
             dirty_suffix = '_' + git_commit_id + "_" + branch_name.replace("_", "-")
 
     try:
-        version_oldest, version = get_changelog_version(product_id)
+        changelog_id = env.GetProjectOption("custom_changelog_id_override", product_id)
+        version_oldest, version = get_changelog_version(changelog_id)
     except Exception as e:
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
