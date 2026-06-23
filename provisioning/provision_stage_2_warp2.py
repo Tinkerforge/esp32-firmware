@@ -364,7 +364,7 @@ class Scanner:
             self.qr_hw_version = m_4.group(7)
             self.qr_serial = m_4.group(8)
             self.qr_built = m_4.group(9)
-            self.qr_accessories = m_4.group(10)
+            self.qr_extras = m_4.group(10)
         else:
             self.qr_sku = m_3_2.group(1)
             self.qr_gen = m_3_2.group(2)
@@ -376,10 +376,10 @@ class Scanner:
             self.qr_hw_version = m_3_2.group(7)
             self.qr_serial = m_3_2.group(8)
             self.qr_built = m_3_2.group(9)
-            self.qr_accessories = m_3_2.group(10)
+            self.qr_extras = m_3_2.group(10)
 
-        if self.qr_accessories == None:
-            self.qr_accessories = '0'
+        if self.qr_extras == None:
+            self.qr_extras = '0'
 
         print("Charger QR code data:")
         print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
@@ -399,10 +399,10 @@ class Scanner:
         print("    HW Version: {}".format(self.qr_hw_version))
         print("    Serial: {}".format(self.qr_serial))
         print("    Build month: {}".format(self.qr_built))
-        print("    Accessories: {}".format(self.qr_accessories))
+        print("    Extras: {}".format(self.qr_extras))
 
-        if self.qr_accessories == '0':
-            self.qr_accessories_code = None
+        if self.qr_extras == '0':
+            self.qr_extras_code = None
             self.qr_stand = '0'
             self.qr_stand_wiring = '0'
             self.qr_stand_lock = False
@@ -413,12 +413,12 @@ class Scanner:
         else:
             # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
             pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
-            self.qr_accessories_code = my_input("Scan the accessories QR code:")
-            m = re.match(pattern, self.qr_accessories_code)
+            self.qr_extras_code = my_input("Scan the extras QR code:")
+            m = re.match(pattern, self.qr_extras_code)
 
             while not m:
-                self.qr_accessories_code = my_input("Scan the accessories QR code:", red)
-                m = re.match(pattern, self.qr_accessories_code)
+                self.qr_extras_code = my_input("Scan the extras QR code:", red)
+                m = re.match(pattern, self.qr_extras_code)
 
             self.qr_stand = m.group(1) if m.group(1) != None else '0'
             self.qr_stand_wiring = m.group(2) if m.group(2) != None else '0'
@@ -434,7 +434,7 @@ class Scanner:
             else:
                 self.qr_custom_type2_cable = False
 
-            print("Accessories QR code data:")
+            print("Extras QR code data:")
             print("    Stand: {}".format(self.qr_stand))
             print("    Stand Wiring: {}".format(self.qr_stand_wiring))
             print("    Stand Lock: {}".format(self.qr_stand_lock))
@@ -750,8 +750,8 @@ def main(stage3, scanner, result):
     result["serial"] = scanner.qr_serial
     result["qr_code"] = scanner.qr_charger_code
 
-    if scanner.qr_accessories_code != None:
-        result["accessories_qr_code"] = scanner.qr_accessories_code
+    if scanner.qr_extras_code != None:
+        result["extras_qr_code"] = scanner.qr_extras_code
 
     global generation
     assert scanner.qr_gen in ("2", "3", "4")
