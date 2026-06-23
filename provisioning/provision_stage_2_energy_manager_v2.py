@@ -26,7 +26,7 @@ WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__))
 FIRMWARES_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'firmwares')
 
 def get_next_serial_number(prefix):
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging_password.txt'), 'r') as f:
         staging_password = f.read().strip()
 
     context = ssl.create_default_context()
