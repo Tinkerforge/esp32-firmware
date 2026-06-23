@@ -8,6 +8,11 @@ import socket
 import time
 import tinkerforge_util as tfutil
 
+tfutil.create_parent_module(__file__, 'provisioning')
+
+from provisioning.provision_common.provision_common import *
+from provisioning.provision_common.provision_common.zbase32 import ZBASE32
+
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
 QR_CODE_FORMAT = 'W288,29,5,2,M,8,4,{0},0\r'
@@ -22,7 +27,7 @@ COPIES_FORMAT = '^C{0}\r'
 
 def print_esp32_label(ssid, passphrase, copies, stdout):
     # check SSID
-    if re.match('^(esp32|warp|warp2|warp3|warp4|wem|wem2|seb|wallbox)-[{0}]{{3,6}}$'.format(BASE58), ssid) == None:
+    if re.match('^(esp32|warp|warp2|warp3|warp4|wem|wem2|seb|wallbox)-([{0}]{{3,6}}|[{1}]{{3,7}})$'.format(BASE58, ZBASE32), ssid) == None:
         raise Exception('Invalid SSID: {0}'.format(ssid))
 
     # check passphrase

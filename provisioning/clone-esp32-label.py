@@ -1,15 +1,15 @@
 #!/usr/bin/env -S uv run --active --script
 
-import tinkerforge_util as tfutil
-
-tfutil.create_parent_module(__file__, 'provisioning')
-
 import re
 import subprocess
 import getpass
 from tinkerforge_util.colored import green
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
 
 from provisioning.provision_common.provision_common import *
+from provisioning.provision_common.provision_common.zbase32 import ZBASE32
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
@@ -22,7 +22,7 @@ def main():
             print('Aborted!')
             return
 
-        m = re.fullmatch('WIFI:S:((?:esp32|warp|warp2|warp3|wem|seb)-[{0}]{{3,6}});T:WPA;P:([{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}});;'.format(BASE58), qr_code)
+        m = re.fullmatch('WIFI:S:((?:esp32|warp|warp2|warp3|warp4|wem|wem2|seb|wallbox)-(?:[{0}]{{3,6}}|[{1}]{{3,7}}));T:WPA;P:([{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}});;'.format(BASE58, ZBASE32), qr_code)
 
         if m == None:
             print('Invalid ESP32 label: {0}'.format(qr_code))
