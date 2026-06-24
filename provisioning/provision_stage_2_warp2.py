@@ -10,6 +10,7 @@ import time
 import urllib.request
 import csv
 import traceback
+import glob
 from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
