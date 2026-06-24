@@ -19,8 +19,8 @@ actions = [
     Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                               lambda x: x not in ("warp3", "warp4")),
     Action("ESP Test",                    ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x not in ("warp3", "warp4")),
     Action("ESP Print Label (Skip Test)", ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x not in ("warp3", "warp4")),
-    Action("WARP ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick.py",                                               lambda x: x == "warp3"),
-    Action("WARP4 ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick_v2.py",                                           lambda x: x == "warp4")
+    Action("WARP3 ESP Flash and Test",    ".", "./provision_warp_esp32_ethernet_brick.py",                                               lambda x: x == "warp3"),
+    Action("WARP4 ESP Flash and Test",    ".", "./provision_warp_esp32_ethernet_brick_v2.py",                                            lambda x: x == "warp4")
 ]
 
 work_queue = queue.Queue()
