@@ -935,6 +935,14 @@ def main(stage3, scanner, result):
 
             dprint("post factory data validate")
 
+        security_info = json.loads(connect_to_ethernet(ssid, "esp32/security_info").decode('utf-8'))
+
+        if not security_info['secure_boot'] or \
+           not security_info['app_encrypted'] or \
+           not security_info['data_encrypted'] or \
+           not security_info['lockdown']:
+            fatal_error(f"Unexpected ESP32 security info: {security_info}")
+
         connect_to_ethernet(ssid, "hidden_proxy/enable")
         ipcon = IPConnection()
 
