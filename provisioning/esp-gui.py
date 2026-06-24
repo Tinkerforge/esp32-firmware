@@ -16,10 +16,11 @@ selected_firmware_type = ""
 Action = namedtuple("Action", "name pwd cmd filter_fn")
 
 actions = [
-    Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                               lambda x: x != "warp3"),
-    Action("ESP Test",                    ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x != "warp3"),
-    Action("ESP Print Label (Skip Test)", ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x != "warp3"),
-    Action("WARP ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick.py",                                               lambda x: x == "warp3")
+    Action("ESP Parallel-Flash",          ".", "lxterminal -e ./provision_stage_0_{{{firmware_type}}}.sh",                               lambda x: x not in ("warp3", "warp4")),
+    Action("ESP Test",                    ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x not in ("warp3", "warp4")),
+    Action("ESP Print Label (Skip Test)", ".", "lxterminal -e ./provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x not in ("warp3", "warp4")),
+    Action("WARP ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick.py",                                               lambda x: x == "warp3"),
+    Action("WARP4 ESP Flash and Test",     ".", "./provision_warp_esp32_ethernet_brick_v2.py",                                           lambda x: x == "warp4")
 ]
 
 work_queue = queue.Queue()
@@ -91,6 +92,7 @@ def main():
     combo_box.addItem("ESP32 Ethernet Brick (Energy Manager 2.0 Firmware)", "energy_manager_v2")
     combo_box.addItem("ESP32 Ethernet Brick (Smart Energy Broker Firmware)", "smart_energy_broker")
     combo_box.addItem("WARP ESP32 Ethernet Brick", "warp3")
+    combo_box.addItem("WARP ESP32 Ethernet Brick 2.0", "warp4")
     layout.addWidget(combo_box)
 
     btn_action = {}
