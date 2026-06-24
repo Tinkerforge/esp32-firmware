@@ -529,7 +529,7 @@ def upload_iso15118_pib():
             ex = e
             #fatal_error("Failed to read back iso15118 pib: {}".format(e))
     if ex is not None:
-        fatal_error("Failed to read back iso15118 pib: {}".format(e))
+        fatal_error("Failed to read back iso15118 pib: {}".format(ex))
 
 def led_wrap():
     dprint("pre scanner")
