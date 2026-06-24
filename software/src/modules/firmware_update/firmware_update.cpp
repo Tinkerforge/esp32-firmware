@@ -715,7 +715,7 @@ static void boot_other_partition(const char *other_partition_label, String &errm
 
     if (other_partition_label != nullptr) {
         if (strcmp(running_partition->label, other_partition_label) == 0) {
-            errmsg = String("Partition ") + running_partition->label + (" is already running");
+            errmsg = string_printf<48>("Partition %s is already running", running_partition->label);
             return;
         }
     }
@@ -726,46 +726,33 @@ static void boot_other_partition(const char *other_partition_label, String &errm
         other_partition_label = "app0";
     }
     else {
-        errmsg = String("Unexpected running partition: ") + running_partition->label;
+        errmsg = string_printf<48>("Unexpected running partition: %s", running_partition->label);
         return;
     }
 
-    esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP,
-                                                     ESP_PARTITION_SUBTYPE_ANY,
-                                                     nullptr);
+    const esp_partition_t *other_partition = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
+                                                                      ESP_PARTITION_SUBTYPE_ANY,
+                                                                      other_partition_label);
 
-    while (it != nullptr) {
-        const esp_partition_t *partition = esp_partition_get(it);
-
-        if (strcmp(partition->label, other_partition_label) == 0) {
-            esp_partition_iterator_release(it);
-
-            esp_err_t err = esp_ota_set_boot_partition(partition);
-
-            if (err != ESP_OK) {
-                String err_str;
-
-                if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
-                    err_str = "firmware is missing or invalid";
-                }
-                else {
-                    err_str = String(err);
-                }
-
-                errmsg = String("Could not set ") + partition->label + (" as boot partition: ") + err_str;
-            }
-            else {
-                logger.printfln("Booting %s partition", other_partition_label);
-                trigger_reboot("booting other partition", 1_s);
-            }
-
-            return;
-        }
-
-        it = esp_partition_next(it);
+    if (other_partition == nullptr) {
+        errmsg = string_printf<48>("Other partition not found: %s", other_partition_label);
+        return;
     }
 
-    errmsg = String("Other partition not found: ") + other_partition_label;
+    esp_err_t err = esp_ota_set_boot_partition(other_partition);
+
+    if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
+        errmsg = string_printf<96>("Could not set %s as boot partition: firmware is missing or invalid", other_partition->label);
+        return;
+    }
+
+    if (err != ESP_OK) {
+        errmsg = string_printf<64>("Could not set %s as boot partition: %u", other_partition->label, static_cast<unsigned>(err));
+        return;
+    }
+
+    logger.printfln("Booting %s partition", other_partition_label);
+    trigger_reboot("booting other partition", 1_s);
 }
 
 bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
