@@ -34,6 +34,7 @@
 #include <sodium.h>
 
 // Other libraries
+#include <TFJson.h>
 #include <WString.h>
 
 // This module
@@ -315,6 +316,23 @@ void ESP32Common::register_urls()
             });
         }
     }
+#endif
+
+#ifdef CONFIG_SECURE_BOOT
+    server.on_HTTPThread("/esp32/security_info", HTTP_GET, [this](WebServerRequest req) {
+        char json_buf[128];
+        TFJsonSerializer json{json_buf, sizeof(json_buf)};
+
+        json.addObject();
+            json.addMemberBoolean("secure_boot",    ESP32CommonSecureBoot::is_secure_boot_enabled());
+            json.addMemberBoolean("app_encrypted",  ESP32CommonEncryption::is_app_encrypted());
+            json.addMemberBoolean("data_encrypted", ESP32CommonEncryption::is_data_partition_encrypted());
+            json.addMemberBoolean("lockdown",       ESP32CommonSecureBoot::is_locked_down());
+        json.endObject();
+        json.end();
+
+        return req.send_json(200, json);
+    });
 #endif
 }
 

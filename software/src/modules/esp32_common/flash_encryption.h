@@ -36,5 +36,6 @@ private:
     static void encrypt_app_bootloader_partition_table(String *errmsg, bool deterministic);
     static bool mark_and_erase_data_partition();
 
+    static bool is_app_encrypted();
     static bool is_data_partition_encrypted();
 };

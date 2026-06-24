@@ -845,6 +845,11 @@ bool ESP32CommonEncryption::mark_and_erase_data_partition()
     return true;
 }
 
+bool ESP32CommonEncryption::is_app_encrypted()
+{
+    return efuse_hal_flash_encryption_enabled();
+}
+
 bool ESP32CommonEncryption::is_data_partition_encrypted()
 {
     const esp_partition_t *data_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "data");
