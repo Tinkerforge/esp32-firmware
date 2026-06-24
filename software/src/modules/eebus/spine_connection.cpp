@@ -158,6 +158,11 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
             }
         }
     }
+    // If we havent gotten a detailed discovery data, we are in inital peer discovery and the targeted address is [0]/0 we just assume the message is for us.
+    std::vector<AddressEntityType> nm_ent = {0};
+    if (!detailed_discovery_data_received && initial_peer_discovery_started && address.entity.get() == nm_ent && address.feature.get() == 0) {
+        return true;
+    }
     return false;
 }
 
