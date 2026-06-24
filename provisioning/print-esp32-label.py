@@ -11,7 +11,7 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'provisioning')
 
 from provisioning.provision_common.provision_common import *
-from provisioning.provision_common.provision_common.zbase32 import ZBASE32
+from provisioning.provision_common.zbase32 import ZBASE32
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
