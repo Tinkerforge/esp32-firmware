@@ -848,12 +848,14 @@ class Stage3:
         blackbox.bb_disable()
 
     # requires power_on
-    def test_charger(self, report, has_phase_switch, is_warp2):
+    def test_charger(self, result, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
         assert self.reset_evse_function != None
+
+        report = result["electrical_tests"]
 
         if has_phase_switch:
             assert self.switch_phases_function != None
@@ -946,13 +948,13 @@ class Stage3:
 
             time.sleep(ISO15118_CONNECT_DURATION)
             ev_mac = self.get_iso15118_ev_mac_function()
-            report['iso15118_ev_mac'] = ev_mac
+            result['iso15118_ev_mac'] = ev_mac
 
             if ev_mac == '00:00:00:00:00:00':
                 fatal_error(f"Failed to connect to simulated car via ISO15118 {ev_mac=}")
 
             ap = self.get_iso15118_attenuation_profile_function()
-            report['iso15118_attenuation_profile'] = ap
+            result['iso15118_attenuation_profile'] = ap
 
             for i, v in enumerate(ap[:-1]):
                 if v >= 40:

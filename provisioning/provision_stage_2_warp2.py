@@ -1086,7 +1086,7 @@ def main(stage3, scanner, result):
             browser.get("http://{}/#evse".format(host))
 
         print("Performing the electrical tests")
-        stage3.test_charger(result["electrical_tests"], has_phase_switch=generation >= 3, is_warp2=generation == 2)
+        stage3.test_charger(result, has_phase_switch=generation >= 3, is_warp2=generation == 2)
     finally:
         if browser is not None:
             browser.quit()
