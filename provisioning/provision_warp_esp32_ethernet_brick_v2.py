@@ -958,7 +958,7 @@ class P:
                     try:
                         P.test_wifi(relay_to_ssid[k], relay_to_passphrase[k], host_ip, static_ips[k], gateway, subnet, dns, test_reports[k])
                     except BaseException as e:
-                        print(red(f"Failed to test WiFi for {k} {v}: {e}", file=P.logs[k][1]))
+                        print(red(f"Failed to test WiFi for {k} {v}: {e}"), file=P.logs[k][1])
                         relay_to_serial.pop(k)
                         P.set_progress(k, stage, P.red)
                     else:
@@ -1039,13 +1039,13 @@ class P:
 
         threads.clear()
 
-        # P.ps.set_beep(262, 0, 250)
-        # time.sleep(0.25)
-        # P.ps.set_beep(330, 0, 250)
-        # time.sleep(0.25)
-        # P.ps.set_beep(392, 0, 250)
-        # time.sleep(0.25)
-        # P.ps.set_beep(523, 0, 1000)
+        P.ps.set_beep(262, 0, 250)
+        time.sleep(0.25)
+        P.ps.set_beep(330, 0, 250)
+        time.sleep(0.25)
+        P.ps.set_beep(392, 0, 250)
+        time.sleep(0.25)
+        P.ps.set_beep(523, 0, 1000)
 
         if not P.io4.get_value()[0]:
             print("Open lid!")
@@ -1060,7 +1060,7 @@ class P:
 
             relay_to_pressed = {}
 
-            while not any(relay_to_pressed.values()):
+            while not any(relay_to_pressed.values()) and P.io4.get_value()[0]:
                 time.sleep(0.01)
                 relay_to_pressed = {k: (P.btns[k].get_button_state() == BrickletRGBLEDButton.BUTTON_STATE_PRESSED) for k, v in relay_to_serial.items()}
 
@@ -1077,7 +1077,7 @@ class P:
         P.quit_requested = True
         qt_thread.join()
 
-        result = 42 if P.restart_clicked else 0
+        result = 42
         P.original_stdout.write("returning" + str(result) + "\n")
         P.original_stdout.flush()
         return result
