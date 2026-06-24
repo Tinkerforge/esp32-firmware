@@ -775,18 +775,16 @@ bool ESP32CommonSecureBoot::set_secure_boot_fuse()
 }
 
 static constexpr const esp_efuse_desc_t **const efuse_lockdown_data[] = {
-    //ESP_EFUSE_RD_DIS_ENCRYPT_FLASH_KEY, // Disable reading the Flash encryption key by software.
+    //ESP_EFUSE_RD_DIS_ENCRYPT_FLASH_KEY, // Don't disable reading the Flash encryption key by software. This would break software-assisted decryption speed-ups.
     ESP_EFUSE_CONSOLE_DEBUG_DISABLE,    // Disable ROM BASIC interpreter fallback.
     ESP_EFUSE_JTAG_DISABLE,             // Disable JTAG.
     ESP_EFUSE_DISABLE_DL_ENCRYPT,       // Disable UART bootloader encryption.
     ESP_EFUSE_DISABLE_DL_DECRYPT,       // Disable UART bootloader decryption.
     ESP_EFUSE_DISABLE_DL_CACHE,         // Disable UART bootloader MMU cache (used for decryption).
     ESP_EFUSE_UART_DOWNLOAD_DIS,        // Disable UART download boot mode.
-};
 
-static constexpr const esp_efuse_desc_t **const efuse_write_disable_data[] = {
     // Four things can be read-protected:
-    // Flash encryption key in BLOCK1 - already set.
+    // Flash encryption key in BLOCK1 - must not be read-protected.
     // Secure Boot key in BLOCK2 - must not be read-protected.
     // User data in BLOCK3 - must not be read-protected.
     // Some settings in BLOCK0 - must not be read-protected.
@@ -829,13 +827,7 @@ static bool batch_write_fuses(const esp_efuse_desc_t **const *fuses, size_t fuse
 bool ESP32CommonSecureBoot::lockdown()
 {
     if (!batch_write_fuses(efuse_lockdown_data, std::size(efuse_lockdown_data))) {
-        logger.printfln("Settung lockdown fuses failed");
-        return false;
-    }
-
-    // Write-disable fuses cannot be batched with the fuses above because those must be set first.
-    if (!batch_write_fuses(efuse_write_disable_data, std::size(efuse_write_disable_data))) {
-        logger.printfln("Settung lockdown fuses failed");
+        logger.printfln("Setting lockdown fuses failed");
         return false;
     }
 
