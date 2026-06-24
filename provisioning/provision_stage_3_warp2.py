@@ -937,6 +937,8 @@ class Stage3:
         self.verify_evse_not_crashed()
 
         if self.generation >= 4:
+            print('Test ISO 15118')
+
             self.set_iso15118_enabled_function(True)
 
             self.change_cp_pe_state('B')

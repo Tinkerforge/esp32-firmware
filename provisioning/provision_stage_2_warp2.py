@@ -474,9 +474,9 @@ def set_iso15118_enabled(enable: bool):
         with urllib.request.urlopen(req, timeout=6) as f:
             f.read()
     except urllib.error.HTTPError as e:
-        fatal_error("Failed to set iso15118 enable: {} {}".format(e, e.read()))
+        fatal_error("Failed to enable ISO 15118: {} {}".format(e, e.read()))
     except Exception as e:
-        fatal_error("Failed to set iso15118 enable: {}".format(e))
+        fatal_error("Failed to enable ISO 15118: {}".format(e))
 
 
 def get_iso15118_ev_mac():
@@ -484,9 +484,9 @@ def get_iso15118_ev_mac():
         with urllib.request.urlopen("http://{}/iso15118/state_slac/pev_mac".format(host), timeout=5) as f:
             return ":".join([hex(x)[2:] for x in json.loads(f.read())])
     except urllib.error.HTTPError as e:
-        fatal_error("Failed to get iso15118 EV mac: {} {}".format(e, e.read()))
+        fatal_error("Failed to get ISO 15118 EV MAC address: {} {}".format(e, e.read()))
     except Exception as e:
-        fatal_error("Failed to get iso15118 EV mac: {}".format(e))
+        fatal_error("Failed to get ISO 15118 EV MAC address: {}".format(e))
 
 
 def get_iso15118_attenuation_profile():
@@ -494,9 +494,9 @@ def get_iso15118_attenuation_profile():
         with urllib.request.urlopen("http://{}/iso15118/state_slac/attenuation_profile".format(host), timeout=5) as f:
             return json.loads(f.read())
     except urllib.error.HTTPError as e:
-        fatal_error("Failed to get iso15118 attenuation profile: {} {}".format(e, e.read()))
+        fatal_error("Failed to get ISO 15118 attenuation profile: {} {}".format(e, e.read()))
     except Exception as e:
-        fatal_error("Failed to get iso15118 attenuation profile: {}".format(e))
+        fatal_error("Failed to get ISO 15118 attenuation profile: {}".format(e))
 
 def upload_iso15118_pib():
     pib_filename = "qca7000_lab_x2.pib"
@@ -506,9 +506,9 @@ def upload_iso15118_pib():
         with urllib.request.urlopen(req, timeout=6) as f:
             f.read()
     except urllib.error.HTTPError as e:
-        fatal_error("Failed to upload iso15118 pib: {} {}".format(e, e.read()))
+        fatal_error("Failed to upload ISO 15118 PIB: {} {}".format(e, e.read()))
     except Exception as e:
-        fatal_error("Failed to upload iso15118 pib: {}".format(e))
+        fatal_error("Failed to upload ISO 15118 PIB: {}".format(e))
 
     start = time.time()
     ex = None
@@ -520,17 +520,17 @@ def upload_iso15118_pib():
                 pid_readback = f.read()
                 if not pib_compare_data(pib, pid_readback):
                     Path(pib_filename + ".readback").write_bytes(pid_readback)
-                    fatal_error(f"Iso15118 pib not applied! See {pib_filename} vs {pib_filename}.readback file")
+                    fatal_error(f"ISO 15118 PIB not applied! See {pib_filename} vs {pib_filename}.readback file")
                 ex = None
                 break
         except urllib.error.HTTPError as e:
             ex = str(e) + e.read().decode('utf-8')
-            #fatal_error("Failed to read back iso15118 pib: {} {}".format(e, e.read()))
+            #fatal_error("Failed to read back ISO 15118 PIB: {} {}".format(e, e.read()))
         except Exception as e:
             ex = e
-            #fatal_error("Failed to read back iso15118 pib: {}".format(e))
+            #fatal_error("Failed to read back ISO 15118 PIB: {}".format(e))
     if ex is not None:
-        fatal_error("Failed to read back iso15118 pib: {}".format(ex))
+        fatal_error("Failed to read back ISO 15118 PIB: {}".format(ex))
 
 def led_wrap():
     dprint("pre scanner")
