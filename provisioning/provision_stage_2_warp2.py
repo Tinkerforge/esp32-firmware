@@ -25,6 +25,7 @@ from provisioning.tinkerforge.bricklet_evse_v2 import BrickletEVSEV2
 from provisioning.provision_common.provision_common import *
 from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
+from provisioning.pib_compare import compare_data as pib_compare_data
 
 evse = None
 host = None
@@ -516,9 +517,9 @@ def upload_iso15118_pib():
         req = urllib.request.Request("http://{}/iso15118/pib_read".format(host))
         try:
             with urllib.request.urlopen(req, timeout=2) as f:
-                result = f.read()
-                if result != pib:
-                    Path(pib_filename + ".readback").write_bytes(result)
+                pid_readback = f.read()
+                if not pib_compare_data(pib, pid_readback):
+                    Path(pib_filename + ".readback").write_bytes(pid_readback)
                     fatal_error(f"Iso15118 pib not applied! See {pib_filename} vs {pib_filename}.readback file")
                 ex = None
                 break
