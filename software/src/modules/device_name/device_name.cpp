@@ -52,7 +52,11 @@ static String getWarpDisplayType(bool add_optional_hw=true)
 #if OPTIONS_PRODUCT_ID_IS_ELTAKO()
         ""; // ELTAKO Wallbox always has a meter
 #else
+#if MODULE_FACTORY_DATA_AVAILABLE()
+        String(" ") + factory_data.get_sku_model_display_str();
+#else
         api.hasFeature("meter") ? " Pro" : " Smart";
+#endif
 #endif
 
     if (api.hasFeature("evse")) {
@@ -116,6 +120,7 @@ void DeviceName::setup()
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }
 
+    // FIXME: investigate if this timer can be replaced with an event for info/features and evse/slots
     task_scheduler.scheduleUncancelable([this](){
         this->updateDisplayType();
     }, 60_s);
@@ -127,4 +132,14 @@ void DeviceName::register_urls()
 {
     api.addState("info/name", &name);
     api.addPersistentConfig("info/display_name", &display_name);
+}
+
+void DeviceName::register_events()
+{
+#if MODULE_FACTORY_DATA_AVAILABLE() && MODULE_EVENT_AVAILABLE()
+    event.registerEvent("factory_data/state", {"sku_model"}, [this](const Config * /*config*/) {
+        updateDisplayType();
+        return EventResult::OK;
+    });
+#endif
 }

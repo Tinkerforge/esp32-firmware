@@ -229,6 +229,58 @@ void FactoryData::register_urls()
 #endif
 }
 
+const char *FactoryData::get_sku_model_display_str() const
+{
+    SKUModel model = get_sku_model();
+
+    switch (model) {
+    case SKUModel::Unknown:
+        return "Unknown";
+
+    case SKUModel::Smart:
+        return "Smart";
+
+    case SKUModel::Pro:
+        return "Pro";
+
+    case SKUModel::Eichrecht:
+        return "Eichrecht";
+
+    default:
+        esp_system_abortf<32>("Invalid model: %u", static_cast<uint8_t>(model));
+    }
+}
+
+bool FactoryData::has_meter_according_to_sku() const
+{
+    SKUProduct product = get_sku_product();
+    SKUModel model = get_sku_model();
+
+    switch (product) {
+    case SKUProduct::Unknown:
+        return false;
+
+    case SKUProduct::WARP4:
+        switch (model) {
+        case SKUModel::Unknown:
+        case SKUModel::Smart:
+            return false;
+
+        case SKUModel::Pro:
+        case SKUModel::Eichrecht:
+            return true;
+
+        default:
+            esp_system_abortf<32>("Invalid model: %u", static_cast<uint8_t>(model));
+        }
+
+        break;
+
+    default:
+        esp_system_abortf<32>("Invalid product: %u", static_cast<uint8_t>(product));
+    }
+}
+
 bool FactoryData::read_factory_sku(char sku_str[FACTORY_DATA_SKU_STR_MAX_LEN + 1])
 {
     fs::LittleFSFS factorydata_fs;

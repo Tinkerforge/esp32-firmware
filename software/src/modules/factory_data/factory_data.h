@@ -50,6 +50,9 @@ public:
     inline SKUType2 get_sku_type2() const         { return state.get("sku_type2")->asEnum<SKUType2>(); }
     inline SKUEngraving get_sku_engraving() const { return state.get("sku_engraving")->asEnum<SKUEngraving>(); }
 
+    const char *get_sku_model_display_str() const;
+    bool has_meter_according_to_sku() const;
+
     struct NFCTag {
         uint8_t tag_type = 255;
         char tag_id[FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH + 1] = "";

@@ -25,6 +25,8 @@
 #include "tools.h"
 #include "modules/meters/meter_value_availability.h"
 
+// FIXME: maybe make this timeout shorter if meter is not API and not SDM62v1. in
+//        those cases we should have fast changing values available
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
 
@@ -213,6 +215,13 @@ void RequireMeter::setup()
 {
     api.restorePersistentConfig("require_meter/config", &config);
 
+#if MODULE_FACTORY_DATA_AVAILABLE()
+    if (config.get("config")->asUint() == WARP_SMART && factory_data.has_meter_according_to_sku()) {
+        config.get("config")->updateUint(WARP_PRO_ENABLED);
+        api.writeConfig("require_meter/config", &config);
+    }
+#endif
+
     task_scheduler.scheduleOnce([this](){ this->apply_config(); });
 
     initialized = true;
@@ -221,6 +230,22 @@ void RequireMeter::setup()
 void RequireMeter::register_urls()
 {
     api.addPersistentConfig("require_meter/config", &config);
+}
+
+void RequireMeter::register_events()
+{
+#if MODULE_FACTORY_DATA_AVAILABLE()
+    event.registerEvent("factory_data/state", {}, [this](const Config * /*config*/) {
+        if (config.get("config")->asUint() == WARP_SMART && factory_data.has_meter_according_to_sku()) {
+            config.get("config")->updateUint(WARP_PRO_ENABLED);
+            api.writeConfig("require_meter/config", &config);
+
+            task_scheduler.scheduleOnce([this](){ this->apply_config(); });
+        }
+
+        return EventResult::OK;
+    });
+#endif
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
