@@ -99,6 +99,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_CONNECTED:
         conn->start_client_confirm();
         break;
+    case WEBSOCKET_EVENT_PONG:
+        break;
     default:
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
@@ -183,6 +185,7 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
     if (ws_pkt->final) {
         message_incoming->multipart_index = SIZE_MAX;
+        incoming_message_pending = true;
         ws_mode = WebsocketMode::HttpThreadCb;
         state_machine_next_step();
     }
@@ -426,6 +429,12 @@ void ShipConnection::schedule_state_machine_next_step()
 
 void ShipConnection::state_machine_next_step()
 {
+    // Pending frames need to be consumed
+    const bool was_listening = is_listening_state(state);
+    if (was_listening) {
+        incoming_message_pending = false;
+    }
+
     switch (state) {
         case ShipConnectionState::CmiInitStart:
             state_cme_init_start();
@@ -548,6 +557,12 @@ void ShipConnection::state_machine_next_step()
             state_is_not_implemented();
             break;
     }
+
+    // Move to next state if a frame was received in a state which did not process it
+    if (!was_listening && incoming_message_pending && is_listening_state(state)) {
+        incoming_message_pending = false;
+        state_machine_next_step();
+    }
 }
 
 void ShipConnection::state_cme_init_start()
@@ -595,7 +610,7 @@ void ShipConnection::state_cmi_client_wait()
 void ShipConnection::state_cmi_client_evaluate()
 {
     auto cmi_message = get_cmi_message();
-    if (cmi_message.type == 0 && cmi_message.value == 0) {
+    if (cmi_message.valid && cmi_message.type == 0 && cmi_message.value == 0) {
         // SHIP 13.4.3 3.2.2
         set_and_schedule_state(ShipConnectionState::SmeConnectionDataPreparation);
     } else {
@@ -1486,4 +1501,24 @@ void ShipConnection::log_message(const String &state_prefix, Message *msg)
 
 void ShipConnection::common_procedure_enable_data_exchange()
 {
+}
+
+bool ShipConnection::is_listening_state(ShipConnectionState s)
+{
+    // States which read and processes the content of message_incoming.
+    // All other states do not consume the content of message_incoming so if a message is received, it could be lost there
+    switch (s) {
+        case ShipConnectionState::CmiClientEvaluate:
+        case ShipConnectionState::CmiServerEvaluate:
+        case ShipConnectionState::SmeHelloReadyListen:
+        case ShipConnectionState::SmeHelloPendingListen:
+        case ShipConnectionState::SmeProtocolHandshakeServerListenProposal:
+        case ShipConnectionState::SmeProtocolHandshakeServerListenConfirm:
+        case ShipConnectionState::SmeProtocolHandshakeClientListenChoice:
+        case ShipConnectionState::SmeAccessMethodRequest:
+        case ShipConnectionState::Done:
+            return true;
+        default:
+            return false;
+    }
 }

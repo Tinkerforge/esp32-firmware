@@ -428,4 +428,12 @@ public:
     void to_json_access_methods_type();
 
     void log_message(const String &state_prefix, Message *msg);
+
+    // We need to handle situations where a frame is received while SHIP is in a state where it does not automatically process it.
+    // To avoid getting stuck waiting for an already arrived frame, we need to check this.
+    // True while incoming is ready in message_incoming and has not been fed into the state machine.
+    bool incoming_message_pending = false;
+
+    // Returns true for states whose handler reads and processes message_incoming
+    static bool is_listening_state(ShipConnectionState s);
 };
