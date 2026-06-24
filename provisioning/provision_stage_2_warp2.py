@@ -251,7 +251,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
 def exists_evse_test_report(evse_uid):
     global generation
-    evse_version = {2: 2, 3: 3, 4: 3}[generation]
+    evse_version = {2: 2, 3: 3, 4: 4}[generation]
     with open(os.path.join("..", "..", "test-reports", f"evse_v{evse_version}", "full_test_log.csv"), newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
