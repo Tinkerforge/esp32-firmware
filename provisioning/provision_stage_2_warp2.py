@@ -877,9 +877,17 @@ def main(stage3, scanner, result):
         else:
             pull_firmwares_git()
 
-            firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
-            firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
-            firmware_path = os.path.join(firmware_directory, firmware_path)
+            firmware_path = None
+
+            for arg in sys.argv:
+                if arg.startswith('--latest-firmware='):
+                    firmware_path = arg.removeprefix('--latest-firmware=')
+
+            if firmware_path == None:
+                firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
+                firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
+                firmware_path = os.path.join(firmware_directory, firmware_path)
+
             latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
             flash_latest_version = False
 
