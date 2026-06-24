@@ -8,6 +8,7 @@ import pathlib
 import json
 import hashlib
 import csv
+import secure_boot as secure_boot_py
 from zlib import crc32
 
 env = None
@@ -24,6 +25,7 @@ product_id = metadata['product_id']
 signature_preset = metadata['signature_preset']
 firmware_basename = metadata['firmware_basename']
 split_esptool_ota = metadata['split_esptool_ota']
+secure_boot = metadata['secure_boot']
 
 if sys.platform == 'win32':
     def symlink(src, dst):
@@ -135,20 +137,21 @@ merge_cmd_base = [
     '--chip', 'esp32',
     'merge-bin',
     '--target-offset', '0x1000',
-    app_offset, env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
 ]
 
 def merge_firmware_merged():
     global merge_cmd_base
     global partition_table_offset
     global otadata_offset
+    global app_offset
 
     cmd = merge_cmd_base + [
-        '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
+        '-o',                   env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin'),
         '0x1000',               env.subst(f'$BUILD_DIR{os.sep}bootloader.bin'),
         partition_table_offset, env.subst(f'$BUILD_DIR{os.sep}partitions.bin'),
         '0xd000',               env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin'),
         otadata_offset,         'boot_app0.bin',
+        app_offset,             env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin'),
     ]
 
     subprocess.check_call(cmd)
@@ -157,22 +160,73 @@ def merge_firmware_esptool():
     global merge_cmd_base
     global partition_table_offset
     global otadata_offset
+    global app_offset
 
     cmd = merge_cmd_base + [
-        '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_esptool.bin'),
+        '-o',                   env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_esptool.bin'),
         '0x1000',               env.subst(f'$BUILD_DIR{os.sep}bootloader.bin'),
         partition_table_offset, env.subst(f'$BUILD_DIR{os.sep}partitions.bin'),
         otadata_offset,         'boot_app0.bin',
+        app_offset,             env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
+    ]
+
+    subprocess.check_call(cmd)
+
+def merge_firmware_esptool_secure():
+    global merge_cmd_base
+    global partition_table_offset
+    global otadata_offset
+    global secure_boot
+
+    # Expected format of the custom_secure_boot setting: "<UID/name>,<efuses block3>,<factory MAC>"
+    # Example:
+    # custom_secure_boot = "8555,0000123456789abcdef0123456789abcdef012345678ab00cdef012345678900,a8:03:2a:12:34:56"
+
+    sb = secure_boot.split(',')
+    encryption_target_name = sb[0]
+    efuses_block3 = sb[1]
+    factory_mac = sb[2]
+
+    f_boot     = env.subst(f'$BUILD_DIR{os.sep}bootloader.bin')
+    f_boot_sig = env.subst(f'$BUILD_DIR{os.sep}bootloader_signed.bin')
+    f_boot_enc = env.subst(f'$BUILD_DIR{os.sep}bootloader_signed_encrypted.bin')
+    secure_boot_py.sign_str(f_boot, f_boot_sig, efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_boot_sig, f_boot_enc, '0x1000', efuses_block3, factory_mac)
+
+    f_part     = env.subst(f'$BUILD_DIR{os.sep}partitions.bin')
+    f_part_enc = env.subst(f'$BUILD_DIR{os.sep}partitions_encrypted.bin')
+    secure_boot_py.encrypt_str(f_part, f_part_enc, partition_table_offset, efuses_block3, factory_mac)
+
+    f_ota     = 'boot_app0.bin'
+    f_ota_enc = env.subst(f'$BUILD_DIR{os.sep}boot_app0_encrypted.bin')
+    secure_boot_py.encrypt_str(f_ota, f_ota_enc, otadata_offset, efuses_block3, factory_mac)
+
+    f_app     = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
+    f_app_sig = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_signed.bin')
+    f_app_enc = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_signed_encrypted.bin')
+    secure_boot_py.sign_str(f_app, f_app_sig, efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_app_sig, f_app_enc, app_offset, efuses_block3, factory_mac)
+
+    f_out = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_esptool_secure_{encryption_target_name}.bin')
+
+    cmd = merge_cmd_base + [
+        '-o',                   f_out,
+        '0x1000',               f_boot_enc,
+        partition_table_offset, f_part_enc,
+        otadata_offset,         f_ota_enc,
+        app_offset,             f_app_enc,
     ]
 
     subprocess.check_call(cmd)
 
 def merge_firmware_ota():
     global merge_cmd_base
+    global app_offset
 
     cmd = merge_cmd_base + [
-        '-o', env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_ota.bin'),
-        '0xd000', env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin'),
+        '-o',       env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_ota.bin'),
+        '0xd000',   env.subst(f'$BUILD_DIR{os.sep}firmware_info.bin'),
+        app_offset, env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin'),
     ]
 
     subprocess.check_call(cmd)
@@ -205,6 +259,9 @@ add_post_action_bin(f'Writing firmware info', write_firmware_info)
 if split_esptool_ota:
     add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_esptool.bin', merge_firmware_esptool)
     add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_ota.bin', merge_firmware_ota)
+    if len(secure_boot) > 0:
+        encryption_target_name = secure_boot.split(',')[0]
+        add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_esptool_secure_{encryption_target_name}.bin', merge_firmware_esptool_secure)
 else:
     add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_merged.bin', merge_firmware_merged)
 

@@ -1064,6 +1064,7 @@ def main():
     prepare_only = "-DPREPARE_ONLY" in build_flags
     signature_preset = env.GetProjectOption("custom_signature_preset")
     split_esptool_ota = env.GetProjectOption("custom_split_esptool_ota") == "true"
+    secure_boot = env.GetProjectOption("custom_secure_boot", "").replace('"', '')
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
@@ -1708,6 +1709,7 @@ def main():
         'firmware_basename': firmware_basename,
         'signature_preset': signature_preset,
         'split_esptool_ota': split_esptool_ota,
+        'secure_boot': secure_boot,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
         'branding_mod_path': os.path.abspath(branding_mod_path),
         'options': options_dict,
