@@ -920,8 +920,6 @@ void ChargeTracker::setup()
 
     repair_charges();
 
-    logger.printfln("Done");
-
     api.restorePersistentConfig("charge_tracker/config", &config);
     api.restorePersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
 }
