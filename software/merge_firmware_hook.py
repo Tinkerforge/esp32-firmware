@@ -268,6 +268,9 @@ else:
 if split_esptool_ota:
     unsigned_suffixes = ['esptool']
     signed_suffixes = ['ota']
+    if len(secure_boot) > 0:
+        encryption_target_name = secure_boot.split(',')[0]
+        unsigned_suffixes += [f'esptool_secure_{encryption_target_name}']
 else:
     unsigned_suffixes = []
     signed_suffixes = ['merged']
