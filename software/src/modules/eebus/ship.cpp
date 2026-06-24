@@ -357,6 +357,10 @@ void Ship::connect_trusted_peers()
             eebus.trace_fmtln("Skipping peer %s: no IP or port", node->node_name().c_str());
             continue;
         }
+        if (node->txt_ski.isEmpty()) {
+            eebus.trace_fmtln("Skipping peer %s: no SKI", node->node_name().c_str());
+            continue;
+        }
 
         // Check if we already have an active connection to this peer
         bool already_connected = false;
@@ -558,25 +562,12 @@ void Ship::check_mdns_results()
             continue;
         }
 
-        // Check if we already have a peer with this SKI
-        auto existing_ski_peer = peer_handler.get_peer_by_ski(txt_ski);
-
-        // Check if we have a peer with matching IP but different/empty SKI (from SHIP connection)
-        // If so, merge them by updating the existing peer's SKI instead of creating a duplicate
-        for (const String &ip : ip_addresses) {
-            auto ip_peer = peer_handler.get_peer_by_ip(ip);
-            if (ip_peer != nullptr && ip_peer->txt_ski != txt_ski) {
-                // Found a peer with matching IP but different SKI - merge them
-                eebus.trace_fmtln("Merging peer with IP %s: updating SKI from %s to %s", ip.c_str(), ip_peer->txt_ski.c_str(), txt_ski.c_str());
-                ip_peer->txt_ski = txt_ski;
-                // Mark as discovered (non-persistent) since it came from mDNS
-                ip_peer->persistent = false;
-                existing_ski_peer = ip_peer;
-                break;
-            }
-        }
-
-        // This is pretty slow as we have to search for the peer again everytime, could be optimized by adding, getting and then setting the values
+        // The SKI is the authoritative peer identity, not the IP. A peers SKI is never
+        // changed after creation: we only ever talk to peers whose SKI we know (the SKI is
+        // learned from the TLS client certificate on connect, and we never connect without
+        // one). Therefore mDNS results are matched by SKI only. If a new SKI shows up for an
+        // already-known IP, we assume its a different peer and it gets its own ShipNode; the IP
+        // may legitimately be shared between several peer entries or the peer may have a new SKI.
         auto *peer = peer_handler.get_or_create_by_ski(txt_ski);
         peer->txt_vers = txt_vers;
         peer->txt_id = txt_id;
