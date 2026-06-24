@@ -78,15 +78,14 @@ class StderrWrapper:
 
         return f.__setattr__(name, value)
 
-class ThreadWithReturnValue(Thread):
+class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
-                args=(), kwargs={}, Verbose=None):
-        Thread.__init__(self, group, target, name, args, kwargs)
+                 args=(), kwargs={}, Verbose=None):
+        super().__init__(group, target, name, args, kwargs)
         self._return = None
         self._success = False
         self._exception = None
         self.start_semaphore = threading.Semaphore(0)
-
 
     def run(self):
         self.start_semaphore.acquire()
@@ -98,7 +97,7 @@ class ThreadWithReturnValue(Thread):
                 self._exception = e
 
     def join(self, *args):
-        Thread.join(self, *args)
+        super().join(*args)
         return self._success, self._return, self._exception
 
 def test_bricklet_ports_warp3(ipcon):

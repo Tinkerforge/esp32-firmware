@@ -39,7 +39,7 @@ from provisioning.xmc_flash_bootloader import xmc_flash_bootloader
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
                     args=(), kwargs={}, Verbose=None):
-        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        super().__init__(group, target, name, args, kwargs)
         self._return = None
         self._success = False
         self._exception = None
@@ -55,7 +55,7 @@ class ThreadWithReturnValue(threading.Thread):
                 self._exception = e
 
     def join(self, *args):
-        threading.Thread.join(self, *args)
+        super().join(*args)
         return self._success, self._return, self._exception
 
 def excepthook(cls, exception, traceback):
