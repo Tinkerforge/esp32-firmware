@@ -26,6 +26,7 @@
 #include "tools.h"
 #include "tools/string_builder.h"
 #include "generated/evse_v2_bricklet_firmware_bin.embedded.h"
+#include "modules/meters/meter_defs.h"
 
 extern EVSEV2 evse_v2;
 
@@ -1375,7 +1376,7 @@ bool EVSEV2::is_shutdown_input_closed()
 {
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     return !evse_common.low_level_state.get("gpio")->get(5)->asBool();
-#elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+#elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_WARP4_PROVISIONING() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     return !evse_common.low_level_state.get("gpio")->get(18)->asBool();
 #else
     #error "GPIO layout is unknown"
