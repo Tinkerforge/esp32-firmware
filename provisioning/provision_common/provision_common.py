@@ -51,11 +51,20 @@ def temp_file():
         except IOError:
             print('Failed to clean up temp file {}'.format(name))
 
-def run(args):
-    return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8", LANG="C", LANGUAGE="en")).decode("utf-8").split("\n")
+def run(args, capture_stderr=False):
+    p = subprocess.run(args,
+                       check=True,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE if capture_stderr else None,
+                       env=dict(os.environ, LC_ALL="en_US.UTF-8", LANG="C", LANGUAGE="en"))
 
-def esptool(args, override_port=None):
-    return run(["uv", "run", "esptool", "--port", PORT if override_port is None else override_port, *args])
+    if capture_stderr:
+        return (p.stdout.decode('utf-8').split("\n"), p.stderr.decode('utf-8').split("\n"))
+    return p.stdout.decode('utf-8').split("\n")
+
+
+def esptool(args, override_port=None, capture_stderr=False):
+    return run(["uv", "run", "esptool", "--port", PORT if override_port is None else override_port, *args], capture_stderr)
 
 def espefuse(args, override_port=None):
     return run(["uv", "run", "espefuse", "--port", PORT if override_port is None else override_port, *args])
