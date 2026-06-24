@@ -8,7 +8,6 @@ import pathlib
 import json
 import hashlib
 import csv
-import secure_boot as secure_boot_py
 from zlib import crc32
 
 env = None
@@ -171,6 +170,10 @@ def merge_firmware_esptool():
     ]
 
     subprocess.check_call(cmd)
+
+
+if len(secure_boot) > 0:
+    import secure_boot as secure_boot_py
 
 def merge_firmware_esptool_secure():
     global merge_cmd_base

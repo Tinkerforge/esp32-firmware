@@ -1080,11 +1080,25 @@ def main():
             'build/firmware_latest_ota.bin',
         ]
 
+        glob_patterns_to_remove = [
+            f'build/{product_id}_firmware_latest_esptool_secure_*.bin',
+            'build/firmware_latest_esptool_secure_*.bin',
+        ]
+
         for symlink in symlinks_to_remove:
             try:
                 os.remove(symlink)
             except FileNotFoundError:
                 pass
+
+        for glob_pattern in glob_patterns_to_remove:
+            symlinks = glob.glob(glob_pattern)
+
+            for symlink in symlinks:
+                try:
+                    os.remove(symlink)
+                except FileNotFoundError:
+                    pass
 
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
     is_dirty = len(subprocess.run(["git", "diff", "HEAD"], check=True, capture_output=True).stdout) > 0
