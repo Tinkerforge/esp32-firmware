@@ -78,7 +78,7 @@ public:
 
     bool vehicle_connected = false;
 
-    static bool erase_other_partition(String &errmsg, bool erase_all);
+    bool erase_other_partition(String &msg, bool erase_all);
 
     void handle_index_data(const void *data, size_t data_len);
 

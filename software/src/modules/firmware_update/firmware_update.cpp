@@ -33,7 +33,7 @@
 #include "modules/esp32_common/secure_boot.h"
 #include "rollback_timing.h"
 #include "tools/hexdump.h"
-#include "tools/string_builder.h"
+#include "tools/printf.h"
 #include "tools/semantic_version.h"
 #include "generated/check_state.enum.h"
 #include "generated/install_origin.enum.h"
@@ -768,12 +768,12 @@ static void boot_other_partition(const char *other_partition_label, String &errm
     errmsg = String("Other partition not found: ") + other_partition_label;
 }
 
-bool FirmwareUpdate::erase_other_partition(String &errmsg, bool erase_all)
+bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
     if (running_partition == nullptr) {
-        errmsg = "Could not get running partition";
+        msg = "Could not get running partition";
         return false;
     }
 
@@ -786,50 +786,38 @@ bool FirmwareUpdate::erase_other_partition(String &errmsg, bool erase_all)
         other_partition_label = "app0";
     }
     else {
-        char buf[48];
-        StringWriter sw{buf, sizeof(buf)};
-
-        sw.printf("Unexpected running partition: %s", running_partition->label);
-
-        errmsg = sw.getPtr();
+        msg = string_printf<48>("Unexpected running partition: %s", running_partition->label);
         return false;
     }
 
-    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
-                                                                ESP_PARTITION_SUBTYPE_ANY,
-                                                                other_partition_label);
+    const esp_partition_t *other_partition = esp_partition_find_first(ESP_PARTITION_TYPE_APP,
+                                                                      ESP_PARTITION_SUBTYPE_ANY,
+                                                                      other_partition_label);
 
-    if (partition == nullptr) {
-        char buf[48];
-        StringWriter sw{buf, sizeof(buf)};
-
-        sw.printf("Other partition '%s' not found", other_partition_label);
-
-        errmsg = sw.getPtr();
+    if (other_partition == nullptr) {
+        msg = string_printf<48>("Other partition %s not found", other_partition_label);
         return false;
     }
 
-    const size_t erase_size = erase_all ? partition->size : partition->erase_size;
+    if (!change_partition_ota_state_from_to(other_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, true)) {
+        msg = string_printf<64>("Could not change OTA state of partition %s to invalid", other_partition_label);
+        return false;
+    }
+
+    const size_t erase_size = erase_all ? other_partition->size : other_partition->erase_size;
 
     const micros_t t_start = now_us();
-    esp_err_t err = esp_partition_erase_range(partition, 0, erase_size);
+    esp_err_t err = esp_partition_erase_range(other_partition, 0, erase_size);
     const uint32_t runtime_us = (now_us() - t_start).as<uint32_t>();
 
-    bool success;
-    char buf[64];
-    StringWriter sw{buf, sizeof(buf)};
-
-    if (err == ESP_OK) {
-        const uint32_t runtime_ms = runtime_us / 1000;
-        sw.printf("Erased %s of partition %s in %lu.%lus", erase_all ? "all" : "beginning", other_partition_label, runtime_ms / 1000, runtime_ms % 1000);
-        success = true;
-    } else {
-        sw.printf("Could not erase partition '%s': %s (0x%04x)", other_partition_label, esp_err_to_name(err), static_cast<unsigned>(err));
-        success = false;
+    if (err != ESP_OK) {
+        msg = string_printf<64>("Could not erase partition %s: %s (0x%04x)", other_partition_label, esp_err_to_name(err), static_cast<unsigned>(err));
+        return false;
     }
 
-    errmsg = sw.getPtr();
-    return success;
+    const uint32_t runtime_ms = runtime_us / 1000;
+    msg = string_printf<64>("Erased %s of partition %s in %lu.%lus", erase_all ? "all" : "beginning", other_partition_label, runtime_ms / 1000, runtime_ms % 1000);
+    return true;
 }
 
 void FirmwareUpdate::register_urls()
@@ -964,9 +952,9 @@ void FirmwareUpdate::register_urls()
 
     // Completely erase other firmware in HTTP thread because it takes a while.
     server.on_HTTPThread("/firmware_update/erase_other", HTTP_GET, [this](WebServerRequest request) {
-        String errmsg;
-        const bool success = erase_other_partition(errmsg, true);
-        return request.send_plain(success ? 200 : 500, errmsg);
+        String msg;
+        const bool success = erase_other_partition(msg, true);
+        return request.send_plain(success ? 200 : 500, msg);
     });
 
     server.on_HTTPThread("/check_firmware", HTTP_POST, [this](WebServerRequest request) {

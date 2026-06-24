@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <WString.h>
 
 // Unchecked snprintf that returns size_t
 [[gnu::format(__printf__, 2, 3)]]
@@ -33,3 +34,18 @@ size_t snprintf_u(char *buf, size_t len, const char *fmt, ...);
 // Unchecked vsnprintf that returns size_t
 [[gnu::format(__printf__, 3, 0)]]
 size_t vsnprintf_u(char *buf, size_t len, const char *fmt, va_list args);
+
+template<size_t buf_len>
+[[gnu::noinline]]
+[[gnu::format(__printf__, 1, 2)]]
+String string_printf(const char *fmt, ...)
+{
+    char buf[buf_len];
+    va_list args;
+
+    va_start(args, fmt);
+    vsnprintf(buf, buf_len, fmt, args);
+    va_end(args);
+
+    return buf;
+}
