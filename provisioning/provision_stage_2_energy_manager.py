@@ -174,7 +174,7 @@ class EnergyManagerTester:
             self.wem_ipcon.connect(host, 4223)
         except Exception as e:
             self.fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
-            
+
         time.sleep(1)
         enumerations = enumerate_devices(self.wem_ipcon)
 
@@ -184,7 +184,7 @@ class EnergyManagerTester:
 
         self.wem = BrickletWARPEnergyManager(wem_bricklet_enum.uid, self.wem_ipcon)
         self.wem.set_rgb_value(0, 0, 255)
-    
+
     def fatal_error(self, string):
         self.rgb_led.set_rgb_value(255, 0, 0)
 
@@ -220,7 +220,7 @@ class EnergyManagerTester:
         else:
             self.fatal_error(" ... Contactor not active FAILED!")
         print(' ... Done')
-    
+
     def test_gp_output(self):
         print('Testing GP output...')
         self.wem.set_output(True)
@@ -290,7 +290,7 @@ class EnergyManagerTester:
         else:
             self.fatal_error(" ... RS485 FAILED! ({})".format(value))
         print(' ... Done')
-    
+
     def test_sd_card(self):
         print('Testing SD card...')
         print(' ... formating SD card')
@@ -377,7 +377,7 @@ class EnergyManagerTester:
         self.result["end"] = now()
         with mkdir_open(os.path.join("..", "..", "test-reports", "energy_manager", "{}_{}_report_stage_2.json".format(self.ssid, now().replace(":", "-"))), "w") as f:
             json.dump(self.result, f, indent=4)
-    
+
         print('Done!')
         self.rgb_led.set_rgb_value(0, 255, 0)
 
