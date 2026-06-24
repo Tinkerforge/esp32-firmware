@@ -816,7 +816,7 @@ def main(stage3, scanner, result):
                     print(f"Mismatch between already locked factory data SKU {factory_data["sku"]} and scanned SKU {scanner.qr_sku}")
                     factory_data_write = True
 
-                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data['nfc_tags']]
+                factory_tag_infos = [TagInfo(x['tag_type'], x['tag_id']) for x in factory_data['nfc_tags']]
 
                 if set(factory_tag_infos) != set(tag_infos):
                     print(f"Mismatch between already locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
@@ -869,7 +869,7 @@ def main(stage3, scanner, result):
                 dprint("post factory data write")
 
         info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
-        version = [int(x) for x in info_version['firmware'].split('+').split('.')]
+        version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
 
         dprint("post version fetch")
 
@@ -922,7 +922,7 @@ def main(stage3, scanner, result):
                 if factory_data['sku'] != scanner.qr_sku:
                     fatal_error(f"Mismatch between locked factory data SKU {factory_data["sku"]} and scanned SKU {scanner.qr_sku}")
 
-                factory_tag_infos = [TagInfo(x.tag_type, x.tag_id) for x in factory_data['nfc_tags']]
+                factory_tag_infos = [TagInfo(x['tag_type'], x['tag_id']) for x in factory_data['nfc_tags']]
 
                 if factory_tag_infos != tag_infos:
                     fatal_error(f"Mismatch between locked factory data NFC tags {factory_tag_infos} and seen NFC tag {tag_infos}")
