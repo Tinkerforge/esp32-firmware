@@ -238,10 +238,10 @@ def get_espefuse_tasks(*, override_port=None, secure_mode=False, mac_address_byt
     if any(b is None for b in blocks):
         fatal_error("Failed to read eFuses", "Not all blocks where found", "espefuse output was", '\n'.join(output))
 
-    if any(i != 0 for i in blocks[1]):
+    if not secure_mode and any(i != 0 for i in blocks[1]):
         fatal_error("eFuse block 1 is not empty.", "espefuse output was", '\n'.join(output))
 
-    if any(i != 0 for i in blocks[2]):
+    if not secure_mode and any(i != 0 for i in blocks[2]):
         fatal_error("eFuse block 2 is not empty.", "espefuse output was", '\n'.join(output))
 
     voltage_fuses = blocks[0][4] & 0x0001c000
