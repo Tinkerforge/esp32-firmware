@@ -51,7 +51,7 @@ if args.erase:
     if confirm == 'n':
         sys.exit(0)
 
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 erase_flash".format(port))
+    os.system("uv run esptool --port {} --chip esp32 erase-flash".format(port))
 
 if not args.serial_only:
     if args.firmware is None:
@@ -67,10 +67,10 @@ if not args.serial_only:
 
     print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash 0x1000 {}".format(port, firmware))
+    os.system("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after hard-reset write-flash 0x1000 {}".format(port, firmware))
 
 if args.reboot:
-    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 run".format(port))
+    os.system("uv run esptool --port {} --chip esp32 --baud 921600 run".format(port))
 
 if not args.no_serial:
     while True:
