@@ -184,6 +184,14 @@ void ESP32Common::setup()
 
 void ESP32Common::register_urls()
 {
+#ifdef CONFIG_SECURE_BOOT
+    if (ESP32CommonSecureBoot::is_secure_boot_enabled()) {
+        if (!ESP32CommonSecureBoot::check_secure_boot_v2_key()) {
+            logger.printfln("SBv2 key boot check failed");
+        }
+    }
+#endif
+
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/esp32/dump_flash", HTTP_GET, [this](WebServerRequest request) {
         constexpr uint32_t BUFFER_SIZE = 4000;

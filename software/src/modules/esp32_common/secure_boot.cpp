@@ -337,10 +337,8 @@ static bool load_secure_boot_key(uint8_t sb_key[ESP_SECURE_BOOT_DIGEST_LEN])
 [[gnu::noinline]]
 static bool load_key_from_file(std::unique_ptr<uint8_t[]> *key_buffer, size_t *key_length_out, uint8_t *sb_key)
 {
-    uint8_t sb_key_local[ESP_SECURE_BOOT_DIGEST_LEN];
-
     if (sb_key == nullptr) {
-        sb_key = sb_key_local;
+        return false;
     }
 
     if (!load_secure_boot_key(sb_key)) {
@@ -421,8 +419,45 @@ static bool parse_key_without_randomness(mbedtls_pk_context *rsa_key, const unsi
 }
 
 [[gnu::noinline]]
+static bool validate_or_delete_cache(mbedtls_pk_context *rsa_key, uint8_t sb_key[ESP_SECURE_BOOT_DIGEST_LEN])
+{
+    {
+        uint8_t sb_key_validation[ESP_SECURE_BOOT_DIGEST_LEN];
+
+        if (!hash_rsa_pubkey(rsa_key, sb_key_validation)) {
+            return false;
+        }
+
+        if (memcmp(sb_key, sb_key_validation, sizeof(sb_key_validation)) == 0) {
+            // Validation successful
+            return true;
+        }
+    }
+
+    logger.printfln("Cached Secure Boot v2 key signature check failed");
+
+    // Remove invalid cached key
+    {
+        char path_buf[64];
+        StringWriter path(path_buf, std::size(path_buf));
+
+        if (generate_cache_path(&path, sb_key)) {
+            LittleFS.remove(path.getPtr());
+        }
+    }
+
+    return false;
+}
+
+[[gnu::noinline]]
 bool ESP32CommonSecureBoot::load_cached_secure_boot_v2_key(mbedtls_pk_context *rsa_key, mbedtls_f_rng_t *f_rng, void *p_rng, uint8_t *sb_key)
 {
+    uint8_t sb_key_local[ESP_SECURE_BOOT_DIGEST_LEN];
+
+    if (sb_key == nullptr) {
+        sb_key = sb_key_local;
+    }
+
     std::unique_ptr<uint8_t[]> key_buffer;
     size_t key_length;
 
@@ -451,21 +486,8 @@ bool ESP32CommonSecureBoot::load_cached_secure_boot_v2_key(mbedtls_pk_context *r
         return false;
     }
 
-    if (sb_key != nullptr) {
-        bool key_set = false;
-
-        for (size_t i = 0; i < ESP_SECURE_BOOT_DIGEST_LEN; i++) {
-            if (sb_key[i] != 0) {
-                key_set = true;
-                break;
-            }
-        }
-
-        if (!key_set) {
-            if (!hash_rsa_pubkey(rsa_key, sb_key)) {
-                return false;
-            }
-        }
+    if (!validate_or_delete_cache(rsa_key, sb_key)) {
+        return false;
     }
 
     return true;
