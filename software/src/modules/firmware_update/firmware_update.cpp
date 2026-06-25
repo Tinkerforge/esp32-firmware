@@ -1218,7 +1218,17 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
         return -1;
     }
 
-    state.get(app_state_key)->updateUint(new_ota_state);
+    // This function can be called during pre_init when 'state' doesn't exist yet.
+    // It's initialized during setup, so there's no point in setting it earlier.
+    if (boot_stage > BootStage::PRE_SETUP) {
+        if (running_in_main_task()) {
+            state.get(app_state_key)->updateUint(new_ota_state);
+        } else {
+            task_scheduler.scheduleOnce([this, app_state_key, new_ota_state]() {
+                state.get(app_state_key)->updateUint(new_ota_state);
+            });
+        }
+    }
 
     if (!silent) {
         logger.printfln("Changed %s partition OTA state from %s to %s",
