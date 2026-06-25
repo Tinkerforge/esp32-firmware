@@ -28,7 +28,7 @@ let x = {
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
                 <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> : <span>charge management</span>} among the chargers.</p>
                 <ul>
-                    <li><strong>Disabled:</strong> No charge management is performed by a WARP device. External control by EVCC or other non-WARP charge managers is still possible.</li>
+                    <li><strong>Disabled:</strong> No charge management is performed by a WARP device. External control via the HTTP and MQTT APIs, for example by EVCC, is still possible.</li>
                     {has_managed_mode ?
                         <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another WARP device. No further settings are required.</li>
                         : undefined}
