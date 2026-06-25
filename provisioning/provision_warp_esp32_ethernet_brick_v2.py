@@ -407,8 +407,6 @@ class P:
         result["tests_successful"] = True
 
     def encrypt_and_secure(serial_port, ethernet_ip, result):
-        # TODO handle "A fatal error occurred: Active security features detected, erasing flash is disabled as a safety measure. Use the force argument to override, please use with caution, otherwise it may brick your device!"
-        # handle 404
         print("Securing device")
         req = urllib.request.Request(f"http://{ethernet_ip}/esp32/secure_device",
                                     data=json.dumps({"destroy_my_data":True, "deterministic":False}).encode("utf-8"),
