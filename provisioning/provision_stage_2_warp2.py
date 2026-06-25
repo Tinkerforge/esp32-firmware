@@ -694,19 +694,19 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
     print(f"\r{expected_count} NFC tag{'s' if expected_count != 1 else ''} seen." + " " * 20)
     return [TagInfo(x.tag_type, ":".join("{:02X}".format(i) for i in x.tag_id)) for x in seen_tags]
 
-def pull_firmwares_git():
+def pull_git(name):
     github_reachable = True
     try:
-        with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
+        with urllib.request.urlopen(f'https://github.com/Tinkerforge/{name}', timeout=5.0) as req:
             req.read()
     except:
-        print("github.com not reachable: Will not pull firmwares git.")
+        print(f"github.com not reachable: Will not pull {name} git.")
         github_reachable = False
 
     dprint("post github reachable")
 
     if github_reachable:
-        with tfutil.ChangedDirectory(os.path.join("..", "..", "firmwares")):
+        with tfutil.ChangedDirectory(os.path.join("..", "..", name)):
             run(["git", "pull"])
 
     dprint("post git pull")
@@ -881,14 +881,15 @@ def main(stage3, scanner, result):
             result["security_info_checked"] = True
 
         info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
-        version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
+        version_parts = info_version['firmware'].split('+')
+        version = [int(x) for x in version_parts[0].split('.')] + [int(version_parts[1], base=16)]
 
         dprint("post version fetch")
 
         if not provisioning_firmware_flashed and '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
         else:
-            pull_firmwares_git()
+            pull_git('warp-charger')
 
             firmware_path = None
 
@@ -897,25 +898,26 @@ def main(stage3, scanner, result):
                     firmware_path = arg.removeprefix('--latest-firmware=')
 
             if firmware_path == None:
-                firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
-                firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
+                firmware_directory = os.path.join("..", "..", "warp-charger", "firmwares")
+                firmware_path = os.readlink(os.path.join(firmware_directory, f"warp{scanner.qr_gen}_firmware_latest_ota.bin"))
                 firmware_path = os.path.join(firmware_directory, firmware_path)
 
-            latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
+            latest_version_parts = list(re.search(rf"warp{scanner.qr_gen}_firmware_(\d+)_(\d+)_(\d+)_([a-f0-9]+)_ota.bin", firmware_path).groups())
+            latest_version = [int(x) for x in latest_version_parts] + [int(latest_version_parts[3], base=16)]
             flash_latest_version = False
 
             if version > latest_version:
-                fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest release is {}.{}.{}".format(*version, *latest_version))
+                fatal_error("Flashed firmware {}.{}.{}+{:x} is not released yet! Latest release is {}.{}.{}+{:x}".format(*version, *latest_version))
             elif provisioning_firmware_flashed:
                 flash_latest_version = True
             elif version < latest_version:
-                print("Flashed firmware {}.{}.{} is outdated!".format(*version))
+                print("Flashed firmware {}.{}.{}+{:x} is outdated!".format(*version))
                 flash_latest_version = True
             else:
                 print("Flashed firmware is up-to-date.")
 
             if flash_latest_version:
-                print("Flashing {}.{}.{}...".format(*latest_version))
+                print("Flashing firmware {}.{}.{}+{:x}...".format(*latest_version))
                 flash_firmware(firmware_path, ssid)
 
                 result["firmware_file"] = firmware_path.split("/")[-1]
@@ -1060,7 +1062,7 @@ def main(stage3, scanner, result):
         if evse_enum is None:
             fatal_error("No EVSE Bricklet found!")
 
-        pull_firmwares_git()
+        pull_git('firmwares')
 
         evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
         evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
