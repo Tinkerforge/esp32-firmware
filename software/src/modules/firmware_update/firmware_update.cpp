@@ -677,6 +677,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
 
 #ifdef CONFIG_SECURE_BOOT
         if (!sbv2_sign_app(chunk_data, chunk_len)) {
+            Update.end();
             return InstallState::SecureBootSignatureGenerationFailed;
         }
 #endif
@@ -898,6 +899,7 @@ void FirmwareUpdate::register_urls()
 
 #ifdef CONFIG_SECURE_BOOT
         if (!sbv2_sign_app(nullptr, 0)) {
+            Update.end();
             errmsg = "Failed to sign update";
             return;
         }
