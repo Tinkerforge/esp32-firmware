@@ -22,11 +22,13 @@
 #include <LittleFS.h>
 #include <freertos/task.h>
 #include <esp_system.h>
+#include <sdkconfig.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "language.h"
 #include "generated/recovery_html.embedded.h"
+#include "tools/fs.h"
 
 extern int8_t green_led_pin;
 
@@ -41,6 +43,29 @@ void blinky(void *arg)
         delay(200);
     }
 }
+
+#if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
+#include "modules/esp32_common/secure_boot.h"
+
+static void write_cached_secure_boot_v2_key(const std::unique_ptr<uint8_t[]> &key_cache, size_t key_length, const String &key_cache_path)
+{
+    if (mount_or_format_data_partition()) {
+        File f = LittleFS.open(key_cache_path, "w", true);
+        size_t writelen = f.write(key_cache.get(), key_length);
+
+        if (writelen == key_length) {
+            logger.printfln("Cached Secure Boot v2 private key");
+        } else {
+            logger.printfln("Writing Secure Boot v2 private key failed");
+            f.close();
+            LittleFS.remove(key_cache_path);
+        }
+    }
+
+    LittleFS.end();
+}
+
+#endif
 
 void System::factory_reset(bool restart_esp)
 {
@@ -62,8 +87,21 @@ void System::factory_reset(bool restart_esp)
     evse_common.factory_reset();
 #endif
 
+#if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
+    String key_cache_path;
+    std::unique_ptr<uint8_t[]> key_cache;
+    const size_t key_length = ESP32CommonSecureBoot::get_cached_secure_boot_v2_key_and_path(&key_cache, &key_cache_path);
+#endif
+
     LittleFS.end();
     LittleFS.format();
+
+#if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
+    if (key_length > 0) {
+        write_cached_secure_boot_v2_key(key_cache, key_length, key_cache_path);
+    }
+#endif
+
     if (restart_esp) {
         esp_restart();
     }

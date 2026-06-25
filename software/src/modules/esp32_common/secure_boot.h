@@ -29,6 +29,7 @@ class ESP32CommonSecureBoot final
     friend class ESP32Common;
     friend class ESP32CommonEncryption;
     friend class FirmwareUpdate;
+    friend class System;
 
 private:
     static bool load_cached_secure_boot_v2_key(mbedtls_pk_context *rsa_key, mbedtls_f_rng_t *f_rng, void *p_rng, uint8_t *sb_key);
@@ -38,6 +39,7 @@ private:
     static bool load_or_generate_secure_boot_v2_key(mbedtls_pk_context *rsa_key, mbedtls_f_rng_t *f_rng, void *p_rng, uint8_t *sb_key);
     static bool check_secure_boot_v2_key();
     static bool get_secure_boot_key(uint8_t key_digest[ESP_SECURE_BOOT_DIGEST_LEN]);
+    static size_t get_cached_secure_boot_v2_key_and_path(std::unique_ptr<uint8_t[]> *key_buffer, String *path);
 
     static bool sb_sign_image(ets_secure_boot_sig_block_t *sig_block, const uint8_t image_digest[ESP_SECURE_BOOT_DIGEST_LEN]);
     static bool sb_sign_image_or_skip(ets_secure_boot_sig_block_t *sig_block, const uint8_t image_digest[ESP_SECURE_BOOT_DIGEST_LEN]);

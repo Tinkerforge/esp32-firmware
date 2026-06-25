@@ -643,6 +643,26 @@ bool ESP32CommonSecureBoot::get_secure_boot_key(uint8_t key_digest[ESP_SECURE_BO
     return load_or_generate_secure_boot_v2_key(&rsa_key.ctx, nullptr, nullptr, key_digest);
 }
 
+size_t ESP32CommonSecureBoot::get_cached_secure_boot_v2_key_and_path(std::unique_ptr<uint8_t[]> *key_buffer, String *path_out)
+{
+    uint8_t sb_key[ESP_SECURE_BOOT_DIGEST_LEN];
+    size_t key_length;
+
+    if (!load_key_from_file(key_buffer, &key_length, sb_key)) {
+        return 0;
+    }
+
+    char path_buf[64];
+    StringWriter path(path_buf, std::size(path_buf));
+
+    if (!generate_cache_path(&path, sb_key)) {
+        return 0;
+    }
+
+    *path_out = path.toString();
+    return key_length;
+}
+
 bool ESP32CommonSecureBoot::sb_sign_image(ets_secure_boot_sig_block_t *sig_block, const uint8_t image_digest[ESP_SECURE_BOOT_DIGEST_LEN])
 {
     mbedtls_entropy_raii entropy; // Large
