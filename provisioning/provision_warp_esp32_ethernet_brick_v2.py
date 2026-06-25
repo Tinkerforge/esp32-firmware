@@ -424,6 +424,7 @@ class P:
             fatal_error("Failed to secure device")
 
         time.sleep(5)
+        P.connect_ethernet(ethernet_ip)
 
         print("Encrypting data")
         req = urllib.request.Request(f"http://{ethernet_ip}/esp32/encrypt_data")
