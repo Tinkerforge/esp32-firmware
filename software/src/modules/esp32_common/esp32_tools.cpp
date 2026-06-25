@@ -23,12 +23,18 @@
 #include "./esp32_tools.h"
 
 #include "event_log_prefix.h"
+#include "tools.h"
 #include "tools/hexdump.h"
 
 #include "gcc_warnings.h"
 
 bool esp32_poke_main_thread()
 {
+    if (running_in_main_task()) {
+        // Main task can't poke itself.
+        return true;
+    }
+
     const bool success = task_scheduler.await([]() {
         // Do nothing, just poke main thread.
     });

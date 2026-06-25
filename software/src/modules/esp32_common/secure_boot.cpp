@@ -133,9 +133,7 @@ static int blake_ctr_drbg_for_rsa_key_func(void *data, unsigned char *output, co
         offset += sublen;
 
         if (ctx->subkey_id_counter % 2048 == 0) {
-            if (!esp32_poke_main_thread()) {
-                return -1;
-            }
+            esp32_poke_main_thread(); // Poke failures are non-fatal. Continue and hope for the best.
         }
     }
 
