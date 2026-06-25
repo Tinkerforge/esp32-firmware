@@ -339,7 +339,7 @@
 - Fix crash when another HTTP request arrives while rebooting
 - Improve translations
 
-2026-06-25: 1.7.0 (<unknown>)
+2026-06-25: 1.7.0 (2613b535)
 - Support user and NFC tag configuration changes without reboot
 - Add state of charge to meter table collapsed values
 - Add missing effective-mode handling for custom battery Modbus/TCP table
