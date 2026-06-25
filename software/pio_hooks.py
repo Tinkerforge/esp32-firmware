@@ -1065,6 +1065,7 @@ def main():
     signature_preset = env.GetProjectOption("custom_signature_preset")
     split_esptool_ota = env.GetProjectOption("custom_split_esptool_ota") == "true"
     secure_boot = env.GetProjectOption("custom_secure_boot", "").replace('"', '')
+    provisioning = env.GetProjectOption("custom_provisioning") == "true"
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
@@ -1238,8 +1239,9 @@ def main():
     build_lines.append('} build_custom_app_desc_t;')
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
-    firmware_basename = '{}_firmware{}{}{}_{}_{:x}{}'.format(
+    firmware_basename = '{}_firmware{}{}{}{}_{}_{:x}{}'.format(
         product_id,
+        "-PROVISIONING" if provisioning else "",
         "-UNSIGNED" if len(signature_preset) == 0 else "",
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",

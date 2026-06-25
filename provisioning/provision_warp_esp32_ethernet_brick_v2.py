@@ -871,9 +871,9 @@ class P:
 
         print(f"Flashing {len(relay_to_serial)} ESPs...")
 
-        fws = list(Path(".").glob(f"{firmware_prefix}_provisioning_firmware*_esptool.bin"))
+        fws = list(Path(".").glob(f"{firmware_prefix}_firmware-PROVISIONING*_esptool.bin"))
         if len(fws) != 1:
-            fatal_error(f"Expected exactly one {firmware_prefix}_provisioning_firmware*_esptool.bin, but found {fws}")
+            fatal_error(f"Expected exactly one {firmware_prefix}_firmware-PROVISIONING*_esptool.bin, but found {fws}")
         fw = fws[0]
 
         stage += 1
