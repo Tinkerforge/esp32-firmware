@@ -154,7 +154,7 @@ void ESP32EthernetBrick::pre_init()
     pinMode(button_pin, INPUT);
 
     // Initialize LEDs
-#if OPTIONS_PRODUCT_ID_IS_WARP4()
+#if MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
     // WARP4 LEDs are controlled through WARP ESP32 Ethernet V2 Co Bricklet
     return;
 #endif
@@ -205,7 +205,7 @@ void ESP32EthernetBrick::setup()
     watchdog.reset(watchdog_handle);
 #endif
 
-#if OPTIONS_PRODUCT_ID_IS_WARP4() && MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
+#if MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
     led_blink(0, 2000, 1, 0, [](uint8_t pin, uint8_t val) {
         esp32_ethernet_v2_co_bricklet.set_blue_led(val == 0 ? false : true);
     });
