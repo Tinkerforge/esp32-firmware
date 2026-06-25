@@ -1003,3 +1003,10 @@
 - Fix crash with unstable Modbus TCP/SunSpec connection
 - Fix crash when another HTTP request arrives while rebooting
 - Improve translations
+
+2026-06-25: 2.12.0 (<unknown>)
+- Support user configuration changes without reboot
+- Add state of charge to meter table collapsed values
+- Improve charge manager wake-up handling of vehicles that wake up on phase switch
+- Improve Modbus/TCP robustness against malformed packets
+- Improve error message when firmware update is corrupted
