@@ -903,7 +903,7 @@ def main(stage3, scanner, result):
                 firmware_path = os.path.join(firmware_directory, firmware_path)
 
             latest_version_parts = list(re.search(rf"warp{scanner.qr_gen}_firmware_(\d+)_(\d+)_(\d+)_([a-f0-9]+)_ota.bin", firmware_path).groups())
-            latest_version = [int(x) for x in latest_version_parts] + [int(latest_version_parts[3], base=16)]
+            latest_version = [int(x) for x in latest_version_parts[:3]] + [int(latest_version_parts[3], base=16)]
             flash_latest_version = False
 
             if version > latest_version:
