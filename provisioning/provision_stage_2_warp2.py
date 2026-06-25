@@ -788,12 +788,12 @@ def main(stage3, scanner, result):
         result["factory_data_validated"] = False
 
         if generation >= 4:
-            provisioning_firmware_names = glob.glob(f"warp{generation}_firmware-PROVISIONING*_esptool.bin")
+            provisioning_firmware_names = glob.glob(f"warp{generation}_firmware-PROVISIONING*_ota.bin")
 
             if len(provisioning_firmware_names) != 1:
                 fatal_error(f"Wrong number of WARP{generation} provisioning firmwares found: {len(provisioning_firmware_names)}")
 
-            latest_provisioning_version = "{}.{}.{}+{}".format(*re.search(rf"warp{generation}_firmware-PROVISIONING(?:.*)_(\d+)_(\d+)_(\d+)_([a-f0-9]+)(?:.*)_esptool.bin", provisioning_firmware_names[0]).groups())
+            latest_provisioning_version = "{}.{}.{}+{}".format(*re.search(rf"warp{generation}_firmware-PROVISIONING(?:.*)_(\d+)_(\d+)_(\d+)_([a-f0-9]+)(?:.*)_ota.bin", provisioning_firmware_names[0]).groups())
 
             factory_data = json.loads(connect_to_ethernet(ssid, "factory_data/read").decode('utf-8'))
             factory_data_write = False
