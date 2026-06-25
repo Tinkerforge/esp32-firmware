@@ -280,12 +280,10 @@ void EVSEV2::post_register_urls()
     }, true);
 #endif
 
-#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
     api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()));
     }, true);
-#endif
 }
 
 void EVSEV2::register_events()
