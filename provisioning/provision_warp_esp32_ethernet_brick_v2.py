@@ -420,7 +420,7 @@ class P:
         except urllib.request.HTTPError as e:
             if e.code != 404:
                 traceback.print_exc()
-                fatal_error("Failed to secure device")
+                fatal_error(f"Failed to secure device {e.code=} {e.read().decode('utf-8')}")
         except:
             traceback.print_exc()
             fatal_error("Failed to secure device")
@@ -435,7 +435,7 @@ class P:
         except urllib.request.HTTPError as e:
             if e.code != 404:
                 traceback.print_exc()
-                fatal_error("Failed to encrypt data")
+                fatal_error(f"Failed to encrypt data {e.code=} {e.read().decode('utf-8')}")
         except:
             traceback.print_exc()
             fatal_error("Failed to encrypt data")
