@@ -160,3 +160,40 @@
 - Update core software libraries (ESP-IDF 5.4 and arduino-esp32 3.2)
 - Update timezone database
 - Improve translations
+
+2026-06-25: 2.2.0 (<unknown>)
+- Add TLS 1.3 support
+- Add configuration changes without reboot for most modules
+- Add status information to many subpages
+- Add status widget to web interface
+- Add dark mode to web interface
+- Center header logo on small screens
+- Unify device scan dialogs
+- Restart all Bricklets when rebooting via system subpage
+- Support reading and writing sub-APIs via URL/topic suffix
+- Speed up establishing WiFi connection
+- Speed up WiFi network scan
+- Fix WiFi AP's automatic channel selection interfering with first STA connection attempt
+- Improve hostname/IP address inputs and validation
+- Extend network address misconfiguration detection
+- Warn more when disabling network interfaces to prevent lock-out
+- Improve WireGuard robustness
+- Prevent WireGuard keys from being leaked via debug report
+- Add key generation to WireGuard subpage
+- Make WireGuard MTU configurable
+- Fix crashes caused by WireGuard (re)connects
+- Improve web server and WebSocket robustness against dropped connections
+- Fix crash when another HTTP request arrives while rebooting
+- Fix login dialog for Firefox and Chrome on iOS
+- Fix firmware update progress bar
+- Make sure broken web server results in firmware rollback
+- Show warning for unexpected reboots
+- Show warning if web interface and browser UI locale differ
+- Fix crash in the common config logic
+- Fix mDNS spam
+- Speed up Ethernet initialization
+- Display MAC addresses and BSSIDs on Ethernet and WiFi subpages
+- Always prefer Ethernet connection over WiFi connection
+- Fix network interface priority
+- Improve translations
+- Update timezone database
