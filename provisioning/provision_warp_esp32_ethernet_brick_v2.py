@@ -498,7 +498,7 @@ class P:
         with mkdir_open(os.path.join("..", "..", "test-reports", firmware_prefix, "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-"))), "w") as f:
             json.dump(stage_1_test_report, f, indent=4)
 
-        run(["uv", "run", "print-esp32-label.py", ssid, passphrase, "-c", "4"])
+        run(["uv", "run", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
 
 
     def terminal_to_html(s):
