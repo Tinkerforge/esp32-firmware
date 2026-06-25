@@ -32,7 +32,7 @@ class ESP32EthernetV2CoBricklet final : public DeviceModule<TF_WARPESP32Ethernet
                                               tf_warp_esp32_ethernet_v2_co_get_bootloader_mode,
                                               tf_warp_esp32_ethernet_v2_co_reset,
                                               tf_warp_esp32_ethernet_v2_co_destroy,
-                                              OPTIONS_PRODUCT_ID_IS_WARP4()>,
+                                              true>,
                                         public IRtcBackend
 {
 public:
