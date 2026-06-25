@@ -28,9 +28,9 @@ let x = {
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
                 <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> : <span>charge management</span>} among the chargers.</p>
                 <ul>
-                    <li><strong>Disabled:</strong> No charge management is performed. {__("This_device")} operates completely independently.</li>
+                    <li><strong>Disabled:</strong> No charge management is performed by a WARP device. External control by EVCC or other non-WARP charge managers is still possible.</li>
                     {has_managed_mode ?
-                        <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another charge manager. No further settings are required.</li>
+                        <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another WARP device. No further settings are required.</li>
                         : undefined}
                     <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV excess charging</a> : <span>PV excess charging</span>}. Additional settings must be configured.</li>
                 </ul>
@@ -239,7 +239,7 @@ let x = {
             "scan_failed": "Scan failed",
 
             "mode_explainer_0": <>{__("This_device")} is not part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. PV excess charging is disabled.</>,
-            "mode_explainer_1": <>{__("This_device")} is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.</>,
+            "mode_explainer_1": <>{__("This_device")} is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another WARP device controls this group to make sure the configured current is never exceeded.</>,
             "mode_explainer_2": <>{__("This_device")} either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded.</>,
 
             "mode_explainer_0_em": <>{__("This_device")} does not control any chargers.</>,

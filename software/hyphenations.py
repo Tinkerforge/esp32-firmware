@@ -1565,6 +1565,7 @@ de_hyph = [
     "ne-go-tia-ted",
     "pa-ra-me-ter",
     "ter-mi-na-te",
+    "wei-ter-hin",
 ]
 
 en_hyph = [
