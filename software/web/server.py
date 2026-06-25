@@ -119,6 +119,7 @@ port = 5000
 while True:
     try:
         s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('::', port))
         s.close()
         break
