@@ -189,26 +189,27 @@ def merge_firmware_esptool_secure():
     encryption_target_name = sb[0]
     efuses_block3 = sb[1]
     factory_mac = sb[2]
+    encryption_key = sb[3] if 3 < len(sb) else ""
 
     f_boot     = env.subst(f'$BUILD_DIR{os.sep}bootloader.bin')
     f_boot_sig = env.subst(f'$BUILD_DIR{os.sep}bootloader_signed.bin')
     f_boot_enc = env.subst(f'$BUILD_DIR{os.sep}bootloader_signed_encrypted.bin')
     secure_boot_py.sign_str(f_boot, f_boot_sig, efuses_block3, factory_mac)
-    secure_boot_py.encrypt_str(f_boot_sig, f_boot_enc, '0x1000', efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_boot_sig, f_boot_enc, '0x1000', efuses_block3, factory_mac, encryption_key)
 
     f_part     = env.subst(f'$BUILD_DIR{os.sep}partitions.bin')
     f_part_enc = env.subst(f'$BUILD_DIR{os.sep}partitions_encrypted.bin')
-    secure_boot_py.encrypt_str(f_part, f_part_enc, partition_table_offset, efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_part, f_part_enc, partition_table_offset, efuses_block3, factory_mac, encryption_key)
 
     f_ota     = 'boot_app0.bin'
     f_ota_enc = env.subst(f'$BUILD_DIR{os.sep}boot_app0_encrypted.bin')
-    secure_boot_py.encrypt_str(f_ota, f_ota_enc, otadata_offset, efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_ota, f_ota_enc, otadata_offset, efuses_block3, factory_mac, encryption_key)
 
     f_app     = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}.bin')
     f_app_sig = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_signed.bin')
     f_app_enc = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_signed_encrypted.bin')
     secure_boot_py.sign_str(f_app, f_app_sig, efuses_block3, factory_mac)
-    secure_boot_py.encrypt_str(f_app_sig, f_app_enc, app_offset, efuses_block3, factory_mac)
+    secure_boot_py.encrypt_str(f_app_sig, f_app_enc, app_offset, efuses_block3, factory_mac, encryption_key)
 
     f_out = env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_esptool_secure_{encryption_target_name}.bin')
 

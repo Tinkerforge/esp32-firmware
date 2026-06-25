@@ -214,8 +214,9 @@ def sign(infile: str, outfile: str, efuses_block3: bytes, factory_mac: bytes) ->
             sys.exit(1)
 
 
-def encrypt(infile: str, outfile: str, address: int, efuses_block3: bytes, factory_mac: bytes) -> None:
-    encryption_key: bytes = derive_encryption_key(libsodium, efuses_block3, factory_mac)[::-1]
+def encrypt(infile: str, outfile: str, address: int, efuses_block3: bytes, factory_mac: bytes, encryption_key: bytes = bytes()) -> None:
+    if len(encryption_key) == 0:
+        encryption_key = derive_encryption_key(libsodium, efuses_block3, factory_mac)[::-1]
 
     with tempfile.NamedTemporaryFile(prefix='sbv2-', suffix='.bin', delete_on_close=False) as key_file:
         key_file.write(encryption_key)
@@ -251,12 +252,13 @@ def sign_str(infile: str, outfile: str, efuses_block3: str, factory_mac: str) ->
     sign(infile, outfile, _efuses_block3, _factory_mac)
 
 
-def encrypt_str(infile: str, outfile: str, address: str, efuses_block3: str, factory_mac: str) -> None:
-    _efuses_block3 = bytes.fromhex(efuses_block3)
-    _factory_mac   = bytes.fromhex(factory_mac.replace(":", ""))
-    _address       = int(address, 0)
+def encrypt_str(infile: str, outfile: str, address: str, efuses_block3: str, factory_mac: str, encryption_key: str = str()) -> None:
+    _efuses_block3  = bytes.fromhex(efuses_block3)
+    _factory_mac    = bytes.fromhex(factory_mac.replace(":", ""))
+    _encryption_key = bytes.fromhex(encryption_key)[::-1]
+    _address        = int(address, 0)
 
-    encrypt(infile, outfile, _address, _efuses_block3, _factory_mac)
+    encrypt(infile, outfile, _address, _efuses_block3, _factory_mac, _encryption_key)
 
 
 if __name__ == '__main__':
