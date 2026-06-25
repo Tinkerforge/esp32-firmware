@@ -211,7 +211,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             checked={rule_config.enabled}
                             onClick={() => this.props.on_rules(this.props.rules.map((r, k) => k === i ? {...r, enabled: !r.enabled} : r))}
                         />,
-                        rule_config.desc,
+                        <span style="overflow-wrap: anywhere;">{rule_config.desc}</span>,
                         get_column_time_cond(rule_config),
                         get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
                         get_column_cond(rule_config.price_cond, `${util.toLocaleFixed(rule_config.price_th / 10, 1)} ct`),

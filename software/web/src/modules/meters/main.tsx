@@ -960,7 +960,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
                                 return {
                                     columnValues: [
-                                        get_meter_display_name(this.state.configs_table, meter_slot),
+                                        <span style="overflow-wrap: anywhere;">{get_meter_display_name(this.state.configs_table, meter_slot)}</span>,
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(state_of_charge) ? util.toLocaleFixed(state_of_charge, 1) + " %" : undefined,
                                         util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
