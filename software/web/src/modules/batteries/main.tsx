@@ -203,6 +203,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
     render() {
         return <Table
+            tableTill="lg"
             columnNames={[__("batteries.content.table_rule_enabled"), __("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg"), __("batteries.content.table_rule_action")]}
             rows={this.props.rules.map((rule_config, i) => {
                 return {
