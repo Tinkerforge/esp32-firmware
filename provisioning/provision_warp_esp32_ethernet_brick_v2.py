@@ -415,7 +415,7 @@ class P:
                                     method='PUT',
                                     headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=60) as f:
+            with urllib.request.urlopen(req, timeout=120) as f:
                 f.read()
         except urllib.request.HTTPError as e:
             if e.code != 404:
@@ -430,7 +430,7 @@ class P:
         print("Encrypting data")
         req = urllib.request.Request(f"http://{ethernet_ip}/esp32/encrypt_data")
         try:
-            with urllib.request.urlopen(req, timeout=30) as f:
+            with urllib.request.urlopen(req, timeout=60) as f:
                 f.read()
         except urllib.request.HTTPError as e:
             if e.code != 404:
