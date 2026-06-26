@@ -19,6 +19,8 @@
 
 #include "pib_manager.h"
 
+#include <cstdio>
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
@@ -87,14 +89,40 @@ void PibManager::set_error(const char *msg)
     iso15118.trace("PibManager: %s", msg);
 }
 
+void PibManager::set_modem_error(const char *msg, uint16_t mstatus, uint16_t err_rec_code, uint16_t mod_status, uint16_t mod_err_rec_code)
+{
+    error_message          = msg;
+    modem_mstatus          = mstatus;
+    modem_err_rec_code     = err_rec_code;
+    modem_mod_status       = mod_status;
+    modem_mod_err_rec_code = mod_err_rec_code;
+    iso15118.trace("PibManager: %s (mstatus=0x%04X, err_rec_code=0x%04X, mod_status=0x%04X/0x%04X)", msg, mstatus, err_rec_code, mod_status, mod_err_rec_code);
+}
+
+void PibManager::format_error(char *out, size_t out_len) const
+{
+    if (out == nullptr || out_len == 0) {
+        return;
+    }
+
+    const char *msg = error_message != nullptr ? error_message : "unknown error";
+
+    if (modem_mstatus != 0 || modem_err_rec_code != 0 || modem_mod_status != 0 || modem_mod_err_rec_code != 0) {
+        snprintf(out, out_len, "%s (mstatus=0x%04X, err_rec_code=0x%04X, mod_status=0x%04X/0x%04X)",
+                 msg, modem_mstatus, modem_err_rec_code, modem_mod_status, modem_mod_err_rec_code);
+    } else {
+        snprintf(out, out_len, "%s", msg);
+    }
+}
+
 bool PibManager::start_read()
 {
     if (is_busy()) {
         return false;
     }
 
-    if (!iso15118.qca700x.is_spi_ready()) {
-        set_error("QCA700x SPI not initialized");
+    if (!iso15118.is_pib_modem_ready()) {
+        set_error("PLC modem not ready");
         return false;
     }
 
@@ -105,7 +133,13 @@ bool PibManager::start_read()
     pib_length = 0;
     transfer_offset = 0;
     error_message = nullptr;
+    modem_mstatus = 0;
+    modem_err_rec_code = 0;
+    modem_mod_status = 0;
+    modem_mod_err_rec_code = 0;
     timeout_deadline = 0_us;
+    retry_attempt = 0;
+    retry_wait_until = 0_us;
     state = PibState::ReadSendRequest;
     schedule_task();
     return true;
@@ -136,8 +170,8 @@ bool PibManager::start_write()
         return false;
     }
 
-    if (!iso15118.qca700x.is_spi_ready()) {
-        set_error("QCA700x SPI not initialized");
+    if (!iso15118.is_pib_modem_ready()) {
+        set_error("PLC modem not ready");
         return false;
     }
 
@@ -155,7 +189,13 @@ bool PibManager::start_write()
 
     transfer_offset = 0;
     error_message = nullptr;
+    modem_mstatus = 0;
+    modem_err_rec_code = 0;
+    modem_mod_status = 0;
+    modem_mod_err_rec_code = 0;
     timeout_deadline = 0_us;
+    retry_attempt = 0;
+    retry_wait_until = 0_us;
 
     // Initiate random session ID
     session_id = esp_random();
@@ -190,9 +230,17 @@ void PibManager::state_machine_loop()
 #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (state) {
         case PibState::ReadSendRequest:
+            if (retry_wait_until != 0_us && !deadline_elapsed(retry_wait_until)) {
+                break;
+            }
+            retry_wait_until = 0_us;
             send_read_request();
             break;
         case PibState::WriteSessionSendRequest:
+            if (retry_wait_until != 0_us && !deadline_elapsed(retry_wait_until)) {
+                break;
+            }
+            retry_wait_until = 0_us;
             send_session_request();
             break;
         case PibState::WriteFragmentSendRequest:
@@ -297,6 +345,9 @@ void PibManager::send_reset_request()
 
     // The modem resets immediately upon receiving this command and will not
     // send a confirmation back over SPI.
+    iso15118.qca700x.set_modem_detected(false);
+    iso15118.slac.state = SLACState::ModemDisabled;
+
     iso15118.trace("PIB write complete (modem reset sent)");
     state = PibState::WriteComplete;
 }
@@ -352,7 +403,20 @@ void PibManager::handle_read_confirmation(const uint8_t *data, size_t length)
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationReadConfirmation *>(data);
 
     if (cnf->mstatus != 0) {
-        set_error("Read confirmation: modem returned error");
+        static constexpr uint8_t PIB_READ_MAX_ATTEMPTS = 16;
+        if (transfer_offset == 0 && (retry_attempt + 1 < PIB_READ_MAX_ATTEMPTS)) {
+            retry_attempt++;
+            iso15118.trace("PIB: read rejected (mstatus=0x%04X, err_rec_code=0x%04X), retry %u/%u",
+                           static_cast<unsigned>(cnf->mstatus), static_cast<unsigned>(cnf->err_rec_code),
+                           static_cast<unsigned>(retry_attempt), static_cast<unsigned>(PIB_READ_MAX_ATTEMPTS - 1));
+            timeout_deadline = 0_us;
+            retry_wait_until = calculate_deadline(500_ms);
+            state = PibState::ReadSendRequest;
+            return;
+        }
+
+        set_modem_error("Read confirmation: modem returned error",
+                        cnf->mstatus, cnf->err_rec_code, 0, 0);
         state = PibState::ReadError;
         return;
     }
@@ -405,7 +469,22 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationSessionConfirmation *>(data);
 
     if (cnf->mstatus != 0) {
-        set_error("Session start failed: modem returned error");
+        static constexpr uint8_t PIB_SESSION_MAX_ATTEMPTS = 8;
+        if (retry_attempt + 1 < PIB_SESSION_MAX_ATTEMPTS) {
+            retry_attempt++;
+            iso15118.trace("PIB: session start rejected (mstatus=0x%04X, err_rec_code=0x%04X, mod_status=0x%04X/0x%04X), retry %u/%u",
+                           static_cast<unsigned>(cnf->mstatus), static_cast<unsigned>(cnf->err_rec_code),
+                           static_cast<unsigned>(cnf->module_status.mod_status), static_cast<unsigned>(cnf->module_status.err_rec_code),
+                           static_cast<unsigned>(retry_attempt), static_cast<unsigned>(PIB_SESSION_MAX_ATTEMPTS - 1));
+            session_id = esp_random();
+            timeout_deadline = 0_us;
+            retry_wait_until = calculate_deadline(500_ms);
+            state = PibState::WriteSessionSendRequest;
+            return;
+        }
+
+        set_modem_error("Session start failed: modem returned error",
+                        cnf->mstatus, cnf->err_rec_code, cnf->module_status.mod_status, cnf->module_status.err_rec_code);
         state = PibState::WriteError;
         return;
     }
@@ -417,7 +496,8 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
     }
 
     if (cnf->module_status.mod_status != 0) {
-        set_error("Session confirmation: module status error");
+        set_modem_error("Session start: module status error",
+                        0, 0, cnf->module_status.mod_status, cnf->module_status.err_rec_code);
         state = PibState::WriteError;
         return;
     }

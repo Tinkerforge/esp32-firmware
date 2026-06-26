@@ -422,12 +422,16 @@ void ISO15118::register_urls()
             return request.send_plain(409, "PIB operation already in progress");
         }
 
+        if (!prepare_for_pib_blocking(5000)) {
+            return request.send_plain(503, "PLC modem not ready");
+        }
+
         if (!pib_manager.start_read()) {
             return request.send_plain(500, "Failed to start PIB read (buffer allocation failed?)");
         }
 
         // The scheduled task drives the state machine. We poll the state here.
-        for (int i = 0; i < 500; i++) { // 500 * 20ms = 10s max
+        for (int i = 0; i < 1000; i++) { // 1000 * 20ms = 20s max (covers first-read retry backoff)
             PibState pib_state = pib_manager.get_state();
             if (pib_state == PibState::ReadComplete) {
                 const uint8_t *buf = pib_manager.get_buffer();
@@ -436,9 +440,10 @@ void ISO15118::register_urls()
                 return request.send_bytes(200, reinterpret_cast<const char *>(buf), len);
             }
             if (pib_state == PibState::ReadError) {
-                const char *err = pib_manager.get_error();
+                char err[160];
+                pib_manager.format_error(err, sizeof(err));
                 pib_manager.reset();
-                return request.send_plain(500, err ? err : "PIB read failed");
+                return request.send_plain(500, err);
             }
 
             delay(20);
@@ -453,6 +458,10 @@ void ISO15118::register_urls()
     server.on_HTTPThread("/iso15118/pib_write", HTTP_POST, [this](WebServerRequest request) {
         if (pib_manager.is_busy()) {
             return request.send_plain(409, "PIB operation already in progress");
+        }
+
+        if (!prepare_for_pib_blocking(5000)) {
+            return request.send_plain(503, "PLC modem not ready");
         }
 
         size_t content_len = request.contentLength();
@@ -510,10 +519,11 @@ void ISO15118::register_urls()
                 pib_manager.reset();
                 return request.send_plain(200, "complete");
             case PibState::WriteError: {
-                const char *err = pib_manager.get_error();
+                char err[160];
+                pib_manager.format_error(err, sizeof(err));
                 pib_manager.reset();
-                char buf[128];
-                snprintf(buf, sizeof(buf), "error: %s", err ? err : "unknown");
+                char buf[176];
+                snprintf(buf, sizeof(buf), "error: %s", err);
                 return request.send_plain(200, buf);
             }
             case PibState::ReadComplete:
@@ -756,6 +766,73 @@ void ISO15118::ensure_state_machine_running()
         }, 20_ms, 20_ms);
     }
     is_setup = true;
+}
+
+bool ISO15118::prepare_for_pib()
+{
+    // Bring up the prerequisites for a PIB transfer.
+    // Returns true if a fresh modem initialization was triggered (i.e. the modem
+    // was powered up / reset), so the caller can apply an additional settle
+    // delay before talking to it.
+    iso15118.trace("ISO15118: Preparing PLC modem for PIB transfer");
+
+    // 1. Power the modem.
+    evse_v2.set_plc_modem(true);
+
+    // 2. Ensure the SPI/poll loop is running.
+    const bool loop_was_running = (state_machine_task != 0);
+    ensure_state_machine_running();
+
+    // 3. (Re)start modem initialization only when needed:
+    //    - the polling loop was not running yet (fresh boot, or after the
+    //      charging mode was disabled, which cancels the loop), or
+    //    - SLAC explicitly marked the modem as down (ModemDisabled), which
+    //      happens after a charging session ends and after a PIB write resets
+    //      the modem.
+    //    If init is already in progress (or the modem is already up), we leave
+    //    SLAC alone so repeated prepare calls don't restart init over and over.
+    if (!loop_was_running || (slac.state == SLACState::ModemDisabled)) {
+        qca700x.set_modem_detected(false);
+        slac.api_state.get("modem_initialization_tries")->updateUint(0);
+        slac.api_state.get("modem_found")->updateBool(false);
+        slac.state = SLACState::ModemReset;
+        return true;
+    }
+    return false;
+}
+
+bool ISO15118::prepare_for_pib_blocking(uint32_t timeout_ms)
+{
+    bool did_reset = false;
+    bool prepared = task_scheduler.await([this, &did_reset]() {
+        did_reset = prepare_for_pib();
+    });
+    if (!prepared) {
+        return false;
+    }
+
+    uint32_t waited = 0;
+    bool ready = false;
+    while (waited < timeout_ms) {
+        if (is_pib_modem_ready()) {
+            ready = true;
+            break;
+        }
+        delay(20);
+        waited += 20;
+    }
+
+    if (!ready) {
+        return is_pib_modem_ready();
+    }
+
+    if (did_reset) {
+        constexpr uint32_t PIB_MODEM_SETTLE_MS = 500;
+        iso15118.trace("ISO15118: Modem initialized, settling %ums before PIB transfer", static_cast<unsigned>(PIB_MODEM_SETTLE_MS));
+        delay(PIB_MODEM_SETTLE_MS);
+    }
+
+    return true;
 }
 
 void ISO15118::disable_plc_modem()

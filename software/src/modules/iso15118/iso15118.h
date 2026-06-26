@@ -125,6 +125,9 @@ public:
 
     // Ensure the state machine task is running (schedules it if not already running)
     void ensure_state_machine_running();
+    bool prepare_for_pib();
+    bool prepare_for_pib_blocking(uint32_t timeout_ms);
+    bool is_pib_modem_ready() const { return qca700x.is_modem_detected() && qca700x.is_l2tap_ready() && slac.state == SLACState::WaitForSlacParamRequest; }
 
     // Returns current limit and phase info
     ChargingInformation get_charging_information() const;

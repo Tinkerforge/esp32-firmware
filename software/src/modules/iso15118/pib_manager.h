@@ -81,6 +81,9 @@ public:
     const uint8_t *get_buffer() const { return pib_buffer; }
     size_t get_buffer_length() const { return pib_length; }
     const char *get_error() const { return error_message; }
+
+    void format_error(char *out, size_t out_len) const;
+
     void reset() { state = PibState::Idle; error_message = nullptr; }
 
     [[gnu::const]] static const char *validate_pib_size(size_t size);
@@ -101,6 +104,7 @@ private:
     void handle_commit_confirmation(const uint8_t *data, size_t length);
 
     void set_error(const char *msg);
+    void set_modem_error(const char *msg, uint16_t mstatus, uint16_t err_rec_code, uint16_t mod_status, uint16_t mod_err_rec_code);
 
     static uint32_t fdchecksum32(const uint8_t *data, size_t size);
 
@@ -114,6 +118,13 @@ private:
     uint32_t session_id = 0;    // Random session ID for write operations
     micros_t timeout_deadline = 0_us;
 
+    uint8_t retry_attempt = 0;
+    micros_t retry_wait_until = 0_us;
+
     const char *error_message = nullptr;
+    uint16_t modem_mstatus = 0;
+    uint16_t modem_err_rec_code = 0;
+    uint16_t modem_mod_status = 0;
+    uint16_t modem_mod_err_rec_code = 0;
     uint64_t task_id = 0;
 };
