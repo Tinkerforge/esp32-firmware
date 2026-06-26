@@ -300,7 +300,7 @@ void ISO15118::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"autocharge", Config::Bool(false)},
-        {"read_soc", Config::Bool(true)},
+        {"read_soc", Config::Bool(false)},
         {"charge_via_iso15118", Config::Bool(false)},
         {"min_charge_current", Config::Uint16(1000)},
     }), [this](Config &update, ConfigSource source) -> String {
