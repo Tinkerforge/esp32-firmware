@@ -499,6 +499,10 @@ def get_iso15118_attenuation_profile():
         fatal_error("Failed to get ISO 15118 attenuation profile: {}".format(e))
 
 def upload_iso15118_pib():
+    set_iso15118_enabled(True)
+    time.sleep(1)
+    set_iso15118_enabled(False)
+
     pib_filename = "qca7000_lab_x2.pib"
     pib = Path(pib_filename).read_bytes()
     req = urllib.request.Request("http://{}/iso15118/pib_write".format(host), data=pib)
