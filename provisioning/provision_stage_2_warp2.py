@@ -500,8 +500,7 @@ def get_iso15118_attenuation_profile():
 
 def upload_iso15118_pib():
     set_iso15118_enabled(True)
-    time.sleep(1)
-    set_iso15118_enabled(False)
+    time.sleep(3)
 
     pib_filename = "qca7000_lab_x2.pib"
     pib = Path(pib_filename).read_bytes()
@@ -535,6 +534,8 @@ def upload_iso15118_pib():
             #fatal_error("Failed to read back ISO 15118 PIB: {}".format(e))
     if ex is not None:
         fatal_error("Failed to read back ISO 15118 PIB: {}".format(ex))
+
+    set_iso15118_enabled(False)
 
 def led_wrap():
     dprint("pre scanner")
