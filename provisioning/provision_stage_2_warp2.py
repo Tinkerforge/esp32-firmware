@@ -51,10 +51,12 @@ class LogWriter:
     def write(self, data):
         sys_stdout.write(data)
 
-        if self.fp != None:
-            return self.fp.write(data.replace('\r', '\n'))
+        log_data = tfutil.colored.strip(data.replace('\r', '\n'))
 
-        self.pending_data += data
+        if self.fp != None:
+            return self.fp.write(log_data)
+
+        self.pending_data += log_data
 
         return len(data)
 
@@ -765,7 +767,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
                 stage3.beep_notify()
             start_blink(max(expected_count - len(seen_tags), 0))
             last_len = len(seen_tags)
-        print("\r" + green("Waiting for NFC tags. {} seen".format(len(seen_tags))), end="")
+            print("\r" + green("Waiting for NFC tags. {} seen".format(len(seen_tags))), end="")
         blink_tick(stage3)
         time.sleep(0.1)
     stop_blink(stage3)
