@@ -951,17 +951,17 @@ class Stage3:
             result['iso15118_ev_mac'] = ev_mac
 
             if ev_mac == '00:00:00:00:00:00':
-                fatal_error(f"Failed to connect to simulated car via ISO15118 {ev_mac=}")
+                fatal_error(f"Failed to connect to simulated car via ISO 15118 {ev_mac=}")
 
             ap = self.get_iso15118_attenuation_profile_function()
             result['iso15118_attenuation_profile'] = ap
 
             for i, v in enumerate(ap[:-1]):
                 if v >= 40:
-                    fatal_error(f"ISO15118 attenuation profile entry {i} out of range: {v} >= 40!\nProfile: {",".join(ap)}")
+                    fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= 40!\nProfile: {",".join([str(x) for x in ap])}")
 
             if ap[-1] >= 60:
-                fatal_error(f"Last ISO15118 attenuation profile entry out of range: {v} >= 60!\nProfile: {",".join(ap)}")
+                fatal_error(f"Last ISO 15118 attenuation profile entry out of range: {v} >= 60!\nProfile: {",".join([str(x) for x in ap])}")
 
             self.change_cp_pe_state('A')
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
