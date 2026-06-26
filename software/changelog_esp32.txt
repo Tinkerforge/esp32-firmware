@@ -166,7 +166,7 @@
 - Center header logo on small screens
 - Unify device scan dialogs
 - Restart all Bricklets when rebooting via system subpage
-- Support reading and writing sub-APIs via URL/topic suffix
+- Support reading and writing sub-APIs via URL suffix
 - Speed up establishing WiFi connection
 - Speed up WiFi network scan
 - Display MAC addresses and BSSIDs on WiFi subpages
