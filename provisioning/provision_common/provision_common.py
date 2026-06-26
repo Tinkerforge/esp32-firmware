@@ -145,68 +145,8 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision
 def get_esp_mac():
     esptool(['read-mac'])
 
-def get_espefuse_tasks_with_two_int_format():
-    have_to_set_voltage_fuses = False
-    have_to_set_block_3 = False
-
-    output = espefuse(['dump'])
-
-    def parse_regs(line, regs):
-        match = re.search(r'([0-9a-f]{8}\s?)' * regs, line)
-        if not match:
-            return False, []
-
-        return True, [int(match.group(x + 1), base=16) for x in range(regs)]
-
-    blocks = [None] * 4
-    for line in output:
-        if line.startswith('BLOCK0'):
-            success, blocks[0] = parse_regs(line, 7)
-        elif line.startswith('BLOCK1'):
-            success, blocks[1] = parse_regs(line, 8)
-        elif line.startswith('BLOCK2'):
-            success, blocks[2] = parse_regs(line, 8)
-        elif line.startswith('BLOCK3'):
-            success, blocks[3] = parse_regs(line, 8)
-        else:
-            continue
-        if not success:
-            fatal_error("Failed to read eFuses", "could not parse line '{}'".format(line), "espefuse output was", '\n'.join(output))
-
-    if any(b is None for b in blocks):
-        fatal_error("Failed to read eFuses", "Not all blocks where found", "espefuse output was", '\n'.join(output))
-
-    if any(i != 0 for i in blocks[1]):
-        fatal_error("eFuse block 1 is not empty.", "espefuse output was", '\n'.join(output))
-
-    if any(i != 0 for i in blocks[2]):
-        fatal_error("eFuse block 2 is not empty.", "espefuse output was", '\n'.join(output))
-
-    voltage_fuses = blocks[0][4] & 0x0001c000
-    if voltage_fuses == 0x0001c000:
-        have_to_set_voltage_fuses = False
-    elif voltage_fuses == 0x00000000:
-        have_to_set_voltage_fuses = True
-    else:
-        fatal_error("Flash voltage efuses have unexpected value {}".format(voltage_fuses), "espefuse output was", '\n'.join(output))
-
-    block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
-    passphrase, uid = block3_to_payload(block3_bytes, use_two_int_format=True)
-
-    if passphrase == '1-1-1-1' and uid == '000-0000':
-        have_to_set_block_3 = True
-    else:
-        if uid == 0:
-            fatal_error("Block 3 efuses have unexpected value {}".format(block3_bytes.hex()),
-                        "parsed passphrase and uid are {}; {}".format(passphrase, uid),
-                        "espefuse output was",
-                        '\n'.join(output))
-
-    return have_to_set_voltage_fuses, have_to_set_block_3, passphrase, uid
-
-
-def get_espefuse_tasks(*, override_port=None, secure_mode=False, mac_address_bytes=None):
-    assert not secure_mode or mac_address_bytes != None
+def get_espefuse_tasks(*, override_port=None, secure_mode=False, mac_address=None, use_two_int_format=False):
+    assert mac_address != None
 
     have_to_set_voltage_fuses = False
     have_to_set_block_3 = False
@@ -254,57 +194,57 @@ def get_espefuse_tasks(*, override_port=None, secure_mode=False, mac_address_byt
 
     block3_bytes = b''.join([r.to_bytes(4, "little") for r in blocks[3]])
 
-    if secure_mode:
-        passphrase, uid = block3_to_payload_secure_mode(block3_bytes, mac_address_bytes)
-        passphrase_empty = calculate_passphrase(bytearray(32), mac_address_bytes)
-        uid_empty = 'y'
-        uid_pattern = '[{0}]{{3,7}}'.format(ZBASE32)
-    else:
-        passphrase, uid = block3_to_payload(block3_bytes)
-        passphrase_empty = '1-1-1-1'
-        uid_empty = '1'
-        uid_pattern = '[{0}]{{3,6}}'.format(BASE58)
+    passphrase, uid, passphrase_empty, uid_empty = block3_to_payload(block3_bytes, mac_address, use_two_int_format=use_two_int_format)
 
-    if passphrase == passphrase_empty and uid == uid_empty:
+    if passphrase_empty and uid_empty:
         have_to_set_block_3 = True
-    else:
-        passphrase_invalid = re.match('[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}'.format(BASE58), passphrase) is None
-        uid_invalid = re.match(uid_pattern, uid) is None
-        if passphrase_invalid or uid_invalid:
-            fatal_error("Block 3 efuses have unexpected value {}".format(block3_bytes.hex()),
-                        "parsed values are passphrase={} and uid={}".format(passphrase, uid),
-                        "espefuse output was",
-                        '\n'.join(output))
+    elif passphrase_empty or uid_empty:
+        fatal_error("Block 3 efuses have unexpected value {}".format(block3_bytes.hex()),
+                    "parsed values are passphrase={} and uid={}".format(passphrase, uid),
+                    "espefuse output was",
+                    '\n'.join(output))
 
     return have_to_set_voltage_fuses, have_to_set_block_3, passphrase, uid
 
-def block3_to_payload(block3, *, use_two_int_format=False):
-    passphrase_bytes_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    passphrase_bytes_list[0] = block3[7:10]
-    passphrase_bytes_list[1][0:2] = block3[10:12]
-    passphrase_bytes_list[1][2] = block3[20]
-    passphrase_bytes_list[2][0:2] = block3[21:23]
-    passphrase_bytes_list[2][2] = block3[24]
-    passphrase_bytes_list[3] = block3[25:28]
+def last_base58_uid_num(use_two_int_format):
+    return 257899 if not use_two_int_format else 0xFFFFFFFF
+
+def block3_to_payload(block3, mac_address, *, use_two_int_format=False):
+    mac_address_bytes = bytes([int(x, base=16) for x in mac_address.split(':')])
     uid_bytes = bytes(block3[28:32])
-    passphrase_bytes_list = [bytes(chunk) for chunk in passphrase_bytes_list]
-    passphrase = [base58encode(int.from_bytes(chunk, "little")) for chunk in passphrase_bytes_list]
     uid_num = int.from_bytes(uid_bytes, "little")
+
+    if uid_num <= last_base58_uid_num(use_two_int_format):
+        passphrase_bytes_list = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        passphrase_bytes_list[0] = block3[7:10]
+        passphrase_bytes_list[1][0:2] = block3[10:12]
+        passphrase_bytes_list[1][2] = block3[20]
+        passphrase_bytes_list[2][0:2] = block3[21:23]
+        passphrase_bytes_list[2][2] = block3[24]
+        passphrase_bytes_list[3] = block3[25:28]
+
+        passphrase_bytes_list = [bytes(chunk) for chunk in passphrase_bytes_list]
+        passphrase = [base58encode(int.from_bytes(chunk, "little")) for chunk in passphrase_bytes_list]
+        uid = base58encode(uid_num)
+        passphrase = '-'.join(passphrase)
+
+        empty_passphrase = '1-1-1-1'
+        empty_uid = 1
+    else:
+        uid = zbase32encode(uid_num)
+        passphrase = calculate_passphrase(block3, mac_address_bytes)
+
+        empty_passphrase = calculate_passphrase(bytearray(32), mac_address_bytes)
+        empty_uid = y
+
+
     if use_two_int_format:
         uid1 = str(uid_num & 0xFF).zfill(3)
         uid2 = str((uid_num >> 8) & 0xFFFFFF).zfill(4)
         uid = uid1 + '-' + uid2
-    else:
-        uid = base58encode(uid_num)
-    passphrase = '-'.join(passphrase)
-    return passphrase, uid
+        empty_uid = '000-0000'
 
-def block3_to_payload_secure_mode(block3, mac_address_bytes):
-    uid_bytes = bytes(block3[28:32])
-    uid_num = int.from_bytes(uid_bytes, "little")
-    uid = zbase32encode(uid_num)
-    passphrase = calculate_passphrase(block3, mac_address_bytes)
-    return passphrase, uid
+    return passphrase, uid, passphrase == empty_passphrase, uid == empty_uid
 
 def handle_voltage_fuses(set_voltage_fuses):
     if not set_voltage_fuses:
@@ -343,22 +283,15 @@ def sn_helper(next_uid_path):
 
     return sn
 
-def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_mode=False, mac_address_bytes=None):
-    assert not secure_mode or mac_address_bytes != None
+def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, mac_address=None):
+    assert mac_address != None
 
     if not set_block_3:
         print("Block 3 eFuses already set. UID: {}, Passphrase valid".format(uid))
         return uid, passphrase
 
-    if secure_mode:
-        encode_uid = zbase32encode
-        decode_uid = zbase32decode
-    else:
-        encode_uid = base58encode
-        decode_uid = base58decode
-
     if offline:
-        uid = encode_uid(sn_helper("/home/tester/next_uid.txt"))
+        uid_num = sn_helper("/home/tester/next_uid.txt")
     else:
         print("Reading staging password")
         try:
@@ -383,9 +316,18 @@ def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_m
         urllib.request.install_opener(opener)
 
         print("Generating UID")
-        uid = encode_uid(get_new_uid())
+        uid_num = get_new_uid()
 
-    if not secure_mode:
+    if uid_num > last_base58_uid_num(False):
+        encode_uid = zbase32encode
+        decode_uid = zbase32decode
+    else:
+        encode_uid = base58encode
+        decode_uid = base58decode
+
+    uid = encode_uid(uid_num)
+
+    if uid_num <= last_base58_uid_num(False):
         print("Generating passphrase")
         # smallest 4-char-base58 string is "2111" = 195112 ("ZZZ"(= 195111) + 1)
         # largest 4-char-base58 string is "ZZZZ" = 11316495
@@ -395,7 +337,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_m
 
     print("UID: " + uid)
 
-    #if not secure_mode:
+    #if uid_num <= last_base58_uid_num(False):
     #    print("Passphrase: {}-{}-{}-{}".format(*wifi_passphrase))
 
     print("Generating efuse binary")
@@ -403,7 +345,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_m
     binary = bytearray(32)
     binary[28:32] = uid_bytes
 
-    if not secure_mode:
+    if uid_num <= last_base58_uid_num(False):
         passphrase_bytes_list = [base58decode(chunk).to_bytes(3, byteorder='little') for chunk in wifi_passphrase]
 
         #56-95: 5 byte
@@ -424,6 +366,7 @@ def handle_block3_fuses(set_block_3, uid, passphrase, *, offline=False, secure_m
         binary[2:23] = secrets.token_bytes(21)
         binary[24:28] = secrets.token_bytes(4)
 
+        mac_address_bytes = bytes([int(x, base=16) for x in mac_address.split(':')])
         wifi_passphrase_str = calculate_passphrase(binary, mac_address_bytes)
 
     with temp_file() as (fd, name):

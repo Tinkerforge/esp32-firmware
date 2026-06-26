@@ -247,7 +247,7 @@ class P:
         print("MAC Address is {}".format(mac_address))
         result["mac"] = mac_address
 
-        set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks(override_port=serial_port, secure_mode=True, mac_address_bytes=bytes([int(x, base=16) for x in mac_address.split(':')]))
+        set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks(override_port=serial_port, secure_mode=True, mac_address=mac_address)
         if set_voltage_fuses or set_block_3:
             fatal_error("Fuses are not set. Re-run stage 0!")
 

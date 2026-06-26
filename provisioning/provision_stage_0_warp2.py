@@ -43,21 +43,16 @@ def main():
     print("MAC Address is {}".format(mac_address))
     result["mac"] = mac_address
 
-    if secure_mode:
-        mac_address_bytes = bytes([int(x, base=16) for x in mac_address.split(':')])
-    else:
-        mac_address_bytes = None
-
-    set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
+    set_voltage_fuses, set_block_3, passphrase, uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address=mac_address)
     result["set_voltage_fuses"] = set_voltage_fuses
     result["set_block_3"] = set_block_3
 
     handle_voltage_fuses(set_voltage_fuses)
 
-    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase, offline=firmware_type == "eltako", secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
+    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase, offline=firmware_type == "eltako", mac_address=mac_address)
 
     print("Verifying eFuses")
-    _set_voltage_fuses, _set_block_3, _passphrase, _uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address_bytes=mac_address_bytes)
+    _set_voltage_fuses, _set_block_3, _passphrase, _uid = get_espefuse_tasks(secure_mode=secure_mode, mac_address=mac_address)
     if _set_voltage_fuses:
         fatal_error("Failed to verify voltage eFuses! Are they burned in yet?")
 
