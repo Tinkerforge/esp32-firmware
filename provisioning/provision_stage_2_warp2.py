@@ -732,7 +732,7 @@ def pull_git(name):
 
     dprint("post git pull")
 
-def flash_firmware(firmware_path, ssid):
+def flash_firmware(firmware_path, ssid, do_factory_reset=True):
     host = ssid + '.local'
 
     with open(firmware_path, "rb") as f:
@@ -762,7 +762,8 @@ def flash_firmware(firmware_path, ssid):
 
     time.sleep(3)
     connect_to_ethernet(ssid, "firmware_update/validate")
-    factory_reset(ssid)
+    if do_factory_reset:
+        factory_reset(ssid)
 
 def main(stage3, scanner, result):
     global host
@@ -829,7 +830,7 @@ def main(stage3, scanner, result):
                     print("Skipping provisioning firmware update due to irrelevant diff")
                 elif latest_provisioning_version != info_version['firmware']:
                     print(f'Flashed provisioning firmware {info_version['firmware']} is outdated! Flashing {latest_provisioning_version}...')
-                    flash_firmware(provisioning_firmware_names[0], ssid)
+                    flash_firmware(provisioning_firmware_names[0], ssid, do_factory_reset=False)
                 else:
                     print("Flashed provisioning firmware is up-to-date")
 
@@ -858,7 +859,7 @@ def main(stage3, scanner, result):
                     result["factory_data_validated"] = True
                 else:
                     print("Flashing provisioning firmware to fix factory data mismatch")
-                    flash_firmware(provisioning_firmware_names[0], ssid)
+                    flash_firmware(provisioning_firmware_names[0], ssid, do_factory_reset=False)
 
                     provisioning_firmware_flashed = True
                     validate_factory_data = True
