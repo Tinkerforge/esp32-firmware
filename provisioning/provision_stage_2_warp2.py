@@ -698,11 +698,16 @@ TagInfo = namedtuple('TagInfo', 'tag_type tag_id')
 
 def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
     print(green("Waiting for NFC tags"), end="")
-    seen_tags = []
+    seen_tags = {}
     last_len = 0
     start_blink(expected_count)
     while len(seen_tags) < expected_count:
-        seen_tags = [x for x in getter() if any(y != 0 for y in x.tag_id)]
+        seen_tags = {}
+        for x in getter():  # filter duplicate tags created by the async sampling of the NFC Bricklet API
+            if not any(y != 0 for y in x.tag_id):
+                continue
+            if x.tag_id not in seen_tags:
+                seen_tags[x.tag_id] = x
         if len(seen_tags) != last_len:
             if beep_notify:
                 stage3.beep_notify()
@@ -713,7 +718,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
         time.sleep(0.1)
     stop_blink(stage3)
     print(f"\r{expected_count} NFC tag{'s' if expected_count != 1 else ''} seen." + " " * 20)
-    return [TagInfo(x.tag_type, ":".join("{:02X}".format(i) for i in x.tag_id)) for x in seen_tags]
+    return [TagInfo(x.tag_type, ":".join("{:02X}".format(i) for i in x.tag_id)) for x in seen_tags.values()]
 
 def pull_git(name):
     github_reachable = True
