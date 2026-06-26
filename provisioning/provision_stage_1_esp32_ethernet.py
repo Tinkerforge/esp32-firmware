@@ -97,15 +97,7 @@ def main():
         print(f"Connecting via ethernet to {esp_ethernet_static_ip}", end="")
         for i in range(30):
             start = time.time()
-            req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/ethernet/config_update",
-                                    data=json.dumps({"enable_ethernet":True,
-                                                    "ip":"0.0.0.0",
-                                                    "gateway":"0.0.0.0",
-                                                    "subnet":"0.0.0.0",
-                                                    "dns":"0.0.0.0",
-                                                    "dns2":"0.0.0.0"}).encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/info/version")
             try:
                 with urllib.request.urlopen(req, timeout=1) as f:
                     f.read()
@@ -153,6 +145,22 @@ def main():
 
         # We don't test the IO0 button anymore
         result["io0_test_successful"] = None
+
+        req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/ethernet/config_update",
+                                    data=json.dumps({"enable_ethernet":True,
+                                                    "ip":"0.0.0.0",
+                                                    "gateway":"0.0.0.0",
+                                                    "subnet":"0.0.0.0",
+                                                    "dns":"0.0.0.0",
+                                                    "dns2":"0.0.0.0"}).encode("utf-8"),
+                                    method='PUT',
+                                    headers={"Content-Type": "application/json"})
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as f:
+                 f.read()
+        except Exception as e:
+            fatal_error("Failed to reset ethernet configuration!")
 
         led0_stop = input("Press EN button. Does the status LED stop blinking for some seconds? [y/n]")
         while led0_stop not in ("y", "n"):
