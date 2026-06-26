@@ -89,7 +89,8 @@ class EnergyManagerV2Tester:
         wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_{0}_firmware_latest.bin".format(self.brick_firmware_basename)))
         wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)
 
-        pattern = r"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        pattern = rf"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
+
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 
@@ -109,12 +110,12 @@ class EnergyManagerV2Tester:
 
         self.ssid = hardware_type + "-" + esp_uid_qr
 
-        ethernet_state = json.loads(connect_to_ethernet(self.ssid, "ethernet/state")[0].decode('utf-8'))
+        ethernet_state = json.loads(connect_to_ethernet(self.ssid, "ethernet/state").decode('utf-8'))
         print(ethernet_state)
 
         self.mac = ethernet_state["mac"]
 
-        info_version = json.loads(connect_to_ethernet(self.ssid, "info/version")[0].decode('utf-8'))
+        info_version = json.loads(connect_to_ethernet(self.ssid, "info/version").decode('utf-8'))
         print(info_version)
 
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
@@ -158,7 +159,8 @@ class EnergyManagerV2Tester:
 
         self.result["firmware"] = wem_brick_path.split("/")[-1]
 
-        host = connect_to_ethernet(self.ssid, "hidden_proxy/enable")[1]
+        connect_to_ethernet(self.ssid, "hidden_proxy/enable")
+        host = self.ssid + ".localdomain"
 
         time.sleep(1)
         wem_ipcon = IPConnection()
