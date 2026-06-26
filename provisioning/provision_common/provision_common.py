@@ -102,7 +102,7 @@ def wifi(ssid, passphrase):
 def get_new_uid():
     return int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/uid', timeout=15).read())
 
-def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision=3, override_port=None):
+def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision=[3, 3.1], override_port=None):
     output = esptool(['flash-id'], override_port=override_port)  # flash-id to get the flash size
     chip_type = None
     chip_revision = None
