@@ -914,10 +914,10 @@ def main(stage3, scanner, result):
             latest_version = [int(x) for x in latest_version_parts[:3]] + [int(latest_version_parts[3], base=16)]
             flash_latest_version = False
 
-            if version > latest_version:
-                fatal_error("Flashed firmware {}.{}.{}+{:x} is not released yet! Latest release is {}.{}.{}+{:x}".format(*version, *latest_version))
-            elif provisioning_firmware_flashed:
+            if provisioning_firmware_flashed:
                 flash_latest_version = True
+            elif version > latest_version:
+                fatal_error("Flashed firmware {}.{}.{}+{:x} is not released yet! Latest release is {}.{}.{}+{:x}".format(*version, *latest_version))
             elif version < latest_version:
                 print("Flashed firmware {}.{}.{}+{:x} is outdated!".format(*version))
                 flash_latest_version = True
