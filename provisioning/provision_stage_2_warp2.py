@@ -11,6 +11,7 @@ import urllib.request
 import csv
 import traceback
 import glob
+import subprocess
 from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
@@ -27,11 +28,16 @@ from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
 from provisioning.pib_compare import compare_data as pib_compare_data
 
+TEST_REPORTS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'test-reports'))
+
+files_to_commit = []
+commit_message = None
 evse = None
 host = None
 power_off_on_error = True
 generation = None
 sys_stdout = sys.stdout
+sys_stderr = sys.stderr
 sys_print = print
 
 class LogWriter:
@@ -598,7 +604,38 @@ def upload_iso15118_pib():
 
     set_iso15118_enabled(False)
 
+def test_report_pull():
+    try:
+        subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e}')
+
+def test_report_commit_and_push():
+    if commit_message == None:
+        return
+
+    test_report_pull()
+
+    try:
+        subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e}')
+
+    try:
+        subprocess.check_output(['git', 'push'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not push test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not push test-reports git:\n{e}')
+
 def led_wrap():
+    global files_to_commit
+    global commit_message
+
     dprint("pre scanner")
 
     scanner = Scanner()
@@ -608,16 +645,21 @@ def led_wrap():
     if scanner.qr_variant != "B":
         product = scanner.qr_hardware_type
         ssid = f'{product}-{scanner.qr_esp_uid}'
+        commit_message = f'Add test report for {product.upper()} Charger with UID {scanner.qr_esp_uid}'
     else:
         product = f'warp{scanner.qr_gen}'
         ssid = f'{product}-basic'
+        commit_message = f'Add test report for {product.upper()} Charger (Basic)'
 
     result = {}
     result["start"] = now()
 
-    report_path_prefix = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2".format(ssid, result["start"].replace(":", "-")))
+    report_path_prefix = os.path.join(TEST_REPORTS_DIRECTORY, product, "{}_{}_report_stage_2".format(ssid, result["start"].replace(":", "-")))
+    report_path_log = report_path_prefix + ".log"
 
-    log_writer.set_filename(report_path_prefix + ".log")
+    log_writer.set_filename(report_path_log)
+
+    files_to_commit.append(report_path_log)
 
     stage3 = Stage3(int(scanner.qr_gen),
                     is_front_panel_button_pressed_function=is_front_panel_button_pressed,
@@ -643,6 +685,9 @@ def led_wrap():
         report_path_json = report_path_prefix + ".json"
         report_path_pdf = report_path_prefix + ".pdf"
 
+        files_to_commit.append(report_path_json)
+        files_to_commit.append(report_path_pdf)
+
         with mkdir_open(report_path_json, "w") as f:
             json.dump(result, f, indent=4)
 
@@ -665,8 +710,12 @@ def led_wrap():
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
 
+        report_path_json = report_path_prefix + "_failure.json"
+
+        files_to_commit.append(report_path_json)
+
         try:
-            with mkdir_open(report_path_prefix + "_failure.json", "w") as f:
+            with mkdir_open(report_path_json, "w") as f:
                 json.dump(result, f, indent=4)
         except Exception as e:
             print(red(f'Failed to write failure report: {e}'))
@@ -1235,17 +1284,42 @@ def main(stage3, scanner, result):
 
     result["end"] = now()
 
-if __name__ == "__main__":
-    sys.stdout = log_writer
-    sys.stderr = log_writer
+def outer_main():
+    exit_code = 0
 
     try:
-        led_wrap()
-        input('Press return to exit ')
+        test_report_pull()
     except FatalError:
-        input('Press return to exit ')
-        sys.exit(1)
-    except Exception as e:
+        exit_code = 1
+    except Exception:
         traceback.print_exc()
-        input('Press return to exit ')
-        sys.exit(1)
+        exit_code = 1
+
+    if exit_code == 0:
+        sys.stdout = log_writer
+        sys.stderr = log_writer
+
+        try:
+            led_wrap()
+        except FatalError:
+            exit_code = 1
+        except Exception:
+            traceback.print_exc()
+            exit_code = 1
+
+        sys.stdout = sys_stdout
+        sys.stderr = sys_stderr
+
+        try:
+            test_report_commit_and_push()
+        except FatalError:
+            exit_code = 1
+        except Exception:
+            traceback.print_exc()
+            exit_code = 1
+
+    input('Press return to exit ')
+    sys.exit(exit_code)
+
+if __name__ == "__main__":
+    outer_main()
