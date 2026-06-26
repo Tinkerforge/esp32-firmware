@@ -229,13 +229,13 @@ def block3_to_payload(block3, mac_address, *, use_two_int_format=False):
         passphrase = '-'.join(passphrase)
 
         empty_passphrase = '1-1-1-1'
-        empty_uid = 1
+        empty_uid = '1'
     else:
         uid = zbase32encode(uid_num)
         passphrase = calculate_passphrase(block3, mac_address_bytes)
 
         empty_passphrase = calculate_passphrase(bytearray(32), mac_address_bytes)
-        empty_uid = y
+        empty_uid = 'y'
 
 
     if use_two_int_format:
