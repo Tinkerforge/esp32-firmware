@@ -57,7 +57,7 @@
 
 #include "gcc_warnings.h"
 
-static constexpr uint32_t LAST_BASE58_UID_NUM = 257899; // 2jEx (base58); 855m (zbase32) first zbase32 uid is 855c
+static constexpr uint32_t LAST_BASE58_UID_NUM = OPTION_ESP32_COMMON_LAST_BASE58_UID_NUM();
 static constexpr uint32_t LAST_DIRECT_WIFI_PASSPHRASE_UID_NUM = LAST_BASE58_UID_NUM;
 
 // TF_HAL hal;
