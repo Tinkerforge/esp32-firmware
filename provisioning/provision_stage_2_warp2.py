@@ -31,7 +31,40 @@ evse = None
 host = None
 power_off_on_error = True
 generation = None
+sys_stdout = sys.stdout
 sys_print = print
+
+class LogWriter:
+    def __init__(self):
+        self.fp = None
+        self.pending_data = ''
+
+    def set_filename(self, filename):
+        if self.fp != None:
+            self.fp.close()
+
+        self.fp = open(filename, 'a')
+        self.fp.write(self.pending_data)
+        self.fp.flush()
+        self.pending_data = ''
+
+    def write(self, data):
+        sys_stdout.write(data)
+
+        if self.fp != None:
+            return self.fp.write(data.replace('\r', '\n'))
+
+        self.pending_data += data
+
+        return len(data)
+
+    def flush(self):
+        sys_stdout.flush()
+
+        if self.fp != None:
+            self.fp.flush()
+
+log_writer = LogWriter()
 
 def orig_print(*args, **kwargs):
     sys_print(*args, **kwargs)
@@ -560,6 +593,20 @@ def led_wrap():
 
     dprint("post scanner")
 
+    if scanner.qr_variant != "B":
+        product = scanner.qr_hardware_type
+        ssid = f'{product}-{scanner.qr_esp_uid}'
+    else:
+        product = f'warp{scanner.qr_gen}'
+        ssid = f'{product}-basic'
+
+    result = {}
+    result["start"] = now()
+
+    report_path_prefix = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2".format(ssid, result["start"].replace(":", "-")))
+
+    log_writer.set_filename(report_path_prefix + ".log")
+
     stage3 = Stage3(int(scanner.qr_gen),
                     is_front_panel_button_pressed_function=is_front_panel_button_pressed,
                     has_evse_error_function=has_evse_error,
@@ -578,10 +625,24 @@ def led_wrap():
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
 
-    result = {}
-
     try:
         main(stage3, scanner, result)
+
+        report_path_json = report_path_prefix + ".json"
+        report_path_pdf = report_path_prefix + ".pdf"
+
+        with mkdir_open(report_path_json, "w") as f:
+            json.dump(result, f, indent=4)
+
+        if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:
+            fatal_error(f"Could not generate PDF report file from {report_path_json}")
+
+        print(f"Printing report {report_path_pdf}")
+
+        if os.system(f'lpr {report_path_pdf}') != 0:
+            fatal_error(f"Could not print report")
+
+        print('Done!')
     except BaseException as e:
         result['failure_exception'] = str(e)
         result['failure_traceback'] = traceback.format_exc()
@@ -593,16 +654,7 @@ def led_wrap():
         stage3.beep_failure()
 
         try:
-            if scanner.qr_variant != "B":
-                product = scanner.qr_hardware_type
-                ssid = f'{product}-{scanner.qr_esp_uid}'
-            else:
-                product = f'warp{scanner.qr_gen}'
-                ssid = f'{product}-{result.get("evse_uid", "unknown")}'
-
-            report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2_failure.json".format(ssid, now().replace(":", "-")))
-
-            with mkdir_open(report_path_json, "w") as f:
+            with mkdir_open(report_path_prefix + "_failure.json", "w") as f:
                 json.dump(result, f, indent=4)
         except Exception as e:
             print(red(f'Failed to write failure report: {e}'))
@@ -772,8 +824,6 @@ def flash_firmware(firmware_path, ssid, do_factory_reset=True):
 
 def main(stage3, scanner, result):
     global host
-
-    result["start"] = now()
 
     dprint("main")
 
@@ -1173,28 +1223,10 @@ def main(stage3, scanner, result):
 
     result["end"] = now()
 
-    if scanner.qr_variant != "B":
-        product = scanner.qr_hardware_type
-    else:
-        product = f'warp{scanner.qr_gen}'
-
-    report_path_json = os.path.join("..", "..", "test-reports", product, "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")))
-    report_path_pdf = report_path_json.replace('.json', '.pdf')
-
-    with mkdir_open(report_path_json, "w") as f:
-        json.dump(result, f, indent=4)
-
-    if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:
-        fatal_error(f"Could not generate PDF report file from {report_path_json}")
-
-    print(f"Printing report {report_path_pdf}")
-
-    if os.system(f'lpr {report_path_pdf}') != 0:
-        fatal_error(f"Could not print report")
-
-    print('Done!')
-
 if __name__ == "__main__":
+    sys.stdout = log_writer
+    sys.stderr = log_writer
+
     try:
         led_wrap()
         input('Press return to exit ')
