@@ -957,8 +957,8 @@ class Stage3:
             result['iso15118_attenuation_profile'] = ap
 
             for i, v in enumerate(ap[:-1]):
-                if v >= 40:
-                    fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= 40!\nProfile: {",".join([str(x) for x in ap])}")
+                if v >= 45:
+                    fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= 45!\nProfile: {",".join([str(x) for x in ap])}")
 
             if ap[-1] >= 60:
                 fatal_error(f"Last ISO 15118 attenuation profile entry out of range: {v} >= 60!\nProfile: {",".join([str(x) for x in ap])}")
