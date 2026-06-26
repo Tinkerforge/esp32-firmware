@@ -902,7 +902,7 @@ class Stage3:
                 if state == 'D' and self.get_iec_state_function() == 'E':
                     fatal_error('Charger not in IEC state {0}. If the DC fault protector has triggered, please check whether the CP wire is (wronly) placed in the DC fault protector ring.'.format(state))
 
-                fatal_error('Charger not in IEC state {0}'.format(state))
+                fatal_error('Charger not in IEC state {0}. Is CP wire connected correctly to the EVSE?'.format(state))
 
             if self.has_evse_error_function():
                 if state != 'D':
