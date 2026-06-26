@@ -1,5 +1,5 @@
 2026-06-25: 2.12.0 (2613b535)
 - Initial release
 
-2026-06-26: 2.12.1 (<unknown>)
+2026-06-26: 2.12.1 (5ee856ba)
 - Fix rare firmware update issue
