@@ -807,7 +807,10 @@ def main(stage3, scanner, result):
 
                 info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
 
-                if latest_provisioning_version != info_version['firmware']:
+                if latest_provisioning_version == '2.12.1+6a3e414f' and info_version['firmware'] == '1.0.0+6a3bedd1':
+                    # the only change between these two version is the signedness of 2.12.1
+                    print("Skipping provisioning firmware update due to irrelevant diff")
+                elif latest_provisioning_version != info_version['firmware']:
                     print(f'Flashed provisioning firmware {info_version['firmware']} is outdated! Flashing {latest_provisioning_version}...')
                     flash_firmware(provisioning_firmware_names[0], ssid)
                 else:
