@@ -605,6 +605,8 @@ def upload_iso15118_pib():
     set_iso15118_enabled(False)
 
 def test_report_pull():
+    dprint("pre test_report_pull")
+
     try:
         subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
     except subprocess.CalledProcessError as e:
@@ -613,10 +615,19 @@ def test_report_pull():
         fatal_error(f'Cound not pull test-reports git:\n{e}')
 
 def test_report_commit_and_push():
+    dprint("pre test_report_commit_and_push")
+
     if commit_message == None:
         return
 
     test_report_pull()
+
+    try:
+        subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e}')
 
     try:
         subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
