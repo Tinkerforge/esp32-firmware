@@ -50,7 +50,9 @@ class LogWriter:
 
     def write(self, data):
         sys_stdout.write(data)
+        self.write_log(data)
 
+    def write_log(self, data):
         log_data = tfutil.colored.strip(data.replace('\r', '\n'))
 
         if self.fp != None:
@@ -375,12 +377,14 @@ class Scanner:
         pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
 
         self.qr_charger_code = my_input("Scan the charger QR code:")
+        log_writer.write_log(self.qr_charger_code + '\n')
         m_4 = re.match(pattern_4, self.qr_charger_code)
         if m_4 == None:
             m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
 
         while not m_4 and not m_3_2:
             self.qr_charger_code = my_input("Scan the charger QR code:", red)
+            log_writer.write_log(self.qr_charger_code + '\n')
             m_4 = re.match(pattern_4, self.qr_charger_code)
             if m_4 == None:
                 m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
@@ -460,10 +464,12 @@ class Scanner:
             # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
             pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
             self.qr_extras_code = my_input("Scan the extras QR code:")
+            log_writer.write_log(self.qr_extras_code + '\n')
             m = re.match(pattern, self.qr_extras_code)
 
             while not m:
                 self.qr_extras_code = my_input("Scan the extras QR code:", red)
+                log_writer.write_log(self.qr_extras_code + '\n')
                 m = re.match(pattern, self.qr_extras_code)
 
             self.qr_stand = m.group(1) if m.group(1) != None else '0'
@@ -498,11 +504,15 @@ class Scanner:
 
         if self.qr_variant != "B":
             pattern = rf"^WIFI:S:(warp{self.qr_gen})-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
-            self.qr_esp_code = getpass.getpass(green("Scan the ESP Brick QR code: "))
+            orig_print(green("Scan the ESP Brick QR code: "), end="")
+            self.qr_esp_code = getpass.getpass('')
+            log_writer.write_log('\n')
             m = re.match(pattern, self.qr_esp_code)
 
             while not m:
-                self.qr_esp_code = getpass.getpass(red("Scan the ESP Brick QR code: "))
+                orig_print(red("Scan the ESP Brick QR code: "), end="")
+                self.qr_esp_code = getpass.getpass('')
+                log_writer.write_log('\n')
                 m = re.match(pattern, self.qr_esp_code)
 
             self.qr_hardware_type = m.group(1)
