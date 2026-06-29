@@ -134,6 +134,11 @@ public:
     int register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data);
     int register_eichrecht_signature_callback(TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data);
 
+    // OVE R37 (grid support, WARP4 only)
+    int get_ove_r37_configuration(bool *ret_enabled, uint16_t *ret_undervoltage_threshold, uint16_t *ret_undervoltage_observation_time, uint16_t *ret_reconnect_wait_time, uint16_t *ret_start_delay);
+    int set_ove_r37_configuration(bool enabled, uint16_t undervoltage_threshold, uint16_t undervoltage_observation_time, uint16_t reconnect_wait_time, uint16_t start_delay);
+    int get_ove_r37_status(uint8_t *ret_state, uint8_t *ret_trip_reason, uint8_t *ret_flags);
+
     bool is_shutdown_input_closed();
 
 private:

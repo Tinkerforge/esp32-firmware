@@ -405,6 +405,21 @@ int EVSEV2::get_eichrecht_public_key(uint8_t ret_public_key[64])
     return tf_evse_v2_get_eichrecht_public_key(&device, ret_public_key);
 }
 
+int EVSEV2::get_ove_r37_configuration(bool *ret_enabled, uint16_t *ret_undervoltage_threshold, uint16_t *ret_undervoltage_observation_time, uint16_t *ret_reconnect_wait_time, uint16_t *ret_start_delay)
+{
+    return tf_evse_v2_get_ove_r37_configuration(&device, ret_enabled, ret_undervoltage_threshold, ret_undervoltage_observation_time, ret_reconnect_wait_time, ret_start_delay);
+}
+
+int EVSEV2::set_ove_r37_configuration(bool enabled, uint16_t undervoltage_threshold, uint16_t undervoltage_observation_time, uint16_t reconnect_wait_time, uint16_t start_delay)
+{
+    return tf_evse_v2_set_ove_r37_configuration(&device, enabled, undervoltage_threshold, undervoltage_observation_time, reconnect_wait_time, start_delay);
+}
+
+int EVSEV2::get_ove_r37_status(uint8_t *ret_state, uint8_t *ret_trip_reason, uint8_t *ret_flags)
+{
+    return tf_evse_v2_get_ove_r37_status(&device, ret_state, ret_trip_reason, ret_flags);
+}
+
 int EVSEV2::register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data)
 {
     return tf_evse_v2_register_eichrecht_dataset_callback(&device, handler, message, user_data);
@@ -917,6 +932,9 @@ void EVSEV2::update_all_data()
     uint8_t enumerate_value;
     uint32_t enumerate_value_change_time;
     uint8_t phase_switch_wait_time_;
+    uint8_t ove_r37_state;
+    uint8_t ove_r37_trip_reason;
+    uint8_t ove_r37_flags;
 
     // get_low_level_state
     uint8_t led_state;
@@ -985,7 +1003,10 @@ void EVSEV2::update_all_data()
                                    &enumerate_value,
                                    &enumerate_value_change_time,
                                    &phase_switch_wait_time_,
-                                   nullptr /*plc_modem_enabled*/);
+                                   nullptr /*plc_modem_enabled*/,
+                                   &ove_r37_state,
+                                   &ove_r37_trip_reason,
+                                   &ove_r37_flags);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1311,6 +1332,10 @@ void EVSEV2::update_all_data()
 
 #if MODULE_METERS_EVSE_V2_AVAILABLE()
     meters_evse_v2.update_from_evse_v2_all_data(&meter_data);
+#endif
+
+#if MODULE_OVE_R37_AVAILABLE()
+    ove_r37.update_state_from_all_data(ove_r37_state, ove_r37_trip_reason, ove_r37_flags);
 #endif
 }
 

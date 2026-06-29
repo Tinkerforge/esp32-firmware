@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-05-08.      *
+ * This file was automatically generated on 2026-06-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -38,7 +38,7 @@ typedef void (*TF_EVSEV2_EichrechtSignatureHandler)(struct TF_EVSEV2 *evse_v2, c
 /**
  * \ingroup TF_EVSEV2
  *
- * TBD
+ * Controls the charging of electric vehicles according to IEC 61851
  */
 typedef struct TF_EVSEV2 {
     TF_TFP *tfp;
@@ -397,6 +397,21 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_GET_TEST_MODE 70
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_OVE_R37_CONFIGURATION 71
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_OVE_R37_CONFIGURATION 72
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_OVE_R37_STATUS 73
 
 /**
  * \ingroup TF_EVSEV2
@@ -1465,6 +1480,76 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_OVE_R37_STATE_DISABLED 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_STATE_NORMAL 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_STATE_TRIPPED 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_STATE_WAIT 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_STATE_RAMP 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_TRIP_REASON_NONE 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_TRIP_REASON_UNDERVOLTAGE 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_TRIP_REASON_OVERVOLTAGE 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_TRIP_REASON_FREQUENCY 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_FLAGS_VOLTAGE_IN_RANGE 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_FLAGS_FREQUENCY_IN_RANGE 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_FLAGS_VOLTAGE_VALID 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_FLAGS_CURRENT_VALID 8
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_FLAGS_FREQUENCY_VALID 16
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
@@ -1624,7 +1709,9 @@ int tf_evse_v2_set_response_expected_all(TF_EVSEV2 *evse_v2, bool response_expec
  *
  * Signature: \code void callback(float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data) \endcode
  *
- * TODO
+ * This callback is triggered with the latest energy meter values, see
+ * {@link tf_evse_v2_get_energy_meter_values}. It is called whenever new values are
+ * available from the connected energy meter.
  */
 int tf_evse_v2_register_energy_meter_values_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EnergyMeterValuesHandler handler, void *user_data);
 
@@ -1637,7 +1724,10 @@ int tf_evse_v2_register_energy_meter_values_callback(TF_EVSEV2 *evse_v2, TF_EVSE
  *
  * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
  *
- * TODO
+ * This callback is triggered after a Eichrecht transaction was
+ * started with {@link tf_evse_v2_set_eichrecht_transaction}. It contains the signed OCMF
+ * dataset. The corresponding signature is delivered through the
+ * {@link tf_evse_v2_register_eichrecht_signature_low_level_callback} callback.
  */
 int tf_evse_v2_register_eichrecht_dataset_low_level_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtDatasetLowLevelHandler handler, void *user_data);
 
@@ -1650,7 +1740,10 @@ int tf_evse_v2_register_eichrecht_dataset_low_level_callback(TF_EVSEV2 *evse_v2,
  *
  * Signature: \code void callback(char *message, uint16_t message_length, void *user_data) \endcode
  *
- * TODO
+ * This callback is triggered after a Eichrecht transaction was
+ * started with {@link tf_evse_v2_set_eichrecht_transaction}. It contains the signed OCMF
+ * dataset. The corresponding signature is delivered through the
+ * {@link tf_evse_v2_register_eichrecht_signature_low_level_callback} callback.
  */
 int tf_evse_v2_register_eichrecht_dataset_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data);
 
@@ -1663,7 +1756,9 @@ int tf_evse_v2_register_eichrecht_dataset_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2
  *
  * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
  *
- * TODO
+ * This callback is triggered after the {@link tf_evse_v2_register_eichrecht_dataset_low_level_callback}
+ * callback. It contains the signature of the signed OCMF dataset of the
+ * Eichrecht transaction.
  */
 int tf_evse_v2_register_eichrecht_signature_low_level_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtSignatureLowLevelHandler handler, void *user_data);
 
@@ -1676,7 +1771,9 @@ int tf_evse_v2_register_eichrecht_signature_low_level_callback(TF_EVSEV2 *evse_v
  *
  * Signature: \code void callback(char *message, uint16_t message_length, void *user_data) \endcode
  *
- * TODO
+ * This callback is triggered after the {@link tf_evse_v2_register_eichrecht_dataset_low_level_callback}
+ * callback. It contains the signature of the signed OCMF dataset of the
+ * Eichrecht transaction.
  */
 int tf_evse_v2_register_eichrecht_signature_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data);
 #endif
@@ -1694,480 +1791,699 @@ int tf_evse_v2_callback_tick(TF_EVSEV2 *evse_v2, uint32_t timeout_us);
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the current state of the EVSE.
+ *
+ * * IEC61851 State: State according to IEC 61851 (A = not connected,
+ *   B = connected, C = charging, D = unused, EF = error).
+ * * Charger State: High level state of the charging process.
+ * * Contactor State: State of the contactor (relays for N+L1 and L2+L3).
+ * * Contactor Error: Error code of the contactor check, 0 means OK.
+ * * Allowed Charging Current: Charging current that is currently allowed in mA
+ *   (minimum over all active charging slots).
+ * * Error State: 0 if everything is OK, otherwise the current error.
+ * * Lock State: State of the type 2 socket lock motor.
+ * * DC Fault Current State: State of the DC fault current protection.
  */
 int tf_evse_v2_get_state(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the hardware configuration of the EVSE.
+ *
+ * * Jumper Configuration: Maximum current of the incoming cable as configured
+ *   through the slide switch.
+ * * Has Lock Switch: *true* if a type 2 socket lock motor is connected.
+ * * EVSE Version: Hardware version of the EVSE (e.g. 20 for EVSE 2.0, 30 for
+ *   3.0 and 40 for 4.0).
+ * * Energy Meter Type: Type of the connected energy meter (Not Available if no
+ *   energy meter is connected).
  */
 int tf_evse_v2_get_hardware_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the low level state of the EVSE. This is mostly useful for debugging.
+ *
+ * * LED State: State of the status LED.
+ * * CP PWM Duty Cycle: Duty cycle of the CP (control pilot) PWM in 1/10 %.
+ * * ADC Values: Raw ADC values of the voltage measurements.
+ * * Voltages: Measured voltages (CP/PE before and after the resistor for high
+ *   and low PWM, PP/PE and the +12V and -12V rails).
+ * * Resistances: Calculated resistances (CP/PE and PP/PE).
+ * * GPIO: State of the GPIO pins.
+ * * Car Stopped Charging: *true* if the car stopped the charging by itself.
+ * * Time Since State Change: Time since the last IEC 61851 state change.
+ * * Time Since DC Fault Check: Time since the last DC fault current check.
+ * * Uptime: Uptime of the EVSE.
  */
 int tf_evse_v2_get_low_level_state(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], bool *ret_car_stopped_charging, uint32_t *ret_time_since_state_change, uint32_t *ret_time_since_dc_fault_check, uint32_t *ret_uptime);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * fixed slots:
- * 0: incoming cable (read-only, configured through slide switch)
- * 1: outgoing cable (read-only, configured through resistor)
- * 2: gpio input 0 (shutdown input)
- * 3: gpio input 1 (input)
- * 4: button (0A <-> 32A, can be controlled from web interface with start button and physical button if configured)
+ * Sets the configuration of a charging slot. The EVSE has 20 charging slots
+ * (0-19). The charging current that is allowed is the minimum of the maximum
+ * current of all active slots.
+ *
+ * * Slot: Index of the slot (0-19).
+ * * Max Current: Maximum current of the slot in mA. 0 blocks charging.
+ * * Active: *true* if the slot is taken into account.
+ * * Clear On Disconnect: *true* if the slot should be deactivated when the
+ *   cable is disconnected.
+ *
+ * The following slots have a fixed meaning:
+ *
+ * * 0: Incoming cable (read-only, configured through slide switch).
+ * * 1: Outgoing cable (read-only, configured through resistor).
+ * * 2: GPIO input 0 (shutdown input).
+ * * 3: GPIO input 1 (input).
+ * * 4: Button (0A <-> 32A, can be controlled from the web interface with the
+ *   start button and the physical button if configured).
  */
 int tf_evse_v2_set_charging_slot(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- *
+ * Sets the maximum current of a charging slot, see {@link tf_evse_v2_set_charging_slot}.
  */
 int tf_evse_v2_set_charging_slot_max_current(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current);
 
 /**
  * \ingroup TF_EVSEV2
  *
- *
+ * Activates/deactivates a charging slot, see {@link tf_evse_v2_set_charging_slot}.
  */
 int tf_evse_v2_set_charging_slot_active(TF_EVSEV2 *evse_v2, uint8_t slot, bool active);
 
 /**
  * \ingroup TF_EVSEV2
  *
- *
+ * Sets the clear-on-disconnect flag of a charging slot, see
+ * {@link tf_evse_v2_set_charging_slot}.
  */
 int tf_evse_v2_set_charging_slot_clear_on_disconnect(TF_EVSEV2 *evse_v2, uint8_t slot, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- *
+ * Returns the configuration of a charging slot as set by
+ * {@link tf_evse_v2_set_charging_slot}.
  */
 int tf_evse_v2_get_charging_slot(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * packed getter
+ * Returns the configuration of all 20 charging slots, see
+ * {@link tf_evse_v2_set_charging_slot}.
+ *
+ * The active and clear-on-disconnect flags are packed: bit 0 is the active flag
+ * and bit 1 is the clear-on-disconnect flag.
  */
 int tf_evse_v2_get_all_charging_slots(TF_EVSEV2 *evse_v2, uint16_t ret_max_current[20], uint8_t ret_active_and_clear_on_disconnect[20]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * fixed slots:
- * 0: incoming cable (read-only, configured through slide switch)
- * 1: outgoing cable (read-only, configured through resistor)
- * 2: gpio input 0 (shutdown input)
- * 3: gpio input 1 (input)
+ * Sets the default configuration of a charging slot. The default values are
+ * used to initialize the charging slots on startup. Slots 0 and 1 (the cables)
+ * have no default and can not be configured here.
+ *
+ * See {@link tf_evse_v2_set_charging_slot} for the meaning of the parameters.
  */
 int tf_evse_v2_set_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t max_current, bool active, bool clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- *
+ * Returns the default configuration of a charging slot as set by
+ * {@link tf_evse_v2_set_charging_slot_default}.
  */
 int tf_evse_v2_get_charging_slot_default(TF_EVSEV2 *evse_v2, uint8_t slot, uint16_t *ret_max_current, bool *ret_active, bool *ret_clear_on_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the measured values of the connected energy meter.
+ *
+ * * Power: Total active power in W.
+ * * Current: Current per phase (L1, L2, L3) in A.
+ * * Phases Active: For each phase *true* if current is currently flowing.
+ * * Phases Connected: For each phase *true* if the phase is connected.
  */
 int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, float ret_current[3], bool ret_phases_active[3], bool ret_phases_connected[3]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TBD
+ * Returns all values that the connected energy meter provides. The meaning of
+ * the values depends on the energy meter type, see
+ * {@link tf_evse_v2_get_hardware_configuration}.
  */
 int tf_evse_v2_get_all_energy_meter_values_low_level(TF_EVSEV2 *evse_v2, uint16_t *ret_values_length, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the Modbus communication error counters of the connected energy
+ * meter. The counters are: local timeout, global timeout, illegal function,
+ * illegal data address, illegal data value and slave device failure.
  */
 int tf_evse_v2_get_energy_meter_errors(TF_EVSEV2 *evse_v2, uint32_t ret_error_count[6]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the relative energy value of the energy meter to zero. This sets the
+ * point in time from which on the relative energy meter values are counted.
  */
 int tf_evse_v2_reset_energy_meter_relative_energy(TF_EVSEV2 *evse_v2);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Resets the DC fault current protection back to normal condition after a DC
+ * fault was detected. The password is 0xDC42FA23. A new DC fault current
+ * calibration is started immediately after the reset.
+ *
+ * Before resetting the DC fault current protection you should make sure that
+ * the fault is gone, otherwise the next charging session will trip it again.
  */
 int tf_evse_v2_reset_dc_fault_current_state(TF_EVSEV2 *evse_v2, uint32_t password);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the configuration of the GPIOs.
+ *
+ * * Shutdown Input Configuration: Defines how the shutdown input (GPIO input 0)
+ *   reacts (e.g. shut down charging on open/close or limit to 4200 Watt).
+ * * Input Configuration: Defines the function of GPIO input 1 (e.g. limit the
+ *   charging current depending on the input level).
+ * * Output Configuration: Defines the default state of the GP output (connected
+ *   to ground or high impedance).
  */
 int tf_evse_v2_set_gpio_configuration(TF_EVSEV2 *evse_v2, uint8_t shutdown_input_configuration, uint8_t input_configuration, uint8_t output_configuration);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the GPIO configuration as set by {@link tf_evse_v2_set_gpio_configuration}.
  */
 int tf_evse_v2_get_gpio_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the content of the given storage page (63 bytes), see
+ * {@link tf_evse_v2_set_data_storage}.
  */
 int tf_evse_v2_get_data_storage(TF_EVSEV2 *evse_v2, uint8_t page, uint8_t ret_data[63]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Stores 63 bytes of data in the given storage page. This storage can be used
+ * by the ESP32 to store its own data on the EVSE.
  */
 int tf_evse_v2_set_data_storage(TF_EVSEV2 *evse_v2, uint8_t page, const uint8_t data[63]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the current state of the indicator LED as set by
+ * {@link tf_evse_v2_set_indicator_led}. The duration is the remaining duration in ms.
  */
 int tf_evse_v2_get_indicator_led(TF_EVSEV2 *evse_v2, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the indicator LED to signal different states to the user.
+ *
+ * * Indication: -1 leaves the control of the LED to the EVSE, 0 turns it off,
+ *   255 turns it on, 1-254 sets a PWM value and 1001/1002/1003 show an
+ *   acknowledge/not-acknowledge/nag indication.
+ * * Duration: Duration of the indication in ms.
+ * * Color H/S/V: HSV color of the LED. If the value (V) is 0 an automatic color
+ *   is used. EVSE 2.0 only supports blue.
+ *
+ * The returned status is 0 if the indication could be set. Otherwise the LED is
+ * currently in use by the EVSE (e.g. blinking, flickering or breathing) and the
+ * status is the current LED state.
  */
 int tf_evse_v2_set_indicator_led(TF_EVSEV2 *evse_v2, int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the function of the button (key switch). The button can be configured to
+ * start charging, stop charging, both or to enumerate (see the enumerate
+ * functions). It can also be deactivated.
  */
 int tf_evse_v2_set_button_configuration(TF_EVSEV2 *evse_v2, uint8_t button_configuration);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the button configuration as set by {@link tf_evse_v2_set_button_configuration}.
  */
 int tf_evse_v2_get_button_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_button_configuration);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the state of the button (key switch).
+ *
+ * The press and release time are the times (relative to the EVSE uptime) of the
+ * last press and release. Button Pressed is *true* while the button is held down.
  */
 int tf_evse_v2_get_button_state(TF_EVSEV2 *evse_v2, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Enables/disables the EV wakeup. If enabled the EVSE adheres to IEC 61851
+ * Annex A.5.3 and tries to wake up the electric vehicle after a long period of
+ * inactivity. This helps with some legacy EVs that do not wake up by themselves.
  */
 int tf_evse_v2_set_ev_wakeup(TF_EVSEV2 *evse_v2, bool ev_wakeup_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the EV wakeup setting as set by {@link tf_evse_v2_set_ev_wakeup}.
  */
 int tf_evse_v2_get_ev_wakuep(TF_EVSEV2 *evse_v2, bool *ret_ev_wakeup_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Disconnects/connects the control pilot (CP) from the electric vehicle. This
+ * can be used to stop a charging session without opening the contactor.
+ *
+ * The CP can only be disconnected in IEC 61851 state A or B and only if the
+ * contactor is currently not active. The returned value shows whether the CP is
+ * now disconnected.
  */
 int tf_evse_v2_set_control_pilot_disconnect(TF_EVSEV2 *evse_v2, bool control_pilot_disconnect, bool *ret_is_control_pilot_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the control pilot disconnect state as set by
+ * {@link tf_evse_v2_set_control_pilot_disconnect}.
  */
 int tf_evse_v2_get_control_pilot_disconnect(TF_EVSEV2 *evse_v2, bool *ret_control_pilot_disconnect);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the values of {@link tf_evse_v2_get_state}, {@link tf_evse_v2_get_hardware_configuration},
+ * {@link tf_evse_v2_get_energy_meter_values} and {@link tf_evse_v2_get_energy_meter_errors} combined
+ * in one call.
  */
 int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_dc_fault_current_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_energy_meter_type, float *ret_power, float ret_current[3], bool ret_phases_active[3], bool ret_phases_connected[3], uint32_t ret_error_count[6]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the values of {@link tf_evse_v2_get_gpio_configuration},
+ * {@link tf_evse_v2_get_indicator_led}, {@link tf_evse_v2_get_button_configuration},
+ * {@link tf_evse_v2_get_button_state}, {@link tf_evse_v2_get_ev_wakuep},
+ * {@link tf_evse_v2_get_control_pilot_disconnect}, {@link tf_evse_v2_get_boost_mode},
+ * {@link tf_evse_v2_get_temperature}, {@link tf_evse_v2_get_phase_control},
+ * {@link tf_evse_v2_get_phase_auto_switch}, {@link tf_evse_v2_get_phases_connected},
+ * {@link tf_evse_v2_get_enumerate_value}, {@link tf_evse_v2_get_phase_switch_wait_time},
+ * {@link tf_evse_v2_get_plc_modem} and {@link tf_evse_v2_get_ove_r37_status} combined in one call.
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time, bool *ret_plc_modem_enabled);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time, bool *ret_plc_modem_enabled, uint8_t *ret_ove_r37_state, uint8_t *ret_ove_r37_trip_reason, uint8_t *ret_ove_r37_flags);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Resets the EVSE to the factory settings. The password is 0x2342FACD.
  */
 int tf_evse_v2_factory_reset(TF_EVSEV2 *evse_v2, uint32_t password);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the amount of time the button was continuously pressed during boot in
+ * ms. This can be used to detect a long button press during startup (e.g. to
+ * trigger a factory reset). Returns 0xFFFFFFFF if the boot press was already
+ * reset.
+ *
+ * If Reset is set to *true* the value is reset after it has been read.
  */
 int tf_evse_v2_get_button_press_boot_time(TF_EVSEV2 *evse_v2, bool reset, uint32_t *ret_button_press_boot_time);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Enables/disables the boost mode. In boost mode the duty cycle of the CP PWM
+ * signal is increased by about 4µs (which stays within the IEC 61851
+ * tolerance). This signals a slightly higher current to the car, which allows
+ * some cars to charge a bit faster. Boost mode is disabled by default.
  */
 int tf_evse_v2_set_boost_mode(TF_EVSEV2 *evse_v2, bool boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the boost mode setting as set by {@link tf_evse_v2_set_boost_mode}.
  */
 int tf_evse_v2_get_boost_mode(TF_EVSEV2 *evse_v2, bool *ret_boost_mode_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Triggers a test of the DC fault current protection. The password is
+ * 0xDCFAE550. This can only be started in IEC 61851 state A (not connected) and
+ * if no calibration is currently running. The returned value shows whether the
+ * test was started.
  */
 int tf_evse_v2_trigger_dc_fault_test(TF_EVSEV2 *evse_v2, uint32_t password, bool *ret_started);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the state of the general purpose output (connected to ground or high
+ * impedance). The default state after boot is set with
+ * {@link tf_evse_v2_set_gpio_configuration}. Only available for EVSE 2.0.
  */
 int tf_evse_v2_set_gp_output(TF_EVSEV2 *evse_v2, uint8_t gp_output);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the temperature of the EVSE in 1/100 °C. EVSE 2.0 has no temperature
+ * sensor and always returns 0.
  */
 int tf_evse_v2_get_temperature(TF_EVSEV2 *evse_v2, int16_t *ret_temperature);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the number of phases that are used for charging (1 or 3). This requires
+ * the hardware to support phase switching (EVSE 3.0 and newer). On EVSE 2.0 this
+ * function has no effect.
  */
 int tf_evse_v2_set_phase_control(TF_EVSEV2 *evse_v2, uint8_t phases);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the current phase control state.
+ *
+ * * Phases Current: Number of phases currently used for charging (1 or 3).
+ * * Phases Requested: Number of phases requested by {@link tf_evse_v2_set_phase_control}.
+ * * Phases State: Progress state of an ongoing phase switch.
+ * * Phases Info: 0 if normal, 1 if forced to one phase by the auto-switch.
  */
 int tf_evse_v2_get_phase_control(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Enables/disables automatic phase switching. If enabled the EVSE switches
+ * between one and three phases depending on the available charging current. This
+ * requires the hardware to support phase switching (EVSE 3.0 and newer) and is
+ * ignored on EVSE 2.0.
  */
 int tf_evse_v2_set_phase_auto_switch(TF_EVSEV2 *evse_v2, bool phase_auto_switch_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the phase auto switch setting as set by {@link tf_evse_v2_set_phase_auto_switch}.
  */
 int tf_evse_v2_get_phase_auto_switch(TF_EVSEV2 *evse_v2, bool *ret_phase_auto_switch_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the number of phases that are physically connected to the EVSE (1 or 3).
+ * This is used by the phase control to know how many phases are available.
  */
 int tf_evse_v2_set_phases_connected(TF_EVSEV2 *evse_v2, uint8_t phases_connected);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the number of connected phases as set by {@link tf_evse_v2_set_phases_connected}.
  */
 int tf_evse_v2_get_phases_connected(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_connected);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the charging protocol that is used (IEC 61851 or ISO 15118). The CP duty
+ * cycle is only used for ISO 15118, where only 50 (5%) and 1000 (100%) are
+ * accepted. This requires ISO 15118 support (EVSE 4.0) and has no effect
+ * otherwise.
  */
 int tf_evse_v2_set_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t charging_protocol, uint16_t cp_duty_cycle);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the charging protocol as set by {@link tf_evse_v2_set_charging_protocol}.
  */
 int tf_evse_v2_get_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t *ret_charging_protocol, uint16_t *ret_cp_duty_cycle);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the gateway identification (OCMF field "GI") for the calibration law
+ * (Eichrecht) signed metering. This requires an Eichrecht-capable energy meter
+ * (EVSE 4.0). The returned state shows whether the value could be set.
  */
 int tf_evse_v2_set_eichrecht_gateway_identification(TF_EVSEV2 *evse_v2, const char gateway_identification[41], uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the gateway identification as set by
+ * {@link tf_evse_v2_set_eichrecht_gateway_identification}.
  */
 int tf_evse_v2_get_eichrecht_gateway_identification(TF_EVSEV2 *evse_v2, char ret_gateway_identification[41]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the gateway serial (OCMF field "GS") for the calibration law
+ * (Eichrecht) signed metering. This requires an Eichrecht-capable energy meter
+ * (EVSE 4.0). The returned state shows whether the value could be set.
  */
 int tf_evse_v2_set_eichrecht_gateway_serial(TF_EVSEV2 *evse_v2, const char gateway_serial[25], uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the gateway serial as set by {@link tf_evse_v2_set_eichrecht_gateway_serial}.
  */
 int tf_evse_v2_get_eichrecht_gateway_serial(TF_EVSEV2 *evse_v2, char ret_gateway_serial[25]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the user assignment (OCMF fields "IS", "IF", "IT" and "ID") for the
+ * calibration law (Eichrecht) signed metering. It identifies the user of a
+ * charging transaction.
+ *
+ * * Identification Status: *true* if a user is assigned.
+ * * Identification Flags: Identification flags (up to 4 entries).
+ * * Identification Type: Type of the identification data.
+ * * Identification Data: The identification data itself.
+ *
+ * This requires an Eichrecht-capable energy meter (EVSE 4.0). The returned state
+ * shows whether the value could be set.
  */
 int tf_evse_v2_set_eichrecht_user_assignment(TF_EVSEV2 *evse_v2, bool identification_status, const uint8_t identification_flags[4], uint8_t identification_type, const char identification_data[40], uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the user assignment as set by {@link tf_evse_v2_set_eichrecht_user_assignment}.
  */
 int tf_evse_v2_get_eichrecht_user_assignment(TF_EVSEV2 *evse_v2, bool *ret_identification_status, uint8_t ret_identification_flags[4], uint8_t *ret_identification_type, char ret_identification_data[40]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the charge point identification (OCMF fields "CT" and "CI") for the
+ * calibration law (Eichrecht) signed metering. This requires an
+ * Eichrecht-capable energy meter (EVSE 4.0). The returned state shows whether
+ * the value could be set.
  */
 int tf_evse_v2_set_eichrecht_charge_point(TF_EVSEV2 *evse_v2, uint8_t identification_type, const char identification[20], uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the charge point identification as set by
+ * {@link tf_evse_v2_set_eichrecht_charge_point}.
  */
 int tf_evse_v2_get_eichrecht_charge_point(TF_EVSEV2 *evse_v2, uint8_t *ret_identification_type, char ret_identification[20]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Starts or modifies Eichrecht transaction. A transaction
+ * generates a signed OCMF dataset (e.g. at the begin and end of a charging
+ * session).
+ *
+ * * Transaction: The transaction command (e.g. begin or end).
+ * * Unix Time: The current time as unix timestamp in seconds.
+ * * UTC Time Offset: The local time offset to UTC in minutes.
+ * * Signature Format: The format of the generated signature (ASN.1 or Base64).
+ *
+ * The signed dataset and signature are returned through the
+ * {@link tf_evse_v2_register_eichrecht_dataset_low_level_callback} and {@link tf_evse_v2_register_eichrecht_signature_low_level_callback}
+ * callbacks. This requires an Eichrecht-capable energy meter (EVSE 4.0). The
+ * returned state shows whether the transaction could be started.
  */
 int tf_evse_v2_set_eichrecht_transaction(TF_EVSEV2 *evse_v2, char transaction, uint32_t unix_time, int16_t utc_time_offset, uint16_t signature_format, uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the state of the current Eichrecht transaction, see
+ * {@link tf_evse_v2_set_eichrecht_transaction}. It includes the current transaction
+ * command, the transaction and inner state, and the measurement and signature
+ * status of the energy meter.
  */
 int tf_evse_v2_get_eichrecht_transaction_state(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the public key of the energy meter that is used to verify the
+ * Eichrecht signatures.
  */
 int tf_evse_v2_get_eichrecht_public_key(TF_EVSEV2 *evse_v2, uint8_t ret_public_key[64]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the configuration for the enumerate function of the button. The button
+ * can step through up to 8 values, each one represented by an HSV color of the
+ * indicator LED. Trailing entries with value (V) 0 are ignored.
+ *
+ * The button function must be set to enumerate with
+ * {@link tf_evse_v2_set_button_configuration}.
  */
 int tf_evse_v2_set_enumerate_configuration(TF_EVSEV2 *evse_v2, const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the enumerate configuration as set by
+ * {@link tf_evse_v2_set_enumerate_configuration}.
  */
 int tf_evse_v2_get_enumerate_configuration(TF_EVSEV2 *evse_v2, uint16_t ret_enumerator_h[8], uint8_t ret_enumerator_s[8], uint8_t ret_enumerator_v[8]);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the current enumerate value immediately, see
+ * {@link tf_evse_v2_set_enumerate_configuration}.
  */
 int tf_evse_v2_set_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t value);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the current enumerate value and the EVSE uptime (in ms) of the last
+ * value change. A new value is only reported once it has been stable for more
+ * than 2 seconds. See {@link tf_evse_v2_set_enumerate_configuration}.
  */
 int tf_evse_v2_get_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t *ret_value, uint32_t *ret_value_change_time);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Sets the minimum wait time between two phase switches (15s to 120s, or
+ * default). The wait time prevents the phases from being switched too often.
  */
 int tf_evse_v2_set_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t phase_switch_wait_time);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the phase switch wait time as set by
+ * {@link tf_evse_v2_set_phase_switch_wait_time}.
  */
 int tf_evse_v2_get_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t *ret_phase_switch_wait_time);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Enables/disables the PLC (powerline communication) modem that is used for
+ * ISO 15118 communication. The PLC modem is enabled by default. Only available
+ * on hardware with a PLC modem (EVSE 4.0).
  */
 int tf_evse_v2_set_plc_modem(TF_EVSEV2 *evse_v2, bool plc_modem_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the PLC modem setting as set by {@link tf_evse_v2_set_plc_modem}.
  */
 int tf_evse_v2_get_plc_modem(TF_EVSEV2 *evse_v2, bool *ret_plc_modem_enabled);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Enables/disables the test mode. The password is 0xDEADBEEF. The test mode is
+ * used during production and should normally not be needed. It is disabled by
+ * default.
  */
 int tf_evse_v2_set_test_mode(TF_EVSEV2 *evse_v2, bool test_mode_enabled, uint32_t password);
 
 /**
  * \ingroup TF_EVSEV2
  *
- * TODO
+ * Returns the test mode setting as set by {@link tf_evse_v2_set_test_mode}.
  */
 int tf_evse_v2_get_test_mode(TF_EVSEV2 *evse_v2, bool *ret_test_mode_enabled);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Sets the configuration for the OVE-Richtlinie R 37 grid support functions.
+ *
+ * If enabled the undervoltage trip, reconnect conditions and phase symmetry
+ * checks according to OVE R 37 are active. The undervoltage threshold is given
+ * in 1/1000 pu of the nominal voltage (800 = 0.80 pu), the observation time in
+ * ms, the reconnect wait time and start delay in seconds (0 to 300).
+ *
+ * This is currently only supported on WARP4 with an Iskra meter.
+ */
+int tf_evse_v2_set_ove_r37_configuration(TF_EVSEV2 *evse_v2, bool enabled, uint16_t undervoltage_threshold, uint16_t undervoltage_observation_time, uint16_t reconnect_wait_time, uint16_t start_delay);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Returns the configuration as set by {@link tf_evse_v2_set_ove_r37_configuration}.
+ */
+int tf_evse_v2_get_ove_r37_configuration(TF_EVSEV2 *evse_v2, bool *ret_enabled, uint16_t *ret_undervoltage_threshold, uint16_t *ret_undervoltage_observation_time, uint16_t *ret_reconnect_wait_time, uint16_t *ret_start_delay);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Returns the current state of the OVE R 37 grid support functions.
+ *
+ * The state indicates the charging state machine (disabled, normal, tripped,
+ * waiting for reconnect or ramping up), the trip reason is a bitmask of the
+ * reasons charging was tripped and the flags are a bitmask of the validity and
+ * in-range status of the voltage and frequency measurements.
+ */
+int tf_evse_v2_get_ove_r37_status(TF_EVSEV2 *evse_v2, uint8_t *ret_state, uint8_t *ret_trip_reason, uint8_t *ret_flags);
 
 /**
  * \ingroup TF_EVSEV2
@@ -2316,7 +2632,9 @@ int tf_evse_v2_get_identity(TF_EVSEV2 *evse_v2, char ret_uid[8], char ret_connec
 /**
  * \ingroup TF_EVSEV2
  *
- * TBD
+ * Returns all values that the connected energy meter provides. The meaning of
+ * the values depends on the energy meter type, see
+ * {@link tf_evse_v2_get_hardware_configuration}.
  */
 int tf_evse_v2_get_all_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_values, uint16_t *ret_values_length);
 
