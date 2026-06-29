@@ -1281,6 +1281,9 @@ def main(stage3, scanner, result):
         orig_print(" Connected.")
         print("Tracked charges removed.")
 
+        time.sleep(3)
+        connect_to_ethernet(ssid, "info/version") # wait for reboot triggered by remove_all_charges command
+
         print("Erasing other app partition")
         try:
             with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
