@@ -91,6 +91,11 @@ class EnergyManagerV2Tester:
 
         pattern = rf"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
 
+        try:
+            subprocess.check_call(['numlockx', 'on'])
+        except:
+            fatal_error('Could not turn numlock on. Is numlockx installed?')
+
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 

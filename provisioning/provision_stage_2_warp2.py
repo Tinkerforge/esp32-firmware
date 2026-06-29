@@ -378,6 +378,11 @@ def reset_evse():
 
 class Scanner:
     def __init__(self):
+        try:
+            subprocess.check_call(['numlockx', 'on'])
+        except:
+            fatal_error('Could not turn numlock on. Is numlockx installed?')
+
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
         pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
         pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
