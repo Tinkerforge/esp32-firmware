@@ -24,6 +24,8 @@ files_to_commit = []
 commit_message = None
 
 def test_report_pull():
+    print('Checking test-reports repo')
+
     try:
         subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
     except subprocess.CalledProcessError as e:
@@ -36,6 +38,8 @@ def test_report_commit_and_push():
         return
 
     test_report_pull()
+
+    print('Pushing test-report to repo')
 
     try:
         subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
@@ -228,6 +232,8 @@ def main():
     files_to_commit.append(report_path_json)
     commit_message = f'Add test report for {product_name} with UID {uid}'
 
+    test_report_commit_and_push()
+
     label_success = "n"
     while label_success != "y":
         run(["./print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"] else "1"])
@@ -264,15 +270,7 @@ def outer_main():
 
     if exit_code == 0:
         try:
-            led_wrap()
-        except FatalError:
-            exit_code = 1
-        except Exception:
-            traceback.print_exc()
-            exit_code = 1
-
-        try:
-            test_report_commit_and_push()
+            main()
         except FatalError:
             exit_code = 1
         except Exception:
