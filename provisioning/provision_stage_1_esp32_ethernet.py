@@ -7,7 +7,6 @@ import sys
 import time
 import traceback
 import urllib.request
-import subprocess
 from pathlib import Path
 import tinkerforge_util as tfutil
 
@@ -16,55 +15,9 @@ tfutil.create_parent_module(__file__, 'provisioning')
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.provision_common.provision_common import *
 
-TEST_REPORTS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'test-reports'))
-
 ESP_ETHERNET_DEVICE_ID = 115
 
-files_to_commit = []
-commit_message = None
-
-def test_report_pull():
-    print('Checking test-reports repo')
-
-    try:
-        subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not pull test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not pull test-reports git:\n{e}')
-
-def test_report_commit_and_push():
-    if commit_message == None or len(files_to_commit) == 0:
-        return
-
-    test_report_pull()
-
-    print('Pushing test-report to repo')
-
-    try:
-        subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not add to test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not add to test-reports git:\n{e}')
-
-    try:
-        subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not commit to test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not commit to test-reports git:\n{e}')
-
-    try:
-        subprocess.check_output(['git', 'push'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not push test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not push test-reports git:\n{e}')
-
 def main():
-    global files_to_commit
-
     common_init('/dev/ttyUSB0')
 
     config = json.loads(Path("provision_stage_1_esp32_ethernet_config.json").read_text())
@@ -229,10 +182,7 @@ def main():
     with mkdir_open(report_path_json, "w") as f:
         json.dump(result, f, indent=4)
 
-    files_to_commit.append(report_path_json)
-    commit_message = f'Add test report for {product_name} with UID {uid}'
-
-    test_report_commit_and_push()
+    test_report_commit_and_push(f'Add stage 1 test report for {product_name} with UID {uid}', [report_path_json])
 
     label_success = "n"
     while label_success != "y":

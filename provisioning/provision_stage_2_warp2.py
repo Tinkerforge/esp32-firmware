@@ -28,8 +28,6 @@ from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
 from provisioning.pib_compare import compare_data as pib_compare_data
 
-TEST_REPORTS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'test-reports'))
-
 files_to_commit = []
 commit_message = None
 evse = None
@@ -609,48 +607,9 @@ def upload_iso15118_pib():
 
     set_iso15118_enabled(False)
 
-def test_report_pull():
-    dprint("pre test_report_pull")
-
-    try:
-        subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not pull test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not pull test-reports git:\n{e}')
-
-def test_report_commit_and_push():
-    dprint("pre test_report_commit_and_push")
-
-    if commit_message == None or len(files_to_commit) == 0:
-        return
-
-    test_report_pull()
-
-    try:
-        subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not add to test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not add to test-reports git:\n{e}')
-
-    try:
-        subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not commit to test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not commit to test-reports git:\n{e}')
-
-    try:
-        subprocess.check_output(['git', 'push'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
-    except subprocess.CalledProcessError as e:
-        fatal_error(f'Cound not push test-reports git:\n{e.output.strip()}')
-    except Exception as e:
-        fatal_error(f'Cound not push test-reports git:\n{e}')
-
 def led_wrap():
-    global files_to_commit
     global commit_message
+    global files_to_commit
 
     dprint("pre scanner")
 
@@ -661,11 +620,11 @@ def led_wrap():
     if scanner.qr_variant != "B":
         product = scanner.qr_hardware_type
         ssid = f'{product}-{scanner.qr_esp_uid}'
-        commit_message = f'Add test report for {product.upper()} Charger with UID {scanner.qr_esp_uid}'
+        commit_message = f'Add stage 2 test report for {product.upper()} Charger with UID {scanner.qr_esp_uid}'
     else:
         product = f'warp{scanner.qr_gen}'
         ssid = f'{product}-basic'
-        commit_message = f'Add test report for {product.upper()} Charger (Basic)'
+        commit_message = f'Add stage 2 test report for {product.upper()} Charger Basic'
 
     result = {}
     result["start"] = now()
@@ -728,13 +687,14 @@ def led_wrap():
 
         report_path_json = report_path_prefix + "_failure.json"
 
-        files_to_commit.append(report_path_json)
-
         try:
             with mkdir_open(report_path_json, "w") as f:
                 json.dump(result, f, indent=4)
         except Exception as e:
             print(red(f'Failed to write failure report: {e}'))
+
+        commit_message += ' (Failure)'
+        files_to_commit.append(report_path_json)
 
         raise
     else:
@@ -1330,7 +1290,7 @@ def outer_main():
         sys.stderr = sys_stderr
 
         try:
-            test_report_commit_and_push()
+            test_report_commit_and_push(commit_message, files_to_commit)
         except FatalError:
             exit_code = 1
         except Exception:

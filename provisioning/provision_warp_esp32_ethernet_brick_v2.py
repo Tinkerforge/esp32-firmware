@@ -494,12 +494,8 @@ class P:
 
         print("Done")
 
-    def print_label(firmware_prefix, ssid, passphrase, stage_1_test_report):
-        with mkdir_open(os.path.join("..", "..", "test-reports", firmware_prefix, "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-"))), "w") as f:
-            json.dump(stage_1_test_report, f, indent=4)
-
+    def print_label(ssid, passphrase):
         run(["uv", "run", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
-
 
     def terminal_to_html(s):
         mapping = {
@@ -779,9 +775,12 @@ class P:
             q.put([])
             raise
 
+        test_report_pull()
+
         config = json.loads(Path("provision_warp_esp32_ethernet_v2.config").read_text())
-        ssid_prefix = config["ssid_prefix"] # warp3 / wallbox
-        firmware_prefix = config["firmware_prefix"] # warp3 / eltako
+        ssid_prefix = config["ssid_prefix"] # warp4
+        firmware_prefix = config["firmware_prefix"] # warp4
+        product_name = config["product_name"] # WARP4 Charger
         host_ip = config["host_ip"]
         static_ips = config["static_ips"]
         subnet = config["subnet"]
@@ -987,7 +986,6 @@ class P:
 
         threads.clear()
 
-
         stage += 1
 
         def run_stage_1_tests_fn(serial_port, ethernet_ip, relay_pin, test_report):
@@ -1054,6 +1052,14 @@ class P:
 
         time.sleep(1)
 
+        for k in relay_to_serial.keys():
+            report_path = os.path.join(TEST_REPORTS_DIRECTORY, firmware_prefix, "{}_{}_report_stage_1.json".format(relay_to_ssid[k], now().replace(":", "-")))
+
+            with mkdir_open(report_path, "w") as f:
+                json.dump(test_reports[k], f, indent=4)
+
+            test_report_commit_and_push(f'Add stage 1 test report for {product_name} with UID {relay_to_ssid[k].split("-")[-1]}', [report_path])
+
         while P.io4.get_value()[0]:
             print(green(f"ESPs in testers {', '.join(str(x) for x in relay_to_serial.keys())} tested successfully. Press one of the print buttons!"))
 
@@ -1068,7 +1074,7 @@ class P:
                     continue
 
                 print(f"Printing labels for ESP in tester {k}. Stick one label on the ESP, put ESP in the ESD bag. Press button again to retry printing the labels. Press next button to continue.")
-                P.print_label(firmware_prefix, relay_to_ssid[k], relay_to_passphrase[k], test_reports[k])
+                P.print_label(relay_to_ssid[k], relay_to_passphrase[k])
                 break
 
         P.original_stdout.write("before join\n")

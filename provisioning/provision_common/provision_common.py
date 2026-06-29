@@ -13,11 +13,12 @@ import time
 import urllib.request
 import fcntl
 from tinkerforge_util.colored import red, green
-
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.provision_common.wifi_pass import calculate_passphrase
 from provisioning.provision_common.zbase32 import zbase32encode, zbase32decode, ZBASE32
+
+TEST_REPORTS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'test-reports'))
 
 rnd = secrets.SystemRandom()
 
@@ -530,3 +531,42 @@ def test_bricklet_ports(ipcon, esp_device_id, is_warp):
 def mkdir_open(path, *args, **kwargs):
     os.makedirs(os.path.split(path)[0], exist_ok=True)
     return open(path, *args, **kwargs)
+
+def test_report_pull():
+    print('Checking test-reports repo')
+
+    try:
+        subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e}')
+
+def test_report_commit_and_push(commit_message, files_to_commit):
+    if commit_message == None or len(files_to_commit) == 0:
+        return
+
+    test_report_pull()
+
+    print('Pushing test-report to repo')
+
+    try:
+        subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e}')
+
+    try:
+        subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e}')
+
+    try:
+        subprocess.check_output(['git', 'push'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not push test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not push test-reports git:\n{e}')
