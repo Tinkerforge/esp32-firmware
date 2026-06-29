@@ -12,9 +12,9 @@ import json
 from pathlib import Path
 import contextlib
 import queue
-from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QColorConstants
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
 from tinkerforge_util import colored
 from tinkerforge_util.colored import red, green
 import tinkerforge_util as tfutil
@@ -824,7 +824,7 @@ class P:
                 relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.red)
             elif "True" in result:
-                print(f"Secure boot already active. Skipping to tests", file=P.logs[k][1])
+                print("Secure boot already active. Skipping to tests", file=P.logs[k][1])
                 already_secured_esps[k] = relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.yellow)
             else:
@@ -852,12 +852,10 @@ class P:
             threads.append((k, t))
             P.set_progress(k, stage, P.blue)
 
-        failed_bricklet_bootloader_flashs = []
         for k, t in threads:
             success, result, exception = t.join()
             if not success:
                 print(f"Failed to flash bootloader to co-bricklet {k}. Assuming already flashed {result} {exception}", file=P.logs[k][1])
-                failed_bricklet_bootloader_flashs.append(i)
                 P.set_progress(k, stage, P.yellow)
             else:
                 P.set_progress(k, stage, P.green)
