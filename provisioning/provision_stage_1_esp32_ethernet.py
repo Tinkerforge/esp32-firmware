@@ -7,6 +7,7 @@ import sys
 import time
 import traceback
 import urllib.request
+import subprocess
 from pathlib import Path
 import tinkerforge_util as tfutil
 
@@ -15,9 +16,51 @@ tfutil.create_parent_module(__file__, 'provisioning')
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.provision_common.provision_common import *
 
+TEST_REPORTS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'test-reports'))
+
 ESP_ETHERNET_DEVICE_ID = 115
 
+files_to_commit = []
+commit_message = None
+
+def test_report_pull():
+    try:
+        subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not pull test-reports git:\n{e}')
+
+def test_report_commit_and_push():
+    if commit_message == None or len(files_to_commit) == 0:
+        return
+
+    test_report_pull()
+
+    try:
+        subprocess.check_output(['git', 'add', '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not add to test-reports git:\n{e}')
+
+    try:
+        subprocess.check_output(['git', 'commit', '-m', commit_message, '--'] + files_to_commit, stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not commit to test-reports git:\n{e}')
+
+    try:
+        subprocess.check_output(['git', 'push'], stderr=subprocess.STDOUT, encoding='utf-8', cwd=TEST_REPORTS_DIRECTORY)
+    except subprocess.CalledProcessError as e:
+        fatal_error(f'Cound not push test-reports git:\n{e.output.strip()}')
+    except Exception as e:
+        fatal_error(f'Cound not push test-reports git:\n{e}')
+
 def main():
+    global files_to_commit
+
     common_init('/dev/ttyUSB0')
 
     config = json.loads(Path("provision_stage_1_esp32_ethernet_config.json").read_text())
@@ -50,14 +93,19 @@ def main():
 
     if firmware_type == 'warp2':
         ssid = "warp2-" + uid
+        product_name = 'WARP2 Charger'
     elif firmware_type == 'energy_manager':
         ssid = "wem-" + uid
+        product_name = 'WARP Energy Manager'
     elif firmware_type == 'energy_manager_v2':
         ssid = "wem2-" + uid
+        product_name = 'WARP Energy Manager 2.0'
     elif firmware_type == 'smart_energy_broker':
         ssid = "seb-" + uid
+        product_name = 'Smart Energy Broker'
     else:
         ssid = "esp32-" + uid
+        product_name = 'ESP32 Ethernet Brick'
 
     if not skip_tests:
         run(["sudo", "systemctl", "restart", "NetworkManager.service"])
@@ -172,8 +220,13 @@ def main():
     result["tests_successful"] = True
     result["end"] = now()
 
-    with mkdir_open(os.path.join("..", "..", "test-reports", firmware_type, "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-"))), "w") as f:
+    report_path_json = os.path.join(TEST_REPORTS_DIRECTORY, firmware_type, "{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-")))
+
+    with mkdir_open(report_path_json, "w") as f:
         json.dump(result, f, indent=4)
+
+    files_to_commit.append(report_path_json)
+    commit_message = f'Add test report for {product_name} with UID {uid}'
 
     label_success = "n"
     while label_success != "y":
@@ -198,14 +251,36 @@ def main():
 
     print('Done!')
 
-if __name__ == "__main__":
+def outer_main():
+    exit_code = 0
+
     try:
-        main()
-        input("Press return to exit. ")
+        test_report_pull()
     except FatalError:
-        input("Press return to exit. ")
-        sys.exit(1)
-    except Exception as e:
+        exit_code = 1
+    except Exception:
         traceback.print_exc()
-        input("Press return to exit. ")
-        sys.exit(1)
+        exit_code = 1
+
+    if exit_code == 0:
+        try:
+            led_wrap()
+        except FatalError:
+            exit_code = 1
+        except Exception:
+            traceback.print_exc()
+            exit_code = 1
+
+        try:
+            test_report_commit_and_push()
+        except FatalError:
+            exit_code = 1
+        except Exception:
+            traceback.print_exc()
+            exit_code = 1
+
+    input('Press return to exit ')
+    sys.exit(exit_code)
+
+if __name__ == "__main__":
+    outer_main()

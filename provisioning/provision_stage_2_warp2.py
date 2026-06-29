@@ -617,7 +617,7 @@ def test_report_pull():
 def test_report_commit_and_push():
     dprint("pre test_report_commit_and_push")
 
-    if commit_message == None:
+    if commit_message == None or len(files_to_commit) == 0:
         return
 
     test_report_pull()
