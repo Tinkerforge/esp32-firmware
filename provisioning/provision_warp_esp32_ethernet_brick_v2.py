@@ -33,7 +33,6 @@ from provisioning.tinkerforge.bricklet_io4_v2 import BrickletIO4V2
 from provisioning.tinkerforge.brick_master import BrickMaster
 from provisioning.provision_common.provision_common import *
 from provisioning.ntpserver import start_ntpserver
-
 from provisioning.xmc_flash_bootloader import xmc_flash_bootloader
 
 class ThreadWithReturnValue(threading.Thread):
@@ -614,8 +613,7 @@ class P:
     red = [255, 0, 0]
 
     def set_progress(i, val, color):
-        P.ls.set_led_values((24 - ((i - 1)  * 8 + val) - 1) * 3, [c * 0.33 for c in color])
-
+        P.ls.set_led_values((24 - ((i - 1) * 8 + val) - 1) * 3, [c * 0.33 for c in color])
 
     def set_relay(i, val):
         P.idrs[i // 2].set_selected_value(i % 2, val)
@@ -648,7 +646,7 @@ class P:
 
 
             def search_devices(uid, connected_uid, position, hardware_version, firmware_version,
-                        device_identifier, enumeration_type):
+                               device_identifier, enumeration_type):
                 nonlocal idr_uids
                 nonlocal idai_uids
                 nonlocal btn_uids
@@ -711,7 +709,6 @@ class P:
                     if fail_if_missing:
                         fatal_error(f"{BrickMaster.DEVICE_DISPLAY_NAME}{"s" if len(master_uids_cpy) > 1 else ""} with hardcoded UID {master_uids_cpy} not found.")
                 return True
-
 
             start = time.time()
             ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_devices)
@@ -808,7 +805,7 @@ class P:
             # If v was used directly, it would behave as if "captured by reference"
             # -> fun with multithreading.
             t = ThreadWithReturnValue(target=lambda port=v:
-                                          espefuse(["summary", "--format", "value_only", "ABS_DONE_1"], override_port=port))
+                                      espefuse(["summary", "--format", "value_only", "ABS_DONE_1"], override_port=port))
             t.start()
             P.thread_ids[t.ident] = k
             t.start_semaphore.release()
@@ -845,7 +842,7 @@ class P:
             # If v was used directly, it would behave as if "captured by reference"
             # -> fun with multithreading.
             t = ThreadWithReturnValue(target=lambda uid=P.master_uids[k]:
-                                          xmc_flash_bootloader(f'../../firmwares/bricklets/warp_esp32_ethernet_v2_co/bricklet_warp_esp32_ethernet_v2_co_firmware_latest.zbin', uid))
+                                      xmc_flash_bootloader('../../firmwares/bricklets/warp_esp32_ethernet_v2_co/bricklet_warp_esp32_ethernet_v2_co_firmware_latest.zbin', uid))
             t.start()
             P.thread_ids[t.ident] = k
             t.start_semaphore.release()
