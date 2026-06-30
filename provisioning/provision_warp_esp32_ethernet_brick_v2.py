@@ -434,7 +434,10 @@ class P:
                                     headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=120) as f:
-                f.read()
+                response = f.read()
+
+                if len(response) > 0:
+                    print(f'esp32/secure_device response: {response}')
         except urllib.request.HTTPError as e:
             if e.code != 404:
                 traceback.print_exc()
@@ -450,7 +453,10 @@ class P:
         req = urllib.request.Request(f"http://{ethernet_ip}/esp32/encrypt_data")
         try:
             with urllib.request.urlopen(req, timeout=60) as f:
-                f.read()
+                response = f.read()
+
+                if len(response) > 0:
+                    print(f'esp32/encrypt_data response: {response}')
         except urllib.request.HTTPError as e:
             if e.code != 404:
                 traceback.print_exc()
@@ -464,6 +470,9 @@ class P:
         try:
             with urllib.request.urlopen(req, timeout=30) as f:
                 check_sbv2_result = f.read()
+
+                if len(check_sbv2_result) > 0:
+                    print(f'esp32/check_sbv2 response: {check_sbv2_result}')
         except:
             traceback.print_exc()
             fatal_error("Failed to check secure boot")
@@ -475,11 +484,13 @@ class P:
         req = urllib.request.Request(f"http://{ethernet_ip}/firmware_update/erase_other")
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
-                f.read()
+                response = f.read()
+
+                if len(response) > 0:
+                    print(f'firmware_update/erase_other response: {response}')
         except:
             traceback.print_exc()
             fatal_error("Failed to erase other partition")
-
 
         import socket
         if socket.gethostname() != "warp4-esp-tester":
@@ -490,7 +501,10 @@ class P:
             req = urllib.request.Request(f"http://{ethernet_ip}/esp32/lockdown")
             try:
                 with urllib.request.urlopen(req, timeout=30) as f:
-                    f.read()
+                    response = f.read()
+
+                    if len(response) > 0:
+                        print(f'esp32/lockdown response: {response}')
             except urllib.request.HTTPError as e:
                 if e.code != 404:
                     traceback.print_exc()
