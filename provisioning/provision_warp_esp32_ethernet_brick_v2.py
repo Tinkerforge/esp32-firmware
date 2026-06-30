@@ -571,7 +571,7 @@ class P:
                 v.setStyleSheet(f"background-color: {back_color};")
                 v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
 
-            if P.last_btns_color.get(k) != back_color:
+            if k >= 0 and P.last_btns_color.get(k) != back_color:
                 P.last_btns_color[k] = back_color
                 P.btns[k].set_color(int(back_color[1:3], base=16), int(back_color[3:5], base=16), int(back_color[5:7], base=16))
 
