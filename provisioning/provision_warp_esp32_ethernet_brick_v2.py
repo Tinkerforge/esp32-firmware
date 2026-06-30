@@ -981,7 +981,7 @@ class P:
 
         for k, v in list(relay_to_serial.items()):
             with contextlib.redirect_stdout(P.logs[k][0]):
-                with contextlib.redirect_stdout(P.logs[k][1]):
+                with contextlib.redirect_stderr(P.logs[k][1]):
                     try:
                         P.test_wifi(relay_to_ssid[k], relay_to_passphrase[k], host_ip, static_ips[k], gateway, subnet, dns, test_reports[k])
                     except BaseException as e:
