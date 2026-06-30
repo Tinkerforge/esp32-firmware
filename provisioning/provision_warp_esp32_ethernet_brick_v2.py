@@ -563,7 +563,7 @@ class P:
             return
 
         for k, v in edits.items():
-            new_log, back_color = P.terminal_to_html(P.logs[k][0].getvalue() + "\n---\n" + P.logs[k][1].getvalue())
+            new_log, back_color = P.terminal_to_html(P.logs[k][0].getvalue().strip() + "\n---\n" + P.logs[k][1].getvalue().strip())
 
             if P.last_edits_content.get(k) == (new_log, back_color):
                 continue
