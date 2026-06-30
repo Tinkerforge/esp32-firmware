@@ -108,9 +108,9 @@ class P:
     ]
 
     last_edits_content = {}
+    last_btns_color = {}
 
     testers_connected = 0
-
 
     class StdoutWrapper:
         def __getattribute__(self, name):
@@ -565,13 +565,15 @@ class P:
         for k, v in edits.items():
             new_log, back_color = P.terminal_to_html(P.logs[k][0].getvalue().strip() + "\n---\n" + P.logs[k][1].getvalue().strip())
 
-            if P.last_edits_content.get(k) == (new_log, back_color):
-                continue
+            if P.last_edits_content.get(k) != (new_log, back_color):
+                P.last_edits_content[k] = (new_log, back_color)
+                v.setHtml(new_log)
+                v.setStyleSheet(f"background-color: {back_color};")
+                v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
 
-            P.last_edits_content[k] = (new_log, back_color)
-            v.setHtml(new_log)
-            v.setStyleSheet(f"background-color: {back_color};")
-            v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
+            if P.last_btns_color.get(k) != back_color:
+                P.last_btns_color[k] = back_color
+                P.btns[k].set_color(int(back_color[1:3], base=16), int(back_color[3:5], base=16), int(back_color[5:7], base=16))
 
     def quit():
         os.killpg(0, signal.SIGKILL)
