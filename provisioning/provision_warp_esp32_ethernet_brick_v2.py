@@ -146,6 +146,21 @@ class P:
 
             return f.__setattr__(name, value)
 
+    def set_iso15118_enabled(ip, enable):
+        req = urllib.request.Request(f"http://{ip}/iso15118/config", data=json.dumps({
+            "autocharge": False,
+            "read_soc": enable,
+            "charge_via_iso15118": False,
+            "min_charge_current": 1000
+            }).encode('utf-8'))
+        try:
+            with urllib.request.urlopen(req, timeout=6) as f:
+                f.read()
+        except urllib.error.HTTPError as e:
+            fatal_error("Failed to enable ISO 15118: {} {}".format(e, e.read()))
+        except Exception as e:
+            fatal_error("Failed to enable ISO 15118: {}".format(e))
+
     def test_bricklet_ports_warp4(ipcon):
         enums = enumerate_devices(ipcon)
 
@@ -328,6 +343,8 @@ class P:
         ipcon.disconnect()
 
         print("Testing PLC modem connection")
+        P.set_iso15118_enabled(ethernet_ip, True)
+
         try:
             with urllib.request.urlopen(f"http://{ethernet_ip}/iso15118/state_slac/modem_found", timeout=10) as f:
                 if not json.loads(f.read()):
@@ -335,6 +352,10 @@ class P:
         except Exception as e:
             traceback.print_exc()
             fatal_error("Failed to read 'PLC modem found' API!")
+
+        result["plc_modem_found"] = True
+
+        P.set_iso15118_enabled(ethernet_ip, False)
 
         print("Testing temperature sensor")
         try:
