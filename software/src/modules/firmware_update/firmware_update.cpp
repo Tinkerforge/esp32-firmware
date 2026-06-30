@@ -756,6 +756,42 @@ static void boot_other_partition(const char *other_partition_label, String &errm
     trigger_reboot("booting other partition", 1_s);
 }
 
+[[gnu::noinline]]
+static uint32_t find_used_size(const esp_partition_t *partition)
+{
+    uint32_t buf[2048 / sizeof(uint32_t)];
+    const uint32_t partition_size = partition->size;
+
+    if (partition_size % sizeof(buf) != 0) {
+        logger.printfln("Partition size not a multiple of the buffer size: %lu", partition_size);
+        return 64 * 1024;
+    }
+
+    uint32_t offset = partition_size;
+
+    while (offset > 0) {
+        offset -= sizeof(buf);
+
+        esp_err_t err = esp_partition_read_raw(partition, offset, buf, sizeof(buf));
+
+        if (err != ESP_OK) {
+            logger.printfln("Partition read failed @ %lu: 0x%x", offset, static_cast<unsigned>(err));
+            return 64 * 1024;
+        }
+
+        for (size_t i = 0; i < std::size(buf); i++) {
+            if (buf[i] == 0xFFFFFFFFUL) {
+                continue;
+            }
+
+            // Block not empty
+            return ALIGNUP(64UL * 1024UL, offset + sizeof(buf) - 1);
+        }
+    }
+
+    return 0;
+}
+
 bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
@@ -792,10 +828,43 @@ bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
         return false;
     }
 
-    const size_t erase_size = erase_all ? other_partition->size : other_partition->erase_size;
-
+    uint32_t to_erase;
+    esp_err_t err;
     const micros_t t_start = now_us();
-    esp_err_t err = esp_partition_erase_range(other_partition, 0, erase_size);
+
+    if (erase_all) {
+        // Erase all used
+        to_erase = find_used_size(other_partition);
+
+        if (to_erase == 0) {
+            msg = string_printf<64>("Partition %s already erased", other_partition_label);
+            return true;
+        }
+
+        uint32_t offset = 0;
+
+        while (offset < to_erase) {
+            constexpr uint32_t MB1 = 1024UL * 1024UL;
+            const uint32_t block_size = std::min(to_erase - offset, MB1);
+
+            err = esp_partition_erase_range(other_partition, offset, block_size);
+
+            if (err != ESP_OK) {
+                break;
+            }
+
+            if (block_size == MB1) {
+                vTaskDelay(1);
+            }
+
+            offset += block_size;
+        }
+    } else {
+        // Erase first sector
+        to_erase = other_partition->erase_size;
+        err = esp_partition_erase_range(other_partition, 0, to_erase);
+    }
+
     const uint32_t runtime_us = (now_us() - t_start).as<uint32_t>();
 
     if (err != ESP_OK) {
@@ -804,7 +873,7 @@ bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
     }
 
     const uint32_t runtime_ms = runtime_us / 1000;
-    msg = string_printf<64>("Erased %s of partition %s in %lu.%lus", erase_all ? "all" : "beginning", other_partition_label, runtime_ms / 1000, runtime_ms % 1000);
+    msg = string_printf<64>("Erased %lu KiB of partition %s in %lu.%03lus", to_erase / 1024, other_partition_label, runtime_ms / 1000, runtime_ms % 1000);
     return true;
 }
 
