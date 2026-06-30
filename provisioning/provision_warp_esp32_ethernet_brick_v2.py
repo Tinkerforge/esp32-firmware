@@ -855,7 +855,7 @@ class P:
                 relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.red)
             elif "True" in result:
-                print("Secure boot already active. Skipping to tests", file=P.logs[k][1])
+                print("Secure boot already active. Skipping to tests", file=P.logs[k][0])
                 already_secured_esps[k] = relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.yellow)
             else:
