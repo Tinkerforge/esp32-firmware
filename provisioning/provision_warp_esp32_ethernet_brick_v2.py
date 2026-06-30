@@ -511,8 +511,7 @@ class P:
             traceback.print_exc()
             fatal_error("Failed to re-enable ethernet DHCP")
 
-
-        print("Done")
+        print(green("Done"))
 
     def print_label(ssid, passphrase):
         run(["uv", "run", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
@@ -838,7 +837,7 @@ class P:
             success, result, exception = t.join()
 
             if not success:
-                print(f"Failed to check secure boot state of ESP{k}. {result} {exception}", file=P.logs[k][1])
+                print(red(f"Failed to check secure boot state of ESP{k}. {result} {exception}"), file=P.logs[k][1])
                 relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.red)
             elif "True" in result:
@@ -993,7 +992,7 @@ class P:
                 print(f"Voltage is {voltage / 1000}", file=P.logs[k][0])
                 P.set_progress(k, stage, P.green)
             else:
-                print(f"Voltage {voltage / 1000} V out of range [{min_e/1000} V{max_e/1000}] V", file=P.logs[k][1])
+                print(red(f"Voltage {voltage / 1000} V out of range [{min_e/1000} V{max_e/1000}] V"), file=P.logs[k][1])
                 P.set_progress(k, stage, P.red)
                 failed.append(k)
 
