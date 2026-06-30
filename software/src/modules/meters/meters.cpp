@@ -1247,11 +1247,10 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
                 if (filter_data.param == 3 && i_ii > 0 && i_ii % 2 == 0) {
                     if (filter_output_id_count != 3) {
 #ifdef DEBUG_FS_ENABLE
-                        esp_system_abortf<96>
+                        esp_system_abortf<96>("3P filter %zu matched %zu values but filter_output_id_count %lu is not 3", i_f, i_ii, filter_output_id_count);
 #else
-                        logger.printfln
+                        logger.printfln("3P filter %zu matched %zu values but filter_output_id_count %lu is not 3", i_f, i_ii, filter_output_id_count);
 #endif
-                            ("3P filter %zu matched %zu values but filter_output_id_count %lu is not 3", i_f, i_ii, filter_output_id_count);
                         filter_not_applicable = true;
                     } else {
                         filter_output_id_count = i_ii / 2;
