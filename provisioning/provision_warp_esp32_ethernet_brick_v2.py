@@ -227,7 +227,7 @@ class P:
     def test_rtc_time(ip, wait_for_ntp):
         print("Testing RTC")
         if wait_for_ntp:
-            print("    Waiting for NTP sync")
+            print("Waiting for NTP sync")
             for i in range(30):
                 start = time.time()
                 try:
@@ -1065,22 +1065,28 @@ class P:
 
         threads.clear()
 
-        # FIXME: also keep failure reports
-        for k in relay_to_serial.keys():
+        for k in relay_to_ssid.keys():
             report_path_prefix = os.path.join(TEST_REPORTS_DIRECTORY, firmware_prefix, "{}_{}_report_stage_1".format(relay_to_ssid[k], test_reports[k]["start"].replace(":", "-")))
+            is_failure = k not in relay_to_serial
+            report_path_json = report_path_prefix + ("_failure" if is_failure else "") + ".json"
 
-            with mkdir_open(report_path_prefix + ".json", "w") as f:
+            with mkdir_open(report_path_json, "w") as f:
                 json.dump(test_reports[k], f, indent=4)
 
             with mkdir_open(report_path_prefix + ".log", "w") as f:
                 f.write(colored.strip(P.logs[k][0].getvalue().strip() + "\n---\n" + P.logs[k][1].getvalue().strip()))
 
+            commit_message = f'Add stage 1 test report for {product_name} with UID {relay_to_ssid[k].split("-")[-1]}'
+
+            if is_failure:
+                commit_message += " (failure)"
+
             files_to_commit = [
-                report_path_prefix + ".json",
+                report_path_json,
                 report_path_prefix + ".log",
             ]
 
-            test_report_commit_and_push(f'Add stage 1 test report for {product_name} with UID {relay_to_ssid[k].split("-")[-1]}', files_to_commit)
+            test_report_commit_and_push(commit_message, files_to_commit)
 
         P.ps.set_beep(262, 0, 250)
         time.sleep(0.25)
