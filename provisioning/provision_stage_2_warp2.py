@@ -1216,50 +1216,50 @@ def main(stage3, scanner, result):
 
         print("Performing the electrical tests")
         stage3.test_charger(result, has_phase_switch=generation >= 3, is_warp2=generation == 2)
+
+        print("Electrical tests passed")
+        result["electrical_tests_passed"] = True
+
+        if scanner.qr_variant != "B":
+            print("Removing tracked charges")
+            print("Connecting via ethernet to {}".format(host), end="")
+            for i in range(45):
+                start = time.monotonic()
+                try:
+                    req = urllib.request.Request(f"http://{host}/charge_tracker/remove_all_charges",
+                                                data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
+                                                method='PUT',
+                                                headers={"Content-Type": "application/json"})
+                    with urllib.request.urlopen(req, timeout=1) as f:
+                        f.read()
+                        break
+                except Exception as e:
+                    pass
+                t = max(0, 1 - (time.monotonic() - start))
+                time.sleep(t)
+                orig_print(".", end="")
+            else:
+                fatal_error("Failed to connect via ethernet!")
+            orig_print(" Connected.")
+            print("Tracked charges removed.")
+
+            time.sleep(3)
+            connect_to_ethernet(ssid, "info/version") # wait for reboot triggered by remove_all_charges command
+
+            print("Erasing other app partition")
+            try:
+                with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
+                    response = f.read()
+
+                if len(response) > 0:
+                    print(response)
+            except urllib.error.HTTPError as e:
+                fatal_error(f"Failed to erase other app partition: {e} {e.read()}")
+            except Exception as e:
+                fatal_error(f"Failed to erase other app partition: {e}")
     finally:
         if browser is not None:
             browser.quit()
-
-    print("Electrical tests passed")
-    result["electrical_tests_passed"] = True
-
-    if scanner.qr_variant != "B":
-        print("Removing tracked charges")
-        print("Connecting via ethernet to {}".format(host), end="")
-        for i in range(45):
-            start = time.monotonic()
-            try:
-                req = urllib.request.Request(f"http://{host}/charge_tracker/remove_all_charges",
-                                             data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
-                                             method='PUT',
-                                             headers={"Content-Type": "application/json"})
-                with urllib.request.urlopen(req, timeout=1) as f:
-                    f.read()
-                    break
-            except Exception as e:
-                pass
-            t = max(0, 1 - (time.monotonic() - start))
-            time.sleep(t)
-            orig_print(".", end="")
-        else:
-            fatal_error("Failed to connect via ethernet!")
-        orig_print(" Connected.")
-        print("Tracked charges removed.")
-
-        time.sleep(3)
-        connect_to_ethernet(ssid, "info/version") # wait for reboot triggered by remove_all_charges command
-
-        print("Erasing other app partition")
-        try:
-            with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
-                response = f.read()
-
-            if len(response) > 0:
-                print(response)
-        except urllib.error.HTTPError as e:
-            fatal_error(f"Failed to erase other app partition: {e} {e.read()}")
-        except Exception as e:
-            fatal_error(f"Failed to erase other app partition: {e}")
 
     result["end"] = now()
 
