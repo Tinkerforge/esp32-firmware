@@ -591,6 +591,7 @@ class P:
 
             tester_widget = QWidget()
             tester_layout = QHBoxLayout()
+            tester_layout.setContentsMargins(0, 0, 0, 0)
 
             if len(testers) == 0:
                 tester_layout.addWidget(QLabel("NO ESP TESTERS ATTACHED!"))
@@ -610,9 +611,8 @@ class P:
 
             tester_widget.setLayout(tester_layout)
 
-            layout.addWidget(tester_widget)
-
-            layout.addWidget(edits[-1])
+            layout.addWidget(tester_widget, 2)
+            layout.addWidget(edits[-1], 1)
 
             window.setLayout(layout)
             window.show()
