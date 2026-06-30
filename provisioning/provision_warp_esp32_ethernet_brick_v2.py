@@ -990,7 +990,7 @@ class P:
             test_reports[k]["voltage"] = voltage
 
             if min_e <= voltage <= max_e:
-                print(f"Voltage is {voltage / 1000}", file=P.logs[k][1])
+                print(f"Voltage is {voltage / 1000}", file=P.logs[k][0])
                 P.set_progress(k, stage, P.green)
             else:
                 print(f"Voltage {voltage / 1000} V out of range [{min_e/1000} V{max_e/1000}] V", file=P.logs[k][1])
