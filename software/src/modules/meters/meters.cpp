@@ -52,9 +52,9 @@ static void filter_im_ex2imexdiff(const Meters::value_combiner_filter_data *filt
     const uint8_t *input_pos = filter_data->input_pos;
     const size_t output_pos = filter_data->output_pos - base_values_length;
 
-    for (size_t i = 0; i < 3; i++) {
-        float im = get_value_from_concat_values(input_pos[i    ], base_values_length, base_values, extra_values);
-        float ex = get_value_from_concat_values(input_pos[i + 3], base_values_length, base_values, extra_values);
+    for (size_t i = 0; i < filter_data->param; i++) {
+        float im = get_value_from_concat_values(input_pos[2 * i    ], base_values_length, base_values, extra_values);
+        float ex = get_value_from_concat_values(input_pos[2 * i + 1], base_values_length, base_values, extra_values);
 
         extra_values[output_pos + i] = im - ex;
     }
@@ -66,14 +66,14 @@ static void filter_sign2sign(const Meters::value_combiner_filter_data *filter_da
     const uint8_t *input_pos = filter_data->input_pos;
     const size_t output_pos = filter_data->output_pos - base_values_length;
 
-    for (size_t i = 0; i < 3; i++) {
+    for (size_t i = 0; i < filter_data->param; i++) {
         union {
             float    f;
             uint32_t u32;
         } receiver, donor;
 
-        receiver.f = get_value_from_concat_values(input_pos[i    ], base_values_length, base_values, extra_values);
-        donor.f    = get_value_from_concat_values(input_pos[i + 3], base_values_length, base_values, extra_values);
+        receiver.f = get_value_from_concat_values(input_pos[2 * i    ], base_values_length, base_values, extra_values);
+        donor.f    = get_value_from_concat_values(input_pos[2 * i + 1], base_values_length, base_values, extra_values);
 
         // Replace receiver value's sign with donor value's sign.
         receiver.u32 ^= (receiver.u32 ^ donor.u32) & 0x80000000u;
@@ -113,10 +113,10 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
         "Power import and export to ImExDiff",
         {
             MeterValueID::PowerActiveL1Import,
-            MeterValueID::PowerActiveL2Import,
-            MeterValueID::PowerActiveL3Import,
             MeterValueID::PowerActiveL1Export,
+            MeterValueID::PowerActiveL2Import,
             MeterValueID::PowerActiveL2Export,
+            MeterValueID::PowerActiveL3Import,
             MeterValueID::PowerActiveL3Export,
         },
         {
@@ -124,16 +124,17 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
             MeterValueID::PowerActiveL2ImExDiff,
             MeterValueID::PowerActiveL3ImExDiff,
         },
+        3,
     },
     {   // Prefer directional currents from power factors over power
         &filter_sign2sign,
         "Directional currents from power factors",
         {
             MeterValueID::CurrentL1ImExSum,
-            MeterValueID::CurrentL2ImExSum,
-            MeterValueID::CurrentL3ImExSum,
             MeterValueID::PowerFactorL1Directional,
+            MeterValueID::CurrentL2ImExSum,
             MeterValueID::PowerFactorL2Directional,
+            MeterValueID::CurrentL3ImExSum,
             MeterValueID::PowerFactorL3Directional,
         },
         {
@@ -141,16 +142,17 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
             MeterValueID::CurrentL2ImExDiff,
             MeterValueID::CurrentL3ImExDiff,
         },
+        3,
     },
     {
         &filter_sign2sign,
         "Directional currents from power",
         {
             MeterValueID::CurrentL1ImExSum,
-            MeterValueID::CurrentL2ImExSum,
-            MeterValueID::CurrentL3ImExSum,
             MeterValueID::PowerActiveL1ImExDiff,
+            MeterValueID::CurrentL2ImExSum,
             MeterValueID::PowerActiveL2ImExDiff,
+            MeterValueID::CurrentL3ImExSum,
             MeterValueID::PowerActiveL3ImExDiff,
         },
         {
@@ -158,6 +160,7 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
             MeterValueID::CurrentL2ImExDiff,
             MeterValueID::CurrentL3ImExDiff,
         },
+        3,
     },
     {
         &filter_phase2sum,
@@ -170,6 +173,7 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
         {
             MeterValueID::PowerActiveLSumImExDiff,
         },
+        0,
     },
     {
         &filter_ex2imexdiff,
@@ -180,6 +184,7 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
         {
             MeterValueID::PowerPVSumImExDiff,
         },
+        0,
     },
 };
 
@@ -1228,6 +1233,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         const MeterValueID *input_ids = filter->input_ids;
         all_filter_data.resize(all_filter_data.size() + 1);
         Meters::value_combiner_filter_data &filter_data = all_filter_data.back();
+        filter_data.param = filter->param;
         filter_data.output_pos = static_cast<uint8_t>(total_value_id_count);
 
         for (size_t i_ii = 0; i_ii < METERS_MAX_FILTER_VALUES; i_ii++) {
@@ -1238,7 +1244,24 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
             uint32_t pos = meters_find_id_index(total_value_ids, total_value_id_count, vid);
             if (pos == UINT32_MAX) {
-                filter_not_applicable = true;
+                if (filter_data.param == 3 && i_ii > 0 && i_ii % 2 == 0) {
+                    if (filter_output_id_count != 3) {
+#ifdef DEBUG_FS_ENABLE
+                        esp_system_abortf<96>
+#else
+                        logger.printfln
+#endif
+                            ("3P filter %zu matched %zu values but filter_output_id_count %lu is not 3", i_f, i_ii, filter_output_id_count);
+                        filter_not_applicable = true;
+                    } else {
+                        filter_output_id_count = i_ii / 2;
+                        filter_data.param = filter_output_id_count;
+                        //logger.printfln("Three-phase filter %zu matched %lu phases (%zu)", i_f, filter_output_id_count, i_ii);
+                    }
+                } else {
+                    //logger.printfln_meter("Input ID not found: filter %zu  input %zu", i_f, i_ii);
+                    filter_not_applicable = true;
+                }
                 break;
             }
 
@@ -1246,7 +1269,6 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         }
 
         if (filter_not_applicable) {
-            //logger.printfln_meter("Input ID not found");
             all_filter_data.pop_back();
             continue;
         }

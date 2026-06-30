@@ -64,6 +64,7 @@ public:
     struct value_combiner_filter_data {
         uint8_t input_pos[METERS_MAX_FILTER_VALUES];
         uint8_t output_pos;
+        uint32_t param;
     };
 
     struct value_combiner_filter {
@@ -71,6 +72,7 @@ public:
         const char *name;
         MeterValueID input_ids[METERS_MAX_FILTER_VALUES];
         MeterValueID output_ids[METERS_MAX_FILTER_VALUES];
+        uint32_t param;
     };
     static_assert(OPTIONS_METERS_MAX_VALUES_PER_METER() <= 256, "Increase size of input_id_count and output_id_count");
 
