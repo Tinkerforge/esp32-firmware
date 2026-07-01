@@ -235,7 +235,7 @@ class P:
         print("Testing RTC")
         if wait_for_ntp:
             print("Waiting for NTP sync")
-            for i in range(30):
+            for i in range(45):
                 start = time.time()
                 try:
                     with urllib.request.urlopen(f"http://{ip}/ntp/state", timeout=1) as f:
@@ -247,7 +247,7 @@ class P:
                 time.sleep(t)
                 print(".", end="")
             else:
-                fatal_error("NTP did not sync in 30 seconds!")
+                fatal_error("NTP did not sync in 45 seconds!")
 
         try:
             with urllib.request.urlopen(f"http://{ip}/rtc/time", timeout=10) as f:
