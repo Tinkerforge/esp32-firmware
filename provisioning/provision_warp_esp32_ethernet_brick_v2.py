@@ -91,6 +91,13 @@ class P:
         3: [io.StringIO(""), io.StringIO("")]
     }
 
+    infos = {
+        0: "",
+        1: "",
+        2: "",
+        3: "",
+    }
+
     thread_ids = {}
 
     idrs: (BrickletIndustrialDualRelay, BrickletIndustrialDualRelay) = (None, None)
@@ -557,7 +564,7 @@ class P:
         P.original_stdout.write("nach disconnect")
         app.quit()
 
-    def update_logs(app, edits):
+    def update_logs(app, edits, labels):
         if P.quit_requested:
             app.quit()
             return
@@ -574,6 +581,9 @@ class P:
             if k >= 0 and P.last_btns_color.get(k) != back_color:
                 P.last_btns_color[k] = back_color
                 P.btns[k].set_color(int(back_color[1:3], base=16), int(back_color[3:5], base=16), int(back_color[5:7], base=16))
+
+        for k, v in labels.items():
+            v.setText(P.infos[k])
 
     def quit():
         os.killpg(0, signal.SIGKILL)
@@ -616,11 +626,20 @@ class P:
             }
             edits[-1].setReadOnly(True)
 
+            labels = {}
+
             for i in range(4):
                 if i in testers:
+                    tester_sublayout = QVBoxLayout()
+                    tester_sublayout.setContentsMargins(0, 0, 0, 0)
+                    tester_layout.addLayout(tester_sublayout)
+
                     edits[i] = QTextEdit()
                     edits[i].setReadOnly(True)
-                    tester_layout.addWidget(edits[i])
+                    tester_sublayout.addWidget(edits[i])
+
+                    labels[i] = QLabel()
+                    tester_sublayout.addWidget(labels[i])
                 else:
                     tester_layout.addWidget(QLabel(f"Tester {i} not attached"))
 
@@ -634,7 +653,7 @@ class P:
             splash.finish(window)
 
             log_timer = QTimer(window)
-            log_timer.timeout.connect(slot_except_hook(lambda: P.update_logs(app, edits)))
+            log_timer.timeout.connect(slot_except_hook(lambda: P.update_logs(app, edits, labels)))
             log_timer.setInterval(100)
             log_timer.start()
 
@@ -966,6 +985,7 @@ class P:
             else:
                 relay_to_ssid[k] = result[0]
                 relay_to_passphrase[k] = result[1]
+                #P.infos[k] = relay_to_passphrase[k]
                 P.set_progress(k, stage, P.green)
 
         print(str(relay_to_ssid))
