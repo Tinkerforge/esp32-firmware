@@ -53,7 +53,7 @@ static String getWarpDisplayType(bool add_optional_hw=true)
         ""; // ELTAKO Wallbox always has a meter
 #else
 #if MODULE_FACTORY_DATA_AVAILABLE()
-        String(" ") + factory_data.get_sku_model_display_str();
+        factory_data.get_sku_model() != SKUModel::Unknown ? String(" ") + factory_data.get_sku_model_display_str() : (api.hasFeature("meter") ? " Pro" : " Smart");
 #else
         api.hasFeature("meter") ? " Pro" : " Smart";
 #endif
