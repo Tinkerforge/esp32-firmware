@@ -392,7 +392,7 @@ void Ethernet::register_urls()
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
 
-#if OPTIONS_ETHERNET_RESTART_API()
+#if OPTIONS_ETHERNET_ENABLE_RESTART_API()
     server.on_HTTPThread("/ethernet/restart", HTTP_GET, [this](WebServerRequest req) {
         task_scheduler.scheduleOnce([this]() {
             ETH.end();
