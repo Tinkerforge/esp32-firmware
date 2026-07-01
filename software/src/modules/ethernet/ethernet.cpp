@@ -391,6 +391,17 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
+
+#if OPTIONS_ETHERNET_RESTART_API()
+    server.on_HTTPThread("/ethernet/restart", HTTP_GET, [this](WebServerRequest req) {
+        task_scheduler.scheduleOnce([this]() {
+            ETH.end();
+            this->runtime_data->last_connected = now_us();
+            ETH.begin();
+        });
+        return req.send_plain(200);
+    });
+#endif
 }
 
 EthernetState Ethernet::get_connection_state() const
