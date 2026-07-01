@@ -307,6 +307,18 @@ export function is_warp_app(): boolean {
     return /warpapp-(android|ios)/.test(navigator.userAgent);
 }
 
+// iOS WARP app: When a charger is opened directly on the local network, the
+// native message-handler bridge is unavailable, because iOS App-Bound Domains
+// forbid script injection / message handlers outside of my.warp-charger.com.
+// Provide a one-way fallback for tinkerforge_devices.resetToDevices()
+// via a custom URL scheme that the native app intercepts. Only installed if the
+// native bridge did not already inject itself (i.e. in remote/app-bound mode).
+if (/warpapp-ios/.test(navigator.userAgent) && !window.tinkerforge_devices) {
+    window.tinkerforge_devices = {
+        resetToDevices: () => { window.location.href = "x-warp-bridge://devices/resetToDevices"; },
+    };
+}
+
 export function closeRemoteConnection() {
     window.parent.postMessage("close");
 }
