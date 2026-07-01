@@ -367,17 +367,17 @@ void Ethernet::setup()
             logger.printfln("Stopped");
             this->print_con_duration();
 
-            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
+            auto now = now_us();
 
             // If eth_started is false, we're being shut down by apply_config() for a disable.
             this->runtime_data->connection_state = this->eth_started
                 ? EthernetState::NotConnected
                 : EthernetState::NotConfigured;
 
-            task_scheduler.scheduleOnce([this, now_ms]() {
+            task_scheduler.scheduleOnce([this, now]() {
                 task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("connection_end")->updateUint(now_ms);
+                state.get("connection_end")->updateUptime(now);
             });
         },
         ARDUINO_EVENT_ETH_STOP);
