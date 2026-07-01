@@ -636,7 +636,7 @@ export function downloadToTimestampedFile(content: BlobPart, fileType: string, e
     }
 
     let timestamp_str = iso8601ButLocal(timestamp).replace(/:/gi, "-").replace(/\./gi, "-");
-    let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
+    let name = API.get_unchecked('info/name')?.name ?? "unknown";
     let filename = name + "-" + fileType + "-" + timestamp_str + "." + extension;
 
     downloadToFile(content, filename, contentType);
