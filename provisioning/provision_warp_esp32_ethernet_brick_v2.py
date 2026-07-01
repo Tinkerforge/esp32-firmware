@@ -639,6 +639,7 @@ class P:
                     tester_sublayout.addWidget(edits[i])
 
                     labels[i] = QLabel()
+                    labels[i].setTextInteractionFlags(Qt.TextSelectableByMouse);
                     tester_sublayout.addWidget(labels[i])
                 else:
                     tester_layout.addWidget(QLabel(f"Tester {i} not attached"))
@@ -985,7 +986,7 @@ class P:
             else:
                 relay_to_ssid[k] = result[0]
                 relay_to_passphrase[k] = result[1]
-                #P.infos[k] = relay_to_passphrase[k]
+                #P.infos[k] = f'{relay_to_ssid[k]} / {relay_to_passphrase[k]}'
                 P.set_progress(k, stage, P.green)
 
         print(str(relay_to_ssid))
