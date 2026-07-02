@@ -153,20 +153,44 @@ class P:
 
             return f.__setattr__(name, value)
 
-    def set_iso15118_enabled(ip, enable):
-        req = urllib.request.Request(f"http://{ip}/iso15118/config", data=json.dumps({
-            "autocharge": False,
-            "read_soc": enable,
-            "charge_via_iso15118": False,
-            "min_charge_current": 1000
-            }).encode('utf-8'))
+    def api_request(req, timeout, ignore_404, error_message):
         try:
-            with urllib.request.urlopen(req, timeout=6) as f:
-                f.read()
+            with urllib.request.urlopen(req, timeout=timeout) as f:
+                return f.read()
         except urllib.error.HTTPError as e:
-            fatal_error("Failed to enable ISO 15118: {} {}".format(e, e.read()))
+            if ignore_404 and e.code == 404:
+                pass
+            else:
+                fatal_error(f"{error_message}: {e} -- {e.read()}")
         except Exception as e:
-            fatal_error("Failed to enable ISO 15118: {}".format(e))
+            fatal_error(f"{error_message}: {e}")
+
+    def api_get(ip, api, *, timeout=10, ignore_404=False, error_message=None):
+        req = urllib.request.Request(f"http://{ip}/{api}")
+
+        if error_message == None:
+            error_message = f"Failed to GET from API {api}"
+
+        return json.loads(P.api_request(req, timeout, ignore_404, error_message))
+
+    def api_put(ip, api, params, *, timeout=10, ignore_404=False, error_message=None):
+        req = urllib.request.Request(f"http://{ip}/{api}",
+                                     data=json.dumps(params).encode("utf-8"),
+                                     method='PUT',
+                                     headers={"Content-Type": "application/json"})
+
+        if error_message == None:
+            error_message = f"Failed to PUT {params} to API {api}"
+
+        return P.api_request(req, timeout, ignore_404, error_message)
+
+    def set_iso15118_enabled(ip, enable):
+        P.api_put(ip, "iso15118/config", {
+                      "autocharge": False,
+                      "read_soc": enable,
+                      "charge_via_iso15118": False,
+                      "min_charge_current": 1000
+                  }, error_message=f"Failed to {'enable' if enable else 'disable'} ISO 15118")
 
     def test_bricklet_ports_warp4(ipcon):
         enums = enumerate_devices(ipcon)
@@ -249,13 +273,12 @@ class P:
             else:
                 fatal_error("NTP did not sync in 45 seconds!")
 
+        t = P.api_get(ip, "rtc/time")
+
         try:
-            with urllib.request.urlopen(f"http://{ip}/rtc/time", timeout=10) as f:
-                t = json.loads(f.read())
-                esp_time = datetime.datetime(t["year"], t["month"], t["day"], t["hour"], t["minute"], t["second"], tzinfo=datetime.timezone.utc)
+            esp_time = datetime.datetime(t["year"], t["month"], t["day"], t["hour"], t["minute"], t["second"], tzinfo=datetime.timezone.utc)
         except Exception as e:
-            print(e)
-            fatal_error("Failed to read RTC time!")
+            fatal_error(f"Failed to parse ESP time {t}: {e}")
 
         print(esp_time, datetime.datetime.now(datetime.timezone.utc))
 
@@ -287,56 +310,31 @@ class P:
 
         print("Testing ESP Wifi.")
         with wifi(ssid, passphrase):
-            req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
-                                        data=json.dumps({"enable_ethernet": True,
-                                                        "ip": ethernet_ip,
-                                                        "gateway": ethernet_gateway,
-                                                        "subnet": ethernet_subnet,
-                                                        "dns": ethernet_dns,
-                                                        "dns2": "0.0.0.0"}).encode("utf-8"),
-                                        method='PUT',
-                                        headers={"Content-Type": "application/json"})
-            try:
-                with urllib.request.urlopen(req, timeout=10) as f:
-                    f.read()
-            except Exception as e:
-                print(e)
-                fatal_error("Failed to set ethernet config!")
+            P.api_put("10.0.0.1", "ethernet/config_update", {
+                          "enable_ethernet": True,
+                          "ip": ethernet_ip,
+                          "gateway": ethernet_gateway,
+                          "subnet": ethernet_subnet,
+                          "dns": ethernet_dns,
+                          "dns2": "0.0.0.0",
+                      }. error_message="Failed to set ethernet config!")
 
-            req = urllib.request.Request("http://10.0.0.1/ntp/config_update",
-                                        data=json.dumps({"enable": None,
-                                                        "use_dhcp": False,
-                                                        "timezone": None,
-                                                        "server": host_ip,
-                                                        "server2": None}).encode("utf-8"),
-                                        method='PUT',
-                                        headers={"Content-Type": "application/json"})
-            try:
-                with urllib.request.urlopen(req, timeout=10) as f:
-                    f.read()
-            except Exception as e:
-                print(e)
-                fatal_error("Failed to set NTP config!")
+            P.api_put("10.0.0.1", "ntp/config_update", {
+                          "enable": None,
+                          "use_dhcp": False,
+                          "timezone": None,
+                          "server": host_ip,
+                          "server2": None,
+                      }. error_message="Failed to set NTP config!")
 
             result["wifi_test_successful"] = True
 
     def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, result):
         P.connect_ethernet(ethernet_ip)
 
-        req = urllib.request.Request(f"http://{ethernet_ip}/info/version")
-        try:
-            with urllib.request.urlopen(req, timeout=10) as f:
-                fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0].split("+")[0]
-        except Exception as e:
-            traceback.print_exc()
-            fatal_error("Failed to read firmware version!")
+        fw_version = P.api_get(ethernet_ip, "info/version/firmware").split("-")[0].split("+")[0]
 
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
-                f.read()
-        except Exception as e:
-            traceback.print_exc()
-            fatal_error("Failed to enable hidden_proxy!")
+        P.api_get(ethernet_ip, "hidden_proxy/enable")
 
         time.sleep(3)
         ipcon = IPConnection()
@@ -352,25 +350,16 @@ class P:
         print("Testing PLC modem connection")
         P.set_iso15118_enabled(ethernet_ip, True)
 
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/iso15118/state_slac/modem_found", timeout=10) as f:
-                if not json.loads(f.read()):
-                    fatal_error("PLC modem not found!")
-        except Exception as e:
-            traceback.print_exc()
-            fatal_error("Failed to read 'PLC modem found' API!")
+        if not P.api_get(ethernet_ip, "iso15118/state_slac/modem_found"):
+            fatal_error("PLC modem not found!")
 
         result["plc_modem_found"] = True
 
         P.set_iso15118_enabled(ethernet_ip, False)
 
         print("Testing temperature sensor")
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/esp32/temperature", timeout=10) as f:
-                esp_temp = float(json.loads(f.read())["temperature"]) / 100
-        except Exception as e:
-            traceback.print_exc()
-            fatal_error("Failed to read temperature value!")
+
+        esp_temp = P.api_get(ethernet_ip, "esp32/temperature/temperature") /= 100
 
         if abs(avg_bricklet_temp - esp_temp) > 15:
             fatal_error(f"ESP temperature sensor value not in expected range: {esp_temp=} {avg_bricklet_temp=}")
@@ -384,20 +373,13 @@ class P:
 
         print("Testing RTC supercap")
 
-        req = urllib.request.Request(f"http://{ethernet_ip}/ntp/config_update",
-                                    data=json.dumps({"enable":False,
-                                                    "use_dhcp":None,
-                                                    "timezone":None,
-                                                    "server":None,
-                                                    "server2":None}).encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=1) as f:
-                f.read()
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to disable NTP")
+        P.api_put(ethernet_ip, "ntp/config_update", {
+                      "enable": False,
+                      "use_dhcp": None,
+                      "timezone": None,
+                      "server": None,
+                      "server2": None,
+                  }, error_message="Failed to disable NTP")
 
         power_off_fn()
         time.sleep(10)
@@ -409,23 +391,9 @@ class P:
 
         result["rtc_test_successful"] = True
 
-        req = urllib.request.Request(f"http://{ethernet_ip}/config/reset",
-                                    data=json.dumps("ntp/config").encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=1) as f:
-                f.read()
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to re-enable NTP")
+        P.api_put(ethernet_ip, "config/reset", "ntp/config", error_message="Failed to re-enable NTP")
 
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
-                f.read()
-        except Exception as e:
-            traceback.print_exc()
-            fatal_error("Failed to enable hidden_proxy!")
+        P.api_get(ethernet_ip, "hidden_proxy/enable")
 
         time.sleep(3)
 
@@ -435,69 +403,37 @@ class P:
 
     def encrypt_and_secure(serial_port, ethernet_ip, result):
         print("Securing device")
-        req = urllib.request.Request(f"http://{ethernet_ip}/esp32/secure_device",
-                                    data=json.dumps({"destroy_my_data":True, "deterministic":False}).encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=120) as f:
-                response = f.read()
+        response = P.api_put(ethernet_ip, "esp32/secure_device", {
+                                 "destroy_my_data": True,
+                                 "deterministic": False,
+                             }, timeout=120, ignore_404=True, error_message="Failed to secure device")
 
-                if len(response) > 0:
-                    print(f'esp32/secure_device response: {response}')
-        except urllib.request.HTTPError as e:
-            if e.code != 404:
-                traceback.print_exc()
-                fatal_error(f"Failed to secure device {e.code=} {e.read().decode('utf-8')}")
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to secure device")
+        if len(response) > 0:
+            print(f'esp32/secure_device response: {response}')
 
         time.sleep(5)
         P.connect_ethernet(ethernet_ip)
 
         print("Encrypting data")
-        req = urllib.request.Request(f"http://{ethernet_ip}/esp32/encrypt_data")
-        try:
-            with urllib.request.urlopen(req, timeout=60) as f:
-                response = f.read()
+        response = P.api_get(ethernet_ip, "esp32/encrypt_data", timeout=60, ignore_404=True, error_message="Failed to encrypt data")
 
-                if len(response) > 0:
-                    print(f'esp32/encrypt_data response: {response}')
-        except urllib.request.HTTPError as e:
-            if e.code != 404:
-                traceback.print_exc()
-                fatal_error(f"Failed to encrypt data {e.code=} {e.read().decode('utf-8')}")
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to encrypt data")
+        if len(response) > 0:
+            print(f'esp32/encrypt_data response: {response}')
 
         print("Checking secure boot")
-        req = urllib.request.Request(f"http://{ethernet_ip}/esp32/check_sbv2")
-        try:
-            with urllib.request.urlopen(req, timeout=30) as f:
-                check_sbv2_result = f.read()
+        response = P.api_get(ethernet_ip, "esp32/check_sbv2", timeout=30, ignore_404=True, error_message="Failed to check secure boot")
 
-                if len(check_sbv2_result) > 0:
-                    print(f'esp32/check_sbv2 response: {check_sbv2_result}')
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to check secure boot")
+        if len(response) > 0:
+            print(f'esp32/check_sbv2 response: {response}')
 
-        if check_sbv2_result.decode('utf-8') != "Success":
+        if response != b"Success":
             fatal_error("Failed to check secure boot")
 
         print("Erasing other app partition")
-        req = urllib.request.Request(f"http://{ethernet_ip}/firmware_update/erase_other")
-        try:
-            with urllib.request.urlopen(req, timeout=10) as f:
-                response = f.read()
+        response = P.api_get(ethernet_ip, "firmware_update/erase_other", error_message="Failed to erase other partition")
 
-                if len(response) > 0:
-                    print(f'firmware_update/erase_other response: {response}')
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to erase other partition")
+        if len(response) > 0:
+            print(f'firmware_update/erase_other response: {response}')
 
         import socket
         if socket.gethostname() != "warp4-esp-tester":
@@ -505,32 +441,14 @@ class P:
             result["locked_down"] = False
         else:
             print("Locking down device")
-            req = urllib.request.Request(f"http://{ethernet_ip}/esp32/lockdown")
-            try:
-                with urllib.request.urlopen(req, timeout=30) as f:
-                    response = f.read()
+            response = P.api_get(ethernet_ip, "esp32/lockdown", timeout=30, ignore_404=True, error_message="Failed to lock down device")
 
-                    if len(response) > 0:
-                        print(f'esp32/lockdown response: {response}')
-            except urllib.request.HTTPError as e:
-                if e.code != 404:
-                    traceback.print_exc()
-                    fatal_error("Failed to lock down device")
-            except:
-                traceback.print_exc()
-                fatal_error("Failed to lock down device")
+            if len(response) > 0:
+                print(f'esp32/lockdown response: {response}')
+
             result["locked_down"] = True
 
-        req = urllib.request.Request(f"http://{ethernet_ip}/config/reset",
-                                    data=json.dumps("ethernet/config").encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=1) as f:
-                f.read()
-        except:
-            traceback.print_exc()
-            fatal_error("Failed to re-enable ethernet DHCP")
+        P.api_put(ethernet_ip, "config/reset", "ethernet/config", error_message="Failed to re-enable ethernet DHCP")
 
         print(green("Done"))
 
