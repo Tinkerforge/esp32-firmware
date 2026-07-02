@@ -330,7 +330,7 @@ class P:
                           "use_dhcp": False,
                           "timezone": None,
                           "server": host_ip,
-                          "server2": None,
+                          "server2": host_ip,
                       }, error_message="Failed to set NTP config!")
 
             result["wifi_test_successful"] = True
