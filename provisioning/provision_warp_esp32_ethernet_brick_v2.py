@@ -442,7 +442,7 @@ class P:
         if len(response) > 0:
             print(f'esp32/check_sbv2 response: {response}')
 
-        if response != b"Success":
+        if response != "Success":
             fatal_error("Failed to check secure boot")
 
         print("Erasing other app partition")
