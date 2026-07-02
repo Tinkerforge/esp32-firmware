@@ -24,6 +24,7 @@ export const EVSE_SLOT_REQUIRE_METER = 13;
 export const EVSE_SLOT_AUTOMATION = 14;
 export const EVSE_SLOT_EEBUS = 15;
 export const EVSE_SLOT_P14A_ENWG = 16;
+export const EVSE_SLOT_OVE_R37 = 17;
 
 export type slots = Slot[];
 

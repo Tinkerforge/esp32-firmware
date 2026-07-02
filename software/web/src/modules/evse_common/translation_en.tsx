@@ -149,7 +149,8 @@ let x = {
                 13: "Meter monitoring",
                 14: "Automation",
                 15: "EEBUS",
-                16: "§14a EnWG"
+                16: "§14a EnWG",
+                17: "OVE R 37"
             }[i];}/*NF*/,
 
             // EVSE V1 only
@@ -349,7 +350,8 @@ let x = {
                 13: "meter monitoring",
                 14: "automation",
                 15: "EEBUS",
-                16: "§14a EnWG"
+                16: "§14a EnWG",
+                17: "OVE R 37"
             }[i];}/*NF*/,
 
             "reboot_content_changed": "charge settings",

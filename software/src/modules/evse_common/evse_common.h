@@ -32,7 +32,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#define CHARGING_SLOT_COUNT 17
+#define CHARGING_SLOT_COUNT 18
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
 
 #define CHARGING_SLOT_INCOMING_CABLE 0
@@ -52,6 +52,7 @@
 #define CHARGING_SLOT_AUTOMATION 14
 #define CHARGING_SLOT_EEBUS 15
 #define CHARGING_SLOT_P14A_ENWG 16
+#define CHARGING_SLOT_OVE_R37 17
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1

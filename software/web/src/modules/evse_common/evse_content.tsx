@@ -35,7 +35,7 @@ import { InputText } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION, EVSE_SLOT_EEBUS } from "./api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION, EVSE_SLOT_EEBUS, EVSE_SLOT_OVE_R37 } from "./api";
 import { EVSEStatus } from "./evse_status";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryCharging } from "react-feather";
@@ -199,6 +199,12 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
 //#else
                         if (i == EVSE_SLOT_EEBUS)
+                            return null;
+//#endif
+//#if MODULE_OVE_R37_AVAILABLE
+
+//#else
+                        if (i == EVSE_SLOT_OVE_R37)
                             return null;
 //#endif
                         let variant = "";

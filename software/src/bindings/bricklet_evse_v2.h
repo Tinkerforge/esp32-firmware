@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-06-29.      *
+ * This file was automatically generated on 2026-07-01.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -1501,6 +1501,11 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_OVE_R37_STATE_RAMP 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_OVE_R37_STATE_BOOT 5
 
 /**
  * \ingroup TF_EVSEV2
