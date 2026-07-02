@@ -504,7 +504,7 @@ class P:
             return
 
         for k, v in edits.items():
-            new_log, back_color = P.terminal_to_html(P.logs[k][0].getvalue().strip() + "\n---\n" + P.logs[k][1].getvalue().strip())
+            new_log, back_color = P.terminal_to_html(P.logs[k][0].getvalue().strip() + "\n------\n" + P.logs[k][1].getvalue().strip())
 
             if P.last_edits_content.get(k) != (new_log, back_color):
                 P.last_edits_content[k] = (new_log, back_color)
@@ -1031,7 +1031,14 @@ class P:
                 json.dump(test_reports[k], f, indent=4)
 
             with mkdir_open(report_path_prefix + ".log", "w") as f:
-                f.write(colored.strip(P.logs[k][0].getvalue().strip() + "\n---\n" + P.logs[k][1].getvalue().strip()))
+                f.write(colored.strip(P.logs[k][0].getvalue().strip() +
+                                      "\n------\n" +
+                                      P.logs[k][1].getvalue().strip() +
+                                      "\n======\n" +
+                                      P.logs[-1][0].getvalue().strip() +
+                                      "\n------\n" +
+                                      P.logs[-1][1].getvalue().strip() +
+                                      "\n"))
 
             commit_message = f'Add stage 1 test report for {product_name} with UID {relay_to_ssid[k].split("-")[-1]}'
 
