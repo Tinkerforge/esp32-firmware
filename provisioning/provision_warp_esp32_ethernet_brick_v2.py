@@ -154,36 +154,44 @@ class P:
 
             return f.__setattr__(name, value)
 
-    def api_request(req, timeout, ignore_404, error_message):
+    def api_request(request, timeout, ignore_404, error_message):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as f:
+            with urllib.request.urlopen(request, timeout=timeout) as f:
                 return f.read()
         except urllib.error.HTTPError as e:
             if ignore_404 and e.code == 404:
-                pass
+                return None
             else:
                 fatal_error(f"{error_message}: {e} -- {e.read()}")
         except Exception as e:
             fatal_error(f"{error_message}: {e}")
 
     def api_get(ip, api, *, timeout=10, ignore_404=False, error_message=None):
-        req = urllib.request.Request(f"http://{ip}/{api}")
+        request = urllib.request.Request(f"http://{ip}/{api}")
 
         if error_message == None:
             error_message = f"Failed to GET from API {api}"
 
-        return json.loads(P.api_request(req, timeout, ignore_404, error_message))
+        response = P.api_request(request, timeout, ignore_404, error_message)
+
+        if response == None:
+            return None
+
+        if len(response) == 0:
+            return response
+
+        return json.loads(response)
 
     def api_put(ip, api, params, *, timeout=10, ignore_404=False, error_message=None):
-        req = urllib.request.Request(f"http://{ip}/{api}",
-                                     data=json.dumps(params).encode("utf-8"),
-                                     method='PUT',
-                                     headers={"Content-Type": "application/json"})
+        request = urllib.request.Request(f"http://{ip}/{api}",
+                                         data=json.dumps(params).encode("utf-8"),
+                                         method='PUT',
+                                         headers={"Content-Type": "application/json"})
 
         if error_message == None:
             error_message = f"Failed to PUT {params} to API {api}"
 
-        return P.api_request(req, timeout, ignore_404, error_message)
+        return P.api_request(request, timeout, ignore_404, error_message)
 
     def set_iso15118_enabled(ip, enable):
         P.api_put(ip, "iso15118/config", {
