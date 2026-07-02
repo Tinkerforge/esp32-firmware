@@ -1202,7 +1202,8 @@ export function isDarkMode(): boolean {
 }
 
 export function is_central_management_enabled(): boolean {
+    const cm_config = API.get_unchecked("charge_manager/config") as {enable_charge_manager?: boolean, enable_central_management?: boolean} | null;
     return API.hasModule("charge_manager") &&
-        API.get("charge_manager/config").enable_charge_manager &&
-        API.get("charge_manager/config").enable_central_management;
+        !!cm_config?.enable_charge_manager &&
+        !!cm_config?.enable_central_management;
 }
