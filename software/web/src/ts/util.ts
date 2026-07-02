@@ -1200,3 +1200,9 @@ export function getChartColors() {
 export function isDarkMode(): boolean {
     return document.documentElement.getAttribute('data-bs-theme') === 'dark';
 }
+
+export function is_central_management_enabled(): boolean {
+    return API.hasModule("charge_manager") &&
+        API.get("charge_manager/config").enable_charge_manager &&
+        API.get("charge_manager/config").enable_central_management;
+}

@@ -48,8 +48,7 @@ import {
     DiscoveryResultGroup,
 } from "../../ts/components/discovery_result";
 import { InputSelect } from "../../ts/components/input_select";
-import { useEffect, useRef, useState } from "preact/hooks";
-import { useSignal } from "@preact/signals";
+import { useState } from "preact/hooks";
 //#endif
 import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 import { ChargeAuth } from "../charge_authorization/api";
@@ -57,6 +56,7 @@ import { ChargeAuth } from "../charge_authorization/api";
 //#if MODULE_CHARGE_MANAGER_AVAILABLE
 export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType[]): Promise<(ChargeAuth & {charger_name: string})[]> {
     let cm_state = API.get("charge_manager/state");
+    let now = API.get("info/keep_alive").uptime;
     let auths:(ChargeAuth & {charger_name?: string})[][] = [];
     try {
         auths = JSON.parse(await util.download("/charge_manager/auth_info", false).then(x => x.text()));
@@ -81,6 +81,7 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
                 continue;
 
             auth.charger_name = charger_name;
+            auth.seen_at = now - auth.seen_at;
 
             const info_json = JSON.stringify(auth.auth_info);
 
@@ -103,13 +104,9 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
 
 async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
-    let central_management_enabled = API.hasModule("charge_manager") &&
-        API.get("charge_manager/config").enable_charge_manager &&
-        API.get("charge_manager/config").enable_central_management;
-
     let now = API.get("info/keep_alive").uptime;
 
-    if (!central_management_enabled) {
+    if (!util.is_central_management_enabled()) {
         return API.get('nfc/seen_tags')?.map(t => {
             const tag: NFCSeenTag = {...t, charger_name: null};
             return tag;
@@ -118,10 +115,18 @@ async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
         return (await get_charge_manager_auth_info([CMAuthType.NFC, CMAuthType.InjectedNFC])).map(x => ({
                 tag_id: (x.auth_info[1] as any).tag_id,
                 tag_type: (x.auth_info[1] as any).tag_type,
-                last_seen: now - x.seen_at,
+                last_seen: x.seen_at,
                 charger_name: x.charger_name,
             } as NFCSeenTag));
     }
+}
+
+function refresh_seen_tags(users: Users) {
+    get_all_seen_tags().then((tags) => {
+        users.setState({seenTags: tags});
+    }).catch((e) => {
+        console.error("Failed to refresh seen NFC tags:", e);
+    });
 }
 
 export function UsersNavbar() {
@@ -146,6 +151,8 @@ type UsersConfig = Omit<API.getType["users/config"], "users"> & {
 interface UsersState {
     userSlotEnabled: boolean;
     nfcDeadtime: number;
+
+    seenTags: NFCSeenTag[];
 
     editUser: User;
     editUserNfcTags: API.getType["nfc/config"]["authorized_tags"];
@@ -231,6 +238,7 @@ function add_user(u: User) {
 interface NfcTagsSectionProps {
     users: User[];
     nfcConfig: API.getType["nfc/config"]["authorized_tags"];
+    seenTags: NFCSeenTag[];
     onNfcConfig: (tags: API.getType["nfc/config"]["authorized_tags"]) => void;
     currentUserId: number;
     currentUsername: string;
@@ -239,21 +247,14 @@ interface NfcTagsSectionProps {
 function NfcTagsSection({
     users,
     nfcConfig,
+    seenTags,
     onNfcConfig,
     currentUserId,
     currentUsername
 }: NfcTagsSectionProps) {
-    const seenTags = useSignal<NFCSeenTag[]>([]);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            get_all_seen_tags().then((tags) => (seenTags.value = tags));
-        }, 1000);
-        return () => clearInterval(interval);
-    });
-
     const getRows = (): TableRow[] => {
         return nfcConfig.filter(tag => tag.user_id == currentUserId).map((tag, j) => {
-            const seen = seenTags.value.find(
+            const seen = seenTags.find(
                 (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
             );
             const lastSeenText = seen
@@ -336,7 +337,7 @@ function NfcTagsSection({
                 addTitle={__("users.content.nfc_add_tag")}
                 onAddShow={async () => setEditTag({user_id: currentUserId, tag_type: 0, tag_id: ""})}
                 onAddGetChildren={() => {
-                    let filtered = seenTags.value
+                    let filtered = seenTags
                                     .filter((t) => t.tag_id !== "")
                                     .map((t) => {
                                         const error = getTagError(t);
@@ -525,6 +526,7 @@ interface EditUserFormContentProps {
     //#if MODULE_NFC_AVAILABLE
     users: User[];
     nfcConfig: API.getType["nfc/config"]["authorized_tags"];
+    seenTags: NFCSeenTag[];
     onNfcConfig: (tags: API.getType["nfc/config"]["authorized_tags"]) => void;
     //#endif
     //#if MODULE_EV_AVAILABLE
@@ -541,6 +543,7 @@ function EditUserFormContent({
     //#if MODULE_NFC_AVAILABLE
     users,
     nfcConfig,
+    seenTags,
     onNfcConfig,
     //#endif
     //#if MODULE_EV_AVAILABLE
@@ -607,6 +610,7 @@ function EditUserFormContent({
             <NfcTagsSection
                 users={users}
                 nfcConfig={nfcConfig}
+                seenTags={seenTags}
                 onNfcConfig={onNfcConfig}
                 currentUserId={user.id}
                 currentUsername={user.username}
@@ -645,6 +649,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                 },
                 editUserNfcTags: [],
                 nfcDeadtime: 0,
+                seenTags: [],
                 editUserEvs: []
             },
         );
@@ -662,6 +667,22 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             this.setState({
                 nfcDeadtime: API.get("nfc/config").deadtime_post_start,
             });
+        });
+
+        util.addApiEventListener("nfc/seen_tags", () => {
+            if (!util.is_central_management_enabled()) {
+                refresh_seen_tags(this);
+            }
+        });
+
+        util.addApiEventListener("charge_manager/state", () => {
+            if (util.is_central_management_enabled()) {
+                refresh_seen_tags(this);
+            }
+        });
+
+        util.addApiEventListener("charge_manager/config", () => {
+            refresh_seen_tags(this);
         });
         //#endif
     }
@@ -931,6 +952,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             //#if MODULE_NFC_AVAILABLE
                                             users={state.users}
                                             nfcConfig={state.editUserNfcTags}
+                                            seenTags={state.seenTags}
                                             onNfcConfig={(cfg) => this.setState({editUserNfcTags: cfg})}
                                             //#endif
                                             //#if MODULE_EV_AVAILABLE
@@ -949,7 +971,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                         />,
                                     ],
                                     onEditCheck: async () => {
-                                        console.log("hier");
                                         let is_invalid =
                                             await this.checkUsername(
                                                 state.editUser,
@@ -1051,6 +1072,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     //#if MODULE_NFC_AVAILABLE
                                     users={state.users}
                                     nfcConfig={state.editUserNfcTags}
+                                    seenTags={state.seenTags}
                                     onNfcConfig={(cfg) => this.setState({editUserNfcTags: cfg})}
                                     //#endif
                                     //#if MODULE_EV_AVAILABLE
@@ -1069,7 +1091,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 />,
                             ]}
                             onAddCheck={async () => {
-                                console.log("hier");
                                 let is_invalid = await this.checkUsername(
                                     state.editUser,
                                     undefined,
@@ -1135,7 +1156,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             rows={API.get("nfc/config").authorized_tags.map(tag => {
                                 const ownerName = tag.user_id == 0 ? "" : API.get("users/config").users.find(u => u.id == tag.user_id).display_name;
 
-                                const seen = API.get("nfc/seen_tags").find(
+                                const seen = this.state.seenTags.find(
                                     (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
                                 );
                                 const lastSeenText = seen

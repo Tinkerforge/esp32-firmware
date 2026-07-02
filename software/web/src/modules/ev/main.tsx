@@ -94,9 +94,7 @@ type EvSeenMac = API.getType['ev/seen_macs'][0] & { charger_name?: string | null
 // Get EV MACs seen locally, merged with the EV MACs received from other chargers
 // through central user management. Returns all MACs deduplicated.
 async function get_all_seen_macs(): Promise<EvSeenMac[]> {
-    let central_management_enabled = API.hasModule("charge_manager") &&
-        API.get("charge_manager/config").enable_charge_manager &&
-        API.get("charge_manager/config").enable_central_management;
+    let central_management_enabled = util.is_central_management_enabled();
 
     let now = API.get("info/keep_alive").uptime;
 
