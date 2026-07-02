@@ -323,7 +323,7 @@ class P:
                           "subnet": ethernet_subnet,
                           "dns": ethernet_dns,
                           "dns2": "0.0.0.0",
-                      }. error_message="Failed to set ethernet config!")
+                      }, error_message="Failed to set ethernet config!")
 
             P.api_put("10.0.0.1", "ntp/config_update", {
                           "enable": None,
@@ -331,7 +331,7 @@ class P:
                           "timezone": None,
                           "server": host_ip,
                           "server2": None,
-                      }. error_message="Failed to set NTP config!")
+                      }, error_message="Failed to set NTP config!")
 
             result["wifi_test_successful"] = True
 
@@ -365,7 +365,7 @@ class P:
 
         print("Testing temperature sensor")
 
-        esp_temp = P.api_get(ethernet_ip, "esp32/temperature/temperature") /= 100
+        esp_temp = P.api_get(ethernet_ip, "esp32/temperature/temperature") / 100
 
         if abs(avg_bricklet_temp - esp_temp) > 15:
             fatal_error(f"ESP temperature sensor value not in expected range: {esp_temp=} {avg_bricklet_temp=}")
