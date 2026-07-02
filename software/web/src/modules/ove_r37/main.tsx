@@ -32,6 +32,8 @@ import { OveR37State } from "./generated/ove_r37_state.enum";
 import { MeterValueID } from "../meters/generated/meter_value_id";
 import { OVE_R37_TRIP_REASON_UNDERVOLTAGE, OVE_R37_TRIP_REASON_OVERVOLTAGE, OVE_R37_TRIP_REASON_FREQUENCY, OVE_R37_FLAG_VOLTAGE_IN_RANGE, OVE_R37_FLAG_FREQUENCY_IN_RANGE, OVE_R37_FLAG_VOLTAGE_VALID, OVE_R37_FLAG_FREQUENCY_VALID } from "./api";
 
+const NOMINAL_VOLTAGE = 230;
+
 export function OveR37Navbar() {
     return (
         <NavbarItem
@@ -54,6 +56,7 @@ function state_name(state: OveR37State): string {
         case OveR37State.Tripped:  return __("ove_r37.content.state_tripped");
         case OveR37State.Wait:     return __("ove_r37.content.state_wait");
         case OveR37State.Ramp:     return __("ove_r37.content.state_ramp");
+        case OveR37State.Boot:     return __("ove_r37.content.state_boot");
         default:                   return "" + state;
     }
 }
@@ -152,10 +155,14 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
                             <InputText value={trip_reason_name(s.trip_reason)}/>
                         </FormRow>
                         : undefined}
-                    <FormRow label={__("ove_r37.status.voltage_in_range")}>
+                    <FormRow label={__("ove_r37.status.voltage_in_range")}
+                             label_muted={__("ove_r37.status.voltage_in_range_muted")}
+                             help={__("ove_r37.status.voltage_in_range_help")}>
                         <InputText value={voltage_value}/>
                     </FormRow>
-                    <FormRow label={__("ove_r37.status.frequency_in_range")}>
+                    <FormRow label={__("ove_r37.status.frequency_in_range")}
+                             label_muted={__("ove_r37.status.frequency_in_range_muted")}
+                             help={__("ove_r37.status.frequency_in_range_help")}>
                         <InputText value={frequency_value}/>
                     </FormRow>
                 </SubPage.Status>
@@ -173,9 +180,11 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
                             onClick={() => this.setState({enabled: !state.enabled})}/>
                     </FormRow>
 
-                    <FormRow label={__("ove_r37.content.undervoltage_threshold")} label_muted={__("ove_r37.content.undervoltage_threshold_muted")}>
+                    <FormRow label={__("ove_r37.content.undervoltage_threshold")}
+                             label_muted={(state.undervoltage_threshold / 1000).toFixed(2) + " pu \u2248 " + Math.round(state.undervoltage_threshold / 1000 * NOMINAL_VOLTAGE) + " V " + __("ove_r37.content.undervoltage_threshold_muted")}
+                             help={__("ove_r37.content.undervoltage_threshold_help")}>
                         <InputNumber
-                            unit="pu/1000"
+                            unit="‰ pu"
                             value={state.undervoltage_threshold}
                             onValue={(v) => this.setState({undervoltage_threshold: v})}
                             min={0} max={1000}/>
