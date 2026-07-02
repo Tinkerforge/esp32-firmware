@@ -129,6 +129,10 @@ void System::pre_setup()
         {"color_scheme", Config::Enum(ColorScheme::Browser)}
     })};
 
+    country_config = ConfigRoot{Config::Object({
+        {"country", Config::Enum(Country::Germany)}
+    })};
+
     esp_reset_reason_t reason = esp_reset_reason();
 
     last_reset = Config::Object({
@@ -141,6 +145,7 @@ void System::setup()
 {
     api.restorePersistentConfig("system/i18n_config", &i18n_config);
     api.restorePersistentConfig("system/theme_config", &theme_config);
+    api.restorePersistentConfig("system/country_config", &country_config);
 
     initialized = true;
 }
@@ -149,6 +154,7 @@ void System::register_urls()
 {
     api.addPersistentConfig("system/i18n_config", &i18n_config);
     api.addPersistentConfig("system/theme_config", &theme_config);
+    api.addPersistentConfig("system/country_config", &country_config);
     api.addState("system/last_reset", &last_reset);
 
     server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {

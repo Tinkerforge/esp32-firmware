@@ -73,7 +73,15 @@ let x = {
             "color_scheme": "Farbschema",
             "color_scheme_browser": "Browser-Farbschema verwenden",
             "color_scheme_light": "Hell",
-            "color_scheme_dark": "Dunkel"
+            "color_scheme_dark": "Dunkel",
+
+            "country": "Land",
+            "country_help": "Wählt das Land aus, in dem die Wallbox installiert ist. Dadurch werden länderspezifische Funktionen und Vorschriften aktiviert.",
+            "country_other": "Anderes Land",
+            "country_germany": "Deutschland",
+            "country_austria": "Österreich",
+            "country_switzerland": "Schweiz",
+            "country_luxembourg": "Luxemburg"
         },
         "script": {
             "factory_reset_init": "Formatiere Konfigurationspartition und starte neu...",

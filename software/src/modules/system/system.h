@@ -22,6 +22,7 @@
 #include "module.h"
 #include "config.h"
 #include "generated/color_scheme.enum.h"
+#include "generated/country.enum.h"
 
 class System final : public IModule
 {
@@ -38,5 +39,6 @@ private:
     bool factory_reset_running = false;
     ConfigRoot i18n_config;
     ConfigRoot theme_config;
+    ConfigRoot country_config;
     ConfigRoot last_reset;
 };

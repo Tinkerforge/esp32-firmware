@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { SubPage } from "../../ts/components/sub_page";
@@ -29,24 +29,29 @@ import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputText } from "../../ts/components/input_text";
 import { OveR37State } from "./generated/ove_r37_state.enum";
+import { Country } from "../system/generated/country.enum";
 import { MeterValueID } from "../meters/generated/meter_value_id";
 import { OVE_R37_TRIP_REASON_UNDERVOLTAGE, OVE_R37_TRIP_REASON_OVERVOLTAGE, OVE_R37_TRIP_REASON_FREQUENCY, OVE_R37_FLAG_VOLTAGE_IN_RANGE, OVE_R37_FLAG_FREQUENCY_IN_RANGE, OVE_R37_FLAG_VOLTAGE_VALID, OVE_R37_FLAG_FREQUENCY_VALID } from "./api";
 
 const NOMINAL_VOLTAGE = 230;
 
-export function OveR37Navbar() {
-    return (
-        <NavbarItem
-            name="ove_r37"
-            module="ove_r37"
-            title={__("ove_r37.navbar.ove_r37")}
-            symbol={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                    <text x="12" y="18" font-size="20" text-anchor="middle">&#167;</text>
-                </svg>
-            }
-        />
-    );
+export class OveR37Navbar extends Component {
+    render() {
+        return (
+            <NavbarItem
+                name="ove_r37"
+                module="ove_r37"
+                // Only show the OVE R 37 menu entry when the charger is configured for Austria.
+                hidden={API.get("system/country_config")?.country !== Country.Austria}
+                title={__("ove_r37.navbar.ove_r37")}
+                symbol={
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <text x="12" y="18" font-size="20" text-anchor="middle">&#167;</text>
+                    </svg>
+                }
+            />
+        );
+    }
 }
 
 function state_name(state: OveR37State): string {
@@ -62,8 +67,9 @@ function state_name(state: OveR37State): string {
 }
 
 function trip_reason_name(trip_reason: number): string {
-    if (trip_reason === 0)
+    if (trip_reason === 0) {
         return __("ove_r37.content.trip_none");
+    }
 
     let reasons: string[] = [];
     if (trip_reason & OVE_R37_TRIP_REASON_UNDERVOLTAGE) reasons.push(__("ove_r37.content.trip_undervoltage"));
@@ -74,15 +80,17 @@ function trip_reason_name(trip_reason: number): string {
 
 function get_charger_meter_value(value_id: number): number {
     const slot = API.get_unchecked('evse/meter_config')?.slot;
-    if (slot === undefined || slot === null)
+    if ((slot === undefined) || (slot === null)) {
         return NaN;
+    }
 
     const value_ids = API.get_unchecked(`meters/${slot}/value_ids`) as Readonly<number[]>;
-    const values = API.get_unchecked(`meters/${slot}/values`) as Readonly<number[]>;
-    const idx = value_ids ? value_ids.indexOf(value_id) : -1;
+    const values    = API.get_unchecked(`meters/${slot}/values`) as Readonly<number[]>;
+    const idx       = value_ids ? value_ids.indexOf(value_id) : -1;
 
-    if (idx < 0 || !values || idx >= values.length)
+    if ((idx < 0) || !values || (idx >= values.length)) {
         return NaN;
+    }
 
     return values[idx];
 }
@@ -125,8 +133,9 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
     }
 
     render(props: {}, state: OveR37Config & OveR37PageState) {
-        if (!util.render_allowed())
+        if (!util.render_allowed()) {
             return <SubPage name="ove_r37" />;
+        }
 
         const s = state.ove_r37_state;
 

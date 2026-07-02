@@ -73,7 +73,15 @@ let x = {
             "color_scheme": "Color scheme",
             "color_scheme_browser": "Use browser color scheme",
             "color_scheme_light": "Light",
-            "color_scheme_dark": "Dark"
+            "color_scheme_dark": "Dark",
+
+            "country": "Country",
+            "country_help": "Selects the country the charger is installed in. This enables country-specific features and regulations.",
+            "country_other": "Other country",
+            "country_germany": "Germany",
+            "country_austria": "Austria",
+            "country_switzerland": "Switzerland",
+            "country_luxembourg": "Luxembourg"
         },
         "script": {
             "factory_reset_init": "Formatting configuration partition and rebooting...",

@@ -1,5 +1,6 @@
 import { Language } from "../../ts/language";
 import { ColorScheme } from "./generated/color_scheme.enum";
+import { Country } from "./generated/country.enum";
 
 export interface i18n_config {
     language: Language;
@@ -8,6 +9,10 @@ export interface i18n_config {
 
 export interface theme_config {
     color_scheme: ColorScheme;
+}
+
+export interface country_config {
+    country: Country;
 }
 
 export interface last_reset {

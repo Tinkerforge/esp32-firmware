@@ -33,6 +33,7 @@ import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
 import { Language } from "../../ts/language";
 import { ColorScheme } from "./generated/color_scheme.enum";
+import { Country } from "./generated/country.enum";
 
 export function applyTheme(color_scheme: number) {
     let effectiveTheme: string;
@@ -63,6 +64,7 @@ export function SystemNavbar() {
 interface SystemState {
     version: API.getType["info/version"],
     theme_config: API.getType["system/theme_config"],
+    country_config: API.getType["system/country_config"],
 }
 
 type SystemI18nConfig = API.getType["system/i18n_config"];
@@ -93,6 +95,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
         this.state = {
             version: null,
             theme_config: {color_scheme: ColorScheme.Browser},
+            country_config: {country: Country.Germany},
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -107,12 +110,18 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             this.setState({theme_config: API.get("system/theme_config")});
         });
 
+        util.addApiEventListener('system/country_config', () => {
+            this.setState({country_config: API.get("system/country_config")});
+        });
+
         set_languages_getter(() => get_languages(API.get("system/i18n_config")));
     }
 
     override async sendSave(topic: "system/i18n_config", config: API.getType["system/i18n_config"]) {
         // Save theme_config
         await API.save("system/theme_config", this.state.theme_config, this.error_string);
+        // Save country_config
+        await API.save("system/country_config", this.state.country_config, this.error_string);
         // Save i18n_config
         await super.sendSave(topic, config);
     }
@@ -160,6 +169,22 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                                 />
                             </div>
                         </div>
+                    </FormRow>
+
+                    <FormRow label={__("system.content.country")} help={__("system.content.country_help")}>
+                        <InputSelect
+                            items={[
+                                [Country.OtherCountry.toString(), __("system.content.country_other")],
+                                [Country.Germany.toString(),      __("system.content.country_germany")],
+                                [Country.Austria.toString(),      __("system.content.country_austria")],
+                                [Country.Switzerland.toString(),  __("system.content.country_switzerland")],
+                                [Country.Luxembourg.toString(),   __("system.content.country_luxembourg")]
+                            ]}
+                            value={state.country_config.country.toString()}
+                            onValue={(v) => {
+                                this.setState({country_config: {country: parseInt(v)}});
+                            }}
+                        />
                     </FormRow>
 
                     <FormRow label={__("system.content.color_scheme")}>
