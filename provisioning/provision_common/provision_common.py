@@ -87,7 +87,12 @@ def fatal_error(*args, force_os_exit=None):
 
 @contextmanager
 def wifi(ssid, passphrase):
-    output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+    try:
+        output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+    except subprocess.CalledProcessError as e:
+        e.cmd[7] = "<hidden>"
+        raise
+
     if "successfully activated with" not in output:
         run(["sudo", "nmcli", "con", "del", ssid])
         fatal_error("Failed to connect to wifi.", "nmcli output was:", output)
