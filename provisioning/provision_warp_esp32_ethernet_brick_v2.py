@@ -279,7 +279,7 @@ class P:
             else:
                 fatal_error("NTP did not sync in 45 seconds!")
 
-        t = P.api_get(ip, "rtc/time")
+        t = json.loads(P.api_get(ip, "rtc/time"))
 
         try:
             esp_time = datetime.datetime(t["year"], t["month"], t["day"], t["hour"], t["minute"], t["second"], tzinfo=datetime.timezone.utc)
