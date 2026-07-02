@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import contextlib
 import queue
+import serial
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QColorConstants
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
@@ -237,7 +238,7 @@ class P:
 
         return sum(temps) / len(temps)
 
-    def connect_ethernet(ip):
+    def connect_ethernet(ip, *, timeout_is_fatal=True):
         print(f"Connecting via ethernet to {ip}", end="")
         for i in range(30):
             start = time.time()
@@ -251,9 +252,14 @@ class P:
             time.sleep(t)
             print(".", end="")
         else:
-            fatal_error("Failed to connect via ethernet!")
+            if timeout_is_fatal:
+                fatal_error("Failed to connect via ethernet!")
+            else:
+                print("Could not to connect via ethernet!")
+                return False
 
         print(" Connected.")
+        return True
 
     def test_rtc_time(ip, wait_for_ntp):
         print("Testing RTC")
@@ -412,6 +418,16 @@ class P:
             print(f'esp32/secure_device response: {response}')
 
         time.sleep(5)
+        P.connect_ethernet(ethernet_ip, timeout_is_fatal=False)
+
+        # free the ESP from a potential broken state after the
+        # securing-device step, that breaks Ethernet communication
+        print("Triggering ESP reset using DTR pin")
+        with serial.Serial(serial_port, baudrate=115200) as p:
+            p.dtr = False
+            time.sleep(1)
+            p.dtr = True
+
         P.connect_ethernet(ethernet_ip)
 
         print("Encrypting data")
