@@ -15,7 +15,7 @@ import queue
 import serial
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QColorConstants
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QAbstractSlider, QLabel, QSplashScreen
 from tinkerforge_util import colored
 from tinkerforge_util.colored import red, green
 import tinkerforge_util as tfutil
@@ -486,7 +486,7 @@ class P:
             if color in mapping:
                 result = mapping[color]
 
-        return colored.strip(s).replace('\n', '<br/>'), result
+        return colored.strip(s), result
 
     def reprint_label():
         P.reprint_clicked = True
@@ -508,7 +508,7 @@ class P:
 
             if P.last_edits_content.get(k) != (new_log, back_color):
                 P.last_edits_content[k] = (new_log, back_color)
-                v.setHtml(new_log)
+                v.setPlainText(new_log)
                 v.setStyleSheet(f"background-color: {back_color};")
                 v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
 
@@ -556,7 +556,7 @@ class P:
                 tester_layout.addWidget(QLabel("NO ESP TESTERS ATTACHED!"))
 
             edits = {
-                -1: QTextEdit()
+                -1: QPlainTextEdit()
             }
             edits[-1].setReadOnly(True)
 
@@ -568,12 +568,12 @@ class P:
                     tester_sublayout.setContentsMargins(0, 0, 0, 0)
                     tester_layout.addLayout(tester_sublayout)
 
-                    edits[i] = QTextEdit()
+                    edits[i] = QPlainTextEdit()
                     edits[i].setReadOnly(True)
                     tester_sublayout.addWidget(edits[i])
 
                     labels[i] = QLabel()
-                    labels[i].setTextInteractionFlags(Qt.TextSelectableByMouse);
+                    labels[i].setTextInteractionFlags(Qt.TextSelectableByMouse)
                     tester_sublayout.addWidget(labels[i])
                 else:
                     tester_layout.addWidget(QLabel(f"Tester {i} not attached"))
