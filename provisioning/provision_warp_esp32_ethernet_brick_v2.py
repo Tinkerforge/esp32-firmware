@@ -157,10 +157,10 @@ class P:
     def api_request(request, timeout, ignore_404, error_message):
         try:
             with urllib.request.urlopen(request, timeout=timeout) as f:
-                return f.read()
+                return f.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             if ignore_404 and e.code == 404:
-                return None
+                return ""
             else:
                 fatal_error(f"{error_message}: {e} -- {e.read()}")
         except Exception as e:
@@ -172,15 +172,7 @@ class P:
         if error_message == None:
             error_message = f"Failed to GET from API {api}"
 
-        response = P.api_request(request, timeout, ignore_404, error_message)
-
-        if response == None:
-            return None
-
-        if len(response) == 0:
-            return response
-
-        return json.loads(response)
+        return P.api_request(request, timeout, ignore_404, error_message)
 
     def api_put(ip, api, params, *, timeout=10, ignore_404=False, error_message=None):
         request = urllib.request.Request(f"http://{ip}/{api}",
@@ -346,7 +338,7 @@ class P:
     def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, result):
         P.connect_ethernet(ethernet_ip)
 
-        fw_version = P.api_get(ethernet_ip, "info/version/firmware").split("-")[0].split("+")[0]
+        fw_version = json.loads(P.api_get(ethernet_ip, "info/version/firmware")).split("+")[0]
 
         P.api_get(ethernet_ip, "hidden_proxy/enable")
 
@@ -364,7 +356,7 @@ class P:
         print("Testing PLC modem connection")
         P.set_iso15118_enabled(ethernet_ip, True)
 
-        if not P.api_get(ethernet_ip, "iso15118/state_slac/modem_found"):
+        if not json.loads(P.api_get(ethernet_ip, "iso15118/state_slac/modem_found")):
             fatal_error("PLC modem not found!")
 
         result["plc_modem_found"] = True
@@ -373,7 +365,7 @@ class P:
 
         print("Testing temperature sensor")
 
-        esp_temp = P.api_get(ethernet_ip, "esp32/temperature/temperature") / 100
+        esp_temp = json.loads(P.api_get(ethernet_ip, "esp32/temperature/temperature")) / 100
 
         if abs(avg_bricklet_temp - esp_temp) > 15:
             fatal_error(f"ESP temperature sensor value not in expected range: {esp_temp=} {avg_bricklet_temp=}")
