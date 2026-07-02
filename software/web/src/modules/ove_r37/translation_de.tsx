@@ -24,6 +24,7 @@ let x = {
             "password": "Elektriker-Passwort",
             "password_muted": "Erforderlich, um die OVE-R-37-Konfiguration zu ändern",
             "password_placeholder": "Elektriker-Passwort",
+            "password_required": "Zum Speichern der Konfiguration ist das Elektriker-Passwort erforderlich.",
             "state_disabled": "Deaktiviert",
             "state_normal": "Normal",
             "state_tripped": "Ausgelöst",

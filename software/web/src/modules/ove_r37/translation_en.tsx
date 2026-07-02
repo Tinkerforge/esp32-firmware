@@ -24,6 +24,7 @@ let x = {
             "password": "Electrician password",
             "password_muted": "Required to change the OVE R 37 configuration",
             "password_placeholder": "Electrician password",
+            "password_required": "The electrician password is required to save the configuration.",
             "state_disabled": "Disabled",
             "state_normal": "Normal",
             "state_tripped": "Tripped",

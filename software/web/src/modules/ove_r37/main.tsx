@@ -225,8 +225,10 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
 
                     <FormRow label={__("ove_r37.content.password")} label_muted={__("ove_r37.content.password_muted")}>
                         <InputText
+                            required
                             value={state.password}
                             onValue={(v) => this.setState({password: v})}
+                            invalidFeedback={__("ove_r37.content.password_required")}
                             placeholder={__("ove_r37.content.password_placeholder")}
                             maxLength={64}/>
                     </FormRow>
