@@ -70,6 +70,12 @@ public:
 class FirmwareUpdate final : public IModule
 {
 public:
+    enum class EraseType {
+        Beginning,
+        All,
+        InUse,
+    };
+
     FirmwareUpdate();
     void pre_setup() override;
     void setup() override;
@@ -78,7 +84,7 @@ public:
 
     bool vehicle_connected = false;
 
-    bool erase_other_partition(String &msg, bool erase_all);
+    bool erase_other_partition(String &msg, EraseType erase_type);
 
     void handle_index_data(const void *data, size_t data_len);
 

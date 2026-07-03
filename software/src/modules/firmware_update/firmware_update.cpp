@@ -764,7 +764,7 @@ static uint32_t find_used_size(const esp_partition_t *partition)
 
     if (partition_size % sizeof(buf) != 0) {
         logger.printfln("Partition size not a multiple of the buffer size: %lu", partition_size);
-        return 64 * 1024;
+        return partition_size;
     }
 
     uint32_t offset = partition_size;
@@ -776,7 +776,7 @@ static uint32_t find_used_size(const esp_partition_t *partition)
 
         if (err != ESP_OK) {
             logger.printfln("Partition read failed @ %lu: 0x%x", offset, static_cast<unsigned>(err));
-            return 64 * 1024;
+            return partition_size;
         }
 
         for (size_t i = 0; i < std::size(buf); i++) {
@@ -792,7 +792,7 @@ static uint32_t find_used_size(const esp_partition_t *partition)
     return 0;
 }
 
-bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
+bool FirmwareUpdate::erase_other_partition(String &msg, EraseType erase_type)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
@@ -832,37 +832,38 @@ bool FirmwareUpdate::erase_other_partition(String &msg, bool erase_all)
     esp_err_t err;
     const micros_t t_start = now_us();
 
-    if (erase_all) {
-        // Erase all used
+    if (erase_type == EraseType::Beginning) {
+        // Erase only minimum erase size
+        to_erase = other_partition->erase_size;
+    } else if (erase_type == EraseType::InUse) {
         to_erase = find_used_size(other_partition);
 
         if (to_erase == 0) {
             msg = string_printf<64>("Partition %s already erased", other_partition_label);
             return true;
         }
-
-        uint32_t offset = 0;
-
-        while (offset < to_erase) {
-            constexpr uint32_t MB1 = 1024UL * 1024UL;
-            const uint32_t block_size = std::min(to_erase - offset, MB1);
-
-            err = esp_partition_erase_range(other_partition, offset, block_size);
-
-            if (err != ESP_OK) {
-                break;
-            }
-
-            if (block_size == MB1) {
-                vTaskDelay(1);
-            }
-
-            offset += block_size;
-        }
     } else {
-        // Erase first sector
-        to_erase = other_partition->erase_size;
-        err = esp_partition_erase_range(other_partition, 0, to_erase);
+        // Erase everything
+        to_erase = other_partition->size;
+    }
+
+    uint32_t offset = 0;
+
+    while (offset < to_erase) {
+        constexpr uint32_t MB1 = 1024UL * 1024UL;
+        const uint32_t block_size = std::min(to_erase - offset, MB1);
+
+        err = esp_partition_erase_range(other_partition, offset, block_size);
+
+        if (err != ESP_OK) {
+            break;
+        }
+
+        if (block_size == MB1) {
+            vTaskDelay(1);
+        }
+
+        offset += block_size;
     }
 
     const uint32_t runtime_us = (now_us() - t_start).as<uint32_t>();
@@ -1011,9 +1012,17 @@ void FirmwareUpdate::register_urls()
     // Completely erase other firmware in HTTP thread because it takes a while.
     server.on_HTTPThread("/firmware_update/erase_other", HTTP_GET, [this](WebServerRequest request) {
         String msg;
-        const bool success = erase_other_partition(msg, true);
+        const bool success = erase_other_partition(msg, EraseType::InUse);
         return request.send_plain(success ? 200 : 500, msg);
     });
+
+#ifdef DEBUG_FS_ENABLE
+    server.on_HTTPThread("/firmware_update/erase_other_force", HTTP_GET, [this](WebServerRequest request) {
+        String msg;
+        const bool success = erase_other_partition(msg, EraseType::All);
+        return request.send_plain(success ? 200 : 500, msg);
+    });
+#endif
 
     server.on_HTTPThread("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         char json_buf[256] = "";
