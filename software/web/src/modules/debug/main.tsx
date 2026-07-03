@@ -96,6 +96,24 @@ export class Debug extends Component {
             __("debug.content.conf_union_buf"),
         ];
 
+        const flash_id_device = state_static.flash_id & 0xFFFF;
+        const flash_id_manufacturer = state_static.flash_id >> 16;
+        let flash_id_manufacturer_name;
+
+        switch(flash_id_manufacturer) {
+            // From spi_flash_defs.h and spi_flash_chip_drivers.h
+            case 0xC8: flash_id_manufacturer_name = "GigaDevice";     break;
+            case 0x9D: flash_id_manufacturer_name = "ISSI";           break;
+            case 0xC2: flash_id_manufacturer_name = "Macronix";       break;
+            case 0x20: // XMC
+            case 0x46: flash_id_manufacturer_name = "XMC";            break;
+            case 0xEF: flash_id_manufacturer_name = "winbond";        break;
+            case 0xCD: flash_id_manufacturer_name = "Kioxia/Toshiba"; break;
+            case 0x68: flash_id_manufacturer_name = "Zhuhai BOYA";    break;
+            case 0x1C: flash_id_manufacturer_name = "ESMT/EON";       break;
+            default:   flash_id_manufacturer_name = "???";
+        }
+
         return (
             <SubPage name="debug">
                 <PageHeader title={__("debug.content.debug")} />
@@ -361,24 +379,25 @@ export class Debug extends Component {
                      c={<OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
                      r={<OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />} />
 
-                <FormRow class="d-none d-sm-flex">
-                    <div class="row gx-2 gy-1">
-                        <div class="col-12 col-sm-6">
-                            <p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>
-                        </div>
-                        <div class="col-12 col-sm-6">
-                            <p class="mb-0 form-label text-center">{__("debug.content.flash_text")}</p>
-                        </div>
-                    </div>
-                </FormRow>
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>}
+                     c={<p class="mb-0 form-label text-center">{__("debug.content.flash_text")}</p>}
+                     r={<p class="mb-0 form-label text-center">{__("debug.content.flash_uncached")}</p>}
+                />
 
-                <FormRow label={__("debug.content.flash_benchmark")}>
+                <Row label={__("debug.content.flash_benchmark")}
+                     l={<OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
+                     c={<OutputFloat value={state_static.text_benchmark  } digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
+                     r={<OutputFloat value={state_static.flash_benchmark } digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
+                />
+
+                <FormRow label={__("debug.content.flash_id")} label_muted={__("debug.content.flash_id_muted")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
+                            <InputText value={"0x" + flash_id_manufacturer.toString(16).toUpperCase() + " – " + flash_id_manufacturer_name} />
                         </div>
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.text_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
+                            <InputText value={"0x" + flash_id_device.toString(16).toUpperCase()} />
                         </div>
                     </div>
                 </FormRow>

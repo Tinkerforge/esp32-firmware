@@ -18,6 +18,8 @@ export interface state_static {
     psram_benchmark: number;
     rodata_benchmark: number;
     text_benchmark: number;
+    flash_benchmark: number;
+    flash_id: number
 }
 
 export interface state_fast {

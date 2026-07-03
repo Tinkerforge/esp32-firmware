@@ -85,6 +85,9 @@
             "flash_benchmark": "Flash benchmark",
             "flash_rodata": "Data",
             "flash_text": "Code",
+            "flash_uncached": "Uncached",
+            "flash_id": "Flash ID",
+            "flash_id_muted": "manufacturer, device",
 
             "websocket_header": "Websockets",
             "websocket_connection": "WebSocket connection",

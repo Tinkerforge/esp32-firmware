@@ -179,6 +179,8 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
 }
 #endif
 
+[[gnu::noinline]]
+static float benchmark_spi_flash();
 static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
 
@@ -250,6 +252,7 @@ void Debug::pre_setup()
     const float iram_speed   = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000),    128*1024); // entire usable IRAM block
     const float rodata_speed = benchmark_area(reinterpret_cast<uint32_t *>(&_rodata_start), 32*1024); // 32KiB at the beginning of the readonly-data
     const float text_speed   = benchmark_area(reinterpret_cast<uint32_t *>(&_text_start),   32*1024); // 32KiB at the beginning of the code
+    const float flash_speed  = benchmark_spi_flash();
 
     float psram_speed = 0;
 #if defined(BOARD_HAS_PSRAM)
@@ -274,6 +277,8 @@ void Debug::pre_setup()
         {"psram_benchmark",  Config::Float(psram_speed)},
         {"rodata_benchmark", Config::Float(rodata_speed)},
         {"text_benchmark",   Config::Float(text_speed)},
+        {"flash_benchmark",  Config::Float(flash_speed)},
+        {"flash_id",         Config::Uint32(esp_flash_default_chip->chip_id)},
     });
 
     state_fast = Config::Object({
@@ -1240,6 +1245,27 @@ void Debug::deregister_task_internal(size_t i)
 {
     task_handles.erase(task_handles.begin() + static_cast<int>(i));
     state_hwm.remove(i);
+}
+
+[[gnu::noinline]]
+static float benchmark_spi_flash()
+{
+    uint8_t buf[4000];
+
+    micros_t start_time = now_us();
+    esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, 0, sizeof(buf));
+    uint32_t runtime = (now_us() - start_time).as<uint32_t>();
+
+    if (err != ESP_OK) {
+        logger.printfln("SPI Flash benchmark failed: 0x%x", static_cast<unsigned>(err));
+        return -1;
+    }
+
+    float runtime_f = static_cast<float>(runtime);
+    float test_length_f = static_cast<float>(sizeof(buf));
+    float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);
+
+    return speed_MiBps;
 }
 
 static float benchmark_area(uint32_t *start_address, size_t max_length)
