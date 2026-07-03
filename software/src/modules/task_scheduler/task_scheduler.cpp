@@ -27,6 +27,7 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#include "options.h"
 
 static uint64_t last_task_id = 0;
 
@@ -150,6 +151,9 @@ void TaskScheduler::custom_loop()
     if (!this->currentTask) {
 #if MODULE_DEBUG_AVAILABLE()
         debug.task_scheduler_idle_call();
+#elif OPTIONS_TASK_SCHEDULER_CPU_IDLE()
+        // Allow the CPU to sleep when there's nothing to do.
+        vTaskDelay(1);
 #endif
         return;
     }
