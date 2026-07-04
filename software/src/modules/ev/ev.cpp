@@ -184,6 +184,7 @@ void Ev::pre_setup()
 
 void Ev::setup()
 {
+    api.addFeature("ev");
     api.restorePersistentConfig("ev/config", &config);
     initialized = true;
 }
