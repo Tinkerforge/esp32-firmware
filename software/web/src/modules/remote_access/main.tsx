@@ -978,7 +978,7 @@ export class RemoteAccess extends ConfigComponent<
                                             </FormRow>
                                             <Collapse in={this.state.authMethod ==="token"}>
                                                 <div>
-                                                    <FormRow label={__("remote_access.content.auth_token")}>
+                                                    <FormRow label={__("remote_access.content.auth_token")} help={__("remote_access.content.auth_token_help")(this.state.relay_host, this.state.relay_port)}>
                                                         <InputText
                                                             required={
                                                                 this.state

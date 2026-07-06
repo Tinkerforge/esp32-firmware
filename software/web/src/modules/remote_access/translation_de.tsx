@@ -44,6 +44,7 @@ let x = {
             "user_exists": "Account wurde bereits hinzugefügt",
             "token_corrupted": "Autorisierungstoken beschädigt. Bitte entfernen und neu hinzufügen.",
             "auth_token": "Autorisierungstoken",
+            "auth_token_help": /*FFN*/(host: string, port: number) => <>Autorisierungstoken des Accounts, der hinzugefügt werden soll, hier einfügen. Das Token kann unter <a href={`https://${host}${port === 443 ? '' : ':' + port}/tokens`} target="_blank">{host}{port === 443 ? '' : ':' + port}</a> erstellt werden.</> /*NF*/,
             "auth_method": "Autorisierungsmethode",
             "ping": "Ping",
             "start_ping": "Ping starten",
