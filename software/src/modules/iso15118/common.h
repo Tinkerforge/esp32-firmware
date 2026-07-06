@@ -80,32 +80,6 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
         iso15118.trace(prefix ": " #msg " received but not implemented"); \
     }
 
-// Macro to send FAILED_UnknownSession error response for DIN/ISO2
-// doc_dec: Decoded document path to check _isUsed flags (e.g., body_dec)
-// doc_enc: Encoded document path to set response (e.g., body_enc)
-// msg: Message name without Req/Res suffix (e.g., ServiceDiscovery)
-// response_code: The FAILED_UnknownSession response code type
-// Returns true if this message type matched, false otherwise
-#define V2G_SEND_FAILED_SESSION(doc_dec, doc_enc, msg, response_code) \
-    (doc_dec.msg##Req_isUsed && ( \
-        doc_enc.msg##Res_isUsed = 1, \
-        doc_enc.msg##Res.ResponseCode = response_code, \
-        true))
-
-// Macro to send FAILED_UnknownSession error response for ISO20
-// doc_dec: Decoded document to check _isUsed flags (e.g., *iso20DocDec)
-// doc_enc: Encoded document pointer to set response (e.g., iso20DocEnc)
-// msg: Message name without Req/Res suffix (e.g., ServiceDiscovery)
-// response_code: The FAILED_UnknownSession response code type
-// prepare_hdr: Function to prepare header (e.g., prepare_header)
-// Returns true if this message type matched, false otherwise
-#define V2G20_SEND_FAILED_SESSION(doc_dec, doc_enc, msg, response_code, prepare_hdr) \
-    (doc_dec.msg##Req_isUsed && ( \
-        doc_enc->msg##Res_isUsed = 1, \
-        prepare_hdr(&doc_enc->msg##Res.Header), \
-        doc_enc->msg##Res.ResponseCode = response_code, \
-        true))
-
 class Common final
 {
 public:

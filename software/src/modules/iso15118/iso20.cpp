@@ -143,22 +143,74 @@ void ISO20::send_failed_unknown_session()
 {
     auto &doc = *iso20DocDec;
 
-    // Determine which message type was received and send the appropriate error response
-    if (false
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, AuthorizationSetup, iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, Authorization,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceDiscovery,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceDetail,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceSelection,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ScheduleExchange,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, PowerDelivery,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, SessionStop,        iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
-    ) {
-        iso15118.common.send_exi(Common::ExiType::Iso20);
+    constexpr auto rc = iso20_responseCodeType_FAILED_UnknownSession;
+
+    // Respond with the matching message type and populate all mandatory child fields.
+    if (doc.AuthorizationSetupReq_isUsed) {
+        auto *res = &iso20DocEnc->AuthorizationSetupRes;
+        iso20DocEnc->AuthorizationSetupRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->AuthorizationServices.array[0] = iso20_authorizationType_EIM;
+        res->AuthorizationServices.arrayLen = 1;
+        res->CertificateInstallationService = 0;
+        res->EIM_ASResAuthorizationMode_isUsed = 1;
+        res->PnC_ASResAuthorizationMode_isUsed = 0;
+    } else if (doc.AuthorizationReq_isUsed) {
+        auto *res = &iso20DocEnc->AuthorizationRes;
+        iso20DocEnc->AuthorizationRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->EVSEProcessing = iso20_processingType_Finished;
+    } else if (doc.ServiceDiscoveryReq_isUsed) {
+        auto *res = &iso20DocEnc->ServiceDiscoveryRes;
+        iso20DocEnc->ServiceDiscoveryRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->ServiceRenegotiationSupported = 0;
+        res->EnergyTransferServiceList.Service.array[0].ServiceID = V2G_SERVICE_ID_CHARGING;
+        res->EnergyTransferServiceList.Service.array[0].FreeService = 1;
+        res->EnergyTransferServiceList.Service.arrayLen = 1;
+        res->VASList_isUsed = 0;
+    } else if (doc.ServiceDetailReq_isUsed) {
+        auto *res = &iso20DocEnc->ServiceDetailRes;
+        iso20DocEnc->ServiceDetailRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->ServiceID = iso20DocDec->ServiceDetailReq.ServiceID;
+        res->ServiceParameterList.ParameterSet.arrayLen = 0;
+    } else if (doc.ServiceSelectionReq_isUsed) {
+        auto *res = &iso20DocEnc->ServiceSelectionRes;
+        iso20DocEnc->ServiceSelectionRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+    } else if (doc.ScheduleExchangeReq_isUsed) {
+        auto *res = &iso20DocEnc->ScheduleExchangeRes;
+        iso20DocEnc->ScheduleExchangeRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->EVSEProcessing = iso20_processingType_Finished;
+        res->GoToPause_isUsed = 0;
+        // Provide the (required) control-mode choice; all its fields are optional.
+        res->Scheduled_SEResControlMode_isUsed = 0;
+        res->Dynamic_SEResControlMode_isUsed = 1;
+    } else if (doc.PowerDeliveryReq_isUsed) {
+        auto *res = &iso20DocEnc->PowerDeliveryRes;
+        iso20DocEnc->PowerDeliveryRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+        res->EVSEStatus_isUsed = 0;
+    } else if (doc.SessionStopReq_isUsed) {
+        auto *res = &iso20DocEnc->SessionStopRes;
+        iso20DocEnc->SessionStopRes_isUsed = 1;
+        prepare_header(&res->Header);
+        res->ResponseCode = rc;
+    } else {
+        iso15118.trace("ISO20: Unknown message type for FAILED_UnknownSession");
         return;
     }
 
-    iso15118.trace("ISO20: Unknown message type for FAILED_UnknownSession");
+    iso15118.common.send_exi(Common::ExiType::Iso20);
 }
 
 void ISO20::prepare_header(struct iso20_MessageHeaderType *header)
@@ -738,16 +790,43 @@ void ISO20::send_ac_failed_unknown_session()
 {
     auto &doc = *iso20AcDocDec;
 
-    // Determine which AC message type was received and send the appropriate error response
-    if (false
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20AcDocEnc, AC_ChargeParameterDiscovery, iso20_ac_responseCodeType_FAILED_UnknownSession, prepare_ac_header))
-        || (V2G20_SEND_FAILED_SESSION(doc, iso20AcDocEnc, AC_ChargeLoop,               iso20_ac_responseCodeType_FAILED_UnknownSession, prepare_ac_header))
-    ) {
-        iso15118.common.send_exi(Common::ExiType::Iso20Ac);
+    constexpr auto rc = iso20_ac_responseCodeType_FAILED_UnknownSession;
+
+    // Respond with the matching message type and populate all mandatory child fields.
+    if (doc.AC_ChargeParameterDiscoveryReq_isUsed) {
+        auto *res = &iso20AcDocEnc->AC_ChargeParameterDiscoveryRes;
+        iso20AcDocEnc->AC_ChargeParameterDiscoveryRes_isUsed = 1;
+        prepare_ac_header(&res->Header);
+        res->ResponseCode = rc;
+        res->BPT_AC_CPDResEnergyTransferMode_isUsed = 0;
+        res->AC_CPDResEnergyTransferMode_isUsed = 1;
+        auto &etm = res->AC_CPDResEnergyTransferMode;
+        etm.EVSEMaximumChargePower.Exponent = 0;
+        etm.EVSEMaximumChargePower.Value = 0;
+        etm.EVSEMinimumChargePower.Exponent = 0;
+        etm.EVSEMinimumChargePower.Value = 0;
+        etm.EVSENominalFrequency.Exponent = 0;
+        etm.EVSENominalFrequency.Value = V2G_NOMINAL_FREQUENCY_HZ;
+    } else if (doc.AC_ChargeLoopReq_isUsed) {
+        auto *res = &iso20AcDocEnc->AC_ChargeLoopRes;
+        iso20AcDocEnc->AC_ChargeLoopRes_isUsed = 1;
+        prepare_ac_header(&res->Header);
+        res->ResponseCode = rc;
+        // Provide the (required) control-mode choice. EVSETargetActivePower is
+        // mandatory in Dynamic mode; the remaining fields are optional.
+        res->Scheduled_AC_CLResControlMode_isUsed = 0;
+        res->BPT_Scheduled_AC_CLResControlMode_isUsed = 0;
+        res->BPT_Dynamic_AC_CLResControlMode_isUsed = 0;
+        res->CLResControlMode_isUsed = 0;
+        res->Dynamic_AC_CLResControlMode_isUsed = 1;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Exponent = 0;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Value = 0;
+    } else {
+        iso15118.trace("ISO20 AC: Unknown message type for FAILED_UnknownSession");
         return;
     }
 
-    iso15118.trace("ISO20 AC: Unknown message type for FAILED_UnknownSession");
+    iso15118.common.send_exi(Common::ExiType::Iso20Ac);
 }
 
 void ISO20::prepare_ac_header(struct iso20_ac_MessageHeaderType *header)

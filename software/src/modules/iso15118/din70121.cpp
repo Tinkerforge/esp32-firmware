@@ -130,29 +130,105 @@ void DIN70121::dispatch_messages()
     V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
 }
 
+// Fill the mandatory child fields of a response with safe "shutdown" values so
+// that a FAILED_UnknownSession response satisfies the EXI schema.
+static void fill_dc_evse_status_shutdown(struct din_DC_EVSEStatusType *s)
+{
+    s->EVSEIsolationStatus_isUsed = 1;
+    s->EVSEIsolationStatus = din_isolationLevelType_Invalid;
+    s->EVSENotification = din_EVSENotificationType_None;
+    s->NotificationMaxDelay = 0;
+    s->EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+}
+
+static void fill_zero_physical_value(struct din_PhysicalValueType *pv, din_unitSymbolType unit)
+{
+    pv->Unit = unit;
+    pv->Unit_isUsed = 1;
+    pv->Value = 0;
+    pv->Multiplier = 0;
+}
+
 void DIN70121::send_failed_unknown_session()
 {
     auto &body_dec = dinDocDec->V2G_Message.Body;
     auto &body_enc = dinDocEnc->V2G_Message.Body;
 
-    // Determine which message type was received and send the appropriate error response
-    if (false
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServiceDiscovery,         din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServicePaymentSelection,  din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ContractAuthentication,   din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargeParameterDiscovery, din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PowerDelivery,            din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CableCheck,               din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PreCharge,                din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CurrentDemand,            din_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, SessionStop,              din_responseCodeType_FAILED_UnknownSession))
-    ) {
-        iso15118.common.send_exi(Common::ExiType::Din);
+    constexpr auto rc = din_responseCodeType_FAILED_UnknownSession;
+
+    // Respond with the matching message type and populate all mandatory child fields.
+    if (body_dec.ServiceDiscoveryReq_isUsed) {
+        auto *res = &body_enc.ServiceDiscoveryRes;
+        body_enc.ServiceDiscoveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->PaymentOptions.PaymentOption.array[0] = din_paymentOptionType_ExternalPayment;
+        res->PaymentOptions.PaymentOption.arrayLen = 1;
+        res->ChargeService.ServiceTag.ServiceID = V2G_SERVICE_ID_CHARGING;
+        res->ChargeService.ServiceTag.ServiceCategory = din_serviceCategoryType_EVCharging;
+        res->ChargeService.ServiceTag.ServiceName_isUsed = 0;
+        res->ChargeService.ServiceTag.ServiceScope_isUsed = 0;
+        res->ChargeService.FreeService = 1;
+        res->ChargeService.EnergyTransferType = din_EVSESupportedEnergyTransferType_DC_extended;
+        res->ServiceList_isUsed = 0;
+    } else if (body_dec.ServicePaymentSelectionReq_isUsed) {
+        body_enc.ServicePaymentSelectionRes_isUsed = 1;
+        body_enc.ServicePaymentSelectionRes.ResponseCode = rc;
+    } else if (body_dec.ContractAuthenticationReq_isUsed) {
+        body_enc.ContractAuthenticationRes_isUsed = 1;
+        body_enc.ContractAuthenticationRes.ResponseCode = rc;
+        body_enc.ContractAuthenticationRes.EVSEProcessing = din_EVSEProcessingType_Finished;
+    } else if (body_dec.ChargeParameterDiscoveryReq_isUsed) {
+        auto *res = &body_enc.ChargeParameterDiscoveryRes;
+        body_enc.ChargeParameterDiscoveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->EVSEProcessing = din_EVSEProcessingType_Finished;
+        res->SAScheduleList_isUsed = 0;
+        res->SASchedules_isUsed = 0;
+        res->AC_EVSEChargeParameter_isUsed = 0;
+        res->DC_EVSEChargeParameter_isUsed = 0;
+        res->EVSEChargeParameter_isUsed = 0;
+    } else if (body_dec.PowerDeliveryReq_isUsed) {
+        auto *res = &body_enc.PowerDeliveryRes;
+        body_enc.PowerDeliveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->AC_EVSEStatus_isUsed = 0;
+        res->EVSEStatus_isUsed = 0;
+        res->DC_EVSEStatus_isUsed = 1;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    } else if (body_dec.CableCheckReq_isUsed) {
+        auto *res = &body_enc.CableCheckRes;
+        body_enc.CableCheckRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->EVSEProcessing = din_EVSEProcessingType_Finished;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    } else if (body_dec.PreChargeReq_isUsed) {
+        auto *res = &body_enc.PreChargeRes;
+        body_enc.PreChargeRes_isUsed = 1;
+        res->ResponseCode = rc;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+        fill_zero_physical_value(&res->EVSEPresentVoltage, din_unitSymbolType_V);
+    } else if (body_dec.CurrentDemandReq_isUsed) {
+        auto *res = &body_enc.CurrentDemandRes;
+        body_enc.CurrentDemandRes_isUsed = 1;
+        res->ResponseCode = rc;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+        fill_zero_physical_value(&res->EVSEPresentVoltage, din_unitSymbolType_V);
+        fill_zero_physical_value(&res->EVSEPresentCurrent, din_unitSymbolType_A);
+        res->EVSECurrentLimitAchieved = 0;
+        res->EVSEVoltageLimitAchieved = 0;
+        res->EVSEPowerLimitAchieved = 0;
+        res->EVSEMaximumVoltageLimit_isUsed = 0;
+        res->EVSEMaximumCurrentLimit_isUsed = 0;
+        res->EVSEMaximumPowerLimit_isUsed = 0;
+    } else if (body_dec.SessionStopReq_isUsed) {
+        body_enc.SessionStopRes_isUsed = 1;
+        body_enc.SessionStopRes.ResponseCode = rc;
+    } else {
+        iso15118.trace("DIN70121: Unknown message type for FAILED_UnknownSession");
         return;
     }
 
-    // Unknown message type - this shouldn't happen but log it
-    iso15118.trace("DIN70121: Unknown message type for FAILED_UnknownSession");
+    iso15118.common.send_exi(Common::ExiType::Din);
 }
 
 void DIN70121::handle_session_setup_req()
@@ -633,7 +709,9 @@ void DIN70121::trace_header(const struct din_MessageHeaderType *header, const ch
 {
     trace_iso("V2G_Message (%s)", name);
     trace_iso(" Header");
-    trace_iso("  SessionID.bytes: %02x%02x%02x%02x", header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3]);
+    trace_iso("  SessionID.bytes: %02x%02x%02x%02x%02x%02x%02x%02x",
+              header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3],
+              header->SessionID.bytes[4], header->SessionID.bytes[5], header->SessionID.bytes[6], header->SessionID.bytes[7]);
     trace_iso("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
     trace_iso("  Notification_isUsed: %d", header->Notification_isUsed);
     if (header->Notification_isUsed) {

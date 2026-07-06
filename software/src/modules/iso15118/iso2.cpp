@@ -133,29 +133,127 @@ void ISO2::dispatch_messages()
     V2G_NOT_IMPL("ISO2", body, WeldingDetectionReq);
 }
 
+// Fill the mandatory child fields of a response with safe "shutdown" values so
+// that a FAILED_UnknownSession response satisfies the EXI schema.
+static void fill_dc_evse_status_shutdown(struct iso2_DC_EVSEStatusType *s)
+{
+    s->EVSEIsolationStatus_isUsed = 1;
+    s->EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
+    s->EVSENotification = iso2_EVSENotificationType_StopCharging;
+    s->NotificationMaxDelay = 0;
+    s->EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
+}
+
+static void fill_ac_evse_status_shutdown(struct iso2_AC_EVSEStatusType *s)
+{
+    s->RCD = 0;
+    s->NotificationMaxDelay = 0;
+    s->EVSENotification = iso2_EVSENotificationType_StopCharging;
+}
+
+static void fill_zero_physical_value(struct iso2_PhysicalValueType *pv, iso2_unitSymbolType unit)
+{
+    pv->Value = 0;
+    pv->Multiplier = 0;
+    pv->Unit = unit;
+}
+
 void ISO2::send_failed_unknown_session()
 {
     auto &body_dec = iso2DocDec->V2G_Message.Body;
     auto &body_enc = iso2DocEnc->V2G_Message.Body;
 
-    // Determine which message type was received and send the appropriate error response
-    if (false
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServiceDiscovery,         iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PaymentServiceSelection,  iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, Authorization,            iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargeParameterDiscovery, iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PowerDelivery,            iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargingStatus,           iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CableCheck,               iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PreCharge,                iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CurrentDemand,            iso2_responseCodeType_FAILED_UnknownSession))
-        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, SessionStop,              iso2_responseCodeType_FAILED_UnknownSession))
-    ) {
-        iso15118.common.send_exi(Common::ExiType::Iso2);
+    constexpr auto rc = iso2_responseCodeType_FAILED_UnknownSession;
+
+    // Respond with the matching message type and populate all mandatory child fields.
+    if (body_dec.ServiceDiscoveryReq_isUsed) {
+        auto *res = &body_enc.ServiceDiscoveryRes;
+        body_enc.ServiceDiscoveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->PaymentOptionList.PaymentOption.array[0] = iso2_paymentOptionType_ExternalPayment;
+        res->PaymentOptionList.PaymentOption.arrayLen = 1;
+        res->ServiceList_isUsed = 0;
+        res->ChargeService.ServiceID = V2G_SERVICE_ID_CHARGING;
+        res->ChargeService.ServiceName_isUsed = 0;
+        res->ChargeService.ServiceScope_isUsed = 0;
+        res->ChargeService.FreeService = 1;
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_AC_single_phase_core;
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
+    } else if (body_dec.PaymentServiceSelectionReq_isUsed) {
+        body_enc.PaymentServiceSelectionRes_isUsed = 1;
+        body_enc.PaymentServiceSelectionRes.ResponseCode = rc;
+    } else if (body_dec.AuthorizationReq_isUsed) {
+        body_enc.AuthorizationRes_isUsed = 1;
+        body_enc.AuthorizationRes.ResponseCode = rc;
+        body_enc.AuthorizationRes.EVSEProcessing = iso2_EVSEProcessingType_Finished;
+    } else if (body_dec.ChargeParameterDiscoveryReq_isUsed) {
+        auto *res = &body_enc.ChargeParameterDiscoveryRes;
+        body_enc.ChargeParameterDiscoveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+        res->SAScheduleList_isUsed = 0;
+        res->SASchedules_isUsed = 0;
+        res->AC_EVSEChargeParameter_isUsed = 0;
+        res->DC_EVSEChargeParameter_isUsed = 0;
+        res->EVSEChargeParameter_isUsed = 0;
+    } else if (body_dec.PowerDeliveryReq_isUsed) {
+        auto *res = &body_enc.PowerDeliveryRes;
+        body_enc.PowerDeliveryRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->DC_EVSEStatus_isUsed = 0;
+        res->EVSEStatus_isUsed = 0;
+        res->AC_EVSEStatus_isUsed = 1;
+        fill_ac_evse_status_shutdown(&res->AC_EVSEStatus);
+    } else if (body_dec.ChargingStatusReq_isUsed) {
+        auto *res = &body_enc.ChargingStatusRes;
+        body_enc.ChargingStatusRes_isUsed = 1;
+        res->ResponseCode = rc;
+        fill_ac_evse_status_shutdown(&res->AC_EVSEStatus);
+        strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+        res->EVSEID.charactersLen = iso15118.evseid_iso_len;
+        res->SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
+        res->EVSEMaxCurrent_isUsed = 0;
+        res->MeterInfo_isUsed = 0;
+        res->ReceiptRequired_isUsed = 0;
+    } else if (body_dec.CableCheckReq_isUsed) {
+        auto *res = &body_enc.CableCheckRes;
+        body_enc.CableCheckRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    } else if (body_dec.PreChargeReq_isUsed) {
+        auto *res = &body_enc.PreChargeRes;
+        body_enc.PreChargeRes_isUsed = 1;
+        res->ResponseCode = rc;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+        fill_zero_physical_value(&res->EVSEPresentVoltage, iso2_unitSymbolType_V);
+    } else if (body_dec.CurrentDemandReq_isUsed) {
+        auto *res = &body_enc.CurrentDemandRes;
+        body_enc.CurrentDemandRes_isUsed = 1;
+        res->ResponseCode = rc;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+        fill_zero_physical_value(&res->EVSEPresentVoltage, iso2_unitSymbolType_V);
+        fill_zero_physical_value(&res->EVSEPresentCurrent, iso2_unitSymbolType_A);
+        res->EVSECurrentLimitAchieved = 0;
+        res->EVSEVoltageLimitAchieved = 0;
+        res->EVSEPowerLimitAchieved = 0;
+        res->EVSEMaximumVoltageLimit_isUsed = 0;
+        res->EVSEMaximumCurrentLimit_isUsed = 0;
+        res->EVSEMaximumPowerLimit_isUsed = 0;
+        strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+        res->EVSEID.charactersLen = iso15118.evseid_iso_len;
+        res->SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
+        res->MeterInfo_isUsed = 0;
+        res->ReceiptRequired_isUsed = 0;
+    } else if (body_dec.SessionStopReq_isUsed) {
+        body_enc.SessionStopRes_isUsed = 1;
+        body_enc.SessionStopRes.ResponseCode = rc;
+    } else {
+        iso15118.trace("ISO2: Unknown message type for FAILED_UnknownSession");
         return;
     }
 
-    iso15118.trace("ISO2: Unknown message type for FAILED_UnknownSession");
+    iso15118.common.send_exi(Common::ExiType::Iso2);
 }
 
 void ISO2::handle_session_setup_req()
@@ -877,7 +975,9 @@ void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char 
 {
     trace_iso("V2G_Message (%s)", name);
     trace_iso(" Header");
-    trace_iso("  SessionID.bytes: %02x%02x%02x%02x", header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3]);
+    trace_iso("  SessionID.bytes: %02x%02x%02x%02x%02x%02x%02x%02x",
+              header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3],
+              header->SessionID.bytes[4], header->SessionID.bytes[5], header->SessionID.bytes[6], header->SessionID.bytes[7]);
     trace_iso("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
     trace_iso("  Notification_isUsed: %d", header->Notification_isUsed);
     if (header->Notification_isUsed) {
