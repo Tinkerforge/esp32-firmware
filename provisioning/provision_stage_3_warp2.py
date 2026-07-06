@@ -9,6 +9,7 @@ import traceback
 import tkinter as tk
 import typing
 import functools
+import json
 from tinkerforge_util.colored import red, green, blue
 import tinkerforge_util as tfutil
 
@@ -1059,7 +1060,13 @@ class Stage3:
         report['zauto_L1'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L1']['passed']:
-            fatal_error(f'Electrical test failed: {report["zauto_L1"]}')
+            output = {'zauto_L1': report['zauto_L1']}
+
+            for r in range(3):
+                time.sleep(2)
+                output = {f'zauto_L1_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
+
+            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
 
         self.verify_evse_not_crashed()
 
@@ -1082,7 +1089,13 @@ class Stage3:
         report['zauto_L2'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L2']['passed']:
-            fatal_error(f'Electrical test failed: {report["zauto_L2"]}')
+            output = {'zauto_L2': report['zauto_L2']}
+
+            for r in range(3):
+                time.sleep(2)
+                output = {f'zauto_L2_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
+
+            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
 
         self.verify_evse_not_crashed()
 
@@ -1105,7 +1118,13 @@ class Stage3:
         report['zauto_L3'] = blackbox.bb_measure_zauto()._asdict()
 
         if not report['zauto_L3']['passed']:
-            fatal_error(f'Electrical test failed: {report["zauto_L3"]}')
+            output = {'zauto_L3': report['zauto_L3']}
+
+            for r in range(3):
+                time.sleep(2)
+                output = {f'zauto_L3_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
+
+            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
 
         self.verify_evse_not_crashed()
 
