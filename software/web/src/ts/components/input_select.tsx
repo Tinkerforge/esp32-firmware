@@ -79,7 +79,7 @@ export function InputSelect(props: InputSelectProps) {
         if (typeof(item[1]) == "string") {
             select_items.push(item_to_option(item as [string | number, string]))
         } else {
-            let subitems = item[1].map(k => item_to_option(k))
+            let subitems = item[1]?.map(k => item_to_option(k))
             select_items.push(<optgroup label={item[0] as string}>{subitems}</optgroup>)
         }
     }
