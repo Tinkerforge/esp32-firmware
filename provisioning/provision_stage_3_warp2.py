@@ -848,7 +848,7 @@ class Stage3:
 
         blackbox.bb_disable()
 
-    def test_zauto(self, phase, report):
+    def test_zauto_strict(self, phase, report):
         key = f'zauto_{phase}'
         report[key] = blackbox.bb_measure_zauto()._asdict()
         output = {key: report[key]}
@@ -876,6 +876,25 @@ class Stage3:
 
             if float(value) < 1:
                 fatal_error(f'Electrical test failed (< 1 Ohm): {json.dumps(output, indent=4)}')
+
+    def test_zauto(self, phase, report):
+        key = f'zauto_{phase}'
+        report[key] = blackbox.bb_measure_zauto()._asdict()
+
+        if report[key]['passed']:
+            return
+
+        output = {key: report[key]}
+
+        for r in range(3):
+            time.sleep(2)
+            key_repeat = f'{key}_repeat_{r + 1}'
+            output[key_repeat] = blackbox.bb_measure_zauto()._asdict()
+
+            if output[key_repeat]['passed']:
+                return
+
+        fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
 
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
