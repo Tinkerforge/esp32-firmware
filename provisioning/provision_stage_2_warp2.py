@@ -315,9 +315,9 @@ def retry_wrapper(fn, s):
         except Exception as e:
             print("Failed to {}. ".format(s), end='')
             if i == 2:
-                print("(3/3) Giving up.")
+                orig_print("(3/3) Giving up.")
                 raise e
-            print("({}/3). Retrying in 3 seconds.".format(i + 1))
+            orig_print("({}/3). Retrying in 3 seconds.".format(i + 1))
             time.sleep(3)
 
 def is_front_panel_button_pressed():
