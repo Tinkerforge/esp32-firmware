@@ -182,6 +182,28 @@ function remove_user(id: number) {
     );
 }
 
+//#if MODULE_NFC_AVAILABLE
+function remove_user_nfc_tags(id: number) {
+    let nfc_config = API.get("nfc/config");
+    let remaining_tags = nfc_config.authorized_tags.filter(t => t.user_id != id);
+    if (remaining_tags.length == nfc_config.authorized_tags.length)
+        return; // No NFC tags assigned to this user.
+
+    retry_once(
+        () =>
+            API.save(
+                "nfc/config",
+                {
+                    ...nfc_config,
+                    authorized_tags: remaining_tags,
+                },
+                () => __("nfc.script.save_failed"),
+            ),
+        "nfc_remove_user_tags_failed",
+    );
+}
+//#endif
+
 function modify_user(u: User) {
     // Don't hash if u.password is falsy, i.e. null, undefined or the empty string
     u.digest_hash = u.password
@@ -1019,6 +1041,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     },
                                     onRemoveClick: async () => {
                                         await remove_user(user.id);
+                                        //#if MODULE_NFC_AVAILABLE
+                                        await remove_user_nfc_tags(user.id);
+                                        //#endif
+
                                         return true;
                                     },
                                 };
@@ -1154,8 +1180,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 __("users.content.nfc_last_seen"),
                             ]}
                             rows={API.get("nfc/config").authorized_tags.map(tag => {
-                                const ownerName = tag.user_id == 0 ? "" : API.get("users/config").users.find(u => u.id == tag.user_id).display_name;
-
+                                let ownerName = tag.user_id == 0 ? "" : API.get("users/config").users.find(u => u.id == tag.user_id)?.display_name;
+                                if (ownerName === undefined) {
+                                  ownerName = "";
+                                }
                                 const seen = this.state.seenTags.find(
                                     (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
                                 );

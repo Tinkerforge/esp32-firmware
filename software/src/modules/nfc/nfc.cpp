@@ -266,13 +266,17 @@ void NFC::remove_user(uint8_t user_id)
 {
     Config *tags = (Config *)config.get("authorized_tags");
 
-    for (size_t i = 0; i < tags->count(); ++i) {
-        if (tags->get(i)->get("user_id")->asUint() == user_id)
-            tags->get(i)->get("user_id")->updateUint(0);
+    bool changed = false;
+    for (size_t i = tags->count(); i-- > 0;) {
+        if (tags->get(i)->get("user_id")->asUint() == user_id) {
+            tags->remove(i);
+            changed = true;
+        }
     }
-    API::writeConfig("nfc/config", &config);
 
-    // todo update auth_tags immediately here?
+    if (changed) {
+        API::writeConfig("nfc/config", &config);
+    }
 }
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
