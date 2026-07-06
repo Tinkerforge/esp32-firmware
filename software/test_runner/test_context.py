@@ -1,5 +1,6 @@
 from pathlib import Path
 from collections.abc import Callable
+import hashlib
 import traceback
 import typing
 from dataclasses import dataclass, field
@@ -13,8 +14,8 @@ import socket
 import subprocess
 import tempfile
 import time
-from urllib.error import URLError
-from urllib.request import Request, urlopen, HTTPError
+from urllib.error import URLError, HTTPError
+from urllib.request import Request, urlopen
 
 import esptool.cmds
 from esptool.targets import ESP32ROM
@@ -313,11 +314,82 @@ class TestContext:
     class NoPayload:
         pass
 
-    def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 1) -> typing.Any:
+    def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 1, auth: tuple[str, str] | None = None) -> typing.Any:
         if isinstance(payload, TestContext.NoPayload):
-            return self.http_request('GET', '/' + api, timeout=timeout, parse=True)
+            method, body, extra_headers = 'GET', '', {}
+        else:
+            method, body, extra_headers = 'PUT', json.dumps(payload), {"Content-Type": "application/json"}
 
-        return self.http_request('PUT', '/' + api, json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=timeout, parse=False)
+        headers: dict[str, str] = dict(extra_headers)
+
+        try:
+            return self.http_request(method, '/' + api, body, headers=headers, timeout=timeout, parse=isinstance(payload, TestContext.NoPayload))
+        except HTTPError as e:
+            if auth is None or e.code != 401:
+                raise
+
+            www_auth = e.headers.get('WWW-Authenticate', '') if e.headers is not None else ''
+            if not www_auth.lower().startswith('digest '):
+                raise
+
+            challenge = www_auth[7:]
+            user, digest_hash = auth
+            headers['Authorization'] = self._build_digest_authorization(challenge, user, digest_hash, method, '/' + api)
+            try:
+                return self.http_request(method, '/' + api, body, headers=headers, timeout=timeout, parse=isinstance(payload, TestContext.NoPayload))
+            except HTTPError as e2:
+                e2.msg += ":" + e2.read().decode('utf-8')
+                raise
+
+    @staticmethod
+    def _parse_digest_challenge(challenge: str) -> dict[str, str]:
+        fields: dict[str, str] = {}
+        remainder = challenge + ', '
+        while True:
+            comma = remainder.find(',')
+            if comma < 0:
+                break
+            pair = remainder[:comma].strip()
+            remainder = remainder[comma + 1:]
+
+            eq = pair.find('=')
+            if eq < 0:
+                continue
+            name = pair[:eq].strip()
+            value = pair[eq + 1:].strip()
+            if value.startswith('"') and value.endswith('"') and len(value) >= 2:
+                value = value[1:-1]
+            fields[name] = value
+        return fields
+
+    @staticmethod
+    def _build_digest_authorization(challenge: str, user: str, digest_hash: str, method: str, uri: str) -> str:
+        fields = TestContext._parse_digest_challenge(challenge)
+        realm = fields.get('realm', '')
+        nonce = fields.get('nonce', '')
+        qop = fields.get('qop', '')
+        opaque = fields.get('opaque', '')
+
+        nc = '00000001'
+        cnonce = hashlib.md5(os.urandom(8)).hexdigest()[:16]
+
+        ha2 = hashlib.md5(f'{method}:{uri}'.encode('utf-8')).hexdigest()
+        response_input = f'{digest_hash}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}'
+        response = hashlib.md5(response_input.encode('utf-8')).hexdigest()
+
+        parts = [
+            f'username="{user}"',
+            f'realm="{realm}"',
+            f'nonce="{nonce}"',
+            f'uri="{uri}"',
+            f'qop={qop}',
+            f'nc={nc}',
+            f'cnonce="{cnonce}"',
+            f'response="{response}"',
+        ]
+        if opaque:
+            parts.append(f'opaque="{opaque}"')
+        return 'Digest ' + ', '.join(parts)
 
     def fail(self, message: str):
         raise AssertionError(f"Test failure: {message}")
