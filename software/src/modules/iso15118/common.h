@@ -35,7 +35,7 @@
 #include "generated/common_state.enum.h"
 #include "generated/encryption.enum.h"
 
-#define SESSION_ID_LENGTH 4
+#define SESSION_ID_LENGTH 8
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
 // Convert value * 10^exponent to float

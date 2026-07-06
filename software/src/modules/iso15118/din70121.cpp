@@ -39,7 +39,7 @@ void DIN70121::pre_setup()
 {
     api_state = Config::Object({
         {"state", Config::Enum(DIN70121State::Idle)},
-        {"session_id", Config::Tuple(4, Config::Uint8(0))},
+        {"session_id", Config::Tuple(SESSION_ID_LENGTH, Config::Uint8(0))},
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
         {"soc", Config::Int8(0)},
     });
