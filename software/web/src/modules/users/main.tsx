@@ -724,8 +724,12 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         if (new_config.users[0].display_name == __("charge_tracker.script.unknown_user"))
             new_config.users[0].display_name = "Anonymous";
 
-        if (new_config.users[0].display_name === "")
+        if (new_config.users[0].display_name === "") {
             await modify_unknown_user("Anonymous");
+            let users = new_config.users.slice();
+            users[0] = { ...users[0], display_name: "Anonymous" };
+            this.setState({ users });
+        }
         else if (new_config.users[0].display_name != old_config.users[0].display_name)
             await modify_unknown_user(new_config.users[0].display_name);
 
@@ -885,8 +889,9 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     : state.users[0].display_name
                             }
                             onValue={(v) => {
-                                this.state.users[0].display_name = v;
-                                this.setState({users: this.state.users});
+                                const users = this.state.users.slice();
+                                users[0] = {...users[0], display_name: v};
+                                this.setState({users});
                             }}
                             showAlways
                         />
