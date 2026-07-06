@@ -836,7 +836,7 @@ class Stage3:
         report['rlow'] = blackbox.bb_measure_rlow()._asdict()
 
         if not report['rlow']['passed']:
-            fatal_error(f'Electrical test failed: {report["rlow"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["rlow"], indent=4)}')
 
         print('Disconnecting front panel')
 
@@ -847,6 +847,35 @@ class Stage3:
         time.sleep(RELAY_SETTLE_DURATION)
 
         blackbox.bb_disable()
+
+    def test_zauto(self, phase, report):
+        key = f'zauto_{phase}'
+        report[key] = blackbox.bb_measure_zauto()._asdict()
+        output = {key: report[key]}
+        passed = [report[key]['passed']]
+        zlpe_auto = [report[key].get('results', {}).get('ZLPE_Auto')]
+
+        for r in range(3):
+            time.sleep(2)
+            key_repeat = f'{key}_repeat_{r + 1}'
+            output[key_repeat] = blackbox.bb_measure_zauto()._asdict()
+            passed.append(output[key_repeat]['passed'])
+            zlpe_auto.append(output[key_repeat].get('results', {}).get('ZLPE_Auto'))
+
+        if not all(passed):
+            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+
+        for result in zlpe_auto:
+            value, unit = result.split(' ')
+
+            if unit != 'Ohm':
+                fatal_error(f'Electrical test failed (unexpected unit): {json.dumps(output, indent=4)}')
+
+            if float(value) > 2:
+                fatal_error(f'Electrical test failed (> 2 Ohm): {json.dumps(output, indent=4)}')
+
+            if float(value) < 1:
+                fatal_error(f'Electrical test failed (< 1 Ohm): {json.dumps(output, indent=4)}')
 
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
@@ -1050,23 +1079,14 @@ class Stage3:
         report['voltage_L1'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L1']['passed']:
-            fatal_error(f'Electrical test failed: {report["voltage_L1"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["voltage_L1"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
         # step 03: test Z auto L1
         print('Electrical test Z auto L1')
 
-        report['zauto_L1'] = blackbox.bb_measure_zauto()._asdict()
-
-        if not report['zauto_L1']['passed']:
-            output = {'zauto_L1': report['zauto_L1']}
-
-            for r in range(3):
-                time.sleep(2)
-                output = {f'zauto_L1_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
-
-            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+        self.test_zauto('L1', report)
 
         self.verify_evse_not_crashed()
 
@@ -1079,23 +1099,14 @@ class Stage3:
         report['voltage_L2'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L2']['passed']:
-            fatal_error(f'Electrical test failed: {report["voltage_L2"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["voltage_L2"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
         # step 05: test Z auto L2
         print('Electrical test Z auto L2')
 
-        report['zauto_L2'] = blackbox.bb_measure_zauto()._asdict()
-
-        if not report['zauto_L2']['passed']:
-            output = {'zauto_L2': report['zauto_L2']}
-
-            for r in range(3):
-                time.sleep(2)
-                output = {f'zauto_L2_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
-
-            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+        self.test_zauto('L2', report)
 
         self.verify_evse_not_crashed()
 
@@ -1108,23 +1119,14 @@ class Stage3:
         report['voltage_L3'] = blackbox.bb_measure_voltage()._asdict()
 
         if not report['voltage_L3']['passed']:
-            fatal_error(f'Electrical test failed: {report["voltage_L3"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["voltage_L3"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
         # step 07: test Z auto L3
         print('Electrical test Z auto L3')
 
-        report['zauto_L3'] = blackbox.bb_measure_zauto()._asdict()
-
-        if not report['zauto_L3']['passed']:
-            output = {'zauto_L3': report['zauto_L3']}
-
-            for r in range(3):
-                time.sleep(2)
-                output = {f'zauto_L3_repeat_{r + 1}': blackbox.bb_measure_zauto()._asdict()}
-
-            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+        self.test_zauto('L3', report)
 
         self.verify_evse_not_crashed()
 
@@ -1137,7 +1139,7 @@ class Stage3:
         report['rcdi_positive'] = blackbox.bb_measure_rcdi('+')._asdict()
 
         if not report['rcdi_positive']['passed']:
-            fatal_error(f'Electrical test failed: {report["rcdi_positive"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_positive"], indent=4)}')
 
         self.reset_dc_fault('C')
         self.verify_evse_not_crashed()
@@ -1148,7 +1150,7 @@ class Stage3:
         report['rcdi_negative'] = blackbox.bb_measure_rcdi('-')._asdict()
 
         if not report['rcdi_negative']['passed']:
-            fatal_error(f'Electrical test failed: {report["rcdi_negative"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_negative"], indent=4)}')
 
         self.reset_dc_fault('A')
         self.verify_evse_not_crashed()
@@ -1159,7 +1161,7 @@ class Stage3:
         report['riso_L1'] = blackbox.bb_measure_riso('L1/PE', limit='250 kOhm' if is_warp2 else '1 MOhm')._asdict()
 
         if not report['riso_L1']['passed']:
-            fatal_error(f'Electrical test failed: {report["riso_L1"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["riso_L1"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
@@ -1172,7 +1174,7 @@ class Stage3:
         report['riso_L2'] = blackbox.bb_measure_riso('L2/PE')._asdict()
 
         if not report['riso_L2']['passed']:
-            fatal_error(f'Electrical test failed: {report["riso_L2"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["riso_L2"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
@@ -1185,7 +1187,7 @@ class Stage3:
         report['riso_L3'] = blackbox.bb_measure_riso('L3/PE')._asdict()
 
         if not report['riso_L3']['passed']:
-            fatal_error(f'Electrical test failed: {report["riso_L3"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["riso_L3"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
@@ -1198,7 +1200,7 @@ class Stage3:
         report['riso_N'] = blackbox.bb_measure_riso('N/PE')._asdict()
 
         if not report['riso_N']['passed']:
-            fatal_error(f'Electrical test failed: {report["riso_N"]}')
+            fatal_error(f'Electrical test failed: {json.dumps(report["riso_N"], indent=4)}')
 
         self.verify_evse_not_crashed()
 
