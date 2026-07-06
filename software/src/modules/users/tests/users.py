@@ -2,10 +2,22 @@
 
 # Tests for users module (central user management)
 
+import hashlib
 from urllib.error import HTTPError
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
+
+
+# Credentials used by the HTTP-auth tests. The firmware stores the HA1
+# (MD5(username:realm:password)) as the digest_hash; since HTTP auth needs
+# a real hash to validate incoming requests, we provide one here.
+_AUTH_USERNAME = "authuser"
+_AUTH_PASSWORD = "authpass"
+# Must match the firmware's DEFAULT_REALM in src/digest_auth.h.
+_AUTH_REALM = "esp32-lib"
+_AUTH_DIGEST_HASH = hashlib.md5(f"{_AUTH_USERNAME}:{_AUTH_REALM}:{_AUTH_PASSWORD}".encode("utf-8")).hexdigest()
+_AUTH_CREDENTIALS: tuple[str, str] = (_AUTH_USERNAME, _AUTH_DIGEST_HASH)
 
 
 _original_config: dict | None = None
@@ -43,11 +55,32 @@ def suite_setup(tc: TestContext) -> None:
 
 
 def setup(tc: TestContext) -> None:
-    # Clean up any users added by previous tests (keep only anonymous user 0)
-    cfg = tc.api("users/config")
+    # A previous test may have left HTTP auth enabled. Fetch the config
+    # with credentials if needed so subsequent calls work in either state.
+    try:
+        cfg = tc.api("users/config")
+    except HTTPError:
+        cfg = tc.api("users/config", auth=_AUTH_CREDENTIALS)
+
+    # If HTTP auth is still enabled from a previous test, try to disable it
+    # using the test credentials so subsequent tests run without auth.
+    if cfg.get("http_auth_enabled"):
+        try:
+            tc.api("users/http_auth_update", {"enabled": False}, auth=_AUTH_CREDENTIALS)
+        except HTTPError:
+            pass
+
+    try:
+        cfg = tc.api("users/config")
+    except HTTPError:
+        cfg = tc.api("users/config", auth=_AUTH_CREDENTIALS)
+
     for user in cfg["users"]:
         if user["id"] != 0:
-            tc.api("users/remove", {"id": user["id"]})
+            try:
+                tc.api("users/remove", {"id": user["id"]}, auth=_AUTH_CREDENTIALS)
+            except HTTPError:
+                tc.api("users/remove", {"id": user["id"]})
 
 
 # ---------- Check for missing keys (breaking changes) ----------
@@ -352,8 +385,12 @@ def test_remove_nonexistent_user_rejected(tc: TestContext) -> None:
 # ---------- HTTP auth ----------
 
 def test_http_auth_enable_without_password_rejected(tc: TestContext) -> None:
-    # Ensure no user has a digest_hash set
-    cfg = tc.api("users/config")
+    # Ensure no user has a digest_hash set. Try unauthenticated first; if
+    # HTTP auth is already enabled, fall back to the test credentials.
+    try:
+        cfg = tc.api("users/config")
+    except HTTPError:
+        cfg = tc.api("users/config", auth=_AUTH_CREDENTIALS)
     all_empty = all(u.get("digest_hash", "") == "" for u in cfg["users"])
     if not all_empty:
         tc.skip("A user already has a digest_hash set; can't test this scenario")
@@ -363,7 +400,10 @@ def test_http_auth_enable_without_password_rejected(tc: TestContext) -> None:
     except HTTPError:
         pass
 
-    cfg2 = tc.api("users/config")
+    try:
+        cfg2 = tc.api("users/config")
+    except HTTPError:
+        cfg2 = tc.api("users/config", auth=_AUTH_CREDENTIALS)
     tc.assert_false(cfg2["http_auth_enabled"])
 
 
@@ -376,20 +416,37 @@ def test_http_auth_enable_with_password_succeeds(tc: TestContext) -> None:
         "roles": 0xFFFF,
         "current": 32000,
         "display_name": "Auth User",
-        "username": "authuser",
-        "digest_hash": "0123456789abcdef0123456789abcdef",
+        "username": _AUTH_USERNAME,
+        "digest_hash": _AUTH_DIGEST_HASH,
     })
 
     try:
         tc.api("users/http_auth_update", {"enabled": True})
 
         def _check_enabled() -> None:
-            cfg2 = tc.api("users/config")
+            # HTTP auth is now enabled, so this request must be authenticated.
+            cfg2 = tc.api("users/config", auth=_AUTH_CREDENTIALS)
             tc.assert_true(cfg2["http_auth_enabled"])
 
         tc.wait_for(_check_enabled)
+
+        # Verify that an unauthenticated request is rejected with 401 and
+        # that an authenticated one succeeds.
+        rejected = False
+        try:
+            tc.api("users/config")
+        except HTTPError:
+            rejected = True
+        tc.assert_true(rejected)
+
+        cfg_auth = tc.api("users/config", auth=_AUTH_CREDENTIALS)
+        tc.assert_true(cfg_auth["http_auth_enabled"])
     finally:
-        tc.api("users/http_auth_update", {"enabled": False})
+        # Disabling HTTP auth also requires auth while it is enabled.
+        try:
+            tc.api("users/http_auth_update", {"enabled": False}, auth=_AUTH_CREDENTIALS)
+        except HTTPError:
+            pass
 
     def _check_disabled() -> None:
         cfg2 = tc.api("users/config")
@@ -400,10 +457,19 @@ def test_http_auth_enable_with_password_succeeds(tc: TestContext) -> None:
 
 
 def test_http_auth_disable(tc: TestContext) -> None:
-    tc.api("users/http_auth_update", {"enabled": False})
+    # HTTP auth may already be enabled from a previous run. Try the
+    # disable command with credentials when needed so this test is
+    # idempotent regardless of starting state.
+    try:
+        tc.api("users/http_auth_update", {"enabled": False})
+    except HTTPError:
+        tc.api("users/http_auth_update", {"enabled": False}, auth=_AUTH_CREDENTIALS)
 
     def _check() -> None:
-        cfg = tc.api("users/config")
+        try:
+            cfg = tc.api("users/config")
+        except HTTPError:
+            cfg = tc.api("users/config", auth=_AUTH_CREDENTIALS)
         tc.assert_false(cfg["http_auth_enabled"])
 
     tc.wait_for(_check)
@@ -521,14 +587,21 @@ def suite_teardown(tc: TestContext) -> None:
     if _original_config is None:
         return
 
+    try:
+        cfg = tc.api("users/config")
+    except HTTPError:
+        cfg = tc.api("users/config", auth=_AUTH_CREDENTIALS)
+
     original_ids = {u["id"] for u in _original_config["users"]}
-    cfg = tc.api("users/config")
     for user in cfg["users"]:
         if user["id"] not in original_ids and user["id"] != 0:
             try:
                 tc.api("users/remove", {"id": user["id"]})
             except HTTPError:
-                pass
+                try:
+                    tc.api("users/remove", {"id": user["id"]}, auth=_AUTH_CREDENTIALS)
+                except HTTPError:
+                    pass
 
     # Restore anonymous display name
     orig_anon = _get_user_by_id(_original_config, 0)
@@ -536,13 +609,19 @@ def suite_teardown(tc: TestContext) -> None:
         try:
             tc.api("users/modify", _modify_payload_for_user(tc, 0, display_name=orig_anon["display_name"]))
         except HTTPError:
-            pass
+            try:
+                tc.api("users/modify", _modify_payload_for_user(tc, 0, display_name=orig_anon["display_name"]), auth=_AUTH_CREDENTIALS)
+            except HTTPError:
+                pass
 
     # Restore http auth state
     try:
         tc.api("users/http_auth_update", {"enabled": _original_config["http_auth_enabled"]})
     except HTTPError:
-        pass
+        try:
+            tc.api("users/http_auth_update", {"enabled": _original_config["http_auth_enabled"]}, auth=_AUTH_CREDENTIALS)
+        except HTTPError:
+            pass
 
 
 if __name__ == "__main__":
