@@ -860,53 +860,12 @@ class Stage3:
 
         blackbox.bb_disable()
 
-    def test_zauto_strict(self, phase, report):
-        key = f'zauto_{phase}'
-        report[key] = blackbox.bb_measure_zauto()._asdict()
-        output = {key: report[key]}
-        passed = [report[key]['passed']]
-        zlpe_auto = [report[key].get('results', {}).get('ZLPE_Auto')]
-
-        for r in range(3):
-            time.sleep(2)
-            key_repeat = f'{key}_repeat_{r + 1}'
-            output[key_repeat] = blackbox.bb_measure_zauto()._asdict()
-            passed.append(output[key_repeat]['passed'])
-            zlpe_auto.append(output[key_repeat].get('results', {}).get('ZLPE_Auto'))
-
-        if not all(passed):
-            fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
-
-        for result in zlpe_auto:
-            value, unit = result.split(' ')
-
-            if unit != 'Ohm':
-                fatal_error(f'Electrical test failed (unexpected unit): {json.dumps(output, indent=4)}')
-
-            if float(value) > 2:
-                fatal_error(f'Electrical test failed (> 2 Ohm): {json.dumps(output, indent=4)}')
-
-            if float(value) < 1:
-                fatal_error(f'Electrical test failed (< 1 Ohm): {json.dumps(output, indent=4)}')
-
     def test_zauto(self, phase, report):
         key = f'zauto_{phase}'
         report[key] = blackbox.bb_measure_zauto()._asdict()
 
-        if report[key]['passed']:
-            return
-
-        output = {key: report[key]}
-
-        for r in range(3):
-            time.sleep(2)
-            key_repeat = f'{key}_repeat_{r + 1}'
-            output[key_repeat] = blackbox.bb_measure_zauto()._asdict()
-
-            if output[key_repeat]['passed']:
-                return
-
-        fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+        if not report[key]['passed']:
+            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
 
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
