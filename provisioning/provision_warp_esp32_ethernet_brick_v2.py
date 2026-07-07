@@ -624,7 +624,7 @@ class P:
             ipcon = IPConnection()
             ipcon.connect("localhost", 4223)
 
-            q.put(f"Searching {BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME}s, {BrickletRGBLEDButton.DEVICE_DISPLAY_NAME}s, {BrickletPiezoSpeakerV2.DEVICE_DISPLAY_NAME} and {BrickletLEDStripV2.DEVICE_DISPLAY_NAME}")
+            q.put(f"Searching \n{BrickletIndustrialDualRelay.DEVICE_DISPLAY_NAME}s, \n{BrickletRGBLEDButton.DEVICE_DISPLAY_NAME}s, \n{BrickletPiezoSpeakerV2.DEVICE_DISPLAY_NAME} and \n{BrickletLEDStripV2.DEVICE_DISPLAY_NAME}")
 
             idr_uids = [None, None]
             idai_uids = [None, None]
