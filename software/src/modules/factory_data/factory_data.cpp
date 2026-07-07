@@ -90,7 +90,7 @@ void FactoryData::pre_setup()
     });
 
     nfc_tag_prototype = Config::Object({
-        {"tag_type", Config::Uint(0, 0, 5)},
+        {"tag_type", Config::Uint(0, 0, 6)},
         {"tag_id", Config::Str("", 0, FACTORY_DATA_NFC_TAG_ID_STRING_LENGTH)}
     });
 

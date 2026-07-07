@@ -332,6 +332,11 @@ typedef struct TF_NFC {
 /**
  * \ingroup TF_NFC
  */
+#define TF_NFC_TAG_TYPE_PHONE 6
+
+/**
+ * \ingroup TF_NFC
+ */
 #define TF_NFC_READER_STATE_INITIALIZATION 0
 
 /**

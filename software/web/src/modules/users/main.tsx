@@ -101,23 +101,44 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 
 // Get NFC tags from managed chargers, merged with local seen tags.
 // Returns all seen tags (local + remote), deduplicated.
-type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null };
+type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null, is_this_device?: boolean };
+
+// Read the NFC tag ID of the smartphone this web interface is running on.
+function get_phone_nfc_id(): string | null {
+    const nfc = (window as any).tinkerforge_nfc;
+    if (nfc?.isSupported?.() && typeof nfc.getDeviceId === 'function') {
+        return nfc.getDeviceId();
+    }
+    return null;
+}
+
+// Prepend a synthetic "this smartphone" entry (tag_type 6 == PHONE) so the
+// phone shows up in the seen-tags discovery list
+function with_phone_seen_tag(tags: NFCSeenTag[]): NFCSeenTag[] {
+    const phone_id = get_phone_nfc_id();
+    if (phone_id === null) {
+        return tags;
+    }
+
+    const rest = tags.filter(t => t.tag_id !== phone_id || t.tag_type !== 6);
+    return [{tag_id: phone_id, tag_type: 6, last_seen: 0, charger_name: null, is_this_device: true}, ...rest];
+}
 
 async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
     let now = API.get("info/keep_alive").uptime;
 
     if (!util.is_central_management_enabled()) {
-        return API.get('nfc/seen_tags')?.map(t => {
+        return with_phone_seen_tag(API.get('nfc/seen_tags')?.map(t => {
             const tag: NFCSeenTag = {...t, charger_name: null};
             return tag;
-        });
+        }) ?? []);
     } else {
-        return (await get_charge_manager_auth_info([CMAuthType.NFC, CMAuthType.InjectedNFC])).map(x => ({
+        return with_phone_seen_tag((await get_charge_manager_auth_info([CMAuthType.NFC, CMAuthType.InjectedNFC])).map(x => ({
                 tag_id: (x.auth_info[1] as any).tag_id,
                 tag_type: (x.auth_info[1] as any).tag_type,
                 last_seen: x.seen_at,
                 charger_name: x.charger_name,
-            } as NFCSeenTag));
+            } as NFCSeenTag)));
     }
 }
 
@@ -375,11 +396,17 @@ function NfcTagsSection({
                                                 error={error}
                                                 onClick={() => setEditTag({...editTag, tag_id: t.tag_id, tag_type: t.tag_type})}
                                             >
-                                                <div>
-                                                    {translate_unchecked(`nfc.content.type_${t.tag_type}`)}
-                                                </div>
-                                                <div class="text-muted small">
-                                                    {__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}
+                                                <div class="pr-2 mb-2">
+                                                    <div>
+                                                        {t.is_this_device ?
+                                                            __("users.content.nfc_smartphone_this_device") :
+                                                            translate_unchecked(`nfc.content.type_${t.tag_type}`)}
+                                                    </div>
+                                                    {t.is_this_device ? null :
+                                                        <div class="text-muted small">
+                                                            {__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}
+                                                        </div>
+                                                    }
                                                 </div>
                                             </DiscoveryResultItem>
                                         );
@@ -422,6 +449,8 @@ function NfcTagsSection({
                                     ["2", __("nfc.content.type_2")],
                                     ["3", __("nfc.content.type_3")],
                                     ["4", __("nfc.content.type_4")],
+                                    ["5", __("nfc.content.type_5")],
+                                    ["6", __("nfc.content.type_6")],
                                 ]}
                                 value={editTag.tag_type.toString()}
                                 onValue={(v) => setEditTag({...editTag, tag_type: parseInt(v)})}

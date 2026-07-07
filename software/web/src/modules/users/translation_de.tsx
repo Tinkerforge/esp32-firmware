@@ -76,6 +76,8 @@ let x = {
             "nfc_tag_id_invalid":
                 "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
 
+            "nfc_smartphone_this_device": "Smartphone (dieses Gerät)",
+
             "ev_macs": "Fahrzeuge",
             "ev_name": "Name",
             "ev_mac": "MAC-Adresse",

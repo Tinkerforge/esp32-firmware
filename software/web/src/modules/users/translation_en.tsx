@@ -75,6 +75,8 @@ let x = {
             "nfc_tag_id_invalid":
                 "The tag ID must have four to ten groups separated by colons, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
 
+            "nfc_smartphone_this_device": "Smartphone (this device)",
+
             "ev_macs": "Vehicles",
             "ev_name": "Name",
             "ev_mac": "MAC address",
