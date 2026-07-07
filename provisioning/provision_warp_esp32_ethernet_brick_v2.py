@@ -437,7 +437,7 @@ class P:
             print(f'esp32/encrypt_data response: {response}')
 
         print("Checking secure boot")
-        response = P.api_get(ethernet_ip, "esp32/check_sbv2", timeout=30, ignore_404=True, error_message="Failed to check secure boot")
+        response = P.api_get(ethernet_ip, "esp32/check_sbv2", timeout=30, ignore_404=False, error_message="Failed to check secure boot")
 
         if len(response) > 0:
             print(f'esp32/check_sbv2 response: {response}')
@@ -803,13 +803,14 @@ class P:
             P.set_progress(k, stage, P.blue)
 
         already_secured_esps = {}
+        locked_or_empty_esps = {}
         for k, t in threads:
             success, result, exception = t.join()
 
             if not success:
-                print(red(f"Failed to check secure boot state of ESP{k}. {result} {exception}"), file=P.logs[k][1])
-                relay_to_serial.pop(k)
-                P.set_progress(k, stage, P.red)
+                print(f"Failed to check secure boot state of ESP{k}. Slot empty or ESP already locked? {result} {exception}", file=P.logs[k][1])
+                locked_or_empty_esps = relay_to_serial.pop(k)
+                P.set_progress(k, stage, P.yellow)
             elif "True" in result:
                 print("Secure boot already active. Skipping to tests", file=P.logs[k][0])
                 already_secured_esps[k] = relay_to_serial.pop(k)
@@ -818,6 +819,40 @@ class P:
                 P.set_progress(k, stage, P.green)
 
         threads.clear()
+
+        stage += 1
+        print(f"Attempting to recover locked ESPs")
+
+        locked_esps = {}
+        locked_esp_to_uid = {}
+        locked_esp_to_passphrase = {}
+        for k, v in locked_or_empty_esps.items():
+            print("Triggering ESP reset using DTR pin")
+            with serial.Serial(v, baudrate=115200, timeout=1) as p:
+                p.dtr = False
+                time.sleep(1)
+                p.dtr = True
+
+                passphrase = None
+                uid = None
+
+                start = time.monotonic()
+                while time.monotonic() - start < 5 and (uid is None or passphrase is None):
+                    line = p.readline()
+                    if m := re.match(rb"WiFi passphrase: (.*)\n", line):
+                        passphrase = m.group(1).decode('utf-8')
+                    elif m := re.search(rb"WARP ESP32 Ethernet Brick V2 UID: (.*)\n", line):
+                        uid = m.group(1).decode('utf-8')
+
+            if uid is None or passphrase is None:
+                print(red(f"Failed to recover locked ESP {k} {v}: Tester slot empty or ESP serial communication broken"), file=P.logs[k][1])
+                P.set_progress(k, stage, P.red)
+            else:
+                print(f"Recovered UID and passphrase from locked ESP {k} {v}: {uid=}")
+                P.set_progress(k, stage, P.green)
+                locked_esps[k] = v
+                locked_esp_to_uid[k] = uid
+                locked_esp_to_passphrase[k] = passphrase
 
         stage += 1
 
@@ -922,6 +957,12 @@ class P:
                 relay_to_passphrase[k] = result[1]
                 P.infos[k] = f'{relay_to_ssid[k]} / {relay_to_passphrase[k]}'
                 P.set_progress(k, stage, P.green)
+
+        for k, v in locked_esps:
+            uid = locked_esp_to_uid[k]
+            relay_to_ssid[k] = f"{ssid_prefix}-{uid}"
+
+            relay_to_passphrase[k] = locked_esp_to_passphrase[k]
 
         print(str(relay_to_ssid))
 
