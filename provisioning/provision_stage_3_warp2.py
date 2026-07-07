@@ -83,6 +83,7 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '03': BrickMaster.DEVICE_IDENTIFIER,
     '03A': BrickletIndustrialDualRelay.DEVICE_IDENTIFIER,
     '03B': BrickletPiezoSpeakerV2.DEVICE_IDENTIFIER,
+    '03C': BrickletIndustrialDualRelay.DEVICE_IDENTIFIER,
     '20': BrickMaster.DEVICE_IDENTIFIER,
     '20A': BrickletLEDStripV2.DEVICE_IDENTIFIER,
     '20B': BrickletNFC.DEVICE_IDENTIFIER,
@@ -138,7 +139,6 @@ class Stage3:
         self.reset_evse_function = reset_evse_function
         self.get_cp_pwm_function = get_cp_pwm_function
         self.get_meter_voltages_function = get_meter_voltages_function
-
         self.set_iso15118_enabled_function = set_iso15118_enabled_function
         self.get_iso15118_ev_mac_function = get_iso15118_ev_mac_function
         self.get_iso15118_attenuation_profile_function = get_iso15118_attenuation_profile_function
@@ -324,6 +324,18 @@ class Stage3:
             self.action_stop_queue.put((('03A', 1), lambda device: device.set_selected_value(1, False), event))
         else:
             self.action_stop_queue.put((('03A', 1), lambda device: device.set_monoflop(1, True, MONOFLOP_DURATION), event))
+
+        if not event.wait(timeout=ACTION_COMPLETION_TIMEOUT):
+            fatal_error('Action did not complete in time')
+
+    # internal
+    def connect_iso_15118_simulator(self, connect):
+        event = threading.Event()
+
+        if connect:
+            self.action_stop_queue.put((('03C', 0), lambda device: device.set_monoflop(0, True, MONOFLOP_DURATION), event))
+        else:
+            self.action_stop_queue.put((('03C', 0), lambda device: device.set_selected_value(0, False), event))
 
         if not event.wait(timeout=ACTION_COMPLETION_TIMEOUT):
             fatal_error('Action did not complete in time')
@@ -990,6 +1002,10 @@ class Stage3:
         if self.generation >= 4:
             print('Test ISO 15118')
 
+            # only connect the ISO 15118 vehicle simulator while its needed, as
+            # the communication on the CP line affects the Z auto L-PE measurement
+            self.connect_iso_15118_simulator(True)
+
             self.set_iso15118_enabled_function(True)
 
             self.change_cp_pe_state('B')
@@ -1016,6 +1032,7 @@ class Stage3:
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
             self.set_iso15118_enabled_function(False)
+            self.connect_iso_15118_simulator(False)
 
         # step 01: test phase separation
         self.change_cp_pe_state('C')
