@@ -87,6 +87,12 @@ def fatal_error(*args, force_os_exit=None):
 
 @contextmanager
 def wifi(ssid, passphrase):
+    # Remove old connection config if it exists.
+    try:
+        run(["sudo", "nmcli", "con", "del", ssid])
+    except subprocess.CalledProcessError as e:
+        pass
+
     try:
         output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
     except subprocess.CalledProcessError as e:
