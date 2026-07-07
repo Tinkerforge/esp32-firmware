@@ -9,13 +9,21 @@ PRESCALER_COUNT = 578
 AFE_GAIN_OFFSET = 0x1471 + PIB_OFFSET_BASE    # 0x1831
 DATA_CHECKSUM_OFFSET = 0x374
 HEADER_CHECKSUM_OFFSET = 0x3BC
-DEVICE_KEY_OFFSET = 0x3D2
-DEVICE_KEY_LEN = 16
+
+# Offsets take from open-plc-utils pib/pib.h
+DAK_OFFSET = PIB_OFFSET_BASE + 0x12   # 0x3D2, 16 bytes
+DAK_LEN = 16
+NMK_OFFSET = PIB_OFFSET_BASE + 0x64   # 0x424, 16 bytes
+NMK_LEN = 16
+NID_OFFSET = PIB_OFFSET_BASE + 0xF8   # 0x4B8, 7 bytes
+NID_LEN = 7
 
 IGNORED_REGIONS = [
     (DATA_CHECKSUM_OFFSET, 4, "data checksum"),
     (HEADER_CHECKSUM_OFFSET, 4, "header checksum"),
-    (DEVICE_KEY_OFFSET, DEVICE_KEY_LEN, "device security key (NMK/DAK)"),
+    (DAK_OFFSET, DAK_LEN, "device access key (DAK)"),
+    (NMK_OFFSET, NMK_LEN, "network membership key (NMK)"),
+    (NID_OFFSET, NID_LEN, "network identifier (NID, derived from NMK)"),
 ]
 
 
