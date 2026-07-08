@@ -610,6 +610,9 @@ class P:
         P.ls.set_led_values((24 - ((i - 1) * 8 + val) - 1) * 3, [c * 0.33 for c in color])
 
     def set_relay(i, val):
+        # HACK: testers 1-3 are connnected to relay pins 0-2
+        i -= 1
+        print(f"bricklet {i//2} relay {i % 2} {val=}")
         P.idrs[i // 2].set_selected_value(i % 2, val)
 
     def main():
