@@ -28,6 +28,8 @@ from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
 from provisioning.pib_compare import compare_data as pib_compare_data
 
+WARP_CHARGER_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger'))
+
 files_to_commit = []
 commit_message = None
 evse = None
@@ -676,6 +678,13 @@ def led_wrap():
 
         if os.system(f'lpr {report_path_pdf}') != 0:
             fatal_error(f"Could not print report")
+
+        drilling_template_path = os.path.join(WARP_CHARGER_DIRECTORY, 'documents', f'WARP{scanner.qr_gen}_Bohrschablone.pdf')
+
+        print(f"Printing drilling template {drilling_template_path}")
+
+        if os.system(f'lpr -o scaling=100 {drilling_template_path}') != 0:
+            fatal_error(f"Could not print drilling template")
 
         print('Done!')
     except BaseException as e:
