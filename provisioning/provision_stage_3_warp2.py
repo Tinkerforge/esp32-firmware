@@ -894,8 +894,8 @@ class Stage3:
 
         fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
 
-     def test_zauto(self, phase, report):
-         self.test_zauto_relaxed(phase, report)
+    def test_zauto(self, phase, report):
+        self.test_zauto_relaxed(phase, report)
 
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
