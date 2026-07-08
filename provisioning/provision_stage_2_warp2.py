@@ -1277,7 +1277,11 @@ def main(stage3, scanner, result):
                     fatal_error(f"Failed to erase other app partition: {e}")
     finally:
         if browser is not None:
-            browser.quit()
+            try:
+                browser.quit()
+            except:
+                traceback.print_exc()
+                print("Closing the browser failed. This can be ignored")
 
     result["end"] = now()
 
