@@ -91,6 +91,18 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '20D': BrickletColorV2.DEVICE_IDENTIFIER,
 }
 
+# maximum of each bin seen with the first ~ 180 chargers + 5 dB
+ATTENUATION_PROFILE_THRESHOLD = [
+    28, 28, 28, 33, 30, 29, 34, 31,
+    30, 33, 31, 31, 32, 31, 31, 31,
+    30, 31, 31, 32, 31, 32, 33, 33,
+    31, 31, 36, 36, 36, 36, 36, 36,
+    35, 35, 35, 37, 36, 36, 36, 37,
+    38, 40, 37, 38, 38, 40, 39, 40,
+    40, 44, 41, 40, 41, 40, 43, 43,
+    45, 59
+]
+
 sys_print = print
 
 def orig_print(*args, **kwargs):
@@ -1008,11 +1020,8 @@ class Stage3:
             result['iso15118_attenuation_profile'] = ap
 
             for i, v in enumerate(ap[:-1]):
-                if v >= 45:
-                    fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= 45!\nProfile: {",".join([str(x) for x in ap])}")
-
-            if ap[-1] >= 60:
-                fatal_error(f"Last ISO 15118 attenuation profile entry out of range: {v} >= 60!\nProfile: {",".join([str(x) for x in ap])}")
+                if v >= ATTENUATION_PROFILE_THRESHOLD[i]:
+                    fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= {ATTENUATION_PROFILE_THRESHOLD[i]}!\nProfile: {",".join([str(x) for x in ap])}")
 
             self.change_cp_pe_state('A')
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
