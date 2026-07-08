@@ -390,6 +390,8 @@ void ISO15118::setup()
 
     iso15118.trace("ISO15118: EVSEID ISO: %s, DIN: %s", evseid_iso, din_str);
 
+    api.addFeature("iso15118");
+
     initialized = true;
 
     if (is_enabled()) {
