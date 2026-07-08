@@ -861,18 +861,23 @@ class P:
 
         stage += 1
 
-        print(f"Flashing bootloader to {len(relay_to_serial)} Co-Bricklets")
+        print(f"Flashing bootloader to {len(relay_to_serial | already_secured_esps)} Co-Bricklets")
 
         for idr in P.idrs:
             idr.set_value(False, False)
-        time.sleep(1)
+
+        def disable_esp_and_flash_bootloader(serial_port, uid):
+            with serial.Serial(serial_port, baudrate=115200) as p:
+                p.dtr = False
+                time.sleep(1)
+                xmc_flash_bootloader('../../firmwares/bricklets/warp_esp32_ethernet_v2_co/bricklet_warp_esp32_ethernet_v2_co_firmware_latest.zbin', uid)
+                p.dtr = True
 
         for k, v in (relay_to_serial | already_secured_esps).items():
             # lambda with default parameter value to fix the late binding issue.
             # If v was used directly, it would behave as if "captured by reference"
             # -> fun with multithreading.
-            t = ThreadWithReturnValue(target=lambda uid=P.master_uids[k]:
-                                      xmc_flash_bootloader('../../firmwares/bricklets/warp_esp32_ethernet_v2_co/bricklet_warp_esp32_ethernet_v2_co_firmware_latest.zbin', uid))
+            t = ThreadWithReturnValue(target=lambda port=v, uid=P.master_uids[k]: disable_esp_and_flash_bootloader(port, uid))
             t.start()
             P.thread_ids[t.ident] = k
             t.start_semaphore.release()
