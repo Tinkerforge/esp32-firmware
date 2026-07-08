@@ -815,7 +815,7 @@ class P:
 
             if not success:
                 print(f"Failed to check secure boot state of ESP{k}. Slot empty or ESP already locked? {result} {exception}", file=P.logs[k][1])
-                locked_or_empty_esps = relay_to_serial.pop(k)
+                locked_or_empty_esps[k] = relay_to_serial.pop(k)
                 P.set_progress(k, stage, P.yellow)
             elif "True" in result:
                 print("Secure boot already active. Skipping to tests", file=P.logs[k][0])
@@ -826,7 +826,6 @@ class P:
 
         threads.clear()
 
-        stage += 1
         print(f"Attempting to recover locked ESPs")
 
         locked_esps = {}
@@ -847,14 +846,14 @@ class P:
                     line = p.readline()
                     if m := re.match(rb"WiFi passphrase: (.*)\n", line):
                         passphrase = m.group(1).decode('utf-8')
-                    elif m := re.search(rb"WARP ESP32 Ethernet Brick V2 UID: (.*)\n", line):
+                    elif m := re.search(rb"(?:WARP )?ESP32 Ethernet Brick (?:V2 )?UID: (.*)\n", line):
                         uid = m.group(1).decode('utf-8')
 
             if uid is None or passphrase is None:
                 print(red(f"Failed to recover locked ESP {k} {v}: Tester slot empty or ESP serial communication broken"), file=P.logs[k][1])
                 P.set_progress(k, stage, P.red)
             else:
-                print(f"Recovered UID and passphrase from locked ESP {k} {v}: {uid=}")
+                print(f"Recovered UID and passphrase from locked ESP {k} {v}: {uid=}", file=P.logs[k][0])
                 P.set_progress(k, stage, P.green)
                 locked_esps[k] = v
                 locked_esp_to_uid[k] = uid
@@ -964,11 +963,22 @@ class P:
                 P.infos[k] = f'{relay_to_ssid[k]} / {relay_to_passphrase[k]}'
                 P.set_progress(k, stage, P.green)
 
-        for k, v in locked_esps:
+        for k, v in locked_esps.items():
             uid = locked_esp_to_uid[k]
             relay_to_ssid[k] = f"{ssid_prefix}-{uid}"
 
             relay_to_passphrase[k] = locked_esp_to_passphrase[k]
+            relay_to_serial[k] = v
+
+            test_reports[k] = {"start": now()}
+            try:
+                test_reports[k]['mac'] = json.loads(next(Path(f"../../test-reports/{ssid_prefix}").glob(f"{ssid_prefix}-{uid}*_report_stage_1.json")).read_text())["mac"]
+            except StopIteration:
+                test_reports[k]['mac'] = "Unknown (previously locked ESP)"
+
+            P.set_progress(k, stage, P.green)
+            P.infos[k] = f'{relay_to_ssid[k]} / {relay_to_passphrase[k]}'
+
 
         print(str(relay_to_ssid))
 
