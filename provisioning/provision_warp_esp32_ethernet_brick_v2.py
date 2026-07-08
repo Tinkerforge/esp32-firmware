@@ -309,7 +309,7 @@ class P:
 
         return ssid, passphrase
 
-    def test_wifi(ssid, passphrase, host_ip, ethernet_ip, ethernet_gateway, ethernet_subnet, ethernet_dns, result):
+    def test_wifi(ssid, passphrase, host_ip, ethernet_ip, ethernet_gateway, ethernet_subnet, ethernet_dns, use_local_ntp, result):
         print("Waiting for ESP wifi. Takes about one minute.")
         if not wait_for_wifi(ssid, 90):
             fatal_error("ESP wifi not found after 90 seconds")
@@ -325,13 +325,16 @@ class P:
                           "dns2": "0.0.0.0",
                       }, error_message="Failed to set ethernet config!")
 
-            P.api_put("10.0.0.1", "ntp/config_update", {
-                          "enable": None,
-                          "use_dhcp": False,
-                          "timezone": None,
-                          "server": host_ip,
-                          "server2": host_ip,
-                      }, error_message="Failed to set NTP config!")
+            if use_local_ntp:
+                P.api_put("10.0.0.1", "ntp/config_update", {
+                              "enable": None,
+                              "use_dhcp": False,
+                              "timezone": None,
+                              "server": host_ip,
+                              "server2": host_ip,
+                          }, error_message="Failed to set NTP config!")
+            else:
+                P.api_put(ethernet_ip, "config/reset", "ntp/config", error_message="Failed to set NTP config!")
 
             result["wifi_test_successful"] = True
 
@@ -773,9 +776,11 @@ class P:
         subnet = config["subnet"]
         gateway = config["gateway"]
         dns = config["dns"]
+        use_local_ntp = config["use_local_ntp"]
 
-        print("Starting NTP server")
-        threading.Thread(target=start_ntpserver, args=("0.0.0.0", 1234)).start()
+        if use_local_ntp:
+            print("Starting NTP server")
+            threading.Thread(target=start_ntpserver, args=("0.0.0.0", 1234)).start()
 
         if P.io4.get_value()[0]:
             print("Close lid!")
@@ -981,7 +986,7 @@ class P:
             with contextlib.redirect_stdout(P.logs[k][0]):
                 with contextlib.redirect_stderr(P.logs[k][1]):
                     try:
-                        P.test_wifi(relay_to_ssid[k], relay_to_passphrase[k], host_ip, static_ips[k], gateway, subnet, dns, test_reports[k])
+                        P.test_wifi(relay_to_ssid[k], relay_to_passphrase[k], host_ip, static_ips[k], gateway, subnet, dns, use_local_ntp, test_reports[k])
                     except BaseException as e:
                         print(red(f"Failed to test WiFi for {k} {v}: {e}"), file=P.logs[k][1])
                         relay_to_serial.pop(k)
