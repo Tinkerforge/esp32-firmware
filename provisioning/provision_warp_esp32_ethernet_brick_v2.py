@@ -1049,7 +1049,6 @@ class P:
 
         stage += 1
         for k, v in relay_to_serial.items():
-            print(f"{k}: {static_ips[k]}")
             t = ThreadWithReturnValue(target=encrypt_and_secure_fn(v, static_ips[k], k, test_reports[k]))
             t.start()
             P.thread_ids[t.ident] = k
