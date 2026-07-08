@@ -333,9 +333,9 @@ class Stage3:
         event = threading.Event()
 
         if connect:
-            self.action_stop_queue.put((('03C', 0), lambda device: device.set_monoflop(0, True, MONOFLOP_DURATION), event))
+            self.action_stop_queue.put((('03C', 0), lambda device: [device.set_monoflop(0, True, MONOFLOP_DURATION), device.set_monoflop(1, True, MONOFLOP_DURATION)], event))
         else:
-            self.action_stop_queue.put((('03C', 0), lambda device: device.set_selected_value(0, False), event))
+            self.action_stop_queue.put((('03C', 0), lambda device: device.set_value(False, False), event))
 
         if not event.wait(timeout=ACTION_COMPLETION_TIMEOUT):
             fatal_error('Action did not complete in time')
