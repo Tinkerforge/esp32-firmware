@@ -1287,6 +1287,10 @@ bool GenerationParams::init() {
                 this->configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
             }
 
+            for (size_t i = 0; i < charge_manager.config.get("chargers")->count(); ++i) {
+                this->configured_chargers[i] = charge_manager.config.get("chargers")->get(i)->get("uid")->asUint();
+            }
+
             // TODO: possible optimization: Only allocate one cache entry if the user filter is set to one user
             // TODO use unique_ptr_any here?
             this->display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
