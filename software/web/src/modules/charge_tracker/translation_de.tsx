@@ -98,7 +98,7 @@ let x = {
             "configured_users": "Konfigurierte Benutzer",
             "all_users": "Alle Benutzer",
             "all_chargers": "Alle Wallboxen",
-            "configured_chargers": "Konfigurierte Wallboxen",
+            "configured_chargers": "Kontrollierte Wallboxen",
             "deleted_chargers": "Gelöschte Wallboxen",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
