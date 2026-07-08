@@ -370,7 +370,7 @@ def get_meter_voltages():
 def reset_evse():
     global evse
     retry_wrapper(lambda: evse.reset(), "reset EVSE")
-    time.sleep(0.5)
+    time.sleep(2)
     for i in range(3):
         retry_wrapper(lambda: evse.set_test_mode(True, 0xdeadbeef), "enable EVSE test mode")
         if retry_wrapper(lambda: evse.get_test_mode(), "read back EVSE test mode"):
