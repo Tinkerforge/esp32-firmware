@@ -1251,20 +1251,21 @@ def main(stage3, scanner, result):
             orig_print(" Connected.")
             print("Tracked charges removed.")
 
-            time.sleep(3)
-            connect_to_ethernet(ssid, "info/version") # wait for reboot triggered by remove_all_charges command
+            if generation >= 4:
+                time.sleep(3)
+                connect_to_ethernet(ssid, "info/version") # wait for reboot triggered by remove_all_charges command
 
-            print("Erasing other app partition")
-            try:
-                with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
-                    response = f.read()
+                print("Erasing other app partition")
+                try:
+                    with urllib.request.urlopen(f"http://{host}/firmware_update/erase_other", timeout=45) as f:
+                        response = f.read()
 
-                if len(response) > 0:
-                    print(response)
-            except urllib.error.HTTPError as e:
-                fatal_error(f"Failed to erase other app partition: {e} {e.read()}")
-            except Exception as e:
-                fatal_error(f"Failed to erase other app partition: {e}")
+                    if len(response) > 0:
+                        print(response)
+                except urllib.error.HTTPError as e:
+                    fatal_error(f"Failed to erase other app partition: {e} {e.read()}")
+                except Exception as e:
+                    fatal_error(f"Failed to erase other app partition: {e}")
     finally:
         if browser is not None:
             browser.quit()
