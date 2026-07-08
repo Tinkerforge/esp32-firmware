@@ -203,28 +203,6 @@ function remove_user(id: number) {
     );
 }
 
-//#if MODULE_NFC_AVAILABLE
-function remove_user_nfc_tags(id: number) {
-    let nfc_config = API.get("nfc/config");
-    let remaining_tags = nfc_config.authorized_tags.filter(t => t.user_id != id);
-    if (remaining_tags.length == nfc_config.authorized_tags.length)
-        return; // No NFC tags assigned to this user.
-
-    retry_once(
-        () =>
-            API.save(
-                "nfc/config",
-                {
-                    ...nfc_config,
-                    authorized_tags: remaining_tags,
-                },
-                () => __("nfc.script.save_failed"),
-            ),
-        "nfc_remove_user_tags_failed",
-    );
-}
-//#endif
-
 function modify_user(u: User) {
     // Don't hash if u.password is falsy, i.e. null, undefined or the empty string
     u.digest_hash = u.password
@@ -1075,10 +1053,6 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     },
                                     onRemoveClick: async () => {
                                         await remove_user(user.id);
-                                        //#if MODULE_NFC_AVAILABLE
-                                        await remove_user_nfc_tags(user.id);
-                                        //#endif
-
                                         return true;
                                     },
                                 };
