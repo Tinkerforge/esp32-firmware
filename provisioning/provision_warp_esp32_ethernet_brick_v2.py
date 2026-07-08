@@ -503,6 +503,7 @@ class P:
 
     def update_logs(app, edits, labels):
         if P.quit_requested:
+            app.aboutToQuit.disconnect()
             app.quit()
             return
 
