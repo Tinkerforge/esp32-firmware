@@ -1017,12 +1017,17 @@ def main(stage3, scanner, result):
                 if arg.startswith('--latest-firmware='):
                     firmware_path = arg.removeprefix('--latest-firmware=')
 
+            if generation >= 4:
+                suffix = '_ota'
+            else:
+                suffix = '_merged'
+
             if firmware_path == None:
                 firmware_directory = os.path.join("..", "..", "warp-charger", "firmwares")
-                firmware_path = os.readlink(os.path.join(firmware_directory, f"warp{scanner.qr_gen}_firmware_latest_ota.bin"))
+                firmware_path = os.readlink(os.path.join(firmware_directory, f"warp{scanner.qr_gen}_firmware_latest{suffix}.bin"))
                 firmware_path = os.path.join(firmware_directory, firmware_path)
 
-            latest_version_parts = list(re.search(rf"warp{scanner.qr_gen}_firmware_(\d+)_(\d+)_(\d+)_([a-f0-9]+)_ota.bin", firmware_path).groups())
+            latest_version_parts = list(re.search(rf"warp{scanner.qr_gen}_firmware_(\d+)_(\d+)_(\d+)_([a-f0-9]+){suffix}.bin", firmware_path).groups())
             latest_version = [int(x) for x in latest_version_parts[:3]] + [int(latest_version_parts[3], base=16)]
             flash_latest_version = False
 
