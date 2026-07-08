@@ -877,22 +877,19 @@ class Stage3:
 
     def test_zauto_relaxed(self, phase, report):
         key = f'zauto_{phase}'
-        report[key] = blackbox.bb_measure_zauto()._asdict()
+        all_results = []
 
-        if report[key]['passed']:
-            return
+        for _ in range(4):
+            report[key] = blackbox.bb_measure_zauto()._asdict()
 
-        output = {key: report[key]}
-
-        for r in range(3):
-            time.sleep(2)
-            key_repeat = f'{key}_repeat_{r + 1}'
-            output[key_repeat] = blackbox.bb_measure_zauto()._asdict()
-
-            if output[key_repeat]['passed']:
+            if report[key]['passed']:
                 return
 
-        fatal_error(f'Electrical test failed: {json.dumps(output, indent=4)}')
+            all_results.append(report[key])
+
+            time.sleep(2)
+
+        fatal_error(f'Electrical test failed: {json.dumps(all_results, indent=4)}')
 
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
