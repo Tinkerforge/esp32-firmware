@@ -436,7 +436,7 @@ class Scanner:
             self.qr_serial = m_3_2.group(8)
             self.qr_built = m_3_2.group(9)
             self.qr_extras = m_3_2.group(10)
-            self.qr_order_id = m_4.group(11)
+            self.qr_order_id = m_3_2.group(11)
 
         if self.qr_extras == None:
             self.qr_extras = '0'
