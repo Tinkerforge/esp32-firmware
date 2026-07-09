@@ -4,7 +4,7 @@
 2026-06-26: 2.12.1 (5ee856ba)
 - Fix rare firmware update issue
 
-2026-07-09: 2.12.2 (<unknown>)
+2026-07-09: 2.12.2 (e04a6ee0)
 - Improve ISO 15118 compatibility with Hyundai Inster
 - Announce iso_15118 feature to improve compatibility with EVCC
 - Make reading/writing ISO 15118 PIB more robust

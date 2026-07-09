@@ -1011,7 +1011,7 @@
 - Improve Modbus/TCP robustness against malformed packets
 - Improve error message when firmware update is corrupted
 
-2026-07-09: 2.12.1 (<unknown>)
+2026-07-09: 2.12.1 (e04a6ee0)
 - Expand calculation of meter values to single- and two-phase meters
 - Add CPU idling to reduce power consumption by 3 to 10%
 - Increase maximum certificate (chain) size to 4352 bytes

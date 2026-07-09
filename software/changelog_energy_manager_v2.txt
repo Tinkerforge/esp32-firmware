@@ -351,7 +351,7 @@
 - Improve error message when firmware update is corrupted
 - Improve EEBus robustness
 
-2026-07-09: 1.7.1 (<unknown>)
+2026-07-09: 1.7.1 (e04a6ee0)
 - Expand calculation of meter values to single- and two-phase meters
 - Add CPU idling to reduce power consumption by 3 to 10%
 - Increase maximum certificate (chain) size to 10179 bytes
