@@ -100,14 +100,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
         // - client->rx_buffer is char * (so not const)
         (void)task_scheduler.await([data, c=&ctx](){
-            if (!c)
+            if (!*c)
                 return;
             (*c)->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, (*c)->recv_cb_userdata);
         });
         break;
     case WEBSOCKET_EVENT_PONG:
         task_scheduler.scheduleOnce([c=&ctx](){
-            if (!c)
+            if (!*c)
                 return;
             (*c)->pong_cb((*c)->pong_cb_userdata);
         });
