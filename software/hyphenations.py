@@ -1566,7 +1566,7 @@ de_hyph = [
     "pa-ra-me-ter",
     "ter-mi-na-te",
     "wei-ter-hin",
-    "Smart-pho-ne"
+    "Smart-phone"
 ]
 
 en_hyph = [
