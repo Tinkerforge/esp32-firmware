@@ -27,6 +27,8 @@
 
 #define MAX_CERT_ID (OPTIONS_CERTS_MAX_CERTS() - 1)
 #define MAX_CERT_NAME 32
+// 29 is the remaining JSON overhead of the /add endpoint; keep in sync with certs/main.tsx.
+#define MAX_CERT_SIZE (OPTIONS_API_JSON_MAX_LENGTH() - MAX_CERT_NAME - 29)
 
 class Certs final : public IModule
 {

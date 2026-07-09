@@ -39,6 +39,9 @@ interface State {
     addCert: Omit<API.getType['certs/add'], 'id'> & {file: File, file_too_large: boolean}
 }
 
+// Keep in sync with certs.h
+const MAX_CERT_SIZE = options.API_JSON_MAX_LENGTH - 32 - 29;
+
 export class Certs extends Component<{}, State> {
     render(props: {}, state: Readonly<State>) {
         if (!util.render_allowed())
@@ -73,9 +76,9 @@ export class Certs extends Component<{}, State> {
                                                     accept="application/pem-certificate-chain"
                                                 onChange={(ev) => {
                                                     let file = (ev.target as HTMLInputElement).files[0];
-                                                    this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > options.CERTS_MAX_CERT_SIZE}})
+                                                    this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}})
                                                 }}/>
-                                            <div class="invalid-feedback">{__("certs.script.cert_too_large")(options.CERTS_MAX_CERT_SIZE)}</div>
+                                            <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
                                         </FormRow>
                                     </>],
                                     onEditSubmit: async () => {
@@ -110,9 +113,9 @@ export class Certs extends Component<{}, State> {
                                             accept="application/pem-certificate-chain"
                                         onChange={(ev) => {
                                             let file = (ev.target as HTMLInputElement).files[0];
-                                            this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > options.CERTS_MAX_CERT_SIZE}});
+                                            this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > MAX_CERT_SIZE}});
                                         }}/>
-                                    <div class="invalid-feedback">{__("certs.script.cert_too_large")(options.CERTS_MAX_CERT_SIZE)}</div>
+                                    <div class="invalid-feedback">{__("certs.script.cert_too_large")(MAX_CERT_SIZE)}</div>
                                 </FormRow>
                             </>]}
                             onAddSubmit={async () => {
