@@ -545,3 +545,14 @@
 - Improve display name of SunSpec model 160
 - Improve error message when firmware update is corrupted
 - Improve EEBus robustness
+
+2026-07-09: 2.12.1 (<unknown>)
+- Expand calculation of meter values to single- and two-phase meters
+- Add CPU idling to reduce power consumption by 3 to 10%
+- Increase maximum certificate (chain) size to 10179 bytes
+- Fix last-seen of remote NFC tags
+- Fix cleaning up NFC tags of removed user
+- Fix renaming unknown user
+- Fix OCPP disconnect sometimes blocking forever
+- Fix "controlled chargers" charge log filter
+- Fix "Close remote access" with soon-to-be-released iOS App 2.0.0
