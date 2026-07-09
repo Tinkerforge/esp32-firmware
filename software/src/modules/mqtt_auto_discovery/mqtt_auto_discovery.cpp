@@ -337,6 +337,8 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 String json_str = buf;
                 json_str.trim();
+                // TODO add mqtt.publish with const char * and size_t to omit a copy here
+                // or add a function to adopt a buffer into a CoolString
                 mqtt.publish(mqtt_discovery_topics[topic_num].full_path, json_str, true);
                 free(buf);
 
