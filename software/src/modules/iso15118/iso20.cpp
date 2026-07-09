@@ -610,7 +610,7 @@ void ISO20::handle_power_delivery_req()
             //              until end of V2G communication session.
             // This is already set in common.cpp during SupportedAppProtocolRes, but we set it
             // again here defensively in case the state was changed externally.
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             state = ISO20State::PowerDeliveryStart;
             break;
 

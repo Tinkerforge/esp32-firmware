@@ -267,7 +267,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // This is an ISO EV that was slow to start SLAC. Restore 5% duty
             // and accept the request.
             iso15118.trace("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             slac_init_retry_count = 0;
             break;
 
@@ -784,7 +784,7 @@ void SLAC::state_machine_loop()
         uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
         if (iec_state == 0) { // State A: EV disconnected
             iso15118.trace("SLAC: EV disconnected during SLAC init retry cycle, resetting");
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             next_timeout = {};
             slac_init_retry_count = 0;
             state = SLACState::WaitForSlacParamRequest;
@@ -876,14 +876,14 @@ void SLAC::state_machine_loop()
                 iso15118.trace("SLAC: TT_EVSE_SLAC_init expired, entering State E/F (attempt %u/%u)",
                                 static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(SLAC_C_SEQU_RETRY));
                 // Set CP to 0% duty cycle (-12V = State E/F)
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
                 next_timeout = now_us() + SLAC_T_STEP_EF;
                 state = SLACState::SlacInitEF;
             }
         } else if (state == SLACState::SlacInitEF) {
             // T_step_EF expired: return to 5% duty and restart TT_EVSE_SLAC_init.
             iso15118.trace("SLAC: T_step_EF expired, returning to 5%% duty cycle");
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT_MAX;
             state = SLACState::WaitForSlacParamRequest;
         } else {

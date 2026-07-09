@@ -464,7 +464,7 @@ void Common::handle_supported_app_protocol_req()
         send_exi(Common::ExiType::AppHand);
         state = CommonState::ProtocolNegotiated;
 
-        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
         trace_iso("SupportedAppProtocolRes sent");
         trace_iso(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);

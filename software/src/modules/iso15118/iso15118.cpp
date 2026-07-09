@@ -330,7 +330,7 @@ void ISO15118::pre_setup()
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
                 evse_v2.set_plc_modem(true);
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             } else {
                 // TODO: Close sockets and set is_setup = false
                 task_scheduler.cancel(state_machine_task);
@@ -340,7 +340,7 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 evse_v2.set_plc_modem(false);
             }
         }
@@ -544,7 +544,7 @@ void ISO15118::register_urls()
         // previous set_plc_modem(false) after SessionStop), the modem would
         // stay disabled forever.
         evse_v2.set_plc_modem(true);
-        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
         }, 1_s, 20_ms);
@@ -583,7 +583,7 @@ void ISO15118::register_events()
 
                 // Reset CP back to 5% duty. This assumes that we are in some
                 // ISO15118 mode, since iec_temporary_active was set.
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
                 // Cancel any pending E/F reset task.
                 if (ef_reset_task != 0) {
@@ -706,7 +706,7 @@ void ISO15118::switch_to_iec_temporary()
 
     // Switch EVSE to IEC 61851 temporary mode.
     // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect.
-    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
+    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
 
     // Mark that we're in IEC temporary mode waiting for EV disconnect.
     iec_temporary_active = true;
@@ -720,6 +720,11 @@ void ISO15118::switch_to_iec_temporary()
     //       The EVSE Bricklet needs additional support for this. Currently this can
     //       collide with the CP disconnect that the Bricklet uses to try to wake up the EV.
     // ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15_s);
+}
+
+void ISO15118::set_charging_protocol(const uint8_t charging_protocol, const uint16_t cp_duty_cycle) {
+    evse_v2.set_charging_protocol(charging_protocol, cp_duty_cycle);
+    iec_temporary_active = (charging_protocol == TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY);
 }
 
 void ISO15118::check_ef_reset()
@@ -749,11 +754,11 @@ void ISO15118::check_ef_reset()
 
     // Set 0% duty cycle on CP (-12V), which signals State E/F to the EV.
     // Per ISO 15118-3 Table 3: T_step_EF >= 4 seconds, C_sequ_retry = 3.
-    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
 
     // After 4 seconds, switch back to IEC temporary mode and schedule another check
     ef_reset_task = task_scheduler.scheduleOnce([this]() {
-        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
+        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
 
         // Give the EV 15 seconds to start charging before retrying
         ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15_s);
@@ -858,7 +863,7 @@ void ISO15118::begin_iec_transition()
     // Set CP to 100% duty. This gives the EV a clean break from the ISO 15118 signal
     // before we offer IEC 61851 PWM charging. Some EVs (e.g. Cupra Born and ID.Buzz)
     // won't accept a PWM unless they see 100% duty cycle first.
-    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
 
     // Mark that the IEC transition is in progress so the State A handler
     // knows to clean up if the EV disconnects during the delay.

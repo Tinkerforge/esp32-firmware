@@ -549,6 +549,10 @@ void ISO2::handle_charge_parameter_discovery_req()
                 iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
                     iso15118.trace("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
                     iso15118.disable_plc_modem();
+                    if (!iso15118.iec_temporary_active) {
+                        iso15118.trace("ISO15118: Beginning IEC transition");
+                        iso15118.begin_iec_transition();
+                    }
                 }, 5_s);
                 return;
             }
@@ -697,16 +701,16 @@ void ISO2::handle_power_delivery_req()
 
     switch (req->ChargeProgress) {
         case iso2_chargeProgressType_Start:
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             break;
         case iso2_chargeProgressType_Stop:
             // Go to 100% PWM to signal to the EV that we accepted the stop,
             // but we need to go back to 5% PWM, so the EV can resume charging
             // if it wants to.
             // TODO: The timing here is unclear, are 5 seconds OK?
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
             task_scheduler.scheduleOnce([this]() {
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             }, 5_s);
             break;
         case iso2_chargeProgressType_Renegotiate:
@@ -953,6 +957,10 @@ void ISO2::handle_session_stop_req()
         iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
             iso15118.trace("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
             iso15118.disable_plc_modem();
+            if (!iso15118.iec_temporary_active) {
+                iso15118.trace("ISO15118: Beginning IEC transition");
+                iso15118.begin_iec_transition();
+            }
         }, 5_s);
 
         // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the

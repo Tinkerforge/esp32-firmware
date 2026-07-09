@@ -31,6 +31,7 @@
 #include "iso20.h"
 #include "debug_mode.h"
 #include "pib_manager.h"
+#include "bindings/bricklet_evse_v2.h"
 
 // If defined, the iso15118 module logs verbose, per-message protocol decode dumps
 // (DIN70121 / ISO15118-2 / ISO15118-20 / SLAC / SDP) to the "iso15118" tracelog via trace_iso().
@@ -111,6 +112,7 @@ public:
 
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
+    void set_charging_protocol(const uint8_t charging_protocol, const uint16_t cp_duty_cycle);
 
     bool iec_temporary_active = false;
     uint64_t ef_reset_task = 0;

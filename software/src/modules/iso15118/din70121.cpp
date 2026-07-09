@@ -696,6 +696,10 @@ void DIN70121::handle_session_stop_req()
         iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
             iso15118.trace("DIN70121: 5s modem-off timer fired, EV did not close TCP in time");
             iso15118.disable_plc_modem();
+            if (!iso15118.iec_temporary_active) {
+                iso15118.trace("ISO15118: Beginning IEC transition");
+                iso15118.begin_iec_transition();
+            }
         }, 5_s);
 
         // Do NOT call reset_active_socket() here. Leave the socket open so the
