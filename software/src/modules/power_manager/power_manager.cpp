@@ -464,6 +464,7 @@ void PowerManager::setup()
 void PowerManager::register_urls()
 {
     api.addState("power_manager/state", &state);
+    api.addFeature("power_manager");
 
     api.addPersistentConfig("power_manager/config", &config);
     api.addPersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
