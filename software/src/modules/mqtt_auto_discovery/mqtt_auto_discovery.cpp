@@ -323,9 +323,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 // For MeterValue entities, inject dynamically-resolved value_template
                 if (info.check_type == MqttDiscoveryCheckType::MeterValue && info.value_template_fmt != nullptr && resolved_meter_index >= 0) {
-                    char vt_buf[128];
-                    snprintf(vt_buf, sizeof(vt_buf), info.value_template_fmt, resolved_meter_index);
-                    json.addMemberString("value_template", vt_buf);
+                    json.addMemberStringF("value_template", info.value_template_fmt, resolved_meter_index);
                 }
 
                 json.addMemberObject("device");
