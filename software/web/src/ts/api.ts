@@ -244,7 +244,11 @@ export type feature =
     "meter_phases" |
     "meter_all_values" |
     "rgb_led" |
-    "firmware_update";
+    "firmware_update" |
+    "iso15118" |
+    "evse_gp_output" |
+    "front_panel";
+    // "ocpp_debug" intentionally omitted here: Not an official feature
 
 export function hasFeature(feature: feature) {
     return hasFeature_unchecked(feature);
