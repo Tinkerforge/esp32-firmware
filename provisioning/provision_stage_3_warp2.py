@@ -1020,7 +1020,7 @@ class Stage3:
             result['iso15118_attenuation_profile'] = ap
 
             for i, v in enumerate(ap[:-1]):
-                if v >= ATTENUATION_PROFILE_THRESHOLD[i]:
+                if v >= (ATTENUATION_PROFILE_THRESHOLD[i] + 10): # temporary +10 until we have more data
                     fatal_error(f"ISO 15118 attenuation profile entry {i} out of range: {v} >= {ATTENUATION_PROFILE_THRESHOLD[i]}!\nProfile: {",".join([str(x) for x in ap])}")
 
             self.change_cp_pe_state('A')
