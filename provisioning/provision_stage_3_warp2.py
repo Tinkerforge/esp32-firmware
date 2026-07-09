@@ -139,7 +139,8 @@ class Stage3:
                  get_meter_voltages_function,
                  set_iso15118_enabled_function,
                  get_iso15118_ev_mac_function,
-                 get_iso15118_attenuation_profile_function):
+                 get_iso15118_attenuation_profile_function,
+                 set_evse_no_pwm_test_mode_function):
         self.generation = generation
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
@@ -154,6 +155,7 @@ class Stage3:
         self.set_iso15118_enabled_function = set_iso15118_enabled_function
         self.get_iso15118_ev_mac_function = get_iso15118_ev_mac_function
         self.get_iso15118_attenuation_profile_function = get_iso15118_attenuation_profile_function
+        self.set_evse_no_pwm_test_mode_function = set_evse_no_pwm_test_mode_function
 
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
@@ -895,7 +897,10 @@ class Stage3:
             report[key] = blackbox.bb_measure_zauto()._asdict()
 
             if report[key]['passed']:
-                return
+                value, unit = report[key]['results']['ZLPE_Auto'].split(' ')
+
+                if unit == 'Ohm' and float(value) > 1:
+                    return
 
             all_results.append(report[key])
 
@@ -913,6 +918,7 @@ class Stage3:
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
         assert self.reset_evse_function != None
+        assert self.set_evse_no_pwm_test_mode_function != None
 
         report = result["electrical_tests"]
 
@@ -1095,6 +1101,16 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
+        # set mode A to disable PWM and then enter no-PWM test mode to keep PWM disabled when
+        # enterting state C. the PWM signal on the CP line affects the Z auto L-PE measurement
+        self.change_cp_pe_state('A')
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        if not self.check_iec_state('A'):
+            fatal_error('Charger not in IEC state A')
+
+        self.set_evse_no_pwm_test_mode_function(True)
+
         # step 02: test voltage L1
         self.change_cp_pe_state('C')
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
@@ -1160,6 +1176,9 @@ class Stage3:
         self.test_zauto('L3', report)
 
         self.verify_evse_not_crashed()
+
+        # switch back to normal test mode before RCD test to avoid the error state waiting times
+        self.set_evse_no_pwm_test_mode_function(False)
 
         # step 08: test RCD positive
         self.change_meter_state('Type2-L1')
@@ -1259,7 +1278,8 @@ def main():
                     get_meter_voltages_function=lambda: None,
                     set_iso15118_enabled_function=lambda: None,
                     get_iso15118_ev_mac_function=lambda: None,
-                    get_iso15118_attenuation_profile_function=lambda: None)
+                    get_iso15118_attenuation_profile_function=lambda: None,
+                    set_evse_no_pwm_test_mode_function=lambda: None)
 
     stage3.setup()
 

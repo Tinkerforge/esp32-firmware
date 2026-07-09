@@ -367,14 +367,24 @@ def get_meter_voltages():
         return meter_values[:3]
     return None
 
+def set_evse_test_mode(password=0xdeadbeef, name=''):
+    global evse
+    for i in range(3):
+        retry_wrapper(lambda: evse.set_test_mode(True, password), f"enable EVSE {name}test mode")
+        if retry_wrapper(lambda: evse.get_test_mode(), "read back EVSE test mode"):
+            break
+
+def set_evse_no_pwm_test_mode(enable):
+    if enable:
+        set_evse_test_mode(0xbeefdead, 'no-PWM ')
+    else:
+        set_evse_test_mode()
+
 def reset_evse():
     global evse
     retry_wrapper(lambda: evse.reset(), "reset EVSE")
     time.sleep(2)
-    for i in range(3):
-        retry_wrapper(lambda: evse.set_test_mode(True, 0xdeadbeef), "enable EVSE test mode")
-        if retry_wrapper(lambda: evse.get_test_mode(), "read back EVSE test mode"):
-            break
+    set_evse_test_mode()
 
 class Scanner:
     def __init__(self):
@@ -654,7 +664,8 @@ def led_wrap():
                     get_meter_voltages_function=get_meter_voltages,
                     set_iso15118_enabled_function=set_iso15118_enabled,
                     get_iso15118_ev_mac_function=get_iso15118_ev_mac,
-                    get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile)
+                    get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile,
+                    set_evse_no_pwm_test_mode_function=set_evse_no_pwm_test_mode)
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
