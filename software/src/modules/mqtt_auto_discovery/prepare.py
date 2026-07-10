@@ -871,8 +871,8 @@ for meter_id in range(0, meters_max_slots):
                 feature=Feature.METERS,
                 object_id=f"meter_{meter_id}_{suffix}",
                 path=f"meters/{meter_id}/values",
-                name_de=f"{name_de} Zähler {meter_id}",
-                name_en=f"{name_en} meter {meter_id}",
+                name_de=f"{name_de}",
+                name_en=f"{name_en}",
                 availability=[
                     AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
                 static_info_generic=static_info,
