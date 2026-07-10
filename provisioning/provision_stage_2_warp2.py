@@ -690,7 +690,7 @@ def led_wrap():
         if os.system(f'pdftops {report_path_pdf} - | lpr') != 0:
             fatal_error(f"Could not print report")
 
-        drilling_template_path = os.path.join(WARP_CHARGER_DIRECTORY, 'documents', f'WARP{scanner.qr_gen}_Bohrschablone.pdf')
+        drilling_template_path = os.path.join(WARP_CHARGER_DIRECTORY, 'documents', f'WARP{self.qr_hw_version.replace(".0", "").replace(".", "")}_Bohrschablone.pdf')
 
         print(f"Printing drilling template {drilling_template_path}")
 
