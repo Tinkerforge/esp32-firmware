@@ -41,7 +41,6 @@ public:
 private:
     // Necessary to not access config_in_use in MQTT thread.
     MqttAutoDiscoveryMode mode;
-    bool broadcast_empty = false;
 
     struct DiscoveryTopic {
         String full_path;

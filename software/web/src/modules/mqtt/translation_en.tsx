@@ -58,9 +58,7 @@ let x = {
             "auto_discovery_mode_generic": "Generic",
             "auto_discovery_mode_homeassistant": "Home Assistant",
             "auto_discovery_prefix": "Discovery topic prefix",
-            "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty.",
-            "broadcast_empty": "Remove unavailable entities",
-            "broadcast_empty_desc": "Remove entities automatically from the home automation if they are no longer available."
+            "auto_discovery_prefix_invalid": "The topic prefix can not start with $, contain a # or +, or be empty."
         },
         "automation": {
             "mqtt": "Send MQTT message",
