@@ -74,5 +74,6 @@ private:
     void trace_request_response();
 
     DIN70121State state = DIN70121State::Idle;
-    bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
+    bool soc_read = false;              // Set after first SoC reading in read_soc_only mode
+    uint8_t soc_shutdown_retries = 0;   // Count of ChargeParameterDiscoveryReq received after SoC was already read
 };

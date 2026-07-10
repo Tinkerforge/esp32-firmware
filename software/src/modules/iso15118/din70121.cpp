@@ -238,6 +238,7 @@ void DIN70121::handle_session_setup_req()
 
     // Reset soc_read flag for new session
     soc_read = false;
+    soc_shutdown_retries = 0;
 
     api_state.get("evcc_id")->removeAll();
     for (uint16_t i = 0; i < std::min(static_cast<uint16_t>(sizeof(req->EVCCID.bytes)), req->EVCCID.bytesLen); i++) {
@@ -363,12 +364,31 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // AC charging via DIN. Read SoC if configured, then end session to fall back to IEC 61851.
     //
     // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Ongoing.
-    // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out after ~10s
-    // (per [V2G-DC-864]), after which the EV sends SessionStopReq or PowerDeliveryReq(Stop).
+    // Some EVs react to EVSE_Shutdown right away and send SessionStopReq.
+    //
+    // Other EVs (e.g. Tesla) ignore the EVSEStatusCode during ChargeParameterDiscovery
+    // and keep polling until their internal Ongoing timeout expires.
+    // To avoid this, after a few Ongoing+EVSE_Shutdown retries we escalate to
+    // EVSEProcessing=Finished. The EV then either stops on the EVSE_Shutdown status or proceeds
+    // to CableCheckReq, where we perform the official SECC-initiated stop per [V2G-DC-891]
+    // (OK + Finished + EVSE_Shutdown), resulting in a graceful session teardown without an
+    // EV-side error.
     if ((iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) && soc_read) {
-        iso15118.trace("DIN70121: SoC already read, sending EVSE_Shutdown to end session");
+        if (soc_shutdown_retries < 255) {
+            soc_shutdown_retries++;
+        }
+
+        // NOTE: We use OK here, while after 10 retries and FAILED in iso2. This is on purpose.
+        //       The meaning is slightly different between the two. With iso2 a new charge can
+        //       explicitely be started after FAILED, which is not true with din.
         res->ResponseCode = din_responseCodeType_OK;
-        res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
+        if (soc_shutdown_retries > 10) {
+            iso15118.trace("DIN70121: SoC shutdown ignored after %d retries, sending Finished", soc_shutdown_retries);
+            res->EVSEProcessing = din_EVSEProcessingType_Finished;
+        } else {
+            iso15118.trace("DIN70121: SoC already read, sending EVSE_Shutdown to end session");
+            res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
+        }
 
         // Mandatory fields: DC_EVSEChargeParameter with valid DC_EVSEStatus and limits
         // must be present for a valid ChargeParameterDiscoveryRes EXI encoding.
@@ -425,6 +445,10 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
         iso15118.common.send_exi(Common::ExiType::Din);
         state = DIN70121State::ChargeParameterDiscovery;
+
+        if (soc_shutdown_retries == 11) {
+            iso15118.schedule_delayed_modem_off();
+        }
         return;
     }
 

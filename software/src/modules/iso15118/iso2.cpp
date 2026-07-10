@@ -470,7 +470,9 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     if (dc_soc_session) {
         if (soc_read) {
-            soc_shutdown_retries++;
+            if (soc_shutdown_retries < 255) {
+                soc_shutdown_retries++;
+            }
 
             // SoC already read. Send OK + Ongoing + EVSE_Shutdown to end the session.
             // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out
@@ -540,20 +542,9 @@ void ISO2::handle_charge_parameter_discovery_req()
 
                 iso15118.common.send_exi(Common::ExiType::Iso2);
 
-                // Start 5s modem-off timer here. If the EV does still send a StopReq after FAILED response,
-                // this is enough time. We expect that the EV closes the socket, after which we
-                // will cancel this timer and disable the plc modem immediately.
-                if (iso15118.plc_modem_off_task != 0) {
-                    task_scheduler.cancel(iso15118.plc_modem_off_task);
+                if (soc_shutdown_retries == 11) {
+                    iso15118.schedule_delayed_modem_off();
                 }
-                iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
-                    iso15118.trace("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
-                    iso15118.disable_plc_modem();
-                    if (!iso15118.iec_temporary_active) {
-                        iso15118.trace("ISO15118: Beginning IEC transition");
-                        iso15118.begin_iec_transition();
-                    }
-                }, 5_s);
                 return;
             }
 
