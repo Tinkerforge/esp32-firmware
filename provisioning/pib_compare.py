@@ -17,6 +17,7 @@ NMK_OFFSET = PIB_OFFSET_BASE + 0x64   # 0x424, 16 bytes
 NMK_LEN = 16
 NID_OFFSET = PIB_OFFSET_BASE + 0xF8   # 0x4B8, 7 bytes
 NID_LEN = 7
+AUTO_FW_OFFSET = PIB_OFFSET_BASE + 0xFF   # 0x4BF, 1 byte
 
 IGNORED_REGIONS = [
     (DATA_CHECKSUM_OFFSET, 4, "data checksum"),
@@ -24,6 +25,7 @@ IGNORED_REGIONS = [
     (DAK_OFFSET, DAK_LEN, "device access key (DAK)"),
     (NMK_OFFSET, NMK_LEN, "network membership key (NMK)"),
     (NID_OFFSET, NID_LEN, "network identifier (NID, derived from NMK)"),
+    (AUTO_FW_OFFSET, 1, "AutoFWUpgradeable"), # The modem clears this flag to 0 after reset
 ]
 
 
