@@ -522,6 +522,12 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                             disabled={true}
                         />
                     </FormRow>
+                    <FormRow label={__("iso15118.content.fast_timeout")} help={__("iso15118.content.fast_timeout_help")}>
+                        <Switch desc={__("iso15118.content.fast_timeout_desc")}
+                                checked={state.fast_timeout}
+                                onClick={this.toggle('fast_timeout')}
+                        />
+                    </FormRow>
                     <CollapsedSection heading={__("iso15118.content.advanced_settings")}>
                         <FormRow label={__("iso15118.content.pib_download")} label_muted={__("iso15118.content.pib_download_desc")}>
                             <Button variant="primary" className="w-100"

@@ -112,6 +112,7 @@ The EXI message encoding/decoding is based on [libcbv2g](https://github.com/Audr
 | Read SoC | Yes/No | Read State of Charge via ISO 15118 |
 | Charge via ISO 15118 | Yes/No | Enable charging via ISO 15118 (allows arbitrary phase switching and currents) |
 | Minimum Charge Current | 1000-22000 mA | Minimum charging current |
+| Fast Timeout | Yes/No | Non-standard SLAC init timeout: single 10s attempt instead of 3x50s with E/F cycling. EVs without ISO 15118 support (e.g. without a CCS charging plug) otherwise wait at least two minutes before the IEC 61851 fallback lets an AC charge start |
 
 ## System Interface
 
