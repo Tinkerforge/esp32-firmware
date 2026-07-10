@@ -85,6 +85,11 @@ static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
 #endif
 }
 
+void WebServer::pre_setup()
+{
+    trace_buffer_index = logger.alloc_trace_buffer("web_server", 64 * 1024);
+}
+
 void WebServer::post_setup()
 {
     if (this->httpd != nullptr) {
@@ -511,6 +516,8 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
     const char *uri = req->uri;
     const size_t uri_len = strlen(uri);
     const httpd_method_t method = static_cast<httpd_method_t>(req->method);
+
+    logger.tracefln(server->get_trace_buffer_index(), ":%hu %s %s", port_handlers->port, request.methodString(), req->uri);
 
     const WebServerHandler *handler = server->match_handlers(port_handlers, uri, uri_len, method);
 

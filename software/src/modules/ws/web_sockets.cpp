@@ -89,8 +89,10 @@ bool WebSockets::queueFull()
 // Closing the WS session directly from within the initial WS request would leak the WebSocketClient object because the session context isn't freed.
 bool WebSockets::send_ws_item_direct(int fd, httpd_ws_frame *ws_pkt)
 {
-    if (httpd_ws_get_fd_info(this->httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
-        logger.printfln("send_ws_item_direct encountered non-WS fd %i", fd);
+    const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(this->httpd, fd);
+
+    if (ws_client_info != HTTPD_WS_CLIENT_WEBSOCKET) {
+        logger.tracefln(server.get_trace_buffer_index(), "send_ws_item_direct non-WS fd %i type %u", fd, static_cast<unsigned>(ws_client_info));
         return false;
     }
 
@@ -117,12 +119,17 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
             continue;
         }
 
-        if (httpd_ws_get_fd_info(this->httpd, wi->fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
-            logger.printfln("send_ws_work_item encountered non-WS fd %i", wi->fds[i]);
+        const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(this->httpd, wi->fds[i]);
+
+        if (ws_client_info != HTTPD_WS_CLIENT_WEBSOCKET) {
+            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item non-WS fd %i type %u", wi->fds[i], static_cast<unsigned>(ws_client_info));
             continue;
         }
 
-        if (httpd_ws_send_frame_async(this->httpd, wi->fds[i], &ws_pkt) != ESP_OK) {
+        const esp_err_t err = httpd_ws_send_frame_async(this->httpd, wi->fds[i], &ws_pkt);
+
+        if (err != ESP_OK) {
+            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item close fd %i, err 0x%x", wi->fds[i], static_cast<unsigned>(err));
             this->keepAliveCloseDead_HTTPThread(wi->fds[i]);
             result = false;
         }
@@ -145,6 +152,7 @@ void WebSockets::processPendingCloses_HTTPThread()
     }
 
     for (size_t i = 0; i < count; ++i) {
+        logger.tracefln(server.get_trace_buffer_index(), "close pending fd %i", fds_to_close[i]);
         this->keepAliveCloseDead_HTTPThread(fds_to_close[i]);
     }
 }
@@ -250,7 +258,10 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
     } else if (frame_type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
-        ws->keepAliveRemove(httpd_req_to_sockfd(req));
+        const int fd = httpd_req_to_sockfd(req);
+        ws->keepAliveRemove(fd);
+
+        logger.tracefln(server.get_trace_buffer_index(), "WS close fd %i", fd);
 
         // Abuse the ws_control_frames flag to indicate that we received a close frame.
         // Any socket that still has both ws_handshake_done and ws_control_frames set to true on close wasn't closed cleanly.
@@ -330,6 +341,8 @@ void WebSockets::keepAliveCloseDead_async(int fd)
 
     this->keepAliveRemove(fd);
 
+    logger.tracefln(server.get_trace_buffer_index(), "closeDead async %i", fd);
+
     // Enqueue the fd for closing on the HTTP thread.
     // The fd-validity and fd-reuse checks (httpd_ws_get_fd_info) must not
     // be called from non-HTTP threads because they access httpd's internal
@@ -357,14 +370,16 @@ void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
     const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(httpd, fd);
 
     if (ws_client_info == HTTPD_WS_CLIENT_HTTP) {
-        logger.printfln("keepAliveCloseDead_HTTPThread encountered fd %i reused for HTTP", fd);
+        logger.tracefln(server.get_trace_buffer_index(), "keepAliveCloseDead_HTTPThread fd %i reused for HTTP", fd);
         return;
     }
 
     if (ws_client_info == HTTPD_WS_CLIENT_INVALID) {
-        logger.printfln("keepAliveCloseDead_HTTPThread encountered invalid fd %i with no associated session", fd);
+        logger.tracefln(server.get_trace_buffer_index(), "keepAliveCloseDead_HTTPThread invalid fd %i with no associated session", fd);
         return;
     }
+
+    // Don't log normal close because the caller already does.
 
     // This old comment might not be relevant anymore:
     // Seems like we have to do everything by ourselves...
@@ -430,7 +445,7 @@ void WebSockets::closeLRUClient_HTTPThread()
             // Found non-websocket fd.
             // Probably was a websocket, was then closed
             // and re-opened as non-websocket-fd.
-            logger.printfln("closeLRUClient_HTTPThread encountered fd reused for HTTP, type %u", static_cast<unsigned>(type));
+            logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i reused for HTTP, type %u", keep_alive_fds[i], static_cast<unsigned>(type));
             this->keepAliveCloseDead_HTTPThread(keep_alive_fds[i]);
             return;
         }
@@ -443,6 +458,7 @@ void WebSockets::closeLRUClient_HTTPThread()
         }
     }
 
+    logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i", keep_alive_fds[min_fd_idx]);
     this->keepAliveCloseDead_HTTPThread(keep_alive_fds[min_fd_idx]);
 }
 
@@ -761,9 +777,11 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
             }
 
             if (success) {
+                logger.tracefln(server.get_trace_buffer_index(), "WS new fd %i connected", sock);
                 this->keepAliveAdd(sock);
                 return request.unsafe_ResponseAlreadySent(); // Don't send a HTTP response after switching to WebSockets.
             } else {
+                logger.tracefln(server.get_trace_buffer_index(), "WS new fd %i failed on connect", sock);
                 // Returning ESP_FAIL inside the WebServerRequestReturnProtect should tell httpd to close the connection.
                 return WebServerRequestReturnProtect{.error = ESP_FAIL};
             }
@@ -882,9 +900,11 @@ void WebSockets::notify_unclean_close(struct sock_db *session)
     WebSocketsClient *client = static_cast<WebSocketsClient *>(session->ctx);
 
     if (client == nullptr) {
-        logger.printfln("Uncleanly closed session via fd %i has no WebSocketsClient", session->fd);
+        logger.tracefln(server.get_trace_buffer_index(), "Uncleanly closed session via fd %i has no WebSocketsClient", session->fd);
         return;
     }
+
+    logger.tracefln(server.get_trace_buffer_index(), "unclean close fd %i WSC %p", session->fd, static_cast<void *>(client));
 
     if (on_client_disconnect_fn != nullptr) {
         on_client_disconnect_fn(client, false);

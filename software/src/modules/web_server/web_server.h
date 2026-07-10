@@ -184,6 +184,7 @@ class WebServer final : public IModule
 public:
     WebServer() {}
 
+    void pre_setup();
     void post_setup();
     void pre_reboot();
 
@@ -200,6 +201,8 @@ public:
     void register_extra_port(WebServerExtraPortData *port_data);
     bool reload_extra_port_cert(cert_load_info *load_info, uint16_t port, bool allow_fallback = true, String *cert_error = nullptr);
     bool reload_web_server_cert(int16_t cert_id, int16_t key_id, bool allow_fallback = true, String *cert_error = nullptr);
+
+    inline size_t get_trace_buffer_index() {return this->trace_buffer_index;}
 
 #ifdef DEBUG_FS_ENABLE
     void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
@@ -237,4 +240,5 @@ private:
     std::function<bool(WebServerRequest)> auth_fn;
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
     WebServerExtraPortData *extra_ports;
+    size_t trace_buffer_index;
 };

@@ -21,12 +21,21 @@
 #include "web_sockets.h"
 #include "web_sockets_client.h"
 
+#include "event_log_prefix.h"
+
 #ifdef DEBUG_FS_ENABLE
 #include <freertos/task.h>
 #endif
 
+WebSocketsClient::WebSocketsClient(int fd_, WebSockets *ws_) : fd(fd_), ws(ws_)
+{
+    logger.tracefln(server.get_trace_buffer_index(), "WSC %p fd %i", this, fd);
+}
+
 WebSocketsClient::~WebSocketsClient()
 {
+    logger.tracefln(server.get_trace_buffer_index(), "~WSC %p fd %i", this, fd);
+
     if (ctx != nullptr) {
         free(ctx);
         ctx = nullptr;
@@ -66,6 +75,7 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
 
 void WebSocketsClient::close_async()
 {
+    logger.tracefln(server.get_trace_buffer_index(), "WSC %p close async fd %i", this, fd);
     ws->keepAliveCloseDead_async(fd);
 }
 
@@ -79,6 +89,7 @@ void WebSocketsClient::close_HTTPThread()
     }
 #endif
 
+    logger.tracefln(server.get_trace_buffer_index(), "WSC %p close httpd fd %i", this, fd);
     ws->keepAliveCloseDead_HTTPThread(fd);
 }
 
