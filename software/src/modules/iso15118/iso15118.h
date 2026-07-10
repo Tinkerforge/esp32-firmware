@@ -121,6 +121,7 @@ public:
 
     uint64_t plc_modem_off_task = 0;
     void disable_plc_modem();
+    void schedule_delayed_modem_off();
 
     uint64_t iec_switch_task = 0;
     void begin_iec_transition();

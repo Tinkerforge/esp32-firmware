@@ -856,6 +856,21 @@ void ISO15118::disable_plc_modem()
     }
 }
 
+void ISO15118::schedule_delayed_modem_off()
+{
+    if (plc_modem_off_task != 0) {
+        task_scheduler.cancel(plc_modem_off_task);
+    }
+    plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
+        trace("ISO15118: 5s modem-off timer fired, EV did not close TCP in time");
+        disable_plc_modem();
+        if (!iec_temporary_active) {
+            trace("ISO15118: Beginning IEC transition");
+            begin_iec_transition();
+        }
+    }, 5_s);
+}
+
 void ISO15118::begin_iec_transition()
 {
     iso15118.trace("ISO15118: Stopping PWM (100%% duty) before IEC transition");

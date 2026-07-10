@@ -563,6 +563,7 @@ void DIN70121::handle_cable_check_req()
     // Cancel sequence timeout since we may not get a SessionStopReq.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         cancel_sequence_timeout(next_timeout);
+        iso15118.schedule_delayed_modem_off();
     }
 }
 
@@ -595,6 +596,10 @@ void DIN70121::handle_power_delivery_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::PowerDelivery;
+
+    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
+        iso15118.schedule_delayed_modem_off();
+    }
 }
 
 void DIN70121::handle_pre_charge_req()
@@ -626,6 +631,7 @@ void DIN70121::handle_pre_charge_req()
 
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         cancel_sequence_timeout(next_timeout);
+        iso15118.schedule_delayed_modem_off();
     }
 }
 
@@ -670,6 +676,7 @@ void DIN70121::handle_current_demand_req()
 
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         cancel_sequence_timeout(next_timeout);
+        iso15118.schedule_delayed_modem_off();
     }
 }
 
@@ -690,17 +697,7 @@ void DIN70121::handle_session_stop_req()
         cancel_sequence_timeout(next_timeout);
 
         // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
-        if (iso15118.plc_modem_off_task != 0) {
-            task_scheduler.cancel(iso15118.plc_modem_off_task);
-        }
-        iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
-            iso15118.trace("DIN70121: 5s modem-off timer fired, EV did not close TCP in time");
-            iso15118.disable_plc_modem();
-            if (!iso15118.iec_temporary_active) {
-                iso15118.trace("ISO15118: Beginning IEC transition");
-                iso15118.begin_iec_transition();
-            }
-        }, 5_s);
+        iso15118.schedule_delayed_modem_off();
 
         // Do NOT call reset_active_socket() here. Leave the socket open so the
         // poll loop can detect POLLHUP when the EV closes the connection, which
