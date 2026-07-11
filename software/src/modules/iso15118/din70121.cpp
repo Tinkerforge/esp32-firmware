@@ -717,8 +717,17 @@ void DIN70121::handle_session_stop_req()
     // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
     // DIN 70121 is DC-only, so we always fall back to IEC.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
+
+        if (iso15118.opt_nonegotiation_after_soc && !iso15118.nonegotiation_pending) {
+            // Keep the PLC modem enabled and force a second SLAC round. The second
+            // supportedAppProtocolReq is answered with Failed_NoNegotiation.
+            state = DIN70121State::Idle;
+            iso15118.begin_reslac_for_nonegotiation();
+            return;
+        }
+
+        iso15118.begin_iec_transition();
 
         // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
         iso15118.schedule_delayed_modem_off();

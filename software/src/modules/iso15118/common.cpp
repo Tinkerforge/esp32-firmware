@@ -429,10 +429,36 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
     }
 
-    if ((din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX)) {
-        iso15118.trace("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
+    const bool no_protocol_match = (din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX);
+    const bool force_nonegotiation = iso15118.nonegotiation_pending ||
+                                     (iso15118.is_autocharge_only() && iso15118.opt_nonegotiation_autocharge);
+
+    if (no_protocol_match || force_nonegotiation) {
+        if (no_protocol_match) {
+            iso15118.trace("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
+        } else {
+            iso15118.trace("Forcing Failed_NoNegotiation (%s)", iso15118.nonegotiation_pending ? "after SoC" : "autocharge");
+        }
         api_state.get("protocol")->updateString("-");
-        return;
+
+        iso15118.nonegotiation_pending = false;
+        if (iso15118.reslac_guard_task != 0) {
+            task_scheduler.cancel(iso15118.reslac_guard_task);
+            iso15118.reslac_guard_task = 0;
+        }
+
+        appHandEnc->supportedAppProtocolRes_isUsed = 1;
+        res->ResponseCode = appHand_responseCodeType_Failed_NoNegotiation;
+        res->SchemaID_isUsed = 0;
+        send_exi(Common::ExiType::AppHand);
+        state = CommonState::Idle;
+        trace_iso("SupportedAppProtocolRes sent with Failed_NoNegotiation");
+
+        // Offer basic charging per IEC 61851-1 Table A.7 ("digital communication
+        // could not be established"). Socket is left open so the poll loop can
+        // detect the EV closing TCP, which triggers early modem shutdown.
+        iso15118.begin_iec_transition();
+        iso15118.schedule_delayed_modem_off();
     } else {
         // Priority: ISO2 > DIN > ISO20. ISO20 is currently testing-only.
         uint8_t schema_id = 0;

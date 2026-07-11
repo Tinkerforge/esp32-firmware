@@ -940,9 +940,19 @@ void ISO2::handle_session_stop_req()
         state = ISO2State::Idle; // Reset state machine for next session
         iso15118.trace("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
+        cancel_sequence_timeout(next_timeout);
+
+        if (iso15118.opt_nonegotiation_after_soc && !iso15118.nonegotiation_pending) {
+            // Keep the PLC modem enabled and force a second SLAC round. The second
+            // supportedAppProtocolReq is answered with Failed_NoNegotiation.
+            state = ISO2State::Idle;
+            soc_read = false;
+            iso15118.begin_reslac_for_nonegotiation();
+            return;
+        }
+
         // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
         iso15118.begin_iec_transition();
-        cancel_sequence_timeout(next_timeout);
 
         // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
         iso15118.schedule_delayed_modem_off();

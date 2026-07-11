@@ -592,7 +592,9 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     // Do NOT send CM_SLAC_MATCH.CNF: if we confirm the match, the EV joins the PLC
     // network and tries SDP/V2G, which times out after ~90-100s before falling back to IEC.
     // By not confirming, the EV's TT_MATCH_RESPONSE expires immediately after 200ms.
-    if (iso15118.is_autocharge_only()) {
+    // With opt_nonegotiation_autocharge the match is confirmed instead and the EV is
+    // answered with Failed_NoNegotiation at the supportedAppProtocol stage.
+    if (iso15118.is_autocharge_only() && !iso15118.opt_nonegotiation_autocharge) {
         iso15118.trace("Autocharge-only mode: SLAC complete, NOT sending CM_SLAC_MATCH.CNF");
         next_timeout = {};
         state = SLACState::LinkDetected;  // Mark SLAC as done

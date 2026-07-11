@@ -115,6 +115,23 @@ public:
     // C_SEQU_RETRY+1 attempts with SLAC_TT_EVSE_SLAC_INIT_MAX.
     bool is_fast_timeout() const { return config.get("fast_timeout")->asBool(); }
 
+    // Experimental DC->AC fallback methods for EVs that refuse to
+    // start basic AC charging after a graceful ISO 15118 session stop.
+    // When true, begin_iec_transition() uses the ISO 15118-3 error teardown
+    // [V2G3-M07-05..09]: X1 -> leave logical network -> E/F >= T_step_EF -> nominal PWM.
+    bool opt_ef_teardown = false;
+    // When true and in autocharge-only mode, complete SLAC/SDP/TCP and answer
+    // supportedAppProtocolReq with Failed_NoNegotiation instead of skipping SDP/V2G.
+    bool opt_nonegotiation_autocharge = false;
+    // When true and in read_soc-only mode, keep the PLC modem enabled after the
+    // DC SoC session, force a second SLAC round and answer the second
+    // supportedAppProtocolReq with Failed_NoNegotiation.
+    bool opt_nonegotiation_after_soc = false;
+
+    bool nonegotiation_pending = false;
+    uint64_t reslac_guard_task = 0;
+    void begin_reslac_for_nonegotiation();
+
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
     void set_charging_protocol(const uint8_t charging_protocol, const uint16_t cp_duty_cycle);

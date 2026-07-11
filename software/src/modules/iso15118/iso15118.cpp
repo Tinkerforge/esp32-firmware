@@ -564,6 +564,11 @@ void ISO15118::register_events()
     event.registerEvent("evse/state", {"charger_state"}, [this](const Config *charger_state) {
         if (charger_state->asUint() == 0) {
             // EV disconnected (State A)
+            nonegotiation_pending = false;
+            if (reslac_guard_task != 0) {
+                task_scheduler.cancel(reslac_guard_task);
+                reslac_guard_task = 0;
+            }
             if (iec_temporary_active) {
                 iso15118.trace("ISO15118: EV disconnected (State A), cleaning up");
                 common.reset_active_socket();
@@ -698,8 +703,9 @@ void ISO15118::state_machines_loop()
             }
 
             // If the EV closes the socket unexpectedly (e.g. after FAILED response),
-            // begin IEC transition.
-            if (!iec_temporary_active && is_read_soc_only()) {
+            // begin IEC transition. Not while a forced re-SLAC round is pending:
+            // there the EV closing TCP after SessionStop is expected.
+            if (!iec_temporary_active && is_read_soc_only() && !nonegotiation_pending) {
                 iso15118.trace("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
                 begin_iec_transition();
             }
@@ -880,6 +886,34 @@ void ISO15118::schedule_delayed_modem_off()
 
 void ISO15118::begin_iec_transition()
 {
+    if (iec_switch_task != 0) {
+        task_scheduler.cancel(iec_switch_task);
+        iec_switch_task = 0;
+    }
+
+    if (opt_ef_teardown) {
+        // ISO 15118-3 error teardown [V2G3-M07-05..09]:
+        // X1 (>=3s) -> leave logical network -> state E/F (>= T_step_EF) -> nominal PWM
+        iso15118.trace("ISO15118: E/F teardown: X1 (100%% duty) for 3s");
+        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+        iec_temporary_active = true;
+
+        iec_switch_task = task_scheduler.scheduleOnce([this]() {
+            if (!nonegotiation_pending) {
+                disable_plc_modem(); // Leave logical network
+            }
+            iso15118.trace("ISO15118: E/F teardown: state E/F (0%% duty) for 4s");
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+            iec_temporary_active = true;
+
+            iec_switch_task = task_scheduler.scheduleOnce([this]() {
+                iec_switch_task = 0;
+                switch_to_iec_temporary();
+            }, SLAC_T_STEP_EF);
+        }, 3_s);
+        return;
+    }
+
     iso15118.trace("ISO15118: Stopping PWM (100%% duty) before IEC transition");
 
     // Set CP to 100% duty. This gives the EV a clean break from the ISO 15118 signal
@@ -892,13 +926,59 @@ void ISO15118::begin_iec_transition()
     iec_temporary_active = true;
 
     // After 2 seconds, switch to IEC temporary mode.
-    if (iec_switch_task != 0) {
-        task_scheduler.cancel(iec_switch_task);
-    }
     iec_switch_task = task_scheduler.scheduleOnce([this]() {
         iec_switch_task = 0;
         switch_to_iec_temporary();
     }, 2_s);
+}
+
+void ISO15118::begin_reslac_for_nonegotiation()
+{
+    iso15118.trace("ISO15118: Forcing re-SLAC for NoNegotiation round");
+    nonegotiation_pending = true;
+
+    if (iec_switch_task != 0) {
+        task_scheduler.cancel(iec_switch_task);
+    }
+
+    // X1 -> leave logical network -> state E/F -> back to 5% duty to trigger a
+    // new SLAC round [V2G3-M07-05..09]. The modem soft-reset (ModemReset ->
+    // CM_SET_KEY with fresh NMK) drops the old AVLN, making the EV "Unmatched".
+    // The modem reset is delayed by 500ms so the SessionStopRes can still drain.
+    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+
+    iec_switch_task = task_scheduler.scheduleOnce([this]() {
+        common.reset_active_socket();
+        qca700x.link_down();
+        slac.state = SLACState::ModemReset;
+        slac.api_state.get("modem_initialization_tries")->updateUint(0);
+
+        iec_switch_task = task_scheduler.scheduleOnce([this]() {
+            iso15118.trace("ISO15118: Re-SLAC: state E/F (0%% duty) for 4s");
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+
+            iec_switch_task = task_scheduler.scheduleOnce([this]() {
+                iec_switch_task = 0;
+                iso15118.trace("ISO15118: Re-SLAC: back to 5%% duty, waiting for new SLAC session");
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            }, SLAC_T_STEP_EF);
+        }, 2500_ms);
+    }, 500_ms);
+
+    if (reslac_guard_task != 0) {
+        task_scheduler.cancel(reslac_guard_task);
+    }
+    reslac_guard_task = task_scheduler.scheduleOnce([this]() {
+        reslac_guard_task = 0;
+        if (nonegotiation_pending) {
+            nonegotiation_pending = false;
+            iso15118.trace("ISO15118: EV did not renegotiate in time, beginning IEC transition");
+            begin_iec_transition();
+            if (!opt_ef_teardown) {
+                disable_plc_modem();
+            }
+        }
+    }, 50_s);
 }
 
 // TODO: Upgrade to per-phase power control based on protocol version and EV capabilities.
