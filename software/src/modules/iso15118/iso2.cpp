@@ -75,7 +75,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
 
     // [V2G2-443] Timeout: stop session if no request received within V2G_SECC_Sequence_Timeout.
     if (!pause_active) {
-        schedule_sequence_timeout(next_timeout, ISO2_SECC_SEQUENCE_TIMEOUT, "ISO2");
+        schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "ISO2");
     // [V2G2-725] Pause: D-LINK_PAUSE.request() after SessionStopRes.
     } else {
         // No timeout in case of pausing by EVCC
@@ -477,8 +477,20 @@ void ISO2::handle_charge_parameter_discovery_req()
             // SoC already read. Send OK + Ongoing + EVSE_Shutdown to end the session.
             // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out
             // after a few tries for some EVs. They send SessionStopReq after timeout.
-            res->ResponseCode = iso2_responseCodeType_OK;
-            res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
+            //
+            // Some EVs (e.g. VW ID.Buzz) ignore EVSE_Shutdown in ChargeParameterDiscoveryRes
+            // and keep polling for ~90 seconds. After 10 retries (~1-2s), escalate to
+            // FAILED + Finished to force the EV to terminate the session immediately.
+            // NOTE: DIN escalates with OK + Finished instead; see din70121.cpp for rationale.
+            if (soc_shutdown_retries > 10) {
+                iso15118.trace("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
+                res->ResponseCode = iso2_responseCodeType_FAILED;
+                res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+            } else {
+                iso15118.trace("ISO2: SoC already read, sending EVSE_Shutdown to end session");
+                res->ResponseCode = iso2_responseCodeType_OK;
+                res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
+            }
 
             // Mandatory: DC_EVSEChargeParameter with EVSE_Shutdown status
             res->DC_EVSEChargeParameter_isUsed = 1;
@@ -532,25 +544,12 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
             res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
 
-            // Some EVs (e.g. VW ID.Buzz) ignore EVSE_Shutdown in ChargeParameterDiscoveryRes
-            // and keep polling for ~90 seconds. After 10 retries (~1-2s), send FAILED to
-            // force the EV to terminate the session immediately.
-            if (soc_shutdown_retries > 10) {
-                iso15118.trace("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
-                res->ResponseCode = iso2_responseCodeType_FAILED;
-                res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
-
-                iso15118.common.send_exi(Common::ExiType::Iso2);
-
-                if (soc_shutdown_retries == 11) {
-                    iso15118.schedule_delayed_modem_off();
-                }
-                return;
-            }
-
-            iso15118.trace("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
+
+            if (soc_shutdown_retries == 11) {
+                iso15118.schedule_delayed_modem_off();
+            }
             return;
         }
 
@@ -605,10 +604,6 @@ void ISO2::handle_charge_parameter_discovery_req()
     } else if (charge_via_iso15118) {
         // AC Charging mode
         const ChargingInformation ci = iso15118.get_charging_information();
-
-        // Calculate minimum possible power from EV's minimum current
-        uint16_t minimum_power = static_cast<uint16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*static_cast<float>(V2G_NOMINAL_VOLTAGE_V) + 100.0f);
-        minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
 
         // Calculate maximum power from our current limit
         // current_ma is per-phase, total power depends on phases
@@ -769,6 +764,23 @@ void ISO2::handle_charging_status_req()
     state = ISO2State::ChargingStatus;
 }
 
+// Shared epilogue for handlers that end the session outside of SessionStop
+void ISO2::finish_or_abort_dc_soc_session(const char *via)
+{
+    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
+    const bool read_soc = iso15118.config.get("read_soc")->asBool();
+
+    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
+        dc_soc_done = true;
+        soc_read = false;
+        state = ISO2State::Idle;
+        iso15118.trace("ISO2: DC SoC session complete (via %s), waiting for AC session", via);
+    } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
+        cancel_sequence_timeout(next_timeout);
+        iso15118.schedule_delayed_modem_off();
+    }
+}
+
 void ISO2::handle_cable_check_req()
 {
     iso2_CableCheckResType *res = &iso2DocEnc->V2G_Message.Body.CableCheckRes;
@@ -793,20 +805,7 @@ void ISO2::handle_cable_check_req()
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = ISO2State::CableCheck;
 
-    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
-    const bool read_soc = iso15118.config.get("read_soc")->asBool();
-
-    // Handle the dc_soc_done transition here since we may not get a SessionStopReq.
-    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
-        dc_soc_done = true;
-        soc_read = false;
-        state = ISO2State::Idle;
-        iso15118.trace("ISO2: DC SoC session complete (via CableCheck), waiting for AC session");
-    } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        // Cancel sequence timeout since we may not get a SessionStopReq.
-        cancel_sequence_timeout(next_timeout);
-        iso15118.schedule_delayed_modem_off();
-    }
+    finish_or_abort_dc_soc_session("CableCheck");
 }
 
 void ISO2::handle_pre_charge_req()
@@ -835,19 +834,7 @@ void ISO2::handle_pre_charge_req()
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
-    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
-    const bool read_soc = iso15118.config.get("read_soc")->asBool();
-
-    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
-        dc_soc_done = true;
-        soc_read = false;
-        state = ISO2State::Idle;
-        iso15118.trace("ISO2: DC SoC session complete (via PreCharge FAILED), waiting for AC session");
-    } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        // Cancel sequence timeout since we may not get a SessionStopReq.
-        cancel_sequence_timeout(next_timeout);
-        iso15118.schedule_delayed_modem_off();
-    }
+    finish_or_abort_dc_soc_session("PreCharge");
 }
 
 void ISO2::handle_current_demand_req()
@@ -892,19 +879,7 @@ void ISO2::handle_current_demand_req()
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
-    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
-    const bool read_soc = iso15118.config.get("read_soc")->asBool();
-
-    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
-        dc_soc_done = true;
-        soc_read = false;
-        state = ISO2State::Idle;
-        iso15118.trace("ISO2: DC SoC session complete (via CurrentDemand FAILED), waiting for AC session");
-    } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        // Cancel sequence timeout since we may not get a SessionStopReq.
-        cancel_sequence_timeout(next_timeout);
-        iso15118.schedule_delayed_modem_off();
-    }
+    finish_or_abort_dc_soc_session("CurrentDemand");
 }
 
 void ISO2::handle_session_stop_req()
@@ -940,26 +915,11 @@ void ISO2::handle_session_stop_req()
         state = ISO2State::Idle; // Reset state machine for next session
         iso15118.trace("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
-        cancel_sequence_timeout(next_timeout);
-
-        if (iso15118.opt_nonegotiation_after_soc && !iso15118.nonegotiation_pending) {
-            // Keep the PLC modem enabled and force a second SLAC round. The second
-            // supportedAppProtocolReq is answered with Failed_NoNegotiation.
+        if (iso15118.end_hlc_after_session_stop(next_timeout)) {
+            // Re-SLAC round started. Reset for the second session.
             state = ISO2State::Idle;
             soc_read = false;
-            iso15118.begin_reslac_for_nonegotiation();
-            return;
         }
-
-        iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
-
-        // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the
-        // poll loop can detect POLLHUP when the EV closes the connection, which
-        // triggers early modem shutdown.
-        // We can under no circumstance close the socket ourselves before the ISO 15118
-        // communication was finished from the perspective of the EV. As far as I can
-        // tell if we close the socket on any MEB EV, it will not reconnect via ISO 15118
-        // and not react to PWM changes anymore until re-plugged.
         return;
     }
 

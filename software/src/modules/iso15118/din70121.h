@@ -22,19 +22,12 @@
 #include "module.h"
 #include "config.h"
 
-#include "lwip/sockets.h"
-
-#include "sdp.h"
-#include "generated/din70121_state.enum.h"
-
 #include "cbv2g/common/exi_bitstream.h"
 #include "cbv2g/din/din_msgDefDecoder.h"
 #include "cbv2g/din/din_msgDefEncoder.h"
 
 #include "common.h"
-
-// DIN TS 70121:2024-11 Table 76: V2G_SECC_Sequence_Timeout = 60s
-#define DIN70121_SECC_SEQUENCE_TIMEOUT 60_s
+#include "generated/din70121_state.enum.h"
 
 inline float physical_value_to_float(const din_PhysicalValueType *value)
 {
@@ -59,16 +52,17 @@ private:
     void send_failed_unknown_session();
 
     void handle_session_setup_req();
-    void handle_supported_app_protocol_req();
     void handle_service_discovery_req();
     void handle_service_payment_selection_req();
     void handle_contract_authentication_req();
     void handle_charge_parameter_discovery_req();
-    void handle_cable_check_req();
     void handle_power_delivery_req();
+    void handle_cable_check_req();
     void handle_pre_charge_req();
     void handle_current_demand_req();
     void handle_session_stop_req();
+
+    void abort_soc_session();
 
     void trace_header(const struct din_MessageHeaderType *header, const char *name);
     void trace_request_response();

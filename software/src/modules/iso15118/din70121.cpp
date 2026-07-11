@@ -41,7 +41,7 @@ void DIN70121::pre_setup()
         {"state", Config::Enum(DIN70121State::Idle)},
         {"session_id", Config::Tuple(SESSION_ID_LENGTH, Config::Uint8(0))},
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
-        {"soc", Config::Int8(0)},
+        {"soc", Config::Int8(-1)},
     });
 }
 
@@ -61,14 +61,13 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     }
     memset(dinDocDec, 0, sizeof(struct din_exiDocument));
     memset(dinDocEnc, 0, sizeof(struct din_exiDocument));
-
-    cancel_sequence_timeout(next_timeout);
-
     int ret = decode_din_exiDocument(exi, dinDocDec);
     if (ret != 0) {
         iso15118.trace("DIN70121: Could not decode EXI document: %d", ret);
         return;
     }
+
+    cancel_sequence_timeout(next_timeout);
 
     dispatch_messages();
 
@@ -80,7 +79,7 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
 
     // DIN TS 70121:2024-11 [V2G-DC-443]: The SECC shall stop waiting for a request message
     // when V2G_SECC_Sequence_Timer >= V2G_SECC_Sequence_Timeout and no request was received.
-    schedule_sequence_timeout(next_timeout, DIN70121_SECC_SEQUENCE_TIMEOUT, "DIN70121");
+    schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "DIN70121");
 }
 
 void DIN70121::dispatch_messages()
@@ -108,25 +107,26 @@ void DIN70121::dispatch_messages()
     V2G_DISPATCH("DIN70121", body, ServicePaymentSelectionReq,  handle_service_payment_selection_req);
     V2G_DISPATCH("DIN70121", body, ContractAuthenticationReq,   handle_contract_authentication_req);
     V2G_DISPATCH("DIN70121", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
+    V2G_DISPATCH("DIN70121", body, PowerDeliveryReq,            handle_power_delivery_req);
     V2G_DISPATCH("DIN70121", body, SessionStopReq,              handle_session_stop_req);
     V2G_DISPATCH("DIN70121", body, CableCheckReq,               handle_cable_check_req);
-    V2G_DISPATCH("DIN70121", body, PowerDeliveryReq,            handle_power_delivery_req);
 
     // We handle PreChargeReq and CurrentDemandReq to respond with FAILED + EVSE_Shutdown
     // as safety nets when an EV ignores our shutdown signals, matching ISO2 behavior.
-    V2G_DISPATCH("DIN70121", body, PreChargeReq,                handle_pre_charge_req);
-    V2G_DISPATCH("DIN70121", body, CurrentDemandReq,            handle_current_demand_req);
+    V2G_DISPATCH("DIN70121", body, PreChargeReq,     handle_pre_charge_req);
+    V2G_DISPATCH("DIN70121", body, CurrentDemandReq, handle_current_demand_req);
 
-    // Not yet implemented
+    // VAS (Value Added Services). Not used in practice.
+    V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
+
+    // These are for Plug&Charge. We don't support PnC via DIN 70121.
+    V2G_NOT_IMPL("DIN70121", body, PaymentDetailsReq);
+    V2G_NOT_IMPL("DIN70121", body, CertificateInstallationReq);
+    V2G_NOT_IMPL("DIN70121", body, CertificateUpdateReq);
+    V2G_NOT_IMPL("DIN70121", body, MeteringReceiptReq);
 
     // Not needed for our SoC-read-only flow.
-    // We will not support them.
-    V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
-    V2G_NOT_IMPL("DIN70121", body, PaymentDetailsReq);
     V2G_NOT_IMPL("DIN70121", body, ChargingStatusReq);
-    V2G_NOT_IMPL("DIN70121", body, MeteringReceiptReq);
-    V2G_NOT_IMPL("DIN70121", body, CertificateUpdateReq);
-    V2G_NOT_IMPL("DIN70121", body, CertificateInstallationReq);
     V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
 }
 
@@ -347,13 +347,17 @@ void DIN70121::handle_charge_parameter_discovery_req()
     din_ChargeParameterDiscoveryReqType* req = &dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq;
     din_ChargeParameterDiscoveryResType* res = &dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
-    api_state.get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+    if (req->DC_EVChargeParameter_isUsed) {
+        api_state.get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
 
-    iso15118.trace("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+        iso15118.trace("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+    }
 
     // Update EV data: only SOC, all other values would be for DC charging.
 #if MODULE_EV_AVAILABLE()
-    ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
+    if (req->DC_EVChargeParameter_isUsed) {
+        ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
+    }
     ev.session_updated(EVDataSource::DIN);
 #endif
 
@@ -556,35 +560,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
     state = DIN70121State::ChargeParameterDiscovery;
 }
 
-void DIN70121::handle_cable_check_req()
+// Shared epilogue for handlers that end the session outside of SessionStop
+void DIN70121::abort_soc_session()
 {
-    din_CableCheckResType *res = &dinDocEnc->V2G_Message.Body.CableCheckRes;
-
-    dinDocEnc->V2G_Message.Body.CableCheckRes_isUsed = 1;
-
-    // We will reach CableCheck in the SoC-read-only flow when the EV doesn't check
-    // EVSEStatusCode in ChargeParameterDiscoveryRes.
-    // [V2G-DC-891] If the SECC wants to stop the process, it shall send CableCheckRes with:
-    //   ResponseCode = OK, EVSEProcessing = Finished, EVSEStatusCode = EVSE_Shutdown,
-    //   EVSENotification = None, EVSEIsolationStatus = Invalid/valid/warning/fault.
-    // Note: DIN uses OK here (not FAILED). FAILED is only for isolation faults per [V2G-DC-890].
-    // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
-    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
-    res->ResponseCode = din_responseCodeType_OK;
-    res->EVSEProcessing = din_EVSEProcessingType_Finished;
-
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
-
-    iso15118.trace("DIN70121: CableCheckReq received in SoC-read flow, sending EVSE_Shutdown to terminate");
-
-    iso15118.common.send_exi(Common::ExiType::Din);
-    state = DIN70121State::CableCheck;
-
-    // Cancel sequence timeout since we may not get a SessionStopReq.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         cancel_sequence_timeout(next_timeout);
         iso15118.schedule_delayed_modem_off();
@@ -621,9 +599,38 @@ void DIN70121::handle_power_delivery_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::PowerDelivery;
 
-    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        iso15118.schedule_delayed_modem_off();
-    }
+    abort_soc_session();
+}
+
+void DIN70121::handle_cable_check_req()
+{
+    din_CableCheckResType *res = &dinDocEnc->V2G_Message.Body.CableCheckRes;
+
+    dinDocEnc->V2G_Message.Body.CableCheckRes_isUsed = 1;
+
+    // We will reach CableCheck in the SoC-read-only flow when the EV doesn't check
+    // EVSEStatusCode in ChargeParameterDiscoveryRes.
+    // [V2G-DC-891] If the SECC wants to stop the process, it shall send CableCheckRes with:
+    //   ResponseCode = OK, EVSEProcessing = Finished, EVSEStatusCode = EVSE_Shutdown,
+    //   EVSENotification = None, EVSEIsolationStatus = Invalid/valid/warning/fault.
+    // Note: DIN uses OK here (not FAILED). FAILED is only for isolation faults per [V2G-DC-890].
+    // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
+    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
+    res->ResponseCode = din_responseCodeType_OK;
+    res->EVSEProcessing = din_EVSEProcessingType_Finished;
+
+    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
+    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
+    res->DC_EVSEStatus.NotificationMaxDelay = 0;
+    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+    iso15118.trace("DIN70121: CableCheckReq received in SoC-read flow, sending EVSE_Shutdown to terminate");
+
+    iso15118.common.send_exi(Common::ExiType::Din);
+    state = DIN70121State::CableCheck;
+
+    abort_soc_session();
 }
 
 void DIN70121::handle_pre_charge_req()
@@ -653,10 +660,7 @@ void DIN70121::handle_pre_charge_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
 
-    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        cancel_sequence_timeout(next_timeout);
-        iso15118.schedule_delayed_modem_off();
-    }
+    abort_soc_session();
 }
 
 void DIN70121::handle_current_demand_req()
@@ -698,10 +702,7 @@ void DIN70121::handle_current_demand_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
 
-    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        cancel_sequence_timeout(next_timeout);
-        iso15118.schedule_delayed_modem_off();
-    }
+    abort_soc_session();
 }
 
 void DIN70121::handle_session_stop_req()
@@ -714,25 +715,13 @@ void DIN70121::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::SessionStop;
 
-    // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
-    // DIN 70121 is DC-only, so we always fall back to IEC.
+    // DIN 70121 is DC-only, so we always fall back to IEC after the session.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        cancel_sequence_timeout(next_timeout);
-
-        if (iso15118.opt_nonegotiation_after_soc && !iso15118.nonegotiation_pending) {
-            // Keep the PLC modem enabled and force a second SLAC round. The second
-            // supportedAppProtocolReq is answered with Failed_NoNegotiation.
+        if (iso15118.end_hlc_after_session_stop(next_timeout)) {
+            // Re-SLAC round started. Reset for the second session.
             state = DIN70121State::Idle;
-            iso15118.begin_reslac_for_nonegotiation();
-            return;
+            soc_read = false;
         }
-
-        iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
-
-        // Do NOT call reset_active_socket() here. Leave the socket open so the
-        // poll loop can detect POLLHUP when the EV closes the connection, which
-        // triggers early modem shutdown.
-        return;
     }
 }
 

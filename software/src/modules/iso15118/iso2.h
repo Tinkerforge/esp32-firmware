@@ -29,8 +29,6 @@
 #include "common.h"
 #include "generated/iso2_state.enum.h"
 
-#define ISO2_SECC_SEQUENCE_TIMEOUT 60_s
-
 // When true and both charge_via_iso15118 and read_soc are enabled, run a DC session
 // first to read the EV's SoC, then restart as an AC session for actual charging.
 // Set to false to skip the DC SoC reading and go directly to AC charging.
@@ -60,17 +58,18 @@ private:
     void send_failed_unknown_session();
 
     void handle_session_setup_req();
-    void handle_supported_app_protocol_req();
     void handle_service_discovery_req();
     void handle_payment_service_selection_req();
     void handle_authorization_req();
     void handle_charge_parameter_discovery_req();
+    void handle_power_delivery_req();
+    void handle_charging_status_req();
     void handle_cable_check_req();
     void handle_pre_charge_req();
     void handle_current_demand_req();
-    void handle_power_delivery_req();
-    void handle_charging_status_req();
     void handle_session_stop_req();
+
+    void finish_or_abort_dc_soc_session(const char *via);
 
     void trace_header(const struct iso2_MessageHeaderType *header, const char *name);
     void trace_request_response();

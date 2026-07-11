@@ -990,6 +990,28 @@ void ISO15118::begin_reslac_for_nonegotiation()
     }, 50_s);
 }
 
+// Ends high-level communication after a SessionStopRes was sent
+bool ISO15118::end_hlc_after_session_stop(uint64_t &next_timeout)
+{
+    cancel_sequence_timeout(next_timeout);
+
+    if (opt_nonegotiation_after_soc && !nonegotiation_pending) {
+        begin_reslac_for_nonegotiation();
+        return true;
+    }
+
+    begin_iec_transition(ModemOff::Delayed);
+
+    // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the
+    // poll loop can detect POLLHUP when the EV closes the connection, which
+    // triggers early modem shutdown.
+    // We can under no circumstance close the socket ourselves before the ISO 15118
+    // communication was finished from the perspective of the EV. As far as I can
+    // tell if we close the socket on any MEB EV, it will not reconnect via ISO 15118
+    // and not react to PWM changes anymore until re-plugged.
+    return false;
+}
+
 // TODO: Upgrade to per-phase power control based on protocol version and EV capabilities.
 ChargingInformation ISO15118::get_charging_information() const
 {

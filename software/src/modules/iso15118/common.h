@@ -154,6 +154,9 @@ static inline ScaledPower encode_milliwatts(uint32_t milliwatts)
 // ServiceID for EV Charging (DIN Table 105, ISO2 Table 105, ISO20 Table 203)
 static constexpr uint16_t V2G_SERVICE_ID_CHARGING = 1;
 
+// V2G_SECC_Sequence_Timeout = 60s (DIN TS 70121:2024-11 Table 76, ISO 15118-2 Table 109)
+static constexpr auto V2G_SECC_SEQUENCE_TIMEOUT = 60_s;
+
 // SAScheduleTupleID: We always only offer one schedule tuple (DIN/ISO2)
 static constexpr uint16_t V2G_SA_SCHEDULE_TUPLE_ID = 1;
 static constexpr uint16_t V2G_NOMINAL_VOLTAGE_V    = 230;
