@@ -68,11 +68,11 @@ void cancel_sequence_timeout(uint64_t &next_timeout);
 void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const char *protocol_name);
 
 // Common message dispatch macros for all V2G protocols (DIN, ISO2, ISO20)
-// prefix: Protocol name for logging (e.g., "ISO2", "DIN70121")
 // doc_path: Path to the _isUsed flags (e.g., body, doc)
 // msg: Message name without suffix (e.g., SessionSetupReq)
 // handler: Handler function to call
-#define V2G_DISPATCH(prefix, doc_path, msg, handler) \
+// prefix: Protocol name for logging (e.g., "ISO2", "DIN70121")
+#define V2G_DISPATCH(doc_path, msg, handler) \
     if (doc_path.msg##_isUsed) { handler(); }
 
 #define V2G_NOT_IMPL(prefix, doc_path, msg) \

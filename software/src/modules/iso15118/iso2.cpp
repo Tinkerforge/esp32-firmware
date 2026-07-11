@@ -89,7 +89,7 @@ void ISO2::dispatch_messages()
     auto &body = iso2DocDec->V2G_Message.Body;
 
     // SessionSetupReq - no session validation needed (session is established here)
-    V2G_DISPATCH("ISO2", body, SessionSetupReq, handle_session_setup_req);
+    V2G_DISPATCH(body, SessionSetupReq, handle_session_setup_req);
     if (body.SessionSetupReq_isUsed) return;
 
     // [V2G2-741] All messages after SessionSetup require session ID validation.
@@ -105,19 +105,19 @@ void ISO2::dispatch_messages()
     }
 
     // Implemented message handlers (session already validated)
-    V2G_DISPATCH("ISO2", body, ServiceDiscoveryReq,         handle_service_discovery_req);
-    V2G_DISPATCH("ISO2", body, PaymentServiceSelectionReq,  handle_payment_service_selection_req);
-    V2G_DISPATCH("ISO2", body, AuthorizationReq,            handle_authorization_req);
-    V2G_DISPATCH("ISO2", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
-    V2G_DISPATCH("ISO2", body, PowerDeliveryReq,            handle_power_delivery_req);
-    V2G_DISPATCH("ISO2", body, ChargingStatusReq,           handle_charging_status_req);
-    V2G_DISPATCH("ISO2", body, SessionStopReq,              handle_session_stop_req);
-    V2G_DISPATCH("ISO2", body, CableCheckReq,               handle_cable_check_req);
+    V2G_DISPATCH(body, ServiceDiscoveryReq,         handle_service_discovery_req);
+    V2G_DISPATCH(body, PaymentServiceSelectionReq,  handle_payment_service_selection_req);
+    V2G_DISPATCH(body, AuthorizationReq,            handle_authorization_req);
+    V2G_DISPATCH(body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
+    V2G_DISPATCH(body, PowerDeliveryReq,            handle_power_delivery_req);
+    V2G_DISPATCH(body, ChargingStatusReq,           handle_charging_status_req);
+    V2G_DISPATCH(body, SessionStopReq,              handle_session_stop_req);
+    V2G_DISPATCH(body, CableCheckReq,               handle_cable_check_req);
 
     // We handle PreChargeReq and CurrentDemandReq to respond with FAILED
     // per [V2G2-526]/[V2G2-539] when an EV ignores our shutdown signals.
-    V2G_DISPATCH("ISO2", body, PreChargeReq,     handle_pre_charge_req);
-    V2G_DISPATCH("ISO2", body, CurrentDemandReq, handle_current_demand_req);
+    V2G_DISPATCH(body, PreChargeReq,     handle_pre_charge_req);
+    V2G_DISPATCH(body, CurrentDemandReq, handle_current_demand_req);
 
     // VAS (Value Added Services). Not used in practice.
     V2G_NOT_IMPL("ISO2", body, ServiceDetailReq);

@@ -87,7 +87,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
     // [V2G20-441] The SECC shall set V2G_SECC_Sequence_Timeout and start monitoring when
     //             it sends a response message.
     // [V2G20-443] The SECC shall stop waiting for a request message when the timer expires.
-    schedule_sequence_timeout(next_timeout, ISO20_SECC_SEQUENCE_TIMEOUT, "ISO20");
+    schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "ISO20");
 }
 
 void ISO20::dispatch_common_messages()
@@ -95,7 +95,7 @@ void ISO20::dispatch_common_messages()
     auto &doc = *iso20DocDec;
 
     // SessionSetupReq - no session validation needed (session is established here)
-    V2G_DISPATCH("ISO20", doc, SessionSetupReq, handle_session_setup_req);
+    V2G_DISPATCH(doc, SessionSetupReq, handle_session_setup_req);
     if (doc.SessionSetupReq_isUsed) return;
 
     // [V2G20-753] All messages after SessionSetup require session ID validation.
@@ -114,14 +114,14 @@ void ISO20::dispatch_common_messages()
     }
 
     // Implemented message handlers (session already validated)
-    V2G_DISPATCH("ISO20", doc, AuthorizationSetupReq, handle_authorization_setup_req);
-    V2G_DISPATCH("ISO20", doc, AuthorizationReq,      handle_authorization_req);
-    V2G_DISPATCH("ISO20", doc, ServiceDiscoveryReq,   handle_service_discovery_req);
-    V2G_DISPATCH("ISO20", doc, ServiceDetailReq,      handle_service_detail_req);
-    V2G_DISPATCH("ISO20", doc, ServiceSelectionReq,   handle_service_selection_req);
-    V2G_DISPATCH("ISO20", doc, ScheduleExchangeReq,   handle_schedule_exchange_req);
-    V2G_DISPATCH("ISO20", doc, PowerDeliveryReq,      handle_power_delivery_req);
-    V2G_DISPATCH("ISO20", doc, SessionStopReq,        handle_session_stop_req);
+    V2G_DISPATCH(doc, AuthorizationSetupReq, handle_authorization_setup_req);
+    V2G_DISPATCH(doc, AuthorizationReq,      handle_authorization_req);
+    V2G_DISPATCH(doc, ServiceDiscoveryReq,   handle_service_discovery_req);
+    V2G_DISPATCH(doc, ServiceDetailReq,      handle_service_detail_req);
+    V2G_DISPATCH(doc, ServiceSelectionReq,   handle_service_selection_req);
+    V2G_DISPATCH(doc, ScheduleExchangeReq,   handle_schedule_exchange_req);
+    V2G_DISPATCH(doc, PowerDeliveryReq,      handle_power_delivery_req);
+    V2G_DISPATCH(doc, SessionStopReq,        handle_session_stop_req);
 
     // Not yet implemented
 
@@ -761,7 +761,7 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
     api_state.get("state")->updateEnum(state);
 
     // [V2G20-435] [V2G20-441] [V2G20-443] Sequence timer handling (see common messages above)
-    schedule_sequence_timeout(next_timeout, ISO20_SECC_SEQUENCE_TIMEOUT, "ISO20 AC");
+    schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "ISO20 AC");
 }
 
 void ISO20::dispatch_ac_messages()
@@ -782,8 +782,8 @@ void ISO20::dispatch_ac_messages()
     }
 
     // AC-specific message dispatch (session already validated)
-    V2G_DISPATCH("ISO20 AC", doc, AC_ChargeParameterDiscoveryReq, handle_ac_charge_parameter_discovery_req);
-    V2G_DISPATCH("ISO20 AC", doc, AC_ChargeLoopReq,               handle_ac_charge_loop_req);
+    V2G_DISPATCH(doc, AC_ChargeParameterDiscoveryReq, handle_ac_charge_parameter_discovery_req);
+    V2G_DISPATCH(doc, AC_ChargeLoopReq,               handle_ac_charge_loop_req);
 }
 
 void ISO20::send_ac_failed_unknown_session()

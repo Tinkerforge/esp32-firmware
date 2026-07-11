@@ -34,7 +34,6 @@
 #include "sdp.h"  // For V2GTPPayloadType
 #include "generated/iso20_state.enum.h"
 
-#define ISO20_SECC_SEQUENCE_TIMEOUT 60_s
 #define ISO20_SESSION_ID_LENGTH 8
 
 // ISO 15118-20 Table 205: ServiceDetail ParameterSet values

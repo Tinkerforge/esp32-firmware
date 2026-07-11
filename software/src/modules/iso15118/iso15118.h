@@ -138,9 +138,6 @@ public:
     void set_charging_protocol(const uint8_t charging_protocol, const uint16_t cp_duty_cycle);
 
     bool iec_temporary_active = false;
-    uint64_t ef_reset_task = 0;
-    uint8_t ef_retry_count = 0;
-    void check_ef_reset();
 
     uint64_t plc_modem_off_task = 0;
     void disable_plc_modem();

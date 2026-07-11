@@ -26,13 +26,6 @@
 #include "build.h"
 #include "tools/malloc.h"
 
-#include "cbv2g/exi_v2gtp.h"
-#include "cbv2g/app_handshake/appHand_Decoder.h"
-#include "cbv2g/app_handshake/appHand_Encoder.h"
-#include "cbv2g/din/din_msgDefDecoder.h"
-#include "cbv2g/din/din_msgDefEncoder.h"
-#include "cbv2g/common/exi_bitstream.h"
-
 #include "gcc_warnings.h"
 
 void DIN70121::pre_setup()
@@ -87,7 +80,7 @@ void DIN70121::dispatch_messages()
     auto &body = dinDocDec->V2G_Message.Body;
 
     // SessionSetupReq - no session validation needed (session is established here)
-    V2G_DISPATCH("DIN70121", body, SessionSetupReq, handle_session_setup_req);
+    V2G_DISPATCH(body, SessionSetupReq, handle_session_setup_req);
     if (body.SessionSetupReq_isUsed) return;
 
     // All messages after SessionSetup require session ID validation.
@@ -103,18 +96,18 @@ void DIN70121::dispatch_messages()
     }
 
     // Implemented message handlers (session already validated)
-    V2G_DISPATCH("DIN70121", body, ServiceDiscoveryReq,         handle_service_discovery_req);
-    V2G_DISPATCH("DIN70121", body, ServicePaymentSelectionReq,  handle_service_payment_selection_req);
-    V2G_DISPATCH("DIN70121", body, ContractAuthenticationReq,   handle_contract_authentication_req);
-    V2G_DISPATCH("DIN70121", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
-    V2G_DISPATCH("DIN70121", body, PowerDeliveryReq,            handle_power_delivery_req);
-    V2G_DISPATCH("DIN70121", body, SessionStopReq,              handle_session_stop_req);
-    V2G_DISPATCH("DIN70121", body, CableCheckReq,               handle_cable_check_req);
+    V2G_DISPATCH(body, ServiceDiscoveryReq,         handle_service_discovery_req);
+    V2G_DISPATCH(body, ServicePaymentSelectionReq,  handle_service_payment_selection_req);
+    V2G_DISPATCH(body, ContractAuthenticationReq,   handle_contract_authentication_req);
+    V2G_DISPATCH(body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
+    V2G_DISPATCH(body, PowerDeliveryReq,            handle_power_delivery_req);
+    V2G_DISPATCH(body, SessionStopReq,              handle_session_stop_req);
+    V2G_DISPATCH(body, CableCheckReq,               handle_cable_check_req);
 
     // We handle PreChargeReq and CurrentDemandReq to respond with FAILED + EVSE_Shutdown
     // as safety nets when an EV ignores our shutdown signals, matching ISO2 behavior.
-    V2G_DISPATCH("DIN70121", body, PreChargeReq,     handle_pre_charge_req);
-    V2G_DISPATCH("DIN70121", body, CurrentDemandReq, handle_current_demand_req);
+    V2G_DISPATCH(body, PreChargeReq,     handle_pre_charge_req);
+    V2G_DISPATCH(body, CurrentDemandReq, handle_current_demand_req);
 
     // VAS (Value Added Services). Not used in practice.
     V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
