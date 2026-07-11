@@ -133,8 +133,8 @@ void ISO2::dispatch_messages()
     V2G_NOT_IMPL("ISO2", body, WeldingDetectionReq);
 }
 
-// Fill the mandatory child fields of a response with safe "shutdown" values so
-// that a FAILED_UnknownSession response satisfies the EXI schema.
+// Fill a DC_EVSEStatus with safe "shutdown" values, used by all FAILED/shutdown
+// responses and to satisfy the EXI schema in FAILED_UnknownSession responses.
 static void fill_dc_evse_status_shutdown(struct iso2_DC_EVSEStatusType *s)
 {
     s->EVSEIsolationStatus_isUsed = 1;
@@ -144,6 +144,15 @@ static void fill_dc_evse_status_shutdown(struct iso2_DC_EVSEStatusType *s)
     s->EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
 }
 
+static void fill_dc_evse_status_ready(struct iso2_DC_EVSEStatusType *s)
+{
+    s->EVSEIsolationStatus_isUsed = 1;
+    s->EVSEIsolationStatus = iso2_isolationLevelType_Invalid; // Invalid = an isolation test has not been carried out
+    s->EVSENotification = iso2_EVSENotificationType_None;
+    s->NotificationMaxDelay = 0;
+    s->EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Ready;
+}
+
 static void fill_ac_evse_status_shutdown(struct iso2_AC_EVSEStatusType *s)
 {
     s->RCD = 0;
@@ -151,11 +160,37 @@ static void fill_ac_evse_status_shutdown(struct iso2_AC_EVSEStatusType *s)
     s->EVSENotification = iso2_EVSENotificationType_StopCharging;
 }
 
-static void fill_zero_physical_value(struct iso2_PhysicalValueType *pv, iso2_unitSymbolType unit)
+static void fill_ac_evse_status_ok(struct iso2_AC_EVSEStatusType *s)
 {
-    pv->Value = 0;
-    pv->Multiplier = 0;
+    s->RCD = 0; // No RCD error detected (informational only)
+    s->NotificationMaxDelay = 0;
+    s->EVSENotification = iso2_EVSENotificationType_None;
+}
+
+static void fill_physical_value(struct iso2_PhysicalValueType *pv, int16_t value, int8_t multiplier, iso2_unitSymbolType unit)
+{
+    pv->Value = value;
+    pv->Multiplier = multiplier;
     pv->Unit = unit;
+}
+
+// Fill a single-tuple SAScheduleList with the given PMax covering 24 hours.
+// [V2G2-297] First SAScheduleTuple is the default. [V2G2-298] EVCC uses default if comparison fails.
+// [V2G2-315] PMax: Total maximum power over all phases for this time interval.
+// [V2G2-328] start: seconds from NOW. [V2G2-330] duration: period of time in seconds.
+// [V2G2-300] SAScheduleTupleID must be unique within the session. [V2G2-773] 1-255 OK, 0 not allowed.
+static void fill_sa_schedule_24h(struct iso2_SAScheduleListType *list, int16_t pmax_value, int8_t pmax_multiplier)
+{
+    list->SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
+    fill_physical_value(&list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax, pmax_value, pmax_multiplier, iso2_unitSymbolType_W);
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
+    list->SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
+    list->SAScheduleTuple.arrayLen = 1;
 }
 
 void ISO2::send_failed_unknown_session()
@@ -226,14 +261,14 @@ void ISO2::send_failed_unknown_session()
         body_enc.PreChargeRes_isUsed = 1;
         res->ResponseCode = rc;
         fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
-        fill_zero_physical_value(&res->EVSEPresentVoltage, iso2_unitSymbolType_V);
+        fill_physical_value(&res->EVSEPresentVoltage, 0, 0, iso2_unitSymbolType_V);
     } else if (body_dec.CurrentDemandReq_isUsed) {
         auto *res = &body_enc.CurrentDemandRes;
         body_enc.CurrentDemandRes_isUsed = 1;
         res->ResponseCode = rc;
         fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
-        fill_zero_physical_value(&res->EVSEPresentVoltage, iso2_unitSymbolType_V);
-        fill_zero_physical_value(&res->EVSEPresentCurrent, iso2_unitSymbolType_A);
+        fill_physical_value(&res->EVSEPresentVoltage, 0, 0, iso2_unitSymbolType_V);
+        fill_physical_value(&res->EVSEPresentCurrent, 0, 0, iso2_unitSymbolType_A);
         res->EVSECurrentLimitAchieved = 0;
         res->EVSEVoltageLimitAchieved = 0;
         res->EVSEPowerLimitAchieved = 0;
@@ -496,53 +531,21 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->DC_EVSEChargeParameter_isUsed = 1;
             res->AC_EVSEChargeParameter_isUsed = 0;
 
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_StopCharging;
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
+            fill_dc_evse_status_shutdown(&res->DC_EVSEChargeParameter.DC_EVSEStatus);
 
-            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
-            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
-
-            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = iso2_unitSymbolType_V;
-            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
-
-            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = iso2_unitSymbolType_A;
-            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
-
-            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = iso2_unitSymbolType_V;
-            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
-
-            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = iso2_unitSymbolType_A;
-            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
-
-            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = iso2_unitSymbolType_W;
-            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 0;
-            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 0;
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit, 0, 0, iso2_unitSymbolType_A);
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit, 0, 0, iso2_unitSymbolType_V);
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit, 0, 0, iso2_unitSymbolType_A);
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit, 0, 0, iso2_unitSymbolType_V);
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple, 0, 0, iso2_unitSymbolType_A);
+            fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit, 0, 0, iso2_unitSymbolType_W);
 
             res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
             res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
             // SAScheduleList is included for EV compatibility even though EVSEProcessing=Ongoing.
             res->SAScheduleList_isUsed = 1;
-            res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = 0;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = 0;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Unit = iso2_unitSymbolType_W;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0;
-            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
-            res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
-            res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
+            fill_sa_schedule_24h(&res->SAScheduleList, 0, 0);
 
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
@@ -561,39 +564,15 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->AC_EVSEChargeParameter_isUsed = 0;
         res->DC_EVSEChargeParameter_isUsed = 1;
 
-        // Invalid = An isolation test has not been carried out.
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
-
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
-
         // EVSE_Ready: The EVSE is ready for charging.
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Ready;
+        fill_dc_evse_status_ready(&res->DC_EVSEChargeParameter.DC_EVSEStatus);
 
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = DC_SOC_MAX_CURRENT_A;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
-
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = iso2_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = DC_SOC_MAX_VOLTAGE_V;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
-
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
-
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = iso2_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
-
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = DC_SOC_PEAK_RIPPLE_A;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
-
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = iso2_unitSymbolType_W;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit, DC_SOC_MAX_CURRENT_A, 0, iso2_unitSymbolType_A); // 500A
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit, DC_SOC_MAX_VOLTAGE_V, 0, iso2_unitSymbolType_V); // 800V
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit, 0, 0, iso2_unitSymbolType_A);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit, 0, 0, iso2_unitSymbolType_V);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple, DC_SOC_PEAK_RIPPLE_A, 0, iso2_unitSymbolType_A); // 1A
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit, DC_SOC_MAX_POWER_VALUE, DC_SOC_MAX_POWER_EXP, iso2_unitSymbolType_W); // 20000W * 10^1 = 200kW
 
         // Optional charge parameters
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
@@ -616,48 +595,18 @@ void ISO2::handle_charge_parameter_discovery_req()
 
         // SAScheduleList: Required when EVSEProcessing=Finished.
         res->SAScheduleList_isUsed = 1;
-
-        // [V2G2-297] First SAScheduleTuple is the default. [V2G2-298] EVCC uses default if comparison fails.
-
-        // [V2G2-315] PMax: Total maximum power over all phases for this time interval.
-
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = pmax.value;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = pmax.exponent;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Unit = iso2_unitSymbolType_W;
-
-        // [V2G2-330] The value of the duration element shall be defined as period of time in seconds.
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY; // One day
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
-
-        // [V2G2-328] Start: seconds from NOW. [V2G2-329] Also defines stop time of previous interval.
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
-
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0; // no content
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
-
-        // [V2G2-300] Must be unique within the session. [V2G2-773] 1-255 OK, 0 not allowed
-        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
-
-        // SalesTariff: Optional
-        res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
-        res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
+        fill_sa_schedule_24h(&res->SAScheduleList, pmax.value, pmax.exponent);
 
         res->DC_EVSEChargeParameter_isUsed = 0;
         res->AC_EVSEChargeParameter_isUsed = 1;
-        res->AC_EVSEChargeParameter.AC_EVSEStatus.RCD = 0;
-        res->AC_EVSEChargeParameter.AC_EVSEStatus.NotificationMaxDelay = 0;
-        res->AC_EVSEChargeParameter.AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
+        fill_ac_evse_status_ok(&res->AC_EVSEChargeParameter.AC_EVSEStatus);
 
         // Max allowed line current per phase. With 5% CP, this is the sole current constraint.
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = static_cast<int16_t>(ci.current_ma); // e.g. 6123mA -> 6123
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = -3;    // 6123 * 10^-3 = 6.123A (1mA resolution)
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
+        // e.g. 6123mA -> 6123 * 10^-3 = 6.123A (1mA resolution)
+        fill_physical_value(&res->AC_EVSEChargeParameter.EVSEMaxCurrent, static_cast<int16_t>(ci.current_ma), -3, iso2_unitSymbolType_A);
 
         // Nominal phase-to-neutral voltage.
-        res->AC_EVSEChargeParameter.EVSENominalVoltage.Value = V2G_NOMINAL_VOLTAGE_V;
-        res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier = 0;
-        res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit = iso2_unitSymbolType_V;
+        fill_physical_value(&res->AC_EVSEChargeParameter.EVSENominalVoltage, V2G_NOMINAL_VOLTAGE_V, 0, iso2_unitSymbolType_V);
 
         iso15118.common.send_exi(Common::ExiType::Iso2);
         state = ISO2State::ChargeParameterDiscovery;
@@ -714,9 +663,7 @@ void ISO2::handle_power_delivery_req()
     iso2DocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed = 1;
     res->ResponseCode = iso2_responseCodeType_OK;
 
-    res->AC_EVSEStatus.RCD = 0; // No RCD error detected (informational only)
-    res->AC_EVSEStatus.NotificationMaxDelay = 0;
-    res->AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None; // Can request stop/renegotiation here
+    fill_ac_evse_status_ok(&res->AC_EVSEStatus); // EVSENotification could request stop/renegotiation here
     res->AC_EVSEStatus_isUsed = 1;
 
     res->DC_EVSEStatus_isUsed = 0;
@@ -732,9 +679,7 @@ void ISO2::handle_charging_status_req()
     iso2DocEnc->V2G_Message.Body.ChargingStatusRes_isUsed = 1;
     res->ResponseCode = iso2_responseCodeType_OK;
 
-    res->AC_EVSEStatus.RCD = 0;
-    res->AC_EVSEStatus.NotificationMaxDelay = 0;
-    res->AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
+    fill_ac_evse_status_ok(&res->AC_EVSEStatus);
 
     strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
     res->EVSEID.charactersLen = iso15118.evseid_iso_len;
@@ -746,9 +691,8 @@ void ISO2::handle_charging_status_req()
     // Read on every ChargingStatus cycle to allow dynamic current control.
     const ChargingInformation ci = iso15118.get_charging_information();
     res->EVSEMaxCurrent_isUsed = 1;
-    res->EVSEMaxCurrent.Value = static_cast<int16_t>(ci.current_ma); // e.g. 6123mA -> 6123
-    res->EVSEMaxCurrent.Multiplier = -3;       // 6123 * 10^-3 = 6.123A (1mA resolution)
-    res->EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
+    // e.g. 6123mA -> 6123 * 10^-3 = 6.123A (1mA resolution)
+    fill_physical_value(&res->EVSEMaxCurrent, static_cast<int16_t>(ci.current_ma), -3, iso2_unitSymbolType_A);
 
     res->MeterInfo_isUsed = 0;
     //res->MeterInfo.MeterID.characters[0] = '1';
@@ -794,11 +738,7 @@ void ISO2::handle_cable_check_req()
     res->ResponseCode = iso2_responseCodeType_FAILED;
     res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_StopCharging;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
 
     iso15118.trace("ISO2: CableCheckReq received in SoC-read flow, sending FAILED to terminate");
 
@@ -820,15 +760,8 @@ void ISO2::handle_pre_charge_req()
     // [V2G2-539] After the SECC sent a ResponseCode=FAILED it shall terminate the communication session.
     res->ResponseCode = iso2_responseCodeType_FAILED;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_StopCharging;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
-
-    res->EVSEPresentVoltage.Unit = iso2_unitSymbolType_V;
-    res->EVSEPresentVoltage.Value = 0;
-    res->EVSEPresentVoltage.Multiplier = 0;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    fill_physical_value(&res->EVSEPresentVoltage, 0, 0, iso2_unitSymbolType_V);
 
     iso15118.trace("ISO2: PreChargeReq received in SoC-read flow, sending FAILED to terminate");
 
@@ -847,19 +780,9 @@ void ISO2::handle_current_demand_req()
     // [V2G2-539] After the SECC sent a ResponseCode=FAILED it shall terminate the communication session.
     res->ResponseCode = iso2_responseCodeType_FAILED;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_StopCharging;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
-
-    res->EVSEPresentVoltage.Unit = iso2_unitSymbolType_V;
-    res->EVSEPresentVoltage.Value = 0;
-    res->EVSEPresentVoltage.Multiplier = 0;
-
-    res->EVSEPresentCurrent.Unit = iso2_unitSymbolType_A;
-    res->EVSEPresentCurrent.Value = 0;
-    res->EVSEPresentCurrent.Multiplier = 0;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    fill_physical_value(&res->EVSEPresentVoltage, 0, 0, iso2_unitSymbolType_V);
+    fill_physical_value(&res->EVSEPresentCurrent, 0, 0, iso2_unitSymbolType_A);
 
     res->EVSECurrentLimitAchieved = 0;
     res->EVSEVoltageLimitAchieved = 0;

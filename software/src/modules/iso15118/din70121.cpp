@@ -130,8 +130,9 @@ void DIN70121::dispatch_messages()
     V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
 }
 
-// Fill the mandatory child fields of a response with safe "shutdown" values so
-// that a FAILED_UnknownSession response satisfies the EXI schema.
+// Fill a DC_EVSEStatus with safe "shutdown" values, used by all FAILED/shutdown
+// responses and to satisfy the EXI schema in FAILED_UnknownSession responses.
+// [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
 static void fill_dc_evse_status_shutdown(struct din_DC_EVSEStatusType *s)
 {
     s->EVSEIsolationStatus_isUsed = 1;
@@ -141,12 +142,40 @@ static void fill_dc_evse_status_shutdown(struct din_DC_EVSEStatusType *s)
     s->EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
 }
 
-static void fill_zero_physical_value(struct din_PhysicalValueType *pv, din_unitSymbolType unit)
+static void fill_dc_evse_status_ready(struct din_DC_EVSEStatusType *s)
 {
+    s->EVSEIsolationStatus_isUsed = 1;
+    s->EVSEIsolationStatus = din_isolationLevelType_Invalid; // Invalid = an isolation test has not been carried out
+    s->EVSENotification = din_EVSENotificationType_None;
+    s->NotificationMaxDelay = 0;
+    s->EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Ready;
+}
+
+static void fill_physical_value(struct din_PhysicalValueType *pv, int16_t value, int8_t multiplier, din_unitSymbolType unit)
+{
+    pv->Value = value;
+    pv->Multiplier = multiplier;
     pv->Unit = unit;
-    pv->Unit_isUsed = 1;
-    pv->Value = 0;
-    pv->Multiplier = 0;
+    pv->Unit_isUsed = 1; // Unit is optional in the DIN schema, but we always provide it
+}
+
+// Fill a single-tuple SAScheduleList with the given PMax covering 24 hours.
+// [V2G-DC-559] SAScheduleList shall provide a PMaxSchedule covering at least 24 hours.
+// [V2G-DC-336] start: seconds from NOW. [V2G-DC-338] duration: period in seconds.
+// [V2G-DC-554] SalesTariff shall not be used.
+static void fill_sa_schedule_24h(struct din_SAScheduleListType *list, int16_t pmax)
+{
+    list->SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleID = 1;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax = pmax;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0;
+    list->SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
+    list->SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
+    list->SAScheduleTuple.arrayLen = 1;
 }
 
 void DIN70121::send_failed_unknown_session()
@@ -206,14 +235,14 @@ void DIN70121::send_failed_unknown_session()
         body_enc.PreChargeRes_isUsed = 1;
         res->ResponseCode = rc;
         fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
-        fill_zero_physical_value(&res->EVSEPresentVoltage, din_unitSymbolType_V);
+        fill_physical_value(&res->EVSEPresentVoltage, 0, 0, din_unitSymbolType_V);
     } else if (body_dec.CurrentDemandReq_isUsed) {
         auto *res = &body_enc.CurrentDemandRes;
         body_enc.CurrentDemandRes_isUsed = 1;
         res->ResponseCode = rc;
         fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
-        fill_zero_physical_value(&res->EVSEPresentVoltage, din_unitSymbolType_V);
-        fill_zero_physical_value(&res->EVSEPresentCurrent, din_unitSymbolType_A);
+        fill_physical_value(&res->EVSEPresentVoltage, 0, 0, din_unitSymbolType_V);
+        fill_physical_value(&res->EVSEPresentCurrent, 0, 0, din_unitSymbolType_A);
         res->EVSECurrentLimitAchieved = 0;
         res->EVSEVoltageLimitAchieved = 0;
         res->EVSEPowerLimitAchieved = 0;
@@ -397,52 +426,20 @@ void DIN70121::handle_charge_parameter_discovery_req()
         // Mandatory fields: DC_EVSEChargeParameter with valid DC_EVSEStatus and limits
         // must be present for a valid ChargeParameterDiscoveryRes EXI encoding.
         res->DC_EVSEChargeParameter_isUsed = 1;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = din_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = din_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 0;
+        fill_dc_evse_status_shutdown(&res->DC_EVSEChargeParameter.DC_EVSEStatus);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit, 0, 0, din_unitSymbolType_A);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit, 0, 0, din_unitSymbolType_V);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit, 0, 0, din_unitSymbolType_A);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit, 0, 0, din_unitSymbolType_V);
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple, 0, 0, din_unitSymbolType_A);
         // [V2G-DC-950] EVSEMaximumPowerLimit shall be used
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 0;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 0;
+        fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit, 0, 0, din_unitSymbolType_W);
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1;
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
         res->SAScheduleList_isUsed = 1;
-        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleID = 1;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax = 0;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
-        res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
-        res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
+        fill_sa_schedule_24h(&res->SAScheduleList, 0);
         res->SASchedules_isUsed = 0;
         res->EVSEChargeParameter_isUsed = 0;
         res->AC_EVSEChargeParameter_isUsed = 0;
@@ -460,13 +457,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
         soc_read = true;
     }
 
-    // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
-    // to be able to continuously read the SoC.
-
     dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
     // [V2G-DC-493] On OK + Ongoing, the EVCC ignores schedule/params and resends ChargeParameterDiscoveryReq.
-
 
     // Get EV to send ChargeParameterDiscoveryReq again by using EVSE_Ready with EVSEProcessingType_Ongoing
     res->ResponseCode = din_responseCodeType_OK;
@@ -476,47 +469,16 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // TODO: Does [V2G-DC-863] + [V2G-DC-864] mean that we can only delay with EVSEProcessingType_Ongoing once?
     res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
 
-    // Invalid: An isolation test has not been carried out.
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-
-    // [V2G-DC-500] For DC charging according to this document, the value of EVSENotification shall always be set to “None”.
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
-
     // EVSE_Ready: The EVSE is ready for charging.
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Ready;
+    fill_dc_evse_status_ready(&res->DC_EVSEChargeParameter.DC_EVSEStatus);
 
     // Mandatory charge parameters
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = DC_SOC_MAX_CURRENT_A; // 500A
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
-
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = DC_SOC_MAX_VOLTAGE_V; // 800V
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
-
-    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
-    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0; // 0A
-    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
-
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = din_unitSymbolType_V;
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0; // 0V
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
-
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = din_unitSymbolType_A;
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = DC_SOC_PEAK_RIPPLE_A; // 1A
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
-
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE; // 20000W * 10^1 = 200kW
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit, DC_SOC_MAX_CURRENT_A, 0, din_unitSymbolType_A); // 500A
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit, DC_SOC_MAX_VOLTAGE_V, 0, din_unitSymbolType_V); // 800V
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit, 0, 0, din_unitSymbolType_A);
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit, 0, 0, din_unitSymbolType_V);
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple, DC_SOC_PEAK_RIPPLE_A, 0, din_unitSymbolType_A); // 1A
+    fill_physical_value(&res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit, DC_SOC_MAX_POWER_VALUE, DC_SOC_MAX_POWER_EXP, din_unitSymbolType_W); // 20000W * 10^1 = 200kW
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1;
 
     res->DC_EVSEChargeParameter_isUsed = 1;
@@ -527,24 +489,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     // [V2G-DC-559] Since for DC charging according to this document, the EVCC is not able to provide a planned
     // departure time, SAScheduleList shall provide PMaxSchedule (refer to 9.5.2.10) covering at least 24 hours.
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax = SHRT_MAX;
-
-    // [V2G-DC-338] The value of the duration element shall be defined as period in seconds.
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1; // Must be used in DIN
-
-    // [V2G-DC-336] The value of the start element shall be defined in seconds from NOW.
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0; // Start of the interval, in seconds from NOW.
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
-
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0; // no content
-    res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleID = 1;
-
-    // [V2G-DC-554] In the scope of this document, the element “SalesTariff” shall not be used.
-    res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
-    res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
+    fill_sa_schedule_24h(&res->SAScheduleList, SHRT_MAX);
     res->SAScheduleList_isUsed = 1;
 
     // [V2G-DC-882] The EV shall ignore the SASchedule received in ChargeParameterDiscoveryRes
@@ -584,11 +529,7 @@ void DIN70121::handle_power_delivery_req()
     // DIN 70121 is DC-only; include DC_EVSEStatus with EVSE_Shutdown so
     // the EV proceeds to SessionStopReq for a clean session teardown.
     res->DC_EVSEStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
 
     res->AC_EVSEStatus_isUsed = 0;
     res->EVSEStatus_isUsed = 0;
@@ -619,11 +560,7 @@ void DIN70121::handle_cable_check_req()
     res->ResponseCode = din_responseCodeType_OK;
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
 
     iso15118.trace("DIN70121: CableCheckReq received in SoC-read flow, sending EVSE_Shutdown to terminate");
 
@@ -644,17 +581,8 @@ void DIN70121::handle_pre_charge_req()
     // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
     res->ResponseCode = din_responseCodeType_FAILED;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
-    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
-
-    res->EVSEPresentVoltage.Unit = din_unitSymbolType_V;
-    res->EVSEPresentVoltage.Unit_isUsed = 1;
-    res->EVSEPresentVoltage.Value = 0;
-    res->EVSEPresentVoltage.Multiplier = 0;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    fill_physical_value(&res->EVSEPresentVoltage, 0, 0, din_unitSymbolType_V);
 
     iso15118.trace("DIN70121: PreChargeReq received in SoC-read flow, sending FAILED to terminate");
 
@@ -673,22 +601,9 @@ void DIN70121::handle_current_demand_req()
     // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
     res->ResponseCode = din_responseCodeType_FAILED;
 
-    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
-    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
-    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
-    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
-    res->DC_EVSEStatus.NotificationMaxDelay = 0;
-    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
-
-    res->EVSEPresentVoltage.Unit = din_unitSymbolType_V;
-    res->EVSEPresentVoltage.Unit_isUsed = 1;
-    res->EVSEPresentVoltage.Value = 0;
-    res->EVSEPresentVoltage.Multiplier = 0;
-
-    res->EVSEPresentCurrent.Unit = din_unitSymbolType_A;
-    res->EVSEPresentCurrent.Unit_isUsed = 1;
-    res->EVSEPresentCurrent.Value = 0;
-    res->EVSEPresentCurrent.Multiplier = 0;
+    fill_dc_evse_status_shutdown(&res->DC_EVSEStatus);
+    fill_physical_value(&res->EVSEPresentVoltage, 0, 0, din_unitSymbolType_V);
+    fill_physical_value(&res->EVSEPresentCurrent, 0, 0, din_unitSymbolType_A);
 
     res->EVSECurrentLimitAchieved = 0;
     res->EVSEVoltageLimitAchieved = 0;
