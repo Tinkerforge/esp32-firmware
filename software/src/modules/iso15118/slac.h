@@ -110,6 +110,12 @@
 #define SLAC_TT_EVSE_MATCH_SESSION            10_s
 #define SLAC_TT_EVSE_SLAC_INIT_MIN            20_s
 #define SLAC_TT_EVSE_SLAC_INIT_MAX            50_s
+// Non-standard: used instead of TT_EVSE_SLAC_init (min 20s per spec) when the
+// fast_timeout config is enabled. A spec-conforming EV has to send
+// CM_SLAC_PARM.REQ within TP_EV_SLAC_init (10s), so any ISO 15118 capable EV
+// should still match while EVs without PLC modem fall back to IEC 61851
+// after 10s instead of 158s (3 x 50s + 2 x 4s State E/F).
+#define SLAC_TT_EVSE_SLAC_INIT_FAST           10_s
 #define SLAC_TT_MATCH_JOIN                    12_s
 #define SLAC_TT_MATCH_RESPONSE               200_ms
 #define SLAC_TT_MATCH_SEQUENCE               400_ms

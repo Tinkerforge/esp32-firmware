@@ -110,6 +110,11 @@ public:
 
     bool is_autocharge() const { return config.get("autocharge")->asBool(); }
 
+    // Returns true if the non-standard fast SLAC init timeout is enabled:
+    // single attempt with SLAC_TT_EVSE_SLAC_INIT_FAST instead of
+    // C_SEQU_RETRY+1 attempts with SLAC_TT_EVSE_SLAC_INIT_MAX.
+    bool is_fast_timeout() const { return config.get("fast_timeout")->asBool(); }
+
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
     void set_charging_protocol(const uint8_t charging_protocol, const uint16_t cp_duty_cycle);

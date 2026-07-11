@@ -3,6 +3,7 @@ export interface config {
     read_soc: boolean;
     charge_via_iso15118: boolean;
     min_charge_current: number;
+    fast_timeout: boolean;
 }
 
 export interface state_slac {

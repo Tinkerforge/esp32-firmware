@@ -191,7 +191,13 @@
 //   t=158s  Timeout #3: retries exhausted -> IEC fallback
 //   t=160s  CP -> IEC 61851 PWM, non-ISO EV can charge
 //
-// This is crazy long... but not much we can do about it.
+// This is crazy long... The optional (non-standard) fast_timeout config
+// shortens this to a single 10s attempt without E/F cycling:
+//   t=0s    EV plugs in, timeout starts (10s)
+//   t=10s   Timeout: no retries -> IEC fallback
+//   t=12s   CP -> IEC 61851 PWM, non-ISO EV can charge
+// A spec-conforming EV has to send CM_SLAC_PARM.REQ within TP_EV_SLAC_init
+// (10s), so ISO-capable EVs should still match with fast_timeout enabled.
 // ============================================================================
 
 #include "iso15118.h"
@@ -303,6 +309,7 @@ void ISO15118::pre_setup()
         {"read_soc", Config::Bool(false)},
         {"charge_via_iso15118", Config::Bool(false)},
         {"min_charge_current", Config::Uint16(1000)},
+        {"fast_timeout", Config::Bool(false)},
     }), [this](Config &update, ConfigSource source) -> String {
         const bool was_enabled = is_enabled();
         const bool will_be_enabled = update.get("autocharge")->asBool() ||
