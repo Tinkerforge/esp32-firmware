@@ -599,13 +599,9 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         next_timeout = {};
         state = SLACState::LinkDetected;  // Mark SLAC as done
 
-        // Use begin_iec_transition() for a clean PWM restart:
-        // CP goes to 100% (no PWM) immediately, then after 2s switches to IEC temporary mode.
-        iso15118.begin_iec_transition();
-
-        // Disable PLC modem immediately. The modem is no longer needed since we're
-        // skipping SDP/V2G entirely in autocharge-only mode.
-        iso15118.disable_plc_modem();
+        // Use begin_iec_transition() for a clean PWM restart.
+        // The PLC modem is disabled immediately since we're skipping SDP/V2G entirely.
+        iso15118.begin_iec_transition(ISO15118::ModemOff::Immediate);
 
         return;
     }
@@ -876,8 +872,7 @@ void SLAC::state_machine_loop()
                 state = SLACState::SlacInitFailed;
 
                 // Trigger IEC 61851 fallback for non-ISO EVs.
-                iso15118.begin_iec_transition();
-                iso15118.disable_plc_modem();
+                iso15118.begin_iec_transition(ISO15118::ModemOff::Immediate);
             } else {
                 iso15118.trace("SLAC: TT_EVSE_SLAC_init expired, entering State E/F (attempt %u/%u)",
                                 static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(max_retries));

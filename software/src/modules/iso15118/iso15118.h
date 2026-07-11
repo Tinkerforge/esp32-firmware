@@ -146,7 +146,13 @@ public:
     void schedule_delayed_modem_off();
 
     uint64_t iec_switch_task = 0;
-    void begin_iec_transition();
+
+    // Modem shutdown policy for begin_iec_transition():
+    // None:      Caller handles the modem (already off, off pending, or keep on).
+    // Immediate: No open socket, disable right away.
+    // Delayed:   Socket still open; 5s timer, killed early when the EV closes TCP.
+    enum class ModemOff : uint8_t { None, Immediate, Delayed };
+    void begin_iec_transition(ModemOff modem_off = ModemOff::None);
 
     // Ensure the state machine task is running (schedules it if not already running)
     void ensure_state_machine_running();

@@ -707,7 +707,7 @@ void ISO15118::state_machines_loop()
             // there the EV closing TCP after SessionStop is expected.
             if (!iec_temporary_active && is_read_soc_only() && !nonegotiation_pending) {
                 iso15118.trace("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
-                begin_iec_transition();
+                begin_iec_transition(plc_modem_off_task == 0 ? ModemOff::Immediate : ModemOff::None);
             }
         }
     }
@@ -884,7 +884,7 @@ void ISO15118::schedule_delayed_modem_off()
     }, 5_s);
 }
 
-void ISO15118::begin_iec_transition()
+void ISO15118::begin_iec_transition(ModemOff modem_off)
 {
     if (iec_switch_task != 0) {
         task_scheduler.cancel(iec_switch_task);
@@ -898,9 +898,15 @@ void ISO15118::begin_iec_transition()
         iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
         iec_temporary_active = true;
 
-        iec_switch_task = task_scheduler.scheduleOnce([this]() {
-            if (!nonegotiation_pending) {
-                disable_plc_modem(); // Leave logical network
+        if (modem_off == ModemOff::Immediate) {
+            disable_plc_modem();
+        } else if (modem_off == ModemOff::Delayed) {
+            schedule_delayed_modem_off();
+        }
+
+        iec_switch_task = task_scheduler.scheduleOnce([this, modem_off]() {
+            if (modem_off != ModemOff::None) {
+                disable_plc_modem(); // Leave logical network (no-op if already off)
             }
             iso15118.trace("ISO15118: E/F teardown: state E/F (0%% duty) for 4s");
             iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
@@ -924,6 +930,12 @@ void ISO15118::begin_iec_transition()
     // Mark that the IEC transition is in progress so the State A handler
     // knows to clean up if the EV disconnects during the delay.
     iec_temporary_active = true;
+
+    if (modem_off == ModemOff::Immediate) {
+        disable_plc_modem();
+    } else if (modem_off == ModemOff::Delayed) {
+        schedule_delayed_modem_off();
+    }
 
     // After 2 seconds, switch to IEC temporary mode.
     iec_switch_task = task_scheduler.scheduleOnce([this]() {
@@ -973,10 +985,7 @@ void ISO15118::begin_reslac_for_nonegotiation()
         if (nonegotiation_pending) {
             nonegotiation_pending = false;
             iso15118.trace("ISO15118: EV did not renegotiate in time, beginning IEC transition");
-            begin_iec_transition();
-            if (!opt_ef_teardown) {
-                disable_plc_modem();
-            }
+            begin_iec_transition(ModemOff::Immediate);
         }
     }, 50_s);
 }

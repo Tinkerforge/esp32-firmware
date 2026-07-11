@@ -727,10 +727,7 @@ void DIN70121::handle_session_stop_req()
             return;
         }
 
-        iso15118.begin_iec_transition();
-
-        // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
-        iso15118.schedule_delayed_modem_off();
+        iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
 
         // Do NOT call reset_active_socket() here. Leave the socket open so the
         // poll loop can detect POLLHUP when the EV closes the connection, which

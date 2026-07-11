@@ -457,8 +457,7 @@ void Common::handle_supported_app_protocol_req()
         // Offer basic charging per IEC 61851-1 Table A.7 ("digital communication
         // could not be established"). Socket is left open so the poll loop can
         // detect the EV closing TCP, which triggers early modem shutdown.
-        iso15118.begin_iec_transition();
-        iso15118.schedule_delayed_modem_off();
+        iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
     } else {
         // Priority: ISO2 > DIN > ISO20. ISO20 is currently testing-only.
         uint8_t schema_id = 0;

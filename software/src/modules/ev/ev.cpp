@@ -214,7 +214,7 @@ void Ev::register_urls()
 
 #if MODULE_ISO15118_AVAILABLE()
         if (iso15118.is_enabled() && !iso15118.iec_temporary_active) {
-            iso15118.begin_iec_transition();
+            iso15118.begin_iec_transition(ISO15118::ModemOff::Immediate);
         }
 #endif
     }, true);
