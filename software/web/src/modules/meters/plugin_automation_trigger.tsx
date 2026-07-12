@@ -22,7 +22,7 @@ import * as options from "../../options";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
-import { AutomationTrigger, PreInitResult } from "../automation/types";
+import { AutomationTrigger } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputSelect } from "../../ts/components/input_select";
@@ -214,16 +214,14 @@ function new_meter_value_config(): AutomationTrigger {
     ];
 }
 
-export function pre_init(): PreInitResult {
+export function pre_init() {
     return {
-        trigger_components: {
-            [AutomationTriggerID.MeterValue]: {
-                translation_name: () => __("meters.automation.meter_value"),
-                new_config: new_meter_value_config,
-                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-                get_table_children: get_meter_value_table_children,
-                get_edit_children: get_meter_value_edit_children,
-            },
+        [AutomationTriggerID.MeterValue]: {
+            name: () => __("meters.automation.meter_value"),
+            new_config: new_meter_value_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+            get_table_children: get_meter_value_table_children,
+            get_edit_children: get_meter_value_edit_children,
         },
     };
 }

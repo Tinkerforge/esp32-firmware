@@ -103,7 +103,7 @@ let x = {
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>setze</b> den Zähler <b>{meter_name}</b> zurück.</> /*NF*/,
             "meter_slot": "Meter",
             "meter_value": "Zählerwert",
-            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold: string, hyst: string, unit: string) => <>wenn Zähler <b>{meter_name}</b> Wert <b>{value_name}</b> {comparator} <b>{threshold} {unit}</b>{hyst !== "" ? <> (Hysterese: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold_value: string, hyst: string, unit: string) => <>wenn Zähler <b>{meter_name}</b> Wert <b>{value_name}</b> {comparator} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (Hysterese: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
             "value_id": "Wert",
             "comparator": "Bedingung",
             "comparator_gt": "Größer als (>)",

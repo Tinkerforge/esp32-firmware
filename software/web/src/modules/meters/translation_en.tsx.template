@@ -103,7 +103,7 @@ let x = {
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>reset</b> energy meter <b>{meter_name}</b>.</>/*NF*/,
             "meter_slot": "Meter",
             "meter_value": "Meter value",
-            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {comparator} <b>{threshold} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold_value: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {comparator} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
             "value_id": "Value",
             "comparator": "Condition",
             "comparator_gt": "Greater than (>)",
