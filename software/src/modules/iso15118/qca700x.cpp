@@ -162,21 +162,15 @@ uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
         return 0;
     }
 
-    if (available <= length) {
-        write_register(QCA700X_SPI_REG_BFR_SIZE, available);
+    write_register(QCA700X_SPI_REG_BFR_SIZE, available);
 
-        spi_select();
-        spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
-        spi_read(data, available);
-        spi_deselect();
+    spi_select();
+    spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
+    spi_read(data, available);
+    spi_deselect();
 
-        iso15118.trace_packet(data, available);
-        return available;
-    } else {
-        iso15118.trace("read_burst error: available %u > max length %u", available, length);
-    }
-
-    return 0;
+    iso15118.trace_packet(data, available);
+    return available;
 }
 
 void QCA700x::flush_receive_buffer()

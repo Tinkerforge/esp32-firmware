@@ -48,15 +48,14 @@ void SDP::pre_setup()
         {"evse_ip_address", Config::Tuple(4, Config::Uint32(0))},// TODO: why is this not a Config::String("", 0, INET6_ADDRSTRLEN)?
         {"evse_port", Config::Uint16(0)},
         {"evse_security", Config::Int16(-1)},
-        {"evse_tranport_protocol", Config::Int16(-1)},
+        {"evse_transport_protocol", Config::Int16(-1)},
         {"ev_security", Config::Int16(-1)},
-        {"ev_tranport_protocol", Config::Int16(-1)}
+        {"ev_transport_protocol", Config::Int16(-1)}
     });
 }
 
 void SDP::setup_socket()
 {
-    // Close existing socket if any
     if (sdp_socket >= 0) {
         close(sdp_socket);
         sdp_socket = -1;
@@ -194,9 +193,9 @@ void SDP::handle_socket()
 
         // Security 0x00 = TLS, 0x10 = no security
         // Transport Protocol 0x00 = TCP, 0x10 = UDP (only TCP allowed here)
-        trace_iso("Got SDP Discovery Request with security %02x, transport_protocol %02x", request->security, request->tranport_protocol);
+        trace_iso("Got SDP Discovery Request with security %02x, transport_protocol %02x", request->security, request->transport_protocol);
         api_state.get("ev_security")->updateInt(request->security);
-        api_state.get("ev_tranport_protocol")->updateInt(request->tranport_protocol);
+        api_state.get("ev_transport_protocol")->updateInt(request->transport_protocol);
 
         esp_ip6_addr_t ip6;
         if (!iso15118.qca700x.get_ip6_linklocal(&ip6)) {
@@ -230,9 +229,9 @@ void SDP::handle_socket()
             .secc_ip_address = {ip6.addr[0], ip6.addr[1], ip6.addr[2], ip6.addr[3]},
             .secc_port = htons(V2G_TCP_DATA_PORT),
             .security = response_security,
-            .tranport_protocol = SDP_TRANSPORT_TCP
+            .transport_protocol = SDP_TRANSPORT_TCP
         };
-        trace_iso("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.tranport_protocol);
+        trace_iso("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.transport_protocol);
 
         int ret = sendto(sdp_socket, &response, sizeof(response), 0, reinterpret_cast<struct sockaddr*>(&recv_addr), recv_addr_length);
         if (ret < 0) {
@@ -248,7 +247,7 @@ void SDP::handle_socket()
         }
         api_state.get("evse_port")->updateUint(ntohs(response.secc_port));
         api_state.get("evse_security")->updateInt(response.security);
-        api_state.get("evse_tranport_protocol")->updateInt(response.tranport_protocol);
+        api_state.get("evse_transport_protocol")->updateInt(response.transport_protocol);
 
         state = SDPState::DiscoveryCompleted;
         api_state.get("state")->updateEnum(state);

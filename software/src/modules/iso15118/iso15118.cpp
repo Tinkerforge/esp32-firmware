@@ -458,7 +458,6 @@ void ISO15118::register_urls()
             delay(20);
         }
 
-        // Timeout
         pib_manager.reset();
         return request.send_plain(504, "PIB read timed out");
     });
@@ -734,12 +733,12 @@ void ISO15118::ensure_state_machine_running()
     is_setup = true;
 }
 
+// Bring up the prerequisites for a PIB transfer.
+// Returns true if a fresh modem initialization was triggered (i.e. the modem
+// was powered up / reset), so the caller can apply an additional settle
+// delay before talking to it.
 bool ISO15118::prepare_for_pib()
 {
-    // Bring up the prerequisites for a PIB transfer.
-    // Returns true if a fresh modem initialization was triggered (i.e. the modem
-    // was powered up / reset), so the caller can apply an additional settle
-    // delay before talking to it.
     iso15118.trace("ISO15118: Preparing PLC modem for PIB transfer");
 
     // 1. Power the modem.

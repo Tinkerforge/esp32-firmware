@@ -50,9 +50,7 @@
 
 #include "gcc_warnings.h"
 
-// =============================================================================
 // ISO 15118 cipher suites (TLS 1.2 + TLS 1.3)
-// =============================================================================
 // TLS 1.3: [V2G20-2458] Table 6
 // TLS 1.2: [V2G2-602] Table 7
 static const int iso15118_ciphersuites[] = {
@@ -65,17 +63,14 @@ static const int iso15118_ciphersuites[] = {
     0
 };
 
-// =============================================================================
 // ISO 15118 named groups (ISO 15118-2 + ISO 15118-20)
-// =============================================================================
 // [V2G20-2674] secp521r1 (ISO 15118-20 primary signature curve)
 // [V2G20-2319] x448 (ISO 15118-20 alternative)
 // [V2G2-006]   secp256r1 (ISO 15118-2)
-// X25519 is listed first for ECDHE key exchange by OpenSSL.
-// Offer X25519 key_share by default in their initial
-// ClientHello. Without it, the server must send a HelloRetryRequest (HRR)
-// adding an extra network round-trip. X25519 is only used for
-// ephemeral key exchange. Certificate signatures remain secp521r1.
+// X25519 is listed first: most EV TLS stacks (OpenSSL-based) offer an X25519
+// key_share in their initial ClientHello. Preferring it avoids a
+// HelloRetryRequest (an extra network round-trip). X25519 is only used for
+// ephemeral key exchange; certificate signatures remain secp521r1.
 static const uint16_t iso15118_curves[] = {
     MBEDTLS_SSL_IANA_TLS_GROUP_X25519,     // Fast ECDHE, avoids HRR with most clients
     MBEDTLS_SSL_IANA_TLS_GROUP_X448,       // ISO 15118-20 alternative, faster than secp256r1
@@ -84,11 +79,9 @@ static const uint16_t iso15118_curves[] = {
     MBEDTLS_SSL_IANA_TLS_GROUP_NONE
 };
 
-// =============================================================================
-// Certificate verification profile
-// =============================================================================
-// This is a copy of the default profile, except that certificate signature
-// verification will be skipped so that it can be done manually in parallel.
+// Certificate verification profile: a copy of the default profile, except that
+// certificate signature verification is skipped so that it can be done
+// manually in parallel.
 static const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_custom =
 {
     /* Hashes from SHA-256 and above. Note that this selection
@@ -116,18 +109,9 @@ static const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_custom =
     1,    // skip_signature_verification
 };
 
-// =============================================================================
-// Certificate selection callback (TLS version-based)
-// =============================================================================
-// Both ISO 15118-2 (secp256r1, TLS 1.2) and ISO 15118-20 (secp521r1, TLS 1.3)
-// certificates are loaded. This callback is invoked after ClientHello processing,
-// when the negotiated TLS version is known. It selects the appropriate certificate:
-//   - TLS 1.3 -> ISO 15118-20 cert (secp521r1)
-//   - TLS 1.2 -> ISO 15118-2  cert (secp256r1)
-// =============================================================================
-
-// File-static pointer to the single ISOTLS instance, used by the callback.
-// Only safe as long as there is exactly one ISOTLS instance in the firmware.
+// File-static pointer to the single ISOTLS instance, used by the certificate
+// selection callback. Only safe as long as there is exactly one ISOTLS
+// instance in the firmware.
 static ISOTLS *s_isotls_instance = nullptr;
 
 static int tls_cert_selection_callback(mbedtls_ssl_context *ssl)
@@ -401,7 +385,6 @@ bool ISOTLS::setup()
 
     iso15118.trace("ISOTLS: Setting up TLS for ISO 15118 (TLS 1.2 + 1.3)");
 
-    // Load certificates first
     if (!load_certificates()) {
         iso15118.trace("ISOTLS: Failed to load certificates");
         return false;
@@ -533,9 +516,6 @@ bool ISOTLS::setup()
         return false;
     }
 
-    // =========================================================================
-    // TLS Version, Cipher Suite and Named Group Configuration
-    // =========================================================================
     // Allow both TLS 1.2 and 1.3, let client negotiate
     // [V2G20-2356] If TLS 1.2 negotiated, SECC shall not select ISO 15118-20
     mbedtls_ssl_conf_min_tls_version(ssl_conf, MBEDTLS_SSL_VERSION_TLS1_2);
@@ -543,10 +523,7 @@ bool ISOTLS::setup()
     mbedtls_ssl_conf_ciphersuites(ssl_conf, iso15118_ciphersuites);
     mbedtls_ssl_conf_groups(ssl_conf, iso15118_curves);
 
-    // =========================================================================
-    // Authentication Mode
-    // =========================================================================
-    // Default: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
+    // Default authmode: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
     // For TLS 1.3 / ISO 15118-20, mutual authentication is enabled
     // per-handshake in the cert_cb callback using:
     //   mbedtls_ssl_set_hs_authmode(MBEDTLS_SSL_VERIFY_REQUIRED)
@@ -556,15 +533,10 @@ bool ISOTLS::setup()
 
     mbedtls_ssl_conf_cert_profile(ssl_conf, &mbedtls_x509_crt_profile_custom);
 
-    // Set random number generator
     mbedtls_ssl_conf_rng(ssl_conf, mbedtls_ctr_drbg_random, ctr_drbg);
 
-    // =========================================================================
-    // Certificate selection callback
-    // =========================================================================
-    // A certificate selection callback (f_cert_cb) fires after ClientHello
-    // processing. At that point, the negotiated TLS version is known, so the
-    // callback:
+    // Certificate selection callback (f_cert_cb): fires after ClientHello
+    // processing, when the negotiated TLS version is known. The callback selects:
     //   - TLS 1.3 -> ISO 15118-20 cert (secp521r1) + mutual auth with trusted CAs
     //   - TLS 1.2 -> ISO 15118-2 cert  (secp256r1) + unilateral auth (no client cert)
     // This is deterministic and independent of client signature_algorithms ordering.

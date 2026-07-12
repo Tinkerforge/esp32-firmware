@@ -417,13 +417,13 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                             <InputText value={security_value_to_string(state_sdp.evse_security)}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.evse_transport_protocol")}>
-                            <InputText value={transport_protocol_to_string(state_sdp.evse_tranport_protocol)}/>
+                            <InputText value={transport_protocol_to_string(state_sdp.evse_transport_protocol)}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.ev_security")}>
                             <InputText value={security_value_to_string(state_sdp.ev_security)}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.ev_transport_protocol")}>
-                            <InputText value={transport_protocol_to_string(state_sdp.ev_tranport_protocol)}/>
+                            <InputText value={transport_protocol_to_string(state_sdp.ev_transport_protocol)}/>
                         </FormRow>
 
                         <FormSeparator heading={__("iso15118.content.din_iso_section")}/>

@@ -96,13 +96,13 @@ private:
     uint8_t *spi_buffer = nullptr;
     uint16_t spi_buffer_length = 0;
 
-    // Flag to track IPv6 packet reception (for SLAC state transition)
+    // Set when an IPv6 packet arrives (for SLAC WaitForSDP -> LinkDetected transition)
     bool ipv6_packet_received = false;
 
-    // Flag to track SPI initialization
     bool spi_initialized = false;
 
-    // Flag to track if modem has been detected via signature check
+    // Modem presence verified via SPI signature check; frame processing is
+    // paused while false to avoid parsing garbage from a disconnected bus.
     bool modem_detected = false;
 
     // Previous frame info for corruption debugging

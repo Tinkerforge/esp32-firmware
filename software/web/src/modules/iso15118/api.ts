@@ -28,9 +28,9 @@ export interface state_sdp {
     evse_ip_address: number[];
     evse_port: number;
     evse_security: number;
-    evse_tranport_protocol: number;
+    evse_transport_protocol: number;
     ev_security: number;
-    ev_tranport_protocol: number;
+    ev_transport_protocol: number;
 }
 
 export interface state_common {

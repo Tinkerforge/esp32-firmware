@@ -65,7 +65,6 @@ void Common::pre_setup()
 
 void Common::setup_socket()
 {
-    // Close existing socket if any
     if (listen_socket >= 0) {
         close(listen_socket);
         listen_socket = -1;
@@ -125,11 +124,11 @@ void Common::handle_socket()
     if (new_socket > 0) {
         // We only support one socket connection at a time. If there is a new connection and one is currently open we close the old one.
         // Usually this means the EV has reconnected. There can't be multiple EVs connected at the same time.
-        if ((active_socket > 0) && (new_socket > 0)) {
+        if (active_socket > 0) {
             iso15118.trace("Common: Replacing socket %d with %d", active_socket, new_socket);
         }
 
-        // Save tls_requested_by_ev before reset (it was set by SDP)
+        // Preserve tls_requested_by_ev across the reset (it was set by SDP)
         bool tls_requested = tls_requested_by_ev;
 
         reset_active_socket();
@@ -138,16 +137,7 @@ void Common::handle_socket()
         // Register active socket in central poll array
         iso15118.set_poll_fd(FDS_ACTIVE_INDEX, active_socket);
 
-        // Restore tls_requested_by_ev after reset
         tls_requested_by_ev = tls_requested;
-        if(active_socket < 0) {
-            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                // No connection available, non-blocking mode
-                return;
-            }
-            iso15118.trace("Common: Failed to accept connection: %d (errno %d [%s])", active_socket, errno, strerror(errno));
-            return;
-        }
 
         char addr_str[INET6_ADDRSTRLEN];
         tf_ip6addr_ntoa(&source_addr, addr_str, sizeof(addr_str));
@@ -231,7 +221,6 @@ void Common::handle_socket()
 
 void Common::reset_active_socket()
 {
-    // Close TLS session if active
     tls.end_session();
     tls_requested_by_ev = false;
     api_state.get("encryption")->updateEnum(Encryption::Unencrypted);
@@ -516,7 +505,7 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
 
 SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len)
 {
-    // Check if received session ID is all zeros (new session requested)
+    // All-zero received ID means the EV requests a new session
     bool all_zero = true;
     for (size_t i = 0; i < received_len; i++) {
         if (received_id[i] != 0x00) {
@@ -525,20 +514,8 @@ SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len
         }
     }
 
-    // Check if received session ID matches stored session ID (resume session)
-    // First compare length, then compare bytes
-    bool matches_stored = false;
-    if (received_len == stored_len) {
-        matches_stored = true;
-        for (size_t i = 0; i < stored_len; i++) {
-            if (received_id[i] != stored_id[i]) {
-                matches_stored = false;
-                break;
-            }
-        }
-    }
+    const bool matches_stored = validate_session_id(received_id, received_len, stored_id, stored_len);
 
-    // Generate new session ID if needed
     if (all_zero || !matches_stored) {
         for (size_t i = 0; i < stored_len; i++) {
             stored_id[i] = static_cast<uint8_t>(esp_random());
@@ -551,19 +528,7 @@ SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len
 
 bool validate_session_id(const uint8_t *received_id, size_t received_len, const uint8_t *stored_id, size_t stored_len)
 {
-    // Check if lengths match
-    if (received_len != stored_len) {
-        return false;
-    }
-
-    // Check if all bytes match
-    for (size_t i = 0; i < stored_len; i++) {
-        if (received_id[i] != stored_id[i]) {
-            return false;
-        }
-    }
-
-    return true;
+    return (received_len == stored_len) && (memcmp(received_id, stored_id, stored_len) == 0);
 }
 
 // Converts a physical value with exponent to float: result = value * 10^exponent

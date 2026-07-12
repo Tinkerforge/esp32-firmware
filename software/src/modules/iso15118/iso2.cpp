@@ -43,7 +43,7 @@ void ISO2::pre_setup()
 
 void ISO2::handle_bitstream(exi_bitstream *exi)
 {
-    // Increment state on first call
+    // Leave Idle once the first bitstream of a session arrives
     if (state == ISO2State::Idle) {
         state = ISO2State::BitstreamReceived;
     }
@@ -74,13 +74,10 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     api_state.get("state")->updateEnum(state);
 
     // [V2G2-443] Timeout: stop session if no request received within V2G_SECC_Sequence_Timeout.
+    // [V2G2-725] Exception: after a pause requested by the EVCC (SessionStopRes sent) there is
+    // no timeout. We just wait for a new SLAC or SDP message.
     if (!pause_active) {
         schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "ISO2");
-    // [V2G2-725] Pause: D-LINK_PAUSE.request() after SessionStopRes.
-    } else {
-        // No timeout in case of pausing by EVCC
-        // We just wait for new SLAC or new SDP message
-        cancel_sequence_timeout(next_timeout);
     }
 }
 
@@ -296,7 +293,7 @@ void ISO2::handle_session_setup_req()
     iso2_SessionSetupReqType *req = &iso2DocDec->V2G_Message.Body.SessionSetupReq;
     iso2_SessionSetupResType *res = &iso2DocEnc->V2G_Message.Body.SessionSetupRes;
 
-    // Reset soc_read flag for new session
+    // Reset SoC tracking for the new session
     soc_read = false;
     soc_shutdown_retries = 0;
 
@@ -412,7 +409,6 @@ void ISO2::handle_service_discovery_req()
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
     }
 
-    // Unique identifier of the service
     res->ChargeService.ServiceID = V2G_SERVICE_ID_CHARGING;
 
     res->ChargeService.ServiceName_isUsed = 0;

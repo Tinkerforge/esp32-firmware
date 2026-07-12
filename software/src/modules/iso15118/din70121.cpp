@@ -40,7 +40,7 @@ void DIN70121::pre_setup()
 
 void DIN70121::handle_bitstream(exi_bitstream *exi)
 {
-    // Increment state on first call
+    // Leave Idle once the first bitstream of a session arrives
     if (state == DIN70121State::Idle) {
         state = DIN70121State::BitstreamReceived;
     }
@@ -258,7 +258,7 @@ void DIN70121::handle_session_setup_req()
     din_SessionSetupReqType *req = &dinDocDec->V2G_Message.Body.SessionSetupReq;
     din_SessionSetupResType *res = &dinDocEnc->V2G_Message.Body.SessionSetupRes;
 
-    // Reset soc_read flag for new session
+    // Reset SoC tracking for the new session
     soc_read = false;
     soc_shutdown_retries = 0;
 

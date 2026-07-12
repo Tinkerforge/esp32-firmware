@@ -88,8 +88,8 @@
 
 #define SLAC_ATTENUATION_PROFILE_SOUNDS 10
 
-// TP seems to be "performance time": Time the EV/EVSE has to react to a message
-// TT seems to be "timeout time":     Time the EV/EVSE has to wait for the next message
+// TP = performance time: Time the EV/EVSE has to react to a message
+// TT = timeout time:     Time the EV/EVSE waits for the next message
 // Constants and Timings (in ms) ISO 15118-3 A.8 [V2G3-A08-01] Table A.1
 #define SLAC_C_EV_MATCH_MNBC            10
 #define SLAC_C_EV_MATCH_RETRY            2

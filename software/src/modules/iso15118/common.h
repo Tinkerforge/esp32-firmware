@@ -43,18 +43,17 @@ float physical_value_to_float(int16_t value, int8_t exponent);
 
 // Result of session ID check in SessionSetupReq handling
 enum class SessionIdResult {
-    NewSession,    // New session: received ID was all zeros or different from stored
-    ResumeSession  // Resume session: received ID matches stored session ID
+    NewSession,
+    ResumeSession
 };
 
-// Check received session ID against stored session ID.
-// If new session is needed, generates a new random session ID.
-// Returns whether this is a new or resumed session.
+// Check received session ID against stored session ID (SessionSetupReq handling).
+// Received ID all zeros or mismatch: generates a new random stored ID, returns NewSession.
+// Received ID matches stored ID: returns ResumeSession.
 SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len);
 
-// Check received session ID matches stored session ID (for messages after SessionSetup).
-// Returns true if session ID matches, false if it's an unknown session.
-// This is used to validate that subsequent messages belong to the established session.
+// Check that a message after SessionSetup belongs to the established session.
+// Returns true if the received session ID matches the stored one.
 bool validate_session_id(const uint8_t *received_id, size_t received_len, const uint8_t *stored_id, size_t stored_len);
 
 // Cancel an existing sequence timeout if active.
@@ -67,14 +66,16 @@ void cancel_sequence_timeout(uint64_t &next_timeout);
 // next_timeout: Reference to store the scheduled task ID (set to 0 on expiry)
 void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const char *protocol_name);
 
-// Common message dispatch macros for all V2G protocols (DIN, ISO2, ISO20)
-// doc_path: Path to the _isUsed flags (e.g., body, doc)
-// msg: Message name without suffix (e.g., SessionSetupReq)
-// handler: Handler function to call
-// prefix: Protocol name for logging (e.g., "ISO2", "DIN70121")
+// Common message dispatch macros for all V2G protocols (DIN, ISO2, ISO20).
+// doc_path: Path to the _isUsed flags (e.g. body, doc)
+// msg:      Message name without suffix (e.g. SessionSetupReq)
+
+// Call handler if the message is present in the decoded document.
 #define V2G_DISPATCH(doc_path, msg, handler) \
     if (doc_path.msg##_isUsed) { handler(); }
 
+// Trace an unimplemented message.
+// prefix: Protocol name for logging (e.g. "ISO2", "DIN70121")
 #define V2G_NOT_IMPL(prefix, doc_path, msg) \
     if (doc_path.msg##_isUsed) { \
         iso15118.trace(prefix ": " #msg " received but not implemented"); \
@@ -89,7 +90,6 @@ public:
     void handle_socket();  // Called by central poll when socket has data
     void pre_setup();
 
-    // TLS handler
     ISOTLS tls;
 
     ConfigRoot api_state;

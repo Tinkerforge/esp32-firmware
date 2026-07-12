@@ -69,7 +69,7 @@ struct [[gnu::packed]] SDP_DiscoveryRequest {
     V2GTP_Header v2gtp;
 
     uint8_t security;
-    uint8_t tranport_protocol;
+    uint8_t transport_protocol;
 };
 
 struct [[gnu::packed]] SDP_DiscoveryResponse {
@@ -78,7 +78,7 @@ struct [[gnu::packed]] SDP_DiscoveryResponse {
     uint32_t secc_ip_address[4];
     uint16_t secc_port;
     uint8_t security;
-    uint8_t tranport_protocol;
+    uint8_t transport_protocol;
 };
 
 class SDP final
