@@ -850,8 +850,8 @@ bool FirmwareUpdate::erase_other_partition(String &msg, EraseType erase_type)
     uint32_t offset = 0;
 
     while (offset < to_erase) {
-        constexpr uint32_t MB1 = 1024UL * 1024UL;
-        const uint32_t block_size = std::min(to_erase - offset, MB1);
+        constexpr uint32_t max_block_size = 512UL * 1024UL;
+        const uint32_t block_size = std::min(to_erase - offset, max_block_size);
 
         err = esp_partition_erase_range(other_partition, offset, block_size);
 
@@ -859,7 +859,7 @@ bool FirmwareUpdate::erase_other_partition(String &msg, EraseType erase_type)
             break;
         }
 
-        if (block_size == MB1) {
+        if (block_size == max_block_size) {
             vTaskDelay(1);
         }
 
