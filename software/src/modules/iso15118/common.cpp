@@ -47,6 +47,66 @@
 
 #include "gcc_warnings.h"
 
+// EVCC vendor detection for vendor-specific behavior.
+// Note: EVCC vendor may be an EV manufacturer like Tesla, but it may also be
+//       a component supplier like Bosch or Continental.
+struct EVCCVendorOUI {
+    uint8_t oui[3];
+    EVCCVendor vendor;
+};
+
+static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
+    {{0x70, 0xB3, 0xD6}, EVCCVendor::Audi},
+    {{0x00, 0x01, 0xA9}, EVCCVendor::BMW},
+    {{0xEC, 0xFA, 0x03}, EVCCVendor::FCA},
+    {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
+    {{0x00, 0x76, 0xB6}, EVCCVendor::Ford},
+    {{0xAC, 0x96, 0x5B}, EVCCVendor::LucidMotors},
+    {{0x3C, 0xCE, 0x15}, EVCCVendor::MercedesBenz},
+    {{0x8C, 0x14, 0x7D}, EVCCVendor::Nio},
+    {{0xF0, 0xF6, 0x9C}, EVCCVendor::Nio},
+    {{0x00, 0x04, 0xEF}, EVCCVendor::Polestar},
+    {{0x0C, 0x29, 0x8F}, EVCCVendor::Tesla},
+    {{0x4C, 0xFC, 0xAA}, EVCCVendor::Tesla},
+    {{0x54, 0xF8, 0xF0}, EVCCVendor::Tesla},
+    {{0x90, 0xE6, 0x43}, EVCCVendor::Tesla},
+    {{0x98, 0xED, 0x5C}, EVCCVendor::Tesla},
+    {{0xD4, 0x4F, 0x14}, EVCCVendor::Tesla},
+    {{0xDC, 0x44, 0x27}, EVCCVendor::Tesla},
+    {{0x00, 0x7D, 0xFA}, EVCCVendor::VolkswagenGroup},
+    {{0x00, 0x50, 0xC2}, EVCCVendor::Volvo},
+};
+
+void Common::set_evcc_vendor(EVCCVendor vendor)
+{
+    if (get_evcc_vendor() == vendor) {
+        return;
+    }
+
+    api_state.get("evcc_vendor")->updateEnum(vendor);
+    if (vendor != EVCCVendor::Unknown) {
+        iso15118.trace("Common: EVCC vendor %s", get_evcc_vendor_name(vendor));
+    }
+}
+
+void Common::detect_evcc_vendor_from_mac(const uint8_t *mac)
+{
+    for (const EVCCVendorOUI &entry : evcc_vendor_ouis) {
+        if (memcmp(entry.oui, mac, sizeof(entry.oui)) == 0) {
+            set_evcc_vendor(entry.vendor);
+            return;
+        }
+    }
+}
+
+void Common::detect_evcc_vendor_from_protocol(const char *protocol_namespace, size_t len)
+{
+    // Tesla uses "urn:tesla:din:2018:MsgDef" for proprietary protocol namespace.
+    if (strnstr(protocol_namespace, "tesla", len) != nullptr) {
+        set_evcc_vendor(EVCCVendor::Tesla);
+    }
+}
+
 void Common::pre_setup()
 {
     supported_protocols_prototype = Config::Str("", 0, 32);
@@ -55,7 +115,8 @@ void Common::pre_setup()
         {"state", Config::Enum(CommonState::Idle)},
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
         {"protocol", Config::Str("", 0, 32)},
-        {"encryption", Config::Enum(Encryption::Unencrypted)}
+        {"encryption", Config::Enum(Encryption::Unencrypted)},
+        {"evcc_vendor", Config::Enum(EVCCVendor::Unknown)}
     });
 
     if (exi_data == nullptr) {
@@ -419,6 +480,8 @@ void Common::handle_supported_app_protocol_req()
         iso15118.trace("%d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
         trace_iso(" found %d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
+
+        detect_evcc_vendor_from_protocol(req->AppProtocol.array[i].ProtocolNamespace.characters, req->AppProtocol.array[i].ProtocolNamespace.charactersLen);
     }
 
     const bool no_protocol_match = (din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX);

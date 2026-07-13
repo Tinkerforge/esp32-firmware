@@ -34,6 +34,7 @@
 
 #include "generated/common_state.enum.h"
 #include "generated/encryption.enum.h"
+#include "generated/evcc_vendor.enum.h"
 
 #define SESSION_ID_LENGTH 8
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
@@ -113,6 +114,13 @@ public:
     int get_listen_socket() const { return listen_socket; }
 
     bool tls_requested_by_ev = false;   // EV requested TLS in SDP
+
+    // EVCC vendor detection
+    void detect_evcc_vendor_from_mac(const uint8_t *mac);
+    void detect_evcc_vendor_from_protocol(const char *protocol_namespace, size_t len);
+    void set_evcc_vendor(EVCCVendor vendor);
+    void reset_evcc_vendor() { set_evcc_vendor(EVCCVendor::Unknown); }
+    EVCCVendor get_evcc_vendor() const { return api_state.get("evcc_vendor")->asEnum<EVCCVendor>(); }
 
 private:
     void handle_session_setup_req();

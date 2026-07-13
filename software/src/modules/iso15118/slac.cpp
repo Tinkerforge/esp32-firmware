@@ -327,6 +327,8 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
         api_state.get("pev_mac")->get(i)->updateUint(pev_mac[i]);
     }
 
+    iso15118.common.detect_evcc_vendor_from_mac(pev_mac);
+
     memcpy(pev_run_id, cm_slac_parm_request.run_id, SLAC_RUN_ID_LENGTH);
     for (size_t i = 0; i < SLAC_RUN_ID_LENGTH; i++) {
         api_state.get("pev_run_id")->get(i)->updateUint(pev_run_id[i]);

@@ -574,6 +574,7 @@ void ISO15118::register_events()
             // Clean up session state
             iso15118.trace("ISO15118: EV disconnected (State A), cleaning up");
             common.reset_active_socket();
+            common.reset_evcc_vendor();
             qca700x.link_down();
             slac.state = SLACState::ModemReset;
             slac.api_state.get("modem_initialization_tries")->updateUint(0);
