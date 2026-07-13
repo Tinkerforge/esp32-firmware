@@ -200,7 +200,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
                     if len(tag_info['tag_id']) == 0:
                         continue
 
-                    local_seen_tags.append(SimpleGetTagID(tag_info['tag_type'], [int(x, base=16) for x in tag_info['tag_id'].split(':')], tag_info['last_seen']))
+                    local_seen_tags.append(SimpleGetTagID(tag_info['tag_type'], tuple([int(x, base=16) for x in tag_info['tag_id'].split(':')]), tag_info['last_seen']))
 
                 return local_seen_tags
 
