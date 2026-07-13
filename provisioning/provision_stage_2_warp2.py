@@ -394,8 +394,8 @@ class Scanner:
             fatal_error('Could not turn numlock on. Is numlockx installed?')
 
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-        pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
-        pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
+        pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
+        pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
 
         self.qr_charger_code = my_input("Scan the charger QR code:")
         log_writer.write_log(self.qr_charger_code + '\n')
@@ -435,7 +435,8 @@ class Scanner:
             self.qr_serial = m_4.group(8)
             self.qr_built = m_4.group(9)
             self.qr_extras = m_4.group(10)
-            self.qr_order_id = m_4.group(11)
+            self.qr_shipping = m_4.group(11)
+            self.qr_order_id = m_4.group(12)
         else:
             self.qr_sku = m_3_2.group(1)
             self.qr_gen = m_3_2.group(2)
@@ -448,7 +449,8 @@ class Scanner:
             self.qr_serial = m_3_2.group(8)
             self.qr_built = m_3_2.group(9)
             self.qr_extras = m_3_2.group(10)
-            self.qr_order_id = m_3_2.group(11)
+            self.qr_shipping = m_3_2.group(11)
+            self.qr_order_id = m_3_2.group(12)
 
         if self.qr_extras == None:
             self.qr_extras = '0'
@@ -470,8 +472,9 @@ class Scanner:
         print("    Custom Engraving: {}".format(self.qr_custom_engraving))
         print("    HW Version: {}".format(self.qr_hw_version))
         print("    Serial: {}".format(self.qr_serial))
-        print("    Build month: {}".format(self.qr_built))
+        print("    Build Month: {}".format(self.qr_built))
         print("    Extras: {}".format(self.qr_extras))
+        print("    Shipping: {}".format(self.qr_shipping))
         print("    Order ID: {}".format(self.qr_order_id))
 
         if self.qr_extras == '0':
