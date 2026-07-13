@@ -48,7 +48,7 @@ import {
     DiscoveryResultGroup,
 } from "../../ts/components/discovery_result";
 import { InputSelect } from "../../ts/components/input_select";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 //#endif
 import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 import { ChargeAuth } from "../charge_authorization/api";
@@ -62,7 +62,7 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
         auths = JSON.parse(await util.download("/charge_manager/auth_info", false).then(x => x.text()));
     } catch (e) {
         console.error("Failed to fetch charge_manager/auth_info:", e);
-        return []
+        return [];
     }
 
     let chargers = Math.min(auths.length, cm_state.chargers.length);
@@ -129,16 +129,16 @@ async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
 
     if (!util.is_central_management_enabled()) {
         return with_phone_seen_tag(API.get('nfc/seen_tags')?.map(t => {
-            const tag: NFCSeenTag = {...t, charger_name: null};
+            const tag: NFCSeenTag = {...t, charger_name: null, last_seen: t.last_seen != 0 ? now - t.last_seen : 0};
             return tag;
         }) ?? []);
     } else {
         return with_phone_seen_tag((await get_charge_manager_auth_info([CMAuthType.NFC, CMAuthType.InjectedNFC])).map(x => ({
-                tag_id: (x.auth_info[1] as any).tag_id,
-                tag_type: (x.auth_info[1] as any).tag_type,
-                last_seen: x.seen_at,
-                charger_name: x.charger_name,
-            } as NFCSeenTag)));
+            tag_id: (x.auth_info[1] as any).tag_id,
+            tag_type: (x.auth_info[1] as any).tag_type,
+            last_seen: x.seen_at != 0 ? now - x.seen_at : 0,
+            charger_name: x.charger_name,
+        } as NFCSeenTag)));
     }
 }
 
@@ -273,14 +273,26 @@ function NfcTagsSection({
     currentUserId,
     currentUsername
 }: NfcTagsSectionProps) {
+    // Force a re-render once per second so the "last seen" duration keeps
+    // ticking even when no other API event triggers a refresh.
+    const [, forceUpdate] = useState(0);
+    useEffect(() => {
+        const handler = () => forceUpdate(n => n + 1);
+        util.addApiEventListener('info/keep_alive', handler);
+        return () => util.eventTarget.removeEventListener('info/keep_alive', handler);
+    }, []);
+
     const getRows = (): TableRow[] => {
+        const uptime = API.get('info/keep_alive').uptime;
         return nfcConfig.filter(tag => tag.user_id == currentUserId).map((tag, j) => {
             const seen = seenTags.find(
                 (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
             );
-            const lastSeenText = seen
+            // seen.last_seen is the absolute uptime at which the tag was last
+            // seen; subtract the current uptime to get a live "ms ago" value.
+            const lastSeenText = seen && seen.last_seen != 0
                 ? __("nfc.content.last_seen") +
-                  util.format_timespan_ms(seen.last_seen) +
+                  util.format_timespan_ms(uptime - seen.last_seen) +
                   __("nfc.content.last_seen_suffix")
                 : "";
             return {
@@ -358,10 +370,14 @@ function NfcTagsSection({
                 addTitle={__("users.content.nfc_add_tag")}
                 onAddShow={async () => setEditTag({user_id: currentUserId, tag_type: 0, tag_id: ""})}
                 onAddGetChildren={() => {
+                    const uptime = API.get('info/keep_alive').uptime;
                     let filtered = seenTags
                                     .filter((t) => t.tag_id !== "")
                                     .map((t) => {
                                         const error = getTagError(t);
+                                        const lastSeenText = t.last_seen != 0
+                                            ? __("nfc.content.last_seen") + util.format_timespan_ms(uptime - t.last_seen) + __("nfc.content.last_seen_suffix")
+                                            : "";
                                         return (
                                             <DiscoveryResultItem
                                                 key={`${t.tag_type}-${t.tag_id}`}
@@ -382,7 +398,7 @@ function NfcTagsSection({
                                                     </div>
                                                     {t.is_this_device ? null :
                                                         <div class="text-muted small">
-                                                            {__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}
+                                                            {lastSeenText}
                                                         </div>
                                                     }
                                                 </div>
@@ -683,6 +699,10 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             },
         );
 
+        util.addApiEventListener('info/keep_alive', () => {
+            this.setState({});
+        });
+
         //#if MODULE_EVSE_COMMON_AVAILABLE
         util.addApiEventListener("evse/slots", () => {
             this.setState({
@@ -705,7 +725,8 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         });
 
         util.addApiEventListener("charge_manager/state", () => {
-            if (util.is_central_management_enabled()) {
+          let cm_state = API.get("charge_manager/state");
+            if (util.is_central_management_enabled() && cm_state.auth_changed) {
                 refresh_seen_tags(this);
             }
         });
@@ -1195,9 +1216,9 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 const seen = this.state.seenTags.find(
                                     (s) => s.tag_id === tag.tag_id && s.tag_type === tag.tag_type,
                                 );
-                                const lastSeenText = seen
+                                const lastSeenText = seen && seen.last_seen != 0
                                     ? __("nfc.content.last_seen") +
-                                    util.format_timespan_ms(seen.last_seen) +
+                                    util.format_timespan_ms(API.get("info/keep_alive").uptime - seen.last_seen) +
                                     __("nfc.content.last_seen_suffix")
                                     : "";
 

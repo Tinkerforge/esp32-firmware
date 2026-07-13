@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "generated/client_error.enum.h"
 #include "generated/config_charge_mode.enum.h"
@@ -300,6 +301,25 @@ struct cm_auth_info {
         } ev;
     };
 };
+
+inline bool operator!=(const cm_auth_info &first, const cm_auth_info &second)
+{
+    if (first.auth_method != second.auth_method) {
+        return true;
+    }
+
+    if (first.last_seen_s > second.last_seen_s) {
+        return true;
+    }
+
+    uint8_t offset = sizeof(uint8_t) + sizeof(CMAuthType) + sizeof(uint16_t);
+    uint8_t cropped_length = sizeof(cm_auth_info) - offset;
+    if (memcmp((uint8_t *)&first + offset, (uint8_t *)&second + offset, cropped_length) != 0) {
+        return true;
+    }
+
+    return false;
+}
 #define CM_AUTH_INFO_LENGTH (sizeof(cm_auth_info))
 static_assert(CM_AUTH_INFO_LENGTH == 16, "Unexpected CM_AUTH_INFO_LENGTH");
 

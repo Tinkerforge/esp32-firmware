@@ -119,6 +119,7 @@ public:
 
     // we need the config to be public since we need access to it in users module setup
     ConfigRoot config;
+    ConfigRoot state;
 
     bool fast_charger_in_c = false;
 
@@ -185,7 +186,6 @@ private:
 
     ConfigRoot low_level_config;
 
-    ConfigRoot state;
     ConfigRoot low_level_state;
 
     ConfigRoot available_current;
@@ -213,6 +213,10 @@ private:
     bool static_cm = true;
 
     bool all_chargers_seen = false;
+
+    // Aggregate auth info changes over one packet from every managed charger.
+    uint64_t auth_info_chargers_seen = 0;
+    bool auth_info_changed = false;
 
     bool watchdog_triggered = false;
 

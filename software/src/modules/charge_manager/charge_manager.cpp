@@ -204,6 +204,7 @@ void ChargeManager::pre_setup()
         {"l_spread", Config::Tuple(4, Config::Int32(0))},
         {"l_max_pv", Config::Int32(0)},
         {"alloc", Config::Tuple(4, Config::Int32(0))},
+        {"auth_changed", Config::Bool(false)},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -482,7 +483,7 @@ static bool on_auth_success(uint8_t new_user_id,
     return true;
 }
 
-static void update_authentication(
+static bool update_authentication(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v5 *v5,
@@ -492,9 +493,15 @@ static void update_authentication(
     // TODO: bounds check
     auto &target = charger_state[client_id];
 
+    bool auth_info_changed = false;
     if (v5 == nullptr) {
         memset(target.auth_info, 0, sizeof(target.auth_info));
     } else {
+        // The newest auth info is at index 0. So it is enough to compare the first entry to see if anything changed.
+        auth_info_changed = target.auth_info[0] != v5->auth_info[0];
+        if (auth_info_changed) {
+            logger.printfln("auth info changed");
+        }
         memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
     }
 
@@ -507,7 +514,7 @@ static void update_authentication(
     if (!cfg->enable_central_management) {
         target.authenticated_user_id = AUTHD_ANONYMOUSLY;
         target.user_current = get_user_current(target.authenticated_user_id);
-        return;
+        return auth_info_changed;
     }
 
     // De-authorize on plug out
@@ -527,11 +534,11 @@ static void update_authentication(
 
     // If we are still in the auth deadtime, ignore new auths.
     if (target.last_auth_success_timestamp != 0_us && !deadline_elapsed(target.last_auth_success_timestamp + deadtime)) {
-        return;
+        return auth_info_changed;
     }
 
     if (v5 == nullptr)
-        return;
+        return auth_info_changed;
 
     micros_t latest_auth_fail = 0_us;
     for (int i = ARRAY_SIZE(v5->auth_info) - 1; i >= 0; --i) {
@@ -555,6 +562,8 @@ static void update_authentication(
     if (latest_auth_fail != 0_us) {
         target.last_auth_fail_timestamp = latest_auth_fail;
     }
+
+    return auth_info_changed;
 }
 
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
@@ -650,7 +659,20 @@ void ChargeManager::start_manager_task()
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
 
-            update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
+            this->auth_info_changed |= update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
+            this->auth_info_chargers_seen |= uint64_t{1} << client_id;
+
+            // this has the problem that in case one charger is not reachable, the auth_changed flag will never be reset.
+            // Maybe we should fix this but ignore for now
+            static_assert(MAX_CONTROLLED_CHARGERS <= 64, "auth info charger tracking mask is too small");
+            const uint64_t all_chargers_mask = this->charger_count == 64
+                ? std::numeric_limits<uint64_t>::max()
+                : (uint64_t{1} << this->charger_count) - 1;
+            if (this->auth_info_chargers_seen == all_chargers_mask) {
+                this->state.get("auth_changed")->updateBool(this->auth_info_changed);
+                this->auth_info_changed = false;
+                this->auth_info_chargers_seen = 0;
+            }
 
             update_charge_tracking(client_id, v1, this->ca_config, this->charger_state);
 

@@ -52,7 +52,9 @@ export type state = {
     l_min: number[],
     l_spread: number[],
     l_max_pv: number,
-    alloc: number[]
+    alloc: number[],
+    /** Set to true by the firmware when any managed charger's auth_info has changed since the last state update. Frontend code should only fetch /charge_manager/auth_info when this flag is true. */
+    auth_changed: boolean
 }
 
 interface ChargerConfig {
