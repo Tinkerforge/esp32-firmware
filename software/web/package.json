@@ -16,7 +16,7 @@
     "react-bootstrap": "^2.10.10",
     "react-dom": "npm:@preact/compat@^18.3.1",
     "react-feather": "^2.0.10",
-    "uplot": "1.6.30",
+    "uplot": "^1.6.31",
     "yamd5.js": "^1.0.0"
   },
   "devDependencies": {
