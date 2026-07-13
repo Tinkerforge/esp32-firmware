@@ -309,11 +309,11 @@ void WebSockets::keepAliveAdd(int fd)
     }
 
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] != -1)
-            continue;
-        keep_alive_fds[i] = fd;
-        keep_alive_last_pong[i] = now_us();
-        return;
+        if (keep_alive_fds[i] == -1) {
+            keep_alive_fds[i] = fd;
+            keep_alive_last_pong[i] = now_us();
+            return;
+        }
     }
 }
 
@@ -327,11 +327,11 @@ void WebSockets::keepAliveRemove(int fd)
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-            if (keep_alive_fds[i] != fd)
-                continue;
-            keep_alive_fds[i] = -1;
-            keep_alive_last_pong[i] = 0_us;
-            break;
+            if (keep_alive_fds[i] == fd) {
+                keep_alive_fds[i] = -1;
+                keep_alive_last_pong[i] = 0_us;
+                break;
+            }
         }
     }
 
@@ -482,11 +482,12 @@ void WebSockets::closeLRUClient_HTTPThread()
 void WebSockets::receivedPong(int fd)
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] != fd)
-            continue;
 
-        keep_alive_last_pong[i] = now_us();
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == fd) {
+            keep_alive_last_pong[i] = now_us();
+            break;
+        }
     }
 }
 
@@ -494,9 +495,12 @@ void WebSockets::receivedPong(int fd)
 void WebSockets::fakeReceivedPongAll()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+
+    const micros_t t_now = now_us();
+
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != -1) {
-            keep_alive_last_pong[i] = now_us();
+            keep_alive_last_pong[i] = t_now;
         }
     }
 }
@@ -717,11 +721,11 @@ void WebSockets::updateDebugState()
     }
 
     {
-        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-
         Config *state_keep_alive_fds   = static_cast<Config *>(state.get("keep_alive_fds"));
         Config *state_keep_alive_pongs = static_cast<Config *>(state.get("keep_alive_pongs"));
         Config *state_keep_alive_peers = static_cast<Config *>(state.get("keep_alive_peers"));
+
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
 
         for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             state_keep_alive_fds->get(i)->updateInt(keep_alive_fds[i]);
