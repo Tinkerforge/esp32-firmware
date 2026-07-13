@@ -806,10 +806,6 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
         this->triggerHttpThread();
     }, 100_ms, 100_ms);
 
-    this->task_ids[1] = task_scheduler.scheduleWithFixedDelay([this](){
-        this->updateDebugState();
-    }, 1_s, 1_s);
-
 #if MODULE_WATCHDOG_AVAILABLE()
     this->watchdog_handle = watchdog.add(
         "websocket_worker",
@@ -827,18 +823,23 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
         checkActiveClients();
     }, 100_ms, 100_ms);
 
-    if (state_path != nullptr && !this->state_handler_registered) {
-        // TODO Add pull only states to API
-        server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
-            if (!this->running) {
-                return request.send_plain(503, "Endpoint not available");
-            }
+    if (state_path != nullptr) {
+        this->task_ids[1] = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->updateDebugState();
+        }, 1_s, 1_s);
 
-            String s = this->state.to_string();
-            return request.send_json(200, s);
-        });
+        if (!this->state_handler_registered) {
+            // TODO Add pull only states to API
+            server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
+                if (!this->running) {
+                    return request.send_plain(503, "Endpoint not available");
+                }
 
-        this->state_handler_registered = true;
+                return request.send_json(200, this->state.to_string());
+            });
+
+            this->state_handler_registered = true;
+        }
     }
 }
 
