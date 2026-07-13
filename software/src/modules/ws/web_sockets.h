@@ -74,6 +74,8 @@ public:
     void notify_unclean_close(struct sock_db *session);
 
 private:
+    bool sendToAllOwnedInternal(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+
     bool haveFreeSlot();
     void pingActiveClients();
     void checkActiveClients();

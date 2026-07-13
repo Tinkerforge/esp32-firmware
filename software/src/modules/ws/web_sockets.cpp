@@ -512,15 +512,9 @@ void WebSockets::fakeReceivedPongAll()
     }
 }
 
-// Called by main thread. Consider removing httpd_ws_get_fd_info(). Instead, always copy the payload and let the worker perform the check.
+// Called by main thread.
 bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
-    // Connection was closed -> message was "sent", as in it has not to be resent
-    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
-        logger.tracefln(server.get_trace_buffer_index(), "sendToClient fd %i not WS", fd);
-        return true;
-    }
-
     char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
     if (payload_copy == nullptr) {
         return false;
@@ -528,19 +522,13 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
 
     memcpy(payload_copy, payload, payload_len);
 
-    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-    if (queueFull()) {
-        free(payload_copy);
-        return false;
-    }
-
-    work_queue.push_back({fd, payload_copy, payload_len, ws_type});
-    return true;
+    return sendToClientOwned(payload_copy, payload_len, fd, ws_type);
 }
 
 // Called by main thread. Consider removing httpd_ws_get_fd_info(). Instead, always copy the payload and let the worker perform the check.
 bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
+    // Connection was closed -> message was "sent", as in, it has not to be resent.
     if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
         logger.tracefln(server.get_trace_buffer_index(), "sendToClientOwned fd %i not WS", fd);
         free(payload);
@@ -585,6 +573,22 @@ bool WebSockets::haveFreeSlot()
 }
 
 // Called by main thread.
+bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+{
+    if (!this->haveActiveClient()) {
+        return true;
+    }
+
+    char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
+    if (payload_copy == nullptr) {
+        return false;
+    }
+    memcpy(payload_copy, payload, payload_len);
+
+    return sendToAllOwnedInternal(payload_copy, payload_len, ws_type);
+}
+
+// Called by main thread.
 bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient()) {
@@ -592,6 +596,12 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type
         return true;
     }
 
+    return sendToAllOwnedInternal(payload, payload_len, ws_type);
+}
+
+// Called by main thread.
+bool WebSockets::sendToAllOwnedInternal(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+{
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload);
@@ -610,28 +620,6 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
 
     ws_work_item wi{BROADCAST_FD, payload, payload_len, ws_type};
     return this->send_ws_work_item(&wi);
-}
-
-// Called by main thread.
-bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)
-{
-    if (!this->haveActiveClient())
-        return true;
-
-    char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
-    if (payload_copy == nullptr) {
-        return false;
-    }
-    memcpy(payload_copy, payload, payload_len);
-
-    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-    if (queueFull()) {
-        free(payload_copy);
-        return false;
-    }
-
-    work_queue.push_back({BROADCAST_FD, payload_copy, payload_len, ws_type});
-    return true;
 }
 
 // Called by main thread.
