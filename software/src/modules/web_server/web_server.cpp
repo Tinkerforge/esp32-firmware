@@ -61,11 +61,14 @@
 static void dummy_free_fn(void *) {}
 
 // Only one handler will be registered with the httpd and it will match everything.
+// Called by HTTP thread.
 static bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
     return true;
 }
 
+// Called during session clean-up, instead of closing the fd.
+// Called by HTTP thread.
 static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
 {
     // If a close_fn is registered, httpd won't close the fd by itself.
@@ -313,6 +316,7 @@ void WebServer::pre_reboot() {
 }
 
 #if HTTPS_AVAILABLE()
+// Called by HTTP thread.
 int WebServer::custom_tls_handshake_callback(mbedtls_ssl_context *ssl)
 {
     const listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(mbedtls_ssl_conf_get_user_data_p(const_cast<mbedtls_ssl_config *>(ssl->private_conf))); // The const_cast should be safe because this is a trivial getter.
@@ -345,6 +349,7 @@ void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
 static const size_t SCRATCH_BUFSIZE = 2048;
 
 // Don't inline the receive handler so that the scratch buffer doesn't always hog the stack.
+// Called by HTTP thread.
 [[gnu::noinline]]
 esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, const WebServerHandler *handler)
 {
@@ -416,6 +421,7 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
 }
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
+// Called by HTTP thread.
 [[gnu::noinline]]
 static TristateBool check_remote_access_connection(WebServerRequest &request)
 {
@@ -440,6 +446,7 @@ static TristateBool check_remote_access_connection(WebServerRequest &request)
 }
 #endif
 
+// Called by HTTP thread.
 esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 {
     auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
@@ -851,6 +858,7 @@ bool WebServer::reload_web_server_cert(int16_t cert_id, int16_t key_id, bool all
 #endif
 }
 
+// Called by HTTP thread.
 const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
 {
     const WebServerHandler *handler = port_handlers->handlers;
@@ -873,6 +881,7 @@ const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *
     return nullptr;
 }
 
+// Called by HTTP thread.
 const WebServerHandler *WebServer::match_wildcard_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
 {
     const WebServerHandler *handler = port_handlers->wildcard_handlers;
@@ -1134,6 +1143,7 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
     }
 }
 
+// Called by HTTP thread.
 WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
 {
     String payload = "Digest ";
@@ -1142,6 +1152,7 @@ WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
     return send_plain(401);
 }
 
+// Can be called by HTTP thread.
 String WebServerRequest::header(const char *header_name)
 {
     auto buf_len = httpd_req_get_hdr_value_len(req, header_name) + 1;

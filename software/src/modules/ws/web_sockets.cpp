@@ -37,6 +37,7 @@ static void clear_ws_work_item(ws_work_item *wi)
     wi->payload = nullptr;
 }
 
+// Called by HTTP thread.
 bool WebSockets::haveWork(ws_work_item *item)
 {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -49,6 +50,7 @@ bool WebSockets::haveWork(ws_work_item *item)
     return true;
 }
 
+// Called by any thread.
 void WebSockets::cleanUpQueue()
 {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -65,6 +67,7 @@ void WebSockets::cleanUpQueue()
     }
 }
 
+// Called by any thread.
 bool WebSockets::queueFull()
 {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -87,6 +90,7 @@ bool WebSockets::queueFull()
 // Send a payload to a single destination. If a write fails, return false and let the callers handle session closing.
 // This function is intended to be used from within the initial WS request and thus cannot close the WS session directly.
 // Closing the WS session directly from within the initial WS request would leak the WebSocketClient object because the session context isn't freed.
+// Called by HTTP thread.
 bool WebSockets::send_ws_item_direct(int fd, httpd_ws_frame *ws_pkt)
 {
     const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(this->httpd, fd);
@@ -102,6 +106,7 @@ bool WebSockets::send_ws_item_direct(int fd, httpd_ws_frame *ws_pkt)
 // Send a work item to multiple destinations. If a write fails, close the WS session.
 // Unlike send_ws_item_direct, this function is only allowed to be called after the initial WS request has finished.
 // Calling this function from within the initial WS request would leak the WebSocketClient object because the session context isn't freed.
+// Called by HTTP thread.
 bool WebSockets::send_ws_work_item(const ws_work_item *wi)
 {
     httpd_ws_frame ws_pkt = {
@@ -138,6 +143,7 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
     return result;
 }
 
+// Called by HTTP thread.
 void WebSockets::processPendingCloses_HTTPThread()
 {
     // Drain the pending close queue. This runs on the HTTP thread,
@@ -157,6 +163,7 @@ void WebSockets::processPendingCloses_HTTPThread()
     }
 }
 
+// Called by HTTP thread.
 void WebSockets::work(void *arg)
 {
     WebSockets *ws = static_cast<WebSockets *>(arg);
@@ -177,6 +184,7 @@ void WebSockets::work(void *arg)
 #endif
 }
 
+// Called by HTTP thread.
 esp_err_t WebSockets::ws_handler(httpd_req_t *req)
 {
     uint8_t small_payload_buffer[4]; // Close frames usually have two bytes payload.
@@ -286,11 +294,13 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Called by HTTP thread.
 void WebSockets::keepAliveAdd(int fd)
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == fd) {
+            logger.tracefln(server.get_trace_buffer_index(), "keepAliveAdd fd %i reused", fd);
             // fd is already in the keep alive array. Only update last_pong to prevent instantly closing the new connection.
             // This can happen if web sockets are opened and closed rapidly (so that LWIP "reuses" the fd) and we miss a close frame.
             keep_alive_last_pong[i] = now_us();
@@ -307,6 +317,7 @@ void WebSockets::keepAliveAdd(int fd)
     }
 }
 
+// Called by any thread.
 void WebSockets::keepAliveRemove(int fd)
 {
     if (fd < 0) {
@@ -333,6 +344,7 @@ void WebSockets::keepAliveRemove(int fd)
     }
 }
 
+// Called by any thread.
 void WebSockets::keepAliveCloseDead_async(int fd)
 {
     if (fd < 0) {
@@ -356,6 +368,7 @@ void WebSockets::keepAliveCloseDead_async(int fd)
     }
 }
 
+// Called by HTTP thread.
 void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
 {
     if (fd < 0) {
@@ -398,6 +411,7 @@ void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
     httpd_sess_delete(hd, session);
 }
 
+// Called by main thread.
 void WebSockets::pingActiveClients()
 {
     if (!this->haveActiveClient())
@@ -419,6 +433,7 @@ void WebSockets::pingActiveClients()
     memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
+// Called by main thread.
 void WebSockets::checkActiveClients()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -432,6 +447,7 @@ void WebSockets::checkActiveClients()
     }
 }
 
+// Called by HTTP thread.
 void WebSockets::closeLRUClient_HTTPThread()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -462,6 +478,7 @@ void WebSockets::closeLRUClient_HTTPThread()
     this->keepAliveCloseDead_HTTPThread(keep_alive_fds[min_fd_idx]);
 }
 
+// Called by HTTP thread.
 void WebSockets::receivedPong(int fd)
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -473,6 +490,7 @@ void WebSockets::receivedPong(int fd)
     }
 }
 
+// Called by HTTP thread.
 void WebSockets::fakeReceivedPongAll()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -483,11 +501,14 @@ void WebSockets::fakeReceivedPongAll()
     }
 }
 
+// Called by main thread. Consider removing httpd_ws_get_fd_info(). Instead, always copy the payload and let the worker perform the check.
 bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     // Connection was closed -> message was "sent", as in it has not to be resent
-    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
+    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        logger.tracefln(server.get_trace_buffer_index(), "sendToClient fd %i not WS", fd);
         return true;
+    }
 
     char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
     if (payload_copy == nullptr) {
@@ -506,9 +527,11 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
     return true;
 }
 
+// Called by main thread. Consider removing httpd_ws_get_fd_info(). Instead, always copy the payload and let the worker perform the check.
 bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        logger.tracefln(server.get_trace_buffer_index(), "sendToClientOwned fd %i not WS", fd);
         free(payload);
         return true;
     }
@@ -523,6 +546,7 @@ bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, ht
     return true;
 }
 
+// Called by any thread.
 bool WebSockets::haveActiveClient()
 {
     if (boot_stage < BootStage::REGISTER_URLS) {
@@ -538,6 +562,7 @@ bool WebSockets::haveActiveClient()
     return false;
 }
 
+// Called by HTTP thread.
 bool WebSockets::haveFreeSlot()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -548,6 +573,7 @@ bool WebSockets::haveFreeSlot()
     return false;
 }
 
+// Called by main thread.
 bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient()) {
@@ -572,6 +598,7 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type
     return true;
 }
 
+// Called by HTTP thread.
 bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient()) {
@@ -584,6 +611,7 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
     return this->send_ws_work_item(&wi);
 }
 
+// Called by main thread.
 bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient())
@@ -613,6 +641,7 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_typ
     return true;
 }
 
+// Called by main thread.
 void WebSockets::triggerHttpThread()
 {
     if (worker_active == WEBSOCKET_WORKER_RUNNING) {
@@ -676,6 +705,7 @@ void WebSockets::pre_setup() {
     }
 }
 
+// Called by main thread.
 void WebSockets::updateDebugState()
 {
     {
@@ -708,6 +738,7 @@ void WebSockets::updateDebugState()
     }
 }
 
+// Called by HTTP thread.
 static void session_ctx_free_fn(void *ctx)
 {
     if (ctx == nullptr) {
@@ -893,6 +924,7 @@ void WebSockets::pre_reboot() {
     this->stop();
 }
 
+// Called by HTTP thread.
 void WebSockets::notify_unclean_close(struct sock_db *session)
 {
     keepAliveRemove(session->fd);

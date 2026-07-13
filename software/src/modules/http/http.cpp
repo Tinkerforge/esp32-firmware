@@ -60,6 +60,7 @@ private:
     WebServerRequest *request;
 };
 
+// Called by HTTP thread.
 bool Http::api_handler(WebServerRequest &req, size_t in_uri_len)
 {
     // Skip first char when matching APIs: request uri starts with /; the api paths don't.
