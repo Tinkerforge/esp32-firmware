@@ -129,7 +129,11 @@ public:
     bool opt_nonegotiation_after_soc = false;
 
     bool nonegotiation_pending = false;
-    uint64_t reslac_guard_task = 0;
+    // Deadline for the NoNegotiation wait, polled in state_machines_loop().
+    micros_t reslac_guard_deadline = 0_us;
+    // V2G_SECC_CommunicationSetup_Timer [V2G2-716]
+    // Armed when CM_SLAC_MATCH.CNF is sent, cleared when supportedAppProtocolReq arrives.
+    micros_t communication_setup_deadline = 0_us;
     void begin_reslac_for_nonegotiation();
     bool end_hlc_after_session_stop(uint64_t &next_timeout);
 

@@ -626,6 +626,9 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
 
+    // Start communication setup timer [V2G2-716]
+    iso15118.communication_setup_deadline = now_us() + 30_s;
+
     // If we're already in WaitForSDP, this is a retry from the EV that didn't receive
     // (or couldn't process) our original CNF. We re-sent the CNF above and reset the
     // timeout to give the EV a fresh window to join the PLC network.
@@ -701,10 +704,8 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
 
 void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &ind)
 {
-    trace_iso("VS_HOST_ACTION.IND: action=%u, version=%u.%u, from %02x:%02x:%02x:%02x:%02x:%02x",
-                   ind.maction, ind.major_version, ind.minor_version,
-                   ind.header.source_mac[0], ind.header.source_mac[1], ind.header.source_mac[2],
-                   ind.header.source_mac[3], ind.header.source_mac[4], ind.header.source_mac[5]);
+    iso15118.trace("SLAC: VS_HOST_ACTION.IND: PLC stack restarted (action=%u, version=%u.%u)",
+                   ind.maction, ind.major_version, ind.minor_version);
 }
 
 void SLAC::handle_vs_module_operation_confirmation(const uint8_t *data, size_t length)

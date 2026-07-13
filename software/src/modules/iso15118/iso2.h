@@ -48,6 +48,15 @@ public:
     void handle_bitstream(exi_bitstream *exi);
     void reset_dc_soc_done() { dc_soc_done = false; }
 
+    bool soc_was_read() const { return soc_read; }
+
+    void reset_session()
+    {
+        state = ISO2State::Idle;
+        soc_read = false;
+        soc_shutdown_retries = 0;
+    }
+
     ConfigRoot api_state;
     struct iso2_exiDocument *iso2DocDec = nullptr;
     struct iso2_exiDocument *iso2DocEnc = nullptr;

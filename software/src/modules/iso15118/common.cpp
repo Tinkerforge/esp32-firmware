@@ -388,7 +388,10 @@ void Common::handle_supported_app_protocol_req()
     struct appHand_supportedAppProtocolReq *req = &appHandDec->supportedAppProtocolReq;
     struct appHand_supportedAppProtocolRes *res = &appHandEnc->supportedAppProtocolRes;
 
-    // check all schemas for DIN, ISO2 and ISO20
+    // V2G communication has started
+    iso15118.communication_setup_deadline = 0_us;
+
+    // Check all schemas for DIN, ISO2 and ISO20
     iso15118.trace("EV supports %u protocols", req->AppProtocol.arrayLen);
     api_state.get("supported_protocols")->removeAll();
 
@@ -431,10 +434,7 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("protocol")->updateString("-");
 
         iso15118.nonegotiation_pending = false;
-        if (iso15118.reslac_guard_task != 0) {
-            task_scheduler.cancel(iso15118.reslac_guard_task);
-            iso15118.reslac_guard_task = 0;
-        }
+        iso15118.reslac_guard_deadline = 0_us;
 
         appHandEnc->supportedAppProtocolRes_isUsed = 1;
         res->ResponseCode = appHand_responseCodeType_Failed_NoNegotiation;

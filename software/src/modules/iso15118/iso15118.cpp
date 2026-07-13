@@ -564,40 +564,44 @@ void ISO15118::register_events()
         if (charger_state->asUint() == 0) {
             // EV disconnected (State A)
             nonegotiation_pending = false;
-            if (reslac_guard_task != 0) {
-                task_scheduler.cancel(reslac_guard_task);
-                reslac_guard_task = 0;
+            reslac_guard_deadline = 0_us;
+            communication_setup_deadline = 0_us;
+
+            if (!is_enabled()) {
+                return EventResult::OK;
             }
-            if (iec_temporary_active) {
-                iso15118.trace("ISO15118: EV disconnected (State A), cleaning up");
-                common.reset_active_socket();
-                qca700x.link_down();
-                slac.state = SLACState::ModemReset;
-                slac.api_state.get("modem_initialization_tries")->updateUint(0);
-                iso2.reset_dc_soc_done();
-                iec_temporary_active = false;
 
-                // Cancel any pending delayed modem-off task.
-                if (plc_modem_off_task != 0) {
-                    task_scheduler.cancel(plc_modem_off_task);
-                    plc_modem_off_task = 0;
-                }
+            // Clean up session state
+            iso15118.trace("ISO15118: EV disconnected (State A), cleaning up");
+            common.reset_active_socket();
+            qca700x.link_down();
+            slac.state = SLACState::ModemReset;
+            slac.api_state.get("modem_initialization_tries")->updateUint(0);
+            iso2.reset_dc_soc_done();
+            iso2.reset_session();
+            din70121.reset_session();
+            iec_temporary_active = false;
 
-                // Cancel any pending IEC switch task.
-                if (iec_switch_task != 0) {
-                    task_scheduler.cancel(iec_switch_task);
-                    iec_switch_task = 0;
-                }
-
-                // Re-enable PLC modem for the next EV.
-                evse_v2.set_plc_modem(true);
-
-                // Reset CP back to 5% duty. This assumes that we are in some
-                // ISO15118 mode, since iec_temporary_active was set.
-                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-
-                slac.reset_slac_init_retry_count();
+            // Cancel any pending delayed modem-off task.
+            if (plc_modem_off_task != 0) {
+                task_scheduler.cancel(plc_modem_off_task);
+                plc_modem_off_task = 0;
             }
+
+            // Cancel any pending IEC switch task.
+            if (iec_switch_task != 0) {
+                task_scheduler.cancel(iec_switch_task);
+                iec_switch_task = 0;
+            }
+
+            // Re-enable PLC modem for the next EV (no-op if it is already on).
+            evse_v2.set_plc_modem(true);
+
+            // Reset CP back to 5% duty for the next SLAC round.
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+
+            slac.reset_slac_init_retry_count();
+            slac.reset_ev_connected_reported();
         }
         return EventResult::OK;
     });
@@ -610,6 +614,30 @@ void ISO15118::state_machines_loop()
 
     // SLAC state machine for timeouts and protocol handling
     slac.state_machine_loop();
+
+    // If the EV did not reconnect (re-SLAC or SDP/TCP) within the deadline after a
+    // gracefully ended SoC session, fall back to IEC 61851 PWM charging.
+    if (reslac_guard_deadline != 0_us && deadline_elapsed(reslac_guard_deadline)) {
+        reslac_guard_deadline = 0_us;
+        if (nonegotiation_pending) {
+            nonegotiation_pending = false;
+            iso15118.trace("ISO15118: EV did not renegotiate in time, beginning IEC transition");
+            begin_iec_transition(ModemOff::Immediate);
+        } else {
+            iso15118.trace("ISO15118: NoNegotiation guard expired but no round pending");
+        }
+    }
+
+    // Communication setup timer [V2G2-716]: The EV completed SLAC match but
+    // never started V2G communication (no supportedAppProtocolReq). Fall back
+    // to IEC 61851 instead of waiting forever.
+    if (communication_setup_deadline != 0_us && deadline_elapsed(communication_setup_deadline)) {
+        communication_setup_deadline = 0_us;
+        nonegotiation_pending = false;
+        reslac_guard_deadline = 0_us;
+        iso15118.trace("ISO15118: Communication setup timeout, no V2G communication after SLAC match, beginning IEC transition");
+        begin_iec_transition(fds[FDS_ACTIVE_INDEX].fd >= 0 ? ModemOff::Delayed : ModemOff::Immediate);
+    }
 
     // Clear revents before polling
     for (int i = 0; i < FDS_COUNT; i++) {
@@ -683,6 +711,23 @@ void ISO15118::state_machines_loop()
         }
 
         if (connection_closed) {
+            // The EV ended the session unilaterally by closing TCP (FIN or RST)
+            // after the SoC was read, without ever sending SessionStopReq
+            if (!iec_temporary_active && is_read_soc_only() && !nonegotiation_pending &&
+                opt_nonegotiation_after_soc &&
+                (iso2.soc_was_read() || din70121.soc_was_read())) {
+                if (plc_modem_off_task != 0) {
+                    task_scheduler.cancel(plc_modem_off_task);
+                    plc_modem_off_task = 0;
+                }
+
+                iso15118.trace("ISO15118: EV closed TCP after SoC read without SessionStop, forcing re-SLAC");
+                iso2.reset_session();
+                din70121.reset_session();
+                begin_reslac_for_nonegotiation();
+                return;
+            }
+
             // If we're waiting for the EV to close TCP after SessionStop,
             // cancel the 5s safety timer and schedule modem shutdown after a short
             // delay. The 200ms gives the TCP stack time to complete the FIN/ACK
@@ -831,6 +876,8 @@ void ISO15118::schedule_delayed_modem_off()
 
 void ISO15118::begin_iec_transition(ModemOff modem_off)
 {
+    communication_setup_deadline = 0_us;
+
     if (iec_switch_task != 0) {
         task_scheduler.cancel(iec_switch_task);
         iec_switch_task = 0;
@@ -891,48 +938,64 @@ void ISO15118::begin_iec_transition(ModemOff modem_off)
 
 void ISO15118::begin_reslac_for_nonegotiation()
 {
-    iso15118.trace("ISO15118: Forcing re-SLAC for NoNegotiation round");
+    iso15118.trace("ISO15118: Session ended, starting wake-up toggle for NoNegotiation round");
     nonegotiation_pending = true;
+
+    cancel_sequence_timeout(iso2.next_timeout);
+    cancel_sequence_timeout(din70121.next_timeout);
+    cancel_sequence_timeout(iso20.next_timeout);
 
     if (iec_switch_task != 0) {
         task_scheduler.cancel(iec_switch_task);
     }
 
-    // X1 -> leave logical network -> state E/F -> back to 5% duty to trigger a
-    // new SLAC round [V2G3-M07-05..09]. The modem soft-reset (ModemReset ->
-    // CM_SET_KEY with fresh NMK) drops the old AVLN, making the EV "Unmatched".
-    // The modem reset is delayed by 500ms so the SessionStopRes can still drain.
-    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+    if (plc_modem_off_task != 0) {
+        task_scheduler.cancel(plc_modem_off_task);
+        plc_modem_off_task = 0;
+    }
 
+    // ISO 15118-3 7.6 wake-up: "The wake-up mechanisms may also be used after
+    // charge session was already terminated to allow the counterpart station
+    // to reestablish HLC." The EVSE-side wake-up trigger is a B1/B2 transition
+    // of the CP PWM ([V2G3-M07-24]): 5% -> X1 (oscillator off) ->
+    // back to 5%. The EV shall wake up on the B1->B2 edge ([V2G3-M07-32]).
+    // Minimum time at X1 per [V2G3-M07-33] is IEC 61851-1 Seq 9.2 (~3s)
     iec_switch_task = task_scheduler.scheduleOnce([this]() {
         common.reset_active_socket();
-        qca700x.link_down();
-        slac.state = SLACState::ModemReset;
-        slac.api_state.get("modem_initialization_tries")->updateUint(0);
+
+        iso15118.trace("ISO15118: Wake-up toggle: X1 (oscillator off) for 5s [V2G3-M07-24]");
+        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
 
         iec_switch_task = task_scheduler.scheduleOnce([this]() {
-            iso15118.trace("ISO15118: Re-SLAC: state E/F (0%% duty) for 4s");
-            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+            iso15118.trace("ISO15118: Wake-up toggle: B1->B2, back to 5%% duty, waiting for EV to reestablish HLC");
+            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
+            // Stage 2 [V2G3-M07-26]: if the EVSE does not detect a PLC link
+            // after the wake-up, reinitiate the connection by applying state E
+            // for at least T_step_EF to retrigger the matching process.
             iec_switch_task = task_scheduler.scheduleOnce([this]() {
                 iec_switch_task = 0;
-                iso15118.trace("ISO15118: Re-SLAC: back to 5%% duty, waiting for new SLAC session");
-                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-            }, SLAC_T_STEP_EF);
-        }, 2500_ms);
+
+                const bool ev_reacted = !nonegotiation_pending || (slac.state != SLACState::LinkDetected) || (fds[FDS_ACTIVE_INDEX].fd >= 0);
+                if (ev_reacted) {
+                    iso15118.trace("ISO15118: EV reacted to wake-up toggle, skipping state E retrigger");
+                    return;
+                }
+
+                iso15118.trace("ISO15118: No PLC link after wake-up toggle, applying state E for 4s [V2G3-M07-26]");
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+
+                iec_switch_task = task_scheduler.scheduleOnce([this]() {
+                    iec_switch_task = 0;
+                    iso15118.trace("ISO15118: State E retrigger done, back to 5%% duty");
+                    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+                }, SLAC_T_STEP_EF);
+            }, 10_s);
+        }, 5_s);
     }, 500_ms);
 
-    if (reslac_guard_task != 0) {
-        task_scheduler.cancel(reslac_guard_task);
-    }
-    reslac_guard_task = task_scheduler.scheduleOnce([this]() {
-        reslac_guard_task = 0;
-        if (nonegotiation_pending) {
-            nonegotiation_pending = false;
-            iso15118.trace("ISO15118: EV did not renegotiate in time, beginning IEC transition");
-            begin_iec_transition(ModemOff::Immediate);
-        }
-    }, 50_s);
+    reslac_guard_deadline = now_us() + 60_s;
+    iso15118.trace("ISO15118: NoNegotiation guard armed (60s until IEC fallback)");
 }
 
 // Ends high-level communication after a SessionStopRes was sent

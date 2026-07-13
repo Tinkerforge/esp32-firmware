@@ -41,6 +41,15 @@ public:
     void pre_setup();
     void handle_bitstream(exi_bitstream *exi);
 
+    bool soc_was_read() const { return soc_read; }
+
+    void reset_session()
+    {
+        state = DIN70121State::Idle;
+        soc_read = false;
+        soc_shutdown_retries = 0;
+    }
+
     ConfigRoot api_state;
 
     struct din_exiDocument *dinDocDec = nullptr;

@@ -72,7 +72,9 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
 
     // DIN TS 70121:2024-11 [V2G-DC-443]: The SECC shall stop waiting for a request message
     // when V2G_SECC_Sequence_Timer >= V2G_SECC_Sequence_Timeout and no request was received.
-    schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "DIN70121");
+    if (!iso15118.nonegotiation_pending) {
+        schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "DIN70121");
+    }
 }
 
 void DIN70121::dispatch_messages()
@@ -407,8 +409,10 @@ void DIN70121::handle_charge_parameter_discovery_req()
         // NOTE: We use OK here, while after 10 retries and FAILED in iso2. This is on purpose.
         //       The meaning is slightly different between the two. With iso2 a new charge can
         //       explicitely be started after FAILED, which is not true with din.
+        const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.opt_nonegotiation_after_soc;
+
         res->ResponseCode = din_responseCodeType_OK;
-        if (soc_shutdown_retries > 10) {
+        if (soc_shutdown_retries > 10 && !end_at_cpd) {
             iso15118.trace("DIN70121: SoC shutdown ignored after %d retries, sending Finished", soc_shutdown_retries);
             res->EVSEProcessing = din_EVSEProcessingType_Finished;
         } else {
@@ -441,7 +445,12 @@ void DIN70121::handle_charge_parameter_discovery_req()
         state = DIN70121State::ChargeParameterDiscovery;
 
         if (soc_shutdown_retries == 11) {
-            iso15118.schedule_delayed_modem_off();
+            if (end_at_cpd && !iso15118.nonegotiation_pending) {
+                iso15118.trace("DIN70121: SoC shutdown ignored after %d retries, ending session at ChargeParameterDiscovery", soc_shutdown_retries);
+                iso15118.begin_reslac_for_nonegotiation();
+            } else {
+                iso15118.schedule_delayed_modem_off();
+            }
         }
         return;
     }
@@ -627,8 +636,7 @@ void DIN70121::handle_session_stop_req()
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         if (iso15118.end_hlc_after_session_stop(next_timeout)) {
             // Re-SLAC round started. Reset for the second session.
-            state = DIN70121State::Idle;
-            soc_read = false;
+            reset_session();
         }
     }
 }

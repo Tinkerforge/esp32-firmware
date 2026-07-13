@@ -76,7 +76,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     // [V2G2-443] Timeout: stop session if no request received within V2G_SECC_Sequence_Timeout.
     // [V2G2-725] Exception: after a pause requested by the EVCC (SessionStopRes sent) there is
     // no timeout. We just wait for a new SLAC or SDP message.
-    if (!pause_active) {
+    if (!pause_active && !iso15118.nonegotiation_pending) {
         schedule_sequence_timeout(next_timeout, V2G_SECC_SEQUENCE_TIMEOUT, "ISO2");
     }
 }
@@ -513,7 +513,9 @@ void ISO2::handle_charge_parameter_discovery_req()
             // and keep polling for ~90 seconds. After 10 retries (~1-2s), escalate to
             // FAILED + Finished to force the EV to terminate the session immediately.
             // NOTE: DIN escalates with OK + Finished instead; see din70121.cpp for rationale.
-            if (soc_shutdown_retries > 10) {
+            const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.opt_nonegotiation_after_soc;
+
+            if (soc_shutdown_retries > 10 && !end_at_cpd) {
                 iso15118.trace("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
                 res->ResponseCode = iso2_responseCodeType_FAILED;
                 res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
@@ -547,7 +549,12 @@ void ISO2::handle_charge_parameter_discovery_req()
             state = ISO2State::ChargeParameterDiscovery;
 
             if (soc_shutdown_retries == 11) {
-                iso15118.schedule_delayed_modem_off();
+                if (end_at_cpd && !iso15118.nonegotiation_pending) {
+                    iso15118.trace("ISO2: SoC shutdown ignored after %d retries, ending session at ChargeParameterDiscovery", soc_shutdown_retries);
+                    iso15118.begin_reslac_for_nonegotiation();
+                } else {
+                    iso15118.schedule_delayed_modem_off();
+                }
             }
             return;
         }
@@ -836,8 +843,7 @@ void ISO2::handle_session_stop_req()
     } else if (iso15118.is_read_soc_only()) {
         if (iso15118.end_hlc_after_session_stop(next_timeout)) {
             // Re-SLAC round started. Reset for the second session.
-            state = ISO2State::Idle;
-            soc_read = false;
+            reset_session();
         }
         return;
     }
