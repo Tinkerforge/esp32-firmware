@@ -130,7 +130,7 @@ private:
 
     ConfigRoot state;
 
-    uint64_t task_ids[4];
+    uint64_t task_ids[3];
 
     int watchdog_handle;
 };

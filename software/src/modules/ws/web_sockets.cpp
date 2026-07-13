@@ -180,8 +180,9 @@ void WebSockets::work(void *arg)
     WebSockets *ws = static_cast<WebSockets *>(arg);
     ws->worker_active = WEBSOCKET_WORKER_RUNNING;
 
-    // Process pending session closes first, before sending new data.
+    // Check and close connections before sending any data.
     ws->processPendingCloses_HTTPThread();
+    ws->checkActiveClients();
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
@@ -440,7 +441,7 @@ void WebSockets::pingActiveClients()
     work_queue.push_back({BROADCAST_FD, nullptr, 0, HTTPD_WS_TYPE_PING});
 }
 
-// Called by main thread.
+// Called by HTTP thread.
 void WebSockets::checkActiveClients()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
@@ -449,7 +450,7 @@ void WebSockets::checkActiveClients()
             continue;
 
         if (deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
-            this->keepAliveCloseDead_async(keep_alive_fds[i]);
+            this->keepAliveCloseDead_HTTPThread(keep_alive_fds[i]);
         }
     }
 }
@@ -643,11 +644,8 @@ void WebSockets::triggerHttpThread()
     }
 
     // Don't schedule work task if no work is pending.
-    // Schedule it anyway once in a while to reset the watchdog.
-#if MODULE_WATCHDOG_AVAILABLE()
-    if (!deadline_elapsed(last_worker_run + WEB_SERVER_DEAD_TIMEOUT / 8_us))
-#endif
-    {
+    // Schedule it anyway every five seconds to reset the watchdog and detect timeouts.
+    if (!deadline_elapsed(last_worker_run + 5_s)) {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty() && (pending_close_count == 0)) {
             return;
@@ -818,10 +816,6 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
     this->task_ids[2] = task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
     }, 1_s, 1_s);
-
-    this->task_ids[3] = task_scheduler.scheduleWithFixedDelay([this](){
-        checkActiveClients();
-    }, 100_ms, 100_ms);
 
     if (state_path != nullptr) {
         this->task_ids[1] = task_scheduler.scheduleWithFixedDelay([this]() {
