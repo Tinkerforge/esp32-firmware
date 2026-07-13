@@ -32,7 +32,7 @@
 #define MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE 32
 
 struct ws_work_item {
-    int fds[MAX_WEB_SOCKET_CLIENTS];
+    int unicast_fd;
     char *payload;
     size_t payload_len;
     httpd_ws_type_t ws_type;

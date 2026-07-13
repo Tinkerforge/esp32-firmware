@@ -30,6 +30,7 @@
 #include "gcc_warnings.h"
 
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
+static constexpr int BROADCAST_FD = -2;
 
 static void clear_ws_work_item(ws_work_item *wi)
 {
@@ -56,13 +57,11 @@ void WebSockets::cleanUpQueue()
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     while (!work_queue.empty()) {
         ws_work_item *wi = &work_queue.front();
-        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-            if (wi->fds[i] != -1) {
-                return;
-            }
+        if (wi->unicast_fd != -1) {
+            return;
         }
         clear_ws_work_item(wi);
-        // Every fd was -1.
+        // unicast_fd was -1.
         work_queue.pop_front();
     }
 }
@@ -117,25 +116,37 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
         .len        = wi->payload_len,
     };
 
+    int fd_count;
+    int fds[MAX_WEB_SOCKET_CLIENTS];
+
+    if (wi->unicast_fd == BROADCAST_FD) {
+        fd_count = MAX_WEB_SOCKET_CLIENTS;
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        memcpy(fds, keep_alive_fds, sizeof(fds));
+    } else {
+        fd_count = 1;
+        fds[0] = wi->unicast_fd;
+    }
+
     bool result = true;
 
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (wi->fds[i] == -1) {
+    for (int i = 0; i < fd_count; ++i) {
+        if (fds[i] == -1) {
             continue;
         }
 
-        const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(this->httpd, wi->fds[i]);
+        const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(this->httpd, fds[i]);
 
         if (ws_client_info != HTTPD_WS_CLIENT_WEBSOCKET) {
-            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item non-WS fd %i type %u", wi->fds[i], static_cast<unsigned>(ws_client_info));
+            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item non-WS fd %i type %u", fds[i], static_cast<unsigned>(ws_client_info));
             continue;
         }
 
-        const esp_err_t err = httpd_ws_send_frame_async(this->httpd, wi->fds[i], &ws_pkt);
+        const esp_err_t err = httpd_ws_send_frame_async(this->httpd, fds[i], &ws_pkt);
 
         if (err != ESP_OK) {
-            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item close fd %i, err 0x%x", wi->fds[i], static_cast<unsigned>(err));
-            this->keepAliveCloseDead_HTTPThread(wi->fds[i]);
+            logger.tracefln(server.get_trace_buffer_index(), "send_ws_work_item close fd %i, err 0x%x", fds[i], static_cast<unsigned>(err));
+            this->keepAliveCloseDead_HTTPThread(fds[i]);
             result = false;
         }
     }
@@ -337,10 +348,14 @@ void WebSockets::keepAliveRemove(int fd)
 
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        for (size_t i = 0; i < work_queue.size(); ++i)
-            for (size_t j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
-                if (work_queue[i].fds[j] == fd)
-                    work_queue[i].fds[j] = -1;
+        size_t work_queue_size = work_queue.size();
+        for (size_t i = 0; i < work_queue_size; ++i) {
+            if (work_queue[i].unicast_fd == fd) {
+                work_queue[i].unicast_fd = -1;
+                // Removing items from somewhere in the work queue is inefficient and would mess with the iteration.
+                // Leave it there and let the worker clean it up.
+            }
+        }
     }
 }
 
@@ -417,20 +432,12 @@ void WebSockets::pingActiveClients()
     if (!this->haveActiveClient())
         return;
 
-    // Copy over to not hold both mutexes at the same time.
-    int fds[MAX_WEB_SOCKET_CLIENTS];
-    {
-        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-        memcpy(fds, keep_alive_fds, sizeof(fds));
-    }
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         return;
     }
 
-    work_queue.push_back({{}, nullptr, 0, HTTPD_WS_TYPE_PING});
-    memcpy(work_queue.back().fds, fds, sizeof(fds));
+    work_queue.push_back({BROADCAST_FD, nullptr, 0, HTTPD_WS_TYPE_PING});
 }
 
 // Called by main thread.
@@ -527,7 +534,7 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
         return false;
     }
 
-    work_queue.push_back({{fd, -1, -1, -1, -1}, payload_copy, payload_len, ws_type});
+    work_queue.push_back({fd, payload_copy, payload_len, ws_type});
     return true;
 }
 
@@ -546,7 +553,7 @@ bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, ht
         return false;
     }
 
-    work_queue.push_back({{fd, -1, -1, -1, -1}, payload, payload_len, ws_type});
+    work_queue.push_back({fd, payload, payload_len, ws_type});
     return true;
 }
 
@@ -585,20 +592,12 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type
         return true;
     }
 
-    // Copy over to not hold both mutexes at the same time.
-    int fds[MAX_WEB_SOCKET_CLIENTS];
-    {
-        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-        memcpy(fds, keep_alive_fds, sizeof(fds));
-    }
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload);
         return false;
     }
-    work_queue.push_back({{}, payload, payload_len, ws_type});
-    memcpy(work_queue.back().fds, fds, sizeof(fds));
+    work_queue.push_back({BROADCAST_FD, payload, payload_len, ws_type});
     return true;
 }
 
@@ -609,9 +608,7 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
         return true;
     }
 
-    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    ws_work_item wi{{}, payload, payload_len, ws_type};
-    memcpy(wi.fds, keep_alive_fds, sizeof(keep_alive_fds));
+    ws_work_item wi{BROADCAST_FD, payload, payload_len, ws_type};
     return this->send_ws_work_item(&wi);
 }
 
@@ -627,21 +624,13 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_typ
     }
     memcpy(payload_copy, payload, payload_len);
 
-    // Copy over to not hold both mutexes at the same time.
-    int fds[MAX_WEB_SOCKET_CLIENTS];
-    {
-        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-        memcpy(fds, keep_alive_fds, sizeof(fds));
-    }
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload_copy);
         return false;
     }
 
-    work_queue.push_back({{}, payload_copy, payload_len, ws_type});
-    memcpy(work_queue.back().fds, fds, sizeof(fds));
+    work_queue.push_back({BROADCAST_FD, payload_copy, payload_len, ws_type});
     return true;
 }
 
