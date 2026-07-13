@@ -585,7 +585,13 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     log_cm_slac_match_request(cm_slac_match_request);
 
 #if MODULE_EV_AVAILABLE()
-    ev.on_ev_connected(pev_mac);
+    // Report the connected EV only once per plug-in session.
+    // Reset on unplug (State A) via reset_ev_connected_reported().
+    if (!ev_connected_reported || memcmp(reported_pev_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+        ev.on_ev_connected(pev_mac);
+        ev_connected_reported = true;
+        memcpy(reported_pev_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH);
+    }
 #endif
 
     // In autocharge-only mode, we have all the data we need (PEV MAC) from SLAC.

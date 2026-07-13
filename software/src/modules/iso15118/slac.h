@@ -564,6 +564,8 @@ public:
 
     void reset_slac_init_retry_count() { slac_init_retry_count = 0; }
 
+    void reset_ev_connected_reported() { ev_connected_reported = false; }
+
     void fill_header_v0(SLAC_HomeplugMessageHeaderV0 *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
 
 private:
@@ -596,6 +598,9 @@ private:
 
     // Retry counter for the SLAC init E/F sequence per [V2G3-M06-07].
     uint8_t slac_init_retry_count = 0;
+
+    bool ev_connected_reported = false;
+    uint8_t reported_pev_mac[SLAC_MAC_ADDRESS_LENGTH] = {0};
 
     // for CM_ATTEN_PROFILE.IND
     uint16_t aag_list[SLAC_AAG_LIST_LENGTH] = {0};
