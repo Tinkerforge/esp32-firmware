@@ -767,15 +767,15 @@ inline bool Config::update_value<float, Config::ConfFloat>(float val, const char
         config_abort_on_type_error("update_value", this, value_type, &value_string);
     }
     ConfFloat *conf = get<ConfFloat>();
-    float old_value = conf->getVal();
+
+    // Value unchanged?
+    if (is_exactly_equal(conf->getVal(), val)) {
+        return false;
+    }
+
     conf->setVal(val);
-
-    bool changed = !is_exactly_equal(old_value, val);
-
-    if (changed)
-        this->value.updated = 0xFF;
-
-    return changed;
+    this->value.updated = 0xFF;
+    return true;
 }
 
 template<>

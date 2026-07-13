@@ -1052,13 +1052,15 @@ private:
             config_abort_on_type_error("update_value", this, value_type, &value_string);
         }
         T *target = get<ConfigT>()->getVal();
-        T old_value = *target;
+
+        // Value unchanged?
+        if (*target == value) {
+            return false;
+        }
+
         *target = value;
-
-        if (old_value != value)
-            this->value.updated = 0xFF;
-
-        return old_value != value;
+        this->value.updated = 0xFF;
+        return true;
     }
 
 public:
