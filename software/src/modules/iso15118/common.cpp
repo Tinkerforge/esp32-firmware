@@ -58,6 +58,7 @@ struct EVCCVendorOUI {
 static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
     {{0x70, 0xB3, 0xD6}, EVCCVendor::Audi},
     {{0x00, 0x01, 0xA9}, EVCCVendor::BMW},
+    {{0x48, 0x31, 0x33}, EVCCVendor::Bosch},
     {{0xEC, 0xFA, 0x03}, EVCCVendor::FCA},
     {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
     {{0x00, 0x76, 0xB6}, EVCCVendor::Ford},
