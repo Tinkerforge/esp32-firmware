@@ -652,6 +652,7 @@ function EditUserFormContent({
                 />
             </FormRow>
             {/*#if MODULE_NFC_AVAILABLE*/}
+            {API.hasFeature("nfc") &&
             <NfcTagsSection
                 users={users}
                 nfcConfig={nfcConfig}
@@ -659,7 +660,7 @@ function EditUserFormContent({
                 onNfcConfig={onNfcConfig}
                 currentUserId={user.id}
                 currentUsername={user.username}
-            />
+            />}
             {/*#endif*/}
             {/*#if MODULE_EV_AVAILABLE*/}
             <EvsSection
@@ -762,17 +763,21 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             await modify_unknown_user(new_config.users[0].display_name);
 
         //#if MODULE_EVSE_COMMON_AVAILABLE
-        await API.save(
-            "evse/user_enabled",
-            { enabled: this.state.userSlotEnabled },
-            () => __("evse.script.save_failed")
-        );
+        if (API.hasFeature("nfc")) {
+            await API.save(
+                "evse/user_enabled",
+                { enabled: this.state.userSlotEnabled },
+                () => __("evse.script.save_failed")
+            );
+        }
         //#endif
 
         //#if MODULE_NFC_AVAILABLE
-        await API.save("nfc/config",
-                       {...API.get("nfc/config"), deadtime_post_start: this.state.nfcDeadtime},
-                       () => __("nfc.script.save_failed"));
+        if (API.hasFeature("nfc")) {
+            await API.save("nfc/config",
+                           {...API.get("nfc/config"), deadtime_post_start: this.state.nfcDeadtime},
+                           () => __("nfc.script.save_failed"));
+        }
         //#endif
 
         // Use call unchecked here: http_auth_update is not in api.ts for some reason
@@ -884,6 +889,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
                     {/*#if MODULE_EVSE_COMMON_AVAILABLE*/}
+                    {API.hasFeature("nfc") &&
                         <FormRow
                             label={__("users.content.evse_user_description")}
                             warning={__(
@@ -905,7 +911,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                             <div class="invalid-feedback">
                                 {__("users.content.evse_user_enable_invalid")}
                             </div>
-                        </FormRow>
+                        </FormRow>}
                     {/*#endif*/}
 
                     <FormRow label={__("users.content.unknown_username")}>
@@ -926,6 +932,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
                     {/*#if MODULE_NFC_AVAILABLE*/}
+                    {API.hasFeature("nfc") &&
                         <FormRow
                             label={__("nfc.content.deadtime")}
                             label_muted={__("nfc.content.deadtime_muted")}
@@ -944,7 +951,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     this.setState({ nfcDeadtime: parseInt(v) });
                                 }}
                             />
-                        </FormRow>
+                        </FormRow>}
                     {/*#endif*/}
 
                     <FormRow label={__("users.content.authorized_users")}>
@@ -1058,11 +1065,13 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
 
                                         await modify_user(state.editUser);
                                         //#if MODULE_NFC_AVAILABLE
-                                        let nfc_config = API.get("nfc/config")
-                                        await API.save("nfc/config", {
-                                            ...nfc_config,
-                                            authorized_tags: state.editUserNfcTags
-                                        });
+                                        if (API.hasFeature("nfc")) {
+                                            let nfc_config = API.get("nfc/config")
+                                            await API.save("nfc/config", {
+                                                ...nfc_config,
+                                                authorized_tags: state.editUserNfcTags
+                                            });
+                                        }
                                         //#endif
                                         //#if MODULE_EV_AVAILABLE
                                         let ev_config = API.get("ev/config")
@@ -1172,9 +1181,11 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 // in case another user was added while the add modal was open.
                                 let next_user_id = API.get("users/config").next_user_id;
                                 if (state.editUser.id != next_user_id) {
-                                    for (let cfg of state.editUserNfcTags)
-                                        if (cfg.user_id == state.editUser.id)
-                                            cfg.user_id = next_user_id;
+                                    if (API.hasFeature("nfc")) {
+                                        for (let cfg of state.editUserNfcTags)
+                                            if (cfg.user_id == state.editUser.id)
+                                                cfg.user_id = next_user_id;
+                                    }
 
                                     state.editUser.id = next_user_id;
                                 }
@@ -1182,11 +1193,13 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 await add_user(state.editUser);
 
                                 //#if MODULE_NFC_AVAILABLE
-                                let nfc_config = API.get("nfc/config")
-                                await API.save("nfc/config", {
-                                    ...nfc_config,
-                                    authorized_tags: state.editUserNfcTags
-                                });
+                                if (API.hasFeature("nfc")) {
+                                    let nfc_config = API.get("nfc/config")
+                                    await API.save("nfc/config", {
+                                        ...nfc_config,
+                                        authorized_tags: state.editUserNfcTags
+                                    });
+                                }
                                 //#endif
                                 //#if MODULE_EV_AVAILABLE
                                 let ev_config = API.get("ev/config")
@@ -1200,7 +1213,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
 
-                    <FormRow label={__("users.content.nfc_tags")}>
+                    {API.hasFeature("nfc") && <FormRow label={__("users.content.nfc_tags")}>
                         <Table
                             columnNames={[
                                 __("users.content.nfc_tag_id"),
@@ -1248,7 +1261,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     API.get("nfc/config").authorized_tags.length,
                                     MAX_TAGS)}
                         />
-                    </FormRow>
+                    </FormRow>}
                 </ConfigForm>
             </SubPage>
         );
