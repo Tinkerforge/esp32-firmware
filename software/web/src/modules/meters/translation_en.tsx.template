@@ -104,7 +104,7 @@ let x = {
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>reset</b> energy meter <b>{meter_name}</b>.</>/*NF*/,
             "meter_slot": "Meter",
             "meter_value": "Meter value",
-            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: Comparator, threshold_value: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {__("meters.automation.comparator_glyph")(comparator)} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: Comparator, threshold_value: string, hyst: string, unit: string) => <>When <b>{value_name}</b> of energy meter <b>{meter_name}</b> {__("meters.automation.comparator_string")(comparator, threshold_value + " " + unit)}</>/*NF*/,
             "value_id": "Value",
             "comparator": "Condition",
             "comparator_select_entry": /*SFN*/(c: Comparator) => {
@@ -117,15 +117,15 @@ let x = {
                     case Comparator.NotEqual:       return "Not equal to (\u2260)";
                     default: return "?"
                 }}/*NF*/,
-            "comparator_glyph": /*SFN*/(c: Comparator) => {
+            "comparator_string": /*FFN*/(c: Comparator, threshold_value: string) => {
                 switch (c) {
-                    case Comparator.Greater: return ">";
-                    case Comparator.Less: return "<";
-                    case Comparator.GreaterOrEqual: return "\u2265";
-                    case Comparator.LessOrEqual: return "\u2264";
-                    case Comparator.Equal: return "=";
-                    case Comparator.NotEqual: return "\u2260";
-                    default: return "?";
+                    case Comparator.Greater:        return <><b>rises</b> above <b>{threshold_value}</b></>;
+                    case Comparator.Less:           return <><b>falls</b> below <b>{threshold_value}</b></>;
+                    case Comparator.GreaterOrEqual: return <><b>rises</b> to <b>{threshold_value}</b> </>;
+                    case Comparator.LessOrEqual:    return <><b>falls</b> to <b>{threshold_value}</b></>;
+                    case Comparator.Equal:          return <><b>reaches</b> <b>{threshold_value}</b></>;
+                    case Comparator.NotEqual:       return <><b>deviates</b> from <b>{threshold_value}</b></>;
+                    default: return <>?</>;
                 }}/*NF*/,
             "threshold": "Threshold",
             "hysteresis": "Hysteresis",
