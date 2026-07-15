@@ -677,16 +677,18 @@ def led_wrap():
         main(stage3, scanner, result)
 
         report_path_json = report_path_prefix + ".json"
-        report_path_pdf = report_path_prefix + ".pdf"
-
-        files_to_commit.append(report_path_json)
-        files_to_commit.append(report_path_pdf)
 
         with mkdir_open(report_path_json, "w") as f:
             json.dump(result, f, indent=4)
 
+        files_to_commit.append(report_path_json)
+
+        report_path_pdf = report_path_prefix + ".pdf"
+
         if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:
             fatal_error(f"Could not generate PDF report file from {report_path_json}")
+
+        files_to_commit.append(report_path_pdf)
 
         print(f"Printing report {report_path_pdf}")
 
@@ -699,6 +701,28 @@ def led_wrap():
 
         if os.system(f'pdftops {drilling_template_path} - | lpr -o scaling=100') != 0:
             fatal_error(f"Could not print drilling template")
+
+        if scanner.qr_shipping:
+            print(f'Shipping order {scanner.qr_order_id}')
+
+            packing_slip_path = f"{report_path_prefix}_packing_slip.pdf"
+            shipping_label_path = f"{report_path_prefix}_shipping_label.pdf"
+
+            if os.system(f'./ship_order.py --output-prefix={report_path_prefix} {scanner.qr_order_id}') != 0:
+                fatal_error(f"Could not ship order")
+
+            files_to_commit.append(packing_slip_path)
+            files_to_commit.append(shipping_label_path)
+
+            print(f"Printing packing slip {packing_slip_path}")
+
+            if os.system(f'pdftops {packing_slip_path} - | lpr') != 0:
+                fatal_error(f"Could not print packing slip")
+
+            print(f"Printing shipping slip {shipping_label_path}")
+
+            if os.system(f'pdftops {shipping_label_path} - | lpr -P Wallbox-DHL') != 0:
+                fatal_error(f"Could not print shipping label")
 
         print('Done!')
     except BaseException as e:
