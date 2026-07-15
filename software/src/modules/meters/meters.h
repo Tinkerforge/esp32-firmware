@@ -212,9 +212,11 @@ private:
 #if MODULE_AUTOMATION_AVAILABLE()
     // Edge detection state for meter value automation triggers.
     struct TriggerStateEntry {
-        const Config *conf;
-        bool          triggered;
+        PointerWithBits<const Config> conf;
         uint32_t      index_cache;
+
+        bool triggered() { return conf.get_bit<0>(); }
+        void set_triggered(bool b) { conf.set_bit<0>(b); }
     };
     TriggerStateEntry trigger_state[OPTIONS_AUTOMATION_MAX_RULES()] = {};
     size_t            trigger_state_count = 0;

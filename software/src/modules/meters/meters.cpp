@@ -1494,7 +1494,7 @@ bool Meters::has_triggered(const Config *conf, void *data)
 
     // Create new trigger state if not found
     if (state_idx == trigger_state_count) {
-        trigger_state[state_idx] = {.conf = conf, .triggered = false, .index_cache = 0};
+        trigger_state[state_idx] = {.conf = {conf}, .index_cache = 0};
 
         ++trigger_state_count;
 
@@ -1532,8 +1532,8 @@ bool Meters::has_triggered(const Config *conf, void *data)
     }
 
     // Only fire on the transition from not-triggered to triggered.
-    if (!ts->triggered && condition_met) {
-        ts->triggered = true;
+    if (!ts->triggered() && condition_met) {
+        ts->set_triggered(true);
         return true;
     }
 
@@ -1550,7 +1550,7 @@ bool Meters::has_triggered(const Config *conf, void *data)
     }
 
     if (reset_condition) {
-        ts->triggered = false;
+        ts->set_triggered(false);
     }
 
     return false;
