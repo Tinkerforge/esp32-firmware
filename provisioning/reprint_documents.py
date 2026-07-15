@@ -60,9 +60,9 @@ def main():
 
     for latest_file in latest_files:
         if latest_file[2].endswith('_report_stage_2_shipping_label.pdf'):
-            cmd = f'pdftops {latest_file[2]} - | lpr -P Wallbox-DHL'
+            cmd = f'sh -c "pdftops {latest_file[2]} - | lpr -P Wallbox-DHL"'
         else:
-            cmd = f'pdftops {latest_file[2]} - | lpr'
+            cmd = f'sh -c "pdftops {latest_file[2]} - | lpr"'
 
         actions.append(AppLauncherAction(latest_file[1], '.', cmd, False, 'hold_shell', False))
 
