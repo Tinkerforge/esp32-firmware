@@ -32,7 +32,7 @@ def app_launcher(title, actions, root_pw='', big_btns=False):
     # import PyQt5 only if the function is actually use to avoid
     # importing it for nothing on system that might not have PyQt5
     from PyQt5.QtCore import QTimer
-    from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+    from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFrame
 
     unblock_btn_queue = queue.Queue()
 
@@ -84,16 +84,24 @@ def app_launcher(title, actions, root_pw='', big_btns=False):
     layout = QVBoxLayout()
 
     for action in actions:
-        btn = QPushButton(action.name)
+        if action == None:
+            line = QFrame()
+            line.setFrameShape(QFrame.HLine)
+            line.setFrameShadow(QFrame.Plain)
+            line.setLineWidth(2)
 
-        if big_btns:
-            btn.setMinimumHeight(btn.sizeHint().height() * 2)
-            font = btn.font()
-            font.setPointSizeF(font.pointSizeF() * 1.5)
-            btn.setFont(font)
+            layout.addWidget(line)
+        else:
+            btn = QPushButton(action.name)
 
-        btn.clicked.connect(functools.partial(run, action, btn))
-        layout.addWidget(btn)
+            if big_btns:
+                btn.setMinimumHeight(btn.sizeHint().height() * 2)
+                font = btn.font()
+                font.setPointSizeF(font.pointSizeF() * 1.5)
+                btn.setFont(font)
+
+            btn.clicked.connect(functools.partial(run, action, btn))
+            layout.addWidget(btn)
 
     window.setLayout(layout)
     window.show()

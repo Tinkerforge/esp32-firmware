@@ -22,6 +22,9 @@ def main():
     actions = []
 
     for root, dirs, files in os.walk(TEST_REPORTS_DIRECTORY):
+        if not root.endswith('warp3') and not root.endswith('warp4'):
+            continue
+
         for name in files:
             if not name.endswith('.pdf'):
                 continue
@@ -58,13 +61,20 @@ def main():
                     latest_files.sort(reverse=True)
                     latest_files = latest_files[:MAX_LATEST_FILES]
 
+    last_ssid = None
+
     for latest_file in latest_files:
         if latest_file[2].endswith('_report_stage_2_shipping_label.pdf'):
             cmd = f'sh -c "pdftops {latest_file[2]} - | lpr -P Wallbox-DHL"'
         else:
             cmd = f'sh -c "pdftops {latest_file[2]} - | lpr"'
 
+        if last_ssid != None and latest_file[0] != last_ssid:
+            actions.append(None)
+
         actions.append(AppLauncherAction(latest_file[1], '.', cmd, False, 'hold_shell', False))
+
+        last_ssid = latest_file[0]
 
     app_launcher('Reprint Documents', actions, big_btns=True)
 
