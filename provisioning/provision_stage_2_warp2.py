@@ -504,12 +504,14 @@ class Scanner:
             self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
 
             if m.group(7) == None or m.group(7) == '0':
-                custom_type2_cable = False
+                custom_type2_cable = 'no'
             elif m.group(7) == '1':
                 if self.qr_power == 'CC':
                     fatal_error('Custom Type-2 power unknown')
 
                 self.qr_custom_type2_power = self.qr_power
+
+                custom_type2_cable = 'yes'
             else:
                 parts = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ').replace('C', 'Custom ').replace('H', '11kW ').replace('F', '22kW ').split(' ')
                 parts[-1] = str(round(int(parts[-1]) / 10, 1))
