@@ -93,13 +93,10 @@ private:
 #endif
                         free_any> event_buf;
 
-
     struct TraceBuffer {
         const char *name;
         std::mutex mutex;
-        TF_Ringbuffer<char,
-                      malloc_psram,
-                      free_any> buf;
+        HimemBuffer buf;
     };
 
 #if defined(BOARD_HAS_PSRAM)
@@ -107,6 +104,12 @@ private:
     size_t trace_buffers_in_use = 0;
     size_t trace_buffer_size_allocd = 0;
     static constexpr size_t MAX_TRACE_BUFFERS_SIZE = 3 << 20;
+
+    std::mutex himem_read_mutex;
+    esp_himem_rangehandle_t himem_read;
+
+    std::mutex himem_write_mutex;
+    esp_himem_rangehandle_t himem_write;
 #endif
 
     ConfigRoot boot_id;

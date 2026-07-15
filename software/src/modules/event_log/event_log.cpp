@@ -85,6 +85,11 @@ size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
         esp_system_abort("Maximum number of trace buffers exceeded!");
     }
 
+    if (trace_buffers_in_use == 0) {
+        assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_read) == ESP_OK);
+        assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_write) == ESP_OK);
+    }
+
     trace_buffers[trace_buffers_in_use].name = name;
     trace_buffers[trace_buffers_in_use].buf.setup(size);
 
@@ -133,29 +138,30 @@ void EventLog::register_urls()
 #if defined(BOARD_HAS_PSRAM)
         request.beginChunkedResponse_plain(200);
 
+        std::lock_guard<std::mutex> read_lock{this->himem_read_mutex};
+
         for (size_t i = 0; i < trace_buffers_in_use; ++i) {
             auto &trace_buffer = trace_buffers[i];
-            std::lock_guard<std::mutex> lock{trace_buffer.mutex};
-
-            char *first_chunk, *second_chunk;
-            size_t first_len, second_len;
-            trace_buffer.buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
 
             char buf[128];
-            size_t written = snprintf(buf, ARRAY_SIZE(buf), "__begin_%.100s__\n", trace_buffer.name);
 
+            size_t written = snprintf(buf, ARRAY_SIZE(buf), "__begin_%.100s__\n", trace_buffer.name);
             SEND_CHUNK_OR_FAIL_LEN(request, buf, written);
 
-            if (first_len > 0) {
-                SEND_CHUNK_OR_FAIL_LEN(request, first_chunk, first_len);
-            }
+            {
+                std::lock_guard<std::mutex> lock{trace_buffer.mutex};
+                size_t blocks = trace_buffer.buf.used_blocks();
 
-            if (second_len > 0) {
-                SEND_CHUNK_OR_FAIL_LEN(request, second_chunk, second_len);
+                for (size_t c = 0; c < blocks; ++c) {
+                    size_t block_len;
+                    char *block = static_cast<char *>(trace_buffer.buf.map_block(c, this->himem_read, &block_len));
+                    defer { trace_buffer.buf.unmap_block(block, this->himem_read); };
+
+                    SEND_CHUNK_OR_FAIL_LEN(request, block, block_len);
+                }
             }
 
             written = snprintf(buf, ARRAY_SIZE(buf), "__end_%.100s__\n", trace_buffer.name);
-
             SEND_CHUNK_OR_FAIL_LEN(request, buf, written);
         }
 
@@ -599,14 +605,15 @@ size_t EventLog::trace_plain(size_t trace_buf_idx, const char *buf, size_t len)
         return 0;
 
     auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
+    {
+        std::lock_guard<std::mutex> write_lock{this->himem_write_mutex};
 
-    std::lock_guard<std::mutex> lock{trace_buffer->mutex};
-    bool drop_line = trace_buffer->buf.free() < len;
+        std::lock_guard<std::mutex> lock{trace_buffer->mutex};
+        bool drop_line = trace_buffer->buf.free() < len;
 
-    trace_buffer->buf.push_n(buf, len);
-
-    if (drop_line) {
-        trace_buffer->buf.pop_until('\n');
+        trace_buffer->buf.push_n(buf, len, this->himem_write);
+        if (drop_line)
+            trace_buffer->buf.pop_until('\n', this->himem_write);
     }
 
     return len;
