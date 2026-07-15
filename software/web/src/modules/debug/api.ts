@@ -8,6 +8,7 @@ export interface state_static {
     heap_dram: number;
     heap_iram: number;
     heap_psram: number;
+    heap_himem: number;
     psram_size: number;
     ipsock_max: number;
     cpu_clk: number;
@@ -27,6 +28,7 @@ export interface state_fast {
     free_dram: number;
     free_iram: number;
     free_psram: number;
+    free_himem: number;
     heap_check_time_avg: number;
     heap_check_time_max: number;
     cpu_usage: number;

@@ -70,6 +70,17 @@ function Row(props: {className?: string, label?: string, label_muted?: string, l
     </FormRow>
 }
 
+function Row4(props: {className?: string, label?: string, label_muted?: string, children: ComponentChild[]}) {
+    return <FormRow class={props.className} label={props.label} label_muted={props.label_muted}>
+        <div class="row gx-2 gy-1">
+            <div class="col-12 col-sm-3">{props.children[0]}</div>
+            <div class="col-12 col-sm-3">{props.children[1]}</div>
+            <div class="col-12 col-sm-3">{props.children[2]}</div>
+            <div class="col-12 col-sm-3">{props.children[3]}</div>
+        </div>
+    </FormRow>
+}
+
 export class Debug extends Component {
     render() {
         if (!util.render_allowed())
@@ -163,45 +174,61 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.memory_header")} />
 
-                <Row className="d-none d-sm-flex"
-                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
-                     c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
-                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
+                <Row4 className="d-none d-sm-flex">
+                     <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
+                     <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
+                     <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
+                     <p class="mb-0 form-label text-center">{__("debug.content.himem")}</p>
+                </Row4>
 
-                <Row label={__("debug.content.heap_used")}
-                     l={<OutputBytes value={state_static.heap_dram - state_fast.free_dram} />}
-                     c={<OutputBytes value={state_static.heap_iram - state_fast.free_iram} />}
-                     r={<OutputBytes value={state_static.heap_psram - state_fast.free_psram} />}/>
+                <Row4 label={__("debug.content.heap_used")}>
+                     <OutputBytes value={state_static.heap_dram - state_fast.free_dram} />
+                     <OutputBytes value={state_static.heap_iram - state_fast.free_iram} />
+                     <OutputBytes value={state_static.heap_psram - state_fast.free_psram} />
+                     <OutputBytes value={state_static.heap_himem - state_fast.free_himem} />
+                </Row4>
 
-                <Row label={__("debug.content.heap_free")}
-                     l={<OutputBytes value={state_fast.free_dram} />}
-                     c={<OutputBytes value={state_fast.free_iram} />}
-                     r={<OutputBytes value={state_fast.free_psram} />}/>
+                <Row4 label={__("debug.content.heap_free")}>
+                     <OutputBytes value={state_fast.free_dram} />
+                     <OutputBytes value={state_fast.free_iram} />
+                     <OutputBytes value={state_fast.free_psram} />
+                     <OutputBytes value={state_fast.free_himem} />
+                </Row4>
 
-                <Row label={__("debug.content.heap_block")}
-                     l={<OutputBytes value={state_slow.largest_free_dram_block} />}
-                     c={<OutputBytes value={state_slow.largest_free_iram_block} />}
-                     r={<OutputBytes value={state_slow.largest_free_psram_block} />}/>
+                <Row4 label={__("debug.content.heap_block")}>
+                     <OutputBytes value={state_slow.largest_free_dram_block} />
+                     <OutputBytes value={state_slow.largest_free_iram_block} />
+                     <OutputBytes value={state_slow.largest_free_psram_block} />
+                     {undefined}
+                </Row4>
 
-                <Row label={__("debug.content.heap_min_free")}
-                     l={<OutputBytes value={state_slow.min_free_dram} />}
-                     c={<OutputBytes value={state_slow.min_free_iram} />}
-                     r={<OutputBytes value={state_slow.min_free_psram} />}/>
+                <Row4 label={__("debug.content.heap_min_free")}>
+                     <OutputBytes value={state_slow.min_free_dram} />
+                     <OutputBytes value={state_slow.min_free_iram} />
+                     <OutputBytes value={state_slow.min_free_psram} />
+                     {undefined}
+                </Row4>
 
-                <Row label={__("debug.content.heap_size")}
-                     l={<OutputBytes value={state_static.heap_dram} />}
-                     c={<OutputBytes value={state_static.heap_iram} />}
-                     r={<OutputBytes value={state_static.heap_psram} />}/>
+                <Row4 label={__("debug.content.heap_size")}>
+                     <OutputBytes value={state_static.heap_dram} />
+                     <OutputBytes value={state_static.heap_iram} />
+                     <OutputBytes value={state_static.heap_psram} />
+                     <OutputBytes value={state_static.heap_himem} />
+                </Row4>
 
-                <Row label={__("debug.content.static")}
-                     l={<OutputBytes value={335872 - state_static.heap_dram} />}
-                     c={<OutputBytes value={131072 - state_static.heap_iram} />}
-                     r={<OutputBytes value={state_static.psram_size - state_static.heap_psram} />}/>
+                <Row4 label={__("debug.content.static")}>
+                     <OutputBytes value={335872 - state_static.heap_dram} />
+                     <OutputBytes value={131072 - state_static.heap_iram} />
+                     <OutputBytes value={state_static.psram_size - state_static.heap_psram} />
+                     <OutputBytes value={0} />
+                </Row4>
 
-                <Row label={__("debug.content.total_size")}
-                     l={<OutputBytes value={335872} />}
-                     c={<OutputBytes value={131072} />}
-                     r={<OutputBytes value={state_static.psram_size} />}/>
+                <Row4 label={__("debug.content.total_size")}>
+                     <OutputBytes value={335872} />
+                     <OutputBytes value={131072} />
+                     <OutputBytes value={state_static.psram_size} />
+                     <OutputBytes value={state_static.heap_himem} />
+                </Row4>
 
                 <FormSeparator heading={__("debug.content.config_buffers")} />
 
@@ -372,7 +399,7 @@ export class Debug extends Component {
                 <Row className="d-none d-sm-flex"
                      l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
-                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
+                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")} / {__("debug.content.himem")}</p>}/>
 
                 <Row label={__("debug.content.ram_benchmark")}
                      l={<OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}

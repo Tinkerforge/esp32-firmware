@@ -24,6 +24,8 @@
 #include <esp_task.h>
 #include <esp_flash.h>
 #include <esp_flash_internal.h>
+#include <esp_psram.h>
+#include <esp32/himem.h>
 #include <LittleFS.h>
 #include <lwipopts.h>
 #include <soc/rtc.h>
@@ -239,10 +241,12 @@ void Debug::pre_setup()
     size_t dram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     size_t iram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_IRAM);
     size_t psram_heap_size    = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t himem_heap_size    = 0;
+    size_t psram_size         = 0;
 
-    size_t psram_size = 0;
 #if defined(BOARD_HAS_PSRAM)
-    psram_size = 4 * 1024 * 1024;
+    himem_heap_size = esp_himem_get_phys_size();
+    psram_size = esp_psram_get_size() - himem_heap_size;
 #endif
 
     rtc_cpu_freq_config_t cpu_freq_conf;
@@ -263,6 +267,7 @@ void Debug::pre_setup()
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
         {"heap_psram", Config::Uint32(psram_heap_size)},
+        {"heap_himem", Config::Uint32(himem_heap_size)},
         {"psram_size", Config::Uint32(psram_size)},
         {"ipsock_max", Config::Uint8(CONFIG_LWIP_MAX_SOCKETS)},
         {"cpu_clk",    Config::Uint32(cpu_freq_conf.freq_mhz * 1000000)},
@@ -286,6 +291,7 @@ void Debug::pre_setup()
         {"free_dram",  Config::Uint32(0)},
         {"free_iram",  Config::Uint32(0)},
         {"free_psram", Config::Uint32(0)},
+        {"free_himem", Config::Uint32(0)},
         {"heap_check_time_avg", Config::Uint32(0)},
         {"heap_check_time_max", Config::Uint32(0)},
         {"cpu_usage",  Config::Uint8(0)},
@@ -372,6 +378,9 @@ void Debug::setup()
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
         state_fast.get("free_iram")->updateUint(iram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
+#if defined(BOARD_HAS_PSRAM)
+        state_fast.get("free_himem")->updateUint(esp_himem_get_free_size());
+#endif
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
         state_slow.get("largest_free_iram_block")->updateUint(iram_info.largest_free_block);

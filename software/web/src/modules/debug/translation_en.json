@@ -25,6 +25,7 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
+            "himem": "HIMEM",
 
             "config_buffers": "Config buffers",
             "conf_uint_buf": "ConfUint",

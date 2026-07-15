@@ -25,6 +25,7 @@
             "dram": "DRAM",
             "iram": "IRAM",
             "psram": "PSRAM",
+            "himem": "HIMEM",
 
             "stack_hwm_header": "Stack-Hochwassermarken",
             "free_stack": "Freier Stack",
