@@ -82,15 +82,15 @@ public:
 
 private:
     std::mutex event_buf_mutex;
+#if not defined(BOARD_HAS_PSRAM)
     TF_PackedRingbuffer<char,
                         10000,
                         uint32_t,
-#if defined(BOARD_HAS_PSRAM)
-                        malloc_psram,
-#else
                         malloc_32bit_addressed,
-#endif
                         free_any> event_buf;
+#else
+    HimemBuffer event_buf;
+#endif
 
     struct TraceBuffer {
         const char *name;

@@ -62,7 +62,13 @@ static constexpr const uint8_t gzip_header[] = {
 
 void EventLog::pre_init()
 {
+#if not defined(BOARD_HAS_PSRAM)
     event_buf.setup();
+#else
+    assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_read) == ESP_OK);
+    assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_write) == ESP_OK);
+    event_buf.setup(HimemBuffer::MIN_BUFFER_SIZE);
+#endif
 
     uint32_t numeric_reset_reason;
     const char *reset_reason = tf_reset_reason(&numeric_reset_reason);
@@ -83,11 +89,6 @@ size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
 
     if (trace_buffers_in_use == trace_buffers.size()){
         esp_system_abort("Maximum number of trace buffers exceeded!");
-    }
-
-    if (trace_buffers_in_use == 0) {
-        assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_read) == ESP_OK);
-        assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_write) == ESP_OK);
     }
 
     trace_buffers[trace_buffers_in_use].name = name;
@@ -114,6 +115,7 @@ void EventLog::pre_setup()
 void EventLog::register_urls()
 {
     server.on_HTTPThread("/event_log", HTTP_GET, [this](WebServerRequest request) {
+#if not defined(BOARD_HAS_PSRAM)
         std::lock_guard<std::mutex> lock{event_buf_mutex};
         char chunk_buf[CHUNK_SIZE]; // The HTTP task's stack is large enough.
         const size_t used = event_buf.used();
@@ -131,6 +133,25 @@ void EventLog::register_urls()
         }
 
         return request.endChunkedResponse();
+#else
+        request.beginChunkedResponse_plain(200);
+
+        {
+            std::scoped_lock lock{this->himem_read_mutex, this->event_buf_mutex};
+
+            size_t blocks = event_buf.used_blocks();
+
+            for (size_t c = 0; c < blocks; ++c) {
+                size_t block_len;
+                char *block = static_cast<char *>(event_buf.map_block(c, this->himem_read, &block_len));
+                defer { event_buf.unmap_block(block, this->himem_read); };
+
+                SEND_CHUNK_OR_FAIL_LEN(request, block, block_len);
+            }
+        }
+
+        return request.endChunkedResponse();
+#endif
     });
 
 
@@ -448,6 +469,7 @@ size_t EventLog::print_plain(const char *buf, size_t len)
 {
     Serial.write(buf, len);
 
+#if not defined(BOARD_HAS_PSRAM)
     {
         std::lock_guard<std::mutex> lock{event_buf_mutex};
 
@@ -465,6 +487,17 @@ size_t EventLog::print_plain(const char *buf, size_t len)
             }
         }
     }
+#else
+    {
+        std::scoped_lock lock{this->himem_write_mutex, this->event_buf_mutex};
+        bool fits = len <= event_buf.free();
+        event_buf.push_n(buf, len, himem_write);
+
+        if (!fits) {
+            event_buf.pop_until('\n', himem_write);
+        }
+    }
+#endif
 
 #if MODULE_WS_AVAILABLE()
     size_t stripped_len = len;
