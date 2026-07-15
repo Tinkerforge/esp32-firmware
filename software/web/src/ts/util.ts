@@ -879,10 +879,10 @@ export function isInteger(x: number) {
     return !isNaN(x) && (x === (x | 0));
 }
 
-export function range(stopOrStart: number, stop?: number) {
+export function range<T extends number>(stopOrStart: T, stop?: T): T[] {
     if (stop === undefined) {
         stop = stopOrStart;
-        stopOrStart = 0;
+        stopOrStart = 0 as T;
     }
 
     if (!isInteger(stopOrStart))
@@ -895,7 +895,7 @@ export function range(stopOrStart: number, stop?: number) {
     if (len <= 0)
         return [];
 
-    return [...Array(len).keys()].map(i => i + stopOrStart);
+    return [...Array(len).keys()].map(i => i + stopOrStart) as T[];
 }
 
 export async function wait(t: number) {
