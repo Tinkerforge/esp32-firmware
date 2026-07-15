@@ -72,7 +72,7 @@ def main():
         if last_ssid != None and latest_file[0] != last_ssid:
             actions.append(None)
 
-        actions.append(AppLauncherAction(latest_file[1], '.', cmd, False, 'hold_shell', False))
+        actions.append(AppLauncherAction(latest_file[1], '.', cmd, False, 'no_shell', False))
 
         last_ssid = latest_file[0]
 
