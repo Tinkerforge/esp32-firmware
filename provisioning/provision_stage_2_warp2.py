@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
-from tinkerforge_util.colored import red, green, blink
+from tinkerforge_util.colored import red, green, blink, cyan
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
@@ -702,8 +702,10 @@ def led_wrap():
         if os.system(f'pdftops {drilling_template_path} - | lpr -o scaling=100') != 0:
             fatal_error(f"Could not print drilling template")
 
-        if scanner.qr_shipping:
-            print(f'Shipping order {scanner.qr_order_id}')
+        if not scanner.qr_shipping:
+            print(cyan(f'No shipping'))
+        else:
+            print(cyan(f'Shipping order {scanner.qr_order_id}'))
 
             packing_slip_path = f"{report_path_prefix}_packing_slip.pdf"
             shipping_label_path = f"{report_path_prefix}_shipping_label.pdf"
