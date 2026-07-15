@@ -65,22 +65,10 @@ function get_value_id_name(value_id: number): string {
     return name;
 }
 
-function get_comparator_text(comparator: number): string {
-    switch (comparator) {
-        case Comparator.Greater: return ">";
-        case Comparator.Less: return "<";
-        case Comparator.GreaterOrEqual: return ">=";
-        case Comparator.LessOrEqual: return "<=";
-        case Comparator.Equal: return "==";
-        case Comparator.NotEqual: return "!=";
-        default: return "?";
-    }
-}
-
 function get_meter_value_table_children(trigger: MeterValueAutomationTrigger) {
     const meter_name = get_meter_name(trigger[1].meter_slot);
     const value_name = get_value_id_name(trigger[1].value_id);
-    const comparator = get_comparator_text(trigger[1].comparator);
+    const comparator = trigger[1].comparator;
     const info       = METER_VALUE_INFOS[trigger[1].value_id];
     const unit       = info ? info.unit : "";
     const digits     = info ? info.digits : 3;
@@ -149,14 +137,10 @@ function get_meter_value_edit_children(trigger: MeterValueAutomationTrigger, on_
         </FormRow>,
         <FormRow label={__("meters.automation.comparator")}>
             <InputSelect
-                items={[
-                    ['0', __("meters.automation.comparator_gt")],
-                    ['1', __("meters.automation.comparator_lt")],
-                    ['2', __("meters.automation.comparator_gte")],
-                    ['3', __("meters.automation.comparator_lte")],
-                    ['4', __("meters.automation.comparator_eq")],
-                    ['5', __("meters.automation.comparator_neq")],
-                ]}
+                items={
+                    util.range<Comparator>(Comparator._max)
+                        .map(c => [c.toString(), __("meters.automation.comparator_select_entry")(c)])
+                }
                 value={trigger[1].comparator.toString()}
                 onValue={(v) => on_trigger(util.get_updated_union(trigger, {comparator: parseInt(v)}))}
             />

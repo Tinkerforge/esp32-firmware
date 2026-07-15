@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { Comparator } from "modules/meters/generated/comparator.enum";
 let x = {
     "meters": {
         "status": {
@@ -101,17 +102,31 @@ let x = {
         "automation": {
             "meter_reset": "Stromzähler zurücksetzen",
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>setze</b> den Zähler <b>{meter_name}</b> zurück.</> /*NF*/,
-            "meter_slot": "Meter",
+            "meter_slot": "Stromzähler",
             "meter_value": "Zählerwert",
-            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold_value: string, hyst: string, unit: string) => <>wenn Zähler <b>{meter_name}</b> Wert <b>{value_name}</b> {comparator} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (Hysterese: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: Comparator, threshold_value: string, hyst: string, unit: string) => <>wenn Zähler <b>{meter_name}</b> Wert <b>{value_name}</b> {__("meters.automation.comparator_glyph")(comparator)} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (Hysterese: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
             "value_id": "Wert",
             "comparator": "Bedingung",
-            "comparator_gt": "Größer als (>)",
-            "comparator_lt": "Kleiner als (<)",
-            "comparator_gte": "Größer oder gleich (\u2265)",
-            "comparator_lte": "Kleiner oder gleich (\u2264)",
-            "comparator_eq": "Gleich (=)",
-            "comparator_neq": "Ungleich (\u2260)",
+            "comparator_select_entry": /*SFN*/(c: Comparator) => {
+                switch (c) {
+                    case Comparator.Greater:        return "Größer als (>)";
+                    case Comparator.Less:           return "Kleiner als (<)";
+                    case Comparator.GreaterOrEqual: return "Größer oder gleich (\u2265)";
+                    case Comparator.LessOrEqual:    return "Kleiner oder gleich (\u2264)";
+                    case Comparator.Equal:          return "Gleich (=)";
+                    case Comparator.NotEqual:       return "Ungleich (\u2260)";
+                    default: return "?"
+                }}/*NF*/,
+            "comparator_glyph": /*SFN*/(c: Comparator) => {
+                switch (c) {
+                    case Comparator.Greater: return ">";
+                    case Comparator.Less: return "<";
+                    case Comparator.GreaterOrEqual: return "\u2265";
+                    case Comparator.LessOrEqual: return "\u2264";
+                    case Comparator.Equal: return "=";
+                    case Comparator.NotEqual: return "\u2260";
+                    default: return "?";
+                }}/*NF*/,
             "threshold": "Schwellwert",
             "hysteresis": "Hysterese",
             "hysteresis_muted": "verhindert wiederholtes Auslösen"

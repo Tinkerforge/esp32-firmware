@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { Comparator } from "modules/meters/generated/comparator.enum";
 let x = {
     "meters": {
         "status": {
@@ -103,15 +104,29 @@ let x = {
             "automation_action_text": /*FFN*/(meter_name: string) => <><b>reset</b> energy meter <b>{meter_name}</b>.</>/*NF*/,
             "meter_slot": "Meter",
             "meter_value": "Meter value",
-            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: string, threshold_value: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {comparator} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
+            "automation_trigger_text": /*FFN*/(meter_name: string, value_name: string, comparator: Comparator, threshold_value: string, hyst: string, unit: string) => <>when meter <b>{meter_name}</b> value <b>{value_name}</b> {__("meters.automation.comparator_glyph")(comparator)} <b>{threshold_value} {unit}</b>{hyst !== "" ? <> (hysteresis: <b>{hyst} {unit}</b>)</> : ""}</>/*NF*/,
             "value_id": "Value",
             "comparator": "Condition",
-            "comparator_gt": "Greater than (>)",
-            "comparator_lt": "Less than (<)",
-            "comparator_gte": "Greater than or equal (\u2265)",
-            "comparator_lte": "Less than or equal (\u2264)",
-            "comparator_eq": "Equal to (=)",
-            "comparator_neq": "Not equal to (\u2260)",
+            "comparator_select_entry": /*SFN*/(c: Comparator) => {
+                switch (c) {
+                    case Comparator.Greater:        return "Greater than (>)";
+                    case Comparator.Less:           return "Less than (<)";
+                    case Comparator.GreaterOrEqual: return "Greater than or equal (\u2265)";
+                    case Comparator.LessOrEqual:    return "Less than or equal (\u2264)";
+                    case Comparator.Equal:          return "Equal to (=)";
+                    case Comparator.NotEqual:       return "Not equal to (\u2260)";
+                    default: return "?"
+                }}/*NF*/,
+            "comparator_glyph": /*SFN*/(c: Comparator) => {
+                switch (c) {
+                    case Comparator.Greater: return ">";
+                    case Comparator.Less: return "<";
+                    case Comparator.GreaterOrEqual: return "\u2265";
+                    case Comparator.LessOrEqual: return "\u2264";
+                    case Comparator.Equal: return "=";
+                    case Comparator.NotEqual: return "\u2260";
+                    default: return "?";
+                }}/*NF*/,
             "threshold": "Threshold",
             "hysteresis": "Hysteresis",
             "hysteresis_muted": "prevents re-triggering"
