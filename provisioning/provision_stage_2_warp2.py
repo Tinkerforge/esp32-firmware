@@ -708,8 +708,15 @@ def led_wrap():
             packing_slip_path = f"{report_path_prefix}_packing_slip.pdf"
             shipping_label_path = f"{report_path_prefix}_shipping_label.pdf"
 
-            if os.system(f'./ship_order.py --output-prefix={report_path_prefix} {scanner.qr_order_id}') != 0:
+            try:
+                output = subprocess.check_output(f'./ship_order.py --output-prefix={report_path_prefix} {scanner.qr_order_id}', stderr=subprocess.STDOUT, shell=True).rstrip()
+            except subprocess.CalledProcessError as e:
+                print(e.output)
                 fatal_error(f"Could not ship order")
+            except:
+                fatal_error(f"Could not ship order")
+
+            print(output)
 
             files_to_commit.append(packing_slip_path)
             files_to_commit.append(shipping_label_path)
