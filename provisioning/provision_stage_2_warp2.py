@@ -434,8 +434,8 @@ class Scanner:
             self.qr_hw_version = m_4.group(7)
             self.qr_serial = m_4.group(8)
             self.qr_built = m_4.group(9)
-            self.qr_extras = m_4.group(10)
-            self.qr_shipping = m_4.group(11)
+            self.qr_extras = bool(int(m_4.group(10) if m_4.group(10) != None else '0'))
+            self.qr_shipping = bool(int(m_4.group(11) if m_4.group(11) != None else '0'))
             self.qr_order_id = m_4.group(12)
         else:
             self.qr_sku = m_3_2.group(1)
@@ -448,12 +448,9 @@ class Scanner:
             self.qr_hw_version = m_3_2.group(7)
             self.qr_serial = m_3_2.group(8)
             self.qr_built = m_3_2.group(9)
-            self.qr_extras = m_3_2.group(10)
-            self.qr_shipping = m_3_2.group(11)
+            self.qr_extras = bool(int(m_3_2.group(10) if m_3_2.group(10) != None else '0'))
+            self.qr_shipping = bool(int(m_3_2.group(11) if m_3_2.group(11) != None else '0'))
             self.qr_order_id = m_3_2.group(12)
-
-        if self.qr_extras == None:
-            self.qr_extras = '0'
 
         print("Charger QR code data:")
         print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
@@ -477,7 +474,7 @@ class Scanner:
         print("    Shipping: {}".format(self.qr_shipping))
         print("    Order ID: {}".format(self.qr_order_id))
 
-        if self.qr_extras == '0':
+        if not self.qr_extras:
             self.qr_extras_code = None
             self.qr_stand = '0'
             self.qr_stand_wiring = '0'
