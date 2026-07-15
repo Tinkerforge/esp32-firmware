@@ -1264,7 +1264,7 @@ class Stage3:
         return report
 
 def main():
-    from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+    from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFrame
 
     stage3 = Stage3(3,
                     is_front_panel_button_pressed_function=lambda: False,
@@ -1301,17 +1301,28 @@ def main():
         button.clicked.connect(command)
         layout.addWidget(button)
 
+    def add_line():
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Plain)
+        line.setLineWidth(2)
+
+        layout.addWidget(line)
+
     add_button('Power On - WARP3/4 L1', lambda: stage3.power_on('Smart'))
     add_button('Power On - WARP3/4 L1/L2/L3', lambda: stage3.power_on('Smart', phases=['L1', 'L2', 'L3']))
     add_button('Power On - WARP2 Pro L1', lambda: stage3.power_on('Pro'))
     add_button('Power On - WARP2 Pro L1/L2/L3', lambda: stage3.power_on('Pro', phases=['L1', 'L2', 'L3']))
     add_button('Power On - CEE L1', lambda: stage3.power_on('CEE'))
     add_button('Power On - CEE L1/L2/L3', lambda: stage3.power_on('CEE', phases=['L1', 'L2', 'L3']))
+    add_line()
     add_button('Power Off', lambda: stage3.power_off())
+    add_line()
     add_button('CP/PE State A', lambda: stage3.change_cp_pe_state('A'))
     add_button('CP/PE State B', lambda: stage3.change_cp_pe_state('B'))
     add_button('CP/PE State C', lambda: stage3.change_cp_pe_state('C'))
     add_button('CP/PE State D', lambda: stage3.change_cp_pe_state('D'))
+    add_line()
     add_button('Meter State Type2 L1', lambda: stage3.change_meter_state('Type2-L1'))
     add_button('Meter State Type2 L2', lambda: stage3.change_meter_state('Type2-L2'))
     add_button('Meter State Type2 L3', lambda: stage3.change_meter_state('Type2-L3'))
