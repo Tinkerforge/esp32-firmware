@@ -26,7 +26,8 @@ import { AutomationTrigger } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputSelect } from "../../ts/components/input_select";
-import { METER_VALUE_INFOS } from "./generated/meter_value_id";
+import { METER_VALUE_INFOS, MeterValueID } from "./generated/meter_value_id";
+import { Comparator } from "./generated/comparator.enum";
 import { translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 
@@ -34,8 +35,8 @@ export type MeterValueAutomationTrigger = [
     AutomationTriggerID.MeterValue,
     {
         meter_slot: number,
-        value_id: number,
-        comparator: number,
+        value_id: MeterValueID,
+        comparator: Comparator,
         threshold: number,
         hysteresis: number,
     },
@@ -66,12 +67,12 @@ function get_value_id_name(value_id: number): string {
 
 function get_comparator_text(comparator: number): string {
     switch (comparator) {
-        case 0: return ">";
-        case 1: return "<";
-        case 2: return ">=";
-        case 3: return "<=";
-        case 4: return "==";
-        case 5: return "!=";
+        case Comparator.Greater: return ">";
+        case Comparator.Less: return "<";
+        case Comparator.GreaterOrEqual: return ">=";
+        case Comparator.LessOrEqual: return "<=";
+        case Comparator.Equal: return "==";
+        case Comparator.NotEqual: return "!=";
         default: return "?";
     }
 }

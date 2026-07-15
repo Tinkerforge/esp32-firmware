@@ -23,6 +23,7 @@
 #include "generated/module_dependencies.h"
 #include "options.h"
 #include "meter_class_none.h"
+#include "generated/comparator.enum.h"
 #include "generated/meter_value_imexdiff.h"
 #include "tools.h"
 #include "tools/malloc.h"
@@ -250,8 +251,8 @@ void Meters::pre_setup()
         AutomationTriggerID::MeterValue,
         Config::Object({
             {"meter_slot", Config::Uint(0, 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
-            {"value_id",   Config::Uint16(0)},
-            {"comparator", Config::Uint8(0, 5)}, // 0: >, 1: <, 2: >=, 3: <=, 4: ==, 5: !=
+            {"value_id",   Config::Enum(MeterValueID::NotSupported)},
+            {"comparator", Config::Enum(Comparator::Greater)},
             {"threshold",  Config::Float(0.0f)},
             {"hysteresis", Config::Float(0.0f)},
         })
@@ -1487,12 +1488,12 @@ bool Meters::has_triggered(const Config *conf, void *data)
         return false;
     }
 
-    const Config   *cfg        = static_cast<const Config *>(conf->get());
-    const uint32_t  meter_slot = cfg->get("meter_slot")->asUint();
-    const uint16_t  value_id   = static_cast<uint16_t>(cfg->get("value_id")->asUint());
-    const uint8_t   comparator = static_cast<uint8_t>(cfg->get("comparator")->asUint());
-    const float     threshold  = cfg->get("threshold")->asFloat();
-    const float     hysteresis = cfg->get("hysteresis")->asFloat();
+    const Config      *cfg        = static_cast<const Config *>(conf->get());
+    const uint32_t     meter_slot = cfg->get("meter_slot")->asUint();
+    const MeterValueID value_id   = cfg->get("value_id")->asEnum<MeterValueID>();
+    const Comparator   comparator = cfg->get("comparator")->asEnum<Comparator>();
+    const float        threshold  = cfg->get("threshold")->asFloat();
+    const float        hysteresis = cfg->get("hysteresis")->asFloat();
 
     if (meter_slot >= OPTIONS_METERS_MAX_SLOTS()) {
         return false;
@@ -1505,7 +1506,7 @@ bool Meters::has_triggered(const Config *conf, void *data)
 
     uint32_t value_index = UINT32_MAX;
     for (uint32_t i = 0; i < vid_count; i++) {
-        if (vid_config.get(i)->asUint() == value_id) {
+        if (vid_config.get(i)->asEnum<MeterValueID>() == value_id) {
             value_index = i;
             break;
         }
@@ -1527,24 +1528,24 @@ bool Meters::has_triggered(const Config *conf, void *data)
     // this point when it is reached. The hysteresis is applied to the reset condition.
     bool condition_met = false;
     switch (comparator) {
-        case 0: condition_met = value >  threshold;                           break; // >
-        case 1: condition_met = value <  threshold;                           break; // <
-        case 2: condition_met = value >= threshold;                           break; // >=
-        case 3: condition_met = value <= threshold;                           break; // <=
-        case 4: condition_met = std::fabs(value - threshold) <= hysteresis;   break; // == (within hysteresis band)
-        case 5: condition_met = std::fabs(value - threshold) >  hysteresis;   break; // != (outside hysteresis band)
+        case Comparator::Greater:        condition_met = value >  threshold;                           break; // >
+        case Comparator::Less:           condition_met = value <  threshold;                           break; // <
+        case Comparator::GreaterOrEqual: condition_met = value >= threshold;                           break; // >=
+        case Comparator::LessOrEqual:    condition_met = value <= threshold;                           break; // <=
+        case Comparator::Equal:          condition_met = std::fabs(value - threshold) <= hysteresis;   break; // == (within hysteresis band)
+        case Comparator::NotEqual:       condition_met = std::fabs(value - threshold) >  hysteresis;   break; // != (outside hysteresis band)
         default: return false;
     }
 
     // Check reset condition
     bool reset_condition = false;
     switch (comparator) {
-        case 0: reset_condition = value < (threshold - hysteresis);           break; // >  trigger, reset when < (threshold - hysteresis)
-        case 1: reset_condition = value > (threshold + hysteresis);           break; // <  trigger, reset when > (threshold + hysteresis)
-        case 2: reset_condition = value < (threshold - hysteresis);           break; // >= trigger, reset when < (threshold - hysteresis)
-        case 3: reset_condition = value > (threshold + hysteresis);           break; // <= trigger, reset when > (threshold + hysteresis)
-        case 4: reset_condition = std::fabs(value - threshold) > hysteresis;  break; // == trigger, reset when outside hysteresis band
-        case 5: reset_condition = std::fabs(value - threshold) <= hysteresis; break; // != trigger, reset when within hysteresis band
+        case Comparator::Greater:        reset_condition = value < (threshold - hysteresis);           break; // >  trigger, reset when < (threshold - hysteresis)
+        case Comparator::Less:           reset_condition = value > (threshold + hysteresis);           break; // <  trigger, reset when > (threshold + hysteresis)
+        case Comparator::GreaterOrEqual: reset_condition = value < (threshold - hysteresis);           break; // >= trigger, reset when < (threshold - hysteresis)
+        case Comparator::LessOrEqual:    reset_condition = value > (threshold + hysteresis);           break; // <= trigger, reset when > (threshold + hysteresis)
+        case Comparator::Equal:          reset_condition = std::fabs(value - threshold) > hysteresis;  break; // == trigger, reset when outside hysteresis band
+        case Comparator::NotEqual:       reset_condition = std::fabs(value - threshold) <= hysteresis; break; // != trigger, reset when within hysteresis band
         default: return false;
     }
 
