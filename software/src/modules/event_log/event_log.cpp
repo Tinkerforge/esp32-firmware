@@ -172,7 +172,7 @@ void EventLog::register_urls()
     });
 
     server.on_HTTPThread("/trace_log/*", HTTP_GET, [this](WebServerRequest request) {
-#if defined(BOARD_HAS_PSRAM)
+#if false && defined(BOARD_HAS_PSRAM)
         int tdefl_flags = TDEFL_NONDETERMINISTIC_PARSING_FLAG;
         int dictionary_probes = atoi(request.uriCStr() + 11);
 
