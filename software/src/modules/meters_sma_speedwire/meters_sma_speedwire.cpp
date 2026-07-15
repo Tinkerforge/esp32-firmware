@@ -27,7 +27,7 @@
 
 void MetersSMASpeedwire::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("meters_swire", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_swire");
 
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},

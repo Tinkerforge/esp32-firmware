@@ -360,7 +360,7 @@ void Debug::pre_setup()
     register_task("ipc1", IPC_STACK_SIZE);
 
 #ifdef DEBUG_FS_ENABLE
-    this->ssl_key_trace_buffer_index = logger.alloc_trace_buffer("sslkeylogfile", 8*1024u);
+    this->ssl_key_trace_buffer_index = logger.alloc_trace_buffer("sslkeylogfile");
 #endif
 }
 

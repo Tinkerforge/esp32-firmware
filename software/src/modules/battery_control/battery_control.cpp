@@ -44,7 +44,7 @@ static int get_localtime_hour()
 
 void BatteryControl::pre_setup()
 {
-    trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 64*1024u);
+    trace_buffer_idx = logger.alloc_trace_buffer("battery_control");
 
     config = Config::Object({
         {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},

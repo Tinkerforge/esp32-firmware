@@ -43,7 +43,7 @@
 
 void Eco::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 18);
+    this->trace_buffer_index = logger.alloc_trace_buffer("eco", 256 * 1024);
 
     // Note: If we desperately need psram we can alloc this when the eco module is enabled
     // and free again when eco module is disabled.

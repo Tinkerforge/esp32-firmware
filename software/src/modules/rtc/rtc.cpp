@@ -61,7 +61,7 @@ void IRtcBackend::set_time(const tm &time, int32_t microseconds)
 
 void Rtc::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("rtc", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("rtc");
 
     time = Config::Object({
         {"year", Config::Uint16(0)},

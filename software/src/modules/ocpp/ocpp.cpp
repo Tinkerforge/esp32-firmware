@@ -65,7 +65,7 @@ static void reset_state(Config *state) {
 
 void Ocpp::pre_setup()
 {
-    trace_buf_idx = logger.alloc_trace_buffer("ocpp", 1 << 17);
+    trace_buf_idx = logger.alloc_trace_buffer("ocpp", 128 * 1024);
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},

@@ -48,7 +48,7 @@ static constexpr auto MAX_STARTUP_DELAY = 1_min;
 
 void Heating::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 18);
+    this->trace_buffer_index = logger.alloc_trace_buffer("heating", 256 * 1024);
 
     config = ConfigRoot{Config::Object({
         {"sgr_blocking_type", Config::Uint(0, 0, 1)},

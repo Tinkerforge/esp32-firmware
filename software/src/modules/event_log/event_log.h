@@ -25,6 +25,7 @@
 #include "module.h"
 #include "config.h"
 #include "tools/ringbuffer.h"
+#include "tools/himem_buffer.h"
 #include "tools/malloc.h"
 
 // Length of an ISO 8601 timestamp. For example "2022-02-11 12:34:56,789"
@@ -78,7 +79,7 @@ public:
     [[gnu::format(__printf__, 2, 3)]] size_t tracefln_debug(const char *fmt, ...);
 
     // Returns id of allocated buffer
-    size_t alloc_trace_buffer(const char *name, size_t size);
+    size_t alloc_trace_buffer(const char *name, size_t size=HimemBuffer::MIN_BUFFER_SIZE);
 
 private:
     std::mutex event_buf_mutex;

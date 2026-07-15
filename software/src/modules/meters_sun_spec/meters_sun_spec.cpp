@@ -53,7 +53,7 @@ static const uint16_t base_addresses[] {
 
 void MetersSunSpec::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("meters_sun_spec", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_sun_spec");
 
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 65)}, // 32 chars manufacturer name; space; 32 chars model name

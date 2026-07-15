@@ -90,7 +90,7 @@ static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
 
 void WebServer::pre_setup()
 {
-    trace_buffer_index = logger.alloc_trace_buffer("web_server", 64 * 1024);
+    trace_buffer_index = logger.alloc_trace_buffer("web_server");
 }
 
 void WebServer::post_setup()

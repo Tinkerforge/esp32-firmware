@@ -33,7 +33,7 @@
 
 void MetersModbusTCP::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("meters_mbtcp", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_mbtcp");
 
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
 

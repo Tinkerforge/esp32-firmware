@@ -301,8 +301,8 @@ void ISO15118::trace(const char *fmt, ...)
 
 void ISO15118::pre_setup()
 {
-    this->trace_buffer_index    = logger.alloc_trace_buffer("iso15118", 1 << 18);
-    this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 1 << 18);
+    this->trace_buffer_index    = logger.alloc_trace_buffer("iso15118", 256 * 1024);
+    this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 256 * 1024);
 
     config = ConfigRoot{Config::Object({
         {"autocharge", Config::Bool(false)},

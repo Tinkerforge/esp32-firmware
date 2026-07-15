@@ -308,8 +308,7 @@ static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
 
 void EEBus::pre_setup()
 {
-    // Use PSRAM 128kB for trace buffer for now. We can reduce it if necessary.
-    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 1 << 17);
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 128 * 1024);
 
     // TOOD: Rework API so this lot is a bit cleaner
     // Config peers prototype - only persistent peers stored in flash
