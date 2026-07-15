@@ -218,7 +218,6 @@ private:
     };
     TriggerStateEntry trigger_state[OPTIONS_AUTOMATION_MAX_RULES()] = {};
     size_t            trigger_state_count = 0;
-    micros_t automation_last_values_updated_at[OPTIONS_METERS_MAX_SLOTS()] = {};
 #endif
 };
 

@@ -453,22 +453,6 @@ void Meters::setup()
     }, 500_ms);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    task_scheduler.scheduleUncancelable([this](){
-        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-            MeterSlot &meter_slot = this->meter_slots[slot];
-
-            if (meter_slot.meter->get_class() == MeterClassID::None) {
-                continue;
-            }
-
-            if (meter_slot.values_last_updated_at != automation_last_values_updated_at[slot]) {
-                automation_last_values_updated_at[slot] = meter_slot.values_last_updated_at;
-                automation.trigger(AutomationTriggerID::MeterValue, nullptr, this);
-                break; // Only trigger once per check cycle
-            }
-        }
-    }, 1_s);
-
     automation.register_on_config_applied([this]() {
         trigger_state_count = 0;
     });
@@ -1197,6 +1181,8 @@ void Meters::finish_update(uint32_t slot)
     if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
         meter_slot.power_history.add_sample(power);
     }
+
+    automation.trigger(AutomationTriggerID::MeterValue, reinterpret_cast<void *>(slot), this);
 }
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
@@ -1490,6 +1476,11 @@ bool Meters::has_triggered(const Config *conf, void *data)
 
     const Config  *cfg        = static_cast<const Config *>(conf->get());
     const uint32_t meter_slot = cfg->get("meter_slot")->asUint();
+
+    const uint32_t triggered_meter_slot = reinterpret_cast<uint32_t>(data);
+    if (meter_slot != triggered_meter_slot) {
+        return false;
+    }
 
     size_t state_idx = trigger_state_count;
 
