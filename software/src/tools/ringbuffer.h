@@ -275,7 +275,7 @@ public:
         if (n > size())
             return;
 
-        bool fits = n < free();
+        bool fits = n <= free();
 
         while (end + n > buf_size) {
             size_t to_write = buf_size - end;
