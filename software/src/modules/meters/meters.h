@@ -126,10 +126,15 @@ public:
     MeterValueAvailability get_soc(uint32_t slot, float *soc, micros_t max_age = 0_us);
     MeterValueAvailability get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_us);
 
+    // Remember to call finish_update when done updating all values for one read-out.
     void update_value(uint32_t slot, uint32_t index, float new_value);
-    void update_all_values(uint32_t slot, const float new_values[]);
-    void update_all_values(uint32_t slot, const Config *new_values);
     void finish_update(uint32_t slot);
+
+    // Calls finish_update automatically.
+    void update_all_values(uint32_t slot, const float new_values[]);
+    // Calls finish_update automatically.
+    void update_all_values(uint32_t slot, const Config *new_values);
+
     void declare_value_ids(uint32_t slot, const MeterValueID value_ids[], uint32_t value_id_count);
 
     bool get_cached_power_index(uint32_t slot, uint32_t *index);
