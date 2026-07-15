@@ -6,7 +6,6 @@ import queue
 import threading
 import time
 import traceback
-import tkinter as tk
 import typing
 import functools
 import json
@@ -1265,6 +1264,8 @@ class Stage3:
         return report
 
 def main():
+    from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+
     stage3 = Stage3(3,
                     is_front_panel_button_pressed_function=lambda: False,
                     has_evse_error_function=lambda: False,
@@ -1283,15 +1284,22 @@ def main():
 
     stage3.setup()
 
-    root = tk.Tk()
-    root.title('WARP Manual Control')
-
-    buttons = []
+    app = QApplication([])
+    window = QWidget()
+    window.setWindowTitle('Manual WARP Control')
+    window.setMinimumWidth(450)
+    layout = QVBoxLayout()
 
     def add_button(text, command):
-        button = tk.Button(root, text=text, width=50, command=command)
-        button.grid(row=len(buttons), column=0, padx=10, pady=10)
-        buttons.append(button)
+        button = QPushButton(text)
+
+        button.setMinimumHeight(button.sizeHint().height() * 2)
+        font = button.font()
+        font.setPointSizeF(font.pointSizeF() * 1.5)
+        button.setFont(font)
+
+        button.clicked.connect(command)
+        layout.addWidget(button)
 
     add_button('Power On - Smart L1', lambda: stage3.power_on('Smart'))
     add_button('Power On - Smart L1/L2/L3', lambda: stage3.power_on('Smart', phases=['L1', 'L2', 'L3']))
@@ -1308,7 +1316,9 @@ def main():
     add_button('Meter State Type2 L2', lambda: stage3.change_meter_state('Type2-L2'))
     add_button('Meter State Type2 L3', lambda: stage3.change_meter_state('Type2-L3'))
 
-    root.mainloop()
+    window.setLayout(layout)
+    window.show()
+    app.exec_()
 
     stage3.power_off()
     stage3.teardown()
