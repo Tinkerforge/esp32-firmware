@@ -105,4 +105,4 @@ def app_launcher(title, actions, root_pw='', big_btns=False):
 
     window.setLayout(layout)
     window.show()
-    app.exec_()
+    app.exec()

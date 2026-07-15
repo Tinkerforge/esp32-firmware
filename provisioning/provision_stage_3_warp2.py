@@ -1318,7 +1318,7 @@ def main():
 
     window.setLayout(layout)
     window.show()
-    app.exec_()
+    app.exec()
 
     stage3.power_off()
     stage3.teardown()
