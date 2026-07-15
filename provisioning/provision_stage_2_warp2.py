@@ -242,7 +242,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
         if scanner.qr_custom_type2_power != None:
             expected_power = scanner.qr_custom_type2_power
         else:
-            # test charger without type 2 cable as 22kW
+            # test charger without type-2 cable as 22kW
             expected_power = "22"
 
     if expected_power == "11" and jumper_config != 3:
@@ -263,9 +263,9 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     else:
         outgoing = evse.get_charging_slot(1).max_current
         if expected_power == "11" and outgoing != 20000:
-            fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
+            fatal_error("Wrong type-2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
         if expected_power == "22" and outgoing != 32000:
-            fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 32 A, as this is a 22 kW box.".format(outgoing / 1000))
+            fatal_error("Wrong type-2 cable config detected: Allowed current is {} but expected 32 A, as this is a 22 kW box.".format(outgoing / 1000))
 
         result["resistor_checked"] = True
 
@@ -459,14 +459,14 @@ class Scanner:
         print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
 
         if self.qr_power == 'CC' and self.qr_cable_len == 'CC':
-            print("    Custom Cable")
+            print("    Type-2 Cable: Custom")
         else:
-            print("    {} kW".format(self.qr_power))
+            print("    Type-2 Power: {} kW".format(self.qr_power))
 
             if self.qr_cable_len == 'CC':
-                print("    Custom Cable")
+                print("    Type-2 Length: Custom")
             else:
-                print("    {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+                print("    Type-2 Length: {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
 
         print("    Material: {}".format(self.qr_material))
         print("    Custom Engraving: {}".format(self.qr_custom_engraving))
@@ -506,7 +506,14 @@ class Scanner:
             self.qr_cee = bool(int(m.group(5)))
             self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
 
-            if m.group(7) != None and m.group(7) != '0':
+            if m.group(7) == None or m.group(7) == '0':
+                custom_type2_cable = False
+            elif m.group(7) == '1':
+                if self.qr_power == 'CC':
+                    fatal_error('Custom Type-2 power unknown')
+
+                self.qr_custom_type2_power = self.qr_power
+            else:
                 parts = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ').replace('C', 'Custom ').replace('H', '11kW ').replace('F', '22kW ').split(' ')
                 parts[-1] = str(round(int(parts[-1]) / 10, 1))
                 custom_type2_cable = ' '.join(parts) + ' m'
@@ -516,9 +523,7 @@ class Scanner:
                 elif 'F' in m.group(7):
                     self.qr_custom_type2_power = '22'
                 else:
-                    fatal_error('Custom Type 2 power unknown')
-            else:
-                custom_type2_cable = False
+                    fatal_error('Custom Type-2 power unknown')
 
             print("Extras QR code data:")
             print("    Stand: {}".format(self.qr_stand))
@@ -527,7 +532,7 @@ class Scanner:
             print("    Supply Cable: {} m".format(self.qr_supply_cable))
             print("    CEE: {}".format(self.qr_cee))
             print("    Custom Engraving: {}".format(self.qr_custom_engraving))
-            print("    Custom Type 2 Cable: {}".format(custom_type2_cable))
+            print("    Custom Type-2 Cable: {}".format(custom_type2_cable))
 
         if self.qr_variant != "B":
             pattern = rf"^WIFI:S:(warp{self.qr_gen})-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
