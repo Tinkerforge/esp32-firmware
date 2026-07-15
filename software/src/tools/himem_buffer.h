@@ -59,6 +59,9 @@ public:
                 }
             }
         }
+
+        // If we don't find the needle, drop everything.
+        clear();
     }
 
     // read
