@@ -19,8 +19,6 @@ let x = {
             "undervoltage_observation_time_muted": "Zeit unterhalb der Schwelle bis zur Auslösung (Standard 3000 ms)",
             "reconnect_wait_time": "Wiederzuschalt-Wartezeit",
             "reconnect_wait_time_muted": "Wartezeit bis zur Wiederaufnahme der Ladung nach einer Auslösung (0…300 s, Standard 60 s)",
-            "start_delay": "Ladestart-Verzögerung",
-            "start_delay_muted": "Verzögerung des Ladestarts (0…300 s, Standard 0 s)",
             "password": "Elektriker-Passwort",
             "password_muted": "Erforderlich, um die OVE-R-37-Konfiguration zu ändern",
             "password_placeholder": "Elektriker-Passwort",
@@ -39,6 +37,12 @@ let x = {
         "status": {
             "state": "OVE-R-37-Zustand",
             "trip_reason": "Auslösegrund",
+            "start_delay": "Ladestart-Verzögerung",
+            "start_delay_active": "Aktiv",
+            "start_delay_help": <>
+                <p>Ladeprogramme mit vorgegebener Startzeit (z.B. eine Automatisierungsregel mit zeitgesteuertem Ladestart) starten die Ladung mit einer zufälligen Verzögerung von 0-300 s (OVE R 37 §5.9.2).</p>
+                <p>Die Verzögerung ist gerade aktiv, die Ladung beginnt in Kürze automatisch.</p>
+            </>,
             "voltage_in_range": "Spannung im Bereich",
             "voltage_in_range_muted": "0,9-1,1 pu (207-253 V)",
             "voltage_in_range_help": <>

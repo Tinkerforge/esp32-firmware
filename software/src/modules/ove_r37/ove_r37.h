@@ -31,6 +31,7 @@ public:
     void register_urls() override;
 
     void update_state_from_all_data(uint8_t ove_r37_state, uint8_t trip_reason, uint8_t flags);
+    void arm_charge_start_delay();
 
 private:
     bool update_config_from_bricklet();

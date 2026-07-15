@@ -25,6 +25,34 @@
 #include "options.h"
 #include "tools.h"
 
+#if MODULE_CM_NETWORKING_AVAILABLE()
+#include "modules/cm_networking/cm_networking_defs.h"
+#endif
+
+#if MODULE_OVE_R37_AVAILABLE()
+static bool action_starts_charge(AutomationActionID id, const Config *cfg)
+{
+    switch (id) {
+        case AutomationActionID::SetCurrent:
+            // Allowing a current > 0 can start a charge.
+            return cfg->get("current")->asUint() > 0;
+
+#if MODULE_CM_NETWORKING_AVAILABLE()
+        case AutomationActionID::EVSEChargeMode:
+            // Switching to any mode except Off can start a charge.
+            return cfg->get("mode")->asEnum<ConfigChargeMode>() != ConfigChargeMode::Off;
+#endif
+
+        case AutomationActionID::PMBlockCharge:
+            // Unblocking a slot can start a charge.
+            return !cfg->get("block")->asBool();
+
+        default:
+            return false;
+    }
+}
+#endif
+
 Automation::Automation()
 {
     trigger_prototypes.push_back({AutomationTriggerID::None, *Config::Null()});
@@ -349,9 +377,25 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
             }
 
             const ActionCb &cb = action_map[action_ident].callback;
+
+            // Charge delay for OVE R 37 5.9.2
+            bool arm_charge_start_delay = false;
+#if MODULE_OVE_R37_AVAILABLE()
+            if (number == AutomationTriggerID::Cron) {
+                arm_charge_start_delay = action_starts_charge(action_ident, static_cast<const Config *>(action->get()));
+            }
+#endif
+
             if (delay > 0_s) {
                 logger.printfln("Running rule #%d in %lu seconds", i + 1, delay.as<uint32_t>());
-                uint64_t task_id = task_scheduler.scheduleOnce([this, cb, action](){
+                uint64_t task_id = task_scheduler.scheduleOnce([this, cb, action, arm_charge_start_delay](){
+#if MODULE_OVE_R37_AVAILABLE()
+                    if (arm_charge_start_delay) {
+                        ove_r37.arm_charge_start_delay();
+                    }
+#else
+                    (void)arm_charge_start_delay;
+#endif
                     cb(static_cast<const Config *>(action->get()));
 
                     // Remove this task from the pending list now that it is executed
@@ -367,6 +411,11 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
                 pending_delayed_tasks.push_back(task_id);
             } else {
                 logger.printfln("Running rule #%d", i + 1);
+#if MODULE_OVE_R37_AVAILABLE()
+                if (arm_charge_start_delay) {
+                    ove_r37.arm_charge_start_delay();
+                }
+#endif
                 cb(static_cast<const Config *>(action->get()));
             }
         }

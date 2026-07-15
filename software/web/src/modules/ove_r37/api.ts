@@ -5,7 +5,6 @@ export interface config {
     undervoltage_threshold: number;
     undervoltage_observation_time: number;
     reconnect_wait_time: number;
-    start_delay: number;
 }
 
 export interface config_update {
@@ -13,7 +12,6 @@ export interface config_update {
     undervoltage_threshold: number;
     undervoltage_observation_time: number;
     reconnect_wait_time: number;
-    start_delay: number;
     password: string;
 }
 
@@ -32,3 +30,4 @@ export const OVE_R37_FLAG_FREQUENCY_IN_RANGE = 2;
 export const OVE_R37_FLAG_VOLTAGE_VALID      = 4;
 export const OVE_R37_FLAG_CURRENT_VALID      = 8;
 export const OVE_R37_FLAG_FREQUENCY_VALID    = 16;
+export const OVE_R37_FLAG_START_DELAY_ACTIVE = 32;

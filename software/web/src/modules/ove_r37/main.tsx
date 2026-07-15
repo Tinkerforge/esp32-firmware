@@ -31,7 +31,7 @@ import { InputText } from "../../ts/components/input_text";
 import { OveR37State } from "./generated/ove_r37_state.enum";
 import { Country } from "../system/generated/country.enum";
 import { MeterValueID } from "../meters/generated/meter_value_id";
-import { OVE_R37_TRIP_REASON_UNDERVOLTAGE, OVE_R37_TRIP_REASON_OVERVOLTAGE, OVE_R37_TRIP_REASON_FREQUENCY, OVE_R37_FLAG_VOLTAGE_IN_RANGE, OVE_R37_FLAG_FREQUENCY_IN_RANGE, OVE_R37_FLAG_VOLTAGE_VALID, OVE_R37_FLAG_FREQUENCY_VALID } from "./api";
+import { OVE_R37_TRIP_REASON_UNDERVOLTAGE, OVE_R37_TRIP_REASON_OVERVOLTAGE, OVE_R37_TRIP_REASON_FREQUENCY, OVE_R37_FLAG_VOLTAGE_IN_RANGE, OVE_R37_FLAG_FREQUENCY_IN_RANGE, OVE_R37_FLAG_VOLTAGE_VALID, OVE_R37_FLAG_FREQUENCY_VALID, OVE_R37_FLAG_START_DELAY_ACTIVE } from "./api";
 
 const NOMINAL_VOLTAGE = 230;
 
@@ -125,7 +125,6 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
             undervoltage_threshold: cfg.undervoltage_threshold,
             undervoltage_observation_time: cfg.undervoltage_observation_time,
             reconnect_wait_time: cfg.reconnect_wait_time,
-            start_delay: cfg.start_delay,
             password: this.state.password,
         }, () => __("ove_r37.script.save_failed"));
 
@@ -162,6 +161,12 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
                     {s !== undefined && (s.state == OveR37State.Tripped || s.trip_reason != 0) ?
                         <FormRow label={__("ove_r37.status.trip_reason")}>
                             <InputText value={trip_reason_name(s.trip_reason)}/>
+                        </FormRow>
+                        : undefined}
+                    {s !== undefined && (s.flags & OVE_R37_FLAG_START_DELAY_ACTIVE) ?
+                        <FormRow label={__("ove_r37.status.start_delay")}
+                                 help={__("ove_r37.status.start_delay_help")}>
+                            <InputText value={__("ove_r37.status.start_delay_active")}/>
                         </FormRow>
                         : undefined}
                     <FormRow label={__("ove_r37.status.voltage_in_range")}
@@ -212,14 +217,6 @@ export class OveR37 extends ConfigComponent<'ove_r37/config', {}, OveR37PageStat
                             unit="s"
                             value={state.reconnect_wait_time}
                             onValue={(v) => this.setState({reconnect_wait_time: v})}
-                            min={0} max={300}/>
-                    </FormRow>
-
-                    <FormRow label={__("ove_r37.content.start_delay")} label_muted={__("ove_r37.content.start_delay_muted")}>
-                        <InputNumber
-                            unit="s"
-                            value={state.start_delay}
-                            onValue={(v) => this.setState({start_delay: v})}
                             min={0} max={300}/>
                     </FormRow>
 

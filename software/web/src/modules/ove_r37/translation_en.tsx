@@ -19,8 +19,6 @@ let x = {
             "undervoltage_observation_time_muted": "Time below the threshold before tripping (default 3000 ms)",
             "reconnect_wait_time": "Reconnect wait time",
             "reconnect_wait_time_muted": "Wait time before resuming charging after a trip (0…300 s, default 60 s)",
-            "start_delay": "Charge start delay",
-            "start_delay_muted": "Delay of the charge start (0…300 s, default 0 s)",
             "password": "Electrician password",
             "password_muted": "Required to change the OVE R 37 configuration",
             "password_placeholder": "Electrician password",
@@ -39,6 +37,12 @@ let x = {
         "status": {
             "state": "OVE R 37 state",
             "trip_reason": "Trip reason",
+            "start_delay": "Charge start delay",
+            "start_delay_active": "Active",
+            "start_delay_help": <>
+                <p>Charging programs with a preset start time (e.g. an automation rule with a scheduled charge start) start charging with a random delay of 0-300 s (OVE R 37 §5.9.2).</p>
+                <p>The delay is currently active, charging will start automatically shortly.</p>
+            </>,
             "voltage_in_range": "Voltage in range",
             "voltage_in_range_muted": "0.9-1.1 pu (207-253 V)",
             "voltage_in_range_help": <>

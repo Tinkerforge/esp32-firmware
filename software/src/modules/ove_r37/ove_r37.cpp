@@ -20,6 +20,7 @@
 #include "ove_r37.h"
 
 #include <string.h>
+#include <esp_random.h>
 #include <mbedtls/sha256.h>
 
 #include "event_log_prefix.h"
@@ -56,7 +57,6 @@ void OveR37::pre_setup()
         {"undervoltage_threshold", Config::Uint16(800)},        // 1/1000 pu (0.80 pu) (5.9.8)
         {"undervoltage_observation_time", Config::Uint16(3000)},// in ms (5.9.8)
         {"reconnect_wait_time", Config::Uint16(60)},            // in s, 0..300 (5.7.4.2)
-        {"start_delay", Config::Uint16(0)},                     // in s, 0..300 (5.9.2 B)
     });
 
     config_update = Config::Object({
@@ -64,7 +64,6 @@ void OveR37::pre_setup()
         {"undervoltage_threshold", Config::Uint(800, 0, 1000)},
         {"undervoltage_observation_time", Config::Uint16(3000)},
         {"reconnect_wait_time", Config::Uint(60, 0, 300)},
-        {"start_delay", Config::Uint(0, 0, 300)},
         {"password", Config::Str("", 0, 64)}, // electrician password (write-only, not echoed back)
     });
 
@@ -97,10 +96,10 @@ void OveR37::register_urls()
 
         int rc = evse_v2.set_ove_r37_configuration(
             config_update.get("enabled")->asBool(),
-            static_cast<uint16_t>(config_update.get("undervoltage_threshold")->asUint()),
-            static_cast<uint16_t>(config_update.get("undervoltage_observation_time")->asUint()),
-            static_cast<uint16_t>(config_update.get("reconnect_wait_time")->asUint()),
-            static_cast<uint16_t>(config_update.get("start_delay")->asUint())
+            config_update.get("undervoltage_threshold")->asUint16(),
+            config_update.get("undervoltage_observation_time")->asUint16(),
+            config_update.get("reconnect_wait_time")->asUint16(),
+            0 // start_delay
         );
 
         if (rc != TF_E_OK) {
@@ -115,7 +114,8 @@ void OveR37::register_urls()
 bool OveR37::update_config_from_bricklet()
 {
     bool enabled;
-    uint16_t undervoltage_threshold, undervoltage_observation_time, reconnect_wait_time, start_delay;
+    uint16_t undervoltage_threshold, undervoltage_observation_time, reconnect_wait_time;
+    uint16_t start_delay; // unused here
 
     if (evse_v2.get_ove_r37_configuration(&enabled, &undervoltage_threshold, &undervoltage_observation_time, &reconnect_wait_time, &start_delay) != TF_E_OK) {
         return false;
@@ -125,9 +125,34 @@ bool OveR37::update_config_from_bricklet()
     config.get("undervoltage_threshold")->updateUint(undervoltage_threshold);
     config.get("undervoltage_observation_time")->updateUint(undervoltage_observation_time);
     config.get("reconnect_wait_time")->updateUint(reconnect_wait_time);
-    config.get("start_delay")->updateUint(start_delay);
 
     return true;
+}
+
+// OVE R 37 5.9.2: Charging programs with a preset start time must
+// start with a randomized delay within 0..300 s.
+void OveR37::arm_charge_start_delay()
+{
+    if (!config.get("enabled")->asBool()) {
+        return;
+    }
+
+    uint16_t delay = static_cast<uint16_t>(esp_random() % 301);
+
+    int rc = evse_v2.set_ove_r37_configuration(
+        config.get("enabled")->asBool(),
+        config.get("undervoltage_threshold")->asUint16(),
+        config.get("undervoltage_observation_time")->asUint16(),
+        config.get("reconnect_wait_time")->asUint16(),
+        delay
+    );
+
+    if (rc != TF_E_OK) {
+        logger.printfln("Failed to arm charge start delay: error %i", rc);
+        return;
+    }
+
+    logger.printfln("Delaying scheduled charge start by %u s (OVE R 37 5.9.2)", delay);
 }
 
 void OveR37::update_state_from_all_data(uint8_t ove_r37_state, uint8_t trip_reason, uint8_t flags)
