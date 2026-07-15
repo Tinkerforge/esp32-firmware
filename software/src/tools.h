@@ -257,3 +257,43 @@ void esp_system_abortf(const char *fmt, ...)
 
     esp_system_abort(buf);
 }
+
+
+template<typename T>
+struct PointerWithBits {
+    PointerWithBits(T *p) : ptr(p) {}
+    PointerWithBits() : ptr(nullptr) {}
+
+    template<size_t i>
+    bool get_bit() {
+        static_assert((1 << i) < alignof(T));
+        return reinterpret_cast<uintptr_t>(this->ptr) & (1 << i);
+    }
+
+    template<size_t i>
+    void set_bit(bool b) {
+        static_assert((1 << i) < alignof(T));
+        if (b)
+            this->ptr = reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(this->ptr) |  (1u << i));
+        else
+            this->ptr = reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(this->ptr) & ~(1u << i));
+    }
+
+    // Behave like a raw pointer
+    // add_lvalue_reference fixes void*: The major difference to directly using T& is that std::add_lvalue_reference<void>::type is void, while void& leads to a compilation error.
+    typename std::add_lvalue_reference<T>::type operator*() const { return *get_ptr(); }
+    T* operator->() const { return get_ptr(); }
+    T& operator[](size_t i) const { return get_ptr()[i]; }
+
+    auto operator<=>(const PointerWithBits<T>& rhs) const { return get_ptr() <=> rhs.get_ptr(); }
+    auto operator<=>(const T* rhs) const { return get_ptr() <=> rhs; }
+
+    bool operator==(const PointerWithBits<T>& rhs) const { return get_ptr() == rhs.get_ptr(); }
+    bool operator==(const T* rhs) const { return get_ptr() == rhs; }
+private:
+    static constexpr size_t BITMASK = (alignof(T) - 1);
+    T *ptr;
+
+    [[gnu::always_inline]]
+    T *get_ptr() const { return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(this->ptr) & (~BITMASK)); }
+};
