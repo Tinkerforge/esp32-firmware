@@ -209,6 +209,7 @@ private:
     struct TriggerStateEntry {
         const Config *conf;
         bool          triggered;
+        uint32_t      index_cache;
     };
     TriggerStateEntry trigger_state[OPTIONS_AUTOMATION_MAX_RULES()] = {};
     size_t            trigger_state_count = 0;

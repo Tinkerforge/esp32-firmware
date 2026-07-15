@@ -1488,39 +1488,42 @@ bool Meters::has_triggered(const Config *conf, void *data)
         return false;
     }
 
-    const Config      *cfg        = static_cast<const Config *>(conf->get());
-    const uint32_t     meter_slot = cfg->get("meter_slot")->asUint();
-    const MeterValueID value_id   = cfg->get("value_id")->asEnum<MeterValueID>();
-    const Comparator   comparator = cfg->get("comparator")->asEnum<Comparator>();
-    const float        threshold  = cfg->get("threshold")->asFloat();
-    const float        hysteresis = cfg->get("hysteresis")->asFloat();
+    const Config  *cfg        = static_cast<const Config *>(conf->get());
+    const uint32_t meter_slot = cfg->get("meter_slot")->asUint();
 
-    if (meter_slot >= OPTIONS_METERS_MAX_SLOTS()) {
-        return false;
-    }
+    size_t state_idx = trigger_state_count;
 
-    // Find the index of the requested value_id in this meter's value_ids
-    const MeterSlot &slot = meter_slots[meter_slot];
-    const Config &vid_config = slot.value_ids;
-    const size_t vid_count = vid_config.count();
-
-    uint32_t value_index = UINT32_MAX;
-    for (uint32_t i = 0; i < vid_count; i++) {
-        if (vid_config.get(i)->asEnum<MeterValueID>() == value_id) {
-            value_index = i;
+    // Search trigger state
+    for (size_t i = 0; i < trigger_state_count; i++) {
+        if (trigger_state[i].conf == conf) {
+            state_idx = i;
             break;
         }
     }
 
-    if (value_index == UINT32_MAX) {
-        return false;
+    // Create new trigger state if not found
+    if (state_idx == trigger_state_count) {
+        trigger_state[state_idx] = {.conf = conf, .triggered = false, .index_cache = 0};
+
+        ++trigger_state_count;
+
+        const MeterValueID value_id = cfg->get("value_id")->asEnum<MeterValueID>();
+
+        this->fill_index_cache(meter_slot, 1, &value_id, &trigger_state[state_idx].index_cache);
     }
 
+    auto *ts = &trigger_state[state_idx];
+
+    // Get current value
     float value;
-    MeterValueAvailability avail = get_value_by_index(meter_slot, value_index, &value);
+    MeterValueAvailability avail = get_values_with_cache(meter_slot, &value, &ts->index_cache, 1);
     if ((avail != MeterValueAvailability::Fresh) || isnan(value)) {
         return false;
     }
+
+    const Comparator comparator = cfg->get("comparator")->asEnum<Comparator>();
+    const float      threshold  = cfg->get("threshold")->asFloat();
+    const float      hysteresis = cfg->get("hysteresis")->asFloat();
 
     // Check trigger condition:
     // Use hysteresis for == and != (e.g. to allow matching 42 as 42.000001)
@@ -1537,6 +1540,12 @@ bool Meters::has_triggered(const Config *conf, void *data)
         default: return false;
     }
 
+    // Only fire on the transition from not-triggered to triggered.
+    if (!ts->triggered && condition_met) {
+        ts->triggered = true;
+        return true;
+    }
+
     // Check reset condition
     bool reset_condition = false;
     switch (comparator) {
@@ -1549,31 +1558,8 @@ bool Meters::has_triggered(const Config *conf, void *data)
         default: return false;
     }
 
-    // Only fire on the transition from not-triggered to triggered.
-    bool was_triggered = false;
-    size_t state_idx = trigger_state_count; // Will point to existing entry or next free slot
-
-    for (size_t i = 0; i < trigger_state_count; i++) {
-        if (trigger_state[i].conf == conf) {
-            was_triggered = trigger_state[i].triggered;
-            state_idx = i;
-            break;
-        }
-    }
-
-    if (!was_triggered) {
-        if (condition_met) {
-            if (state_idx == trigger_state_count && trigger_state_count < ARRAY_SIZE(trigger_state)) {
-                trigger_state[trigger_state_count++] = {conf, true};
-            } else if (state_idx < trigger_state_count) {
-                trigger_state[state_idx].triggered = true;
-            }
-            return true;
-        }
-    } else {
-        if (reset_condition) {
-            trigger_state[state_idx].triggered = false;
-        }
+    if (reset_condition) {
+        ts->triggered = false;
     }
 
     return false;
