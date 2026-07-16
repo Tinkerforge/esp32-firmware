@@ -238,6 +238,9 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             break;
     }
 
+    timeval old_time;
+    micros_t now;
+
     {
         std::lock_guard<std::recursive_mutex> lock{push_system_time_mutex};
 
@@ -245,20 +248,42 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             return false;
         }
 
-        struct tm timeinfo = {};
-        localtime_r(&time.tv_sec, &timeinfo);
-
-        char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
-        size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
-        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
-
-        logger.tracefln(this->trace_buffer_index, "Set time to %s at %llu. Quality %s", buf, now_us().to<millis_t>().as<uint64_t>(), get_quality_name(quality));
-
+        gettimeofday(&old_time, NULL);
+        now = now_us();
         settimeofday(&time, NULL);
 
         last_sync_quality = quality;
-        last_sync = now_us();
+        last_sync = now;
         last_sync_ok_deadline = last_sync + max_age;
+    }
+
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
+    {
+        struct tm timeinfo = {};
+        localtime_r(&time.tv_sec, &timeinfo);
+
+        size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
+    }
+
+    char old_buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
+    {
+        struct tm timeinfo = {};
+        localtime_r(&old_time.tv_sec, &timeinfo);
+
+        size_t written = strftime(old_buf, ARRAY_SIZE(old_buf), "%F %T", &timeinfo);
+        snprintf(old_buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
+    }
+
+    logger.tracefln_plain(this->trace_buffer_index, "Updated time from %s to %s at %llu. Quality %s", old_buf, buf, now.to<millis_t>().as<uint64_t>(), get_quality_name(quality));
+
+    time_t jump = time.tv_sec - old_time.tv_sec;
+
+    // Only log if old time was acceptable. If not, this was probably the first sync.
+    if (timestamp_acceptable(old_time) && abs(jump) > 10) {
+        task_scheduler.scheduleOnce([jump]() {
+            logger.printfln("Time jumped %s %lld seconds!", jump > 0 ? "forward" : "backward", abs(jump));
+        });
     }
 
     // Maybe we run in another thread.
