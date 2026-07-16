@@ -936,16 +936,16 @@ size_t Config::json_size(bool zero_copy) const
     return Config::apply_visitor(json_length_visitor{zero_copy}, this->value);
 }
 
-size_t Config::max_string_length() const
+size_t Config::max_string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     // Asserts checked in ::apply_visitor.
-    return Config::apply_visitor(max_string_length_visitor{}, this->value);
+    return Config::apply_visitor(max_string_length_visitor{keys_to_censor, keys_to_censor_len}, this->value);
 }
 
-size_t Config::string_length() const
+size_t Config::string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     // Asserts checked in ::apply_visitor.
-    return Config::apply_visitor(string_length_visitor{}, this->value);
+    return Config::apply_visitor(string_length_visitor{keys_to_censor, keys_to_censor_len}, this->value);
 }
 
 Config::to_json_result Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const

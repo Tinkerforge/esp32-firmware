@@ -77,7 +77,7 @@ void WS::register_urls()
                     auto &reg = api.states[i];
                     auto path = reg.path;
                     auto path_len = reg.get_path_len();
-                    auto config_len = reg.config->string_length();
+                    auto config_len = reg.config->string_length(reg.keys_to_censor, reg.get_keys_to_censor_len());
                     size_t req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
 
                     if (sb.getRemainingLength() < req) {

@@ -920,11 +920,40 @@ void Debug::register_urls()
 #endif
 
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
-        char buf[3072]; // on httpd stack, which is large enough
-        StringWriter sw(buf, sizeof(buf));
+        auto buf = heap_alloc_array<char>(8192);
+        StringWriter sw(buf.get(), 8192);
+        sw.printf("flash/c   api/c   dbg/c  name\n");
         auto result = task_scheduler.await([&sw]() {
             for (const auto &reg : api.states) {
-                sw.printf("%4u %s\n", reg.config->string_length(), reg.path);
+                sw.printf("%5zu %zu %5zu %zu %5zu %zu %s\n",
+                          reg.config->string_length(nullptr, 0),
+                          0u,
+                          reg.config->string_length(reg.keys_to_censor, reg.get_keys_to_censor_len()),
+                          reg.get_keys_to_censor_len(),
+                          reg.config->string_length(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len()),
+                          reg.get_keys_to_censor_in_debug_report_len(),
+                          reg.path);
+            }
+        });
+        if (!result)
+            return req.send_plain(500, "await failed");
+        return req.send_plain(200, sw);
+    });
+
+    server.on_HTTPThread("/debug/max_state_sizes", HTTP_GET, [](WebServerRequest req) {
+        auto buf = heap_alloc_array<char>(8192);
+        StringWriter sw(buf.get(), 8192);
+        sw.printf("flash/c   api/c   dbg/c  name\n");
+        auto result = task_scheduler.await([&sw]() {
+            for (const auto &reg : api.states) {
+                sw.printf("%5zu %zu %5zu %zu %5zu %zu %s\n",
+                          reg.config->max_string_length(nullptr, 0),
+                          0u,
+                          reg.config->max_string_length(reg.keys_to_censor, reg.get_keys_to_censor_len()),
+                          reg.get_keys_to_censor_len(),
+                          reg.config->max_string_length(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len()),
+                          reg.get_keys_to_censor_in_debug_report_len(),
+                          reg.path);
             }
         });
         if (!result)

@@ -426,6 +426,28 @@ static size_t estimate_chars_per_int64(int64_t v)
     return leading_zeros_to_char_count_64[__builtin_clz(upper_abs)] + sign;
 }
 
+static size_t handle_censored_len(const ConfObjectSchema::Key &key, const Config &child, size_t val_len, const char *const *keys_to_censor, const size_t keys_to_censor_len) {
+    const char *k = key.get_val();
+
+    bool censored = false;
+    for (size_t ktc = 0; ktc < keys_to_censor_len; ++ktc) {
+        // We've made sure that both keys point to _rodata.
+        // Comparing the pointers should be enough, assuming that the literal strings are deduplicated perfectly.
+        if (keys_to_censor[ktc] != k)
+            continue;
+
+        censored = true;
+        break;
+    }
+
+    // Empty strings are reported as such to distinguish "no password set" from "password set, but was censored"
+    if (censored && !(child.is<Config::ConfString>() && child.asString().length() == 0)) {
+        return 4; // null
+    }
+
+    return val_len;
+}
+
 struct max_string_length_visitor {
     size_t operator()(const Config::ConfString &x)
     {
@@ -490,8 +512,7 @@ struct max_string_length_visitor {
     {
         const auto *slot = x.getSlot();
 
-        return Config::apply_visitor(max_string_length_visitor{}, slot->prototype->value) * slot->maxElements +
-               (slot->maxElements + 1); // '[', ']' and (n - 1) * ','
+        return Config::apply_visitor(*this, slot->prototype->value) * slot->maxElements + (slot->maxElements + 1); // '[', ']' and (n - 1) * ','
     }
     size_t operator()(const Config::ConfObject &x)
     {
@@ -501,8 +522,12 @@ struct max_string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
+            size_t val_len = Config::apply_visitor(*this, slot->values[i].value);
+
+            val_len = handle_censored_len(schema->keys[i], slot->values[i], val_len, this->keys_to_censor, this->keys_to_censor_len);
+
             sum += schema->keys[i].get_length() + 3; // "":
-            sum += Config::apply_visitor(max_string_length_visitor{}, slot->values[i].value);
+            sum += val_len;
         }
         sum += size - 1; // ,
         return sum;
@@ -512,10 +537,10 @@ struct max_string_length_visitor {
     {
         const auto *slot = x.getSlot();
 
-        size_t max_len = Config::apply_visitor(max_string_length_visitor{}, x.getVal()->value);
+        size_t max_len = Config::apply_visitor(*this, x.getVal()->value);
         uint8_t max_tag = 0;
         for (size_t i = 0; i < slot->prototypes_len; ++i) {
-            max_len = std::max(max_len, Config::apply_visitor(max_string_length_visitor{}, slot->prototypes[i].config.value));
+            max_len = std::max(max_len, Config::apply_visitor(*this, slot->prototypes[i].config.value));
             max_tag = std::max(max_tag, slot->prototypes[i].tag);
         }
         max_len += estimate_chars_per_uint(max_tag); // tag
@@ -529,11 +554,14 @@ struct max_string_length_visitor {
 
         size_t sum = size + 1; // '[', ']' and (n - 1) * ','
         for (size_t i = 0; i < size; ++i) {
-            sum += Config::apply_visitor(max_string_length_visitor{}, slot->values[i].value);
+            sum += Config::apply_visitor(*this, slot->values[i].value);
         }
 
         return sum;
     }
+
+    const char *const *keys_to_censor;
+    const size_t keys_to_censor_len;
 };
 
 struct string_length_visitor {
@@ -603,7 +631,7 @@ struct string_length_visitor {
 
         size_t sum = 2; // []
         for (size_t i = 0; i < size; ++i) {
-            sum += Config::apply_visitor(string_length_visitor{}, (*val)[i].value) + 1; // ,
+            sum += Config::apply_visitor(*this, (*val)[i].value) + 1; // ,
         }
 
         return sum;
@@ -616,8 +644,12 @@ struct string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
+            size_t val_len = Config::apply_visitor(*this, slot->values[i].value);
+
+            val_len = handle_censored_len(schema->keys[i], slot->values[i], val_len, this->keys_to_censor, this->keys_to_censor_len);
+
             sum += schema->keys[i].get_length() + 3; // "":
-            sum += Config::apply_visitor(string_length_visitor{}, slot->values[i].value);
+            sum += val_len;
         }
         sum += size - 1; // ,
         return sum;
@@ -625,7 +657,7 @@ struct string_length_visitor {
 
     size_t operator()(const Config::ConfUnion &x)
     {
-        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()->asUint8()) + 3; // [,]
+        return Config::apply_visitor(*this, x.getVal()->value) + estimate_chars_per_uint(x.getTag()->asUint8()) + 3; // [,]
     }
 
     size_t operator()(const Config::ConfTuple &x)
@@ -635,11 +667,14 @@ struct string_length_visitor {
 
         size_t sum = size + 1; // '[', ']' and (n - 1) * ','
         for (size_t i = 0; i < size; ++i) {
-            sum += Config::apply_visitor(string_length_visitor{}, slot->values[i].value);
+            sum += Config::apply_visitor(*this, slot->values[i].value);
         }
 
         return sum;
     }
+
+    const char *const *keys_to_censor;
+    const size_t keys_to_censor_len;
 };
 
 struct json_length_visitor {

@@ -202,7 +202,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
-    auto req_size = reg.config->max_string_length();
+    auto req_size = reg.config->max_string_length(nullptr, 0); // We want the full size w/o censored keys here: Those payloads are sent to us.
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
         // ignore the maximum size of batteries/X/config_update being larger than the limit.
         // the limit is obeyed by limiting the total values count to 384, which is smaller

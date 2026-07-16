@@ -1176,8 +1176,8 @@ public:
     size_t fillInt32Array(int32_t *arr, size_t elements);
 
     size_t json_size(bool zero_copy) const;
-    size_t max_string_length() const;
-    size_t string_length() const;
+    size_t max_string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
+    size_t string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
 
     void save_to_file(File &file);
 

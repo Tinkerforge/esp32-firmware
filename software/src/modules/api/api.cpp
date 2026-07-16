@@ -588,7 +588,7 @@ static bool print_regs_to_debug_report(std::span<T> regs, StringWriter &sw, WebS
                 auto &reg = regs[i];
                 auto path = reg.path;
                 auto path_len = reg.get_path_len();
-                auto config_len = reg.config->string_length();
+                auto config_len = reg.config->string_length(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len());
                 size_t req = prefix_len + path_len + infix_len + config_len + suffix_len + terminator_len;
 
                 if (sw.getRemainingLength() < req) {
