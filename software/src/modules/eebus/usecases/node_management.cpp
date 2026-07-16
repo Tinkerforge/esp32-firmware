@@ -448,7 +448,8 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
             // TODO: handle returned messagecounter properly
-            if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false)) {
+            int msg_counter = usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false);
+            if (msg_counter >= 0) {
                 sent_count++;
             } else {
                 error_count++;
