@@ -413,7 +413,7 @@ function NfcTagsSection({
                             key="-1"
                             title=""
                             error={__("users.content.nfc_no_seen_tags")(
-                                !API.hasFeature("nfc") && options.PRODUCT_ID_IS_WARP != 0,
+                                !API.hasFeature("nfc") && options.PRODUCT_ID_IS_WARP as number != 0,
                                 API.hasModule("charge_manager") &&
                                 API.get("charge_manager/config").enable_central_management)}
                             labelAdd="">
