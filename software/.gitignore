@@ -42,3 +42,4 @@ signature/config.ini
 signature/keys/
 .venv/
 .venv-*/
+compile_commands.json
