@@ -55,10 +55,12 @@ let x = {
             "nfc_tag_id": "Tag ID",
             "nfc_tag_type": "Tag type",
             "nfc_no_tags_assigned": "No NFC tags assigned",
-            "nfc_no_seen_tags":  /*FFN*/(central_management: boolean) =>
-                central_management ?
-                    <>No NFC tags seen recently. Hold a tag to one of the controlled chargers to detect it.</> :
-                    <>No NFC tags seen recently. Hold a tag to this charger to detect it.</>
+            "nfc_no_seen_tags":  /*FFN*/(no_bricklet: boolean, central_management: boolean) =>
+                no_bricklet ?
+                    <>No NFC Bricklet connected. An NFC Bricklet can be purchased from our shop, or use the tag-injection API.</> :
+                    central_management ?
+                        <>No NFC tags seen recently. Hold a tag to one of the controlled chargers to detect it.</> :
+                        <>No NFC tags seen recently. Hold a tag to this charger to detect it.</>
                  /*NF*/,
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Already assigned to user "${other_name}"` /*NF*/,

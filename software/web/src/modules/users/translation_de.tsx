@@ -56,10 +56,12 @@ let x = {
             "nfc_tag_id": "Tag-ID",
             "nfc_tag_type": "Tag-Typ",
             "nfc_no_tags_assigned": "Keine NFC-Tags zugeordnet",
-            "nfc_no_seen_tags": /*FFN*/(central_management: boolean) =>
-                central_management ?
-                    <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an eine der kontrollierten Wallboxen, um es zu erkennen.</> :
-                    <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an diese Wallbox, um es zu erkennen.</>
+            "nfc_no_seen_tags": /*FFN*/(no_bricklet: boolean, central_management: boolean) =>
+                no_bricklet ?
+                    <>Kein NFC-Bricklet verbunden. Ein NFC-Bricklet kann bei uns im Shop erworben werden, oder benutze die Tag-Injection API.</> :
+                    central_management ?
+                        <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an eine der kontrollierten Wallboxen, um es zu erkennen.</> :
+                        <>In letzter Zeit wurden keine NFC-Tags erkannt. Halte ein Tag an diese Wallbox, um es zu erkennen.</>
                 /*NF*/,
             "nfc_tag_already_assigned": /*SFN*/ (other_name: string) =>
                 `Bereits Benutzer "${other_name}" zugeordnet` /*NF*/,

@@ -52,6 +52,7 @@ import { useEffect, useState } from "preact/hooks";
 //#endif
 import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 import { ChargeAuth } from "../charge_authorization/api";
+import * as options from "../../options";
 
 //#if MODULE_CHARGE_MANAGER_AVAILABLE
 export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType[]): Promise<(ChargeAuth & {charger_name: string})[]> {
@@ -412,9 +413,9 @@ function NfcTagsSection({
                             key="-1"
                             title=""
                             error={__("users.content.nfc_no_seen_tags")(
-                                !API.hasFeature("nfc") || (
+                                !API.hasFeature("nfc") && options.PRODUCT_ID_IS_WARP != 0,
                                 API.hasModule("charge_manager") &&
-                                API.get("charge_manager/config").enable_central_management))}
+                                API.get("charge_manager/config").enable_central_management)}
                             labelAdd="">
                         </DiscoveryResultItem>;
 
