@@ -22,6 +22,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import YaMD5 from "../../ts/yamd5";
 import { h, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
@@ -652,7 +653,7 @@ function EditUserFormContent({
                 />
             </FormRow>
             {/*#if MODULE_NFC_AVAILABLE*/}
-            {API.hasFeature("nfc") &&
+            {(!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) &&
             <NfcTagsSection
                 users={users}
                 nfcConfig={nfcConfig}
@@ -763,7 +764,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
             await modify_unknown_user(new_config.users[0].display_name);
 
         //#if MODULE_EVSE_COMMON_AVAILABLE
-        if (API.hasFeature("nfc")) {
+        if (!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) {
             await API.save(
                 "evse/user_enabled",
                 { enabled: this.state.userSlotEnabled },
@@ -773,7 +774,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
         //#endif
 
         //#if MODULE_NFC_AVAILABLE
-        if (API.hasFeature("nfc")) {
+        if (!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) {
             await API.save("nfc/config",
                            {...API.get("nfc/config"), deadtime_post_start: this.state.nfcDeadtime},
                            () => __("nfc.script.save_failed"));
@@ -889,7 +890,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
                     {/*#if MODULE_EVSE_COMMON_AVAILABLE*/}
-                    {API.hasFeature("nfc") &&
+                    {(!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) &&
                         <FormRow
                             label={__("users.content.evse_user_description")}
                             warning={__(
@@ -932,7 +933,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
                     {/*#if MODULE_NFC_AVAILABLE*/}
-                    {API.hasFeature("nfc") &&
+                    {(!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) &&
                         <FormRow
                             label={__("nfc.content.deadtime")}
                             label_muted={__("nfc.content.deadtime_muted")}
@@ -1065,7 +1066,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
 
                                         await modify_user(state.editUser);
                                         //#if MODULE_NFC_AVAILABLE
-                                        if (API.hasFeature("nfc")) {
+                                        if (!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) {
                                             let nfc_config = API.get("nfc/config")
                                             await API.save("nfc/config", {
                                                 ...nfc_config,
@@ -1181,7 +1182,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 // in case another user was added while the add modal was open.
                                 let next_user_id = API.get("users/config").next_user_id;
                                 if (state.editUser.id != next_user_id) {
-                                    if (API.hasFeature("nfc")) {
+                                    if (!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) {
                                         for (let cfg of state.editUserNfcTags)
                                             if (cfg.user_id == state.editUser.id)
                                                 cfg.user_id = next_user_id;
@@ -1193,7 +1194,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                 await add_user(state.editUser);
 
                                 //#if MODULE_NFC_AVAILABLE
-                                if (API.hasFeature("nfc")) {
+                                if (!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) {
                                     let nfc_config = API.get("nfc/config")
                                     await API.save("nfc/config", {
                                         ...nfc_config,
@@ -1213,7 +1214,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                     </FormRow>
 
 
-                    {API.hasFeature("nfc") && <FormRow label={__("users.content.nfc_tags")}>
+                    {(!options.PRODUCT_ID_IS_WARP || API.hasFeature("nfc")) && <FormRow label={__("users.content.nfc_tags")}>
                         <Table
                             columnNames={[
                                 __("users.content.nfc_tag_id"),
