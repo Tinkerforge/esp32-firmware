@@ -1182,7 +1182,9 @@ void Meters::finish_update(uint32_t slot)
         meter_slot.power_history.add_sample(power);
     }
 
+#if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger(AutomationTriggerID::MeterValue, reinterpret_cast<void *>(slot), this);
+#endif
 }
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
