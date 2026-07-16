@@ -58,8 +58,8 @@ let x = {
                     "tomorrow's maximum temperature",
                 ];
                 const type_name = type_names[type] ?? "unknown";
-                const comp = comparison == 0 ? "greater" : "less";
-                return (<>If the {type_name} is <b>{comp}</b> than <b>{toLocaleFixed(value / 10, 1)} °C</b>,{" "}</>)
+                const comp = comparison == 0 ? "rises above" : "falls below";
+                return (<>If the {type_name} <b>{comp} {toLocaleFixed(value / 10, 1)} °C</b>,{" "}</>)
             }/*NF*/,
             "temperature_type": "Temperature value",
             "type_current": "Current outdoor temperature",
@@ -70,8 +70,8 @@ let x = {
             "type_tomorrow_avg": "Tomorrow's average",
             "type_tomorrow_max": "Tomorrow's maximum",
             "comparison": "Comparison",
-            "comparison_greater_than": "Greater than",
-            "comparison_less_than": "Less than",
+            "comparison_greater_than": "Greater than (>)",
+            "comparison_less_than": "Less than (<)",
             "value": "Threshold",
             "current_temperature": "Temperature"
         },
