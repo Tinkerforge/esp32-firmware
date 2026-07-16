@@ -90,7 +90,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     return true;
 }
 
-void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, const bool require_ack)
+int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, const bool require_ack)
 {
     const char *function_name = "unknown";
     if (payload.is<JsonObjectConst>()) {
@@ -106,10 +106,11 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_jsonln(payload);
 #endif
-    if (require_ack) {
-        ack_waiting[msg_counter] = millis();
-    }
 
+    int msg_id = msg_counter++;
+    if (require_ack) {
+        ack_waiting[msg_id] = millis();
+    }
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
     HeaderType header{};
     header.ackRequest = require_ack;
@@ -118,16 +119,18 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
     header.addressSource = sender;
 
     header.addressDestination = receiver;
-    header.msgCounter = msg_counter++;
+    header.msgCounter = msg_id;
     if (cmd_classifier == CmdClassifierType::reply || cmd_classifier == CmdClassifierType::result) {
         header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
     }
     response_doc["datagram"][0]["header"] = header;
     if (!response_doc["datagram"][1]["payload"]["cmd"][0].set(payload)) {
         eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");
-        return;
+        msg_counter--;
+        return -1;
     }
     ship_connection->send_data_message(response_doc.as<JsonVariant>());
+    return msg_id;
 }
 
 void SpineConnection::check_message_counter()

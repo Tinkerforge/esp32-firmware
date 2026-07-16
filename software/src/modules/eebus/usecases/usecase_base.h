@@ -215,7 +215,7 @@ public:
     {
     }
 
-
+    void handle_result(const HeaderType &header, ResultDataType &result) const;
 
 protected:
     std::vector<int> entity_address{}; ///< The entity address for this use case.

@@ -59,8 +59,9 @@ public:
      * @param sender The FeatureAddressType of the sender of the datagram.
      * @param receiver The FeatureAddressType of the destination of the datagram.
      * @param require_ack Request an acknowledgement for the datagram. This is used to ensure that the peer received the datagram and can be used to detect if the peer is still alive.
-     */
-    void send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, bool require_ack = false);
+     * @return The message counter of the sent datagram. This can be used to identify result data sent by the peer. -1 if an error occurred and the datagram was not sent.
+    */
+    int send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, bool require_ack = false);
 
     /**
     * Check if the message counter is correct and log it if it isnt. Its not actually a problem if the message counter is lower than expected but indicates that the peer might have technical issues or has been rebooted.

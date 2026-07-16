@@ -129,10 +129,11 @@ public:
      * @param payload The payload to be sent.
      * @param cmd_classifier The command classifier of the message.
      * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
+     * @return The message counter of the sent message. This can be used to identify result data sent by the peer. -1 if an error occurred and the message was not sent.
      */
-    bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+    int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
-    template <typename T> bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
+    template <typename T> int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
 
     /**
      * Get a SpineConnection for a given spine address.

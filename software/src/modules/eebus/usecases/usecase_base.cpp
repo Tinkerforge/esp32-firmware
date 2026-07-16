@@ -37,6 +37,7 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
     JsonObject dst = message.to<JsonObject>();
     dst.createNestedObject(function_name);
+    // TODO: Handle the returned messagecounter to allow handling of results
     eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
 
@@ -81,6 +82,11 @@ void EebusUsecase::set_feature_address(AddressFeatureType feature_address, Featu
         assert(pair.second != feature_address);
     }
     feature_addresses[feature_type] = feature_address;
+}
+
+void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &result) const {
+    // By default we do not do anything with the result. Handling the result is up to the usecases.
+    return;
 }
 
 FeatureTypeEnumType EebusUsecase::get_feature_by_address(AddressFeatureType feature_address) const

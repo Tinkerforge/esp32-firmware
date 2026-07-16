@@ -136,13 +136,19 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     const FeatureAddressType source_address = header.addressSource.get();
     const FeatureAddressType destination_address = header.addressDestination.get();
 
-    // If its a result, no further processing. If the result is an error, log it
-    // TODO: send the results back to the usecase that sent the original command?
+    // If its a result, send it to all usecases under this entity.
+    // The usecase can figure out if it is relevant for it or not.
     if (data->last_cmd == SpineDataTypeHandler::Function::resultData) {
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
         eebus.trace_fmtln("Usecases: Received resultData, no further processing");
 #endif
         ResultDataType result_data = data->resultdatatype.get();
+        for (EebusUsecase *uc : usecase_list) {
+            if (uc->get_entity_address() == header.addressDestination->entity.get()) {
+                uc->handle_result(header, result_data);
+                break;
+            }
+        }
         if (result_data.errorNumber.get() != static_cast<uint8_t>(EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError)) {
             logger.printfln("An error was reported from a communication partner. See tracelog for more details");
             eebus.trace_fmtln("Usecases: Error received from communication Partner. Error Number: %s, Description: %s. Error refers to Message: %d", EEBUS_USECASE_HELPERS::get_result_error_number_string(result_data.errorNumber.get()).c_str(), result_data.description.get().c_str(), header.msgCounterReference.get());
@@ -211,7 +217,7 @@ template <typename T> size_t EEBusUseCases::inform_subscribers(const std::vector
         eebus.trace_fmtln("Attempted to inform subscribers about a change in %s while subscriptions are disabled", function_name);
     return 0;
 }
-template <typename T> bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack)
+template <typename T> int EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack)
 {
     BasicJsonDocument<ArduinoJsonPsramAllocator> doc{SPINE_CONNECTION_MAX_JSON_SIZE};
     JsonObject obj = doc.to<JsonObject>();
@@ -219,7 +225,7 @@ template <typename T> bool EEBusUseCases::send_spine_message(const FeatureAddres
     return send_spine_message(destination, sender, obj, cmd_classifier, want_ack);
 }
 
-bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
+int EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
 {
     eebus_responses_sent++;
     eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
@@ -234,10 +240,9 @@ bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, Fe
     if (sender.device.isNull()) {
         sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     }
-    bool message_sent = false;
+    int message_sent = -1;
     if (SpineConnection *spine_conn = get_spine_connection(destination)) {
-        spine_conn->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
-        message_sent = true;
+        message_sent = spine_conn->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
     } else
     {
         eebus.trace_fmtln("Usecases: send_spine_message failed due to no spine connection found for %s",  EEBUS_USECASE_HELPERS::spine_address_to_string(destination).c_str());
@@ -290,21 +295,21 @@ template size_t EEBusUseCases::inform_subscribers<IncentiveTableDataType>(const 
 // --- send_spine_message<T> instantiations ---
 // Used by NodeManagementEntity::inform_subscribers which forwards to EEBusUseCases::send_spine_message
 // These must match all types used in NodeManagementEntity::inform_subscribers instantiations
-template bool EEBusUseCases::send_spine_message<DeviceDiagnosisHeartbeatDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisHeartbeatDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<NodeManagementDetailedDiscoveryDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementDetailedDiscoveryDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<LoadControlLimitListDataType>(const FeatureAddressType &, FeatureAddressType &, LoadControlLimitListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<DeviceConfigurationKeyValueListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<ElectricalConnectionCharacteristicListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionCharacteristicListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<MeasurementListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<MeasurementConstraintsListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementConstraintsListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<MeasurementDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementDescriptionListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<DeviceDiagnosisStateDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisStateDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<DeviceConfigurationKeyValueDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueDescriptionListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<IdentificationListDataType>(const FeatureAddressType &, FeatureAddressType &, IdentificationListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<DeviceClassificationManufacturerDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceClassificationManufacturerDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<ElectricalConnectionParameterDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionParameterDescriptionListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<ElectricalConnectionPermittedValueSetListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionPermittedValueSetListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<BillListDataType>(const FeatureAddressType &, FeatureAddressType &, BillListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<TimeSeriesListDataType>(const FeatureAddressType &, FeatureAddressType &, TimeSeriesListDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<IncentiveTableDataType>(const FeatureAddressType &, FeatureAddressType &, IncentiveTableDataType, CmdClassifierType, const char *, bool);
-template bool EEBusUseCases::send_spine_message<NodeManagementUseCaseDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementUseCaseDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<DeviceDiagnosisHeartbeatDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisHeartbeatDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<NodeManagementDetailedDiscoveryDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementDetailedDiscoveryDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<LoadControlLimitListDataType>(const FeatureAddressType &, FeatureAddressType &, LoadControlLimitListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<DeviceConfigurationKeyValueListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<ElectricalConnectionCharacteristicListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionCharacteristicListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<MeasurementListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<MeasurementConstraintsListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementConstraintsListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<MeasurementDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<DeviceDiagnosisStateDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisStateDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<DeviceConfigurationKeyValueDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<IdentificationListDataType>(const FeatureAddressType &, FeatureAddressType &, IdentificationListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<DeviceClassificationManufacturerDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceClassificationManufacturerDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<ElectricalConnectionParameterDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionParameterDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<ElectricalConnectionPermittedValueSetListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionPermittedValueSetListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<BillListDataType>(const FeatureAddressType &, FeatureAddressType &, BillListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<TimeSeriesListDataType>(const FeatureAddressType &, FeatureAddressType &, TimeSeriesListDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<IncentiveTableDataType>(const FeatureAddressType &, FeatureAddressType &, IncentiveTableDataType, CmdClassifierType, const char *, bool);
+template int EEBusUseCases::send_spine_message<NodeManagementUseCaseDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementUseCaseDataType, CmdClassifierType, const char *, bool);

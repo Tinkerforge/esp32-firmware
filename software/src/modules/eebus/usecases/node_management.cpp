@@ -144,7 +144,7 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     } else {
         eebus.trace_fmtln("NodeManagementUsecase: Failed to build subscription request message");
     }
-
+    // TODO: handle the returned msgcounter to handle the result
     return eebus.usecases->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
 }
 
@@ -447,6 +447,7 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     size_t error_count = 0;
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
+            // TODO: handle returned messagecounter properly
             if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false)) {
                 sent_count++;
             } else {
