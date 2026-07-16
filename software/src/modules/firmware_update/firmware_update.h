@@ -88,13 +88,13 @@ public:
 
     void handle_index_data(const void *data, size_t data_len);
 
-    int change_running_partition_from_pending_verify_to_valid(bool silent = false);
-    int change_running_partition_from_pending_verify_to_new(bool silent = false);
-    int change_update_partition_from_aborted_to_invalid(bool silent = false);
-    int change_update_partition_to_invalid(bool silent = false);
+    int change_running_partition_from_pending_verify_to_valid(const char *reason, bool silent = false);
+    int change_running_partition_from_pending_verify_to_new(const char *reason, bool silent = false);
+    int change_update_partition_from_aborted_to_invalid(const char *reason, bool silent = false);
+    int change_update_partition_to_invalid(const char *reason, bool silent = false);
 
 private:
-    int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
+    int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, const char *reason, bool silent);
     bool is_vehicle_blocking_update() const;
 #if signature_sodium_public_key_length != 0
     InstallState check_signature_info();

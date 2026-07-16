@@ -366,7 +366,7 @@ void FirmwareUpdate::setup()
 
     if (enable_rollback) {
         task_scheduler.scheduleOnce([this]() {
-            change_running_partition_from_pending_verify_to_valid();
+            change_running_partition_from_pending_verify_to_valid("delayed validate");
         }, VALIDATE_FIRMWARE_DELAY);
     }
 
@@ -592,7 +592,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         // we will probably overwrite the first 16 bytes soon.
         // This only fixes a confusing event log message, so it's
         // fine to ignore await errors here.
-        (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid(); });
+        (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid("preparing firmware update"); });
         mark_update_partition_invalid = false;
     }
 
@@ -823,7 +823,7 @@ bool FirmwareUpdate::erase_other_partition(String &msg, EraseType erase_type)
         return false;
     }
 
-    if (!change_partition_ota_state_from_to(other_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, true)) {
+    if (!change_partition_ota_state_from_to(other_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, "erasing partition", true)) {
         msg = string_printf<64>("Could not change OTA state of partition %s to invalid", other_partition_label);
         return false;
     }
@@ -1000,13 +1000,13 @@ void FirmwareUpdate::register_urls()
     }, true);
 
     api.addCommand("firmware_update/clear_rolled_back_version", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
-        if (change_update_partition_from_aborted_to_invalid() > 0) {
+        if (change_update_partition_from_aborted_to_invalid("clearing rollback") > 0) {
             state.get("rolled_back_version")->updateString("");
         }
     }, true);
 
     api.addCommand("firmware_update/validate", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
-        change_running_partition_from_pending_verify_to_valid();
+        change_running_partition_from_pending_verify_to_valid("forced validate");
     }, true);
 
     // Completely erase other firmware in HTTP thread because it takes a while.
@@ -1182,7 +1182,7 @@ void FirmwareUpdate::register_urls()
 
 void FirmwareUpdate::pre_reboot()
 {
-    change_running_partition_from_pending_verify_to_new();
+    change_running_partition_from_pending_verify_to_new("rebooting");
 }
 
 static bool read_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, bool silent)
@@ -1246,7 +1246,7 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
 }
 
 // return: -1 (error), 0 (expected state not matching), 1 (new state applied)
-int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
+int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t expected_ota_state, esp_ota_img_states_t new_ota_state, const char *reason, bool silent)
 {
     size_t ota_index;
     const char *app_state_key;
@@ -1287,10 +1287,11 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
 
     if (!write_ota_data(ota_index, &ota_data, silent)) {
         if (!silent) {
-            logger.printfln("Could not change %s partition OTA state from %s to %s",
+            logger.printfln("Could not change %s partition OTA state from %s to %s (%s)",
                             partition->label,
                             get_esp_ota_img_state_name(previous_ota_state),
-                            get_esp_ota_img_state_name(new_ota_state));
+                            get_esp_ota_img_state_name(new_ota_state),
+                            reason);
         }
 
         return -1;
@@ -1309,16 +1310,17 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
     }
 
     if (!silent) {
-        logger.printfln("Changed %s partition OTA state from %s to %s",
+        logger.printfln("Changed %s partition OTA state from %s to %s (%s)",
                         partition->label,
                         get_esp_ota_img_state_name(previous_ota_state),
-                        get_esp_ota_img_state_name(new_ota_state));
+                        get_esp_ota_img_state_name(new_ota_state),
+                        reason);
     }
 
     return 1;
 }
 
-int FirmwareUpdate::change_running_partition_from_pending_verify_to_valid(bool silent)
+int FirmwareUpdate::change_running_partition_from_pending_verify_to_valid(const char *reason, bool silent)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
@@ -1330,10 +1332,10 @@ int FirmwareUpdate::change_running_partition_from_pending_verify_to_valid(bool s
         return -1;
     }
 
-    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_VALID, silent);
+    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_VALID, reason, silent);
 }
 
-int FirmwareUpdate::change_running_partition_from_pending_verify_to_new(bool silent)
+int FirmwareUpdate::change_running_partition_from_pending_verify_to_new(const char *reason, bool silent)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
@@ -1345,10 +1347,10 @@ int FirmwareUpdate::change_running_partition_from_pending_verify_to_new(bool sil
         return -1;
     }
 
-    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_NEW, silent);
+    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_NEW, reason, silent);
 }
 
-int FirmwareUpdate::change_update_partition_from_aborted_to_invalid(bool silent)
+int FirmwareUpdate::change_update_partition_from_aborted_to_invalid(const char *reason, bool silent)
 {
     const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
 
@@ -1360,10 +1362,10 @@ int FirmwareUpdate::change_update_partition_from_aborted_to_invalid(bool silent)
         return -1;
     }
 
-    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_INVALID, silent);
+    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_INVALID, reason, silent);
 }
 
-int FirmwareUpdate::change_update_partition_to_invalid(bool silent)
+int FirmwareUpdate::change_update_partition_to_invalid(const char *reason, bool silent)
 {
     const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
 
@@ -1375,7 +1377,7 @@ int FirmwareUpdate::change_update_partition_to_invalid(bool silent)
         return -1;
     }
 
-    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, silent);
+    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, reason, silent);
 }
 
 bool FirmwareUpdate::is_vehicle_blocking_update() const
@@ -1972,11 +1974,11 @@ void FirmwareUpdate::read_app_partition_state()
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
         if (running_partition != nullptr) {
-            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_PENDING_VERIFY, false);
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_PENDING_VERIFY, "recovering running app partition state", false);
         }
 
         if (update_partition != nullptr) {
-            change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_NEW, false);
+            change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_NEW, "recovering other app partition state", false);
         }
     }
 
@@ -1992,7 +1994,7 @@ void FirmwareUpdate::read_app_partition_state()
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
         if (running_partition != nullptr) {
-            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_NEW, ESP_OTA_IMG_PENDING_VERIFY, false);
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_NEW, ESP_OTA_IMG_PENDING_VERIFY, "recovering running app partition state", false);
         }
     }
 
@@ -2006,7 +2008,7 @@ void FirmwareUpdate::read_app_partition_state()
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
         if (running_partition != nullptr) {
-            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_INVALID, ESP_OTA_IMG_PENDING_VERIFY, false);
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_INVALID, ESP_OTA_IMG_PENDING_VERIFY, "recovering running app partition state", false);
         }
     }
 }

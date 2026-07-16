@@ -188,7 +188,7 @@ static void register_default_urls() {
         esp_unregister_shutdown_handler(pre_reboot);
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE()
         // Normally the firmware update pre_reboot hook would do this
-        firmware_update.change_running_partition_from_pending_verify_to_new(true);
+        firmware_update.change_running_partition_from_pending_verify_to_new("forcing reboot", true);
 #endif
         esp_restart();
         return request.send_plain(200, "Forced reboot.");
