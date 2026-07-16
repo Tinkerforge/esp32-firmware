@@ -1,5 +1,5 @@
 /*
-2026b;2026-04-28T11:49:44.660840+00:00
+2026c;2026-07-16T07:55:13.643003+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -94,14 +94,14 @@ static const TableValue Africa_vals[] = {
     {true, {"WAT-1"}},
     {true, {"CAT-2"}},
     {true, {"EET-2EEST,M4.5.5/0,M10.5.4/24"}},
-    {true, {"<+01>-1"}},
+    {true, {"<+00>0"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"GMT0"}},
     {true, {"GMT0"}},
     {true, {"EAT-3"}},
     {true, {"EAT-3"}},
     {true, {"WAT-1"}},
-    {true, {"<+01>-1"}},
+    {true, {"<+00>0"}},
     {true, {"GMT0"}},
     {true, {"CAT-2"}},
     {true, {"CAT-2"}},
@@ -416,7 +416,7 @@ static const TableValue America_vals[] = {
     {true, {"MST7MDT,M3.2.0,M11.1.0"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"AST4"}},
-    {true, {"MST7MDT,M3.2.0,M11.1.0"}},
+    {true, {"CST6"}},
     {true, {"<-05>5"}},
     {true, {"CST6"}},
     {true, {"PST8PDT,M3.2.0,M11.1.0"}},
@@ -519,7 +519,7 @@ static const TableValue America_vals[] = {
     {true, {"MST7"}},
     {true, {"CST6CDT,M3.2.0,M11.1.0"}},
     {true, {"AKST9AKDT,M3.2.0,M11.1.0"}},
-    {true, {"MST7MDT,M3.2.0,M11.1.0"}},
+    {true, {"CST6"}},
 };
 
 static const Table America = {America_keys, America_vals, 147};
