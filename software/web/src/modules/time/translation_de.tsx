@@ -1,0 +1,37 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "time": {
+        "navbar": {
+            "time": "Systemzeit"
+        },
+        "status": {
+            "time": "Systemzeit",
+            "disabled": "Deaktiviert",
+            "not_synced": "Nicht synchronisiert",
+            "synced": "Synchronisiert"
+        },
+        "content": {
+            "time": "Systemzeit",
+            "enable": "Zeitsynchronisierung aktiviert",
+            "enable_desc": "Synchronisiert die interne Zeit über das Netzwerk (NTP)",
+            "use_dhcp": "DHCP verwendet",
+            "use_dhcp_desc": "Verwendet Zeitserver, die per DHCP gesetzt werden",
+            "timezone": "Zeitzone",
+            "use_browser_timezone": "Zeitzone aus Browser übernehmen",
+            "server": "Zeitserver",
+            "server2": "Alternativer Zeitserver",
+            "server2_muted": "optional",
+
+            "ntp": "Zeitsynchronisierung",
+            "live_date": "Aktuelle Systemzeit",
+            "set_time": "Zeit setzen",
+            "enable_auto_sync": "Browserzeit verwendet",
+            "auto_sync_desc": "Setzt die Systemzeit automatisch, wenn das Webinterface geladen wird und keine Zeitsynchronisierung besteht.",
+            "time_not_set": "Zeit nicht gesetzt"
+        },
+        "script": {
+            "save_failed": "Speichern der Systemzeit-Einstellungen fehlgeschlagen."
+        }
+    }
+}

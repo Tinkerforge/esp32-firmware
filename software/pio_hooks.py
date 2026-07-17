@@ -370,6 +370,10 @@ def collect_translation(path, override=False):
 
     tsxs = glob.glob(os.path.join(path, 'translation_*.tsx'))
     jsons = glob.glob(os.path.join(path, 'translation_*.json'))
+
+    if len(jsons) > 0:
+        print(f"Warning: Found translation_*.json in module ({path})! Support for json translations will be removed, please convert to tsx translations!", file=sys.stderr)
+
     if len(tsxs) > 0 and len(jsons) > 0:
         print(f"Found translation_*.tsx and translation_*.json in same module ({path})! Use either tsx or json translations!")
         sys.exit(1)

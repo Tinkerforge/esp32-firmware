@@ -1,0 +1,49 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "wireguard": {
+        "status": {
+            "connection": "WireGuard-Verbindung",
+            "not_configured": "Deaktiviert",
+            "waiting_for_timesync": "Warte auf Zeitsynchronisierung",
+            "not_connected": "Verbinde",
+            "connected": "Verbunden",
+            "peer": "Peer",
+            "connected_since": "Verbunden seit",
+            "disconnected_since": "Getrennt seit"
+        },
+        "navbar": {
+            "wireguard": "WireGuard"
+        },
+        "content": {
+            "wireguard": "WireGuard",
+            "enable_wireguard": "WireGuard aktiviert",
+            "enable_wireguard_desc": "Verbindung wird automatisch aufgebaut, sobald eine Zeitsynchronisierung besteht.",
+            "default_if": "Als Default-Interface verwenden",
+            "default_if_desc": "Bei aktiver WireGuard-Verbindung wird sämtlicher nicht-lokaler Netzwerkverkehr über das VPN geschickt.",
+            "internal_ip": "IP-Adresse im WireGuard-Netz",
+            "internal_subnet": "Subnetzmaske des WireGuard-Netzes",
+            "internal_gateway": "Gateway des WireGuard-Netzes",
+            "remote_host": "Peer-Hostname oder -IP-Adresse",
+            "port": "Peer-Port",
+            "local_port": "Lokaler Port",
+            "private_key": "Eigener privater Schlüssel",
+            "remote_public_key": "Öffentlicher Schlüssel des Peers",
+            "preshared_key": "Preshared-Key",
+            "preshared_key_muted": "optional",
+            "allowed_ip": "Erlaubte Quell-IP-Adresse empfangener Pakete",
+            "allowed_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
+            "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
+            "mtu": "MTU",
+            "mtu_muted": "maximale (innere) Paketgröße im WireGuard-Tunnel",
+            "generate_keypair": "Schlüsselpaar generieren",
+            "generate_keypair_button": "Generieren",
+            "wireguard_public_key": "Eigener öffentlicher Schlüssel",
+            "invalid_private_key": "Ungültiger privater Schlüssel"
+        },
+        "script": {
+            "save_failed": "Speichern der WireGuard-Einstellungen fehlgeschlagen.",
+            "preshared_key_unused": "PSK wird nicht verwendet"
+        }
+    }
+}

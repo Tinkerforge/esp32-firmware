@@ -1,0 +1,23 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "event_log": {
+        "status": {
+
+        },
+        "navbar": {
+            "event_log": "Ereignis-Log"
+        },
+        "content": {
+            "event_log": "Ereignis-Log",
+            "debug_report": "Debug-Report + Ereignis-Log",
+            "debug_report_file": "Debug-Report",
+            "debug_report_no_passwords": "(ohne Passwörter)",
+            "event_log_placeholder": "Lade Ereignis-Log..."
+        },
+        "script": {
+            "load_event_log_error": "Konnte Ereignis-Log nicht laden",
+            "load_debug_report_error": "Konnte Debug-Report nicht laden"
+        }
+    }
+}

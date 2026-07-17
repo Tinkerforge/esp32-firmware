@@ -1,0 +1,22 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "modbus_meter_simulator": {
+        "status": {
+        },
+        "navbar": {
+            "entry": "Modbus Meter Simulator"
+        },
+        "content": {
+            "page_header": "Modbus Meter Simulator",
+            "meter_type": "Zählertyp",
+            "meter_type_muted": "des simulierten Zählers",
+            "meter_type_no_meter": "Kein Zähler",
+            "source_meter_slot": "Zähler für Werte-Ursprung"
+        },
+        "script": {
+            "save_failed": "Speichern der Modbus Meter Simulator-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Modbus Meter Simulator-Einstellungen"
+        }
+    }
+}

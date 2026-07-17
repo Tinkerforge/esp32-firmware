@@ -1,0 +1,49 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "wireguard": {
+        "status": {
+            "connection": "WireGuard connection",
+            "not_configured": "Disabled",
+            "waiting_for_timesync": "Waiting for time synchronization",
+            "not_connected": "Connecting",
+            "connected": "Connected",
+            "peer": "Peer",
+            "connected_since": "Connected since",
+            "disconnected_since": "Disconnected since"
+        },
+        "navbar": {
+            "wireguard": "WireGuard"
+        },
+        "content": {
+            "wireguard": "WireGuard",
+            "enable_wireguard": "WireGuard enabled",
+            "enable_wireguard_desc": "Connection will be established when time synchronization is available.",
+            "default_if": "Use as default interface",
+            "default_if_desc": "While WireGuard connection is established, all non-local traffic is sent over the VPN.",
+            "internal_ip": "IP address in the WireGuard network",
+            "internal_subnet": "Subnet mask of the WireGuard network",
+            "internal_gateway": "Gateway of the WireGuard network",
+            "remote_host": "Peer hostname or IP address",
+            "port": "Peer port",
+            "local_port": "Local port",
+            "private_key": "Own private key",
+            "remote_public_key": "Peer public key",
+            "preshared_key": "Preshared key",
+            "preshared_key_muted": "optional",
+            "allowed_ip": "Allowed source IP address of received packets",
+            "allowed_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
+            "allowed_subnet": "Allowed subnet mask of received packets",
+            "mtu": "MTU",
+            "mtu_muted": "maximum inner packet size in WireGuard tunnel",
+            "generate_keypair": "Generate key pair",
+            "generate_keypair_button": "Generate",
+            "wireguard_public_key": "Own public key",
+            "invalid_private_key": "Invalid private key"
+        },
+        "script": {
+            "save_failed": "Failed to save the WireGuard settings.",
+            "preshared_key_unused": "No PSK in use"
+        }
+    }
+}

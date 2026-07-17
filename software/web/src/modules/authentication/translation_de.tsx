@@ -1,0 +1,29 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "authentication": {
+        "status": {
+
+        },
+        "navbar": {
+            "authentication": "Zugangsdaten"
+        },
+        "content": {
+            "authentication": "Zugangsdaten",
+            "enable_authentication": "Anmeldung aktiviert",
+            "enable_authentication_desc": "Beim Aufrufen des Webinterfaces oder bei Verwendung der HTTP-API muss eine Anmeldung mit den konfigurierten Zugangsdaten durchgeführt werden.",
+
+            "username": "Benutzername",
+            "password": "Passwort",
+
+            "disable_auth": "Zugangsdaten löschen und Anmeldung deaktivieren",
+            "disable_auth_title": "Anmeldung deaktivieren",
+            "disable_auth_body": "Sollen die Zugangsdaten gelöscht und die Anmeldung aktiviert werden? Aufrufen des Webinterfaces oder Verwendung der HTTP-API ist dann ohne Anmeldung möglich.",
+            "disable_auth_abort": "Abbrechen",
+            "disable_auth_confirm": "Deaktivieren"
+        },
+        "script": {
+            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen."
+        }
+    }
+}

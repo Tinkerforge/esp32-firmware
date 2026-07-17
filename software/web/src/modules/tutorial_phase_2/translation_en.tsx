@@ -1,0 +1,17 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "tutorial_phase_2": {
+        "status": {
+        },
+        "navbar": {
+            "tutorial_phase_2": "Tutorial (Phase 2)"
+        },
+        "content": {
+            "tutorial_phase_2": "Tutorial (Phase 2)",
+            "color": "Color"
+        },
+        "script": {
+        }
+    }
+}

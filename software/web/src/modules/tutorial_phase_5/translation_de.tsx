@@ -1,0 +1,22 @@
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
+    "tutorial_phase_5": {
+        "status": {
+        },
+        "navbar": {
+            "tutorial_phase_5": "Tutorial (Phase 5)"
+        },
+        "content": {
+            "tutorial_phase_5": "Tutorial (Phase 5)",
+            "color": "Farbe",
+            "button": "Taster"
+        },
+        "script": {
+            "save_config_failed": "Konnte Farbe nicht speichern",
+            "button_unknown": "Unbekannt",
+            "button_pressed": "Gedrückt",
+            "button_released": "Losgelassen"
+        }
+    }
+}
