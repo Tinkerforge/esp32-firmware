@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
+from pypdf import PdfReader, PdfWriter
 from tinkerforge_util.colored import red, green, blink, cyan
 import tinkerforge_util as tfutil
 
@@ -728,6 +729,16 @@ def led_wrap():
             files_to_commit.append(shipping_label_path)
 
             print(f"Printing packing slip {packing_slip_path}")
+
+            folding_marks_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'folding_marks.pdf'))
+            folding_marks = PdfReader(folding_marks_path).pages[0]
+
+            pdf_writer = PdfWriter(clone_from=packing_slip_path)
+
+            for page in pdf_writer.pages:
+                page.merge_page(folding_marks, over=False)
+
+            pdf_writer.write(packing_slip_path)
 
             if os.system(f'pdftops {packing_slip_path} - | lpr') != 0:
                 fatal_error(f"Could not print packing slip")
