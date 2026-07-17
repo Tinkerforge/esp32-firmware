@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 import { CASState } from "modules/charge_manager/generated/cas_state.enum";
 import { CASError } from "modules/charge_manager/generated/cas_error.enum";
@@ -26,13 +26,13 @@ let x = {
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
-                <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> : <span>charge management</span>} among the chargers.</p>
+                <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`}>charge management</a> : <span>charge management</span>} among the chargers.</p>
                 <ul>
                     <li><strong>Disabled:</strong> No charge management is performed by a WARP device. External control via the HTTP and MQTT APIs, for example by EVCC, is still possible.</li>
                     {has_managed_mode ?
                         <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another WARP device. No further settings are required.</li>
                         : undefined}
-                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV excess charging</a> : <span>PV excess charging</span>}. Additional settings must be configured.</li>
+                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`}>PV excess charging</a> : <span>PV excess charging</span>}. Additional settings must be configured.</li>
                 </ul>
             </>/*NF*/,
             "enable_watchdog": "Watchdog enabled",

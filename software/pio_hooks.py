@@ -12,12 +12,13 @@ import hashlib
 from base64 import b64encode
 from collections import namedtuple
 import tomllib
+import tree_sitter
+import tree_sitter_typescript
 import tinkerforge_util as tfutil
 import util
 from pyphen import Pyphen
 from hyphenations import hyphenations, allowed_missing
 from web.tfpp import tfpp_lines, tfpp_paths
-import shlex
 
 env = None
 
@@ -326,10 +327,6 @@ TSX_ADDITIONAL_HEADER_LINES = [
     'import { toLocaleFixed } from "./src/ts/util";',
     'import { __ } from "../../ts/translation";',
     'import { __ } from "./src/ts/translation";',
-    'import { removeUnicodeHacks } from "../../ts/translation";',
-    'import { removeUnicodeHacks } from "./src/ts/translation";',
-    'import { __, removeUnicodeHacks } from "../../ts/translation";',
-    'import { __, removeUnicodeHacks } from "./src/ts/translation";',
     'import * as options from "../../options";',
     'import * as options from "./src/options";',
     re.compile(r'import \{ [^\s\}]+ \} from "modules/[^"]+\.enum";\n'),
@@ -427,75 +424,100 @@ HYPHENATE_THRESHOLD = 8
 
 missing_hyphenations = {}
 
-def should_be_hyphenated(x):
-    return x not in allowed_missing and not x.startswith("***START_FRAGMENT***") and not x.endswith("***END_FRAGMENT***")
-
-def hyphenate(s, key, lang):
-    if '\u00AD' in s:
-        print("Found unicode soft hyphen in translation value {}: {}".format(key, s.replace('\u00AD', "___HERE___")))
+def hyphenate(text, lang):
+    if '\u00AD' in text:
+        print("Found unicode soft hyphen in translation value: {}".format(text.replace('\u00AD', "___HERE___")))
         sys.exit(1)
 
-    if '&shy;' in s:
-        print("Found HTML entity soft hyphen in translation value {}: {}".format(key, s))
+    if '&shy;' in text:
+        print("Found HTML entity soft hyphen in translation value: {}".format(text))
         sys.exit(1)
-
-    # s could be a string or fragment function. We don't want to hyphenate the translation keys in __() calls used in those.
-    # To prevent re.split(r'\W+', s) from seeing the key components (for example in __("power_manager.automation.foo") "automation" should not be hyphenated)
-    # "escape" them with a string that is probably not used in keys but does not form a word boundary: 'ÄÖÜÄÖÜ'
-    s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace(".", "ÄÖÜÄÖÜ")}")', s)
-
-    # Escape style attributes to prevent hyphenation of CSS property names like "background-color"
-    style_placeholders = []
-    def escape_style(match):
-        style_placeholders.append(match.group(0))
-        return f'___STYLE_{len(style_placeholders) - 1}___'
-    s = re.sub(r'style=\{[^}]+\}|style="[^"]+"', escape_style, s)
-
-    # Escape href attributes to prevent hyphenation of URLs
-    href_placeholders = []
-    def escape_href(match):
-        href_placeholders.append(match.group(0))
-        return f'___HREF_{len(href_placeholders) - 1}___'
-    s = re.sub(r'href=\{[^}]+\}|href="[^"]+"', escape_href, s)
 
     def repl(m: re.Match):
         word = m.group(0)
 
-        for l, r in hyphenations:
-            if word == l:
-                return r
+        for left, right in hyphenations:
+            if word == left:
+                return right
         else:
-            is_too_long = len(word) > HYPHENATE_THRESHOLD
-            is_camel_case = re.search(r'[a-z][A-Z]', word) is not None
-            is_snake_case = "_" in word
-            is_escaped = 'ÄÖÜÄÖÜ' in word
-            if is_too_long and not is_camel_case and not is_snake_case and not is_escaped and should_be_hyphenated(word):
+            if len(word) > HYPHENATE_THRESHOLD and word not in allowed_missing:
                 missing_hyphenation = missing_hyphenations.setdefault(lang, [])
 
                 if word not in missing_hyphenation:
                     missing_hyphenation.append(word)
             return word
 
-    s = re.sub(r'\w+', repl, s)
+    return re.sub(r'\w+', repl, text)
 
-    # Reverse escaping of style attributes.
-    for i, style in enumerate(style_placeholders):
-        s = s.replace(f'___STYLE_{i}___', style)
+def hyphenate_translation(translation, language):
+    translation = translation.encode('utf-8')
+    translation_rows = translation.split(b'\n')
+    last_end_point_ref = [tree_sitter.Point(0, 0)]
+    tree = tree_sitter.Parser(tree_sitter.Language(tree_sitter_typescript.language_tsx())).parse(translation, encoding='utf8')
 
-    # Reverse escaping of href attributes.
-    for i, href in enumerate(href_placeholders):
-        s = s.replace(f'___HREF_{i}___', href)
+    def get_text(start_point, end_point):
+        rows = []
 
-    # Reverse escaping of translation keys.
-    s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace("ÄÖÜÄÖÜ", ".")}")', s)
+        for row in range(start_point.row, end_point.row + 1):
+            if row == start_point.row and row == end_point.row:
+                rows.append(translation_rows[row][start_point.column:end_point.column])
+            elif row == start_point.row:
+                rows.append(translation_rows[row][start_point.column:])
+            elif row == end_point.row:
+                rows.append(translation_rows[row][:end_point.column])
+            else:
+                rows.append(translation_rows[row])
 
-    return s
+        return b'\n'.join(rows).decode('utf-8')
 
-def hyphenate_translation(translation, parent_key=None, lang=None):
-    if parent_key == None:
-        parent_key = []
+    def get_parent_types(node):
+        parent = node.parent
+        parent_types = []
 
-    return {key: (hyphenate(value, key, lang if lang is not None else key) if isinstance(value, str) else hyphenate_translation(value, parent_key + [key], lang if lang is not None else key)) for key, value in translation.items()}
+        while parent != None:
+            parent_types.append(parent.type)
+            parent = parent.parent
+
+        return list(reversed(parent_types))
+
+    def process_node(node, last_end_point_ref, do_hyphenate):
+        output = []
+
+        if node.child_count == 0:
+            prefix = get_text(last_end_point_ref[0], node.start_point)
+            text = get_text(node.start_point, node.end_point)
+            last_end_point_ref[0] = node.end_point
+
+            if (node.type == 'string_fragment' and do_hyphenate) or node.type == 'jsx_text':
+                text = hyphenate(text, language)
+
+            output += [prefix, text]
+        else:
+            do_hyphenate_children = do_hyphenate \
+                                    or (node.type == 'object' \
+                                    and get_parent_types(node) == ['program', 'lexical_declaration', 'variable_declarator', 'as_expression'] \
+                                    and node.parent.parent.children[0].type == 'identifier' \
+                                    and node.parent.parent.children[0].text in [b'translation_de', b'translation_en'])
+
+            for i, child in enumerate(node.children):
+                do_hyphenate_child = do_hyphenate_children
+
+                if do_hyphenate_child:
+                    if node.type == 'pair' and node.parent.type == 'object' and i == 0 and child.type == 'string':
+                        # don't hyphenate object string keys
+                        do_hyphenate_child = False
+                    elif node.type == 'string' and node.parent.type == 'subscript_expression':
+                        # don't hyphenate object subscripts with string keys
+                        do_hyphenate_child = False
+                    elif child.type in ['call_expression', 'jsx_attribute', 'literal_type']:
+                        # don't hyphenate string arguments for function call and strings in JSX attributes and literal types
+                        do_hyphenate_child = False
+
+                output += process_node(child, last_end_point_ref, do_hyphenate_child)
+
+        return output
+
+    return ''.join(process_node(tree.root_node, last_end_point_ref, False)) + get_text(last_end_point_ref[0], tree.root_node.end_point)
 
 def remove_files(path, filenames):
     path = os.path.abspath(path)
@@ -1819,25 +1841,6 @@ def main():
         update_translation(translation, collect_translation(mod_path, override=True), override=True)
 
     check_translation(translation)
-    translation = hyphenate_translation(translation)
-
-    global missing_hyphenations
-    if len(missing_hyphenations) > 0:
-        print("Missing hyphenations detected. Add those to hyphenations.py!")
-        dicts = None
-        langs = {
-            'de': 'de_DE',
-            'en': 'en_US'
-        }
-        dicts = {k: Pyphen(lang=langs[k]) for k in missing_hyphenations.keys()}
-
-        for lang, lst in missing_hyphenations.items():
-            print("  {}".format(lang))
-            for x in lst:
-                if dicts is None:
-                    print("    {}".format(x))
-                else:
-                    print('    "{}",'.format(dicts[lang].inserted(x)))
 
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
@@ -2019,7 +2022,8 @@ def main():
     for language in sorted(translation):
         formatted = format_translation(language, translation[language], False, '')
         formatted = replace_placeholders_in_placeholders(language, formatted)
-        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(formatted))
+        formatted = 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(formatted))
+        translation_str += hyphenate_translation(formatted, language)
 
     translation_str += 'const translation: {[index: string]: Translation} = {\n'
 
@@ -2033,6 +2037,24 @@ def main():
         '{{{additional_imports}}}': "".join(sorted(additional_imports)),
         '{{{translation}}}': translation_str,
     })
+
+    global missing_hyphenations
+    if len(missing_hyphenations) > 0:
+        print("Missing hyphenations detected. Add those to hyphenations.py!")
+        dicts = None
+        langs = {
+            'de': 'de_DE',
+            'en': 'en_US'
+        }
+        dicts = {k: Pyphen(lang=langs[k]) for k in missing_hyphenations.keys()}
+
+        for lang, lst in missing_hyphenations.items():
+            print("  {}".format(lang))
+            for x in lst:
+                if dicts is None:
+                    print("    {}".format(x))
+                else:
+                    print('    "{}",'.format(dicts[lang].inserted(x)))
 
     # Generate enums
     for backend_module in backend_modules:

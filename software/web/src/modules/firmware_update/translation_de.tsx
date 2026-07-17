@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 let x = {
     "firmware_update": {
         "status": {
@@ -10,7 +10,7 @@ let x = {
                 let result = [<>{`Firmware ${rolled_back_version} scheint instabil zu sein. Es wurde automatisch auf die vorherige Firmware ${version} zurückgewechselt.`}</>];
 
                 if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} Firmware ${rolled_back_version} scheint instabil`)}>{options.SUPPORT_EMAIL}</a> schicken.</>);
+                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} Firmware ${rolled_back_version} scheint instabil`}>{options.SUPPORT_EMAIL}</a> schicken.</>);
                 }
 
                 return <>{result}</>;

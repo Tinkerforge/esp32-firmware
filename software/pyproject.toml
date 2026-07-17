@@ -9,6 +9,8 @@ dependencies = [
     "nodeenv",
     "tinkerforge >= 2.1.31", # 2.1.31 adds Industrial Dual AC In Bricklet
     "tinkerforge_util >= 1.6.0",
+    "tree-sitter == 0.25.*", # need to wait for this bug fix to released: https://github.com/tree-sitter/py-tree-sitter/issues/472
+    "tree-sitter-typescript",
 ]
 
 [dependency-groups]

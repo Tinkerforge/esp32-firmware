@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 import { CASState } from "modules/charge_manager/generated/cas_state.enum";
 import { CASError } from "modules/charge_manager/generated/cas_error.enum";
@@ -26,13 +26,13 @@ let x = {
             "charge_manager_chargers": "Wallboxen",
             "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
-                <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>Lastmanagement</a> : <span>Lastmanagement</span>} zwischen den Wallboxen.</p>
+                <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`}>Lastmanagement</a> : <span>Lastmanagement</span>} zwischen den Wallboxen.</p>
                 <ul>
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement durch WARP-Geräte statt. Fremdsteuerung über die HTTP- und MQTT-APIs, zum Beispiel durch EVCC, ist weiterhin möglich.</li>
                     {has_managed_mode ?
                         <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen WARP-Gerät kontrolliert. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
                         : undefined}
-                    <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV-Überschussladen</a> : <span>PV-Überschussladen</span>} ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
+                    <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`}>PV-Überschussladen</a> : <span>PV-Überschussladen</span>} ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
                 </ul>
             </>/*NF*/,
             "enable_watchdog": "Watchdog aktiviert",

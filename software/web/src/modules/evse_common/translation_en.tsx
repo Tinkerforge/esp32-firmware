@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 let x = {
@@ -49,10 +49,10 @@ let x = {
             "error_state": "Error state",
             "error_state_help": <>
                 <ul>
-                    <li><p><strong>Switch error:</strong> The charger was not installed correctly. The charge controller's switch setting remains at its factory default.{options.WARP_DOC_BASE_URL.length > 0 ? <span> See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Charging current configuration</a>.</span> : undefined}</p></li>
+                    <li><p><strong>Switch error:</strong> The charger was not installed correctly. The charge controller's switch setting remains at its factory default.{options.WARP_DOC_BASE_URL.length > 0 ? <span> See <a href={`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`}>Charging current configuration</a>.</span> : undefined}</p></li>
                     <li><p><strong>DC error:</strong> A DC fault current has been detected. The error can be reset either via the charger's website or by briefly disconnecting the charger's power supply.</p> </li>
                     <li><p><strong>Contactor/PE error:</strong> One of the contactors is not switching correctly (see contactor check/status), phase L1 is de-energized, or an earth fault is present.</p></li>
-                    <li><p><strong>Communication error:</strong> An error occurred during communication with the vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process).{options.WARP_DOC_BASE_URL.length > 0 ? <span> If the problem persists, see the <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`)}>instructions</a>.</span> : undefined}</p></li>
+                    <li><p><strong>Communication error:</strong> An error occurred during communication with the vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process).{options.WARP_DOC_BASE_URL.length > 0 ? <span> If the problem persists, see the <a href={`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`}>instructions</a>.</span> : undefined}</p></li>
                 </ul>
             </>,
             "error_ok": "OK",

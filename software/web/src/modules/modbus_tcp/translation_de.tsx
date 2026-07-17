@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "modbus_tcp": {
         "navbar": {
@@ -226,7 +225,7 @@ let x = {
                         <td>weitere Stromzähler-Werte</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API-Dokumentation</a></span> : undefined}</td>
+                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>Siehe <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meter/#meter_all_values_any`}>API-Dokumentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>

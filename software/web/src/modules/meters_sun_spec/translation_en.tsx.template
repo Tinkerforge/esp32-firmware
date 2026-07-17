@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "meters_sun_spec": {
         "status": {
@@ -35,7 +34,7 @@ let x = {
                 let result = [<>An error occurred during the device search.</>];
 
                 if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Please download the log and send it to <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=Error during SunSpec device search`)}>{options.SUPPORT_EMAIL}</a>.</>);
+                    result.push(<> Please download the log and send it to <a href={`mailto:${options.SUPPORT_EMAIL}?subject=Error during SunSpec device search`}>{options.SUPPORT_EMAIL}</a>.</>);
                 }
 
                 return <>{result}</>;

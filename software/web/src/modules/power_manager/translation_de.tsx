@@ -2,7 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { toLocaleFixed } from "../../ts/util";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 let x = {
     "power_manager": {
         "status": {
@@ -30,7 +30,7 @@ let x = {
 
             "header_excess_charging": "PV-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
-            "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>Das <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>Tutorial PV-Überschussladen</a> hilft bei der Einrichtung.</p> : undefined/*NF*/,
+            "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>Das <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`}>Tutorial PV-Überschussladen</a> hilft bei der Einrichtung.</p> : undefined/*NF*/,
             "enable_excess_charging_desc": "Regelt die kontrollierten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart verwendet",

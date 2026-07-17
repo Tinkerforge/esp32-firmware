@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 let x = {
     "system": {
         "status": {
@@ -35,7 +35,7 @@ let x = {
                 let result = [<>__("The_device") wurde {reason_str} unerwartet neu gestartet.</>];
 
                 if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} mit Firmware ${version} wurde unerwartet neu gestartet`)}>{options.SUPPORT_EMAIL}</a> schicken.</>);
+                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} mit Firmware ${version} wurde unerwartet neu gestartet`}>{options.SUPPORT_EMAIL}</a> schicken.</>);
                 }
 
                 return <>{result}</>;

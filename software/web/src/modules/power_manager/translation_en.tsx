@@ -2,7 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { toLocaleFixed } from "../../ts/util";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 let x = {
     "power_manager": {
         "status": {
@@ -30,7 +30,7 @@ let x = {
 
             "header_excess_charging": "PV Excess Charging",
             "enable_excess_charging": "Excess charging enabled",
-            "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>The <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>tutorial PV-excess-charging</a> helps configuring this.</p> : undefined/*NF*/,
+            "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>The <a href={`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`}>tutorial PV-excess-charging</a> helps configuring this.</p> : undefined/*NF*/,
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charge mode",
             "default_mode_muted": "will be used after reboot",

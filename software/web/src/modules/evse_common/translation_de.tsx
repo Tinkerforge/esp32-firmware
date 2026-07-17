@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 let x = {
@@ -49,10 +49,10 @@ let x = {
             "error_state": "Fehlerzustand",
             "error_state_help": <>
                 <ul>
-                    <li><p><strong>Schalterfehler:</strong> Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand.{options.WARP_DOC_BASE_URL.length > 0 ? <span> Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Einstellen des Ladestroms</a>.</span> : undefined}</p></li>
+                    <li><p><strong>Schalterfehler:</strong> Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand.{options.WARP_DOC_BASE_URL.length > 0 ? <span> Siehe <a href={`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`}>Einstellen des Ladestroms</a>.</span> : undefined}</p></li>
                     <li><p><strong>DC-Fehler:</strong> Ein DC-Fehlerstrom wurde erkannt. Der Fehler kann entweder über die Webseite der Wallbox oder über ein kurzzeitiges Trennen der Stromversorgung der Wallbox zurückgesetzt werden.</p></li>
                     <li><p><strong>Schützfehler/PE-Fehler:</strong> Eines der Schütze schaltet nicht korrekt (Siehe Schützprüfung/-zustand), Phase L1 ist stromlos oder Erdungsfehler.</p></li>
-                    <li><p><strong>Kommunikationsfehler:</strong> Fehler bei der Kommunikation mit dem Fahrzeug. Bei erstmaligem Auftreten das Ladekabel vom Fahrzeug trennen, 10 Sekunden warten und das Ladekabel erneut mit dem Fahrzeug verbinden (erneuter Ladevorgang).{options.WARP_DOC_BASE_URL.length > 0 ? <span> Sollte das Problem bestehen bleiben siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`)}>Anleitung</a>.</span> : undefined}</p></li>
+                    <li><p><strong>Kommunikationsfehler:</strong> Fehler bei der Kommunikation mit dem Fahrzeug. Bei erstmaligem Auftreten das Ladekabel vom Fahrzeug trennen, 10 Sekunden warten und das Ladekabel erneut mit dem Fahrzeug verbinden (erneuter Ladevorgang).{options.WARP_DOC_BASE_URL.length > 0 ? <span> Sollte das Problem bestehen bleiben siehe <a href={`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`}>Anleitung</a>.</span> : undefined}</p></li>
                 </ul>
             </>,
             "error_ok": "OK",
