@@ -160,7 +160,7 @@ public:
     uint64_t timeout_task = 0;
     uint64_t state_machine_task = 0;
 
-    void frame_received(httpd_ws_frame_t *ws_pkt);
+    esp_err_t frame_received(httpd_ws_frame_t *ws_pkt);
 
     void schedule_close(millis_t delay_ms, const String &reason = "");
 

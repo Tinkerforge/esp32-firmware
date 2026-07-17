@@ -154,11 +154,11 @@ void ShipConnection::start_client_confirm()
             1_s);
 }
 
-void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
+esp_err_t ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
     if (ws_pkt->len < 2) {
         eebus.trace_fmtln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
-        return;
+        return ESP_FAIL;
     }
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     if (state != ShipConnectionState::Done) {
@@ -176,7 +176,7 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         eebus.trace_fmtln("frame_received: ws frame too big for the buffer. Current index: %zu, incoming length: %d, max buffer size: %d", message_incoming->multipart_index, ws_pkt->len, SHIP_CONNECTION_MAX_BUFFER_SIZE);
         message_incoming->multipart_index = SIZE_MAX;
         message_incoming->length = 0;
-        return;
+        return ESP_FAIL;
     }
     memcpy(message_incoming->data + sizeof(uint8_t) * (message_incoming->multipart_index), ws_pkt->payload, ws_pkt->len);
 
@@ -189,12 +189,11 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         ws_mode = WebsocketMode::HttpThreadCb;
         state_machine_next_step();
     }
-    if (ws_mode == WebsocketMode::HttpThreadCbFail) {
-        // TODO: Provide return value to indicate failure
-    } else {
-        // TODO: Provide return value to indicate success
-    }
     ws_mode = WebsocketMode::TaskScheduler;
+    if (ws_mode == WebsocketMode::HttpThreadCbFail) {
+        return ESP_FAIL;
+    }
+    return ESP_OK;
 }
 
 void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
