@@ -367,23 +367,40 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
         return ProtocolState::None;
     }
 
-    // TODO: Either search the first '"' or use a proper json parser
-    // We assume the json message starts with{""
-    const int start_pos = 1 + strlen("{\"");
+    const char *buf = reinterpret_cast<const char *>(message_incoming->data) + 1;
+    const size_t buf_len = message_incoming->length - 1;
 
-    if (strncmp((char *)&message_incoming->data[start_pos], "connectionHello", strlen("connectionHello")) == 0) {
-        return ProtocolState::ConnectionHello;
-    } else if (strncmp((char *)&message_incoming->data[start_pos], "messageProtocolHandshake", strlen("messageProtocolHandshake")) == 0) {
-        return ProtocolState::MessageProtocolHandshake;
-    } else if (strncmp((char *)&message_incoming->data[start_pos], "connectionPinState", strlen("connectionPinState")) == 0) {
-        return ProtocolState::ConnectionPinState;
-    } else if (strncmp((char *)&message_incoming->data[start_pos], "accessMethodsRequest", strlen("accessMethodsRequest")) == 0) {
-        return ProtocolState::AccessMethodsRequest;
-    } else if (strncmp((char *)&message_incoming->data[start_pos], "accessMethods", strlen("accessMethods")) == 0) {
-        return ProtocolState::AccessMethods;
-    } else if (strncmp((char *)&message_incoming->data[start_pos], "data", strlen("data")) == 0) {
-        return ProtocolState::Data;
+    // Find first " in the string, use that as a start point
+    const char *key_start = (const char *)memchr(buf, '"', buf_len);
+    if (!key_start) return ProtocolState::Unknown;
+    key_start++;
+
+    // find second " in the string. That should signal the end of the first json key
+    const char *key_end = (const char *)memchr(key_start, '"', buf_len - (key_start - buf));
+    if (!key_end) return ProtocolState::Unknown;
+
+    const size_t key_len = (key_end - key_start);
+
+#define KEY_IS(literal) (key_len == (sizeof(literal) - 1) && memcmp(key_start, literal, key_len) == 0)
+
+    switch (key_start[0]) {
+        case 'c':
+            if (KEY_IS("connectionHello")) return ProtocolState::ConnectionHello;
+            if (KEY_IS("connectionPinState")) return ProtocolState::ConnectionPinState;
+            break;
+        case 'm':
+            if (KEY_IS("messageHello")) return ProtocolState::ConnectionHello;
+            break;
+        case 'a':
+            if (KEY_IS("accessMethodsRequest")) return ProtocolState::AccessMethodsRequest;
+            if (KEY_IS("accessMethods")) return ProtocolState::AccessMethods;
+            break;
+        case 'd':
+            if (KEY_IS("data")) return ProtocolState::Data;
+            break;
+        default: return ProtocolState::Unknown;
     }
+#undef KEY_IS
 
     return ProtocolState::Unknown;
 }
