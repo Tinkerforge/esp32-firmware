@@ -722,7 +722,7 @@ def led_wrap():
             except:
                 fatal_error(f"Could not ship order")
 
-            print(output)
+            print(output.decode('utf-8'))
 
             files_to_commit.append(packing_slip_path)
             files_to_commit.append(shipping_label_path)
