@@ -96,9 +96,9 @@ void OveR37::register_urls()
 
         int rc = evse_v2.set_ove_r37_configuration(
             config_update.get("enabled")->asBool(),
-            config_update.get("undervoltage_threshold")->asUint16(),
-            config_update.get("undervoltage_observation_time")->asUint16(),
-            config_update.get("reconnect_wait_time")->asUint16(),
+            static_cast<uint16_t>(config_update.get("undervoltage_threshold")->asUint()),
+            static_cast<uint16_t>(config_update.get("undervoltage_observation_time")->asUint()),
+            static_cast<uint16_t>(config_update.get("reconnect_wait_time")->asUint()),
             0 // start_delay
         );
 
