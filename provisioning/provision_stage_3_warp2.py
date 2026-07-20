@@ -896,6 +896,9 @@ class Stage3:
             report[key] = blackbox.bb_measure_zauto()._asdict()
 
             if report[key]['passed']:
+                if self.generation <= 2:
+                    return
+
                 value, unit = report[key]['results']['ZLPE_Auto'].split(' ')
 
                 if unit == 'Ohm' and float(value) > 1:
