@@ -1489,14 +1489,10 @@ void ShipConnection::to_json_access_methods_type()
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = eebus.get_eebus_name();
 
-    json_am.createNestedObject().createNestedArray("dnsSd_mDns");
-
-#if 0
-    // This is standard conform, but ship-go does not accept it. remove it for now..
-    JsonArray dns = json_am.createNestedObject().createNestedArray("dns");
-    JsonObject uri = dns.createNestedObject();
-    uri["uri"] = "wss://192.168.0.33:4712/ship/"; // TODO
-#endif
+    JsonArray dns_mdns = json_am.createNestedObject().createNestedArray("dnsSd_mDns");
+    // Note: as of SHIP 1.0.1 this array is empty but shall be provided if the service is announced via mdns.
+    // Subsequent versions may required sub elements to be provided
+    // Since we are not providing our SHIP service via unicast DNS, we do not need the "dns" element
 
     message_outgoing->data[0] = 1;
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
