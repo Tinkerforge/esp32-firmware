@@ -2845,7 +2845,11 @@ search_done:
     size_t current_charge_idx = 0;
 
     int rc = init_pdf_generator(callback,
+#if OPTIONS_PRODUCT_ID_IS_ELTAKO()
+                       english ? "ELTAKO Charge Log" : "ELTAKO Ladelog",
+#else
                        english ? "WARP Charge Log" : "WARP Ladelog",
+#endif
                        stats_buf, (params->electricity_price == 0) ? 5 : 6,
                        params->letterhead_buf.get(), params->letterhead_lines,
                        english ? table_header_en : table_header_de,
