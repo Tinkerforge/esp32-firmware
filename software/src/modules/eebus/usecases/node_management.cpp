@@ -216,7 +216,6 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
                     has_feature = true;
                     for (auto function : feature.description->supportedFunction.get()) {
                         i.description->supportedFunction->push_back(function);
-                        // TODO: Check if this function already exists
                     }
                 }
             }

@@ -742,7 +742,7 @@ void ShipConnection::hello_decide_prolongation()
     }
     // If we are not ready
     if (this_hello_phase.phase == ConnectionHelloPhase::Type::Pending) {
-        //TODO: Decide what to do if we are not ready
+        eebus.trace_fmtln("Reached hello pending state that should not be reached and is not properly handled!");
     }
 }
 

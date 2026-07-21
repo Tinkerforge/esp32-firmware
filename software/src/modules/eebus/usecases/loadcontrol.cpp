@@ -281,8 +281,7 @@ bool LoadPowerLimitUsecase::update_limit(bool limit, int current_limit_w, const 
             return false;
         }
     }
-    // TODO: Add more limit validation here.
-    // For example: Can this limit be applied electrically.
+    // If we need to add more checks to LPC limit commands, add them here.
 
     configured_limit = current_limit_w;
 
