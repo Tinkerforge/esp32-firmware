@@ -36,6 +36,17 @@ from provisioning.provision_common.provision_common import *
 from provisioning.ntpserver import start_ntpserver
 from provisioning.xmc_flash_bootloader import xmc_flash_bootloader
 
+UID_DENYLIST = []
+
+evse_tester_path = Path("../../flash-test/src/flash-test/plugin_system/evse_v4_tester.py")
+if evse_tester_path.is_file():
+    evse_locals = {"__file__": str(evse_tester_path.absolute())}
+
+    exec(evse_tester_path.read_text().split("\n# Keep all relative imports below this line!\n")[0], {}, evse_locals)
+
+    UID_DENYLIST += [v for k, v in evse_locals.items() if k.startswith("UID_")]
+
+
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
                     args=(), kwargs={}, Verbose=None):
@@ -644,6 +655,9 @@ class P:
 
             def search_devices(uid, connected_uid, position, hardware_version, firmware_version,
                                device_identifier, enumeration_type):
+                if uid in UID_DENYLIST:
+                    return
+
                 nonlocal idr_uids
                 nonlocal idai_uids
                 nonlocal btn_uids
