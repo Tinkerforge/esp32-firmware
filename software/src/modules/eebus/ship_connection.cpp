@@ -1489,7 +1489,7 @@ void ShipConnection::to_json_access_methods_type()
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = eebus.get_eebus_name();
 
-    JsonArray dns_mdns = json_am.createNestedObject().createNestedArray("dnsSd_mDns");
+    json_am.createNestedObject().createNestedArray("dnsSd_mDns");
     // Note: as of SHIP 1.0.1 this array is empty but shall be provided if the service is announced via mdns.
     // Subsequent versions may required sub elements to be provided
     // Since we are not providing our SHIP service via unicast DNS, we do not need the "dns" element
