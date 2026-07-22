@@ -41,8 +41,9 @@ export class OveR37Navbar extends Component {
             <NavbarItem
                 name="ove_r37"
                 module="ove_r37"
-                // Only show the OVE R 37 menu entry when the charger is configured for Austria.
-                hidden={API.get("system/country_config")?.country !== Country.Austria}
+                // Only show the OVE R 37 menu entry when the charger is configured for Austria
+                // or OVE R 37 is enabled (so it stays visible if the country is changed later).
+                hidden={API.get("system/country_config")?.country !== Country.Austria && !API.get("ove_r37/config")?.enabled}
                 title={__("ove_r37.navbar.ove_r37")}
                 symbol={
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
