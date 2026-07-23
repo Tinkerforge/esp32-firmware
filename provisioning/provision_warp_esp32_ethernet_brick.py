@@ -170,6 +170,37 @@ def connect_ethernet(ip):
 
     print(" Connected.")
 
+def api_request(request, timeout, ignore_404, error_message):
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as f:
+            return f.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        if ignore_404 and e.code == 404:
+            return ""
+        else:
+            fatal_error(f"{error_message}: {e} -- {e.read()}")
+    except Exception as e:
+        fatal_error(f"{error_message}: {e}")
+
+def api_get(ip, api, *, timeout=10, ignore_404=False, error_message=None):
+    request = urllib.request.Request(f"http://{ip}/{api}")
+
+    if error_message == None:
+        error_message = f"Failed to GET from API {api}"
+
+    return api_request(request, timeout, ignore_404, error_message)
+
+def api_put(ip, api, params, *, timeout=10, ignore_404=False, error_message=None):
+    request = urllib.request.Request(f"http://{ip}/{api}",
+                                     data=json.dumps(params).encode("utf-8"),
+                                     method='PUT',
+                                     headers={"Content-Type": "application/json"})
+
+    if error_message == None:
+        error_message = f"Failed to PUT {params} to API {api}"
+
+    return api_request(request, timeout, ignore_404, error_message)
+
 def test_rtc_time(ip, wait_for_ntp):
     print("Testing RTC")
     if wait_for_ntp:
@@ -341,29 +372,10 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
 
     result["rtc_test_successful"] = True
 
-    try:
-        with urllib.request.urlopen(f"http://{ethernet_ip}/ntp/config_reset", timeout=1) as f:
-            f.read()
-    except:
-        traceback.print_exc()
-        fatal_error("Failed to re-enable NTP")
-
-    try:
-        with urllib.request.urlopen(f"http://{ethernet_ip}/ethernet/config_reset", timeout=1) as f:
-            f.read()
-    except:
-        traceback.print_exc()
-        fatal_error("Failed to re-enable NTP")
-
-    try:
-        with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
-            f.read()
-    except Exception as e:
-        traceback.print_exc()
-        fatal_error("Failed to enable hidden_proxy!")
+    api_put(ethernet_ip, "config/reset", "ntp/config", error_message="Failed to re-enable NTP")
+    api_get(ethernet_ip, "hidden_proxy/enable")
 
     time.sleep(3)
-
     ipcon.connect(ethernet_ip, 4223)
 
     result["tests_successful"] = True
@@ -371,6 +383,8 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
 
     rgb_led = BrickletRGBLEDV2(rgb_led_uid, ipcon)
     rgb_led.set_rgb_value(0, 127, 0)
+
+    api_put(ethernet_ip, "config/reset", "ethernet/config", error_message="Failed to re-enable ethernet DHCP")
 
     print(green("All tests successful!"))
 
