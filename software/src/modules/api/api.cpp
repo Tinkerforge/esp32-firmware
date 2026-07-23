@@ -230,7 +230,7 @@ void API::addCommand(const String &path, ConfigRoot *config, const std::vector<c
     this->addCommand(perm_strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
-void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
+void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency, bool persistent_config)
 {
     if (boot_stage != BootStage::REGISTER_URLS)
         esp_system_abort("Registering APIs is only allowed in register_urls!");
@@ -291,7 +291,8 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
     uint32_t state_data = (path_len       & 0xFF) << 24
                         | (ktc_size       & 0xFF) << 16
                         | (ktc_debug_size & 0xFF) <<  8
-                        | (low_latency    & 0xFF) <<  0;
+                        | (low_latency       ? 0x80 : 0x00)
+                        | (persistent_config ? 0x40 : 0x00);
 
     reg_collector->states.push_back({
         path,
@@ -314,9 +315,9 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 #endif
 }
 
-void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
+void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency, bool persistent_config)
 {
-    this->addState(perm_strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency);
+    this->addState(perm_strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency, persistent_config);
 }
 
 bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
@@ -334,7 +335,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         return false;
     }
 
-    addState(path, config, keys_to_censor, keys_to_censor_in_debug_report);
+    addState(path, config, keys_to_censor, keys_to_censor_in_debug_report, false, true);
 
     std::vector<const char *> ktc;
     ktc.reserve(keys_to_censor.size() + keys_to_censor_in_debug_report.size());
