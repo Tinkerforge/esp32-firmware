@@ -212,6 +212,12 @@ public:
 
     static const char *build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len);
 
+    static constexpr size_t MAX_PATH_LEN = std::min({
+        std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_path_len), StateRegistration>::type>::max(),
+        std::numeric_limits<std::invoke_result<decltype(&CommandRegistration::get_path_len), CommandRegistration>::type>::max(),
+        std::numeric_limits<std::invoke_result<decltype(&ResponseRegistration::get_path_len), ResponseRegistration>::type>::max()
+    });
+
 private:
     void push_state_updates();
     bool already_registered(const char *path, size_t path_len, const char *api_type);

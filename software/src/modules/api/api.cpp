@@ -172,7 +172,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<std::invoke_result<decltype(&CommandRegistration::get_path_len), CommandRegistration>::type>::max()) {
+    if (path_len > API::MAX_PATH_LEN) {
         logger.printfln("Command %s: path too long!", path);
         return;
     }
@@ -237,7 +237,7 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_path_len), StateRegistration>::type>::max()) {
+    if (path_len > API::MAX_PATH_LEN) {
         logger.printfln("State %s: path too long!", path);
         return;
     }
