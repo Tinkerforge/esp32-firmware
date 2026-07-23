@@ -172,14 +172,14 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<std::result_of<decltype(&CommandRegistration::get_path_len)(CommandRegistration)>::type>::max()) {
+    if (path_len > std::numeric_limits<std::invoke_result<decltype(&CommandRegistration::get_path_len), CommandRegistration>::type>::max()) {
         logger.printfln("Command %s: path too long!", path);
         return;
     }
 
     size_t ktc_size = keys_to_censor_in_debug_report.size();
 
-    if (ktc_size > std::numeric_limits<std::result_of<decltype(&CommandRegistration::get_keys_to_censor_in_debug_report_len)(CommandRegistration)>::type>::max()) {
+    if (ktc_size > std::numeric_limits<std::invoke_result<decltype(&CommandRegistration::get_keys_to_censor_in_debug_report_len), CommandRegistration>::type>::max()) {
         logger.printfln("Command %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
@@ -237,19 +237,19 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_path_len)(StateRegistration)>::type>::max()) {
+    if (path_len > std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_path_len), StateRegistration>::type>::max()) {
         logger.printfln("State %s: path too long!", path);
         return;
     }
 
     size_t ktc_size = keys_to_censor.size();
-    if (ktc_size > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_keys_to_censor_len)(StateRegistration)>::type>::max()) {
+    if (ktc_size > std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_keys_to_censor_len), StateRegistration>::type>::max()) {
         logger.printfln("State %s: keys_to_censor too long!", path);
         return;
     }
 
     size_t ktc_debug_size = keys_to_censor_in_debug_report.size() + ktc_size;
-    if (ktc_debug_size > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_keys_to_censor_in_debug_report_len)(StateRegistration)>::type>::max()) {
+    if (ktc_debug_size > std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_keys_to_censor_in_debug_report_len), StateRegistration>::type>::max()) {
         logger.printfln("State %s: keys_to_censor_in_debug_report (includes keys_to_censor!) too long!", path);
         return;
     }
