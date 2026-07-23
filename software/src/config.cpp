@@ -976,10 +976,10 @@ Config::to_json_result Config::to_json(const char *const *keys_to_censor, size_t
     return result;
 }
 
-void Config::save_to_file(File &file)
+void Config::save_to_file(File &file, const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     // Asserts checked in ::to_json.
-    to_json_result result = this->to_json(nullptr, 0);
+    to_json_result result = this->to_json(keys_to_censor, keys_to_censor_len);
 
     if (result.failed_allocation_size > 0) {
         logger.printfln("JSON doc allocation failure while writing file %s; needed %u.", file.name(), result.failed_allocation_size);
