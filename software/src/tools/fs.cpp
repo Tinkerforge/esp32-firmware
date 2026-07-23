@@ -33,24 +33,7 @@
 
 #include "gcc_warnings.h"
 
-#if OPTIONS_MIN_DATA_PARTITION_FORMAT() == 0
-static bool is_spiffs_available(const char *part_label, const char *base_path)
-{
-    LogSilencer ls;
-
-    esp_vfs_spiffs_conf_t conf = {
-        .base_path = base_path,
-        .partition_label = part_label,
-        .max_files = 10,
-        .format_if_mount_failed = false
-    };
-
-    esp_err_t err = esp_vfs_spiffs_register(&conf);
-    esp_vfs_spiffs_unregister(part_label);
-
-    return err == ESP_OK;
-}
-#endif
+bool should_factory_reset_bricklets = false;
 
 static bool is_littlefs_available(const char *part_label, const char *base_path)
 {
@@ -73,6 +56,25 @@ static bool is_littlefs_available(const char *part_label, const char *base_path)
 
     // Should only be ESP_NO_MEM
     return false;
+}
+
+
+#if OPTIONS_MIN_DATA_PARTITION_FORMAT() == 0
+static bool is_spiffs_available(const char *part_label, const char *base_path)
+{
+    LogSilencer ls;
+
+    esp_vfs_spiffs_conf_t conf = {
+        .base_path = base_path,
+        .partition_label = part_label,
+        .max_files = 10,
+        .format_if_mount_failed = false
+    };
+
+    esp_err_t err = esp_vfs_spiffs_register(&conf);
+    esp_vfs_spiffs_unregister(part_label);
+
+    return err == ESP_OK;
 }
 
 // Adapted from https://github.com/espressif/arduino-esp32/blob/master/libraries/LittleFS/examples/LITTLEFS_PlatformIO/src/main.cpp
@@ -126,9 +128,8 @@ static bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, const String &root_n
     return true;
 }
 
-bool should_factory_reset_bricklets = false;
 
-#if OPTIONS_MIN_DATA_PARTITION_FORMAT() == 0
+
 static void try_convert_spiffs(const char *partition_label)
 {
     /*
