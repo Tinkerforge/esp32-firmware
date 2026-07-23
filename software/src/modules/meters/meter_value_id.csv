@@ -1,4 +1,4 @@
-id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,display_name_en_muted,display_name_de,display_name_de_muted,desc_en,desc_de,OBIS-Kennziffer (alle .4.0 auch als .7.0),ocpp_measurand,ocpp_phase,comment,targets
+id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,display_name_en_muted,display_name_de,display_name_de_muted,desc_en,desc_de,OBIS-Kennziffer (alle .4.0 auch als .7.0),ocpp_measurand,ocpp_phase,comment
 1,Voltage,,L1 N,,,V,1,Voltage,L1-N,Spannung,L1-N,,,32.4.0,VOLTAGE,L1_N,
 2,Voltage,,L2 N,,,V,1,Voltage,L2-N,Spannung,L2-N,,,52.4.0,VOLTAGE,L2_N,
 3,Voltage,,L3 N,,,V,1,Voltage,L3-N,Spannung,L3-N,,,72.4.0,VOLTAGE,L3_N,
