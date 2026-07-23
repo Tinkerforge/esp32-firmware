@@ -70,8 +70,8 @@ void Mqtt::pre_setup()
         {"broker_port", Config::Uint16(1883)},
         {"broker_username", Config::Str("", 0, 64)},
         {"broker_password", Config::Str("", 0, 64)},
-        {"global_topic_prefix", Config::Str(String(OPTIONS_HOSTNAME_PREFIX()) + "/" + "ABC", 0, 64)},
-        {"client_name", Config::Str(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + "ABC", 1, 64)},
+        {"global_topic_prefix", Config::Str(esp32_common.get_default_name('/'), 0, 64)},
+        {"client_name", Config::Str(esp32_common.get_default_name('-'), 1, 64)},
         {"interval", Config::Uint(1, 0, 24 * 60 * 60)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
         {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
@@ -655,9 +655,6 @@ void Mqtt::setup()
     initialized = true;
 
     if (!api.restorePersistentConfig("mqtt/config", &config)) {
-        config.get("global_topic_prefix")->updateString(esp32_common.get_default_name('/'));
-        config.get("client_name"        )->updateString(esp32_common.get_default_name('-'));
-
 #ifdef DEFAULT_MQTT_ENABLE
         config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
 #endif

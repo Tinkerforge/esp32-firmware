@@ -49,9 +49,9 @@ void Wifi::pre_setup()
     ap_config = ConfigRoot{Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
-        {"ssid", Config::Str("", 0, 32)},
+        {"ssid", Config::Str(esp32_common.get_default_name(), 0, 32)},
         {"hide_ssid", Config::Bool(false)},
-        {"passphrase", Config::Str("", 8, 64)}, // Blank passphrase will be replaced with default passphrase in setup. | FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
+        {"passphrase", Config::Str(esp32_common.get_default_wifi_passphrase(), 8, 64)}, // FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
         {"channel", Config::Uint(0, 0, 13)},
         {"ip",      Config::Str("10.0.0.1",      7, 15)},
         {"gateway", Config::Str("0.0.0.0",       7, 15)},
@@ -1169,27 +1169,10 @@ void Wifi::setup()
 #endif
 #ifdef DEFAULT_WIFI_AP_SSID
         ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
-#else
-        ap_config.get("ssid")->updateString(esp32_common.get_default_name());
 #endif
 #ifdef DEFAULT_WIFI_AP_PASSPHRASE
-        String passphrase{DEFAULT_WIFI_AP_PASSPHRASE};
-#else
-        String passphrase = esp32_common.get_default_wifi_passphrase();
+        ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
 #endif
-        if (passphrase.isEmpty()) {
-            // Prevent accidentally starting the AP with no passphrase
-            logger.printfln("No default passphrase set. Disabling AP.");
-            ap_config.get("enable_ap")->updateBool(false);
-        } else {
-            ap_config.get("passphrase")->updateString(passphrase);
-
-            // Best-effort clearing of temporary passphrase String
-            const size_t len = passphrase.length();
-            for (size_t i = 0; i < len; i++) {
-                passphrase.setCharAt(i, 'x');
-            }
-        }
     }
 
     if (ap_config.get("enable_ap")->asBool()) {

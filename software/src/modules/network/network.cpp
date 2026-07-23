@@ -56,7 +56,7 @@ static constexpr TransportMode default_transport_mode = TransportMode::Insecure;
 void Network::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"hostname", Config::Str("hostname", 1, 32)}, // Will be replaced with stored config or sensible default. Cannot be empty.
+        {"hostname", Config::Str(esp32_common.get_default_name(), 1, 32)}, // Cannot be empty.
         {"enable_mdns", Config::Bool(true)},
         {"transport_mode", Config::Enum<TransportMode>(default_transport_mode)},
         {"web_server_port", Config::Uint16(OPTIONS_NETWORK_WEB_SERVER_PORT())},
@@ -106,9 +106,7 @@ void Network::pre_setup()
 
 void Network::setup()
 {
-    if (!api.restorePersistentConfig("network/config", &config)) {
-        config.get("hostname")->updateString(esp32_common.get_default_name());
-    }
+    api.restorePersistentConfig("network/config", &config);
 
     this->hostname               = config.get("hostname")->asString();
     this->enable_mdns            = config.get("enable_mdns")->asBool();

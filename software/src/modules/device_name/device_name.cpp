@@ -41,7 +41,7 @@ void DeviceName::pre_setup()
     });
 
     display_name = Config::Object({
-        {"display_name", Config::Str("", 0, 32)}
+        {"display_name", Config::Str(name_str, 0, 32)}
     });
 }
 
@@ -116,9 +116,7 @@ void DeviceName::updateDisplayType()
 
 void DeviceName::setup()
 {
-    if (!api.restorePersistentConfig("info/display_name", &display_name)) {
-        display_name.get("display_name")->updateString(name.get("name")->asString());
-    }
+    api.restorePersistentConfig("info/display_name", &display_name);
 
     // FIXME: investigate if this timer can be replaced with an event for info/features and evse/slots
     task_scheduler.scheduleUncancelable([this](){
