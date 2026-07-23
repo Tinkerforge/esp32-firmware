@@ -25,7 +25,7 @@
 #include "tools.h"
 #include "modules/meters/meter_value_availability.h"
 
-// FIXME: maybe make this timeout shorter if meter is not API and not SDM62v1. in
+// FIXME: maybe make this timeout shorter if meter is not API and not SDM72v1. in
 //        those cases we should have fast changing values available
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
