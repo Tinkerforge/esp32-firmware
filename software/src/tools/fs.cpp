@@ -33,8 +33,6 @@
 
 #include "gcc_warnings.h"
 
-static constexpr const char *DATA_MOUNTPOINT = "/data";
-
 #if OPTIONS_MIN_DATA_PARTITION_FORMAT() == 0
 static bool is_spiffs_available(const char *part_label, const char *base_path)
 {
