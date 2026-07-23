@@ -215,7 +215,15 @@ public:
     {
     }
 
-    void handle_result(const HeaderType &header, ResultDataType &result) const;
+    /**
+     * @brief Called when a peer returns a result that might be relevant to the usecase.
+     * Checks awaited_acks if the message counter is know the usecase and marks it accordingly.
+     * Cleans up awaited acknowledgement if the usecase doesnt take care of it.
+     *
+     * @param header
+     * @param result
+     */
+    virtual void handle_result(const HeaderType &header, ResultDataType &result);
 
 protected:
     std::vector<int> entity_address{}; ///< The entity address for this use case.
@@ -255,4 +263,14 @@ protected:
     NodeManagementDetailedDiscoveryFeatureInformationType build_feature_information(FeatureTypeEnumType feature_type, RoleType role = RoleType::server) const;
 
     FunctionPropertyType build_function_property(FunctionEnumType function, bool write = false, bool partial_write = false) const;
+
+    struct AwaitedAcks {
+        FunctionEnumType function;
+        FeatureAddressType target_feature;
+        CmdClassifierType cmd_type;
+        int msg_counter;
+        bool ack_received = false;
+        bool successful = false;
+    };
+    std::vector<AwaitedAcks> awaited_acks{};
 };

@@ -19,6 +19,7 @@
 
 #include "node_management.h"
 
+#include "event_log_prefix.h"
 #include "../eebus.h"
 #include "../eebus_usecases.h"
 #include "../generated/module_dependencies.h"
@@ -116,7 +117,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
     }
 }
 
-bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature) const
+bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature)
 {
     NodeManagementSubscriptionRequestCallType subscription_request{};
     subscription_request.subscriptionRequest->clientAddress = sending_feature;
@@ -144,8 +145,27 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     } else {
         eebus.trace_fmtln("NodeManagementUsecase: Failed to build subscription request message");
     }
-    // TODO: handle the returned msgcounter to handle the result
-    return eebus.usecases->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
+    int msg_counter = eebus.usecases->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
+
+    AwaitedAcks awaited_ack{.function = FunctionEnumType::nodeManagementSubscriptionRequestCall, .target_feature = target_feature, .cmd_type = CmdClassifierType::call, .msg_counter = msg_counter};
+    awaited_acks.push_back(awaited_ack);
+    task_scheduler.scheduleOnce([this, target_feature, msg_counter]() { // This will likely cause a crash if the user connects to an EEBUS device and disables EEBUS within 10 seconds. We would
+        for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
+            if (it->function == FunctionEnumType::nodeManagementSubscriptionRequestCall && it->target_feature.device.get() == target_feature.device.get() && it->target_feature.entity.get() == target_feature.entity.get() && it->target_feature.feature.get() == target_feature.feature.get() && it->msg_counter == msg_counter) {
+                if (!it->ack_received) {
+                    eebus.trace_fmtln("NodeManagementUsecase: Subscription request to %s timed out", EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
+                    logger.printfln("EEBUS subscription request timed out. Connection to %s may not function properly", target_feature.device.get().c_str());
+                } else if (!it->successful) {
+                    eebus.trace_fmtln("NodeManagementUsecase: Subscription request to %s failed", EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
+                    logger.printfln("EEBUS subscription failed. Connection to %s may not function properly", target_feature.device.get().c_str());
+                }
+                awaited_acks.erase(it);
+                break;
+            }
+        }
+    }, 10_s);
+
+    return msg_counter;
 }
 
 void NodeManagementEntity::detailed_discovery_update()

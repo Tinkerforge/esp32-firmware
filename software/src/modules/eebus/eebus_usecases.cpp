@@ -146,7 +146,6 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
         for (EebusUsecase *uc : usecase_list) {
             if (uc->get_entity_address() == header.addressDestination->entity.get()) {
                 uc->handle_result(header, result_data);
-                break;
             }
         }
         if (result_data.errorNumber.get() != static_cast<uint8_t>(EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError)) {

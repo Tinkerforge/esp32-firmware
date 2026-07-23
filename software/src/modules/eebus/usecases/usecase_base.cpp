@@ -20,6 +20,7 @@
 #include "usecase_base.h"
 #include "../eebus.h"
 #include "../eebus_usecases.h"
+#include "../generated/module_dependencies.h"
 
 extern EEBus eebus;
 
@@ -84,9 +85,34 @@ void EebusUsecase::set_feature_address(AddressFeatureType feature_address, Featu
     feature_addresses[feature_type] = feature_address;
 }
 
-void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &result) const {
-    // By default we do not do anything with the result. Handling the result is up to the usecases.
-    return;
+void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &result) {
+    if (header.msgCounterReference.isNull()) {
+        eebus.trace_fmtln("Got Result without msgcounter reference. Peer %s does not seem to compliant", EEBUS_USECASE_HELPERS::spine_address_to_string(header.addressSource.get()).c_str());
+        return;
+    }
+    const int msg_counter = header.msgCounterReference.get();
+    for (auto & awaited_ack : awaited_acks) {
+        if (awaited_ack.msg_counter == msg_counter) {
+            if (result.errorNumber != 0) {
+                awaited_ack.successful = false;
+                eebus.trace_fmtln("Got Result with error %d from peer %s for msgcounter %d", result.errorNumber.get(), EEBUS_USECASE_HELPERS::spine_address_to_string(header.addressSource.get()).c_str(), msg_counter);
+            } else {
+                awaited_ack.successful = true;
+            }
+            awaited_ack.ack_received = true;
+
+            // Clean up the awaited_ack if the usecase doesnt handle it by itself
+            task_scheduler.scheduleOnce([this, awaited_ack]() {
+               for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
+                   if ( it->msg_counter == awaited_ack.msg_counter) {
+                       awaited_acks.erase(it);
+                       break;
+                   }
+               }
+            }, 20_s);
+            break;
+        }
+    }
 }
 
 FeatureTypeEnumType EebusUsecase::get_feature_by_address(AddressFeatureType feature_address) const

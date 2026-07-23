@@ -103,7 +103,7 @@ public:
      * @param feature The feature type of the target feature (optional)
      * @return true if subscription request was valid and destination found (not whether target accepted)
      */
-    bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined) const;
+    bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined);
 
     /**
      * @brief Informs that detailed discovery data has changed.
@@ -147,4 +147,7 @@ private:
      * @return MessageReturn indicating if response needs to be sent
      */
     MessageReturn handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+
+
+
 };
