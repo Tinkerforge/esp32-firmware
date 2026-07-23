@@ -70,7 +70,7 @@ void Ocpp::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"url", Config::Str("", 0, 128)},
-        {"identity", Config::Str("", 0, 64)},
+        {"identity", Config::Str(esp32_common.get_default_name(), 0, 64)},
         {"enable_auth",Config::Bool(false)},
         {"pass", Config::Str("", 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)}
@@ -223,9 +223,7 @@ void Ocpp::apply_config() {
 void Ocpp::setup()
 {
     initialized = true;
-    if (!api.restorePersistentConfig("ocpp/config", &config)) {
-        config.get("identity")->updateString(esp32_common.get_default_name());
-    }
+    api.restorePersistentConfig("ocpp/config", &config);
 
     // Should we use on_network_connected here?
     task_scheduler.scheduleOnce([this](){ this->apply_config(); }, 5_s);
