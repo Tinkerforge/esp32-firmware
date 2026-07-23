@@ -41,13 +41,15 @@ struct StateRegistration {
     [[gnu::always_inline]] uint8_t get_path_len()                           const { asm("" : : "r" (data)); return (data >> 24) & 0xFF; }
     [[gnu::always_inline]] uint8_t get_keys_to_censor_len()                 const { asm("" : : "r" (data)); return (data >> 16) & 0xFF; }
     [[gnu::always_inline]] uint8_t get_keys_to_censor_in_debug_report_len() const { asm("" : : "r" (data)); return (data >>  8) & 0xFF; }
-    [[gnu::always_inline]] bool    get_low_latency()                        const { asm("" : : "r" (data)); return (data >>  0) & 0xFF; }
+    [[gnu::always_inline]] bool    get_low_latency()                        const { asm("" : : "r" (data)); return (data >>  0) & 0x80; }
+    [[gnu::always_inline]] bool    get_is_persistent_config()               const { asm("" : : "r" (data)); return (data >>  0) & 0x40; }
 
     /*
     const uint8_t path_len;
     const uint8_t keys_to_censor_len;
     const uint8_t keys_to_censor_in_debug_report_len;
     const bool low_latency;
+    const bool persistent_config;
     */
     const uint32_t data;
 };
@@ -151,8 +153,8 @@ public:
     void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action);
     void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action);
 
-    void addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
-    void addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
+    void addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false, bool persistent_config = false);
+    void addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false, bool persistent_config = false);
 
     bool addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
     void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, ResponseCallback &&callback);
