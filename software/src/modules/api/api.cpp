@@ -467,7 +467,7 @@ void API::writeConfig(const String &path, Config *config)
 
     File file = LittleFS.open(tmp_path, "w");
 
-    config->save_to_file(file);
+    config->save_to_file(file, nullptr, 0);
     file.close();
 
     if (LittleFS.exists(cfg_path)) {

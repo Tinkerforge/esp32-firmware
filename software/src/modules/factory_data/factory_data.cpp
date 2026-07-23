@@ -210,7 +210,7 @@ void FactoryData::register_urls()
         }
 
         File nfc_tags_file = factorydata_fs.open("/nfc_tags.tmp", FILE_WRITE);
-        static_cast<Config *>(write_config.get("nfc_tags"))->save_to_file(nfc_tags_file);
+        static_cast<Config *>(write_config.get("nfc_tags"))->save_to_file(nfc_tags_file, nullptr, 0);
         nfc_tags_file.close();
 
         if (factorydata_fs.exists("/nfc_tags")) {

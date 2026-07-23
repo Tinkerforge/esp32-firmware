@@ -1179,7 +1179,7 @@ public:
     size_t max_string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
     size_t string_length(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
 
-    void save_to_file(File &file);
+    void save_to_file(File &file, const char *const *keys_to_censor, size_t keys_to_censor_len) const;
 
     void write_to_stream(Print &output);
     void write_to_stream_except(Print &output, const char *const *keys_to_censor, size_t keys_to_censor_len);
