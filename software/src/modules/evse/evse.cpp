@@ -598,9 +598,6 @@ void EVSE::update_all_data()
         evse_common.slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));
     }
 
-    evse_common.auto_start_charging.get("auto_start_charging")->updateBool(
-        !evse_common.slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
-
     // get_button_state
     evse_common.button_state.get("button_press_time")->updateUint(button_press_time);
     evse_common.button_state.get("button_release_time")->updateUint(button_release_time);

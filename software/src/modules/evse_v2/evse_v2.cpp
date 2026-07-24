@@ -1245,9 +1245,6 @@ void EVSEV2::update_all_data()
         evse_common.slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));
     }
 
-    evse_common.auto_start_charging.get("auto_start_charging")->updateBool(
-        !evse_common.slots.get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("clear_on_disconnect")->asBool());
-
     // get_gpio_configuration
     gpio_configuration.get("shutdown_input")->updateUint(shutdown_input_configuration);
     gpio_configuration.get("input")->updateUint(input_configuration);
