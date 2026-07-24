@@ -309,16 +309,25 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         traceback.print_exc()
         fatal_error("Failed to read firmware version!")
 
-    try:
-        with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
-            f.read()
-    except Exception as e:
-        traceback.print_exc()
-        fatal_error("Failed to enable hidden_proxy!")
+    ex = None
+    for i in range(3):
+        try:
+            with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
+                f.read()
+        except Exception as e:
+            traceback.print_exc()
+            fatal_error("Failed to enable hidden_proxy!")
 
-    time.sleep(3)
-    ipcon = IPConnection()
-    ipcon.connect(ethernet_ip, 4223)
+        time.sleep(3)
+        ipcon = IPConnection()
+        try:
+            ipcon.connect(ethernet_ip, 4223)
+            break
+        except Exception as e:
+            ex = e
+    else:
+        raise ex
+
     result["ethernet_test_successful"] = True
     print("Connected. Testing bricklet ports")
 
