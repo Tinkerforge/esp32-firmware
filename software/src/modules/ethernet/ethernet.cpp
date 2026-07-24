@@ -472,7 +472,6 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    ETH.enableIPv6(true);
     ETH.setTaskStackSize(2560);
 
     apply_config();
