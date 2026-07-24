@@ -529,14 +529,14 @@ void Ethernet::apply_ip_to_interface()
     } else {
         ETH.config();
     }
-
 }
+
 void Ethernet::apply_ipv6_config()
 {
     task_scheduler.scheduleOnce([this]() {
             bool want_ipv6 = config.get("enable_ipv6")->asBool();
 
-            if (want_ipv6 ) {
+            if (want_ipv6) {
                 if (want_ipv6 != ipv6_enable) {
                     ETH.enableIPv6(true);
                 }
