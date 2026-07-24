@@ -143,7 +143,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                 />
                             </FormRow>
                         }
-
+                    </>}
 
                     <FormRow label={__("ethernet.content.status_link")}>
                         <InputText
