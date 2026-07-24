@@ -39,7 +39,7 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     JsonObject dst = message.to<JsonObject>();
     dst.createNestedObject(function_name);
     // TODO: Handle the returned messagecounter to allow handling of results
-    eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
+    send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
 
 void EebusUsecase::entities_updated() const
@@ -85,13 +85,14 @@ void EebusUsecase::set_feature_address(AddressFeatureType feature_address, Featu
     feature_addresses[feature_type] = feature_address;
 }
 
-void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &result) {
+void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &result)
+{
     if (header.msgCounterReference.isNull()) {
         eebus.trace_fmtln("Got Result without msgcounter reference. Peer %s does not seem to compliant", EEBUS_USECASE_HELPERS::spine_address_to_string(header.addressSource.get()).c_str());
         return;
     }
     const int msg_counter = header.msgCounterReference.get();
-    for (auto & awaited_ack : awaited_acks) {
+    for (auto &awaited_ack : awaited_acks) {
         if (awaited_ack.msg_counter == msg_counter) {
             if (result.errorNumber != 0) {
                 awaited_ack.successful = false;
@@ -101,15 +102,6 @@ void EebusUsecase::handle_result(const HeaderType &header, ResultDataType &resul
             }
             awaited_ack.ack_received = true;
 
-            // Clean up the awaited_ack if the usecase doesnt handle it by itself
-            task_scheduler.scheduleOnce([this, awaited_ack]() {
-               for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
-                   if ( it->msg_counter == awaited_ack.msg_counter) {
-                       awaited_acks.erase(it);
-                       break;
-                   }
-               }
-            }, 20_s);
             break;
         }
     }
@@ -155,4 +147,34 @@ FunctionPropertyType EebusUsecase::build_function_property(const FunctionEnumTyp
     }
     function_property.possibleOperations->read = PossibleOperationsReadType{};
     return function_property;
+}
+
+int EebusUsecase::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack)
+{
+    int msg_counter = eebus.usecases->send_spine_message(destination, sender, payload, cmd_classifier, want_ack);
+    // TODO: add ack handling
+    if (want_ack) {
+        AwaitedAcks awaited_ack{.function = FunctionEnumType::nodeManagementSubscriptionRequestCall, .target_feature = destination, .cmd_type = CmdClassifierType::call, .msg_counter = msg_counter};
+        awaited_acks.push_back(awaited_ack);
+        // Clean up the awaited_ack if the usecase doesnt handle it by itself
+        task_scheduler.scheduleOnce(
+            [this, msg_counter] {
+                for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
+                    if (it->msg_counter == msg_counter) {
+                        awaited_acks.erase(it);
+                        break;
+                    }
+                }
+            },
+            20_s);
+    }
+    return msg_counter;
+}
+
+template <typename T> int EebusUsecase::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack)
+{
+    BasicJsonDocument<ArduinoJsonPsramAllocator> doc{SPINE_CONNECTION_MAX_JSON_SIZE};
+    JsonObject obj = doc.to<JsonObject>();
+    obj[function_name] = payload;
+    return send_spine_message(destination, sender, obj, cmd_classifier, want_ack);
 }

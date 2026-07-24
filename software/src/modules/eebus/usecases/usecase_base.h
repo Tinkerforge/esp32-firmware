@@ -273,4 +273,19 @@ protected:
         bool successful = false;
     };
     std::vector<AwaitedAcks> awaited_acks{};
+
+    /**
+     * Send a SPINE message to the given destination with the specified payload and command classifier.
+     * Should be used for all spine sending, especially if ack flags need to be handled.
+     * @param destination SPINE address of the destination
+     * @param sender The sending address
+     * @param payload Payload what should be sent
+     * @param cmd_classifier Command classifier
+     * @param want_ack Add to acknowledgement check.
+     * @return
+     */
+    int send_spine_message(const FeatureAddressType & destination, FeatureAddressType & sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+
+    template <typename T> int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
+
 };

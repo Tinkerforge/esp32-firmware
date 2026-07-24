@@ -145,10 +145,9 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     } else {
         eebus.trace_fmtln("NodeManagementUsecase: Failed to build subscription request message");
     }
-    int msg_counter = eebus.usecases->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
+    int msg_counter = send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
 
-    AwaitedAcks awaited_ack{.function = FunctionEnumType::nodeManagementSubscriptionRequestCall, .target_feature = target_feature, .cmd_type = CmdClassifierType::call, .msg_counter = msg_counter};
-    awaited_acks.push_back(awaited_ack);
+
     task_scheduler.scheduleOnce([this, target_feature, msg_counter]() { // This will likely cause a crash if the user connects to an EEBUS device and disables EEBUS within 10 seconds. We would
         for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
             if (it->function == FunctionEnumType::nodeManagementSubscriptionRequestCall && it->target_feature.device.get() == target_feature.device.get() && it->target_feature.entity.get() == target_feature.entity.get() && it->target_feature.feature.get() == target_feature.feature.get() && it->msg_counter == msg_counter) {
@@ -467,7 +466,7 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
             // TODO: handle returned messagecounter properly
-            int msg_counter = usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false);
+            int msg_counter = send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false);
             if (msg_counter >= 0) {
                 sent_count++;
             } else {
