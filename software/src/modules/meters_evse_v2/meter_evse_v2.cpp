@@ -38,6 +38,8 @@ void MeterEVSEV2::setup(Config *ephemeral_config)
     ephemeral_config->get("location")->updateEnum(MeterLocation::Charger);
 
     // Trigger meter value update, in case other modules expect meter values during setup.
+    // update_all_data is also called in EVSECommon::setup, but this is too early,
+    // this meter instance is created in Meters::setup.
     evse_v2.update_all_data();
 }
 
