@@ -14,7 +14,7 @@ import contextlib
 import queue
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QPixmap, QColorConstants
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QPlainTextEdit, QAbstractSlider, QLabel, QSplashScreen
 from tinkerforge_util import colored
 from tinkerforge_util.colored import red, green
 import tinkerforge_util as tfutil
@@ -462,7 +462,7 @@ def terminal_to_html(s):
         if color in mapping:
             result = mapping[color]
 
-    return colored.strip(s).replace('\n', '<br/>'), result
+    return colored.strip(s), result
 
 reprint_enabled = False
 reprint_clicked = False
@@ -489,13 +489,13 @@ def update_logs(edits, restart_button, reprint_button):
     reprint_button.setEnabled(reprint_enabled)
 
     for k, v in edits.items():
-        new_log, back_color = terminal_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue())
+        new_log, back_color = terminal_to_html(logs[k][0].getvalue().strip() + "\n------\n" + logs[k][1].getvalue().strip())
 
         if last_edits_content.get(k) == (new_log, back_color):
             continue
 
         last_edits_content[k] = (new_log, back_color)
-        v.setHtml(new_log)
+        v.setPlainText(new_log)
         v.setStyleSheet(f"background-color: {back_color};")
         v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
 
@@ -552,13 +552,13 @@ def run_gui(q: queue.Queue):
             tester_layout.addWidget(QLabel("NO ESP TESTERS ATTACHED!"))
 
         edits = {
-            -1: QTextEdit()
+            -1: QPlainTextEdit()
         }
         edits[-1].setReadOnly(True)
 
         for i in range(4):
             if i in testers:
-                edits[i] = QTextEdit()
+                edits[i] = QPlainTextEdit()
                 edits[i].setReadOnly(True)
                 tester_layout.addWidget(edits[i])
             else:
