@@ -4,5 +4,12 @@ updates:
     directory: "/**"
     schedule:
       interval: "daily"
-    allow:
-      - dependency-type: "production"
+    groups:
+      all-dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+      all-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
