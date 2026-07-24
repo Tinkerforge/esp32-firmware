@@ -6,28 +6,28 @@
   "scripts": {},
   "author": "Erik Fleckstein",
   "dependencies": {
-    "@preact/signals": "^2.7.1",
+    "@preact/signals": "^2.10.0",
     "@types/argon2-browser": "^1.18.4",
     "argon2-browser": "^1.18.0",
     "bootstrap": "^5.3.8",
     "deepsignal": "^1.6.0",
-    "preact": "^10.28.3",
+    "preact": "^10.29.7",
     "react": "npm:@preact/compat@^18.3.1",
     "react-bootstrap": "^2.10.10",
     "react-dom": "npm:@preact/compat@^18.3.1",
     "react-feather": "^2.0.10",
-    "uplot": "1.6.30",
+    "uplot": "1.6.32",
     "yamd5.js": "^1.0.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.24",
-    "cssnano": "^7.1.2",
-    "cssnano-preset-advanced": "^7.0.10",
+    "autoprefixer": "^10.5.4",
+    "cssnano": "^8.0.2",
+    "cssnano-preset-advanced": "^8.0.2",
     "esbuild": "^0.28.1",
     "html-minifier-terser": "^7.2.0",
-    "median-js-bridge": "^2.13.4",
+    "median-js-bridge": "^2.18.1",
     "postcss-cli": "^11.0.1",
-    "sass": "^1.97.3",
-    "typescript": "^5.9.3"
+    "sass": "^1.101.7",
+    "typescript": "^7.0.2"
   }
 }
