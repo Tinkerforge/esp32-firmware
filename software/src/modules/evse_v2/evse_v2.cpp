@@ -1324,9 +1324,7 @@ void EVSEV2::update_all_data()
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
 #endif
 
-#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     phase_switch_wait_time.get("time")->updateUint(phase_switch_wait_time_);
-#endif
 
     // get_energy_meter_display_backlight. Only relevant with Iskra WM3M4/WM3M4C energy meters.
     energy_meter_display_backlight.get("backlight")->updateUint(energy_meter_display_backlight_);
