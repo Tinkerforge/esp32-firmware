@@ -110,50 +110,56 @@ void EVSEV2::pre_setup()
 
     // EVSE configs
     gpio_configuration = ConfigRoot{Config::Object({
-        {"shutdown_input", Config::Uint8(0)},
-        {"input", Config::Uint8(0)},
-        {"output", Config::Uint8(0)}
-    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, cfg.get("shutdown_input")->asUint(),
-                                                                    cfg.get("input")->asUint(),
-                                                                    cfg.get("output")->asUint()));
-        return "";
-    }};
+            {"shutdown_input", Config::Uint8(0)},
+            {"input", Config::Uint8(0)},
+            {"output", Config::Uint8(0)}
+        }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, cfg.get("shutdown_input")->asUint(),
+                                                                        cfg.get("input")->asUint(),
+                                                                        cfg.get("output")->asUint()));
+            return "";
+        }
+    };
 
     button_configuration = ConfigRoot{Config::Object({
-        {"button", Config::Uint8(2)}
-    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_button_configuration(&device, cfg.get("button")->asUint()));
-        return "";
-    }};
+            {"button", Config::Uint8(2)}
+        }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            is_in_bootloader(tf_evse_v2_set_button_configuration(&device, cfg.get("button")->asUint()));
+            return "";
+        }
+    };
 
     ev_wakeup = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, cfg.get("enabled")->asBool()));
-        return "";
-    }};
+            is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, cfg.get("enabled")->asBool()));
+            return "";
+        }
+    };
 
     phase_auto_switch = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, cfg.get("enabled")->asBool()));
-        return "";
-    }};
+            is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, cfg.get("enabled")->asBool()));
+            return "";
+        }
+    };
 
     phases_connected = ConfigRoot{Config::Object({
-        {"phases", Config::Uint8(0)}
-    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_phases_connected(&device, cfg.get("phases")->asUint()));
-        return "";
-    }};
+            {"phases", Config::Uint8(0)}
+        }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            is_in_bootloader(tf_evse_v2_set_phases_connected(&device, cfg.get("phases")->asUint()));
+            return "";
+        }
+    };
 
     phase_switch_wait_time = ConfigRoot{Config::Object({
-        {"time", Config::Uint8(0)}
-    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, cfg.get("time")->asUint()));
-        return "";
-    }};
+            {"time", Config::Uint8(0)}
+        }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, cfg.get("time")->asUint()));
+            return "";
+        }
+    };
 
     energy_meter_display_backlight = ConfigRoot{Config::Object({
         {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC,
