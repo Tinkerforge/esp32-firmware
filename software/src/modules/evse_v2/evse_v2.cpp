@@ -1097,6 +1097,7 @@ void EVSEV2::publish_all_data()
     const uint8_t phases_connected_ = d.phases_connected;
     const uint8_t enumerate_value = d.enumerate_value;
     const uint32_t enumerate_value_change_time = d.enumerate_value_change_time;
+    const uint8_t phase_switch_wait_time_ = d.phase_switch_wait_time;
     const uint8_t energy_meter_display_backlight_ = d.energy_meter_display_backlight;
 
     const uint8_t led_state = d.led_state;
@@ -1374,9 +1375,7 @@ void EVSEV2::publish_all_data()
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
 #endif
 
-#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-    phase_switch_wait_time.get("time")->updateUint(d.phase_switch_wait_time);
-#endif
+    phase_switch_wait_time.get("time")->updateUint(phase_switch_wait_time_);
 
     // get_energy_meter_display_backlight. Only relevant with Iskra WM3M4/WM3M4C energy meters.
     energy_meter_display_backlight.get("backlight")->updateUint(energy_meter_display_backlight_);
