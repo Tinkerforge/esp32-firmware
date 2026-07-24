@@ -24,7 +24,7 @@
 
 extern EEBus eebus;
 
-void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const
+void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function)
 {
     String function_name = SpineDataTypeHandler::function_to_string(function);
     FeatureAddressType sender{};
@@ -178,3 +178,23 @@ template <typename T> int EebusUsecase::send_spine_message(const FeatureAddressT
     obj[function_name] = payload;
     return send_spine_message(destination, sender, obj, cmd_classifier, want_ack);
 }
+
+// Explicit template instantiations for payload types sent via EebusUsecase::send_spine_message<T>(). If a type is sent via SPINE it needs to be added here
+template int EebusUsecase::send_spine_message<DeviceDiagnosisHeartbeatDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisHeartbeatDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<NodeManagementDetailedDiscoveryDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementDetailedDiscoveryDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<LoadControlLimitListDataType>(const FeatureAddressType &, FeatureAddressType &, LoadControlLimitListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<DeviceConfigurationKeyValueListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<ElectricalConnectionCharacteristicListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionCharacteristicListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<MeasurementListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<MeasurementConstraintsListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementConstraintsListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<MeasurementDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, MeasurementDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<DeviceDiagnosisStateDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceDiagnosisStateDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<DeviceConfigurationKeyValueDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceConfigurationKeyValueDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<IdentificationListDataType>(const FeatureAddressType &, FeatureAddressType &, IdentificationListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<DeviceClassificationManufacturerDataType>(const FeatureAddressType &, FeatureAddressType &, DeviceClassificationManufacturerDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<ElectricalConnectionParameterDescriptionListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionParameterDescriptionListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<ElectricalConnectionPermittedValueSetListDataType>(const FeatureAddressType &, FeatureAddressType &, ElectricalConnectionPermittedValueSetListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<BillListDataType>(const FeatureAddressType &, FeatureAddressType &, BillListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<TimeSeriesListDataType>(const FeatureAddressType &, FeatureAddressType &, TimeSeriesListDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<IncentiveTableDataType>(const FeatureAddressType &, FeatureAddressType &, IncentiveTableDataType, CmdClassifierType, const char *, bool);
+template int EebusUsecase::send_spine_message<NodeManagementUseCaseDataType>(const FeatureAddressType &, FeatureAddressType &, NodeManagementUseCaseDataType, CmdClassifierType, const char *, bool);

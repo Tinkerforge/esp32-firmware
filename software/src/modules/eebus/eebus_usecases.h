@@ -34,9 +34,9 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #pragma once
 #include "config.h"
 #include "generated/loadcontrol_state.enum.h"
+#include "generated/usecases.enum.h"
 #include "spine_connection.h"
 #include "spine_types.h"
-#include "generated/usecases.enum.h"
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used

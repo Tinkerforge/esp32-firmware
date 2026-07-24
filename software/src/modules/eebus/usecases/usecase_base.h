@@ -123,7 +123,7 @@ public:
      * @param receiver The target feature address to send the read to.
      * @param function The function to read.
      */
-    void send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const;
+    void send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function);
 
     /**
      * @brief Inform the use case that supported entities have been updated and that the NodeManagement shall be informed of the updated structure.

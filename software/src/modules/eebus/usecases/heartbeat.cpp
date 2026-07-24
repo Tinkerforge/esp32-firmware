@@ -147,7 +147,7 @@ void EebusHeartBeat::send_heartbeat_to_subs()
         eebus.trace_fmtln("heartbeat_sent to %d subscribers", subs);
     }
 #else
-     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
 #endif
 }
 
