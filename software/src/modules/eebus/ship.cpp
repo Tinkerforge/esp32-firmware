@@ -170,6 +170,7 @@ void Ship::setup()
 
 void Ship::enable_ship()
 {
+    is_enabled = true;
     if (eebus.config.get("enable")->asBool()) {
         setup_wss();
         if (eebus.initialized) {
@@ -195,6 +196,16 @@ void Ship::enable_ship()
 void Ship::disable_ship()
 {
     eebus.trace_fmtln("disable_ship start");
+    is_enabled = false;
+
+    if (mdns_scan != nullptr) {
+        mdns_query_async_delete(mdns_scan);
+        mdns_scan = nullptr;
+    }
+
+    task_scheduler.cancel(autoconnect_timer);
+    autoconnect_timer = 0;
+
     for (auto &ship_connection : eebus.ship.ship_connections) {
         ship_connection->schedule_close(0_ms, "EEBUS disabled");
     }
@@ -204,8 +215,8 @@ void Ship::disable_ship()
     if (network.is_mdns_started() && mdns_service_exists("_ship", "_tcp", NULL)) {
         mdns_service_remove("_ship", "_tcp");
     }
+    update_discovery_state(ShipDiscoveryState::Ready);
 
-    task_scheduler.cancel(autoconnect_timer);
     eebus.trace_fmtln("disable_ship end");
 }
 
@@ -334,6 +345,10 @@ void Ship::setup_wss()
 void Ship::connect_trusted_peers()
 {
 #ifdef EEBUS_SHIP_AUTOCONNECT
+    if (!is_enabled || !eebus.is_enabled()) {
+        return;
+    }
+
     task_scheduler.cancel(autoconnect_timer);
     if (!cert.is_loaded()) {
         eebus.trace_fmtln("connect_trusted_peers: Certificate not loaded, skipping");
@@ -347,6 +362,10 @@ void Ship::connect_trusted_peers()
     int trusted_peer_count = 0;
 
     for (auto &node : peers) {
+        if (!is_enabled || !eebus.is_enabled()) {
+            break;
+        }
+
         if (!node->trusted) {
             continue;
         }
@@ -404,11 +423,15 @@ void Ship::connect_trusted_peers()
     if (trusted_peer_count > 0) {
         logger.printfln("SHIP: Connecting to %d trusted peer(s)", trusted_peer_count);
     }
-    autoconnect_timer= task_scheduler.scheduleOnce(
-        [this]() {
-            discover_ship_peers();
-        },
-        EEBUS_SHIP_AUTOCONNECT_INTERVAL);
+    if (is_enabled && eebus.is_enabled()) {
+        autoconnect_timer = task_scheduler.scheduleOnce(
+            [this]() {
+                discover_ship_peers();
+            },
+            EEBUS_SHIP_AUTOCONNECT_INTERVAL);
+    } else {
+        autoconnect_timer = 0;
+    }
 #endif
 }
 
@@ -479,14 +502,22 @@ void Ship::setup_mdns()
 void Ship::check_mdns_results_cb(mdns_search_once_t *)
 {
     task_scheduler.scheduleOnce([]() {
+        if (!eebus.ship.is_enabled || !eebus.is_enabled()) {
+            return;
+        }
         eebus.ship.check_mdns_results();
     });
 }
 void Ship::check_mdns_results()
 {
+    if (!is_enabled || !eebus.is_enabled() || mdns_scan == nullptr) {
+        return;
+    }
+
     mdns_result_t *results;
     auto query_results = mdns_query_async_get_results(mdns_scan, 0, &results, nullptr);
     mdns_query_async_delete(mdns_scan);
+    mdns_scan = nullptr;
 
     if (!query_results) {
         eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
@@ -601,6 +632,10 @@ void Ship::update_discovery_state(ShipDiscoveryState new_state)
 
 void Ship::discover_ship_peers()
 {
+    if (!is_enabled || !eebus.is_enabled()) {
+        return;
+    }
+
     if (discovery_state == ShipDiscoveryState::Scanning) {
         return;
     }
