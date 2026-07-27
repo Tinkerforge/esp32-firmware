@@ -7,14 +7,14 @@ export function config_plugins_pre_init() {
     let result: BatteryConfigPlugins = {};
 
     for (let m of {{{config_modules}}}) {
-        let plugins: BatteryConfigPlugins = m.pre_init();
+        let plugins = m.pre_init() as BatteryConfigPlugins;
 
         for (let battery_class in plugins) {
             if (result[battery_class]) {
                 console.log('Batteries: Overwriting config plugin for battery class ' + battery_class);
             }
 
-            result[battery_class] = plugins[battery_class];
+            result[battery_class] = plugins[battery_class]!;
         }
     }
 
