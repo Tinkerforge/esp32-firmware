@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-07-01.      *
+ * This file was automatically generated on 2026-07-27.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -412,6 +412,26 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_GET_OVE_R37_STATUS 73
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_ENERGY_METER_DISPLAY_TEXT 74
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_DISPLAY_TEXT 75
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_ENERGY_METER_DISPLAY_BACKLIGHT 76
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_ENERGY_METER_DISPLAY_BACKLIGHT 77
 
 /**
  * \ingroup TF_EVSEV2
@@ -1555,6 +1575,21 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_ON 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
@@ -2123,9 +2158,10 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  * {@link tf_evse_v2_get_temperature}, {@link tf_evse_v2_get_phase_control},
  * {@link tf_evse_v2_get_phase_auto_switch}, {@link tf_evse_v2_get_phases_connected},
  * {@link tf_evse_v2_get_enumerate_value}, {@link tf_evse_v2_get_phase_switch_wait_time},
- * {@link tf_evse_v2_get_plc_modem} and {@link tf_evse_v2_get_ove_r37_status} combined in one call.
+ * {@link tf_evse_v2_get_plc_modem}, {@link tf_evse_v2_get_ove_r37_status} and
+ * {@link tf_evse_v2_get_energy_meter_display_backlight} combined in one call.
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time, bool *ret_plc_modem_enabled, uint8_t *ret_ove_r37_state, uint8_t *ret_ove_r37_trip_reason, uint8_t *ret_ove_r37_flags);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time, bool *ret_plc_modem_enabled, uint8_t *ret_ove_r37_state, uint8_t *ret_ove_r37_trip_reason, uint8_t *ret_ove_r37_flags, uint8_t *ret_energy_meter_display_backlight);
 
 /**
  * \ingroup TF_EVSEV2
@@ -2489,6 +2525,57 @@ int tf_evse_v2_get_ove_r37_configuration(TF_EVSEV2 *evse_v2, bool *ret_enabled, 
  * in-range status of the voltage and frequency measurements.
  */
 int tf_evse_v2_get_ove_r37_status(TF_EVSEV2 *evse_v2, uint8_t *ret_state, uint8_t *ret_trip_reason, uint8_t *ret_flags);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Sets a custom text (8 characters) and label (4 characters) that is shown on the
+ * 7-segment LCD of the energy meter. Only available with Iskra WM3M4/WM3M4C
+ * energy meters.
+ *
+ * The 7-segment display supports the following characters:
+ * 0, O, 1, I, l, 2, 3, 4, 5, S, 6, G, 7, 8, 9, A, B, b, C, D, d, E, F, H, L, J,
+ * N, P, R, U, V, c, h, i, r, n, o, v, u, t, -.
+ * Non-displayable characters are replaced by a blank.
+ *
+ * If a non-empty text is set, it replaces the normal display values (the LCD
+ * shows only the custom text and label). Setting an empty text restores the
+ * default display of the energy meter (energy consumption of charging).
+ *
+ * The text is not stored in the energy meter, after a power cycle of the
+ * energy meter the default display is restored until a text is set again.
+ */
+int tf_evse_v2_set_energy_meter_display_text(TF_EVSEV2 *evse_v2, const char *text, const char *label);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Returns the text and label as set by {@link tf_evse_v2_set_energy_meter_display_text}.
+ */
+int tf_evse_v2_get_energy_meter_display_text(TF_EVSEV2 *evse_v2, char ret_text[8], char ret_label[4]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Sets the backlight mode of the energy meter LCD. Only available with Iskra
+ * WM3M4/WM3M4C energy meters.
+ *
+ * * Off: The backlight is always off.
+ * * On: The backlight is always on.
+ * * Automatic: The backlight is turned on when an EV is charging or a button is
+ *   pressed and turned off 5 minutes after the last event (EV stops charging,
+ *   button press).
+ *
+ * The default is Automatic.
+ */
+int tf_evse_v2_set_energy_meter_display_backlight(TF_EVSEV2 *evse_v2, uint8_t backlight);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Returns the backlight mode as set by {@link tf_evse_v2_set_energy_meter_display_backlight}.
+ */
+int tf_evse_v2_get_energy_meter_display_backlight(TF_EVSEV2 *evse_v2, uint8_t *ret_backlight);
 
 /**
  * \ingroup TF_EVSEV2

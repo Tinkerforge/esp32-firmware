@@ -51,10 +51,12 @@ interface EVSESettingsState {
     require_meter_enabled: API.getType["require_meter/config"];
     led_configuration: API.getType["evse/led_configuration"];
     phase_switch_wait_time: API.getType["evse/phase_switch_wait_time"];
+    energy_meter_display_backlight: API.getType["evse/energy_meter_display_backlight"];
     evse_uptime: number;
     is_evse_v2: boolean;
     is_evse_v3: boolean;
     have_meter: boolean;
+    have_iskra_meter: boolean;
     show_custom_energy_modal: boolean;
 }
 
@@ -70,7 +72,8 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         });
 
         util.addApiEventListener('evse/hardware_configuration', () => {
-            this.setState({have_meter: (API.get('evse/hardware_configuration').energy_meter_type ?? 0) > 0});
+            const energy_meter_type = API.get('evse/hardware_configuration').energy_meter_type ?? 0;
+            this.setState({have_meter: energy_meter_type > 0, have_iskra_meter: (energy_meter_type == 10) || (energy_meter_type == 11)}); // Iskra WM3M4C / WM3M4
         });
 
         util.addApiEventListener('evse/button_configuration', () => {
@@ -121,6 +124,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         util.addApiEventListener("evse/phase_switch_wait_time", () => {
             this.setState({phase_switch_wait_time: API.get("evse/phase_switch_wait_time")});
         });
+
+        util.addApiEventListener("evse/energy_meter_display_backlight", () => {
+            this.setState({energy_meter_display_backlight: API.get("evse/energy_meter_display_backlight")});
+        });
     }
 
     override async sendSave(topic: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
@@ -135,6 +142,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, () => __("evse.script.save_failed"));
             await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, () => __("evse.script.save_failed"));
             await API.save('evse/phases_connected', this.state.phases_connected, () => __("evse.script.save_failed"));
+
+            if (this.state.have_iskra_meter) {
+                await API.save('evse/energy_meter_display_backlight', {"backlight": this.state.energy_meter_display_backlight.backlight}, () => __("evse.script.save_failed"));
+            }
         }
 
         if (this.state.is_evse_v3) {
@@ -161,6 +172,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             require_meter_enabled,
             led_configuration,
             phase_switch_wait_time,
+            energy_meter_display_backlight,
         } = s;
 
         const has_meter = API.hasFeature("meter");
@@ -395,6 +407,21 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                 <Switch desc={__("evse.content.phase_auto_switch")}
                                         checked={phase_auto_switch.enabled}
                                         onClick={async () => this.setState({phase_auto_switch: {enabled: !phase_auto_switch.enabled}})}/>
+                            </FormRow>
+                        }
+
+                        {!this.state.have_iskra_meter ? undefined :
+                            <FormRow label={__("evse.content.energy_meter_display_backlight")} label_muted={__("evse.content.energy_meter_display_backlight_muted")} help={__("evse.content.energy_meter_display_backlight_help")}>
+                                <InputSelect items={[
+                                                ["0",__("evse.content.energy_meter_display_backlight_off")],
+                                                ["1",__("evse.content.energy_meter_display_backlight_on")],
+                                                ["2",__("evse.content.energy_meter_display_backlight_automatic")],
+                                            ]}
+                                        value={energy_meter_display_backlight.backlight}
+                                        onValue={async (v) => {
+                                            this.setState({energy_meter_display_backlight: {backlight: parseInt(v)}});
+                                        }}
+                                />
                             </FormRow>
                         }
 

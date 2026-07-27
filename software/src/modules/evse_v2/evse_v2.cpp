@@ -138,6 +138,11 @@ void EVSEV2::pre_setup()
     });
     phase_switch_wait_time_update = phase_switch_wait_time;
 
+    energy_meter_display_backlight = Config::Object({
+        {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC, TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF, TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
+    });
+    energy_meter_display_backlight_update = energy_meter_display_backlight;
+
 #if MODULE_AUTOMATION_AVAILABLE()
     // Create a temporary config that allocates a schema.
     auto automation_cfg = Config::Object({
@@ -283,6 +288,11 @@ void EVSEV2::post_register_urls()
     api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
     api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()));
+    }, true);
+
+    api.addState("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
+    api.addCommand("evse/energy_meter_display_backlight_update", &energy_meter_display_backlight_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
+        is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, energy_meter_display_backlight_update.get("backlight")->asUint()));
     }, true);
 }
 
@@ -935,6 +945,7 @@ void EVSEV2::update_all_data()
     uint8_t ove_r37_state;
     uint8_t ove_r37_trip_reason;
     uint8_t ove_r37_flags;
+    uint8_t energy_meter_display_backlight_;
 
     // get_low_level_state
     uint8_t led_state;
@@ -1006,7 +1017,8 @@ void EVSEV2::update_all_data()
                                    nullptr /*plc_modem_enabled*/,
                                    &ove_r37_state,
                                    &ove_r37_trip_reason,
-                                   &ove_r37_flags);
+                                   &ove_r37_flags,
+                                   &energy_meter_display_backlight_);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1315,6 +1327,9 @@ void EVSEV2::update_all_data()
 #if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     phase_switch_wait_time.get("time")->updateUint(phase_switch_wait_time_);
 #endif
+
+    // get_energy_meter_display_backlight. Only relevant with Iskra WM3M4/WM3M4C energy meters.
+    energy_meter_display_backlight.get("backlight")->updateUint(energy_meter_display_backlight_);
 
     evse_common.low_level_state.get("temperature")->updateInt(temperature);
     evse_common.low_level_state.get("phases_current")->updateUint(phases_current);

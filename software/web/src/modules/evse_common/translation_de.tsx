@@ -110,6 +110,13 @@ let x = {
             "phase_switch_wait_time_default": "Standard (60 Sekunden)",
             "seconds": "Sekunden",
 
+            "energy_meter_display_backlight": "Displaybeleuchtung des Stromzählers",
+            "energy_meter_display_backlight_muted": "",
+            "energy_meter_display_backlight_help": <><p>Steuert die Hintergrundbeleuchtung des LC-Displays des Stromzählers. In der Einstellung „Automatisch“ wird die Beleuchtung eingeschaltet, wenn ein Fahrzeug lädt oder ein Taster am Stromzähler gedrückt wird, und fünf Minuten nach dem letzten Ereignis wieder ausgeschaltet.</p></>,
+            "energy_meter_display_backlight_off": "Aus",
+            "energy_meter_display_backlight_on": "An",
+            "energy_meter_display_backlight_automatic": "Automatisch",
+
             "auto_start_description": "Manuelle Ladefreigabe",
             "auto_start_description_help": <><p>Wenn die manuelle Ladefreigabe aktiviert wird, wird ein Ladevorgang niemals automatisch begonnen. Jeder Ladevorgang muss über das Webinterface, die API oder (je nach Tastereinstellung) den Taster gestartet werden. Die manuelle Ladefreigabe blockiert zusätzlich zu eventuell anderen aktiven Ladestromgrenzen. Das heißt, dass sie nicht aktiviert werden muss, wenn Ladevorgänge beispielsweise mit der Benutzerfreigabe per NFC-Tag, oder der Steuerung per OCPP kontrolliert werden.</p></>,
             "auto_start_enable": "Erzwingt, dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",

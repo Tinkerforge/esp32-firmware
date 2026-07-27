@@ -199,3 +199,7 @@ export type supported_charge_modes = ConfigChargeMode[];
 export interface phase_switch_wait_time {
     time: number;
 }
+
+export interface energy_meter_display_backlight {
+    backlight: number;
+}

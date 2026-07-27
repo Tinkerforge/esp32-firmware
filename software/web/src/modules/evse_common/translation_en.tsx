@@ -110,6 +110,13 @@ let x = {
             "phase_switch_wait_time_default": "Default (60 seconds)",
             "seconds": "seconds",
 
+            "energy_meter_display_backlight": "Energy meter display backlight",
+            "energy_meter_display_backlight_muted": "",
+            "energy_meter_display_backlight_help": <><p>Controls the backlight of the energy meter's LC display. If set to "Automatic", the backlight is turned on when a vehicle is charging or a button on the energy meter is pressed, and turned off five minutes after the last event.</p></>,
+            "energy_meter_display_backlight_off": "Off",
+            "energy_meter_display_backlight_on": "On",
+            "energy_meter_display_backlight_automatic": "Automatic",
+
             "auto_start_description": "Manual charge release",
             "auto_start_description_help": <><p>If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.</p></>,
             "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",

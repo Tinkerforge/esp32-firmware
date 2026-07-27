@@ -159,6 +159,8 @@ private:
     ConfigRoot gp_output_update;
     ConfigRoot phase_switch_wait_time;
     ConfigRoot phase_switch_wait_time_update;
+    ConfigRoot energy_meter_display_backlight;
+    ConfigRoot energy_meter_display_backlight_update;
 };
 
 #include "generated/module_available_end.h"
