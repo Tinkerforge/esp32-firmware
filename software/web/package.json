@@ -25,9 +25,9 @@
     "cssnano-preset-advanced": "^8.0.2",
     "esbuild": "^0.28.1",
     "html-minifier-terser": "^7.2.0",
-    "median-js-bridge": "^2.18.1",
+    "median-js-bridge": "^2.19.0",
     "postcss-cli": "^11.0.1",
-    "sass": "^1.101.7",
+    "sass": "^1.102.0",
     "typescript": "^7.0.2"
   }
 }
