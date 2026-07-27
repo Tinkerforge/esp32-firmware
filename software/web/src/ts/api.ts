@@ -89,7 +89,8 @@ export function get_unchecked<T extends string>(topic: T): (T extends keyof Conf
 export class APIEventTarget implements EventTarget {
     private delegate = document.createDocumentFragment();
 
-    public addEventListener<T extends keyof EventMap>(type: T, listener: (this: APIEventTarget, ev: EventMap[T]) => any, options?: boolean | AddEventListenerOptions) : void;
+    public addEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions): void;
+    public addEventListener<T extends keyof EventMap>(type: T, listener: (this: APIEventTarget, ev: EventMap[T]) => any, options?: boolean | AddEventListenerOptions): void;
 
     public addEventListener(...args: any): void {
         this.delegate.addEventListener.apply(this.delegate, args);

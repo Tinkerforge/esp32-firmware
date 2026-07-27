@@ -1138,7 +1138,9 @@ def main():
         if branch_name == "master":
             dirty_suffix = '_' + git_commit_id
         else:
-            dirty_suffix = '_' + git_commit_id + "_" + branch_name.replace("_", "-")
+            # This is needed in order to be able to build on branches that contain slashes e.g. dependabot pull-requests
+            safe_branch_name = re.sub(r'[^A-Za-z0-9.-]+', '-', branch_name)
+            dirty_suffix = '_' + git_commit_id + "_" + safe_branch_name
 
     try:
         changelog_id = env.GetProjectOption("custom_changelog_id_override", product_id)
