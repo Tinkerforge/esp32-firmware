@@ -162,13 +162,14 @@ void EVSEV2::pre_setup()
     };
 
     energy_meter_display_backlight = ConfigRoot{Config::Object({
-        {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC,
-                                   TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF,
-                                   TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
-    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
-        is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, cfg.get("backlight")->asUint()));
-        return "";
-    }};
+            {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC,
+                                    TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF,
+                                    TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
+        }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, cfg.get("backlight")->asUint()));
+            return "";
+        }
+    };
 
 #if MODULE_AUTOMATION_AVAILABLE()
     // Create a temporary config that allocates a schema.
