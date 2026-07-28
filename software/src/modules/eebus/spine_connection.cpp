@@ -117,6 +117,9 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
     header.cmdClassifier = cmd_classifier;
     header.specificationVersion = SUPPORTED_SPINE_VERSION;
     header.addressSource = sender;
+    if (header.addressSource->device.isNull()) {
+        header.addressSource->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    }
 
     header.addressDestination = receiver;
     header.msgCounter = msg_id;

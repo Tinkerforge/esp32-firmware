@@ -288,7 +288,9 @@ void ShipConnection::send_current_outgoing_message()
         if (ws_client == nullptr) {
             eebus.trace_fmtln("Attempted send_current_outgoing on closed connection");
         } else {
-            if (ws_mode == WebsocketMode::HttpThreadCb) {
+            const char *task_name = pcTaskGetName(nullptr);
+
+            if (strcmp(task_name, "httpd") == 0) {
                 ws_mode = ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY) ? WebsocketMode::HttpThreadCbSuccess : WebsocketMode::HttpThreadCbFail;
             } else {
                 ws_client->send_async((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
