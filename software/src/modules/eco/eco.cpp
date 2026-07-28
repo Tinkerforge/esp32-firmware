@@ -69,12 +69,18 @@ void Eco::pre_setup()
         return "";
     }};
 
-    charge_plan = Config::Object({
+    charge_plan = ConfigRoot{Config::Object({
         {"enable",Config::Bool(false)},
         {"departure", Config::Enum(Departure::Daily)},
         {"time", Config::Uint(8*60, 0, 24*60)}, // localtime in minutes since 00:00
         {"amount", Config::Uint16(4)}  // h or kWh depending on configuration (currently only h supported)
-    });
+    }), [this](const Config &/*cfg*/, ConfigSource /*source*/) -> String {
+        state.get("last_save")->updateUint(rtc.timestamp_minutes());
+        // Decouple via task scheduler: update() must see the new charge_plan config.
+        task_scheduler.scheduleOnce([this](){this->update();});
+
+        return "";
+    }};
 
     state_chargers_prototype = Config::Object({
         {"start", Config::Uint32(0)}, // Start of charge (minutes since epoch)
@@ -124,12 +130,7 @@ void Eco::register_urls()
     api.addPersistentConfig("eco/config", &config);
     api.addState("eco/state",             &state);
 
-    api.addState("eco/charge_plan", &charge_plan);
-    api.addCommand("eco/charge_plan_update", &charge_plan, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        api.writeConfig("eco/charge_plan", &charge_plan);
-        state.get("last_save")->updateUint(rtc.timestamp_minutes());
-        update();
-    }, false);
+    api.addPersistentConfig("eco/charge_plan", &charge_plan);
 
     server.on("/eco/chart", HTTP_PUT, [this](WebServerRequest request) {
         timeval tv;
