@@ -9,7 +9,7 @@ updates:
         applies-to: "security-updates"
         patterns:
           - "*"
-  - package-ecosystem: "us"
+  - package-ecosystem: "uv"
     directory: "/software"
     schedule:
       interval: "daily"
