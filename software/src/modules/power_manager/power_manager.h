@@ -77,7 +77,6 @@ public:
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
     bool get_enabled() const;
-    ConfigChargeMode get_default_charge_mode() const;
     uint32_t get_guaranteed_power_w() const;
     uint32_t get_phase_switching_mode() const;
     uint32_t get_phases() const;

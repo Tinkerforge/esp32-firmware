@@ -153,14 +153,7 @@ private:
           A managed charger can request a charge mode change.
           This is the same as if this charger's value in charge_manager/charge_modes was updated:a charge move override for a single charging session.
 
-        - power_manager/config contains the "default_mode":
-          This is the default mode that will be used to de-override a charger's mode.
-
-          The default_mode can be ConfigChargeMode::Default.
-          This is used as a marker that power_manager/charge_mode should be persistent.
-
-          If power_manager/charge_mode is persistent, a charger's mode will be set to the **current** value of power_manager/charge_mode when unplugging the vehicle.
-          If it is not, the charger's mode will be set to power_manager/config["default_mode"]
+          A charger's mode will be set to the **current** value of power_manager/charge_mode when unplugging the vehicle.
 
         - The currently selected and all supported modes are sent to managed chargers (see cm_networking)
           The charger responds with a requested charge mode override or ConfigChargeMode::Default if it does not want to request an override.
@@ -225,7 +218,6 @@ private:
     uint16_t requested_current_margin;
 
     uint32_t guaranteed_pv_current;
-    ConfigChargeMode pm_default_charge_mode;
 
     ChargerAllocationState *charger_allocation_state = nullptr;
     CurrentAllocatorConfig *ca_config = nullptr;

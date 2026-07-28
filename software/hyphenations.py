@@ -453,7 +453,6 @@ de_hyph = [
     "Min-dest-lade-leistung",
     "Photo-voltaik",
     "Regel-ver-halten",
-    "Standard-lade-modus",
     "Un-voll-ständige",
     "kon-ser-va-tiv",
     "Fahr-zeug-lade-vor-gänge",

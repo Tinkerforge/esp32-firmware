@@ -255,10 +255,27 @@ void ChargeManager::pre_setup()
 
     charge_mode = Config::Array({}, new Config{Config::Enum(ConfigChargeMode::Default)}, 0, MAX_CONTROLLED_CHARGERS);
 
-    pm_charge_mode = Config::Object({
+    pm_charge_mode = ConfigRoot{Config::Object({
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
-    });
-    pm_charge_mode_update = pm_charge_mode;
+    }), [this](Config &cfg, ConfigSource /*source*/) -> String {
+        auto new_ccm = cfg.get("mode")->asEnum<ConfigChargeMode>();
+        auto old_ccm = this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>();
+
+        if (new_ccm == ConfigChargeMode::Default) {
+            new_ccm = old_ccm;
+            cfg.get("mode")->updateEnum(old_ccm);
+        }
+
+        auto new_mode = config_cm_to_cm(new_ccm);
+
+        for (size_t i = 0; i < charger_count; ++i) {
+            charger_state[i].charge_mode = new_mode;
+            this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(new_mode));
+        }
+
+        return "";
+    }};
+
 
     supported_charge_modes = Config::Tuple({Config::Enum(ConfigChargeMode::Off), Config::Enum(ConfigChargeMode::Fast)});
 
@@ -1282,21 +1299,14 @@ void ChargeManager::register_urls()
 #if MODULE_POWER_MANAGER_AVAILABLE()
     // PowerManager::setup() runs after ChargeManager::setup()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
-    this->pm_default_charge_mode = power_manager.get_default_charge_mode();
 #else
     this->guaranteed_pv_current = 0;
-    this->pm_default_charge_mode = ConfigChargeMode::Fast;
 #endif
 
-    if (this->pm_default_charge_mode == ConfigChargeMode::Default) {
-        if (api.restorePersistentConfig("power_manager/charge_mode", &this->pm_charge_mode, API::SavedDefaultConfig::Keep)) {
-            // The default's default is Fast. This is used if the default charge mode is set to Default, i.e. persistent,
-            // but the charge_mode was never written.
-            this->pm_charge_mode.get("mode")->updateEnum(ConfigChargeMode::Fast);
-        }
-    }
-    else {
-        this->pm_charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
+    if (!api.restorePersistentConfig("power_manager/charge_mode", &this->pm_charge_mode, API::SavedDefaultConfig::Keep)) {
+        // The default's default is Fast. This is used if the default charge mode is set to Default, i.e. persistent,
+        // but the charge_mode was never written.
+        this->pm_charge_mode.get("mode")->updateEnum(ConfigChargeMode::Fast);
     }
 
     auto default_mode = config_cm_to_cm(this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>());
@@ -1361,33 +1371,7 @@ void ChargeManager::register_urls()
     api.addState("charge_manager/supported_charge_modes", &supported_charge_modes);
 
     // This is power_manager API that is now handled by the charge manager.
-    api.addState("power_manager/charge_mode", &pm_charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &pm_charge_mode_update, {}, [this](Language /*language*/, String &errmsg) {
-        auto new_ccm = this->pm_charge_mode_update.get("mode")->asEnum<ConfigChargeMode>();
-        auto mode_is_persistent = this->pm_default_charge_mode == ConfigChargeMode::Default;
-
-        if (new_ccm == ConfigChargeMode::Default) {
-            if (mode_is_persistent)
-                return;  // Setting the mode to default is a nop if the mode is persistent. The default mode *is* the current value of the (persistent) charge mode.
-
-            new_ccm = this->pm_default_charge_mode;
-        }
-
-        this->pm_charge_mode.get("mode")->updateEnum(new_ccm);
-
-        auto new_mode = config_cm_to_cm(new_ccm);
-
-        for (size_t i = 0; i < charger_count; ++i) {
-            charger_state[i].charge_mode = new_mode;
-            this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(new_mode));
-        }
-
-        if (mode_is_persistent)
-            api.writeConfig("power_manager/charge_mode", &pm_charge_mode);
-
-        //logger.printfln("Charging mode %u requested but it was ignored", new_mode);
-        //errmsg = "Charge mode switch ignored";
-    }, false);
+    api.addPersistentConfig("power_manager/charge_mode", &pm_charge_mode);
 
     api.addCommand("charge_manager/authorize_charger", &authorize_charger, {}, [this](Language /*language*/, String &errmsg) {
         uint8_t charger_idx = this->authorize_charger.get("charger_idx")->asUint();
@@ -1554,12 +1538,7 @@ void ChargeManager::update_supported_charge_modes(bool pv, bool eco) {
 }
 
 ConfigChargeMode ChargeManager::get_default_mode() {
-    if (this->pm_default_charge_mode != ConfigChargeMode::Default)
-        return this->pm_default_charge_mode;
-    // default mode == default means persistent.
-    // Use the currently selected charge mode (for all chargers)
-
-    return this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>();
+   return this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>();
 }
 
 void ChargeManager::register_events() {

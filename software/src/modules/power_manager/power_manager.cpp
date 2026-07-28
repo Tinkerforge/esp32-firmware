@@ -1143,11 +1143,6 @@ bool PowerManager::get_enabled() const
     return config.get("enabled")->asBool();
 }
 
-ConfigChargeMode PowerManager::get_default_charge_mode() const
-{
-    return config.get("default_mode")->asEnum<ConfigChargeMode>();
-}
-
 uint32_t PowerManager::get_guaranteed_power_w() const
 {
     return config.get("guaranteed_power")->asUint();

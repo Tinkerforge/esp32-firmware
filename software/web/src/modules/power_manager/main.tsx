@@ -201,11 +201,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         if (!util.render_allowed())
             return <SubPage name="pv_excess_settings" />;
 
-        let mode_list: StringStringTuple[] = [[ConfigChargeMode.Default.toString(), __("power_manager.content.default_mode_persist")]]
-
-        mode_list = mode_list.concat(get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
-                                             .map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)]));
-
         const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"), MeterLocation.Grid, __("power_manager.content.meter_slot_grid_power_incorrect_location"));
 
         let meter_slots_for_battery = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff, MeterValueID.PowerDCImExDiff, MeterValueID.PowerDCChaDisDiff], NoninternalMeterSelector.AnyValue, __("power_manager.content.meter_slot_battery_power_missing_value"), MeterLocation.Battery, __("power_manager.content.meter_slot_battery_power_incorrect_location"));
@@ -235,8 +230,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                         this.setState({phase_switching_mode: parseInt(v)});
                         if (v == "3") {
                             this.setState({
-                                excess_charging_enable: false,
-                                default_mode: 0,
+                                excess_charging_enable: false
                             });
                         }
                     }}
@@ -294,14 +288,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             </FormRow>
                         </div>
                     </Collapse>
-
-                    <FormRow label={__("power_manager.content.default_mode")} label_muted={__("power_manager.content.default_mode_muted")}>
-                        <InputSelect
-                            items={mode_list}
-                            value={s.default_mode}
-                            onValue={s.phase_switching_mode == 3 ? undefined : (v) => this.setState({default_mode: parseInt(v)})}
-                        />
-                    </FormRow>
 
                     <Collapse in={s.excess_charging_enable || !is_em_v1}>
                         <div>
