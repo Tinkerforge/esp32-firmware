@@ -219,18 +219,18 @@ IPType tf_parse_ip_address(const char *str, ip_addr_t *out)
     // Try IPv4 first (most common case)
     if (ip4addr_aton(str, &dest->u_addr.ip4)) {
         dest->type = IPADDR_TYPE_V4;
-        return IPv4;
+        return IPType::IPv4;
     }
 
 #if CONFIG_LWIP_IPV6
     // Try IPv6
     if (ip6addr_aton(str, &dest->u_addr.ip6)) {
         dest->type = IPADDR_TYPE_V6;
-        return IPv6;
+        return IPType::IPv6;
     }
 #endif
 
-    return IPv4;
+    return IPType::IPv4;
 }
 uint8_t tf_ipaddr_mask2cidr(const ip_addr_t &mask)
 {
