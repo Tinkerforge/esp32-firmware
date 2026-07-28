@@ -896,25 +896,29 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 
 void EEBus::update_peers_state()
 {
-    // Update state API with all peers (both persistent and discovered)
-    state.get("peers")->removeAll();
-    auto peers = ship.peer_handler.get_peers();
-    for (const std::shared_ptr<ShipNode> &node : peers) {
-        auto peer = state.get("peers")->add();
-        peer->get("ip")->updateString(node->ip_address_as_string());
-        peer->get("port")->updateUint(node->port);
-        peer->get("trusted")->updateBool(node->trusted);
-        peer->get("dns_name")->updateString(node->dns_name);
-        peer->get("id")->updateString(node->txt_id);
-        peer->get("wss_path")->updateString(node->txt_wss_path);
-        peer->get("ski")->updateString(node->txt_ski);
-        peer->get("autoregister")->updateBool(node->txt_autoregister);
-        peer->get("model_brand")->updateString(node->txt_brand);
-        peer->get("model_model")->updateString(node->txt_model);
-        peer->get("model_type")->updateString(node->txt_type);
-        peer->get("state")->updateEnum(node->state);
-        peer->get("persistent")->updateBool(node->persistent);
-    }
+    task_scheduler.scheduleOnce(
+        [this]() {
+            // Update state API with all peers (both persistent and discovered)
+            state.get("peers")->removeAll();
+            auto peers = ship.peer_handler.get_peers();
+            for (const std::shared_ptr<ShipNode> &node : peers) {
+                auto peer = state.get("peers")->add();
+                peer->get("ip")->updateString(node->ip_address_as_string());
+                peer->get("port")->updateUint(node->port);
+                peer->get("trusted")->updateBool(node->trusted);
+                peer->get("dns_name")->updateString(node->dns_name);
+                peer->get("id")->updateString(node->txt_id);
+                peer->get("wss_path")->updateString(node->txt_wss_path);
+                peer->get("ski")->updateString(node->txt_ski);
+                peer->get("autoregister")->updateBool(node->txt_autoregister);
+                peer->get("model_brand")->updateString(node->txt_brand);
+                peer->get("model_model")->updateString(node->txt_model);
+                peer->get("model_type")->updateString(node->txt_type);
+                peer->get("state")->updateEnum(node->state);
+                peer->get("persistent")->updateBool(node->persistent);
+            }
+        },
+        0_s);
 }
 
 void EEBus::update_peers_config()
