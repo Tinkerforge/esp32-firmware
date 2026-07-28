@@ -1472,7 +1472,9 @@ void Wifi::apply_ipv6_sta_config()
                     esp_netif_dns_info_t dns_info;
                     dns_info.ip.type = ESP_IPADDR_TYPE_V6;
                     dns_info.ip.u_addr.ip6 = dns_addr;
-                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {                          esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
+                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 
+                            && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) 
+                        || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {
                         esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
                     }
                 }
