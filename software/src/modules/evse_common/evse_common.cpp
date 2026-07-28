@@ -516,17 +516,17 @@ bool EvseCommon::apply_defaults()
 void EvseCommon::setup()
 {
     // If any config is not persisted yet, write them all after the first call to update_all_data
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/auto_start_charging", &auto_start_charging);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/global_current", &global_current);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/management_enabled", &management_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/user_enabled", &user_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_enabled", &external_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_defaults", &external_defaults);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/modbus_enabled", &modbus_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ocpp_enabled", &ocpp_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/eebus_enabled", &eebus_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/p14a_enwg_enabled", &p14a_enwg_enabled);
-    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/boost_mode", &boost_mode);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/auto_start_charging", &auto_start_charging, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/global_current", &global_current, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/management_enabled", &management_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/user_enabled", &user_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_enabled", &external_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_defaults", &external_defaults, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/modbus_tcp_enabled", &modbus_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ocpp_enabled", &ocpp_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/eebus_enabled", &eebus_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/p14a_enwg_enabled", &p14a_enwg_enabled, API::SavedDefaultConfig::Keep);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/boost_mode", &boost_mode, API::SavedDefaultConfig::Keep);
 
     api.restorePersistentConfig("evse/meter_config", &meter_config);
     charger_meter_slot = meter_config.get("slot")->asUint();

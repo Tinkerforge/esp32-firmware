@@ -209,13 +209,13 @@ void EVSEV2::setup()
     // Intentionally don't set initialized to true here: we want EvseCommon to decide this.
 
     // If any config is not persisted yet, write them all after the first call to update_all_data
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/gpio_configuration", &gpio_configuration);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/button_configuration", &button_configuration);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ev_wakeup", &ev_wakeup);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_auto_switch", &phase_auto_switch);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phases_connected", &phases_connected);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_switch_wait_time", &phase_switch_wait_time);
-    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/gpio_configuration", &gpio_configuration, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/button_configuration", &button_configuration, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ev_wakeup", &ev_wakeup, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_auto_switch", &phase_auto_switch, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phases_connected", &phases_connected, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_switch_wait_time", &phase_switch_wait_time, API::SavedDefaultConfig::Keep);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/energy_meter_display_backlight", &energy_meter_display_backlight, API::SavedDefaultConfig::Keep);
 }
 
 void EVSEV2::post_setup()
