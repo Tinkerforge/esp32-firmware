@@ -1368,7 +1368,7 @@ void ChargeManager::register_urls()
 
         if (new_ccm == ConfigChargeMode::Default) {
             if (mode_is_persistent)
-                return;  // Setting the mode to default is a nop if the mode is persistent. The default mode *is* the current value of the (persistent) charge mdoe.
+                return;  // Setting the mode to default is a nop if the mode is persistent. The default mode *is* the current value of the (persistent) charge mode.
 
             new_ccm = this->pm_default_charge_mode;
         }
