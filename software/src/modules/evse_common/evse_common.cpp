@@ -94,6 +94,9 @@ void EvseCommon::pre_setup()
     auto_start_charging = ConfigRoot{Config::Object({
             {"auto_start_charging", Config::Bool(true)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             if (cfg.get("auto_start_charging")->asBool()) {
                 apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 32000, true, false);
             } else {
@@ -107,6 +110,9 @@ void EvseCommon::pre_setup()
     global_current = ConfigRoot{
         current_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             apply_slot_default(CHARGING_SLOT_GLOBAL, cfg.get("current")->asUint(), true, false);
 
             return "";
@@ -116,6 +122,9 @@ void EvseCommon::pre_setup()
     management_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             bool enabled = cfg.get("enabled")->asBool();
 
             if (enabled)
@@ -145,6 +154,9 @@ void EvseCommon::pre_setup()
     user_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource source) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             bool enabled = cfg.get("enabled")->asBool();
 
 #if MODULE_USERS_AVAILABLE()
@@ -166,6 +178,9 @@ void EvseCommon::pre_setup()
     external_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             // We don't allow to disable the external slot anymore.
             // However removing the API is a breaking change and calling evse/external_enabled_update with false
             // should set the slot to 32 A to unblock the charger.
@@ -182,6 +197,9 @@ void EvseCommon::pre_setup()
             {"current", Config::Uint16(0)},
             {"clear_on_disconnect", Config::Bool(false)},
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             apply_slot_default(CHARGING_SLOT_EXTERNAL, cfg.get("current")->asUint(), true, cfg.get("clear_on_disconnect")->asBool());
             return "";
         }
@@ -190,6 +208,9 @@ void EvseCommon::pre_setup()
     modbus_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             if (cfg.get("enabled")->asBool()) {
                 apply_slot_default(CHARGING_SLOT_MODBUS_TCP,        32000, true, false);
                 apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
@@ -206,6 +227,9 @@ void EvseCommon::pre_setup()
     ocpp_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             if (cfg.get("enabled")->asBool()) {
                 apply_slot_default(CHARGING_SLOT_OCPP, 32000, true, false);
             }
@@ -220,6 +244,9 @@ void EvseCommon::pre_setup()
     eebus_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             if (cfg.get("enabled")->asBool()) {
                 apply_slot_default(CHARGING_SLOT_EEBUS, 32000, true, false);
             }
@@ -234,6 +261,9 @@ void EvseCommon::pre_setup()
     p14a_enwg_enabled = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             if (cfg.get("enabled")->asBool()) {
                 apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
             }
@@ -248,6 +278,9 @@ void EvseCommon::pre_setup()
     boost_mode = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!backend->is_initialized())
+                return "";
+
             backend->set_boost_mode(cfg.get("enabled")->asBool());
 
             return "";

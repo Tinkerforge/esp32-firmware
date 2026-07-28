@@ -119,6 +119,9 @@ void EVSEV2::pre_setup()
             {"input", Config::Uint8(0)},
             {"output", Config::Uint8(0)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const uint8_t shutdown_input = cfg.get("shutdown_input")->asUint();
             const uint8_t input = cfg.get("input")->asUint();
             const uint8_t output = cfg.get("output")->asUint();
@@ -132,6 +135,9 @@ void EVSEV2::pre_setup()
     button_configuration = ConfigRoot{Config::Object({
             {"button", Config::Uint8(2)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const uint8_t button = cfg.get("button")->asUint();
             is_in_bootloader(io_scheduler.hal_call([this, button]() { return tf_evse_v2_set_button_configuration(&device, button); }));
             return "";
@@ -141,6 +147,9 @@ void EVSEV2::pre_setup()
     ev_wakeup = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const bool enabled = cfg.get("enabled")->asBool();
             is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_ev_wakeup(&device, enabled); }));
             return "";
@@ -150,6 +159,9 @@ void EVSEV2::pre_setup()
     phase_auto_switch = ConfigRoot{
         enabled_cfg,
         [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const bool enabled = cfg.get("enabled")->asBool();
             is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_phase_auto_switch(&device, enabled); }));
             return "";
@@ -159,6 +171,9 @@ void EVSEV2::pre_setup()
     phases_connected = ConfigRoot{Config::Object({
             {"phases", Config::Uint8(0)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const uint8_t phases = cfg.get("phases")->asUint();
             is_in_bootloader(io_scheduler.hal_call([this, phases]() { return tf_evse_v2_set_phases_connected(&device, phases); }));
             return "";
@@ -168,6 +183,9 @@ void EVSEV2::pre_setup()
     phase_switch_wait_time = ConfigRoot{Config::Object({
             {"time", Config::Uint8(0)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const uint8_t time = cfg.get("time")->asUint();
             is_in_bootloader(io_scheduler.hal_call([this, time]() { return tf_evse_v2_set_phase_switch_wait_time(&device, time); }));
             return "";
@@ -179,6 +197,9 @@ void EVSEV2::pre_setup()
                                     TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF,
                                     TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
         }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+            if (!this->is_initialized())
+                return "";
+
             const uint8_t backlight = cfg.get("backlight")->asUint();
             is_in_bootloader(io_scheduler.hal_call([this, backlight]() { return tf_evse_v2_set_energy_meter_display_backlight(&device, backlight); }));
             return "";
