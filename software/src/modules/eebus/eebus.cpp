@@ -23,10 +23,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "generated/node_state.enum.h"
-#include "modules/meters/generated/meter_location.enum.h"
-#include "ship.h"
 #include "generated/ship_connection_state.enum.h"
 #include "generated/ship_discovery_state.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
+#include "ship.h"
 #include <LittleFS.h>
 #include <TFJson.h>
 
@@ -273,7 +273,6 @@ static void run_eebus_usecase_tests()
 }
 
 #endif // EEBUS_DEV_TEST_ENABLE
-
 
 static constexpr MeterValueID mvids[] = {
     MeterValueID::CurrentL1ImExDiff,
@@ -610,6 +609,7 @@ void EEBus::register_urls()
             peer->trusted = add_peer.get("trusted")->asBool();
             peer->dns_name = add_peer.get("dns_name")->asString();
             peer->txt_wss_path = add_peer.get("wss_path")->asString();
+            peer->persistent = peer->persistent || peer->trusted; // A trusted peer is always persistent
 
             sync_persistent_peer_to_config(ship.peer_handler.get_peer_by_ski(ski));
 
@@ -694,7 +694,6 @@ void EEBus::register_urls()
     // toggle_module will register URI handlers and cannot be started during the setup stage.
     toggle_module();
 }
-
 
 // ============================================================================
 // Event Registration
