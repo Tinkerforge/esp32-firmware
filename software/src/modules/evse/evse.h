@@ -82,6 +82,8 @@ protected:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
     void update_all_data() override;
+
+    void write_persistent_config_to_evse() override {};
     //End IEvseBackend implementation
 
     // PhaseSwitcherBackend implementation

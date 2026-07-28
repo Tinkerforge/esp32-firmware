@@ -115,6 +115,8 @@ protected:
     virtual int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) = 0;
     // End: Pass through to bindings functions
 
+    virtual void write_persistent_config_to_evse() = 0;
+
     virtual void update_all_data() = 0;
 };
 

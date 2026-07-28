@@ -544,6 +544,25 @@ void EvseCommon::setup()
     if (!backend->is_initialized())
         return;
 
+    if (evse_configs_in_esp_flash) {
+        // We have all EVSE configs; overwrite the EVSE's values.
+        // This has to happen after we've restored all configs,
+        // but before calling update_all_data for the first time.
+        auto_start_charging.validate(ConfigSource::File);
+        global_current.validate(ConfigSource::File);
+        management_enabled.validate(ConfigSource::File);
+        user_enabled.validate(ConfigSource::File);
+        external_enabled.validate(ConfigSource::File);
+        external_defaults.validate(ConfigSource::File);
+        modbus_enabled.validate(ConfigSource::File);
+        ocpp_enabled.validate(ConfigSource::File);
+        eebus_enabled.validate(ConfigSource::File);
+        p14a_enwg_enabled.validate(ConfigSource::File);
+        boost_mode.validate(ConfigSource::File);
+
+        backend->write_persistent_config_to_evse();
+    }
+
     // Get all data once before announcing the EVSE feature.
     backend->update_all_data();
     api.addFeature("evse");

@@ -1379,6 +1379,16 @@ void EVSEV2::update_all_data()
     }
 }
 
+void EVSEV2::write_persistent_config_to_evse()
+{
+    gpio_configuration.validate(ConfigSource::File);
+    button_configuration.validate(ConfigSource::File);
+    ev_wakeup.validate(ConfigSource::File);
+    phase_auto_switch.validate(ConfigSource::File);
+    phases_connected.validate(ConfigSource::File);
+    phase_switch_wait_time.validate(ConfigSource::File);
+}
+
 uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
 {
     uint16_t len = 0;

@@ -97,6 +97,8 @@ protected:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
+    void write_persistent_config_to_evse() override;
+
     // PhaseSwitcherBackend implementation
     uint32_t get_phase_switcher_priority() override {return 12;}
     bool phase_switching_capable() override;
