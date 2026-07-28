@@ -56,7 +56,7 @@ public:
     // IModule implementation (inherited through DeviceModule and IEvseBackend)
     void pre_init() override;
     void pre_setup() override;
-    void setup() override {}; // Override empty: Base method sets initialized to true, but we want EvseCommon to decide this.
+    void setup() override;
     void register_urls() override {this->DeviceModule::register_urls();};
     void register_events() override;
 
@@ -144,23 +144,16 @@ public:
 private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;
-    ConfigRoot gpio_configuration_update;
     ConfigRoot button_configuration;
-    ConfigRoot button_configuration_update;
     ConfigRoot ev_wakeup;
-    ConfigRoot ev_wakeup_update;
     ConfigRoot phase_auto_switch;
-    ConfigRoot phase_auto_switch_update;
     ConfigRoot phases_connected;
-    ConfigRoot phases_connected_update;
     ConfigRoot control_pilot_disconnect;
     ConfigRoot control_pilot_disconnect_update;
     ConfigRoot gp_output;
     ConfigRoot gp_output_update;
     ConfigRoot phase_switch_wait_time;
-    ConfigRoot phase_switch_wait_time_update;
     ConfigRoot energy_meter_display_backlight;
-    ConfigRoot energy_meter_display_backlight_update;
 };
 
 #include "generated/module_available_end.h"

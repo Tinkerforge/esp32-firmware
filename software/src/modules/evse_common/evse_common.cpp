@@ -45,6 +45,11 @@ EvseCommon::EvseCommon()
 
 void EvseCommon::pre_setup()
 {
+    auto enabled_cfg = Config::Object({{"enabled", Config::Bool(false)}});
+
+    auto current_cfg = Config::Object({{"current", Config::Uint16(32000)}});
+
+    // States
     button_state = Config::Object({
         {"button_press_time", Config::Uint32(0)},
         {"button_release_time", Config::Uint32(0)},
@@ -65,28 +70,6 @@ void EvseCommon::pre_setup()
         {"color_v", Config::Uint8(0)},
     });
 
-    auto_start_charging = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    auto_start_charging_update = Config::Object({
-        {"auto_start_charging", Config::Bool(true)}
-    });
-
-    auto current_cfg = Config::Object({
-        {"current", Config::Uint16(32000)}
-    });
-
-    global_current = current_cfg;
-    global_current_update = global_current;
-
-    auto enabled_cfg = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-
-    management_enabled = enabled_cfg;
-    management_enabled_update = management_enabled;
-
     management_state = Config::Object({
         {"central_user_management_enabled", Config::Bool(false)},
         {"manager_ip", Config::Str("0.0.0.0", 7, 15)},
@@ -94,20 +77,7 @@ void EvseCommon::pre_setup()
 
     user_current = current_cfg;
 
-    user_enabled = enabled_cfg;
-    user_enabled_update = user_enabled;
-
-    external_enabled = enabled_cfg;
-    external_enabled_update = external_enabled;
-
-    external_defaults = Config::Object({
-        {"current", Config::Uint16(0)},
-        {"clear_on_disconnect", Config::Bool(false)},
-    });
-    external_defaults_update = external_defaults;
-
-    management_current = current_cfg;
-    management_current_update = management_current;
+    // Actions
 
     external_current = current_cfg;
     external_current_update = external_current;
@@ -115,27 +85,237 @@ void EvseCommon::pre_setup()
     external_clear_on_disconnect = Config::Object({
         {"clear_on_disconnect", Config::Bool(false)}
     });
-
     external_clear_on_disconnect_update = external_clear_on_disconnect;
 
-    modbus_enabled = enabled_cfg;
-    modbus_enabled_update = modbus_enabled;
+    management_current = current_cfg;
+    management_current_update = management_current;
 
-    ocpp_enabled = enabled_cfg;
-    ocpp_enabled_update = ocpp_enabled;
+    // EVSE configs
+    auto_start_charging = ConfigRoot{Config::Object({
+        {"auto_start_charging", Config::Bool(true)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        // 1. set auto start
+        // 2. make persistent
+        // 3. fake a start/stop charging
 
-    eebus_enabled = enabled_cfg;
-    eebus_enabled_update = eebus_enabled;
+        bool enable_auto_start = cfg.get("auto_start_charging")->asBool();
 
-    p14a_enwg_enabled = enabled_cfg;
-    p14a_enwg_enabled_update = p14a_enwg_enabled;
+        backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_AUTOSTART_BUTTON, !enable_auto_start);
 
-    boost_mode = enabled_cfg;
-    boost_mode_update = boost_mode;
+        if (enable_auto_start) {
+            apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 32000, true, false);
+        } else {
+            apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 0, true, true);
+        }
 
+        if (enable_auto_start) {
+            backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 32000);
+        } else {
+            // Only "stop" charging if no car is currently plugged in.
+            // Clear on disconnect only triggers once, so we have to zero the current manually here.
+            uint8_t iec_state = state.get("iec61851_state")->asUint();
+            if (iec_state != 2 && iec_state != 3)
+                backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 0);
+        }
+
+        return "";
+    }};
+
+    global_current = ConfigRoot{
+        current_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        uint16_t current = cfg.get("current")->asUint();
+        backend->set_charging_slot_max_current(CHARGING_SLOT_GLOBAL, current);
+        apply_slot_default(CHARGING_SLOT_GLOBAL, current, true, false);
+
+        return "";
+    }};
+
+    management_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == management_enabled.get("enabled")->asBool())
+            return "";
+
+        if (enabled)
+            backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
+        else
+            backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
+
+        if (enabled)
+            apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
+        else
+            apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
+
+#if MODULE_EVSE_V2_AVAILABLE()
+        if (!enabled) {
+            constexpr uint16_t h_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t s_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t v_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+
+            evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
+        }
+#endif
+        return "";
+    }};
+
+    user_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == user_enabled.get("enabled")->asBool())
+            return "";
+
+#if MODULE_USERS_AVAILABLE()
+        if (enabled) {
+            users.stop_charging(0, true);
+        }
+#endif
+
+        if (enabled)
+            backend->set_charging_slot(CHARGING_SLOT_USER, 0, true, true);
+        else
+            backend->set_charging_slot(CHARGING_SLOT_USER, 32000, false, false);
+
+        if (enabled)
+            apply_slot_default(CHARGING_SLOT_USER, 0, true, true);
+        else
+            apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
+
+        return "";
+    }};
+
+    external_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        // We don't allow to disable the external slot anymore.
+        // However removing the API is a breaking change and calling evse/external_enabled_update with false
+        // should set the slot to 32 A to unblock the charger.
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == external_enabled.get("enabled")->asBool())
+            return "";
+
+        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, 32000, true, false);
+        apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, true, false);
+
+        return "";
+    }};
+
+    external_defaults = ConfigRoot{Config::Object({
+        {"current", Config::Uint16(0)},
+        {"clear_on_disconnect", Config::Bool(false)},
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        apply_slot_default(CHARGING_SLOT_EXTERNAL, cfg.get("current")->asUint(), true, cfg.get("clear_on_disconnect")->asBool());
+        return "";
+    }};
+
+    modbus_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == modbus_enabled.get("enabled")->asBool())
+            return "";
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
+
+
+            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
+
+            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
+        }
+
+        return "";
+    }};
+
+    ocpp_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == ocpp_enabled.get("enabled")->asBool())
+            return "";
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_OCPP, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_OCPP, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_OCPP, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
+        }
+
+        return "";
+    }};
+
+    eebus_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == eebus_enabled.get("enabled")->asBool())
+            return "";
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, false, false);
+        }
+
+        return "";
+    }};
+
+    p14a_enwg_enabled = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        bool enabled = cfg.get("enabled")->asBool();
+
+        if (enabled == p14a_enwg_enabled.get("enabled")->asBool())
+            return "";
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
+        }
+
+        return "";
+    }};
+
+    boost_mode = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        backend->set_boost_mode(cfg.get("enabled")->asBool());
+
+        return "";
+    }};
+
+    // This is not persisted here, but in the require_meter/config
     require_meter_enabled = enabled_cfg;
-
-    require_meter_enabled_update = require_meter_enabled;
 
     meter_config = Config::Object({
         {"slot", Config::Uint8(0)}
@@ -324,6 +504,19 @@ bool EvseCommon::apply_defaults()
 
 void EvseCommon::setup()
 {
+    // If any config is not persisted yet, write them all after the first call to update_all_data
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/auto_start_charging", &auto_start_charging);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/global_current", &global_current);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/management_enabled", &management_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/user_enabled", &user_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_enabled", &external_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/external_defaults", &external_defaults);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/modbus_enabled", &modbus_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ocpp_enabled", &ocpp_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/eebus_enabled", &eebus_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/p14a_enwg_enabled", &p14a_enwg_enabled);
+    evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/boost_mode", &boost_mode);
+
     api.restorePersistentConfig("evse/meter_config", &meter_config);
     charger_meter_slot = meter_config.get("slot")->asUint();
 
@@ -683,6 +876,9 @@ void EvseCommon::register_urls()
     api.addState("evse/button_state", &button_state, {}, {}, true);
     api.addState("evse/slots", &slots);
     api.addState("evse/indicator_led", &indicator_led);
+    api.addState("evse/management_state", &management_state);
+    api.addState("evse/user_current", &user_current);
+    api.addState("evse/enumerate_value", &enumerate_value);
 
     //Actions
     api.addCommand("evse/stop_charging", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
@@ -712,203 +908,6 @@ void EvseCommon::register_urls()
 
     api.addState("evse/management_current", &management_current);
 
-    api.addState("evse/boost_mode", &boost_mode);
-    api.addCommand("evse/boost_mode_update", &boost_mode_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        backend->set_boost_mode(boost_mode_update.get("enabled")->asBool());
-    }, true);
-
-    api.addState("evse/auto_start_charging", &auto_start_charging);
-    api.addCommand("evse/auto_start_charging_update", &auto_start_charging_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        // 1. set auto start
-        // 2. make persistent
-        // 3. fake a start/stop charging
-
-        bool enable_auto_start = auto_start_charging_update.get("auto_start_charging")->asBool();
-
-        backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_AUTOSTART_BUTTON, !enable_auto_start);
-
-        if (enable_auto_start) {
-            apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 32000, true, false);
-        } else {
-            apply_slot_default(CHARGING_SLOT_AUTOSTART_BUTTON, 0, true, true);
-        }
-
-        if (enable_auto_start) {
-            backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 32000);
-        } else {
-            // Only "stop" charging if no car is currently plugged in.
-            // Clear on disconnect only triggers once, so we have to zero the current manually here.
-            uint8_t iec_state = state.get("iec61851_state")->asUint();
-            if (iec_state != 2 && iec_state != 3)
-                backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 0);
-        }
-    }, false);
-
-    api.addState("evse/global_current", &global_current);
-    api.addCommand("evse/global_current_update", &global_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        uint16_t current = global_current_update.get("current")->asUint();
-        backend->set_charging_slot_max_current(CHARGING_SLOT_GLOBAL, current);
-        apply_slot_default(CHARGING_SLOT_GLOBAL, current, true, false);
-    }, false);
-
-    api.addState("evse/management_enabled", &management_enabled);
-    api.addState("evse/management_state", &management_state);
-    api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = management_enabled_update.get("enabled")->asBool();
-
-        if (enabled == management_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled)
-            backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
-        else
-            backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
-
-        if (enabled)
-            apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, true, true);
-        else
-            apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 32000, false, false);
-
-#if MODULE_EVSE_V2_AVAILABLE()
-        if (!enabled) {
-            constexpr uint16_t h_0[] {
-                0, 0, 0, 0, 0, 0, 0, 0
-            };
-            constexpr uint8_t s_0[] {
-                0, 0, 0, 0, 0, 0, 0, 0
-            };
-            constexpr uint8_t v_0[] {
-                0, 0, 0, 0, 0, 0, 0, 0
-            };
-
-            evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
-        }
-#endif
-    }, false);
-
-    api.addState("evse/user_current", &user_current);
-    api.addState("evse/user_enabled", &user_enabled);
-    api.addCommand("evse/user_enabled_update", &user_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = user_enabled_update.get("enabled")->asBool();
-
-        if (enabled == user_enabled.get("enabled")->asBool())
-            return;
-
-#if MODULE_USERS_AVAILABLE()
-        if (enabled) {
-            users.stop_charging(0, true);
-        }
-#endif
-
-        if (enabled)
-            backend->set_charging_slot(CHARGING_SLOT_USER, 0, true, true);
-        else
-            backend->set_charging_slot(CHARGING_SLOT_USER, 32000, false, false);
-
-        if (enabled)
-            apply_slot_default(CHARGING_SLOT_USER, 0, true, true);
-        else
-            apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
-    }, false);
-
-    // We don't allow to disable the external slot anymore.
-    // However removing the API is a breaking change and calling evse/external_enabled_update with false
-    // should set the slot to 32 A to unblock the charger.
-    api.addState("evse/external_enabled", &external_enabled);
-    api.addCommand("evse/external_enabled_update", &external_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = external_enabled_update.get("enabled")->asBool();
-
-        if (enabled == external_enabled.get("enabled")->asBool())
-            return;
-
-        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, 32000, true, false);
-        apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, true, false);
-    }, false);
-
-    api.addState("evse/external_defaults", &external_defaults);
-    api.addCommand("evse/external_defaults_update", &external_defaults_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        apply_slot_default(CHARGING_SLOT_EXTERNAL, external_defaults_update.get("current")->asUint(), true, external_defaults_update.get("clear_on_disconnect")->asBool());
-    }, false);
-
-    api.addState("evse/modbus_tcp_enabled", &modbus_enabled);
-    api.addCommand("evse/modbus_tcp_enabled_update", &modbus_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = modbus_enabled_update.get("enabled")->asBool();
-
-        if (enabled == modbus_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
-            apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, true, false);
-
-
-            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
-            apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, true, false);
-        }
-        else {
-            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
-            apply_slot_default(CHARGING_SLOT_MODBUS_TCP, 32000, false, false);
-
-            backend->set_charging_slot(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
-            apply_slot_default(CHARGING_SLOT_MODBUS_TCP_ENABLE, 32000, false, false);
-        }
-    }, false);
-
-    api.addState("evse/ocpp_enabled", &ocpp_enabled);
-    api.addCommand("evse/ocpp_enabled_update", &ocpp_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = ocpp_enabled_update.get("enabled")->asBool();
-
-        if (enabled == ocpp_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            backend->set_charging_slot(CHARGING_SLOT_OCPP, 32000, true, false);
-            apply_slot_default(CHARGING_SLOT_OCPP, 32000, true, false);
-        }
-        else {
-            backend->set_charging_slot(CHARGING_SLOT_OCPP, 32000, false, false);
-            apply_slot_default(CHARGING_SLOT_OCPP, 32000, false, false);
-        }
-    }, false);
-
-    api.addState("evse/eebus_enabled", &eebus_enabled);
-    api.addCommand("evse/eebus_enabled_update", &eebus_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = eebus_enabled_update.get("enabled")->asBool();
-
-        if (enabled == eebus_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, true, false);
-            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, true, false);
-        }
-        else {
-            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, false, false);
-            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, false, false);
-        }
-    }, false);
-
-    api.addState("evse/p14a_enwg_enabled", &p14a_enwg_enabled);
-    api.addCommand("evse/p14a_enwg_enabled_update", &p14a_enwg_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        bool enabled = p14a_enwg_enabled_update.get("enabled")->asBool();
-
-        if (enabled == p14a_enwg_enabled.get("enabled")->asBool())
-            return;
-
-        if (enabled) {
-            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
-            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
-        }
-        else {
-            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
-            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
-        }
-    }, false);
-
-    api.addPersistentConfig("evse/meter_config", &meter_config);
-
-    backend->post_register_urls();
-
 #if MODULE_AUTOMATION_AVAILABLE()
     handle_external_current_wd_task();
 
@@ -929,10 +928,25 @@ void EvseCommon::register_urls()
     api.addState("evse/automation_current", &automation_current);
     api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
-    }, false); //TODO: should this be an action?
+    }, false);
 #endif
 
-    api.addState("evse/enumerate_value", &enumerate_value);
+    // EVSE configs
+    api.addPersistentConfig("evse/boost_mode", &boost_mode);
+    api.addPersistentConfig("evse/auto_start_charging", &auto_start_charging);
+    api.addPersistentConfig("evse/global_current", &global_current);
+    api.addPersistentConfig("evse/management_enabled", &management_enabled);
+    api.addPersistentConfig("evse/user_enabled", &user_enabled);
+    api.addPersistentConfig("evse/external_enabled", &external_enabled);
+    api.addPersistentConfig("evse/external_defaults", &external_defaults);
+    api.addPersistentConfig("evse/modbus_tcp_enabled", &modbus_enabled);
+    api.addPersistentConfig("evse/ocpp_enabled", &ocpp_enabled);
+    api.addPersistentConfig("evse/eebus_enabled", &eebus_enabled);
+    api.addPersistentConfig("evse/p14a_enwg_enabled", &p14a_enwg_enabled);
+
+    api.addPersistentConfig("evse/meter_config", &meter_config);
+
+    backend->post_register_urls();
 }
 
 void EvseCommon::register_events()

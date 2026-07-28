@@ -656,4 +656,20 @@ void EVSE::update_all_data()
     static size_t watchdog_handle = watchdog.add("evse_all_data", "EVSE not reachable");
     watchdog.reset(watchdog_handle);
 #endif
+
+    if (!evse_common.evse_configs_in_esp_flash) {
+        API::writeConfig("evse/boost_mode", &evse_common.boost_mode);
+        API::writeConfig("evse/auto_start_charging", &evse_common.auto_start_charging);
+        API::writeConfig("evse/global_current", &evse_common.global_current);
+        API::writeConfig("evse/management_enabled", &evse_common.management_enabled);
+        API::writeConfig("evse/user_enabled", &evse_common.user_enabled);
+        API::writeConfig("evse/external_enabled", &evse_common.external_enabled);
+        API::writeConfig("evse/external_defaults", &evse_common.external_defaults);
+        API::writeConfig("evse/modbus_tcp_enabled", &evse_common.modbus_enabled);
+        API::writeConfig("evse/ocpp_enabled", &evse_common.ocpp_enabled);
+        API::writeConfig("evse/eebus_enabled", &evse_common.eebus_enabled);
+        API::writeConfig("evse/p14a_enwg_enabled", &evse_common.p14a_enwg_enabled);
+
+        evse_common.evse_configs_in_esp_flash = true;
+    }
 }

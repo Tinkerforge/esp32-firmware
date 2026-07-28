@@ -50,6 +50,8 @@ void EVSEV2::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
+    auto enabled_cfg = Config::Object({{"enabled", Config::Bool(false)}});
+
     // States
     evse_common.state = Config::Object({
         {"iec61851_state", Config::Uint8(0)},
@@ -94,33 +96,6 @@ void EVSEV2::pre_setup()
         {"password", Config::Uint32(0)} // 0xDC42FA23
     });
 
-    // EVSE configs
-    gpio_configuration = Config::Object({
-        {"shutdown_input", Config::Uint8(0)},
-        {"input", Config::Uint8(0)},
-        {"output", Config::Uint8(0)}
-    });
-
-    gpio_configuration_update = gpio_configuration;
-
-    button_configuration = Config::Object({
-        {"button", Config::Uint8(2)}
-    });
-    button_configuration_update = button_configuration;
-
-    ev_wakeup = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    ev_wakeup_update = ev_wakeup;
-
-    phase_auto_switch = ev_wakeup;
-    phase_auto_switch_update = ev_wakeup;
-
-    phases_connected = Config::Object({
-        {"phases", Config::Uint8(0)}
-    });
-    phases_connected_update = phases_connected;
-
     control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)}
     });
@@ -133,15 +108,61 @@ void EVSEV2::pre_setup()
 
     gp_output_update = gp_output;
 
-    phase_switch_wait_time = Config::Object({
-        {"time", Config::Uint8(0)}
-    });
-    phase_switch_wait_time_update = phase_switch_wait_time;
+    // EVSE configs
+    gpio_configuration = ConfigRoot{Config::Object({
+        {"shutdown_input", Config::Uint8(0)},
+        {"input", Config::Uint8(0)},
+        {"output", Config::Uint8(0)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, cfg.get("shutdown_input")->asUint(),
+                                                                    cfg.get("input")->asUint(),
+                                                                    cfg.get("output")->asUint()));
+        return "";
+    }};
 
-    energy_meter_display_backlight = Config::Object({
-        {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC, TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF, TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
-    });
-    energy_meter_display_backlight_update = energy_meter_display_backlight;
+    button_configuration = ConfigRoot{Config::Object({
+        {"button", Config::Uint8(2)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_button_configuration(&device, cfg.get("button")->asUint()));
+        return "";
+    }};
+
+    ev_wakeup = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, cfg.get("enabled")->asBool()));
+        return "";
+    }};
+
+    phase_auto_switch = ConfigRoot{
+        enabled_cfg,
+        [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, cfg.get("enabled")->asBool()));
+        return "";
+    }};
+
+    phases_connected = ConfigRoot{Config::Object({
+        {"phases", Config::Uint8(0)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_phases_connected(&device, cfg.get("phases")->asUint()));
+        return "";
+    }};
+
+    phase_switch_wait_time = ConfigRoot{Config::Object({
+        {"time", Config::Uint8(0)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, cfg.get("time")->asUint()));
+        return "";
+    }};
+
+    energy_meter_display_backlight = ConfigRoot{Config::Object({
+        {"backlight", Config::Uint(TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC,
+                                   TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_OFF,
+                                   TF_EVSE_V2_ENERGY_METER_DISPLAY_BACKLIGHT_AUTOMATIC)}
+    }), [this](const Config &cfg, ConfigSource /*source*/) -> String {
+        is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, cfg.get("backlight")->asUint()));
+        return "";
+    }};
 
 #if MODULE_AUTOMATION_AVAILABLE()
     // Create a temporary config that allocates a schema.
@@ -175,6 +196,20 @@ void EVSEV2::pre_setup()
 #endif
 
 #endif
+}
+
+void EVSEV2::setup()
+{
+    // Intentionally don't set initialized to true here: we want EvseCommon to decide this.
+
+    // If any config is not persisted yet, write them all after the first call to update_all_data
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/gpio_configuration", &gpio_configuration);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/button_configuration", &button_configuration);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/ev_wakeup", &ev_wakeup);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_auto_switch", &phase_auto_switch);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phases_connected", &phases_connected);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/phase_switch_wait_time", &phase_switch_wait_time);
+    evse_common.evse_configs_in_esp_flash &= api.restorePersistentConfig("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
 }
 
 void EVSEV2::post_setup()
@@ -235,39 +270,6 @@ void EVSEV2::post_register_urls()
         }
     }, true);
 
-    // Configurations. Note that those are _not_ configs in the api.addPersistentConfig sense:
-    // The configs are stored on the EVSE itself, not the ESP's flash.
-    // All _update APIs that write the EVSEs flash without checking first if this was a change
-    // are marked as actions to make sure the flash is not written unnecessarily.
-
-    api.addState("evse/gpio_configuration", &gpio_configuration);
-    api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
-                                                                    gpio_configuration_update.get("input")->asUint(),
-                                                                    gpio_configuration_update.get("output")->asUint()));
-    }, true);
-
-    api.addState("evse/button_configuration", &button_configuration);
-    api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()));
-    }, true);
-
-    api.addState("evse/ev_wakeup", &ev_wakeup);
-    api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()));
-    }, true);
-
-    api.addState("evse/phase_auto_switch", &phase_auto_switch);
-    api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()));
-    }, true);
-
-
-    api.addState("evse/phases_connected", &phases_connected);
-    api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()));
-    }, true);
-
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
     api.addCommand("evse/control_pilot_disconnect_update", &control_pilot_disconnect_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (evse_common.management_enabled.get("enabled")->asBool()) { // Disallow updating control pilot configuration if management is enabled because the charge manager will override the CP config every second.
@@ -285,15 +287,13 @@ void EVSEV2::post_register_urls()
     }, true);
 #endif
 
-    api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
-    api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()));
-    }, true);
-
-    api.addState("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
-    api.addCommand("evse/energy_meter_display_backlight_update", &energy_meter_display_backlight_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, energy_meter_display_backlight_update.get("backlight")->asUint()));
-    }, true);
+    api.addPersistentConfig("evse/gpio_configuration", &gpio_configuration);
+    api.addPersistentConfig("evse/button_configuration", &button_configuration);
+    api.addPersistentConfig("evse/ev_wakeup", &ev_wakeup);
+    api.addPersistentConfig("evse/phase_auto_switch", &phase_auto_switch);
+    api.addPersistentConfig("evse/phases_connected", &phases_connected);
+    api.addPersistentConfig("evse/phase_switch_wait_time", &phase_switch_wait_time);
+    api.addPersistentConfig("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
 }
 
 void EVSEV2::register_events()
@@ -1347,6 +1347,30 @@ void EVSEV2::update_all_data()
 #if MODULE_OVE_R37_AVAILABLE()
     ove_r37.update_state_from_all_data(ove_r37_state, ove_r37_trip_reason, ove_r37_flags);
 #endif
+
+    if (!evse_common.evse_configs_in_esp_flash) {
+        API::writeConfig("evse/boost_mode", &evse_common.boost_mode);
+        API::writeConfig("evse/auto_start_charging", &evse_common.auto_start_charging);
+        API::writeConfig("evse/global_current", &evse_common.global_current);
+        API::writeConfig("evse/management_enabled", &evse_common.management_enabled);
+        API::writeConfig("evse/user_enabled", &evse_common.user_enabled);
+        API::writeConfig("evse/external_enabled", &evse_common.external_enabled);
+        API::writeConfig("evse/external_defaults", &evse_common.external_defaults);
+        API::writeConfig("evse/modbus_tcp_enabled", &evse_common.modbus_enabled);
+        API::writeConfig("evse/ocpp_enabled", &evse_common.ocpp_enabled);
+        API::writeConfig("evse/eebus_enabled", &evse_common.eebus_enabled);
+        API::writeConfig("evse/p14a_enwg_enabled", &evse_common.p14a_enwg_enabled);
+
+        API::writeConfig("evse/gpio_configuration", &gpio_configuration);
+        API::writeConfig("evse/button_configuration", &button_configuration);
+        API::writeConfig("evse/ev_wakeup", &ev_wakeup);
+        API::writeConfig("evse/phase_auto_switch", &phase_auto_switch);
+        API::writeConfig("evse/phases_connected", &phases_connected);
+        API::writeConfig("evse/phase_switch_wait_time", &phase_switch_wait_time);
+        API::writeConfig("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
+
+        evse_common.evse_configs_in_esp_flash = true;
+    }
 }
 
 uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)

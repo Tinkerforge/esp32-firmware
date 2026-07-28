@@ -199,6 +199,13 @@ public:
     micros_t last_current_update = 0_us;
     bool shutdown_logged = false;
 
+    // If this is false at the end of backend->update_all_data(),
+    // all EVSE configs are written into the ESP's flash.
+    // To be used for the first time when updating to a firmware
+    // that stores the EVSE configs as persistent config,
+    // or after a factory reset.
+    bool evse_configs_in_esp_flash = true;
+
 private:
     ConfigRoot low_level_state;
     ConfigRoot management_enabled;
@@ -215,28 +222,17 @@ private:
     ConfigRoot management_current;
     ConfigRoot management_current_update;
     ConfigRoot boost_mode;
-    ConfigRoot boost_mode_update;
     ConfigRoot auto_start_charging;
-    ConfigRoot auto_start_charging_update;
     ConfigRoot global_current;
-    ConfigRoot global_current_update;
     ConfigRoot user_current;
     ConfigRoot user_enabled;
-    ConfigRoot user_enabled_update;
     ConfigRoot external_enabled;
-    ConfigRoot external_enabled_update;
     ConfigRoot external_defaults;
-    ConfigRoot external_defaults_update;
     ConfigRoot modbus_enabled;
-    ConfigRoot modbus_enabled_update;
     ConfigRoot ocpp_enabled;
-    ConfigRoot ocpp_enabled_update;
     ConfigRoot eebus_enabled;
-    ConfigRoot eebus_enabled_update;
     ConfigRoot p14a_enwg_enabled;
-    ConfigRoot p14a_enwg_enabled_update;
     ConfigRoot require_meter_enabled;
-    ConfigRoot require_meter_enabled_update;
     ConfigRoot automation_current;
     ConfigRoot automation_current_update;
     ConfigRoot management_state;
