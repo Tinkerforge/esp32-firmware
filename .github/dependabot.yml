@@ -9,3 +9,12 @@ updates:
         applies-to: "security-updates"
         patterns:
           - "*"
+  - package-ecosystem: "us"
+    directory: "/software"
+    schedule:
+      interval: "daily"
+    groups:
+      all-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
