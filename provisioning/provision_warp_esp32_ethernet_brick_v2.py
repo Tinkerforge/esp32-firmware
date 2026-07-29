@@ -47,6 +47,8 @@ if evse_tester_path.is_file():
     UID_DENYLIST += [v for k, v in evse_locals.items() if k.startswith("UID_")]
 
 
+GEOMETRY_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'provision_warp_esp32_ethernet_brick_v2.geometry')
+
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
                     args=(), kwargs={}, Verbose=None):
@@ -559,7 +561,16 @@ class P:
 
             app.aboutToQuit.connect(slot_except_hook(P.quit))
 
-            window = QWidget()
+            class MainWindow(QWidget):
+                def closeEvent(self, event):
+                    geometry = self.saveGeometry()
+
+                    with open(GEOMETRY_PATH, 'wb') as f:
+                        f.write(geometry)
+
+                    super().closeEvent(event)
+
+            window = MainWindow()
             window.setWindowTitle('WARP ESP32 Provisioning')
             layout = QVBoxLayout()
 
@@ -600,6 +611,13 @@ class P:
 
             window.setLayout(layout)
             window.show()
+
+            try:
+                with open(GEOMETRY_PATH, 'rb') as f:
+                    window.restoreGeometry(f.read())
+            except FileNotFoundError:
+                pass
+
             splash.finish(window)
 
             log_timer = QTimer(window)
