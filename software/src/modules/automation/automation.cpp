@@ -82,6 +82,8 @@ void Automation::pre_setup()
         })
     );
 
+    register_trigger(AutomationTriggerID::Reboot, *Config::Null());
+
     state_actions_prototype  = Config::Enum(AutomationActionID::None);
     state_triggers_prototype = Config::Enum(AutomationTriggerID::None);
 
@@ -187,6 +189,8 @@ void Automation::setup()
     last_run = heap_alloc_array<micros_t>(task_count);
 
     handle_cron_task();
+
+    trigger(AutomationTriggerID::Reboot, nullptr, this);
 
     initialized = true;
 }
@@ -490,6 +494,14 @@ static bool is_last_day(struct tm time)
 
 bool Automation::has_triggered(const Config *conf, void *data)
 {
+    switch (conf->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::Reboot:
+            return true;
+
+        default:
+            break;
+    }
+
     const Config *cfg = static_cast<const Config *>(conf->get());
     tm *time_struct = static_cast<tm *>(data);
     bool triggered = false;

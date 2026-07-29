@@ -18,7 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { AutomationTrigger } from "../automation/types";
@@ -193,6 +193,26 @@ function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (tri
     ];
 }
 
+export type RebootAutomationTrigger = [
+    AutomationTriggerID.Reboot,
+    null,
+];
+
+function new_reboot_config(): RebootAutomationTrigger {
+    return [
+        AutomationTriggerID.Reboot,
+        null,
+    ];
+}
+
+function get_reboot_table_children(_trigger: RebootAutomationTrigger): ComponentChildren {
+    return __("automation.automation.reboot_translation_function")();
+}
+
+function get_reboot_edit_children(_trigger: RebootAutomationTrigger, _on_trigger: (trigger: AutomationTrigger) => void): ComponentChildren {
+    return [];
+}
+
 export function pre_init() {
     return {
         [AutomationTriggerID.Cron]: {
@@ -208,6 +228,13 @@ export function pre_init() {
             clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
             get_edit_children: get_http_edit_children,
             get_table_children: get_http_table_children,
+        },
+        [AutomationTriggerID.Reboot]: {
+            name: () => __("automation.automation.reboot"),
+            new_config: new_reboot_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], trigger[1]] as AutomationTrigger,
+            get_edit_children: get_reboot_edit_children,
+            get_table_children: get_reboot_table_children,
         },
     };
 }

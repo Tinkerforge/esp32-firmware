@@ -120,8 +120,10 @@ let x = {
 
             "print_action": "Gebe im Ereignis-Log aus",
             "print_action_message": "Nachricht",
-            "print_action_text": /*FFN*/(message: string) => <>zeige "<b>{message}</b>" im <b>Ereignis-Log</b> an.</> /*NF*/
+            "print_action_text": /*FFN*/(message: string) => <>zeige "<b>{message}</b>" im <b>Ereignis-Log</b> an.</> /*NF*/,
 
+            "reboot": "Nach Neustart",
+            "reboot_translation_function": /*FFN*/() => <>Einmalig <b>nach einem Neustart</b>{", "}</> /*NF*/
         },
         "content": {
             "automation": "Automatisierung",
