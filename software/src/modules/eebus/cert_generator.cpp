@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
- #include "cert_generator.h"
+#include "cert_generator.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"

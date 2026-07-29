@@ -76,7 +76,7 @@ String ShipMessageDataType::type_to_json()
     // We also just assume the psram has enough space for this.
     BasicJsonDocument<ArduinoJsonPsramAllocator> doc(required_size);
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
-    logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size*3+64);
+    logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size * 3 + 64);
 #endif
 
     doc["data"]["header"]["protocolId"] = protocol_id;

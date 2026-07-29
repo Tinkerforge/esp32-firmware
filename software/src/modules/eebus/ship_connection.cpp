@@ -83,7 +83,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 return;
             }
             httpd_ws_frame frame = {};
-            frame.payload = (uint8_t*)data->data_ptr;
+            frame.payload = (uint8_t *)data->data_ptr;
             frame.len = data->data_len;
             bool last_chunk = (data->payload_offset + data->data_len >= data->payload_len);
             frame.fragmented = !data->fin || !last_chunk;
@@ -93,19 +93,19 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             break;
         }
-    case WEBSOCKET_EVENT_DISCONNECTED:
-        conn->schedule_close(0_ms, "WebSocket disconnected");
-        break;
-    case WEBSOCKET_EVENT_CONNECTED:
-        conn->start_client_confirm();
-        break;
-    case WEBSOCKET_EVENT_PONG:
-        break;
-    default:
+        case WEBSOCKET_EVENT_DISCONNECTED:
+            conn->schedule_close(0_ms, "WebSocket disconnected");
+            break;
+        case WEBSOCKET_EVENT_CONNECTED:
+            conn->start_client_confirm();
+            break;
+        case WEBSOCKET_EVENT_PONG:
+            break;
+        default:
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
-        eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
+            eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
 #endif
-        return; // Ignore other events for now
+            return; // Ignore other events for now
     }
 }
 
@@ -125,7 +125,6 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std
     role = Role::Client;
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
-
 
     ws_server = tf_websocket_client_init(&ws_config);
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_node->node_name().c_str());
@@ -148,10 +147,10 @@ void ShipConnection::start_client_confirm()
 {
     task_scheduler.cancel(state_machine_task);
     state_machine_task = task_scheduler.scheduleOnce(
-            [this]() {
-                state_machine_next_step();
-            },
-            1_s);
+        [this]() {
+            state_machine_next_step();
+        },
+        1_s);
 }
 
 esp_err_t ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
@@ -374,12 +373,14 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 
     // Find first " in the string, use that as a start point
     const char *key_start = (const char *)memchr(buf, '"', buf_len);
-    if (!key_start) return ProtocolState::Unknown;
+    if (!key_start)
+        return ProtocolState::Unknown;
     key_start++;
 
     // find second " in the string. That should signal the end of the first json key
     const char *key_end = (const char *)memchr(key_start, '"', buf_len - (key_start - buf));
-    if (!key_end) return ProtocolState::Unknown;
+    if (!key_end)
+        return ProtocolState::Unknown;
 
     const size_t key_len = (key_end - key_start);
 
@@ -387,20 +388,27 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 
     switch (key_start[0]) {
         case 'c':
-            if (KEY_IS("connectionHello")) return ProtocolState::ConnectionHello;
-            if (KEY_IS("connectionPinState")) return ProtocolState::ConnectionPinState;
+            if (KEY_IS("connectionHello"))
+                return ProtocolState::ConnectionHello;
+            if (KEY_IS("connectionPinState"))
+                return ProtocolState::ConnectionPinState;
             break;
         case 'm':
-            if (KEY_IS("messageHello")) return ProtocolState::ConnectionHello;
+            if (KEY_IS("messageHello"))
+                return ProtocolState::ConnectionHello;
             break;
         case 'a':
-            if (KEY_IS("accessMethodsRequest")) return ProtocolState::AccessMethodsRequest;
-            if (KEY_IS("accessMethods")) return ProtocolState::AccessMethods;
+            if (KEY_IS("accessMethodsRequest"))
+                return ProtocolState::AccessMethodsRequest;
+            if (KEY_IS("accessMethods"))
+                return ProtocolState::AccessMethods;
             break;
         case 'd':
-            if (KEY_IS("data")) return ProtocolState::Data;
+            if (KEY_IS("data"))
+                return ProtocolState::Data;
             break;
-        default: return ProtocolState::Unknown;
+        default:
+            return ProtocolState::Unknown;
     }
 #undef KEY_IS
 
@@ -1233,13 +1241,11 @@ void ShipConnection::state_done()
                     }
 
                     if (close_this) {
-                        eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing this connection (role=%s)",
-                            peer_node->node_name().c_str(), role == Role::Client ? "client" : "server");
+                        eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing this connection (role=%s)", peer_node->node_name().c_str(), role == Role::Client ? "client" : "server");
                         schedule_close(0_ms, "Duplicate connection resolved per SHIP 13.4.6.2");
                         return;
                     } else {
-                        eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing other connection (role=%s)",
-                            peer_node->node_name().c_str(), conn->role == Role::Client ? "client" : "server");
+                        eebus.trace_fmtln("SHIP 13.4.6.2: Duplicate connection to %s detected, closing other connection (role=%s)", peer_node->node_name().c_str(), conn->role == Role::Client ? "client" : "server");
                         conn->schedule_close(0_ms, "Duplicate connection resolved per SHIP 13.4.6.2");
                     }
                     break;
@@ -1267,8 +1273,7 @@ void ShipConnection::state_done()
         eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
     }
 #endif
-    if (!spine)
-    {
+    if (!spine) {
         spine = make_unique_psram<SpineConnection>(this);
     }
     switch (protocol_state) {

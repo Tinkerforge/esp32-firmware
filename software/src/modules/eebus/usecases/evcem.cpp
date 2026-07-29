@@ -141,7 +141,7 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
             monitorPowerSupported = false;
             updateSupportedScenarios();
         }
-    }else {
+    } else {
         if (!monitorPowerSupported) {
             monitorPowerSupported = true;
             updateSupportedScenarios();
@@ -155,13 +155,12 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
             monitorEnergySupported = false;
             updateSupportedScenarios();
         }
-     } else {
+    } else {
         if (!monitorEnergySupported) {
             monitorEnergySupported = true;
             updateSupportedScenarios();
         }
-
-     }
+    }
     power_charged_wh = charged_wh;
     power_charged_measured = charged_measured;
 
@@ -274,11 +273,11 @@ void EvcemUsecase::get_measurement_constraints(MeasurementConstraintsListDataTyp
         {id_x_2, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3, true},
         {id_x_3, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3, true},
         // Scenario 2: Power per phase (Optional) - only include phases with active measurements
-        {id_x_4, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
-        {id_x_5, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
-        {id_x_6, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported },
+        {id_x_4, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported},
+        {id_x_5, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported},
+        {id_x_6, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0, monitorPowerSupported},
         // Scenario 3: Charged energy (Optional)
-        {id_x_7, measurement_limit_energy_min, measurement_limit_energy_max, measurement_limit_energy_stepsize, 0, monitorEnergySupported },
+        {id_x_7, measurement_limit_energy_min, measurement_limit_energy_max, measurement_limit_energy_stepsize, 0, monitorEnergySupported},
     }};
 
     for (const auto &entrydata : entries) {
@@ -311,11 +310,11 @@ void EvcemUsecase::get_measurement_list(MeasurementListDataType *data) const
         {id_x_2, milliamps_draw_phase[1], -3, true},
         {id_x_3, milliamps_draw_phase[2], -3, true},
         // Scenario 2: Power per phase (Optional) - only include if scenario enabled and value > 0
-        {id_x_4, power_draw_phase[0], 0, monitorPowerSupported },
-        {id_x_5, power_draw_phase[1], 0, monitorPowerSupported },
-        {id_x_6, power_draw_phase[2], 0, monitorPowerSupported },
+        {id_x_4, power_draw_phase[0], 0, monitorPowerSupported},
+        {id_x_5, power_draw_phase[1], 0, monitorPowerSupported},
+        {id_x_6, power_draw_phase[2], 0, monitorPowerSupported},
         // Scenario 3: Charged energy (Optional) - only include if scenario enabled and value > 0
-        {id_x_7, power_charged_wh, 0, monitorEnergySupported },
+        {id_x_7, power_charged_wh, 0, monitorEnergySupported},
     }};
 
     for (const auto &entry : entries) {

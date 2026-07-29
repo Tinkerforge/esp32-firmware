@@ -130,10 +130,11 @@ static String extract_peer_ski_from_tls(httpd_handle_t httpd, int sockfd)
 }
 
 #ifdef EEBUS_SHIP_AUTOCONNECT
-static esp_err_t eebus_client_crt_bundle_attach(void *conf) {
+static esp_err_t eebus_client_crt_bundle_attach(void *conf)
+{
     mbedtls_ssl_config *ssl_conf = (mbedtls_ssl_config *)conf;
     mbedtls_ssl_conf_authmode(ssl_conf, MBEDTLS_SSL_VERIFY_NONE);
-    return ESP_OK;  // Don't chain to real bundle — we don't need CA certs
+    return ESP_OK; // Don't chain to real bundle — we don't need CA certs
 }
 #endif
 
@@ -190,7 +191,6 @@ void Ship::enable_ship()
             },
             30_s); // Initial Timeout is 30s after that EEBUS_SHIP_AUTOCONNECT_INTERVAL should be used
     }
-
 }
 
 void Ship::disable_ship()
@@ -409,7 +409,6 @@ void Ship::connect_trusted_peers()
         websocket_cfg.disable_auto_reconnect = true;
         websocket_cfg.crt_bundle_attach = eebus_client_crt_bundle_attach;
         websocket_cfg.task_stack = 8192;
-
 
         eebus.trace_fmtln("Connecting to trusted peer %s at %s:%d%s", node->node_name().c_str(), ip.c_str(), node->port, wss_path.c_str());
 

@@ -147,7 +147,4 @@ private:
      * @return MessageReturn indicating if response needs to be sent
      */
     MessageReturn handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
-
-
 };

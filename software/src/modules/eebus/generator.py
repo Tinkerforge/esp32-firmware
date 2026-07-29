@@ -30,7 +30,6 @@ from typing import Optional
 
 import xmlschema
 
-
 # =============================================================================
 # Configuration Constants
 # =============================================================================
@@ -139,8 +138,8 @@ WHITELISTED_FUNCTIONS = frozenset([
 # Types directly referenced by application code (outside the handler).
 # These are used as extra root types for dependency-based pruning.
 ADDITIONAL_REQUIRED_TYPES = frozenset([
-    "HeaderType",                         # Used in handle_message() signatures
-    "BindingManagementEntryListDataType", # Stored as member in use-case class
+    "HeaderType",  # Used in handle_message() signatures
+    "BindingManagementEntryListDataType",  # Stored as member in use-case class
 ])
 
 

@@ -19,9 +19,9 @@
 
 #pragma once
 
+#include "../generated/usecases.enum.h"
 #include "../spine_connection.h"
 #include "../spine_types.h"
-#include "../generated/usecases.enum.h"
 #include "config.h"
 #include "usecase_helpers.h"
 #include <map>
@@ -284,8 +284,7 @@ protected:
      * @param want_ack Add to acknowledgement check.
      * @return
      */
-    int send_spine_message(const FeatureAddressType & destination, FeatureAddressType & sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+    int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
     template <typename T> int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
-
 };

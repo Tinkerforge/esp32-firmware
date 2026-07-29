@@ -242,9 +242,8 @@ int EEBusUseCases::send_spine_message(const FeatureAddressType &destination, Fea
     int message_sent = -1;
     if (SpineConnection *spine_conn = get_spine_connection(destination)) {
         message_sent = spine_conn->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
-    } else
-    {
-        eebus.trace_fmtln("Usecases: send_spine_message failed due to no spine connection found for %s",  EEBUS_USECASE_HELPERS::spine_address_to_string(destination).c_str());
+    } else {
+        eebus.trace_fmtln("Usecases: send_spine_message failed due to no spine connection found for %s", EEBUS_USECASE_HELPERS::spine_address_to_string(destination).c_str());
     }
 
     return message_sent;

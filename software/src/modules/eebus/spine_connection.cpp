@@ -81,10 +81,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 #endif
         return false;
     }
-    eebus.trace_fmtln("SPINE: Received %s %s from %s",
-        convertToString(received_header.cmdClassifier.get()).c_str(),
-        SpineDataTypeHandler::function_to_string(called_function).c_str(),
-        EEBUS_USECASE_HELPERS::spine_address_to_string(received_header.addressSource.get()).c_str());
+    eebus.trace_fmtln("SPINE: Received %s %s from %s", convertToString(received_header.cmdClassifier.get()).c_str(), SpineDataTypeHandler::function_to_string(called_function).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(received_header.addressSource.get()).c_str());
     initial_peer_discovery();
     eebus.usecases->process_spine_message(received_header, eebus.data_handler.get(), this);
     return true;
@@ -99,10 +96,7 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
             function_name = obj.begin()->key().c_str();
         }
     }
-    eebus.trace_fmtln("SPINE: Sending %s %s to %s",
-        convertToString(cmd_classifier).c_str(),
-        function_name,
-        EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
+    eebus.trace_fmtln("SPINE: Sending %s %s to %s", convertToString(cmd_classifier).c_str(), function_name, EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_jsonln(payload);
 #endif
@@ -299,9 +293,7 @@ void SpineConnection::send_use_case_read()
     if (use_case_data_received)
         return;
     FeatureAddressType peer_nm{};
-    if (detailed_discovery_data.deviceInformation.has_value()
-        && detailed_discovery_data.deviceInformation->description.has_value()
-        && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
+    if (detailed_discovery_data.deviceInformation.has_value() && detailed_discovery_data.deviceInformation->description.has_value() && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
         peer_nm.device = detailed_discovery_data.deviceInformation->description->deviceAddress->device;
     } else if (!known_addresses.empty()) {
         peer_nm.device = known_addresses[0].device;
@@ -322,9 +314,7 @@ void SpineConnection::subscribe_to_peer_node_management()
 
     // Build the peer's NodeManagement address from the discovery data
     FeatureAddressType peer_nm{};
-    if (detailed_discovery_data.deviceInformation.has_value()
-        && detailed_discovery_data.deviceInformation->description.has_value()
-        && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
+    if (detailed_discovery_data.deviceInformation.has_value() && detailed_discovery_data.deviceInformation->description.has_value() && detailed_discovery_data.deviceInformation->description->deviceAddress.has_value()) {
         peer_nm.device = detailed_discovery_data.deviceInformation->description->deviceAddress->device;
     } else if (!known_addresses.empty()) {
         peer_nm.device = known_addresses[0].device;
