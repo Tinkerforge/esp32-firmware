@@ -195,24 +195,11 @@ class TestContext:
         else:
             self.api('factory_reset', {"do_i_know_what_i_am_doing": True})
 
-    def reboot(self):
-        rebooted = False
-
-        # Fast reboot via esptool, if serial port available
-        if (self._serial_port):
-            with ESP32ROM(self._serial_port) as esp:
-                esp.connect()
-                esptool.cmds.reset_chip(esp)
-                time.sleep(6.5)
-                rebooted = True
-
-        # No serial port, use slow reboot via API
-        if not rebooted:
-            self.api('reboot', '')
-            time.sleep(9)
+    def wait_for_reboot(self, pre_reboot_delay=10):
+        time.sleep(pre_reboot_delay)
 
         # Wait for the host to be responsive
-        for i in range(10, 0, -1):
+        for i in range(30, 0, -1):
             try:
                 self.api('info/version', timeout=1)
                 break
@@ -227,6 +214,18 @@ class TestContext:
                         time.sleep(1)
                 else:
                     raise e
+
+    def reboot(self):
+        # Fast reboot via esptool, if serial port available
+        if self._serial_port:
+            with ESP32ROM(self._serial_port) as esp:
+                esp.connect()
+                esptool.cmds.reset_chip(esp)
+                self.wait_for_reboot(6.5)
+        else:
+            # No serial port, use slow reboot via API
+            self.api('reboot', '')
+            self.wait_for_reboot(9)
 
     def assert_(self, actual):
         if not actual:
