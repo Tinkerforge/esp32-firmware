@@ -70,6 +70,7 @@ class TestContext:
 
     _testbox: TestBox | None = None
 
+    _to_restore_suite: dict[str, JSON] = field(default_factory=dict)
     _to_restore: dict[str, JSON] = field(default_factory=dict)
 
     _debug_fs_enabled: bool | None = None
@@ -571,6 +572,13 @@ class TestContext:
         return DeviceType(self.api('info/name/type'))
 
     def restore_before_suite_teardown(self, api: str):
+        self._to_restore_suite[api] = self.api(api)
+
+    def _restore_suite(self):
+        for api, payload in self._to_restore_suite.items():
+            self.api(api, payload)
+
+    def restore_before_teardown(self, api: str):
         self._to_restore[api] = self.api(api)
 
     def _restore(self):
@@ -677,8 +685,10 @@ def _run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
     tc._notify_test_start(name)
 
     try:
-        if name.endswith("/suite_teardown"):
+        if name.endswith("/teardown"):
             tc._restore()
+        if name.endswith("/suite_teardown"):
+            tc._restore_suite()
 
         if fn is not None:
             fn(tc)
