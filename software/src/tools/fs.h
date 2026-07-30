@@ -32,8 +32,10 @@ bool mount_or_format_data_partition();
 bool rewrite_data_partition(const std::function<bool(void)> &unmounted_task_fn);
 
 bool for_file_in(const char *dir, std::function<bool(File *open_file)> callback, bool skip_directories = true);
+bool for_file_in(File *dir, std::function<bool(File *open_file)> callback, bool skip_directories = true);
 bool for_filename_in(const char *dir, std::function<bool(const char *, size_t, bool)> callback);
 bool for_filename_in(const char *dir, std::function<bool(const String &, bool)> callback);
+bool for_filepath_in(const char *dir, std::function<bool(const String &, bool)> callback);
 
 void remove_directory(const char *path);
 
@@ -42,3 +44,5 @@ ssize_t file_size(fs::LittleFSFS &file_system, const String &path);
 
 bool file_exists(fs::LittleFSFS &file_system, const char *path);
 bool file_exists(fs::LittleFSFS &file_system, const String &path);
+
+bool copy_file(File &src, File &dst, uint8_t *buf, size_t buf_size);
