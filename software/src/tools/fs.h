@@ -25,7 +25,7 @@
 #include <LittleFS.h>
 #include "stdint.h"
 
-constexpr const char *DATA_MOUNTPOINT = "/data";
+#define DATA_MOUNTPOINT "/data"
 
 extern bool should_factory_reset_bricklets;
 bool mount_or_format_data_partition();
