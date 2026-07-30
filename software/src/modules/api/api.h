@@ -214,6 +214,8 @@ public:
 
     static const char *build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len);
 
+    static constexpr const char *CONFIG_DIRECTORY = "/config";
+
     static constexpr size_t MAX_PATH_LEN = std::min({
         std::numeric_limits<std::invoke_result<decltype(&StateRegistration::get_path_len), StateRegistration>::type>::max(),
         std::numeric_limits<std::invoke_result<decltype(&CommandRegistration::get_path_len), CommandRegistration>::type>::max(),

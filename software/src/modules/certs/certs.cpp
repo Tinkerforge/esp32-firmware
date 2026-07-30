@@ -38,6 +38,8 @@ static inline String get_cert_name_path(uint8_t cert_id) {
     return StringSumHelper(CERT_DIRECTORY "/") + cert_id + "_name";
 }
 
+static constexpr size_t max_cert_file_length = constexpr_strlen(MACRO_VALUE_TO_STRING(MAX_CERT_ID) "_name");
+
 void Certs::pre_setup()
 {
     state_certs_prototype = Config::Object({
@@ -251,6 +253,10 @@ void Certs::register_urls()
         LittleFS.remove(path + "_name");
         this->update_state();
     }, true);
+
+#if MODULE_CONFIG_IMPORT_AVAILABLE()
+    config_import.allow_path(CERT_DIRECTORY, max_cert_file_length, MAX_CERT_SIZE);
+#endif
 }
 
 std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len)
