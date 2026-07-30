@@ -274,6 +274,29 @@ class P:
         print(" Connected.")
         return True
 
+    def connect_wifi(ip, *, timeout_is_fatal=True):
+        print(f"Connecting via wifi to {ip}", end="")
+        for i in range(30):
+            start = time.time()
+            try:
+                with urllib.request.urlopen(f"http://{ip}/info/modules", timeout=1) as f:
+                    f.read()
+                    break
+            except:
+                pass
+            t = max(0, 1 - (time.time() - start))
+            time.sleep(t)
+            print(".", end="")
+        else:
+            if timeout_is_fatal:
+                fatal_error("Failed to connect via wifi!")
+            else:
+                print("Could not to connect via wifi!")
+                return False
+
+        print(" Connected.")
+        return True
+
     def test_rtc_time(ip, wait_for_ntp):
         print("Testing RTC")
         if wait_for_ntp:
@@ -329,6 +352,8 @@ class P:
 
         print("Testing ESP Wifi.")
         with wifi(ssid, passphrase):
+            P.connect_wifi("10.0.0.1")
+
             P.api_put("10.0.0.1", "ethernet/config_update", {
                           "enable_ethernet": True,
                           "ip": ethernet_ip,
