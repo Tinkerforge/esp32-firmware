@@ -427,7 +427,7 @@ bool rewrite_data_partition(const std::function<bool(void)> &unmounted_task_fn)
     return true;
 }
 
-bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories)
+bool for_file_in(const char *dir, std::function<bool(File *open_file)> callback, bool skip_directories)
 {
     File root = LittleFS.open(dir);
     File file;
