@@ -34,6 +34,9 @@
 #include "tools/malloc.h"
 #include "tools/string_builder.h"
 
+struct httpd_ssl_config;
+typedef struct httpd_ssl_config httpd_ssl_config_t;
+
 constexpr size_t WEB_SERVER_MAX_PORTS = 3;
 static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);
 
@@ -186,6 +189,7 @@ public:
 
     void pre_setup();
     void post_setup();
+    void register_events() override;
     void pre_reboot();
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
@@ -241,4 +245,7 @@ private:
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
     WebServerExtraPortData *extra_ports;
     size_t trace_buffer_index;
+
+    httpd_ssl_config_t *ssl_configs = nullptr;
+    size_t ssl_configs_used = 0;
 };

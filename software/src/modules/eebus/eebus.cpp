@@ -690,9 +690,6 @@ void EEBus::register_urls()
             return "scan done";
         },
         true);
-
-    // toggle_module will register URI handlers and cannot be started during the setup stage.
-    toggle_module();
 }
 
 // ============================================================================
@@ -701,6 +698,9 @@ void EEBus::register_urls()
 
 void EEBus::register_events()
 {
+    // toggle_module will register URI handlers and cannot be started during the setup stage.
+    toggle_module();
+
 #ifdef EEBUS_MODE_EVSE
     register_evse_events();
 #endif

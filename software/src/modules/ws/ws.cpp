@@ -126,14 +126,17 @@ void WS::register_urls()
         return true;
     });
 
-    web_sockets.start("/ws", "/info/ws");
-
     task_scheduler.scheduleUncancelable([this](){
         char *payload;
         int payload_len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
         if (payload_len > 0)
             web_sockets.sendToAllOwned(payload, static_cast<size_t>(payload_len));
     }, 1_s, 1_s);
+}
+
+void WS::register_events()
+{
+    web_sockets.start("/ws", "/info/ws");
 }
 
 // returns true on success

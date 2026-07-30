@@ -106,15 +106,12 @@ void WebServer::post_setup()
     default_handlers->supports_http_api = true;
 
 #if HTTPS_AVAILABLE()
-    httpd_ssl_config_t ssl_configs[WEB_SERVER_MAX_PORTS] = {
-        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
-        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
-        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
-    };
-    size_t ssl_configs_used = 0;
+    ssl_configs = static_cast<httpd_ssl_config_t *>(malloc(sizeof(httpd_ssl_config_t) * WEB_SERVER_MAX_PORTS));
+    for (size_t i = 0; i < WEB_SERVER_MAX_PORTS; ++i) {
+        ssl_configs[i] = HTTPD_SSL_PORT_CONFIG_DEFAULT();
+    }
 
     bool http_fallback_needed = false;
-    bool https_multiport_needed = false;
 
 #if MODULE_NETWORK_AVAILABLE()
     const TransportMode transport_mode = network.get_transport_mode();
@@ -169,7 +166,6 @@ void WebServer::post_setup()
             ssl_config->ssl_userdata = default_handlers;
 
             ssl_configs_used++;
-            https_multiport_needed = true;
         } else {
             listen_port_handlers[ssl_configs_used] = nullptr;
             http_fallback_needed = true;
@@ -184,7 +180,7 @@ void WebServer::post_setup()
     while (extra_ports != nullptr) {
         WebServerExtraPortData *extra_port = extra_ports;
 
-        if (ssl_configs_used >= std::size(ssl_configs)) {
+        if (ssl_configs_used >= WEB_SERVER_MAX_PORTS) {
             logger.printfln("Cannot listen on extra port %hu: All ports in use", extra_port->port);
             break;
         } else {
@@ -221,8 +217,6 @@ void WebServer::post_setup()
                 }
 
                 ssl_configs_used++;
-
-                https_multiport_needed = true;
             } while (false);
         }
 
@@ -230,10 +224,20 @@ void WebServer::post_setup()
         extra_port->next = nullptr;
         free(extra_port);
     }
+
+    if (ssl_configs_used <= 1) {
+        // HTTP only, discard SSL configs
+        free(ssl_configs);
+        ssl_configs = nullptr;
+        ssl_configs_used = 0;
+    }
 #else // HTTPS_AVAILABLE()
     listen_port_handlers[0] = default_handlers;
 #endif // HTTPS_AVAILABLE()
+}
 
+void WebServer::register_events()
+{
     // === Basic httpd config ===
 
 #if defined(__GNUC__)
@@ -265,15 +269,18 @@ void WebServer::post_setup()
 
     // Start the httpd server
 #if HTTPS_AVAILABLE()
-    if (https_multiport_needed) {
+    if (ssl_configs_used > 0) {
         logger.printfln("Starting multi-port server with %zu port%s", ssl_configs_used, ssl_configs_used == 1 ? "": "s");
 
-        esp_err_t result_https = httpd_ssl_start_multi(&this->httpd, &httpd_config, ssl_configs, ssl_configs_used);
+        esp_err_t result_https = httpd_ssl_start_multi(&this->httpd, &httpd_config, static_cast<httpd_ssl_config_t *>(this->ssl_configs), ssl_configs_used);
         if (result_https != ESP_OK) {
             httpd = nullptr;
             logger.printfln("Failed to start https web server: %s (0x%X)", esp_err_to_name(result_https), static_cast<unsigned>(result_https));
             return;
         }
+        free(this->ssl_configs);
+        this->ssl_configs = nullptr;
+        this->ssl_configs_used = 0;
     } else {
 #endif
         logger.printfln("Starting single-port server on port %hu", httpd_config.server_port);
