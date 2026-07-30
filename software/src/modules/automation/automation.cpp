@@ -190,7 +190,9 @@ void Automation::setup()
 
     handle_cron_task();
 
-    trigger(AutomationTriggerID::Reboot, nullptr, this);
+    task_scheduler.scheduleOnce([this]() {
+        trigger(AutomationTriggerID::Reboot, nullptr, this);
+    });
 
     initialized = true;
 }
