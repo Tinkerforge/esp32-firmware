@@ -626,6 +626,34 @@ class TestContext:
 
         return self.http_request('GET', f"/debug/fs{path}")
 
+    def list_dir(self, path: str, recursive: bool = True):
+        if not path.endswith('/'):
+            path = path + '/'
+
+        if not self.debug_fs_enabled():
+            self.skip("Firmware was built without DEBUG_FS_ENABLE")
+
+        html = self.http_request('GET', f"/debug/fs{path}").decode('utf-8')
+
+        if listed_path := re.search('<h1>([^<]+)</h1>', html).group(1) != path.removesuffix('/'):
+            raise Exception(f"Attempted to list directory {path}, but received listing of directory {listed_path}!")
+
+        entries = [path + e for e in re.findall('<a href="([^"]+)"', html)]
+
+        if not recursive:
+            return entries
+
+        files = []
+
+        for f in entries:
+            if not f.endswith("/"):
+                files.append(f)
+            else:
+                files += self.list_dir(f, True)
+
+        return files
+
+
     # @dataclass
     # class Cap:
     #     val: typing.Any
