@@ -113,16 +113,8 @@ static bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, const String &root_n
         }
 
         File target = toFS.open(root_name + source.name(), FILE_WRITE);
-
-        while (source.available()) {
-            size_t read = source.read(buf, buf_size);
-            size_t written = target.write(buf, read);
-
-            if (written != read) {
-                logger.printfln("Failed to write file %s: written %u read %u", target.name(), written, read);
-                return false;
-            }
-        }
+        if (!copy_file(source, target, buf, buf_size))
+            return false;
     }
 
     return true;
@@ -430,8 +422,13 @@ bool rewrite_data_partition(const std::function<bool(void)> &unmounted_task_fn)
 bool for_file_in(const char *dir, std::function<bool(File *open_file)> callback, bool skip_directories)
 {
     File root = LittleFS.open(dir);
+    return for_file_in(&root, callback, skip_directories);
+}
+
+bool for_file_in(File *root, std::function<bool(File *open_file)> callback, bool skip_directories)
+{
     File file;
-    while ((file = root.openNextFile())) {
+    while ((file = root->openNextFile())) {
         if (skip_directories && file.isDirectory()) {
             continue;
         }
@@ -471,6 +468,19 @@ bool for_filename_in(const char *dir, std::function<bool(const String &, bool)> 
     bool is_dir;
     while (!(filename = root.getNextFileName(&is_dir)).isEmpty()) {
         if (!callback(filename.substring(skip), is_dir))
+            return false;
+    }
+    return true;
+}
+
+bool for_filepath_in(const char *dir, std::function<bool(const String &, bool)> callback)
+{
+    File root = LittleFS.open(dir);
+
+    String filename;
+    bool is_dir;
+    while (!(filename = root.getNextFileName(&is_dir)).isEmpty()) {
+        if (!callback(filename, is_dir))
             return false;
     }
     return true;
@@ -578,4 +588,17 @@ bool file_exists(fs::LittleFSFS &file_system, const char *path)
 
 bool file_exists(fs::LittleFSFS &file_system, const String &path) {
     return file_exists(file_system, path.c_str());
+}
+
+bool copy_file(File &src, File &dst, uint8_t *buf, size_t buf_size) {
+    while (src.available()) {
+        size_t read = src.read(buf, buf_size);
+        size_t written = dst.write(buf, read);
+
+        if (written != read) {
+            logger.printfln("Failed to copy file %s to %s: written %u read %u", src.path(), dst.path(), written, read);
+            return false;
+        }
+    }
+    return true;
 }
