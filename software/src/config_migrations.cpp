@@ -1066,6 +1066,12 @@ static const ConfigMigration migrations[] = {
         }
     },
 #endif
+
+    // When writing new migrations past this point,
+    // make sure to implement migrations that read/write multiple files correctly:
+    // Using the config export/import (to be released with 2.14.0)
+    // can result in partially migrated configs
+
 };
 
 bool prepare_migrations()

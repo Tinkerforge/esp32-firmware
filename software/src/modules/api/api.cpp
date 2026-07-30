@@ -61,6 +61,9 @@ void API::pre_setup()
 
 void API::setup()
 {
+#if MODULE_CONFIG_IMPORT_AVAILABLE()
+    config_import.import();
+#endif
     migrate_config();
 
     String config_version;
@@ -517,8 +520,8 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config, SavedD
     const auto updated = config->value.updated;
     config->value.updated = 0;
 
-    const String error = config->update_from_file(LittleFS.open(filename));
-    const bool restore_ok = error.isEmpty();
+    String error = config->update_from_file(LittleFS.open(filename));
+    bool restore_ok = error.isEmpty();
 
     // If the file load didn't update anything, the file's content matches the default config.
     // Remove the saved file in that case.
@@ -533,6 +536,18 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config, SavedD
     if (!restore_ok) {
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     }
+
+
+#if MODULE_CONFIG_IMPORT_AVAILABLE()
+    error = config_import.import_json_update(filename, config);
+    // Return false if both restoring the config and applying the json update fail:
+    // The config is then still the default one.
+    restore_ok &= error.isEmpty();
+
+    if (!error.isEmpty()) {
+        logger.printfln("Failed to apply config import json update %s: %s", path.c_str(), error.c_str());
+    }
+#endif
 
     return restore_ok;
 }

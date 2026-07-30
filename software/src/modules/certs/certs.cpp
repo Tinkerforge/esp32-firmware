@@ -51,6 +51,8 @@ static void clear_upload(ConfigRoot &upload)
     upload.get("name")->clearString();
 }
 
+static constexpr size_t max_cert_file_length = constexpr_strlen(MACRO_VALUE_TO_STRING(MAX_CERT_ID) "_name");
+
 void Certs::pre_setup()
 {
     state_certs_prototype = Config::Object({
@@ -258,6 +260,10 @@ void Certs::register_urls()
         LittleFS.remove(path + "_name");
         this->update_state();
     }, true);
+
+#if MODULE_CONFIG_IMPORT_AVAILABLE()
+    config_import.allow_path(CERT_DIRECTORY, max_cert_file_length, MAX_CERT_SIZE);
+#endif
 }
 
 std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len)
