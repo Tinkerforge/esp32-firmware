@@ -298,9 +298,15 @@ class TestContext:
 
         return match
 
+    def assert_contains(self, expected, actual):
+        if not (expected in actual):
+            raise AssertionError(f"Expected {actual=} to contain {expected=}\n" + self._get_callee())
+
+        return actual
+
     def assert_in(self, expected, actual):
         if not (actual in expected):
-            raise AssertionError(f"Expected {actual=} to contain {expected=}\n" + self._get_callee())
+            raise AssertionError(f"Expected {actual=} to be in {expected=}\n" + self._get_callee())
 
         return actual
 
@@ -309,6 +315,36 @@ class TestContext:
             raise AssertionError(f"Expected {actual=} to be in range {expected=} ± {epsilon=}\n" + self._get_callee())
 
         return actual
+
+    def assert_list_eq(self, expected, actual):
+        if len(expected) != len(actual):
+            missing = set(expected).difference(set(actual))
+            unexpected = set(actual).difference(set(expected))
+            msg = f"Expected list of length {len(actual)} but got list of length {len(expected)}."
+            if missing:
+                msg += f"\n\tMissing {", ".join(missing)}"
+            if unexpected:
+                msg += f"\n\tUnexpected {", ".join(unexpected)}"
+            raise AssertionError(msg)
+
+        errors = []
+
+        for i, tup in enumerate(zip(expected, actual)):
+            e, a = tup
+            if e != a:
+                errors.append(f"At index {i}: Expected {e} but got {a}")
+
+        if len(errors) > 0:
+            raise AssertionError(f"Expected lists to be equal but they are not.\n\t{'\n\t'.join(errors)}")
+
+    def assert_not_raising(self, expected: type, actual: Callable[[], typing.Any]):
+        try:
+            actual()
+        except Exception as e:
+            if isinstance(e, expected):
+                traceback.print_exc(e)
+                raise AssertionError(f"Expected to not raise {expected} but an exception of this type was raised!")
+            raise e
 
     class NoPayload:
         pass
