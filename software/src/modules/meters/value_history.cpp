@@ -172,14 +172,14 @@ void ValueHistory::tick(micros_t now, bool update_history, int32_t *live_sample,
     }
 }
 
-void ValueHistory::format_live(micros_t now, StringBuilder *sb)
+void ValueHistory::format_live(micros_t now, StringWriter *sb)
 {
     sb->printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now - live_last_update).to<millis_t>().as<uint32_t>(), static_cast<double>(samples_per_second()));
     format_live_samples(sb);
     sb->puts("]}");
 }
 
-void ValueHistory::format_live_samples(StringBuilder *sb)
+void ValueHistory::format_live_samples(StringWriter *sb)
 {
     int32_t val;
 
@@ -202,14 +202,14 @@ void ValueHistory::format_live_samples(StringBuilder *sb)
     }
 }
 
-void ValueHistory::format_history(micros_t now, StringBuilder *sb)
+void ValueHistory::format_history(micros_t now, StringWriter *sb)
 {
     sb->printf("{\"offset\":%lu,\"samples\":[", (now - history_last_update).to<millis_t>().as<uint32_t>());
     format_history_samples(sb);
     sb->puts("]}");
 }
 
-void ValueHistory::format_history_samples(StringBuilder *sb)
+void ValueHistory::format_history_samples(StringWriter *sb)
 {
     int32_t val;
 

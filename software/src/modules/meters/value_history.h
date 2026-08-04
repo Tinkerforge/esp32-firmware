@@ -50,7 +50,7 @@
 static_assert(INT32_MIN < VALUE_HISTORY_VALUE_MIN);
 static_assert(INT32_MAX >= VALUE_HISTORY_VALUE_MAX);
 
-class StringBuilder;
+class StringWriter;
 
 class ValueHistory
 {
@@ -64,10 +64,10 @@ public:
     void register_urls_empty(String base_url);
     void add_sample(float sample);
     void tick(micros_t now, bool update_history, int32_t *live_sample, int32_t *history_sample);
-    void format_live(micros_t now, StringBuilder *sb);
-    void format_live_samples(StringBuilder *sb);
-    void format_history(micros_t now, StringBuilder *sb);
-    void format_history_samples(StringBuilder *sb);
+    void format_live(micros_t now, StringWriter *sb);
+    void format_live_samples(StringWriter *sb);
+    void format_history(micros_t now, StringWriter *sb);
+    void format_history_samples(StringWriter *sb);
     float samples_per_second();
 
     int64_t sum_this_interval = 0;
