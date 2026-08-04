@@ -787,7 +787,13 @@ void API::register_urls()
 #endif
 
     server.on_HTTPThread("/debug_report", HTTP_GET, [this](WebServerRequest request) {
-        constexpr size_t BUF_SIZE = OPTIONS_API_JSON_MAX_LENGTH() + 1024;
+        constexpr size_t BUF_SIZE = std::max({
+            static_cast<size_t>(OPTIONS_API_JSON_MAX_LENGTH() + 1024)
+#if MODULE_METERS_AVAILABLE()
+            , meters.HISTORY_JSON_SIZE
+#endif
+        });
+
         auto buf = heap_alloc_array<char>(BUF_SIZE);
 
         if (buf == nullptr)
@@ -891,6 +897,20 @@ void API::register_urls()
         } // Drop JsonSerializer to prevent accidentially using it below.
 
         StringWriter sw{buf.get(), BUF_SIZE};
+
+#if MODULE_METERS_AVAILABLE()
+        SEND_CHUNK_OR_FAIL(request, ",\n \"meters/history\": ");
+        auto result = meters.send_meters_history(request, sw);
+        if (result.error != ESP_OK)
+            return result;
+        SEND_CHUNK_OR_FAIL(request, ",\n \"meters/live\": ");
+        sw.clear();
+
+        result = meters.send_meters_live(request, sw);
+        if (result.error != ESP_OK)
+            return result;
+        sw.clear();
+#endif
 
         if (!print_regs_to_debug_report(this->states,    sw, request, nullptr) ||
             !print_regs_to_debug_report(this->commands,  sw, request, nullptr) ||

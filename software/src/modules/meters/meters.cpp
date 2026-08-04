@@ -512,26 +512,11 @@ void Meters::register_urls()
         if (!sb.setCapacity(HISTORY_JSON_SIZE)) {
             return request.send_plain(500, "Failed to allocate buffer");
         }
-
-        sb.printf("{\"offset\":%lu,\"samples\":[", (now_us() - last_history_update).to<millis_t>().as<uint32_t>());
         request.beginChunkedResponse_json(200);
 
-        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-            MeterSlot &meter_slot = meter_slots[slot];
-
-            if (meter_slot.meter->get_class() != MeterClassID::None) {
-                sb.puts(slot == 0 ? "[" : ",[");
-                meter_slot.power_history.format_history_samples(&sb);
-                sb.puts("]");
-            } else {
-                sb.puts(slot == 0 ? "null" : ",null");
-            }
-
-            SEND_CHUNK_OR_FAIL(request, sb);
-            sb.clear();
-        }
-
-        SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
+        auto result = this->send_meters_history(request, sb);
+        if (result.error != ESP_OK)
+            return result;
 
         return request.endChunkedResponse();
     });
@@ -543,25 +528,12 @@ void Meters::register_urls()
             return request.send_plain(500, "Failed to allocate buffer");
         }
 
-        sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now_us() - last_live_update).to<millis_t>().as<uint32_t>(), static_cast<double>(live_samples_per_second()));
         request.beginChunkedResponse_json(200);
 
-        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-            MeterSlot &meter_slot = meter_slots[slot];
+        auto result = this->send_meters_live(request, sb);
+        if (result.error != ESP_OK)
+            return result;
 
-            if (meter_slot.meter->get_class() != MeterClassID::None) {
-                sb.puts(slot == 0 ? "[" : ",[");
-                meter_slot.power_history.format_live_samples(&sb);
-                sb.puts("]");
-            } else {
-                sb.puts(slot == 0 ? "null" : ",null");
-            }
-
-            SEND_CHUNK_OR_FAIL(request, sb);
-            sb.clear();
-        }
-
-        SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
 
         return request.endChunkedResponse();
     });
@@ -1413,6 +1385,54 @@ String Meters::get_path(uint32_t slot, Meters::PathType path_type)
     sw.puts(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
 
     return String(buf, sw.getLength());
+}
+
+WebServerRequestReturnProtect Meters::send_meters_live(WebServerRequest request, StringWriter &sw)
+{
+    sw.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now_us() - last_live_update).to<millis_t>().as<uint32_t>(), static_cast<double>(live_samples_per_second()));
+
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        MeterSlot &meter_slot = meter_slots[slot];
+
+        if (meter_slot.meter->get_class() != MeterClassID::None) {
+            sw.puts(slot == 0 ? "[" : ",[");
+            meter_slot.power_history.format_live_samples(&sw);
+            sw.puts("]");
+        } else {
+            sw.puts(slot == 0 ? "null" : ",null");
+        }
+
+        SEND_CHUNK_OR_FAIL(request, sw);
+        sw.clear();
+    }
+
+    SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
+
+    return request.unsafe_ResponseAlreadySent();
+}
+
+WebServerRequestReturnProtect Meters::send_meters_history(WebServerRequest request, StringWriter &sw)
+{
+    sw.printf("{\"offset\":%lu,\"samples\":[", (now_us() - last_history_update).to<millis_t>().as<uint32_t>());
+
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        MeterSlot &meter_slot = meter_slots[slot];
+
+        if (meter_slot.meter->get_class() != MeterClassID::None) {
+            sw.puts(slot == 0 ? "[" : ",[");
+            meter_slot.power_history.format_history_samples(&sw);
+            sw.puts("]");
+        } else {
+            sw.puts(slot == 0 ? "null" : ",null");
+        }
+
+        SEND_CHUNK_OR_FAIL(request, sw);
+        sw.clear();
+    }
+
+    SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
+
+    return request.unsafe_ResponseAlreadySent();
 }
 
 uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, std::initializer_list<MeterValueID> ids)

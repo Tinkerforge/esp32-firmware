@@ -33,6 +33,8 @@
 #include "generated/module_available.h"
 #include "tools.h"
 
+#include "modules/web_server/web_server.h"
+
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
@@ -151,6 +153,9 @@ public:
     void fill_index_cache(uint32_t slot, size_t value_count, const MeterValueID value_ids[], uint32_t index_cache[]);
 
     String get_path(uint32_t slot, PathType path_type);
+
+    WebServerRequestReturnProtect send_meters_live(WebServerRequest request, StringWriter &sw);
+    WebServerRequestReturnProtect send_meters_history(WebServerRequest request, StringWriter &sw);
 
 private:
     class MeterSlot final
