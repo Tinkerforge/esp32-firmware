@@ -348,12 +348,6 @@ void Meters::setup()
     generators.clear();
     generators.shrink_to_fit();
 
-    history_chars_per_value = std::max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
-    // INT32_MIN values are replaced with null -> require at least 4 chars per value.
-    history_chars_per_value = std::max(4U, history_chars_per_value);
-    // For ',' between the values.
-    ++history_chars_per_value;
-
     task_scheduler.scheduleUncancelable([this](){
         micros_t now = now_us();
         uint32_t current_history_slot = (now / minutes_t{HISTORY_MINUTE_INTERVAL}).as<uint32_t>();
@@ -389,7 +383,7 @@ void Meters::setup()
         ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
-        if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * history_chars_per_value + 100)) {
+        if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
             sb.printf("{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
 
             for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
@@ -424,7 +418,7 @@ void Meters::setup()
             end_this_interval = 0_us;
 
 #if MODULE_WS_AVAILABLE()
-            if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * history_chars_per_value + 100)) {
+            if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
                 sb.puts("{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
 
                 for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
@@ -515,7 +509,7 @@ void Meters::register_urls()
     server.on("/meters/history", HTTP_GET, [this](WebServerRequest request) {
         StringBuilder sb;
 
-        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
+        if (!sb.setCapacity(HISTORY_JSON_SIZE)) {
             return request.send_plain(500, "Failed to allocate buffer");
         }
 
@@ -545,7 +539,7 @@ void Meters::register_urls()
     server.on("/meters/live", HTTP_GET, [this](WebServerRequest request) {
         StringBuilder sb;
 
-        if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
+        if (!sb.setCapacity(HISTORY_JSON_SIZE)) {
             return request.send_plain(500, "Failed to allocate buffer");
         }
 

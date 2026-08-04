@@ -95,6 +95,15 @@ public:
         ExtraValueDirection direction;
     };
 
+    static constexpr size_t HISTORY_CHARS_PER_VALUE = 1 + // For ',' between the values.
+        std::max({
+            static_cast<size_t>(4), // INT32_MIN values are replaced with null -> require at least 4 chars per value.
+            constexpr_strlen(MACRO_VALUE_TO_STRING(VALUE_HISTORY_VALUE_MIN)),
+            constexpr_strlen(MACRO_VALUE_TO_STRING(VALUE_HISTORY_VALUE_MAX))
+        });
+
+    static constexpr size_t HISTORY_JSON_SIZE = HISTORY_RING_BUF_SIZE * HISTORY_CHARS_PER_VALUE + 100;
+
     Meters(){}
     void pre_setup() override;
     void setup() override;
