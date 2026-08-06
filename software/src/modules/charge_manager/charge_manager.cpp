@@ -1303,11 +1303,7 @@ void ChargeManager::register_urls()
     this->guaranteed_pv_current = 0;
 #endif
 
-    if (!api.restorePersistentConfig("power_manager/charge_mode", &this->pm_charge_mode, API::SavedDefaultConfig::Keep)) {
-        // The default's default is Fast. This is used if the default charge mode is set to Default, i.e. persistent,
-        // but the charge_mode was never written.
-        this->pm_charge_mode.get("mode")->updateEnum(ConfigChargeMode::Fast);
-    }
+    api.restorePersistentConfig("power_manager/charge_mode", &this->pm_charge_mode);
 
     auto default_mode = config_cm_to_cm(this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>());
     for (size_t i = 0; i < charger_count; ++i) {
