@@ -52,20 +52,25 @@ enum class PhaseRotation {
     L312 = PHASE_ROTATION(GridPhase::L3,GridPhase::L1,GridPhase::L2), // Standard 240 degree rotation (= TRS in OCPP)
 };
 
-struct Cost {
-    int pv = 0;
-    int l1 = 0;
-    int l2 = 0;
-    int l3 = 0;
+struct Cost final {
+    union {
+        struct {
+            int pv = 0;
+            int l1 = 0;
+            int l2 = 0;
+            int l3 = 0;
+        };
+        int phases[4];
+    };
 
     Cost () : pv(0), l1(0), l2(0), l3(0) {}
     Cost (int pv, int l1, int l2, int l3) : pv(pv), l1(l1), l2(l2), l3(l3) {}
 
-    int &operator[](size_t idx) { return *(&pv + idx); }
-    const int &operator[](size_t idx) const { return *(&pv + idx); }
+    int &operator[](size_t idx) { return phases[idx]; }
+    const int &operator[](size_t idx) const { return phases[idx]; }
 
-    int &operator[](GridPhase p) { return *(&pv + (int)p); }
-    const int &operator[](GridPhase p) const { return *(&pv + (int)p); }
+    int &operator[](GridPhase p) { return phases[(size_t)p]; }
+    const int &operator[](GridPhase p) const { return phases[(size_t)p]; }
 
     // Looks strange but seems to be best practice:
     // https://en.cppreference.com/w/cpp/language/operators#Binary_arithmetic_operators

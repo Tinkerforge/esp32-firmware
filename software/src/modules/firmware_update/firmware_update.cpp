@@ -40,8 +40,6 @@
 
 #include "gcc_warnings.h"
 
-static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT_ID());
-
 static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};
 
 // Newer firmwares contain a firmware info
@@ -49,6 +47,9 @@ static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MI
 #define FIRMWARE_INFO_LENGTH 0x1000
 
 static const uint8_t firmware_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0x71, 0x21, 0xCE, 0x12, 0xF0, 0x12, 0x6E};
+
+#if signature_sodium_public_key_length != 0
+static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT_ID());
 
 // Signed firmwares contain a signature info
 #define SIGNATURE_INFO_OFFSET (0xc000 - 0x1000)
@@ -58,6 +59,7 @@ static const uint8_t signature_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0xE6, 0x
 
 #define SIGNATURE_INFO_SIGNATURE_OFFSET (SIGNATURE_INFO_OFFSET + offsetof(signature_info_t, signature))
 #define SIGNATURE_INFO_SIGNATURE_LENGTH crypto_sign_BYTES
+#endif
 
 // The firmware files are merged with the bootloader, partition table, signature_info,
 // firmware_info and slot configuration bins.
