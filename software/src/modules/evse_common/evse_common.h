@@ -211,7 +211,6 @@ public:
 private:
     ConfigRoot low_level_state;
     ConfigRoot management_enabled;
-    ConfigRoot management_enabled_update;
     ConfigRoot state;
     ConfigRoot slots;
     ConfigRoot hardware_configuration;
@@ -222,7 +221,6 @@ private:
     ConfigRoot external_clear_on_disconnect;
     ConfigRoot external_clear_on_disconnect_update;
     ConfigRoot management_current;
-    ConfigRoot management_current_update;
     ConfigRoot boost_mode;
     ConfigRoot auto_start_charging;
     ConfigRoot global_current;

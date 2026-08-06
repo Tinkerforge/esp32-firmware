@@ -88,7 +88,6 @@ void EvseCommon::pre_setup()
     external_clear_on_disconnect_update = external_clear_on_disconnect;
 
     management_current = current_cfg;
-    management_current_update = management_current;
 
     // EVSE configs
     auto_start_charging = ConfigRoot{Config::Object({
