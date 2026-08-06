@@ -826,6 +826,17 @@ void API::register_urls()
                 json.endObject();
             }
 
+            json.addMemberObject("himem");
+            json.addMemberNumber("free", static_cast<uint32_t>(
+#if defined(BOARD_HAS_PSRAM)
+                esp_himem_get_free_size()
+#else
+                0
+#endif
+                )
+            );
+            json.endObject();
+
             // Ignore await results here:
             // Half a debug report is better than nothing.
             (void)task_scheduler.await([&json](){
