@@ -163,6 +163,9 @@ void WebSockets::processPendingCloses_HTTPThread()
     size_t count;
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        if (pending_close_count == 0) {
+            return;
+        }
         count = pending_close_count;
         memcpy(fds_to_close, pending_close_fds, count * sizeof(int));
         pending_close_count = 0;
