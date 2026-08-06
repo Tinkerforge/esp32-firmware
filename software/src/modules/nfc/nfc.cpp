@@ -176,7 +176,9 @@ void NFC::pre_setup()
             }
         }
 
-        task_scheduler.scheduleOnce([this](){this->setup_auth_tags();});
+        // NFC::setup() calls setup_auth_tags after restoring the config.
+        if (source != ConfigSource::File)
+            task_scheduler.scheduleOnce([this](){this->setup_auth_tags();});
         return "";
     }};
 
@@ -472,9 +474,8 @@ void NFC::setup_auth_tags()
 
 void NFC::setup()
 {
-    if (!api.restorePersistentConfig("nfc/config", &config)) {
-        setup_auth_tags(); // If restoring the config failed, setup_auth_tags was not called.
-    }
+    api.restorePersistentConfig("nfc/config", &config);
+    setup_auth_tags();
 
     old_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*old_tags)));
     new_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*new_tags)));
