@@ -92,7 +92,7 @@ void Mqtt::pre_setup()
         {"broker_username", Config::Str(DEFAULT_MQTT_BROKER_USERNAME, 0, 64)},
         {"broker_password", Config::Str(DEFAULT_MQTT_BROKER_PASSWORD, 0, 64)},
         {"global_topic_prefix", Config::Str(esp32_common.get_default_name('/'), 0, 64)},
-        {"client_name", Config::Str(esp32_common.get_default_name('-'), 1, 64)},
+        {"client_name", Config::Str(esp32_common.get_default_name(), 1, 64)},
         {"interval", Config::Uint(1, 0, 24 * 60 * 60)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
         {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
