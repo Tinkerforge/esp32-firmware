@@ -47,6 +47,8 @@
 
 #include "gcc_warnings.h"
 
+constexpr size_t EMAC_TASK_STACK_SIZE = 2560;
+
 static constexpr uint8_t IGMP_MAC[6] = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x01};
 
 // Generation counter for async ETH.begin() tasks. Incremented on every
@@ -250,6 +252,10 @@ void Ethernet::setup()
 
                 state.get("mac")->updateString(String{mac_str, len});
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
+
+#if MODULE_DEBUG_AVAILABLE()
+                debug.register_task("emac_rx", EMAC_TASK_STACK_SIZE);
+#endif
             });
         },
         ARDUINO_EVENT_ETH_START);
@@ -472,7 +478,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    ETH.setTaskStackSize(2560);
+    ETH.setTaskStackSize(EMAC_TASK_STACK_SIZE);
 
     apply_config();
 }
