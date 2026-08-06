@@ -44,14 +44,44 @@
 #define MAX_CERT_ID -1
 #endif
 
+
+#ifndef DEFAULT_WIFI_AP_ENABLE
+#define DEFAULT_WIFI_AP_ENABLE true
+#endif
+
+#ifndef DEFAULT_WIFI_AP_FALLBACK_ONLY
+#define DEFAULT_WIFI_AP_FALLBACK_ONLY false
+#endif
+
+#ifndef DEFAULT_WIFI_AP_SSID
+#define DEFAULT_WIFI_AP_SSID esp32_common.get_default_name()
+#endif
+
+#ifndef DEFAULT_WIFI_AP_PASSPHRASE
+#define DEFAULT_WIFI_AP_PASSPHRASE esp32_common.get_default_wifi_passphrase()
+#endif
+
+#ifndef DEFAULT_WIFI_STA_ENABLE
+#define DEFAULT_WIFI_STA_ENABLE false
+#endif
+
+#ifndef DEFAULT_WIFI_STA_SSID
+#define DEFAULT_WIFI_STA_SSID ""
+#endif
+
+#ifndef DEFAULT_WIFI_STA_PASSPHRASE
+#define DEFAULT_WIFI_STA_PASSPHRASE ""
+#endif
+
+
 void Wifi::pre_setup()
 {
     ap_config = ConfigRoot{Config::Object({
-        {"enable_ap", Config::Bool(true)},
-        {"ap_fallback_only", Config::Bool(false)},
-        {"ssid", Config::Str(esp32_common.get_default_name(), 0, 32)},
+        {"enable_ap", Config::Bool(DEFAULT_WIFI_AP_ENABLE)},
+        {"ap_fallback_only", Config::Bool(DEFAULT_WIFI_AP_FALLBACK_ONLY)},
+        {"ssid", Config::Str(DEFAULT_WIFI_AP_SSID, 0, 32)},
         {"hide_ssid", Config::Bool(false)},
-        {"passphrase", Config::Str(esp32_common.get_default_wifi_passphrase(), 8, 64)}, // FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
+        {"passphrase", Config::Str(DEFAULT_WIFI_AP_PASSPHRASE, 8, 64)}, // FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
         {"channel", Config::Uint(0, 0, 13)},
         {"ip",      Config::Str("10.0.0.1",      7, 15)},
         {"gateway", Config::Str("0.0.0.0",       7, 15)},
@@ -162,12 +192,12 @@ void Wifi::pre_setup()
     })};
 
     sta_config = ConfigRoot{Config::Object({
-        {"enable_sta", Config::Bool(false)},
-        {"ssid", Config::Str("", 0, 32)},
+        {"enable_sta", Config::Bool(DEFAULT_WIFI_STA_ENABLE)},
+        {"ssid", Config::Str(DEFAULT_WIFI_STA_SSID, 0, 32)},
         {"bssid", Config::Tuple(6, Config::Uint8(0))},
         {"bssid_lock", Config::Bool(false)},
         {"enable_11b", Config::Bool(false)},
-        {"passphrase", Config::Str("", 0, 64)},
+        {"passphrase", Config::Str(DEFAULT_WIFI_STA_PASSPHRASE, 0, 64)},
         {"ip",      Config::Str("0.0.0.0", 7, 15)},
         {"gateway", Config::Str("0.0.0.0", 7, 15)},
         {"subnet",  Config::Str("0.0.0.0", 7, 15)},
@@ -1148,32 +1178,8 @@ void Wifi::setup()
 {
     initialized = true;
 
-    if (!api.restorePersistentConfig("wifi/sta_config", &sta_config, API::SavedDefaultConfig::Keep)) {
-#ifdef DEFAULT_WIFI_STA_ENABLE
-        sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
-#endif
-#ifdef DEFAULT_WIFI_STA_SSID
-        sta_config.get("ssid")->updateString(String(DEFAULT_WIFI_STA_SSID));
-#endif
-#ifdef DEFAULT_WIFI_STA_PASSPHRASE
-        sta_config.get("passphrase")->updateString(String(DEFAULT_WIFI_STA_PASSPHRASE));
-#endif
-    }
-
-    if (!api.restorePersistentConfig("wifi/ap_config", &ap_config, API::SavedDefaultConfig::Keep)) {
-#ifdef DEFAULT_WIFI_AP_ENABLE
-        ap_config.get("enable_ap")->updateBool(DEFAULT_WIFI_AP_ENABLE);
-#endif
-#ifdef DEFAULT_WIFI_AP_FALLBACK_ONLY
-        ap_config.get("ap_fallback_only")->updateBool(DEFAULT_WIFI_AP_FALLBACK_ONLY);
-#endif
-#ifdef DEFAULT_WIFI_AP_SSID
-        ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
-#endif
-#ifdef DEFAULT_WIFI_AP_PASSPHRASE
-        ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
-#endif
-    }
+    api.restorePersistentConfig("wifi/sta_config", &sta_config, API::SavedDefaultConfig::Keep);
+    api.restorePersistentConfig("wifi/ap_config", &ap_config, API::SavedDefaultConfig::Keep);
 
     if (ap_config.get("enable_ap")->asBool()) {
         apply_ap_config(true); // Allocate runtime_ap, but don't start the AP yet.

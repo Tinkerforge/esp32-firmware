@@ -61,15 +61,36 @@ int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic,
 #pragma GCC poison esp_mqtt_client_subscribe
 #pragma GCC poison esp_mqtt_client_subscribe_single
 #pragma GCC poison esp_mqtt_client_subscribe_multiple
+
+#ifndef DEFAULT_MQTT_ENABLE
+#define DEFAULT_MQTT_ENABLE false
+#endif
+
+#ifndef DEFAULT_MQTT_BROKER_HOST
+#define DEFAULT_MQTT_BROKER_HOST ""
+#endif
+
+#ifndef DEFAULT_MQTT_BROKER_PORT
+#define DEFAULT_MQTT_BROKER_PORT 1883
+#endif
+
+#ifndef DEFAULT_MQTT_BROKER_USERNAME
+#define DEFAULT_MQTT_BROKER_USERNAME ""
+#endif
+
+#ifndef DEFAULT_MQTT_BROKER_PASSWORD
+#define DEFAULT_MQTT_BROKER_PASSWORD ""
+#endif
+
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
     config = ConfigRoot{Config::Object({
-        {"enable_mqtt", Config::Bool(false)},
-        {"broker_host", Config::Str("", 0, 128)},
-        {"broker_port", Config::Uint16(1883)},
-        {"broker_username", Config::Str("", 0, 64)},
-        {"broker_password", Config::Str("", 0, 64)},
+        {"enable_mqtt", Config::Bool(DEFAULT_MQTT_ENABLE)},
+        {"broker_host", Config::Str(DEFAULT_MQTT_BROKER_HOST, 0, 128)},
+        {"broker_port", Config::Uint16(DEFAULT_MQTT_BROKER_PORT)},
+        {"broker_username", Config::Str(DEFAULT_MQTT_BROKER_USERNAME, 0, 64)},
+        {"broker_password", Config::Str(DEFAULT_MQTT_BROKER_PASSWORD, 0, 64)},
         {"global_topic_prefix", Config::Str(esp32_common.get_default_name('/'), 0, 64)},
         {"client_name", Config::Str(esp32_common.get_default_name('-'), 1, 64)},
         {"interval", Config::Uint(1, 0, 24 * 60 * 60)},
@@ -654,23 +675,7 @@ void Mqtt::setup()
 {
     initialized = true;
 
-    if (!api.restorePersistentConfig("mqtt/config", &config)) {
-#ifdef DEFAULT_MQTT_ENABLE
-        config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
-#endif
-#ifdef DEFAULT_MQTT_BROKER_HOST
-        config.get("broker_host")->updateString(DEFAULT_MQTT_BROKER_HOST);
-#endif
-#ifdef DEFAULT_MQTT_BROKER_PORT
-        config.get("broker_port")->updateUint(DEFAULT_MQTT_BROKER_PORT);
-#endif
-#ifdef DEFAULT_MQTT_BROKER_USERNAME
-        config.get("broker_username")->updateString(DEFAULT_MQTT_BROKER_USERNAME);
-#endif
-#ifdef DEFAULT_MQTT_BROKER_PASSWORD
-        config.get("broker_password")->updateString(DEFAULT_MQTT_BROKER_PASSWORD);
-#endif
-    }
+    api.restorePersistentConfig("mqtt/config", &config);
 
     global_topic_prefix = this->config.get("global_topic_prefix")->asString();
     send_interval = seconds_t{this->config.get("interval")->asUint()};
