@@ -559,6 +559,7 @@ void Wifi::apply_sta_config(bool defer_start)
         new_runtime->last_connected = 0_us;
         new_runtime->connect_tries    = 0;
         new_runtime->was_connected    = runtime_sta != nullptr && runtime_sta->was_connected;
+        new_runtime->ipv6_enabled     = runtime_sta != nullptr && runtime_sta->ipv6_enabled;
 
         auto eap_union = const_cast<const ConfigRoot *>(&sta_config)->get("wpa_eap_config");
         const EapConfigID eap_config_id = eap_union->getTag<EapConfigID>();
@@ -1402,83 +1403,83 @@ void Wifi::get_scan_results(StringBuilder *sb, size_t network_count)
 }
 void Wifi::apply_ipv6_sta_config()
 {
-    logger.printfln("Applying IPv6 STA config");
     task_scheduler.scheduleOnce([this]() {
-            bool want_ipv6 = sta_config.get("enable_ipv6")->asBool();
+        logger.printfln("Applying IPv6 STA config");
+        bool want_ipv6 = sta_config.get("enable_ipv6")->asBool();
 
-            if (want_ipv6 ) {
-                if (want_ipv6 != ipv6_enable_sta) {
-                    WiFi.enableIPv6(sta_config.get("enable_ipv6")->asBool());
-                }
-                String configured_ip_str = sta_config.get("ipv6")->get("ip")->asString();
-                String state_ip_str = state.get("sta_ip6_configured")->asString();
+        if (want_ipv6 ) {
+            if (!runtime_sta->ipv6_enabled) {
+                runtime_sta->ipv6_enabled = true;
+                WiFi.enableIPv6(true);
+            }
+            String configured_ip_str = sta_config.get("ipv6")->get("ip")->asString();
+            String state_ip_str = state.get("sta_ip6_configured")->asString();
 
-                // Case: Update IPV6 address as the configured and current one dont match
-                if (configured_ip_str != state_ip_str) {
-                    esp_ip6_addr_t config_ip;
-                    esp_ip6_addr_t state_ip;
-                    esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
-                    esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
+            // Case: Update IPV6 address as the configured and current one dont match
+            if (configured_ip_str != state_ip_str) {
+                esp_ip6_addr_t config_ip;
+                esp_ip6_addr_t state_ip;
+                esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
+                esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
 
-                    // If the configured ip is unset -> remove the IP
-                    if (configured_ip_str == "::") {
+                // If the configured ip is unset -> remove the IP
+                if (configured_ip_str == "::") {
+                    esp_err_t err = esp_netif_remove_ip6_address(WiFi.STA.netif(), &state_ip);
+                    if (err != ESP_OK) {
+                        logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                    } else {
+                        state.get("sta_ip6_configured")->updateString(configured_ip_str);
+                    }
+                } else {
+                    // A different IPV6 address was configured previously -> need to remove it before setting the new one
+                    if (state_ip_str != "::") {
                         esp_err_t err = esp_netif_remove_ip6_address(WiFi.STA.netif(), &state_ip);
                         if (err != ESP_OK) {
                             logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
                         } else {
                             state.get("sta_ip6_configured")->updateString(configured_ip_str);
                         }
+                    }
+                    esp_err_t err = esp_netif_add_ip6_address(WiFi.STA.netif(), config_ip, false);
+                    if (err != ESP_OK) {
+                        logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
                     } else {
-                        // A different IPV6 address was configured previously -> need to remove it before setting the new one
-                        if (state_ip_str != "::") {
-                            esp_err_t err = esp_netif_remove_ip6_address(WiFi.STA.netif(), &state_ip);
-                            if (err != ESP_OK) {
-                                logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                            } else {
-                                state.get("sta_ip6_configured")->updateString(configured_ip_str);
-                            }
-                        }
-                        esp_err_t err = esp_netif_add_ip6_address(WiFi.STA.netif(), config_ip, false);
-                        if (err != ESP_OK) {
-                            logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                        } else {
-                            state.get("sta_ip6_configured")->updateString(configured_ip_str);
-                        }
+                        state.get("sta_ip6_configured")->updateString(configured_ip_str);
                     }
                 }
-
-                String dns_str = sta_config.get("ipv6")->get("dns")->asString();
-                if (dns_str != "::") {
-                    // IPv6 DNS ist set as Fallback so its the lowest Priority.
-                    esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_FALLBACK;
-                    // Check configured DNS
-                    esp_netif_dns_info_t get_dns_info;
-                    esp_netif_get_dns_info(WiFi.STA.netif(), dns_type, &get_dns_info);
-                    esp_ip6_addr_t dns_addr;
-                    esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
-                    esp_netif_dns_info_t dns_info;
-                    dns_info.ip.type = ESP_IPADDR_TYPE_V6;
-                    dns_info.ip.u_addr.ip6 = dns_addr;
-                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6
-                            && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0)
-                        || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {
-                        esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
-                    }
-                }
-
-
-            } else {
-                if (want_ipv6 != ipv6_enable_sta) {
-                    WiFi.enableIPv6(false);
-                }
-                state.get("sta_ip6_link_local")->updateString("::");
-                state.get("sta_ip6_global")->updateString("::");
-                state.get("sta_ip6_unique_local")->updateString("::");
-                state.get("sta_ip6_site_local")->updateString("::");
-                state.get("sta_ip6_configured")->updateString("::");
-                // Cannot unset DNS so we just leave it in this case
             }
-            ipv6_enable_sta = want_ipv6;
+
+            String dns_str = sta_config.get("ipv6")->get("dns")->asString();
+            if (dns_str != "::") {
+                // IPv6 DNS ist set as backup so its the lowest priority. Fallback is not enabled.
+                esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_BACKUP;
+
+                // Check configured DNS
+                esp_netif_dns_info_t get_dns_info;
+                esp_netif_get_dns_info(WiFi.STA.netif(), dns_type, &get_dns_info);
+
+                esp_ip6_addr_t dns_addr;
+                esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
+                esp_netif_dns_info_t dns_info;
+                dns_info.ip.type = ESP_IPADDR_TYPE_V6;
+                dns_info.ip.u_addr.ip6 = dns_addr;
+
+                if ((get_dns_info.ip.type != ESP_IPADDR_TYPE_V6 || memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0)) {
+                    esp_netif_set_dns_info(WiFi.STA.netif(), dns_type, &dns_info);
+                }
+            }
+        } else {
+            if (runtime_sta->ipv6_enabled) {
+                runtime_sta->ipv6_enabled = false;
+                WiFi.enableIPv6(false);
+            }
+            state.get("sta_ip6_link_local")->updateString("::");
+            state.get("sta_ip6_global")->updateString("::");
+            state.get("sta_ip6_unique_local")->updateString("::");
+            state.get("sta_ip6_site_local")->updateString("::");
+            state.get("sta_ip6_configured")->updateString("::");
+            // Cannot unset DNS so we just leave it in this case
+        }
     });
 }
 

@@ -44,6 +44,7 @@ public:
 private:
     void apply_config();
     void apply_ip_to_interface();
+    void apply_ipv6_config();
 
     struct eth_runtime {
         micros_t last_connected;
@@ -62,6 +63,7 @@ private:
 
         EthernetState connection_state;
         bool was_connected;
+        bool ipv6_enabled;
     };
 
     ConfigRoot config;
@@ -72,7 +74,4 @@ private:
 
     uint64_t reconnect_task_id = 0;
     uint64_t revert_countdown_task_id = 0;
-
-    void apply_ipv6_config();
-    bool ipv6_enable = false;
 };

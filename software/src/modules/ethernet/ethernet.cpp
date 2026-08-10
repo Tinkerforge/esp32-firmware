@@ -220,7 +220,7 @@ void Ethernet::setup()
                 logger.printfln("Setting IGMP filter failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
             }
 
-            if (this->ipv6_enable) {
+            if (this->runtime_data->ipv6_enabled) {
                 // Enable "pass all multicast" mode on the ESP32 EMAC hardware.
                 // By default, the EMAC's frame filter register (gmacff.pam) is 0, meaning multicast
                 // frames are only received if their destination MAC matches a registered filter entry.
@@ -539,79 +539,82 @@ void Ethernet::apply_ip_to_interface()
 void Ethernet::apply_ipv6_config()
 {
     task_scheduler.scheduleOnce([this]() {
-            bool want_ipv6 = config.get("enable_ipv6")->asBool();
+        const bool want_ipv6 = config.get("enable_ipv6")->asBool();
 
-            if (want_ipv6) {
-                if (want_ipv6 != ipv6_enable) {
-                    ETH.enableIPv6(true);
-                }
-                String configured_ip_str = config.get("ipv6")->get("ip")->asString();
-                String state_ip_str = state.get("ip6_configured")->asString();
+        if (want_ipv6) {
+            if (!this->runtime_data->ipv6_enabled) {
+                this->runtime_data->ipv6_enabled = true;
+                ETH.enableIPv6(true);
+            }
+            String configured_ip_str = config.get("ipv6")->get("ip")->asString();
+            String state_ip_str = state.get("ip6_configured")->asString();
 
-                // Case: Update IPV6 address as the configured and current one dont match
-                if (configured_ip_str != state_ip_str) {
-                    esp_ip6_addr_t config_ip;
-                    esp_ip6_addr_t state_ip;
-                    esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
-                    esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
+            // Case: Update IPV6 address as the configured and current one dont match
+            if (configured_ip_str != state_ip_str) {
+                esp_ip6_addr_t config_ip;
+                esp_ip6_addr_t state_ip;
+                esp_netif_str_to_ip6(configured_ip_str.c_str(), &config_ip);
+                esp_netif_str_to_ip6(state_ip_str.c_str(), &state_ip);
 
-                    // If the configured ip is unset -> remove the IP
-                    if (configured_ip_str == "::") {
+                // If the configured ip is unset -> remove the IP
+                if (configured_ip_str == "::") {
+                    esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
+                    if (err != ESP_OK) {
+                        logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                    } else {
+                        state.get("ip6_configured")->updateString(configured_ip_str);
+                    }
+                } else {
+                    // A different IPV6 address was configured previously -> need to remove it before setting the new one
+                    if (state_ip_str != "::") {
                         esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
                         if (err != ESP_OK) {
                             logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
                         } else {
                             state.get("ip6_configured")->updateString(configured_ip_str);
                         }
+                    }
+                    esp_err_t err = esp_netif_add_ip6_address(ETH.netif(), config_ip, false);
+                    if (err != ESP_OK) {
+                        logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
                     } else {
-                        // A different IPV6 address was configured previously -> need to remove it before setting the new one
-                        if (state_ip_str != "::") {
-                            esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), &state_ip);
-                            if (err != ESP_OK) {
-                                logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                            } else {
-                                state.get("ip6_configured")->updateString(configured_ip_str);
-                            }
-                        }
-                        esp_err_t err = esp_netif_add_ip6_address(ETH.netif(), config_ip, false);
-                        if (err != ESP_OK) {
-                            logger.printfln("Failed to set static IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-                        } else {
-                            state.get("ip6_configured")->updateString(configured_ip_str);
-                        }
-
+                        state.get("ip6_configured")->updateString(configured_ip_str);
                     }
 
                 }
-
-                String dns_str = config.get("ipv6")->get("dns")->asString();
-                if (dns_str != "::") {
-                    // IPv6 DNS ist set as Fallback so its the lowest Priority.
-                    esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_FALLBACK;
-                    // Check configured DNS
-                    esp_netif_dns_info_t get_dns_info;
-                    esp_netif_get_dns_info(ETH.netif(), dns_type, &get_dns_info);
-                    esp_ip6_addr_t dns_addr;
-                    esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
-                    esp_netif_dns_info_t dns_info;
-                    dns_info.ip.type = ESP_IPADDR_TYPE_V6;
-                    dns_info.ip.u_addr.ip6 = dns_addr;
-                    if ((get_dns_info.ip.type == ESP_IPADDR_TYPE_V6 && memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0) || get_dns_info.ip.type != ESP_IPADDR_TYPE_V6) {
-                        esp_netif_set_dns_info(ETH.netif(), dns_type, &dns_info);
-                    }
-                }
-            } else {
-                if (want_ipv6 != ipv6_enable) {
-                    ETH.enableIPv6(false);
-                }
-                state.get("ip6_link_local")->updateString("::");
-                state.get("ip6_global")->updateString("::");
-                state.get("ip6_unique_local")->updateString("::");
-                state.get("ip6_site_local")->updateString("::");
-                state.get("ip6_configured")->updateString("::");
-                // Cannot unset DNS so we just leave it in this case
             }
-            ipv6_enable = want_ipv6;
+
+            String dns_str = config.get("ipv6")->get("dns")->asString();
+            if (dns_str != "::") {
+                // IPv6 DNS ist set as backup so its the lowest priority. Fallback is not enabled.
+                esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_BACKUP;
+
+                // Check configured DNS
+                esp_netif_dns_info_t get_dns_info;
+                esp_netif_get_dns_info(ETH.netif(), dns_type, &get_dns_info);
+
+                esp_ip6_addr_t dns_addr;
+                esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
+                esp_netif_dns_info_t dns_info;
+                dns_info.ip.type = ESP_IPADDR_TYPE_V6;
+                dns_info.ip.u_addr.ip6 = dns_addr;
+
+                if ((get_dns_info.ip.type != ESP_IPADDR_TYPE_V6 || memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0)) {
+                    esp_netif_set_dns_info(ETH.netif(), dns_type, &dns_info);
+                }
+            }
+        } else {
+            if (this->runtime_data->ipv6_enabled) {
+                this->runtime_data->ipv6_enabled = false;
+                ETH.enableIPv6(false);
+            }
+            state.get("ip6_link_local")->updateString("::");
+            state.get("ip6_global")->updateString("::");
+            state.get("ip6_unique_local")->updateString("::");
+            state.get("ip6_site_local")->updateString("::");
+            state.get("ip6_configured")->updateString("::");
+            // Cannot unset DNS so we just leave it in this case
+        }
     });
 }
 

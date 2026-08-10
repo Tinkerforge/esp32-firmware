@@ -54,6 +54,7 @@ private:
     void apply_soft_ap_config_and_start();
     void apply_ap_config(bool defer_start = false);
     void apply_sta_config(bool defer_start = false);
+    void apply_ipv6_sta_config();
     void register_ap_event_handlers();
     void register_sta_event_handlers();
     bool apply_sta_config_and_connect();
@@ -112,6 +113,7 @@ private:
         bool bssid_lock     : 1;
         bool enable_11b     : 1;
         bool was_connected  : 1;
+        bool ipv6_enabled   : 1;
 
         uint8_t connect_tries;
 
@@ -129,7 +131,4 @@ private:
 
     uint64_t ap_revert_countdown_task_id  = 0;
     uint64_t sta_revert_countdown_task_id = 0;
-
-    bool ipv6_enable_sta = false;
-    void apply_ipv6_sta_config();
 };
