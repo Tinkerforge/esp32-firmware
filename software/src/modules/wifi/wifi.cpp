@@ -408,7 +408,7 @@ void Wifi::apply_soft_ap_config_and_start()
                    runtime_ap->channel,
                    runtime_ap->hide_ssid);
 
-    if (!WiFi.softAPConfig(ip, {tf_ip_addr_to_IPAddress(&runtime_ap->gateway)}, subnet)) {
+    if (!WiFi.softAPConfig(ip, {runtime_ap->gateway.addr}, subnet)) {
         logger.printfln("softAPConfig failed");
     }
 
@@ -445,11 +445,11 @@ void Wifi::apply_ap_config(bool defer_start)
             return;
         }
 
-        ipaddr_aton(ap_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
+        ip4addr_aton(ap_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
 
-        ip_addr_t subnet;
-        ipaddr_aton(ap_config.get("subnet")->asUnsafeCStr(), &subnet);
-        new_runtime->subnet_cidr = tf_ipaddr_mask2cidr(subnet);
+        ip4_addr_t subnet;
+        ip4addr_aton(ap_config.get("subnet")->asUnsafeCStr(), &subnet);
+        new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet);
 
         new_runtime->ap_fallback_only = ap_config.get("ap_fallback_only")->asBool();
         new_runtime->hide_ssid        = ap_config.get("hide_ssid"       )->asBool();
@@ -540,14 +540,14 @@ void Wifi::apply_sta_config(bool defer_start)
             return;
         }
 
-        ipaddr_aton(sta_config.get("ip"     )->asUnsafeCStr(), &new_runtime->ip     );
-        ipaddr_aton(sta_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
-        ipaddr_aton(sta_config.get("dns"    )->asUnsafeCStr(), &new_runtime->dns    );
-        ipaddr_aton(sta_config.get("dns2"   )->asUnsafeCStr(), &new_runtime->dns2   );
+        ip4addr_aton(sta_config.get("ip"     )->asUnsafeCStr(), &new_runtime->ip     );
+        ip4addr_aton(sta_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
+        ip4addr_aton(sta_config.get("dns"    )->asUnsafeCStr(), &new_runtime->dns    );
+        ip4addr_aton(sta_config.get("dns2"   )->asUnsafeCStr(), &new_runtime->dns2   );
 
-        ip_addr_t subnet;
-        ipaddr_aton(sta_config.get("subnet" )->asUnsafeCStr(), &subnet);
-        new_runtime->subnet_cidr = tf_ipaddr_mask2cidr(subnet) & 0x1F;
+        ip4_addr_t subnet;
+        ip4addr_aton(sta_config.get("subnet" )->asUnsafeCStr(), &subnet);
+        new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet) & 0x1F;
 
         new_runtime->enable_11b = sta_config.get("enable_11b")->asBool();
         new_runtime->bssid_lock = sta_config.get("bssid_lock")->asBool();
@@ -834,7 +834,7 @@ void Wifi::register_sta_event_handlers()
                 const micros_t now = now_us();
                 const uint32_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
 
-                if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.type == 0 && connected_for_s < 30) {
+                if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
                     String last_ip{};
 
                     (void)task_scheduler.await([this, &last_ip](){
@@ -1052,22 +1052,16 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.disconnect(false, true);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
 
-    if (runtime_sta->ip.type == 0) {
+    if (runtime_sta->ip.addr == 0) {
         WiFi.STA.config(static_cast<uint32_t>(0), static_cast<uint32_t>(0), static_cast<uint32_t>(0));
     } else {
-        // WiFi.STA.config() only supports IPv4
-        if (runtime_sta->ip.type == IPv4) {
-            const ip4_addr_t subnet = tf_ip4addr_cidr2mask(runtime_sta->subnet_cidr);
+        const ip4_addr_t subnet = tf_ip4addr_cidr2mask(runtime_sta->subnet_cidr);
 
-            WiFi.STA.config(&runtime_sta->ip, &runtime_sta->gateway, subnet.addr, &runtime_sta->dns, &runtime_sta->dns2);
-        } else if (runtime_sta->ip.type == IPv6) {
-            const ip6_addr_t subnet = tf_ip6addr_cidr2mask(runtime_sta->subnet_cidr);
-            ip_addr_t ip_t{};
-            ip_t.type = IPADDR_TYPE_V6;
-            ip_t.u_addr.ip6 = subnet;
-
-            WiFi.STA.config(&runtime_sta->ip, &runtime_sta->gateway, &ip_t, &runtime_sta->dns, &runtime_sta->dns2);
-        }
+        WiFi.STA.config({runtime_sta->ip.addr},
+                        {runtime_sta->gateway.addr},
+                        {subnet.addr},
+                        {runtime_sta->dns.addr},
+                        {runtime_sta->dns2.addr});
     }
 
     const char *ssid = runtime_sta->ssid_passphrase;
