@@ -27,11 +27,12 @@
 #define ETH_PHY_MDC   23
 #define ETH_PHY_MDIO  18
 #define ETH_PHY_POWER 5
-#define ETH_CLK_MODE ETH_CLOCK_GPIO0_IN
+#define ETH_CLK_MODE  ETH_CLOCK_GPIO0_IN
 
 #include "generated/module_dependencies.h"
 
 #include <ETH.h>
+#include <esp_netif.h>
 #include <lwip/tcpip.h>
 
 #include "event_log_prefix.h"
@@ -42,8 +43,6 @@
 #include "tools/malloc.h"
 #include "tools/net.h"
 #include "tools/printf.h"
-
-#include <esp_netif.h>
 
 #include "gcc_warnings.h"
 
@@ -71,35 +70,31 @@ void Ethernet::pre_setup()
         })},
         {"enable_ipv6", Config::Bool(false)},
     }), [this](Config &update, ConfigSource source) -> String {
-        IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
+        IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
         if (!ip_addr.fromString(update.get("ip")->asEphemeralCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+            return "Failed to parse \"ip\": Expected format is dotted decimal, e.g. 10.0.0.1";
 
         if (!gateway_addr.fromString(update.get("gateway")->asEphemeralCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+            return "Failed to parse \"gateway\": Expected format is dotted decimal, e.g. 10.0.0.1";
 
         if (!subnet_mask.fromString(update.get("subnet")->asEphemeralCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g., 255.255.255.0) or IPv6 prefix length (e.g., 64)";
+            return "Failed to parse \"subnet\": Expected format is dotted decimal, e.g. 255.255.255.0";
 
-        // Only validate IPv4 constraints
-        if (tf_ip_is_v4(ip_addr)) {
-            if (!is_valid_subnet_mask(subnet_mask))
-                return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+        if (!is_valid_subnet_mask(subnet_mask))
+            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
-            if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
-                return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
+        if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
+            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
 
-            if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-                return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
-        }
-        // TODO: Add IPv6-specific validation when needed
+        if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
-        if (!dns1.fromString(update.get("dns")->asEphemeralCStr()))
-            return "Failed to parse \"dns\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!unused.fromString(update.get("dns")->asEphemeralCStr()))
+            return "Failed to parse \"dns\": Expected format is dotted decimal, e.g. 10.0.0.1";
 
-        if (!dns2.fromString(update.get("dns2")->asEphemeralCStr()))
-            return "Failed to parse \"dns2\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!unused.fromString(update.get("dns2")->asEphemeralCStr()))
+            return "Failed to parse \"dns2\": Expected format is dotted decimal, e.g. 10.0.0.1";
 
         if (!update.get("enable_ethernet")->asBool()) {
 #if MODULE_WIFI_AVAILABLE()
@@ -148,7 +143,7 @@ void Ethernet::pre_setup()
         {"connection_end",    Config::Uptime()},
         {"mac",               Config::Str("", 0, 17)},
         {"ip",                Config::Str("0.0.0.0", 7, 15)},
-        {"subnet",            Config::Str("0.0.0.0", 7, 45)},
+        {"subnet",            Config::Str("0.0.0.0", 7, 15)},
         {"ip6_link_local",    Config::Str("::", 0, 45)},
         {"ip6_global",        Config::Str("::", 0, 45)},
         {"ip6_unique_local",  Config::Str("::", 0, 45)},
@@ -212,7 +207,6 @@ void Ethernet::setup()
             const String hostname = esp32_common.get_default_name();
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
-            ETH.setRoutePrio(110);             // Prefer Ethernet over WiFi, which has priority 100.
 
             // Manually add a MAC filter to accept IGMP packets because lwIP is bugged and doesn't do it.
             esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
@@ -624,11 +618,11 @@ void Ethernet::apply_config()
 
         // Parse IPv4 settings from top-level config fields.
         ip4_addr_t subnet4_tmp;
-        ip4addr_aton(config.get("ip")->asUnsafeCStr(), &runtime_data->ip4);
+        ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip4);
         ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway4);
-        ip4addr_aton(config.get("dns")->asUnsafeCStr(), &runtime_data->dns4);
-        ip4addr_aton(config.get("dns2")->asUnsafeCStr(), &runtime_data->dns24);
-        ip4addr_aton(config.get("subnet")->asUnsafeCStr(), &subnet4_tmp);
+        ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns4);
+        ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns24);
+        ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet4_tmp);
         runtime_data->subnet4_cidr = tf_ip4addr_mask2cidr(subnet4_tmp);
 
         // IPv6 specific
