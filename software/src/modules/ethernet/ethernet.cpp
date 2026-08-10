@@ -58,104 +58,106 @@ static std::atomic<uint32_t> eth_begin_generation{0};
 
 void Ethernet::pre_setup()
 {
-    config = ConfigRoot{Config::Object({{"enable_ethernet", Config::Bool(true)},
-                                        {"ip", Config::Str("0.0.0.0", 7, 15)},
-                                        {"gateway", Config::Str("0.0.0.0", 7, 15)},
-                                        {"subnet", Config::Str("0.0.0.0", 7, 15)},
-                                        {"dns", Config::Str("0.0.0.0", 7, 15)},
-                                        {"dns2", Config::Str("0.0.0.0", 7, 15)},
-                                        {"ipv6",
-                                         Config::Object({
-                                             {"ip", Config::Str("::", 2, 45)},
-                                             {"dns", Config::Str("::", 2, 45)},
-                                         })},
-                                        {"enable_ipv6", Config::Bool(false)}}),
-                        [this](Config &update, ConfigSource source) -> String {
-                            IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
+    config = ConfigRoot{Config::Object({
+        {"enable_ethernet", Config::Bool(true)},
+        {"ip",      Config::Str("0.0.0.0", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet",  Config::Str("0.0.0.0", 7, 15)},
+        {"dns",     Config::Str("0.0.0.0", 7, 15)},
+        {"dns2",    Config::Str("0.0.0.0", 7, 15)},
+        {"ipv6",    Config::Object({
+            {"ip",  Config::Str("::", 2, 45)},
+            {"dns", Config::Str("::", 2, 45)},
+        })},
+        {"enable_ipv6", Config::Bool(false)},
+    }), [this](Config &update, ConfigSource source) -> String {
+        IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
 
-                            if (!ip_addr.fromString(update.get("ip")->asEphemeralCStr()))
-                                return "Failed to parse \"ip\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!ip_addr.fromString(update.get("ip")->asEphemeralCStr()))
+            return "Failed to parse \"ip\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-                            if (!gateway_addr.fromString(update.get("gateway")->asEphemeralCStr()))
-                                return "Failed to parse \"gateway\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!gateway_addr.fromString(update.get("gateway")->asEphemeralCStr()))
+            return "Failed to parse \"gateway\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-                            if (!subnet_mask.fromString(update.get("subnet")->asEphemeralCStr()))
-                                return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g., 255.255.255.0) or IPv6 prefix length (e.g., 64)";
+        if (!subnet_mask.fromString(update.get("subnet")->asEphemeralCStr()))
+            return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g., 255.255.255.0) or IPv6 prefix length (e.g., 64)";
 
-                            // Only validate IPv4 constraints
-                            if (tf_ip_is_v4(ip_addr)) {
-                                if (!is_valid_subnet_mask(subnet_mask))
-                                    return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+        // Only validate IPv4 constraints
+        if (tf_ip_is_v4(ip_addr)) {
+            if (!is_valid_subnet_mask(subnet_mask))
+                return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
-                                if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
-                                    return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
+            if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
+                return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
 
-                                if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-                                    return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
-                            }
-                            // TODO: Add IPv6-specific validation when needed
+            if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+                return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+        }
+        // TODO: Add IPv6-specific validation when needed
 
-                            if (!dns1.fromString(update.get("dns")->asEphemeralCStr()))
-                                return "Failed to parse \"dns\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!dns1.fromString(update.get("dns")->asEphemeralCStr()))
+            return "Failed to parse \"dns\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-                            if (!dns2.fromString(update.get("dns2")->asEphemeralCStr()))
-                                return "Failed to parse \"dns2\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
+        if (!dns2.fromString(update.get("dns2")->asEphemeralCStr()))
+            return "Failed to parse \"dns2\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-                            if (!update.get("enable_ethernet")->asBool()) {
+        if (!update.get("enable_ethernet")->asBool()) {
 #if MODULE_WIFI_AVAILABLE()
-                                if (!wifi.is_sta_enabled_in_config() && !wifi.is_ap_enabled_in_config()) {
-                                    return "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi STA or WiFi AP first.";
-                                }
+            if (!wifi.is_sta_enabled_in_config() && !wifi.is_ap_enabled_in_config()) {
+                return "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi STA or WiFi AP first.";
+            }
 #else
-                                return "Cannot disable Ethernet: No other network interface is available.";
+            return "Cannot disable Ethernet: No other network interface is available.";
 #endif
-                            }
+        }
 
-                            if (source != ConfigSource::File) {
-                                // clang-format off
-                                bool is_reenabled =
-                                    eth_started &&
-                                    update.get("enable_ethernet")->asBool() &&
-                                    update.get("ip")->asString() == config.get("ip")->asString() &&
-                                    update.get("gateway")->asString() == config.get("gateway")->asString() &&
-                                    update.get("subnet")->asString() == config.get("subnet")->asString() &&
-                                    update.get("dns")->asString() == config.get("dns")->asString() &&
-                                    update.get("dns2")->asString() == config.get("dns2")->asString();
+        if (source != ConfigSource::File) {
+            // clang-format off
+            bool is_reenabled =
+                eth_started &&
+                update.get("enable_ethernet")->asBool() &&
+                update.get("ip")->asString() == config.get("ip")->asString() &&
+                update.get("gateway")->asString() == config.get("gateway")->asString() &&
+                update.get("subnet")->asString() == config.get("subnet")->asString() &&
+                update.get("dns")->asString() == config.get("dns")->asString() &&
+                update.get("dns2")->asString() == config.get("dns2")->asString();
 
-                                is_reenabled = is_reenabled &&
-                                    update.get("enable_ipv6")->asBool() == config.get("enable_ipv6")->asBool() &&
-                                    update.get("ipv6")->get("ip")->asString() == config.get("ipv6")->get("ip")->asString();
-                                // clang-format on
+            is_reenabled = is_reenabled &&
+                update.get("enable_ipv6")->asBool() == config.get("enable_ipv6")->asBool() &&
+                update.get("ipv6")->get("ip")->asString() == config.get("ipv6")->get("ip")->asString();
+            // clang-format on
 
-                                if (is_reenabled) {
-                                    task_scheduler.scheduleOnce([this]() {
-                                        task_scheduler.cancel(revert_countdown_task_id);
-                                        state.get("disable_countdown")->updateUint(0);
-                                    });
-                                } else {
-                                    task_scheduler.scheduleOnce([this]() {
-                                        this->apply_config();
-                                    });
-                                }
-                            }
+            if (is_reenabled) {
+                task_scheduler.scheduleOnce([this]() {
+                    task_scheduler.cancel(revert_countdown_task_id);
+                    state.get("disable_countdown")->updateUint(0);
+                });
+            } else {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_config();
+                });
+            }
+        }
 
-                            return "";
-                        }};
+        return "";
+    }};
 
-    state = Config::Object({{"connection_state", Config::Enum(EthernetState::NotConfigured)},
-                            {"connection_start", Config::Uptime()},
-                            {"connection_end", Config::Uptime()},
-                            {"mac", Config::Str("", 0, 17)},
-                            {"ip", Config::Str("0.0.0.0", 7, 15)},
-                            {"subnet", Config::Str("0.0.0.0", 7, 45)},
-                            {"ip6_link_local", Config::Str("::", 0, 45)},
-                            {"ip6_global", Config::Str("::", 0, 45)},
-                            {"ip6_unique_local", Config::Str("::", 0, 45)},
-                            {"ip6_site_local", Config::Str("::", 0, 45)},
-                            {"ip6_configured", Config::Str("::", 0, 45)},
-                            {"full_duplex", Config::Bool(false)},
-                            {"link_speed", Config::Uint8(0)},
-                            {"disable_countdown", Config::Uint8(0)}});
+    state = Config::Object({
+        {"connection_state",  Config::Enum(EthernetState::NotConfigured)},
+        {"connection_start",  Config::Uptime()},
+        {"connection_end",    Config::Uptime()},
+        {"mac",               Config::Str("", 0, 17)},
+        {"ip",                Config::Str("0.0.0.0", 7, 15)},
+        {"subnet",            Config::Str("0.0.0.0", 7, 45)},
+        {"ip6_link_local",    Config::Str("::", 0, 45)},
+        {"ip6_global",        Config::Str("::", 0, 45)},
+        {"ip6_unique_local",  Config::Str("::", 0, 45)},
+        {"ip6_site_local",    Config::Str("::", 0, 45)},
+        {"ip6_configured",    Config::Str("::", 0, 45)},
+        {"full_duplex",       Config::Bool(false)},
+        {"link_speed",        Config::Uint8(0)},
+        {"disable_countdown", Config::Uint8(0)},
+    });
 }
 
 void Ethernet::print_con_duration()
@@ -200,8 +202,7 @@ void Ethernet::setup()
 
     Network.begin();
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             const uint32_t t_startup = (now_us() - this->runtime_data->last_connected).as<uint32_t>() / 1000;
             logger.printfln("Started after %lums", t_startup);
 
@@ -260,8 +261,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_START);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             const uint16_t link_speed = ETH.linkSpeed();
             if (link_speed < 100) {
                 // A 10MBit link sometimes chokes on link-up and won't be able to send any data.
@@ -293,8 +293,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
             char ip_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
@@ -349,8 +348,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             esp_ip6_addr_t ip_addr = info.got_ip6.ip6_info.ip;
             esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip_addr);
             // TODO: Check if the IP matches any of the existing addresses -> skip in this case
@@ -397,8 +395,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
@@ -437,8 +434,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Disconnected");
             this->print_con_duration();
 
@@ -460,8 +456,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
-    Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Stopped");
             this->print_con_duration();
 
@@ -681,20 +676,18 @@ void Ethernet::apply_config()
         state.get("disable_countdown")->updateUint(4 * 60);
         task_scheduler.cancel(revert_countdown_task_id);
 
-        revert_countdown_task_id = task_scheduler.scheduleWithFixedDelay(
-            [this]() {
-                uint8_t remaining = state.get("disable_countdown")->asUint8();
-                if (remaining <= 1) {
-                    logger.printfln("No reboot within 4 minutes. Auto-reverting ethernet config to enabled.");
-                    state.get("disable_countdown")->updateUint(0);
-                    task_scheduler.cancel(revert_countdown_task_id);
-                    config.get("enable_ethernet")->updateBool(true);
-                    API::writeConfig("ethernet/config", &config);
-                    return;
-                }
-                state.get("disable_countdown")->updateUint(remaining - 1);
-            },
-            1_s);
+        revert_countdown_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            uint8_t remaining = state.get("disable_countdown")->asUint8();
+            if (remaining <= 1) {
+                logger.printfln("No reboot within 4 minutes. Auto-reverting ethernet config to enabled.");
+                state.get("disable_countdown")->updateUint(0);
+                task_scheduler.cancel(revert_countdown_task_id);
+                config.get("enable_ethernet")->updateBool(true);
+                API::writeConfig("ethernet/config", &config);
+                return;
+            }
+            state.get("disable_countdown")->updateUint(remaining - 1);
+        }, 1_s);
     } else {
         // Not enabled and not started (initial boot with ethernet disabled).
         runtime_data->connection_state = EthernetState::NotConfigured;
