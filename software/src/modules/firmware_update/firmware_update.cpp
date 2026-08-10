@@ -144,7 +144,7 @@ static bool read_custom_app_desc_version(const esp_partition_t *partition, char 
         }
 
         if (erased) {
-            snprintf(fw_version, fw_version_len, "<erased>");
+            snprintf(fw_version, fw_version_len, "erased");
             return true;
         }
 
