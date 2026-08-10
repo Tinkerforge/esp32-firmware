@@ -52,7 +52,7 @@ public:
 };
 
 class NFC final : public IModule
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
           , public IAutomationBackend
 #endif
 {
@@ -82,7 +82,14 @@ public:
 
     bool get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]);
 
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+    struct automation_trigger_data_t {
+        tag_t tag;
+        int8_t charger_index;
+    };
+
+    void remote_tag_seen(uint8_t tag_type, const uint8_t *tag_id, uint8_t tag_id_length, int8_t charger_index);
+
+#if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 

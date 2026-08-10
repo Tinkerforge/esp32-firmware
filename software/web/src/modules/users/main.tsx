@@ -102,7 +102,7 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 
 // Get NFC tags from managed chargers, merged with local seen tags.
 // Returns all seen tags (local + remote), deduplicated.
-type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null, is_this_device?: boolean };
+export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null, is_this_device?: boolean };
 
 // Read the NFC tag ID of the smartphone this web interface is running on.
 function get_phone_nfc_id(): string | null {
@@ -125,7 +125,7 @@ function with_phone_seen_tag(tags: NFCSeenTag[]): NFCSeenTag[] {
     return [{tag_id: phone_id, tag_type: 6, last_seen: 0, charger_name: null, is_this_device: true}, ...rest];
 }
 
-async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
+async function fetch_all_seen_tags(): Promise<NFCSeenTag[]> {
     let now = API.get("info/keep_alive").uptime;
 
     if (!util.is_central_management_enabled()) {
@@ -143,8 +143,18 @@ async function get_all_seen_tags(): Promise<NFCSeenTag[]> {
     }
 }
 
+// Cache of the last fetched seen tags, so that other modules (e.g. the NFC
+// automation plugins) can access them synchronously. Updated whenever
+// refresh_seen_tags fetches new tags.
+let cached_seen_tags: NFCSeenTag[] = [];
+
+export function get_all_seen_tags(): NFCSeenTag[] {
+    return cached_seen_tags;
+}
+
 function refresh_seen_tags(users: Users) {
-    get_all_seen_tags().then((tags) => {
+    fetch_all_seen_tags().then((tags) => {
+        cached_seen_tags = tags;
         users.setState({seenTags: tags});
     }).catch((e) => {
         console.error("Failed to refresh seen NFC tags:", e);

@@ -71,6 +71,8 @@ let x = {
             "last_seen": "",
             "last_seen_suffix": " ago",
             "last_seen_and_known_tags": "Last seen tags and known tags",
+            "table_charger": "Charger",
+            "any_charger": "All chargers",
 
             "automation_action_text": /*FFN*/(tag_id: string, tag_type: string, action: number) => {
                 let start_stop = <></>;
@@ -81,7 +83,12 @@ let x = {
                     fake the presence of the <b>NFC</b> tag "<b>{tag_id}</b>" ({tag_type}).
                 </>
             }/*NF*/,
-            "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
+            "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string, charger_name: string) => {
+                if (charger_name != null) {
+                    return <>
+                        If <b>NFC</b> tag "<b>{tag_id}</b>" ({tag_type}) is detected by charger "<b>{charger_name}</b>",{" "}
+                    </>
+                }
                 return <>
                     If <b>NFC</b> tag "<b>{tag_id}</b>" ({tag_type}) is detected,{" "}
                 </>

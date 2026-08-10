@@ -27,6 +27,7 @@ import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { get_all_seen_tags } from "../users/main";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 
@@ -52,9 +53,12 @@ function get_nfc_inject_tag_edit_children(
     on_action: (action: AutomationAction) => void,
 ) {
     const known_tags = API.get("nfc/config").authorized_tags;
-    const seen_tags = API.get("nfc/seen_tags")
+    const now = API.get("info/keep_alive").uptime;
+
+    const seen_tags = get_all_seen_tags()
         .filter(
             (t) =>
+                !t.is_this_device &&
                 t.tag_id != "" &&
                 !known_tags.find((tag) => t.tag_id == tag.tag_id),
         )
@@ -73,14 +77,17 @@ function get_nfc_inject_tag_edit_children(
                     }
                 }}
             >
-                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                    <span class="text-end">{t.charger_name}</span>
+                </div>
                 <div class="d-flex w-100 justify-content-between">
                     <span class="text-start">
                         {translate_unchecked(`nfc.automation.type_${t.tag_type}`)}
                     </span>
                     <span class="text-end">
                         {__("nfc.automation.last_seen") +
-                            util.format_timespan_ms(t.last_seen) +
+                            util.format_timespan_ms((t.last_seen != 0) ? (now - t.last_seen) : 0) +
                             __("nfc.automation.last_seen_suffix")}
                     </span>
                 </div>

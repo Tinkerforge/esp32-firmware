@@ -27,14 +27,21 @@ import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { get_all_seen_tags } from "../users/main";
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+
+type ChargeManagerConfig = {
+    enable_charge_manager?: boolean;
+    chargers?: {name: string}[];
+};
 
 export type NfcAutomationTrigger = [
     AutomationTriggerID.NFC,
     {
         tag_type: number;
         tag_id: string;
+        charger: number;
     },
 ];
 
@@ -44,14 +51,22 @@ function new_nfc_config(): AutomationTrigger {
         {
             tag_type: 0,
             tag_id: "",
+            charger: -1,
         },
     ];
 }
 
 function get_nfc_table_children(trigger: NfcAutomationTrigger) {
+    let charger_name: string = null;
+    if (trigger[1].charger >= 0) {
+        const cm_config = API.get_unchecked("charge_manager/config") as ChargeManagerConfig | null;
+        charger_name = cm_config?.chargers?.[trigger[1].charger]?.name ?? `#${trigger[1].charger}`;
+    }
+
     return __("nfc.automation.automation_trigger_text")(
         trigger[1].tag_id,
         translate_unchecked("nfc.automation.type_" + trigger[1].tag_type),
+        charger_name,
     );
 }
 
@@ -60,9 +75,12 @@ function get_nfc_edit_children(
     on_trigger: (trigger: AutomationTrigger) => void,
 ) {
     const known_tags = API.get("nfc/config").authorized_tags;
-    const seen_tags = API.get("nfc/seen_tags")
+    const now = API.get("info/keep_alive").uptime;
+
+    const seen_tags = get_all_seen_tags()
         .filter(
             (t) =>
+                !t.is_this_device &&
                 t.tag_id != "" &&
                 !known_tags.find((tag) => t.tag_id == tag.tag_id),
         )
@@ -81,7 +99,10 @@ function get_nfc_edit_children(
                     }
                 }}
             >
-                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <h5 class="mb-1 pe-2">{t.tag_id}</h5>
+                    <span class="text-end">{t.charger_name}</span>
+                </div>
                 <div class="d-flex w-100 justify-content-between">
                     <span class="text-start">
                         {translate_unchecked(
@@ -90,7 +111,7 @@ function get_nfc_edit_children(
                     </span>
                     <span class="text-end">
                         {__("nfc.automation.last_seen") +
-                            util.format_timespan_ms(t.last_seen) +
+                            util.format_timespan_ms((t.last_seen != 0) ? (now - t.last_seen) : 0) +
                             __("nfc.automation.last_seen_suffix")}
                     </span>
                 </div>
@@ -129,7 +150,7 @@ function get_nfc_edit_children(
 
     const all_tags = known_items.concat(seen_tags);
 
-    return [
+    const result = [
         <FormRow label={__("nfc.automation.last_seen_and_known_tags")}>
             {all_tags.length > 0 ? (
                 <ListGroup>{all_tags}</ListGroup>
@@ -172,6 +193,32 @@ function get_nfc_edit_children(
             />
         </FormRow>,
     ];
+
+    // If this device manages chargers, the rule can be restricted
+    // to tags that were seen by a specific charger.
+    const cm_config = API.get_unchecked("charge_manager/config") as ChargeManagerConfig | null;
+    if (cm_config?.enable_charge_manager && cm_config.chargers?.length > 0) {
+        const charger_items: [string, string][] = [["-1", __("nfc.automation.any_charger")]];
+        cm_config.chargers.forEach((c, i) => charger_items.push([i.toString(), c.name]));
+
+        result.push(
+            <FormRow label={__("nfc.automation.table_charger")}>
+                <InputSelect
+                    items={charger_items}
+                    value={trigger[1].charger.toString()}
+                    onValue={(v) => {
+                        on_trigger(
+                            util.get_updated_union(trigger, {
+                                charger: parseInt(v),
+                            }),
+                        );
+                    }}
+                />
+            </FormRow>,
+        );
+    }
+
+    return result;
 }
 
 export function pre_init() {

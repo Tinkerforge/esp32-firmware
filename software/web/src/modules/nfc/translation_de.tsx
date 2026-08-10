@@ -71,6 +71,8 @@ let x = {
             "last_seen": "Vor ",
             "last_seen_suffix": "",
             "last_seen_and_known_tags": "Zuletzt erkannte und bekannte Tags",
+            "table_charger": "Wallbox",
+            "any_charger": "Alle Wallboxen",
             "automation_action_text": /*FFN*/(tag_id: string, tag_type: string, action: number) => {
                 let start_stop = <></>;
                 if (action !== 0) {
@@ -80,7 +82,14 @@ let x = {
                     simuliere das <b>NFC</b>-Tag "<b>{tag_id}</b>" ({tag_type}){start_stop}.
                 </>
             }/*NF*/,
-            "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string) => {
+            "automation_trigger_text": /*FFN*/(tag_id: string, tag_type: string, charger_name: string) => {
+                if (charger_name != null) {
+                    return (
+                    <>
+                        Wenn das <b>NFC</b>-Tag "<b>{tag_id}</b>" ({tag_type}) von der Wallbox "<b>{charger_name}</b>" erkannt wird,{" "}
+                    </>
+                    )
+                }
                 return (
                 <>
                     Wenn das <b>NFC</b>-Tag "<b>{tag_id}</b>" ({tag_type}) erkannt wird,{" "}

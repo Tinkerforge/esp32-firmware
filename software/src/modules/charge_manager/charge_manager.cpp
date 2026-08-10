@@ -497,6 +497,19 @@ static bool update_authentication(
         auth_info_changed = target.auth_info[0] != v5->auth_info[0];
         if (auth_info_changed) {
             logger.printfln("auth info changed");
+
+#if MODULE_NFC_AVAILABLE() && MODULE_AUTOMATION_AVAILABLE()
+            // Fire the NFC automation trigger for tags that were just seen by a
+            // managed charger. Skip this device's own state packets. Locally seen
+            // tags already fire the trigger via NFC::tag_seen.
+            const cm_auth_info &newest = v5->auth_info[0];
+            if ((v1->esp32_uid != esp32_common.get_uid_num()) &&
+                ((newest.auth_method == CMAuthType::NFC) || (newest.auth_method == CMAuthType::InjectedNFC)) &&
+                (newest.last_seen_s != 0) &&
+                (newest.last_seen_s < 2)) {
+                nfc.remote_tag_seen(newest.nfc.tag_type, newest.nfc.tag_id, newest.nfc.tag_id_len, static_cast<int8_t>(client_id));
+            }
+#endif
         }
         memcpy(target.auth_info, v5->auth_info, sizeof(target.auth_info));
     }

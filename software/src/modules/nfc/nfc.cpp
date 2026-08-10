@@ -206,7 +206,9 @@ void NFC::pre_setup()
         AutomationTriggerID::NFC,
         Config::Object({
             {"tag_type", Config::Uint(0, 0, 6)},
-            {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
+            {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+            // Index into the charge manager's charger list, or -1 to match tags seen by any charger.
+            {"charger", Config::Int8(-1)}
         }),
         nullptr,
         false
@@ -281,8 +283,15 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
-    automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation_trigger_data_t data;
+    data.tag = info->tag;
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    data.charger_index = charge_manager.get_charger_state_index(charge_manager.find_charger_state(esp32_common.get_uid_num()));
+#else
+    data.charger_index = -1;
+#endif
+    automation.trigger(AutomationTriggerID::NFC, &data, this);
 #endif
 
 #if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
@@ -304,6 +313,24 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
         0,
 #endif
         auth_info.value);
+#endif
+}
+
+void NFC::remote_tag_seen(uint8_t tag_type, const uint8_t *tag_id, uint8_t tag_id_length, int8_t charger_index)
+{
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation_trigger_data_t data;
+    data.tag.type = tag_type;
+    data.tag.id_length = (tag_id_length <= NFC_TAG_ID_LENGTH) ? tag_id_length : NFC_TAG_ID_LENGTH;
+    memcpy(data.tag.id_bytes, tag_id, data.tag.id_length);
+    data.charger_index = charger_index;
+
+    automation.trigger(AutomationTriggerID::NFC, &data, this);
+#else
+    (void)tag_type;
+    (void)tag_id;
+    (void)tag_id_length;
+    (void)charger_index;
 #endif
 }
 
@@ -501,16 +528,21 @@ bool NFC::get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_
     return true;
 }
 
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
 bool NFC::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    tag_t *tag = (tag_t *)data;
+    const automation_trigger_data_t *trigger_data = static_cast<automation_trigger_data_t *>(data);
     switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::NFC: {
+            const int8_t rule_charger = cfg->get("charger")->asInt8();
+            if ((rule_charger != -1) && (rule_charger != trigger_data->charger_index)) {
+                return false;
+            }
+
             char buf[NFC_TAG_ID_STRING_LENGTH + 1];
-            id_to_string(buf, tag);
-            if (cfg->get("tag_type")->asUint() == tag->type && cfg->get("tag_id")->asString() == buf) {
+            id_to_string(buf, &trigger_data->tag);
+            if ((cfg->get("tag_type")->asUint() == trigger_data->tag.type) && (cfg->get("tag_id")->asString() == buf)) {
                 return true;
             }
         }
