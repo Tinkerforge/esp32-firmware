@@ -131,9 +131,9 @@ void Wifi::pre_setup()
         {"sta_ip",     Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_ip6_link_local", Config::Str("", 0, INET6_ADDRSTRLEN - 1)},
-        {"sta_ip6_global", Config::Str("", 0, INET6_ADDRSTRLEN - 1INET6_ADDRSTRLEN - 1
-        {"sta_ip6_unique_local", Config::Str("", 0, INET6_ADDRSTRLEN - 1INET6_ADDRSTRLEN - 1
-        {"sta_ip6_site_local", Config::Str("", 0, INET6_ADDRSTRLEN - 1INET6_ADDRSTRLEN - 1
+        {"sta_ip6_global", Config::Str("", 0, INET6_ADDRSTRLEN - 1)},
+        {"sta_ip6_unique_local", Config::Str("", 0, INET6_ADDRSTRLEN - 1)},
+        {"sta_ip6_site_local", Config::Str("", 0, INET6_ADDRSTRLEN - 1)},
         {"sta_ip6_configured", Config::Str("", 0, INET6_ADDRSTRLEN - 1)},
         {"sta_rssi", Config::Int8(-127)},
         {"sta_bssid", Config::Str("", 0, 17)},
