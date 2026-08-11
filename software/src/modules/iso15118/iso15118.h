@@ -149,6 +149,9 @@ public:
 
     uint64_t iec_switch_task = 0;
 
+    uint64_t cp_resume_task = 0;
+    void cancel_cp_resume_task();
+
     // Modem shutdown policy for begin_iec_transition():
     // None:      Caller handles the modem (already off, off pending, or keep on).
     // Immediate: No open socket, disable right away.

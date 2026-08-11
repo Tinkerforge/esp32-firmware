@@ -347,6 +347,7 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
+                iso15118.cancel_cp_resume_task();
                 iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 evse_v2.set_plc_modem(false);
             }
@@ -595,6 +596,9 @@ void ISO15118::register_events()
                 iec_switch_task = 0;
             }
 
+            // Cancel any pending "back to 5%" task from PowerDeliveryReq(Stop).
+            cancel_cp_resume_task();
+
             // Re-enable PLC modem for the next EV (no-op if it is already on).
             evse_v2.set_plc_modem(true);
 
@@ -752,9 +756,19 @@ void ISO15118::state_machines_loop()
     }
 }
 
+void ISO15118::cancel_cp_resume_task()
+{
+    if (cp_resume_task != 0) {
+        task_scheduler.cancel(cp_resume_task);
+        cp_resume_task = 0;
+    }
+}
+
 void ISO15118::switch_to_iec_temporary()
 {
     iso15118.trace("Switching to IEC 61851 temporary mode");
+
+    cancel_cp_resume_task();
 
     // Switch EVSE to IEC 61851 temporary mode.
     // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect.
@@ -879,6 +893,8 @@ void ISO15118::begin_iec_transition(ModemOff modem_off)
 {
     communication_setup_deadline = 0_us;
 
+    cancel_cp_resume_task();
+
     if (iec_switch_task != 0) {
         task_scheduler.cancel(iec_switch_task);
         iec_switch_task = 0;
@@ -945,6 +961,8 @@ void ISO15118::begin_reslac_for_nonegotiation()
     cancel_sequence_timeout(iso2.next_timeout);
     cancel_sequence_timeout(din70121.next_timeout);
     cancel_sequence_timeout(iso20.next_timeout);
+
+    cancel_cp_resume_task();
 
     if (iec_switch_task != 0) {
         task_scheduler.cancel(iec_switch_task);

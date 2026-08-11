@@ -642,12 +642,27 @@ void ISO2::handle_power_delivery_req()
             iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             break;
         case iso2_chargeProgressType_Stop:
+            // In the SoC-read flow the session is torn down anyway: The EV
+            // follows up with SessionStopReq, which triggers the IEC 61851 transition.
+            if (iso15118.is_read_soc_only()) {
+                iso15118.trace("ISO2: PowerDeliveryReq Stop in SoC-read flow, leaving CP untouched");
+                break;
+            }
+
             // Go to 100% PWM to signal to the EV that we accepted the stop,
             // but we need to go back to 5% PWM, so the EV can resume charging
             // if it wants to.
             // TODO: The timing here is unclear, are 5 seconds OK?
             iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
-            task_scheduler.scheduleOnce([this]() {
+            iso15118.cancel_cp_resume_task();
+            iso15118.cp_resume_task = task_scheduler.scheduleOnce([]() {
+                iso15118.cp_resume_task = 0;
+                if (iso15118.iec_temporary_active) {
+                    // CP was handed over to IEC 61851 in the meantime, don't touch it.
+                    iso15118.trace("ISO2: CP resume to 5%% skipped, IEC temporary mode active");
+                    return;
+                }
+                iso15118.trace("ISO2: CP resume to 5%% after PowerDelivery Stop");
                 iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             }, 5_s);
             break;
