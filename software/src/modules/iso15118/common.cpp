@@ -56,12 +56,15 @@ struct EVCCVendorOUI {
 };
 
 static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
+    {{0x44, 0x1D, 0xB1}, EVCCVendor::AptivService}, // OBC seen in CUPRA e-HYBRID
     {{0x70, 0xB3, 0xD6}, EVCCVendor::Audi},
+    {{0x18, 0x4C, 0xAE}, EVCCVendor::Aumovio},      // OBC seen in Renault Megane E-Tech
     {{0x00, 0x01, 0xA9}, EVCCVendor::BMW},
     {{0x48, 0x31, 0x33}, EVCCVendor::Bosch},
     {{0xEC, 0xFA, 0x03}, EVCCVendor::FCA},
     {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
     {{0x00, 0x76, 0xB6}, EVCCVendor::Ford},
+    {{0x9C, 0x36, 0xF8}, EVCCVendor::Hyundai},
     {{0xAC, 0x96, 0x5B}, EVCCVendor::LucidMotors},
     {{0x3C, 0xCE, 0x15}, EVCCVendor::MercedesBenz},
     {{0x8C, 0x14, 0x7D}, EVCCVendor::Nio},
