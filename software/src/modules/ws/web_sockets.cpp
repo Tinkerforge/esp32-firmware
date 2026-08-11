@@ -675,7 +675,7 @@ void WebSockets::pre_setup() {
     state = Config::Object({
         {"keep_alive_fds", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Int32(-1))},
         {"keep_alive_pongs", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Uptime())},
-        {"keep_alive_peers", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Str("", 0, INET6_ADDRSTRLEN))},
+        {"keep_alive_peers", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Str("", 0, INET6_ADDRSTRLEN - 1))},
         {"worker_active", Config::Uint8(WEBSOCKET_WORKER_DONE)},
         {"last_worker_run", Config::Uptime()},
         {"queue_len", Config::Uint16(0)}
