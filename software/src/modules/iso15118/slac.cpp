@@ -645,9 +645,26 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     state = SLACState::WaitForSDP;
 
     // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
-    task_scheduler.scheduleOnce([] {
+    cancel_link_up_task();
+    link_up_task = task_scheduler.scheduleOnce([this] {
+        link_up_task = 0;
+
+        // Only report link_up if we are still waiting for the EV to join the PLC network.
+        if (state != SLACState::WaitForSDP) {
+            iso15118.trace("SLAC: Skipping stale link_up, state changed");
+            return;
+        }
+
         iso15118.qca700x.link_up();
     }, SLAC_TP_LINK_READY_NOTIFICATION_MIN);
+}
+
+void SLAC::cancel_link_up_task()
+{
+    if (link_up_task != 0) {
+        task_scheduler.cancel(link_up_task);
+        link_up_task = 0;
+    }
 }
 
 void SLAC::handle_cm_qualcomm_get_sw_request()

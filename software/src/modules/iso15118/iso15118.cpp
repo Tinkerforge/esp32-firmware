@@ -343,11 +343,17 @@ void ISO15118::pre_setup()
                 task_scheduler.cancel(state_machine_task);
                 state_machine_task = 0;
 
+                // Cancel all pending CP/modem tasks and sequence timeouts
+                cancel_pending_tasks();
+                common.reset_active_socket(); // Also cancels sequence timeouts
+                nonegotiation_pending = false;
+                reslac_guard_deadline = 0_us;
+                communication_setup_deadline = 0_us;
+
                 // TODO: Check if charge is currently ongoing:
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
-                iso15118.cancel_cp_resume_task();
                 iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 evse_v2.set_plc_modem(false);
             }
@@ -568,6 +574,8 @@ void ISO15118::register_events()
             reslac_guard_deadline = 0_us;
             communication_setup_deadline = 0_us;
 
+            cancel_pending_tasks();
+
             if (!is_enabled()) {
                 return EventResult::OK;
             }
@@ -577,27 +585,13 @@ void ISO15118::register_events()
             common.reset_active_socket();
             common.reset_evcc_vendor();
             qca700x.link_down();
+            slac.cancel_link_up_task();
             slac.state = SLACState::ModemReset;
             slac.api_state.get("modem_initialization_tries")->updateUint(0);
             iso2.reset_dc_soc_done();
             iso2.reset_session();
             din70121.reset_session();
             iec_temporary_active = false;
-
-            // Cancel any pending delayed modem-off task.
-            if (plc_modem_off_task != 0) {
-                task_scheduler.cancel(plc_modem_off_task);
-                plc_modem_off_task = 0;
-            }
-
-            // Cancel any pending IEC switch task.
-            if (iec_switch_task != 0) {
-                task_scheduler.cancel(iec_switch_task);
-                iec_switch_task = 0;
-            }
-
-            // Cancel any pending "back to 5%" task from PowerDeliveryReq(Stop).
-            cancel_cp_resume_task();
 
             // Re-enable PLC modem for the next EV (no-op if it is already on).
             evse_v2.set_plc_modem(true);
@@ -764,11 +758,33 @@ void ISO15118::cancel_cp_resume_task()
     }
 }
 
+void ISO15118::cancel_pending_tasks()
+{
+    cancel_cp_resume_task();
+
+    if (plc_modem_off_task != 0) {
+        task_scheduler.cancel(plc_modem_off_task);
+        plc_modem_off_task = 0;
+    }
+
+    if (iec_switch_task != 0) {
+        task_scheduler.cancel(iec_switch_task);
+        iec_switch_task = 0;
+    }
+}
+
 void ISO15118::switch_to_iec_temporary()
 {
     iso15118.trace("Switching to IEC 61851 temporary mode");
 
+    // Note: plc_modem_off_task is intentionally kept alive here, it still has
+    // to turn off the modem if the EV never closes the TCP connection
+    // (its callback is guarded by iec_temporary_active).
     cancel_cp_resume_task();
+    if (iec_switch_task != 0) {
+        task_scheduler.cancel(iec_switch_task);
+        iec_switch_task = 0;
+    }
 
     // Switch EVSE to IEC 61851 temporary mode.
     // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect.

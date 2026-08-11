@@ -566,6 +566,9 @@ public:
 
     void reset_ev_connected_reported() { ev_connected_reported = false; }
 
+    // cleanup already did link_down().
+    void cancel_link_up_task();
+
     void fill_header_v0(SLAC_HomeplugMessageHeaderV0 *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
 
 private:
@@ -595,6 +598,8 @@ private:
     void handle_vs_module_operation_confirmation(const uint8_t *data, size_t length);
 
     Option<micros_t> next_timeout = {};
+
+    uint64_t link_up_task = 0;
 
     // Retry counter for the SLAC init E/F sequence per [V2G3-M06-07].
     uint8_t slac_init_retry_count = 0;
