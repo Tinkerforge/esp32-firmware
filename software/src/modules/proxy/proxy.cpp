@@ -91,7 +91,7 @@ void Proxy::pre_setup()
          {"authentication_secret", Config::Str("", 0, 64)},
          {"listen_address", Config::Str("0.0.0.0", 7, 15)},
          {"listen_port", Config::Uint16(4223)},
-         {"listen_address_v6", Config::Str("::", 2, 45)},
+         {"listen_address_v6", Config::Str("::", 2, INET6_ADDRSTRLEN - 1)},
     }),  [this](Config &cfg, ConfigSource source) -> String {
         IPAddress listen_address;
         if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr())) {
