@@ -155,6 +155,9 @@ void ShipConnection::start_client_confirm()
 
 esp_err_t ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
+    if (closing_scheduled) {
+        return ESP_OK;
+    }
     if (ws_pkt->len < 2) {
         eebus.trace_fmtln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
         return ESP_FAIL;
@@ -455,6 +458,10 @@ void ShipConnection::schedule_state_machine_next_step()
 
 void ShipConnection::state_machine_next_step()
 {
+    if (closing_scheduled) {
+        return;
+    }
+
     // Pending frames need to be consumed
     const bool was_listening = is_listening_state(state);
     if (was_listening) {
@@ -602,6 +609,7 @@ void ShipConnection::state_cme_init_start()
         }
         case Role::Server: {
             set_state(ShipConnectionState::CmiServerWait);
+            task_scheduler.cancel(timeout_task);
             timeout_task = task_scheduler.scheduleOnce(
                 [this]() {
                     schedule_close(0_ms, "Timeout during connection initialization. No CMI message received.");
@@ -617,6 +625,7 @@ void ShipConnection::state_cmi_client_send()
     // SHIP 13.4.3 1.1
     send_cmi_message(0, 0);
     set_state(ShipConnectionState::CmiClientWait);
+    task_scheduler.cancel(timeout_task);
     timeout_task = task_scheduler.scheduleOnce(
         [this]() {
             schedule_close(0_ms, "Timeout during connection initialization. No CMI response received.");
@@ -887,6 +896,7 @@ void ShipConnection::state_sme_hello_pending_listen()
                 task_scheduler.cancel(hello_wait_for_ready_timer);
                 task_scheduler.cancel(hello_send_prolongation_reply_timer);
                 if (peer_hello_phase.waiting >= static_cast<millis_t>(SHIP_CONNECTION_SME_T_hello_prolong_thr_inc).as<uint64_t>()) {
+                    task_scheduler.cancel(hello_send_prolongation_request_timer);
                     hello_send_prolongation_request_timer = task_scheduler.scheduleOnce(
                         [this]() {
                             set_and_schedule_state(ShipConnectionState::SmeHelloPendingTimeout);
@@ -903,6 +913,7 @@ void ShipConnection::state_sme_hello_pending_listen()
             if (!peer_hello_phase.prolongation_request_valid && peer_hello_phase.waiting_valid) {
                 task_scheduler.cancel(hello_send_prolongation_reply_timer);
                 if (peer_hello_phase.waiting >= static_cast<millis_t>(SHIP_CONNECTION_SME_T_hello_prolong_thr_inc).as<uint64_t>()) {
+                    task_scheduler.cancel(hello_send_prolongation_request_timer);
                     hello_send_prolongation_request_timer = task_scheduler.scheduleOnce(
                         [this]() {
                             set_and_schedule_state(ShipConnectionState::SmeHelloPendingTimeout);
@@ -946,6 +957,7 @@ void ShipConnection::state_sme_hello_pending_timeout()
         uint64_t waiting_time = peer_hello_phase.waiting_valid ? peer_hello_phase.waiting : SHIP_CONNECTION_SME_INIT_TIMEOUT.as<uint64_t>();
         // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough
 
+        task_scheduler.cancel(hello_send_prolongation_reply_timer);
         hello_send_prolongation_reply_timer = task_scheduler.scheduleOnce(
             [this]() {
                 hello_timer_expiry = 3;
@@ -1010,6 +1022,7 @@ void ShipConnection::state_sme_hello_rejected()
 void ShipConnection::state_sme_protocol_handshake_server_init()
 {
     // SHIP 13.4.4.2.3 State SME_PROT_H_STATE_SERVER_INIT
+    task_scheduler.cancel(protocol_handshake_timer);
     protocol_handshake_timer = task_scheduler.scheduleOnce(
         [this]() {
             set_and_schedule_state(ShipConnectionState::SmeProtocolHandshakeTimeout);
@@ -1026,6 +1039,7 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
     type_to_json_handshake_type(&handshake);
     send_current_outgoing_message();
     set_state(ShipConnectionState::SmeProtocolHandshakeClientListenChoice);
+    task_scheduler.cancel(protocol_handshake_timer);
     protocol_handshake_timer = task_scheduler.scheduleOnce(
         [this]() {
             set_and_schedule_state(ShipConnectionState::SmeProtocolHandshakeTimeout);
