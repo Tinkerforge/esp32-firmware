@@ -41,6 +41,7 @@
 #include "build.h"
 #include "options.h"
 #include "tools/printf.h"
+#include "tools/himem_mapper.h"
 
 struct deflate_outbuf {
     char outbuf[1274]; // 1390 (conservative optimal WireGuard MTU) - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)
@@ -65,8 +66,7 @@ void EventLog::pre_init()
 #if not defined(BOARD_HAS_PSRAM)
     event_buf.setup();
 #else
-    assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_read) == ESP_OK);
-    assert(esp_himem_alloc_map_range(ESP_HIMEM_BLKSZ, &this->himem_write) == ESP_OK);
+    HimemMapper::pre_init();
     event_buf.setup(HimemBuffer::MIN_BUFFER_SIZE);
 #endif
 
@@ -137,14 +137,14 @@ void EventLog::register_urls()
         request.beginChunkedResponse_plain(200);
 
         {
-            std::scoped_lock lock{this->himem_read_mutex, this->event_buf_mutex};
+            std::scoped_lock lock{this->event_buf_mutex};
 
             size_t blocks = event_buf.used_blocks();
 
             for (size_t c = 0; c < blocks; ++c) {
                 size_t block_len;
-                char *block = static_cast<char *>(event_buf.map_block(c, this->himem_read, &block_len));
-                defer { event_buf.unmap_block(block, this->himem_read); };
+                char *block = static_cast<char *>(event_buf.map_block(c, &block_len));
+                defer { event_buf.unmap_block(block, c != (blocks - 1)); };
 
                 SEND_CHUNK_OR_FAIL_LEN(request, block, block_len);
             }
@@ -158,8 +158,6 @@ void EventLog::register_urls()
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
 #if defined(BOARD_HAS_PSRAM)
         request.beginChunkedResponse_plain(200);
-
-        std::lock_guard<std::mutex> read_lock{this->himem_read_mutex};
 
         for (size_t i = 0; i < trace_buffers_in_use; ++i) {
             auto &trace_buffer = trace_buffers[i];
@@ -175,8 +173,8 @@ void EventLog::register_urls()
 
                 for (size_t c = 0; c < blocks; ++c) {
                     size_t block_len;
-                    char *block = static_cast<char *>(trace_buffer.buf.map_block(c, this->himem_read, &block_len));
-                    defer { trace_buffer.buf.unmap_block(block, this->himem_read); };
+                    char *block = static_cast<char *>(trace_buffer.buf.map_block(c, &block_len));
+                    defer { trace_buffer.buf.unmap_block(block, c != (blocks - 1)); };
 
                     SEND_CHUNK_OR_FAIL_LEN(request, block, block_len);
                 }
@@ -489,12 +487,12 @@ size_t EventLog::print_plain(const char *buf, size_t len)
     }
 #else
     {
-        std::scoped_lock lock{this->himem_write_mutex, this->event_buf_mutex};
+        std::scoped_lock lock{this->event_buf_mutex};
         bool fits = len <= event_buf.free();
-        event_buf.push_n(buf, len, himem_write);
+        event_buf.push_n(buf, len);
 
         if (!fits) {
-            event_buf.pop_until('\n', himem_write);
+            event_buf.pop_until('\n');
         }
     }
 #endif
@@ -632,14 +630,12 @@ size_t EventLog::trace_plain(size_t trace_buf_idx, const char *buf, size_t len)
 
     auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
     {
-        std::lock_guard<std::mutex> write_lock{this->himem_write_mutex};
-
         std::lock_guard<std::mutex> lock{trace_buffer->mutex};
         bool drop_line = trace_buffer->buf.free() < len;
 
-        trace_buffer->buf.push_n(buf, len, this->himem_write);
+        trace_buffer->buf.push_n(buf, len);
         if (drop_line)
-            trace_buffer->buf.pop_until('\n', this->himem_write);
+            trace_buffer->buf.pop_until('\n');
     }
 
     return len;

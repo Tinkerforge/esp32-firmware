@@ -50,6 +50,7 @@ extern "C" {
 #include "tools/memory.h"
 #include "tools/fs.h"
 #include "tools/printf.h"
+#include "tools/himem_mapper.h"
 
 #ifdef DEBUG_FS_ENABLE
 #include "generated/embedded_bootloader.embedded.h"
@@ -292,6 +293,8 @@ void Debug::pre_setup()
         {"free_iram",  Config::Uint32(0)},
         {"free_psram", Config::Uint32(0)},
         {"free_himem", Config::Uint32(0)},
+        {"himem_mapper_cache_hits", Config::Uint53(0)},
+        {"himem_mapper_cache_misses", Config::Uint53(0)},
         {"heap_check_time_avg", Config::Uint32(0)},
         {"heap_check_time_max", Config::Uint32(0)},
         {"cpu_usage",  Config::Uint8(0)},
@@ -380,6 +383,8 @@ void Debug::setup()
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
 #if defined(BOARD_HAS_PSRAM)
         state_fast.get("free_himem")->updateUint(esp_himem_get_free_size());
+        state_fast.get("himem_mapper_cache_hits")->updateUint53(HimemMapper::cache_hits);
+        state_fast.get("himem_mapper_cache_misses")->updateUint53(HimemMapper::cache_misses);
 #endif
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);

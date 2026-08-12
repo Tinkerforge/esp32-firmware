@@ -21,7 +21,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, Context, Fragment, Component, ComponentChild } from "preact";
-import { Button         } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import { FormRow as VanillaFormRow, FormRowProps, register_id_context_component_type } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
@@ -199,14 +199,14 @@ export class Debug extends Component {
                      <OutputBytes value={state_slow.largest_free_dram_block} />
                      <OutputBytes value={state_slow.largest_free_iram_block} />
                      <OutputBytes value={state_slow.largest_free_psram_block} />
-                     {undefined}
+                     <OutputFloat value={state_fast.himem_mapper_cache_hits}  digits={0} scale={0} unit="MCH" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={2.5} />
                 </Row4>
 
                 <Row4 label={__("debug.content.heap_min_free")}>
                      <OutputBytes value={state_slow.min_free_dram} />
                      <OutputBytes value={state_slow.min_free_iram} />
                      <OutputBytes value={state_slow.min_free_psram} />
-                     {undefined}
+                     <OutputFloat value={state_fast.himem_mapper_cache_misses}  digits={0} scale={0} unit="MCM" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={2.5} />
                 </Row4>
 
                 <Row4 label={__("debug.content.heap_size")}>

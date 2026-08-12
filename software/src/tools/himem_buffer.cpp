@@ -24,6 +24,8 @@
 
 #include <esp_system.h>
 
+#include "tools/himem_mapper.h"
+
 #include "gcc_warnings.h"
 
 HimemBuffer::HimemBuffer() : start(0),
@@ -48,7 +50,7 @@ void HimemBuffer::setup(size_t size)
         esp_system_abort("HimemBuffer: size must be multiple of BLOCK_SIZE");
 
     this->buf_size = size;
-    esp_himem_alloc(this->buf_size, &mh);
+    this->mh = HimemMapper::alloc(this->buf_size);
 
     this->block_count = this->buf_size / BLOCK_SIZE;
 
@@ -65,7 +67,7 @@ void HimemBuffer::clear()
     end = 0;
 }
 
-void HimemBuffer::push_n(const void *val, size_t n, esp_himem_rangehandle_t rh) {
+void HimemBuffer::push_n(const void *val, size_t n) {
     if (n > size())
         return;
 
@@ -73,13 +75,13 @@ void HimemBuffer::push_n(const void *val, size_t n, esp_himem_rangehandle_t rh) 
 
     while (end + n > buf_size) {
         size_t to_write = buf_size - end;
-        this->write(rh, end, val, to_write);
+        this->write(end, val, to_write);
         val = static_cast<const void *>(static_cast<const std::byte *>(val) + to_write);
         n -= to_write;
         end = 0;
     }
 
-    this->write(rh, end, val, n);
+    this->write(end, val, n);
     end = mod_buf_size(end + n);
 
     if (!fits) {
@@ -102,7 +104,7 @@ size_t HimemBuffer::used_blocks() {
     return end_block + (end >= start ? 0 : block_count) - start_block + (end_offset == 0 ? 0 : 1);
 }
 
-void *HimemBuffer::map_block(size_t block_idx, esp_himem_rangehandle_t rh, size_t *out_block_len) {
+void *HimemBuffer::map_block(size_t block_idx, size_t *out_block_len) {
     size_t start_block;
     size_t start_offset;
     block_and_offset(start, &start_block, &start_offset);
@@ -113,8 +115,7 @@ void *HimemBuffer::map_block(size_t block_idx, esp_himem_rangehandle_t rh, size_
 
     size_t block = ((start_block + block_idx) % block_count);
 
-    void *result;
-    esp_himem_map(this->mh, rh, block << BLOCK_SIZE_BITS, 0, BLOCK_SIZE, 0, &result);
+    void *result = HimemMapper::map(this->mh, block << BLOCK_SIZE_BITS);
 
     size_t block_len = BLOCK_SIZE;
     // block_idx == 0 is almost identical to block == start_block
@@ -136,25 +137,25 @@ void *HimemBuffer::map_block(size_t block_idx, esp_himem_rangehandle_t rh, size_
     return result;
 }
 
-void HimemBuffer::unmap_block(void *block, esp_himem_rangehandle_t rh) {
-    esp_himem_unmap(rh,
-                    reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(block) & (~(BLOCK_SIZE - 1))),
-                    BLOCK_SIZE);
+void HimemBuffer::unmap_block(void *block, bool madv_dontneed) {
+    HimemMapper::unmap(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(block) & (~(BLOCK_SIZE - 1))),
+                       madv_dontneed);
 }
 
-void HimemBuffer::write(esp_himem_rangehandle_t rh, size_t offset, const void *src, size_t len) {
+void HimemBuffer::write(size_t offset, const void *src, size_t len) {
     while(len > 0) {
         size_t offset_in_block = mod_block_size(offset);
         size_t block_offset = offset - offset_in_block;
-        size_t to_write = std::min(BLOCK_SIZE - offset_in_block, len);
-        void *block;
+        bool fills_block = BLOCK_SIZE - offset_in_block <= len;
+        size_t to_write = fills_block ? BLOCK_SIZE - offset_in_block : len;
 
-        esp_himem_map(this->mh, rh, block_offset, 0, BLOCK_SIZE, 0, &block);
+        void *block = HimemMapper::map(this->mh, block_offset);
         memcpy(static_cast<std::byte *>(block) + offset_in_block, src, to_write);
-        esp_himem_unmap(rh, block, BLOCK_SIZE);
 
         len -= to_write;
         offset += to_write;
         src = static_cast<const void *>(static_cast<const std::byte *>(src) + to_write);
+
+        HimemMapper::unmap(block, fills_block);
     }
 }

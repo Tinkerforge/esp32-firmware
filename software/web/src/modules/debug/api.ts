@@ -29,6 +29,8 @@ export interface state_fast {
     free_iram: number;
     free_psram: number;
     free_himem: number;
+    himem_mapper_cache_hits: number;
+    himem_mapper_cache_misses: number;
     heap_check_time_avg: number;
     heap_check_time_max: number;
     cpu_usage: number;

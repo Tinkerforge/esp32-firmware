@@ -22,6 +22,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <bit>
+#include <condition_variable>
+#include <mutex>
 
 #include <esp32/himem.h>
 
@@ -40,8 +42,8 @@ public:
 
     // write
     void clear();
-    void push_n(const void *val, size_t n, esp_himem_rangehandle_t rh);
-    template<typename T> void pop_until(T needle, esp_himem_rangehandle_t rh) {
+    void push_n(const void *val, size_t n);
+    template<typename T> void pop_until(T needle) {
         static_assert(std::has_single_bit(sizeof(T)));
         static_assert(BLOCK_SIZE % sizeof(T) == 0);
 
@@ -49,8 +51,8 @@ public:
 
         for (size_t block_idx = 0; block_idx < blocks; ++block_idx) {
             size_t block_len;
-            T *block = reinterpret_cast<T *>(this->map_block(block_idx, rh, &block_len));
-            defer {this->unmap_block(block, rh); };
+            T *block = reinterpret_cast<T *>(this->map_block(block_idx, &block_len));
+            defer {this->unmap_block(block, block_idx != (blocks - 1)); };
 
             for (size_t i = 0; i < block_len / sizeof(T); ++i) {
                 if (block[i] == needle) {
@@ -66,8 +68,8 @@ public:
 
     // read
     size_t used_blocks();
-    void *map_block(size_t block_idx, esp_himem_rangehandle_t rh, size_t *out_block_len);
-    void unmap_block(void *block, esp_himem_rangehandle_t rh);
+    void *map_block(size_t block_idx, size_t *out_block_len);
+    void unmap_block(void *block, bool madv_dontneed=false);
 
     static constexpr size_t BLOCK_SIZE = ESP_HIMEM_BLKSZ;
     static constexpr size_t BLOCK_SIZE_BITS = 31 - __builtin_clz(BLOCK_SIZE);
@@ -93,9 +95,9 @@ private:
         *out_block  = div_block_size(index);
     }
 
-    void write(esp_himem_rangehandle_t rh, size_t offset, const void *src, size_t len);
+    void write(size_t offset, const void *src, size_t len);
 
-    //void read(esp_himem_rangehandle_t rh, size_t offset, void *dst, size_t len);
+    //void read(size_t offset, void *dst, size_t len);
 
     [[gnu::always_inline]] inline size_t mod_buf_size(size_t x) { return x & (buf_size - 1); }
 
