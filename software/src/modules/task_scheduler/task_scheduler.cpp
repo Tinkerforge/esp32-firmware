@@ -168,7 +168,16 @@ void TaskScheduler::custom_loop()
         if (!this->currentTask->fn) {
             logger.printfln("Invalid task");
         } else {
+#if MODULE_DEBUG_AVAILABLE()
+            const micros_t t_start = now_us();
+#endif
+
             this->currentTask->fn();
+
+#if MODULE_DEBUG_AVAILABLE()
+            const micros_t t_runtime = now_us() - t_start;
+            debug.task_scheduler_task_accounting_call(this->currentTask->file, this->currentTask->line, t_runtime);
+#endif
         }
     }
 

@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include <TFTools/Micros.h>
+
 #include "module.h"
 #include "config.h"
 #include "tools.h"
@@ -44,6 +46,7 @@ public:
     void custom_loop();
 
     void task_scheduler_idle_call();
+    void task_scheduler_task_accounting_call(const char *file, uint_least32_t line, micros_t runtime);
 
     void api_state_count(size_t count);
     void api_command_count(size_t count);
@@ -87,4 +90,35 @@ private:
     bool     psram_heap_valid = true;
     bool     check_psram_next = false;
     uint8_t  lwip_sockets_hwm = 0;
+
+    struct TaskAccounting {
+        void init(size_t max_entries);
+        void add(const char *file, uint_least32_t line, micros_t runtime);
+
+        struct TaskData {
+            micros_t runtime_total;
+            uint32_t runtime_min;
+            uint32_t runtime_max;
+            uint32_t executions;
+            const char *file;
+            uint_least32_t line;
+        };
+
+        struct TaskInfo {
+            std::uintptr_t id;
+            TaskData *data;
+        };
+
+        TaskData *tdata = nullptr;
+        TaskInfo *tinfo = nullptr;
+
+        size_t entries_max  = 0;
+        size_t entries_used = 0;
+
+        std::uintptr_t task_accounting_file_mask  = 0;
+        uint32_t       task_accounting_line_shift = 0;
+    };
+
+    TaskAccounting task_scheduler_accounting;
+    //TaskAccounting event_accounting;
 };

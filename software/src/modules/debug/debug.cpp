@@ -344,6 +344,8 @@ void Debug::pre_setup()
         0, 64
     );
 
+    task_scheduler_accounting.init(384);
+    //event_accounting.init(64);
 
     task_handles.reserve(16);
     register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
@@ -966,6 +968,75 @@ void Debug::register_urls()
         return req.send_plain(200, sw);
     });
 
+    server.on_HTTPThread("/debug/task_accounting_names", HTTP_GET, [this](WebServerRequest req) {
+        constexpr size_t BUF_SIZE = 131072;
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
+        TFJsonSerializer json{buf.get(), BUF_SIZE};
+
+        json.addArray();
+
+        for (size_t i = 0; i < task_scheduler_accounting.entries_used; i++) {
+            json.addObject();
+
+            const TaskAccounting::TaskData *data = task_scheduler_accounting.tdata + i;
+
+            json.addMemberString("file", data->file);
+            json.addMemberNumber("line", data->line);
+
+            json.endObject();
+        }
+
+        json.endArray();
+        json.end();
+
+        return req.send_json(200, json);
+    });
+
+    server.on_HTTPThread("/debug/task_accounting_data", HTTP_GET, [this](WebServerRequest req) {
+        constexpr size_t BUF_SIZE = 131072;
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
+        TFJsonSerializer json{buf.get(), BUF_SIZE};
+
+        json.addArray();
+
+        for (size_t i = 0; i < task_scheduler_accounting.entries_used; i++) {
+            json.addObject();
+
+            const TaskAccounting::TaskData *data = task_scheduler_accounting.tdata + i;
+
+            json.addMemberNumber("runs", data->executions);
+            json.addMemberNumber("ttot", data->runtime_total.as<int64_t>());
+            json.addMemberNumber("tmin", data->runtime_min);
+            json.addMemberNumber("tmax", data->runtime_max);
+
+            json.endObject();
+        }
+
+        json.endArray();
+        json.end();
+
+        return req.send_json(200, json);
+    });
+
+    server.on_HTTPThread("/debug/task_accounting_simple", HTTP_GET, [this](WebServerRequest req) {
+        constexpr size_t BUF_SIZE = 131072;
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
+        StringWriter sw{buf.get(), BUF_SIZE};
+
+        for (size_t i = 0; i < task_scheduler_accounting.entries_used; i++) {
+            const TaskAccounting::TaskData *data = task_scheduler_accounting.tdata + i;
+
+            sw.printf("%s:%lu %lu %lli %lu %lu\n",
+                data->file, data->line,
+                data->executions,
+                data->runtime_total.as<int64_t>(),
+                data->runtime_min, data->runtime_max
+            );
+        }
+
+        return req.send_plain(200, sw);
+    });
+
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/rtos_tasks", HTTP_GET, [](WebServerRequest req) {
         char buf[2048]; // "This buffer is assumed to be large enough to contain the generated report. Approximately 40 bytes per task should be sufficient." - vTaskGetRunTimeStats@FreeRTOS
@@ -1163,6 +1234,11 @@ void Debug::task_scheduler_idle_call()
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }
+}
+
+void Debug::task_scheduler_task_accounting_call(const char *file, uint_least32_t line, micros_t runtime)
+{
+    task_scheduler_accounting.add(file, line, runtime);
 }
 
 extern const char *task_fn_file;
@@ -1411,4 +1487,93 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
             *spi_mode = "invalid clock";
         }
     }
+}
+
+void Debug::TaskAccounting::init(size_t max_entries)
+{
+    tinfo = static_cast<decltype(tinfo)>(heap_caps_malloc_prefer(max_entries * sizeof(TaskInfo), 1,                                      MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+    tdata = static_cast<decltype(tdata)>(heap_caps_malloc_prefer(max_entries * sizeof(TaskData), 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+
+    if (tinfo == nullptr || tdata == nullptr) {
+        logger.printfln("Failed to allocate memory for task accounting: %p %p", static_cast<void *>(tinfo), static_cast<void *>(tdata));
+
+        free(tinfo);
+        tinfo = nullptr;
+
+        free(tdata);
+        tdata = nullptr;
+
+        return;
+    }
+
+    entries_max = max_entries;
+
+    const uint32_t same_msb = static_cast<uint32_t>(__builtin_clz(reinterpret_cast<std::uintptr_t>(&_rodata_start) ^ reinterpret_cast<std::uintptr_t>(&_rodata_end)));
+
+    task_accounting_file_mask  = ~0lu >> same_msb;
+    task_accounting_line_shift = 32lu  - same_msb;
+}
+
+void Debug::TaskAccounting::add(const char *file, uint_least32_t line, micros_t runtime)
+{
+    if (tinfo == nullptr) {
+        return;
+    }
+
+    const std::uintptr_t id = (line << task_accounting_line_shift) | (reinterpret_cast<std::uintptr_t>(file) & task_accounting_file_mask);
+
+    for (size_t i = 0; i < entries_used; i++) {
+        if (tinfo[i].id != id) {
+            continue;
+        }
+
+        TaskData *data = tinfo[i].data;
+
+        data->runtime_total += runtime;
+
+        // This can be 32 bit because a task can't run longer than 1.2 hours.
+        const uint32_t runtime32 = runtime.as<uint32_t>();
+
+        if (runtime32 < data->runtime_min) {
+            data->runtime_min = runtime32;
+        } else if (runtime32 > data->runtime_max) {
+            data->runtime_max = runtime32;
+        }
+
+        data->executions++;
+
+        if (i > 0 && data->executions > tinfo[i - 1].data->executions) {
+            tinfo[i].id = tinfo[i - 1].id;
+            tinfo[i - 1].id = id;
+
+            tinfo[i].data = tinfo[i - 1].data;
+            tinfo[i - 1].data = data;
+        }
+
+        return;
+    }
+
+    if (entries_used >= entries_max) {
+        logger.printfln("Task accounting has no room for 0x%08x", id);
+        return;
+    }
+
+    file += 4; // Cut off "src/"
+
+    if (strncmp(file, "modules/", 8) == 0) {
+        file += 8;
+    }
+
+    TaskData *data = tdata + entries_used;
+    data->file = file;
+    data->line = line;
+
+    data->executions = 1;
+    data->runtime_total = runtime;
+    data->runtime_min = data->runtime_max = runtime.as<uint32_t>();
+
+    tinfo[entries_used].data = data;
+    tinfo[entries_used].id = id;
+
+    entries_used++;
 }
