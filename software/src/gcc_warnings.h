@@ -1,10 +1,20 @@
 #if defined(__clang__)
 #pragma clang diagnostic error "-Weverything"
 
-// We use at least C++11
+// We use at least C++20
 #pragma clang diagnostic ignored "-Wc++98-compat"
+#pragma clang diagnostic ignored "-Wpre-c++14-compat"
+#pragma clang diagnostic ignored "-Wpre-c++14-compat-pedantic"
+#pragma clang diagnostic ignored "-Wpre-c++17-compat"
+#pragma clang diagnostic ignored "-Wpre-c++17-compat-pedantic"
+#pragma clang diagnostic ignored "-Wpre-c++20-compat"
+#pragma clang diagnostic ignored "-Wpre-c++20-compat-pedantic"
+
 // https://clang.llvm.org/docs/SafeBuffers.html That's too much for now
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+
+// We have to add the switch default to satisfy GCC.
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
 #endif
 
 // Use check_gcc_warnings.py when updating the compiler to find new warnings to enable.
