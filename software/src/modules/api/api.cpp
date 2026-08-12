@@ -1113,7 +1113,7 @@ String API::callCommand(const char *path, const Config::ConfUpdate &payload, Lan
     return error;
 }
 
-const Config *API::getState(const char *path, bool log_if_not_found, size_t path_len)
+const StateRegistration *API::getStateRegistration(const char *path, size_t path_len)
 {
     if (!path) {
         return nullptr;
@@ -1123,7 +1123,7 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
     if (address_is_in_rodata(path)) {
         for (const auto &reg : states) {
             if (path == reg.path) { // Address check
-                return reg.config;
+                return &reg;
             }
         }
     }
@@ -1137,7 +1137,21 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
             continue;
         }
 
-        return reg.config;
+        return &reg;
+    }
+
+    return nullptr;
+}
+
+const Config *API::getState(const char *path, bool log_if_not_found, size_t path_len)
+{
+    if (!path) {
+        return nullptr;
+    }
+
+    if (auto *result = this->getStateRegistration(path, path_len);
+        result != nullptr) {
+        return result->config;
     }
 
     if (log_if_not_found) {
