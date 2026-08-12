@@ -257,6 +257,11 @@ void Certs::register_urls()
 #if MODULE_CONFIG_IMPORT_AVAILABLE()
     config_import.allow_path(CERT_DIRECTORY, max_cert_file_length, MAX_CERT_SIZE);
 #endif
+
+#if MODULE_CONFIG_EXPORT_AVAILABLE()
+    config_export.allow_path(CERT_DIRECTORY, ConfigExport::ExportType::Text);
+#endif
+
 }
 
 std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len)
