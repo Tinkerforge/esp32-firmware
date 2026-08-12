@@ -28,6 +28,10 @@
 
 #include "TFTools/Micros.h"
 
+#ifndef CONFIG_SPIRAM_BANKSWITCH_RESERVE
+#define CONFIG_SPIRAM_BANKSWITCH_RESERVE 1
+#endif
+
 struct HimemMapper {
     static struct {
         esp_himem_rangehandle_t rh;
