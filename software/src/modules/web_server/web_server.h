@@ -61,6 +61,32 @@ struct WebServerRequestReturnProtect {
     esp_err_t error = ESP_OK;
 };
 
+class WebServerRequest;
+
+struct WebServerChunkedResponse {
+    unique_ptr_any<char> _buf;
+    char *buf;
+    static constexpr size_t HEADER_SIZE = 6; // 4 chars chunk size + \r\n
+    static constexpr size_t BUF_SIZE = 4096;
+    static constexpr size_t TRAILER_SIZE = 2; // \r\n
+    size_t buf_filled = 0;
+    bool first_chunk_sent = false;
+    WebServerRequest &req;
+
+    WebServerChunkedResponse(WebServerRequest &req);
+
+    inline char *write_ptr() { return this->buf + this->buf_filled; }
+    inline size_t free() { return this->BUF_SIZE - this->buf_filled; }
+    void written(size_t len) { buf_filled += len; }
+
+    [[nodiscard]]        esp_err_t sendChunk(const char *chunk, size_t chunk_len);
+    [[nodiscard]] inline esp_err_t sendChunk(const char *chunk        ) { return sendChunk(chunk,          strlen(chunk)); }
+    [[nodiscard]] inline esp_err_t sendChunk(const String &chunk      ) { return sendChunk(chunk.c_str(),  chunk.length()); }
+    [[nodiscard]] inline esp_err_t sendChunk(const StringWriter &chunk) { return sendChunk(chunk.getPtr(), chunk.getLength()); }
+
+    [[nodiscard]] esp_err_t flush();
+};
+
 class WebServerRequest
 {
 public:
@@ -134,6 +160,8 @@ public:
 
     IPAddress getLocalAddress();
     IPAddress getPeerAddress();
+
+    friend WebServerChunkedResponse;
 
 private:
     httpd_req_t *req;

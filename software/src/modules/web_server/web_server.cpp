@@ -29,6 +29,7 @@
 #include "tools/malloc.h"
 #include "tools/memory.h"
 #include "tools/net.h"
+#include "tools/printf.h"
 #include "tools/tristate_bool.h"
 #include "options.h"
 
@@ -1231,4 +1232,71 @@ IPAddress WebServerRequest::getPeerAddress()
     }
 
     return tf_peer_address_of_sockfd(sockfd);
+}
+
+
+WebServerChunkedResponse::WebServerChunkedResponse(WebServerRequest &request) :
+        _buf(unique_ptr_any<char>(reinterpret_cast<char *>(heap_caps_malloc(this->HEADER_SIZE + this->BUF_SIZE + this->TRAILER_SIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)))),
+        buf(_buf.get() + this->HEADER_SIZE),
+        req(request)
+{
+
+}
+
+esp_err_t WebServerChunkedResponse::sendChunk(const char *chunk, size_t chunk_len)
+{
+    while (this->buf_filled + chunk_len > this->BUF_SIZE) {
+        size_t to_copy = this->BUF_SIZE - this->buf_filled;
+
+        memcpy(this->buf + this->buf_filled, chunk, to_copy);
+
+        chunk += to_copy;
+        chunk_len -= to_copy;
+        this->buf_filled += to_copy;
+
+        if (auto err = this->flush(); err != ESP_OK)
+            return err;
+    }
+
+    memcpy(this->buf + this->buf_filled, chunk, chunk_len);
+    this->buf_filled += chunk_len;
+
+    return ESP_OK;
+}
+
+esp_err_t WebServerChunkedResponse::flush()
+{
+    // Use send_chunk for the first chunk to send headers, etc.
+    // This is not as efficient as sending other chunks,
+    // but we optimize for a large chunk count.
+    if (!this->first_chunk_sent)
+    {
+        if (auto err = httpd_resp_send_chunk(this->req.req, this->buf, static_cast<ssize_t>(this->buf_filled)); err != ESP_OK)
+            return err;
+
+        this->first_chunk_sent = true;
+        this->buf_filled = 0;
+        return ESP_OK;
+    }
+
+    char header[HEADER_SIZE + 1];
+    snprintf_u(header, std::size(header), "%0*zx\r\n", static_cast<int>(this->HEADER_SIZE - 2), this->buf_filled);
+    memcpy(this->buf - HEADER_SIZE, header, HEADER_SIZE);
+
+    this->buf[this->buf_filled] = '\r';
+    this->buf[this->buf_filled + 1] = '\n';
+
+    size_t to_send = this->buf_filled + this->HEADER_SIZE + this->TRAILER_SIZE;
+    char *ptr = buf - HEADER_SIZE;
+    while (to_send > 0) {
+        int ret = httpd_send(this->req.req, ptr, to_send);
+        if (ret < 0) {
+            return ESP_FAIL;
+        }
+        ptr += ret;
+        to_send -= static_cast<size_t>(ret);
+    }
+
+    this->buf_filled = 0;
+    return ESP_OK;
 }
