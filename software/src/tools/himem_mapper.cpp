@@ -21,8 +21,6 @@
 
 #include "gcc_warnings.h"
 
-#include "tools/backtrace.h"
-
 decltype(HimemMapper::handles) HimemMapper::handles{};
 decltype(HimemMapper::handle_mutex) HimemMapper::handle_mutex{};
 decltype(HimemMapper::handle_free_cv) HimemMapper::handle_free_cv{};
