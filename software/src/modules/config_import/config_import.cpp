@@ -33,7 +33,7 @@
 
 void ConfigImport::pre_setup()
 {
-    this->allow_path(API::CONFIG_DIRECTORY, 128, OPTIONS_API_JSON_MAX_LENGTH());
+    this->allow_path(API::CONFIG_DIRECTORY, constexpr_strlen(API::CONFIG_DIRECTORY) + 1 + API::MAX_PATH_LEN , OPTIONS_API_JSON_MAX_LENGTH());
 }
 
 static void clean_up() {
