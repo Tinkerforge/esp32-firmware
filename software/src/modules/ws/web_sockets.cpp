@@ -529,16 +529,9 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
     return sendToClientOwned(payload_copy, payload_len, fd, ws_type);
 }
 
-// Called by main thread. Consider removing httpd_ws_get_fd_info(). Instead, always copy the payload and let the worker perform the check.
+// Called by main thread.
 bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
-    // Connection was closed -> message was "sent", as in, it has not to be resent.
-    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
-        logger.tracefln(server.get_trace_buffer_index(), "sendToClientOwned fd %i not WS", fd);
-        free(payload);
-        return true;
-    }
-
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     if (queueFull()) {
         free(payload);
