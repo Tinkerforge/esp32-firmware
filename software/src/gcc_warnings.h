@@ -409,6 +409,16 @@ static_assert(__cplusplus == 202002L);
 #pragma GCC diagnostic error "-Wvirtual-move-assign"
 #pragma GCC diagnostic error "-Wvolatile"
 
+// ignored because they create lots of errors, but maybe enable in the future
+// From -Wextra
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+// Probably fine to leave disabled?
+#pragma GCC diagnostic ignored "-Warith-conversion"
+
+#pragma GCC diagnostic ignored "-Wnrvo"
+#pragma GCC diagnostic ignored "-Wpadded"
+#pragma GCC diagnostic ignored "-Wredundant-tags"
+
 // ignored
 // We build the complete firmware and don't care about abi.
 #pragma GCC diagnostic ignored "-Wabi"
@@ -417,12 +427,6 @@ static_assert(__cplusplus == 202002L);
 
 // https://stackoverflow.com/a/14017047
 #pragma GCC diagnostic ignored "-Waggregate-return"
-
-// From -Wextra, creates a lot of errors right now.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
-// Creates lots of errors. Probably fine to leave disabled?
-#pragma GCC diagnostic ignored "-Warith-conversion"
 
 // long long is fine in C++11
 #pragma GCC diagnostic ignored "-Wlong-long"
@@ -436,9 +440,6 @@ static_assert(__cplusplus == 202002L);
 // The -Wdelete-non-virtual-dtor option (enabled by -Wall) should be preferred because it warns about the unsafe cases without false positives.
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 
-// Creates lots of errors.
-#pragma GCC diagnostic ignored "-Wnrvo"
-
 #ifndef __cplusplus
 // We don't care about old compilers
 #pragma GCC diagnostic ignored "-Woverlength-strings"
@@ -446,12 +447,6 @@ static_assert(__cplusplus == 202002L);
 #pragma GCC diagnostic ignored "-Wtraditional-conversion"
 #pragma GCC diagnostic ignored "-Wunsuffixed-float-constants"
 #endif
-
-// Creates lots of errors.
-#pragma GCC diagnostic ignored "-Wpadded"
-
-// Creates lots of errors.
-#pragma GCC diagnostic ignored "-Wredundant-tags"
 
 // We don't care about compatibility with cfront :D
 #pragma GCC diagnostic ignored "-Wsynth"
