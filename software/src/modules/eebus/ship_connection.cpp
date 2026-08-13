@@ -145,6 +145,9 @@ void ShipConnection::start_client()
 
 void ShipConnection::start_client_confirm()
 {
+    if (closing_scheduled) {
+        return;
+    }
     task_scheduler.cancel(state_machine_task);
     state_machine_task = task_scheduler.scheduleOnce(
         [this]() {
@@ -435,6 +438,9 @@ void ShipConnection::set_and_schedule_state(ShipConnectionState state)
 
 void ShipConnection::set_and_schedule_state(ShipConnectionState state, millis_t delay_ms)
 {
+    if (closing_scheduled) {
+        return;
+    }
     task_scheduler.cancel(state_machine_task);
     state_machine_task = task_scheduler.scheduleOnce(
         [this, state]() {
@@ -445,6 +451,9 @@ void ShipConnection::set_and_schedule_state(ShipConnectionState state, millis_t 
 
 void ShipConnection::schedule_state_machine_next_step()
 {
+    if (closing_scheduled) {
+        return;
+    }
     task_scheduler.cancel(state_machine_task);
     state_machine_task = task_scheduler.scheduleOnce(
         [this]() {
