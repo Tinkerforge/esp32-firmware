@@ -100,6 +100,10 @@ public:
     void custom_loop();
     uint64_t currentTaskId();
 
+    void setOwnerTask(TaskHandle_t handle) { this->owner_task = handle; }
+    TaskHandle_t ownerTask() const { return (this->owner_task != nullptr) ? this->owner_task : mainTaskHandle; }
+    bool isOwnedByMainTask() const { return this->ownerTask() == mainTaskHandle; }
+
     enum class CancelResult {
         // Task not found in task queue
         NotFound,
@@ -115,6 +119,8 @@ public:
     };
 
     CancelResult cancel(uint64_t task_id);
+
+    micros_t timeUntilNextTask(micros_t if_empty);
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
@@ -150,8 +156,11 @@ private:
     TaskQueue tasks;
     std::unique_ptr<Task> currentTask = nullptr;
 
+    TaskHandle_t owner_task = nullptr;
+
     std::vector<WallClockTask> wall_clock_tasks;
     bool wall_clock_worker_started = false;
+    int wall_clock_last_minute = -1;
 
     std::atomic<bool> rebooting = false;
 

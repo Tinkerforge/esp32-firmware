@@ -29,7 +29,8 @@
 #include "generated/module_dependencies.h"
 #include "options.h"
 
-static uint64_t last_task_id = 0;
+// Shared between all TaskScheduler instances so that task IDs stay globally unique.
+static std::atomic<uint64_t> last_task_id = 0;
 
 Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once) :
         fn(std::move(fn)),
@@ -122,8 +123,12 @@ void TaskScheduler::pre_reboot()
     rebooting = true;
 }
 
+// Coredump hints: Which task function was running last. One pair for the
+// scheduler owned by the main task, one pair shared by all secondary instances.
 COREDUMP_RTC_DATA_ATTR const char *task_fn_file;
 COREDUMP_RTC_DATA_ATTR uint_least32_t task_fn_line;
+COREDUMP_RTC_DATA_ATTR const char *task_fn_file_secondary;
+COREDUMP_RTC_DATA_ATTR uint_least32_t task_fn_line_secondary;
 
 void TaskScheduler::custom_loop()
 {
@@ -148,18 +153,30 @@ void TaskScheduler::custom_loop()
         }
     }
 
+    const bool main_instance = this->isOwnedByMainTask();
+
     if (!this->currentTask) {
+        if (main_instance) {
 #if MODULE_DEBUG_AVAILABLE()
-        debug.task_scheduler_idle_call();
+            debug.task_scheduler_idle_call();
 #elif OPTIONS_TASK_SCHEDULER_CPU_IDLE()
-        // Allow the CPU to sleep when there's nothing to do.
-        vTaskDelay(1);
+            // Allow the CPU to sleep when there's nothing to do.
+            vTaskDelay(1);
 #endif
+        } else {
+            // Secondary instances always yield when idle to not starve main task.
+            vTaskDelay(1);
+        }
         return;
     }
 
-    task_fn_file = this->currentTask->file;
-    task_fn_line = this->currentTask->line;
+    if (main_instance) {
+        task_fn_file = this->currentTask->file;
+        task_fn_line = this->currentTask->line;
+    } else {
+        task_fn_file_secondary = this->currentTask->file;
+        task_fn_line_secondary = this->currentTask->line;
+    }
 
     if (!this->rebooting) {
         // Run task without holding the lock.
@@ -175,8 +192,10 @@ void TaskScheduler::custom_loop()
             this->currentTask->fn();
 
 #if MODULE_DEBUG_AVAILABLE()
-            const micros_t t_runtime = now_us() - t_start;
-            debug.task_scheduler_task_accounting_call(this->currentTask->file, this->currentTask->line, t_runtime);
+            if (main_instance) {
+                const micros_t t_runtime = now_us() - t_start;
+                debug.task_scheduler_task_accounting_call(this->currentTask->file, this->currentTask->line, t_runtime);
+            }
 #endif
         }
     }
@@ -213,6 +232,24 @@ void TaskScheduler::custom_loop()
 
         tasks.push(std::move(this->currentTask));
     }
+}
+
+micros_t TaskScheduler::timeUntilNextTask(micros_t if_empty)
+{
+    std::lock_guard<std::mutex> lock{this->task_mutex};
+
+    if (tasks.empty()) {
+        return if_empty;
+    }
+
+    const micros_t next_deadline = tasks.top()->next_deadline;
+    const micros_t now = now_us();
+
+    if (next_deadline <= now) {
+        return 0_us;
+    }
+
+    return next_deadline - now;
 }
 
 uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
@@ -252,10 +289,10 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn, 
     // Check once per second if clock is synced,
     // cancel task if it is and then call
     // the user supplied function
-    return this->scheduleWithFixedDelay([fn]() {
+    return this->scheduleWithFixedDelay([this, fn]() {
         struct timeval tv_now;
         if (rtc.clock_synced(&tv_now)) {
-            task_scheduler.cancel(task_scheduler.currentTaskId());
+            this->cancel(this->currentTaskId());
             fn();
         }
     }, 0_ms, 1_s, src_location);
@@ -318,8 +355,8 @@ uint64_t TaskScheduler::currentTaskId()
 {
     // currentTaskId is intended to write a self-canceling task.
     // Don't allow other threads to cancel tasks without knowing their ID.
-    if (!running_in_main_task()) {
-        logger.printfln("Calling TaskScheduler::currentTask is only allowed in the main thread!");
+    if (xTaskGetCurrentTaskHandle() != this->ownerTask()) {
+        logger.printfln("Calling TaskScheduler::currentTaskId is only allowed in the thread owning this scheduler!");
         return 0;
     }
 
@@ -358,8 +395,8 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 
     TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
 
-    if (mainTaskHandle == thisThread) {
-        logger.printfln("Calling TaskScheduler::await is not allowed in the main thread!");
+    if (this->ownerTask() == thisThread) {
+        logger.printfln("Calling TaskScheduler::await is not allowed in the thread owning this scheduler!");
         return false;
     }
 
@@ -421,8 +458,6 @@ void TaskScheduler::await_or_die(std::function<void(void)> &&fn, millis_t millis
 }
 
 void TaskScheduler::wall_clock_worker() {
-    static int last_minute = -1;
-
     timeval tv;
     if (!rtc.clock_synced(&tv))
         return;
@@ -430,7 +465,7 @@ void TaskScheduler::wall_clock_worker() {
     tm time_struct;
     gmtime_r(&tv.tv_sec, &time_struct);
 
-    if (time_struct.tm_min == last_minute) {
+    if (time_struct.tm_min == this->wall_clock_last_minute) {
         // If we somehow managed to hit the same minute or this is a leap second, check again in one second.
         this->currentTask->delay = 1_s;
         return;
@@ -449,10 +484,10 @@ void TaskScheduler::wall_clock_worker() {
     auto now = now_us();
 
     for (auto &task : wall_clock_tasks) {
-        if (last_minute == -1 && !task.run_on_first_sync)
+        if (this->wall_clock_last_minute == -1 && !task.run_on_first_sync)
             continue;
 
-        if (last_minute != -1 && (minutes_since_midnight % task.interval_minutes) != 0_min)
+        if (this->wall_clock_last_minute != -1 && (minutes_since_midnight % task.interval_minutes) != 0_min)
             continue;
 
         if(!task.runner_task) {
@@ -465,7 +500,7 @@ void TaskScheduler::wall_clock_worker() {
         tasks.emplace(std::move(task.runner_task));
     }
 
-    last_minute = time_struct.tm_min;
+    this->wall_clock_last_minute = time_struct.tm_min;
 }
 
 bool TaskScheduler::rescheduleNow(uint64_t task_id) {

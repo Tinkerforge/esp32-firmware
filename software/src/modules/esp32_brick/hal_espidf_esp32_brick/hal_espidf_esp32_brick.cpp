@@ -20,6 +20,8 @@
 #include "bindings/config.h"
 #include "bindings/errors.h"
 
+#include "../generated/module_dependencies.h"
+
 #define TF_SPI_BUS_HSPI SPI2_HOST
 #define TF_SPI_BUS_VSPI SPI3_HOST
 
@@ -143,6 +145,10 @@ static spi_device_handle_t get_spi_device(TF_HAL *hal, uint8_t port_id) {
 }
 
 int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    io_scheduler.assert_hal_access_allowed();
+#endif
+
     if (enable) {
         gpio_set_level((gpio_num_t)ports[port_id].chip_select_pin, 0);
     } else {

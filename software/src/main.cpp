@@ -306,6 +306,11 @@ void setup()
 
     logger.printfln("Initialization done");
 
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    // Hand over HAL ownership from the main task to the IO task.
+    io_scheduler.start_task();
+#endif
+
     boot_stage = BootStage::LOOP;
 }
 
@@ -314,7 +319,9 @@ void loop() {
     watchdog.reset(watchdog_handle);
 #endif
 
+#if !MODULE_IO_SCHEDULER_AVAILABLE()
     tf_hal_tick(&hal, 0);
+#endif
     task_scheduler.custom_loop();
 
 #if MODULE_DEBUG_AVAILABLE()

@@ -52,6 +52,10 @@ public:
     void set_blue_led(const bool on);
 
     ConfigRoot state;
+
+private:
+    int16_t temperature_staging = 0;
+    bool temperature_valid = false;
 };
 
 #include "generated/module_available_end.h"

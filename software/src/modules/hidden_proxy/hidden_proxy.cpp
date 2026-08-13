@@ -71,10 +71,19 @@ void HiddenProxy::start_proxy()
             tskIDLE_PRIORITY,
             &xTaskBuffer);
 
-    tf_hal_set_net(&hal, nullptr);
-    tf_net_create(net, nullptr, 0, nullptr);
-    tf_net_set_listen_addr6(net, nullptr, 0);
-    tf_hal_set_net(&hal, net);
+    // The net context is used from inside tf_hal_tick, so it must be attached/detached by the owner of the HAL.
+    auto attach_net = [this]() {
+        tf_hal_set_net(&hal, nullptr);
+        tf_net_create(net, nullptr, 0, nullptr);
+        tf_net_set_listen_addr6(net, nullptr, 0);
+        tf_hal_set_net(&hal, net);
+    };
+
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    (void)io_scheduler.await(std::move(attach_net));
+#else
+    attach_net();
+#endif
 }
 
 void HiddenProxy::stop_proxy()
@@ -86,8 +95,21 @@ void HiddenProxy::stop_proxy()
     if (green_led_pin >= 0)
         vTaskDelete(xTaskBuffer);
 
-    tf_hal_set_net(&hal, nullptr);
-    tf_net_destroy(net);
+    auto detach_net = [this]() {
+        tf_hal_set_net(&hal, nullptr);
+        tf_net_destroy(net);
+    };
+
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    if (!io_scheduler.await(std::move(detach_net))) {
+        // Not detached (e.g. reboot in progress(?)). Don't free the net
+        // context, it might still be used by the IO task.
+        return;
+    }
+#else
+    detach_net();
+#endif
+
     free(net);
     net = nullptr;
 }

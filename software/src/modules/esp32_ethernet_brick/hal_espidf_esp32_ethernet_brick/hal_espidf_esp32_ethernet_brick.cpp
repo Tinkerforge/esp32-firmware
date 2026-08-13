@@ -21,6 +21,8 @@
 #include "bindings/config.h"
 #include "bindings/errors.h"
 
+#include "../generated/module_dependencies.h"
+
 typedef struct TF_Port {
     char port_name;
 
@@ -115,6 +117,10 @@ int tf_hal_destroy(TF_HAL *hal) {
 }
 
 int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    io_scheduler.assert_hal_access_allowed();
+#endif
+
     if (enable) {
         select_demux(port_id);
     } else {

@@ -346,18 +346,23 @@ void EvseCommon::setup()
 
     debug_protocol.register_backend(backend);
 
-    task_scheduler.scheduleUncancelable([this](){
-        auto old_state = this->state.get("iec61851_state")->asUint8();
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() {
+            backend->fetch_all_data();
+        },
+        [this]() {
+            auto old_state = this->state.get("iec61851_state")->asUint8();
 
-        backend->update_all_data();
+            backend->publish_all_data();
 
-        auto new_state = this->state.get("iec61851_state")->asUint8();
-        if ((old_state != new_state) && (old_state == 0 || new_state == 0)) {
-            // Immediately request reallocation and response to reduce latency
-            send_cm_client_update(true, true);
-        }
-
-    }, 250_ms);
+            auto new_state = this->state.get("iec61851_state")->asUint8();
+            if ((old_state != new_state) && (old_state == 0 || new_state == 0)) {
+                // Immediately request reallocation and response to reduce latency
+                send_cm_client_update(true, true);
+            }
+        },
+        0_ms, 250_ms);
 
 #if MODULE_POWER_MANAGER_AVAILABLE()
     power_manager.register_phase_switcher_backend(backend);

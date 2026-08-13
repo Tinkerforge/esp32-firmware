@@ -102,6 +102,8 @@ private:
     size_t modbus_read_state_slow = 0;
     bool last_read_was_fast = false;
 
+    const RegRead *deferred_read = nullptr;
+
     UserData callback_data;
 
     bool reset_requested = false;

@@ -113,6 +113,7 @@ private:
     std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
     void setup_auth_tags();
 
+    void fetch_seen_tags();
     void update_seen_tags();
     void tag_seen(tag_info_t *info, bool injected);
 

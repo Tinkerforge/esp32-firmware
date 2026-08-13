@@ -169,7 +169,7 @@ void EVSEV2::pre_setup()
         AutomationActionID::EVSEGPOutput,
         automation_cfg,
         [this](const Config *config) {
-            is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1));
+            is_in_bootloader(io_scheduler.hal_call([this, config]() { return tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1); }));
         }
     );
 #endif
@@ -184,7 +184,7 @@ void EVSEV2::post_setup()
 
     task_scheduler.scheduleOnce([this](){
         uint32_t press_time = 0;
-        tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
+        io_scheduler.hal_call([this, &press_time]() { return tf_evse_v2_get_button_press_boot_time(&device, true, &press_time); });
         if (press_time != 0)
             logger.printfln("Reset boot button press time");
     }, 40_s);
@@ -212,7 +212,7 @@ void EVSEV2::post_setup()
         localtime_r(&tv.tv_sec, &timeinfo);
 
         if (timeinfo.tm_hour == 3) {
-            tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, nullptr);
+            io_scheduler.hal_call([this]() { return tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, nullptr); });
         }
     }, 1_min/* wait for ntp sync */, 1_h);
 }
@@ -220,7 +220,7 @@ void EVSEV2::post_setup()
 void EVSEV2::post_register_urls()
 {
     api.addCommand("evse/reset_dc_fault_current_state", &reset_dc_fault_current_state, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, reset_dc_fault_current_state.get("password")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_reset_dc_fault_current_state(&device, reset_dc_fault_current_state.get("password")->asUint()); }));
     }, true);
 
     api.addCommand("evse/trigger_dc_fault_test", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
@@ -229,7 +229,7 @@ void EVSEV2::post_register_urls()
             return;
         }
         bool success = false;
-        int rc = tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, &success);
+        int rc = io_scheduler.hal_call([this, &success]() { return tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, &success); });
         if (!success) {
             logger.printfln("Failed to start DC fault test. rc %d", rc);
         }
@@ -242,30 +242,30 @@ void EVSEV2::post_register_urls()
 
     api.addState("evse/gpio_configuration", &gpio_configuration);
     api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
-                                                                    gpio_configuration_update.get("input")->asUint(),
-                                                                    gpio_configuration_update.get("output")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
+                                                                                               gpio_configuration_update.get("input")->asUint(),
+                                                                                               gpio_configuration_update.get("output")->asUint()); }));
     }, true);
 
     api.addState("evse/button_configuration", &button_configuration);
     api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()); }));
     }, true);
 
     api.addState("evse/ev_wakeup", &ev_wakeup);
     api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()); }));
     }, true);
 
     api.addState("evse/phase_auto_switch", &phase_auto_switch);
     api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()); }));
     }, true);
 
 
     api.addState("evse/phases_connected", &phases_connected);
     api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()); }));
     }, true);
 
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
@@ -274,25 +274,25 @@ void EVSEV2::post_register_urls()
             logger.printfln("Control pilot cannot be (dis)connected by API while charge management is enabled.");
             return;
         }
-        is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr); }));
     }, true);
 
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     api.addFeature("evse_gp_output");
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()); }));
     }, true);
 #endif
 
     api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
     api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()); }));
     }, true);
 
     api.addState("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
     api.addCommand("evse/energy_meter_display_backlight_update", &energy_meter_display_backlight_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(tf_evse_v2_set_energy_meter_display_backlight(&device, energy_meter_display_backlight_update.get("backlight")->asUint()));
+        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_energy_meter_display_backlight(&device, energy_meter_display_backlight_update.get("backlight")->asUint()); }));
     }, true);
 }
 
@@ -304,27 +304,27 @@ void EVSEV2::register_events()
 
 void EVSEV2::factory_reset()
 {
-    tf_evse_v2_factory_reset(&device, 0x2342FACD);
+    io_scheduler.hal_call([this]() { return tf_evse_v2_factory_reset(&device, 0x2342FACD); });
 }
 
 void EVSEV2::set_data_storage(uint8_t page, const uint8_t *data)
 {
-    tf_evse_v2_set_data_storage(&device, page, data);
+    io_scheduler.hal_call([this, page, data]() { return tf_evse_v2_set_data_storage(&device, page, data); });
 }
 
 void EVSEV2::get_data_storage(uint8_t page, uint8_t *data)
 {
-    tf_evse_v2_get_data_storage(&device, page, data);
+    io_scheduler.hal_call([this, page, data]() { return tf_evse_v2_get_data_storage(&device, page, data); });
 }
 
 void EVSEV2::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status)
 {
-    tf_evse_v2_set_indicator_led(&device, indication, duration, color_h, color_s, color_v, ret_status);
+    io_scheduler.hal_call([&]() { return tf_evse_v2_set_indicator_led(&device, indication, duration, color_h, color_s, color_v, ret_status); });
 }
 
 void EVSEV2::set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected)
 {
-    is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, cp_disconnect, cp_disconnected));
+    is_in_bootloader(io_scheduler.hal_call([&]() { return tf_evse_v2_set_control_pilot_disconnect(&device, cp_disconnect, cp_disconnected); }));
 }
 
 bool EVSEV2::get_control_pilot_disconnect()
@@ -334,110 +334,110 @@ bool EVSEV2::get_control_pilot_disconnect()
 
 void EVSEV2::set_boost_mode(bool enabled)
 {
-    is_in_bootloader(tf_evse_v2_set_boost_mode(&device, enabled));
+    is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_boost_mode(&device, enabled); }));
 }
 
 int EVSEV2::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc)
 {
-    return tf_evse_v2_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc); });
 }
 
 int EVSEV2::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc)
 {
-    return tf_evse_v2_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_charging_slot(&device, slot, current, enabled, reset_on_dc); });
 }
 
 void EVSEV2::set_charging_slot_max_current(uint8_t slot, uint16_t current)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_max_current(&device, slot, current));
+    is_in_bootloader(io_scheduler.hal_call([this, slot, current]() { return tf_evse_v2_set_charging_slot_max_current(&device, slot, current); }));
 }
 
 void EVSEV2::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect)
 {
-    is_in_bootloader(tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect));
+    is_in_bootloader(io_scheduler.hal_call([this, slot, clear_on_disconnect]() { return tf_evse_v2_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect); }));
 }
 
 void EVSEV2::set_charging_slot_active(uint8_t slot, bool enabled)
 {
-    tf_evse_v2_set_charging_slot_active(&device, slot, enabled);
+    io_scheduler.hal_call([this, slot, enabled]() { return tf_evse_v2_set_charging_slot_active(&device, slot, enabled); });
 }
 
 int EVSEV2::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect)
 {
-    return tf_evse_v2_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect); });
 }
 
 int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect)
 {
-    return tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect); });
 }
 
 int EVSEV2::set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]) {
-    return tf_evse_v2_set_enumerate_configuration(&device, enumerator_h, enumerator_s, enumerator_v);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_enumerate_configuration(&device, enumerator_h, enumerator_s, enumerator_v); });
 }
 
 int EVSEV2::set_enumerate_value(uint8_t value) {
-    return tf_evse_v2_set_enumerate_value(&device, value);
+    return io_scheduler.hal_call([this, value]() { return tf_evse_v2_set_enumerate_value(&device, value); });
 }
 
 int EVSEV2::set_eichrecht_gateway_identification(const char gateway_identification[41], uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_set_eichrecht_gateway_identification(&device, gateway_identification, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_eichrecht_gateway_identification(&device, gateway_identification, ret_eichrecht_state); });
 }
 
 int EVSEV2::set_eichrecht_gateway_serial(const char gateway_serial[25], uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_set_eichrecht_gateway_serial(&device, gateway_serial, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_eichrecht_gateway_serial(&device, gateway_serial, ret_eichrecht_state); });
 }
 
 int EVSEV2::set_eichrecht_user_assignment(bool identification_status, const uint8_t identification_flags[4], uint8_t identification_type, const char identification_data[40], uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_set_eichrecht_user_assignment(&device, identification_status, identification_flags, identification_type, identification_data, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_eichrecht_user_assignment(&device, identification_status, identification_flags, identification_type, identification_data, ret_eichrecht_state); });
 }
 
 int EVSEV2::set_eichrecht_charge_point(uint8_t identification_type, const char identification[20], uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_set_eichrecht_charge_point(&device, identification_type, identification, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_eichrecht_charge_point(&device, identification_type, identification, ret_eichrecht_state); });
 }
 
 int EVSEV2::set_eichrecht_transaction(char transaction, uint32_t unix_time, int16_t utc_time_offset, uint16_t signature_format, uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_set_eichrecht_transaction(&device, transaction, unix_time, utc_time_offset, signature_format, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_eichrecht_transaction(&device, transaction, unix_time, utc_time_offset, signature_format, ret_eichrecht_state); });
 }
 
 int EVSEV2::get_eichrecht_transaction_state(char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state)
 {
-    return tf_evse_v2_get_eichrecht_transaction_state(&device, ret_transaction, ret_transaction_state, ret_transaction_inner_state, ret_measurement_status, ret_signature_status, ret_eichrecht_state);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_eichrecht_transaction_state(&device, ret_transaction, ret_transaction_state, ret_transaction_inner_state, ret_measurement_status, ret_signature_status, ret_eichrecht_state); });
 }
 
 int EVSEV2::get_eichrecht_public_key(uint8_t ret_public_key[64])
 {
-    return tf_evse_v2_get_eichrecht_public_key(&device, ret_public_key);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_eichrecht_public_key(&device, ret_public_key); });
 }
 
 int EVSEV2::get_ove_r37_configuration(bool *ret_enabled, uint16_t *ret_undervoltage_threshold, uint16_t *ret_undervoltage_observation_time, uint16_t *ret_reconnect_wait_time, uint16_t *ret_start_delay)
 {
-    return tf_evse_v2_get_ove_r37_configuration(&device, ret_enabled, ret_undervoltage_threshold, ret_undervoltage_observation_time, ret_reconnect_wait_time, ret_start_delay);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_ove_r37_configuration(&device, ret_enabled, ret_undervoltage_threshold, ret_undervoltage_observation_time, ret_reconnect_wait_time, ret_start_delay); });
 }
 
 int EVSEV2::set_ove_r37_configuration(bool enabled, uint16_t undervoltage_threshold, uint16_t undervoltage_observation_time, uint16_t reconnect_wait_time, uint16_t start_delay)
 {
-    return tf_evse_v2_set_ove_r37_configuration(&device, enabled, undervoltage_threshold, undervoltage_observation_time, reconnect_wait_time, start_delay);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_set_ove_r37_configuration(&device, enabled, undervoltage_threshold, undervoltage_observation_time, reconnect_wait_time, start_delay); });
 }
 
 int EVSEV2::get_ove_r37_status(uint8_t *ret_state, uint8_t *ret_trip_reason, uint8_t *ret_flags)
 {
-    return tf_evse_v2_get_ove_r37_status(&device, ret_state, ret_trip_reason, ret_flags);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_get_ove_r37_status(&device, ret_state, ret_trip_reason, ret_flags); });
 }
 
 int EVSEV2::register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data)
 {
-    return tf_evse_v2_register_eichrecht_dataset_callback(&device, handler, message, user_data);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_register_eichrecht_dataset_callback(&device, handler, message, user_data); });
 }
 
 int EVSEV2::register_eichrecht_signature_callback(TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data)
 {
-    return tf_evse_v2_register_eichrecht_signature_callback(&device, handler, message, user_data);
+    return io_scheduler.hal_call([&]() { return tf_evse_v2_register_eichrecht_signature_callback(&device, handler, message, user_data); });
 }
 
 static const char *debug_header_prefix =
@@ -615,6 +615,13 @@ size_t EVSEV2::get_debug_line_length() const
 }
 
 void EVSEV2::get_debug_line(StringBuilder *sb)
+{
+    if (!io_scheduler.await([this, sb]() { this->get_debug_line_impl(sb); })) {
+        sb->puts("io await failed");
+    }
+}
+
+void EVSEV2::get_debug_line_impl(StringBuilder *sb)
 {
     uint8_t iec61851_state;
     uint8_t charger_state;
@@ -882,7 +889,7 @@ bool EVSEV2::switch_phases(uint32_t phases_wanted)
         return false;
     }
 
-    int err = tf_evse_v2_set_phase_control(&device, phases_wanted);
+    int err = io_scheduler.hal_call([this, phases_wanted]() { return tf_evse_v2_set_phase_control(&device, phases_wanted); });
     if (err == TF_E_OK) {
         return true;
     }
@@ -899,88 +906,41 @@ bool EVSEV2::is_external_control_allowed()
 
 void EVSEV2::update_all_data()
 {
+    if (!io_scheduler.await([this]() { this->fetch_all_data(); })) {
+        return;
+    }
+
+    publish_all_data();
+}
+
+void EVSEV2::fetch_all_data()
+{
+    // Runs on the task owning the HAL. No Config/API access allowed here.
+    EVSEV2AllData &d = all_data;
+
+    d.valid = false;
+
     if (!initialized)
         return;
 
-    // get_all_data_1
-    uint8_t iec61851_state;
-    uint8_t charger_state;
-    uint8_t contactor_state;
-    uint8_t contactor_error;
-    uint16_t allowed_charging_current;
-    uint8_t error_state;
-    uint8_t lock_state;
-    uint8_t dc_fault_current_state;
-    uint8_t jumper_configuration;
-    bool has_lock_switch;
-    uint8_t evse_version;
-    EVSEV2MeterData meter_data;
-
-    // get_all_data_2
-    uint8_t shutdown_input_configuration;
-    uint8_t input_configuration;
-    uint8_t output_configuration;
-    int16_t indication;
-    uint16_t duration;
-    uint16_t color_h;
-    uint8_t color_s;
-    uint8_t color_v;
-    uint8_t button_cfg;
-    uint32_t button_press_time;
-    uint32_t button_release_time;
-    bool button_pressed;
-    bool ev_wakeup_enabled;
-    bool cp_disconnect;
-    bool boost_mode_enabled;
-    int16_t temperature;
-    uint8_t phases_current;
-    uint8_t phases_requested;
-    uint8_t phases_state;
-    uint8_t phases_info;
-    bool phase_auto_switch_enabled;
-    uint8_t phases_connected_;
-    uint8_t enumerate_value;
-    uint32_t enumerate_value_change_time;
-    uint8_t phase_switch_wait_time_;
-    uint8_t ove_r37_state;
-    uint8_t ove_r37_trip_reason;
-    uint8_t ove_r37_flags;
-    uint8_t energy_meter_display_backlight_;
-
-    // get_low_level_state
-    uint8_t led_state;
-    uint16_t cp_pwm_duty_cycle;
-    uint16_t adc_values[7];
-    int16_t voltages[7];
-    uint32_t resistances[2];
-    bool gpio[24];
-    bool car_stopped_charging;
-    uint32_t time_since_state_change;
-    uint32_t time_since_dc_fault_check;
-    uint32_t uptime;
-
-    // get_all_charging_slots
-    uint16_t max_current[20];
-    uint8_t active_and_clear_on_disconnect[20];
-
     int rc = tf_evse_v2_get_all_data_1(&device,
-                                       &iec61851_state,
-                                       &charger_state,
-                                       &contactor_state,
-                                       &contactor_error,
-                                       &allowed_charging_current,
-                                       &error_state,
-                                       &lock_state,
-                                       &dc_fault_current_state,
-                                       &jumper_configuration,
-                                       &has_lock_switch,
-                                       &evse_version,
-                                       &meter_data.meter_type,
-                                       &meter_data.power,
-                                       meter_data.currents,
-                                       meter_data.phases_active,
-                                       meter_data.phases_connected,
-                                       meter_data.error_count);
+                                       &d.iec61851_state,
+                                       &d.charger_state,
+                                       &d.contactor_state,
+                                       &d.contactor_error,
+                                       &d.allowed_charging_current,
+                                       &d.error_state,
+                                       &d.lock_state,
+                                       &d.dc_fault_current_state,
+                                       &d.jumper_configuration,
+                                       &d.has_lock_switch,
+                                       &d.evse_version,
+                                       &d.meter_data.meter_type,
+                                       &d.meter_data.power,
+                                       d.meter_data.currents,
+                                       d.meter_data.phases_active,
+                                       d.meter_data.phases_connected,
+                                       d.meter_data.error_count);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_1 %d", rc);
@@ -989,36 +949,36 @@ void EVSEV2::update_all_data()
     }
 
     rc = tf_evse_v2_get_all_data_2(&device,
-                                   &shutdown_input_configuration,
-                                   &input_configuration,
-                                   &output_configuration,
-                                   &indication,
-                                   &duration,
-                                   &color_h,
-                                   &color_s,
-                                   &color_v,
-                                   &button_cfg,
-                                   &button_press_time,
-                                   &button_release_time,
-                                   &button_pressed,
-                                   &ev_wakeup_enabled,
-                                   &cp_disconnect,
-                                   &boost_mode_enabled,
-                                   &temperature,
-                                   &phases_current,
-                                   &phases_requested,
-                                   &phases_state,
-                                   &phases_info,
-                                   &phase_auto_switch_enabled,
-                                   &phases_connected_,
-                                   &enumerate_value,
-                                   &enumerate_value_change_time,
-                                   &phase_switch_wait_time_,
+                                   &d.shutdown_input_configuration,
+                                   &d.input_configuration,
+                                   &d.output_configuration,
+                                   &d.indication,
+                                   &d.duration,
+                                   &d.color_h,
+                                   &d.color_s,
+                                   &d.color_v,
+                                   &d.button_cfg,
+                                   &d.button_press_time,
+                                   &d.button_release_time,
+                                   &d.button_pressed,
+                                   &d.ev_wakeup_enabled,
+                                   &d.cp_disconnect,
+                                   &d.boost_mode_enabled,
+                                   &d.temperature,
+                                   &d.phases_current,
+                                   &d.phases_requested,
+                                   &d.phases_state,
+                                   &d.phases_info,
+                                   &d.phase_auto_switch_enabled,
+                                   &d.phases_connected,
+                                   &d.enumerate_value,
+                                   &d.enumerate_value_change_time,
+                                   &d.phase_switch_wait_time,
                                    nullptr /*plc_modem_enabled*/,
-                                   &ove_r37_state,
-                                   &ove_r37_trip_reason,
-                                   &ove_r37_flags,
-                                   &energy_meter_display_backlight_);
+                                   &d.ove_r37_state,
+                                   &d.ove_r37_trip_reason,
+                                   &d.ove_r37_flags,
+                                   &d.energy_meter_display_backlight);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1027,16 +987,16 @@ void EVSEV2::update_all_data()
     }
 
     rc = tf_evse_v2_get_low_level_state(&device,
-                                        &led_state,
-                                        &cp_pwm_duty_cycle,
-                                        adc_values,
-                                        voltages,
-                                        resistances,
-                                        gpio,
-                                        &car_stopped_charging,
-                                        &time_since_state_change,
-                                        &time_since_dc_fault_check,
-                                        &uptime);
+                                        &d.led_state,
+                                        &d.cp_pwm_duty_cycle,
+                                        d.adc_values,
+                                        d.voltages,
+                                        d.resistances,
+                                        d.gpio,
+                                        &d.car_stopped_charging,
+                                        &d.time_since_state_change,
+                                        &d.time_since_dc_fault_check,
+                                        &d.uptime);
 
     if (rc != TF_E_OK) {
         logger.printfln("ll_state %d", rc);
@@ -1044,7 +1004,7 @@ void EVSEV2::update_all_data()
         return;
     }
 
-    rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
+    rc = tf_evse_v2_get_all_charging_slots(&device, d.max_current, d.active_and_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("slots %d", rc);
@@ -1052,21 +1012,84 @@ void EVSEV2::update_all_data()
         return;
     }
 
-    uint16_t external_default_current;
-    bool external_default_enabled;
-    bool external_default_clear_on_disconnect;
-
     rc = tf_evse_v2_get_charging_slot_default(&device,
                                               CHARGING_SLOT_EXTERNAL,
-                                              &external_default_current,
-                                              &external_default_enabled,
-                                              &external_default_clear_on_disconnect);
+                                              &d.external_default_current,
+                                              &d.external_default_enabled,
+                                              &d.external_default_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("external slot default %d", rc);
         is_in_bootloader(rc);
         return;
     }
+
+    d.valid = true;
+}
+
+void EVSEV2::publish_all_data()
+{
+    if (!all_data.valid) {
+        return;
+    }
+
+    const EVSEV2AllData &d = all_data;
+
+    const uint8_t iec61851_state = d.iec61851_state;
+    const uint8_t charger_state = d.charger_state;
+    const uint8_t contactor_state = d.contactor_state;
+    const uint8_t contactor_error = d.contactor_error;
+    const uint16_t allowed_charging_current = d.allowed_charging_current;
+    const uint8_t error_state = d.error_state;
+    const uint8_t lock_state = d.lock_state;
+    uint8_t dc_fault_current_state = d.dc_fault_current_state; // decomposed below
+    const uint8_t jumper_configuration = d.jumper_configuration;
+    const bool has_lock_switch = d.has_lock_switch;
+    const uint8_t evse_version = d.evse_version;
+    EVSEV2MeterData &meter_data = all_data.meter_data;
+
+    const uint8_t shutdown_input_configuration = d.shutdown_input_configuration;
+    const uint8_t input_configuration = d.input_configuration;
+    const uint8_t output_configuration = d.output_configuration;
+    const int16_t indication = d.indication;
+    const uint16_t duration = d.duration;
+    const uint16_t color_h = d.color_h;
+    const uint8_t color_s = d.color_s;
+    const uint8_t color_v = d.color_v;
+    const uint8_t button_cfg = d.button_cfg;
+    const uint32_t button_press_time = d.button_press_time;
+    const uint32_t button_release_time = d.button_release_time;
+    const bool button_pressed = d.button_pressed;
+    const bool ev_wakeup_enabled = d.ev_wakeup_enabled;
+    const bool cp_disconnect = d.cp_disconnect;
+    const bool boost_mode_enabled = d.boost_mode_enabled;
+    const int16_t temperature = d.temperature;
+    const uint8_t phases_current = d.phases_current;
+    const uint8_t phases_requested = d.phases_requested;
+    const uint8_t phases_state = d.phases_state;
+    const uint8_t phases_info = d.phases_info;
+    const bool phase_auto_switch_enabled = d.phase_auto_switch_enabled;
+    const uint8_t phases_connected_ = d.phases_connected;
+    const uint8_t enumerate_value = d.enumerate_value;
+    const uint32_t enumerate_value_change_time = d.enumerate_value_change_time;
+    const uint8_t energy_meter_display_backlight_ = d.energy_meter_display_backlight;
+
+    const uint8_t led_state = d.led_state;
+    const uint16_t cp_pwm_duty_cycle = d.cp_pwm_duty_cycle;
+    const uint16_t (&adc_values)[7] = d.adc_values;
+    const int16_t (&voltages)[7] = d.voltages;
+    const uint32_t (&resistances)[2] = d.resistances;
+    const bool (&gpio)[24] = d.gpio;
+    const bool car_stopped_charging = d.car_stopped_charging;
+    const uint32_t time_since_state_change = d.time_since_state_change;
+    const uint32_t time_since_dc_fault_check = d.time_since_dc_fault_check;
+    const uint32_t uptime = d.uptime;
+
+    const uint16_t (&max_current)[20] = d.max_current;
+    const uint8_t (&active_and_clear_on_disconnect)[20] = d.active_and_clear_on_disconnect;
+
+    const uint16_t external_default_current = d.external_default_current;
+    const bool external_default_clear_on_disconnect = d.external_default_clear_on_disconnect;
 
     // We don't allow firmware updates when a vehicle is connected,
     // to be sure a potential EVSE firmware update does not interrupt a
@@ -1225,8 +1248,10 @@ void EVSEV2::update_all_data()
     InputState input_state = !gpio[16] ? InputState::Closed : InputState::Open;
     if (last_input_state != input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
-        task_scheduler.scheduleOnce([this, gpio]() {
-            automation.trigger(AutomationTriggerID::EVSEGPInput, (void *)&gpio[16], this);
+        const bool gp_input = gpio[16];
+        task_scheduler.scheduleOnce([this, gp_input]() {
+            bool gp_input_ = gp_input;
+            automation.trigger(AutomationTriggerID::EVSEGPInput, (void *)&gp_input_, this);
         });
         last_input_state = input_state;
     }
@@ -1325,7 +1350,7 @@ void EVSEV2::update_all_data()
 #endif
 
 #if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-    phase_switch_wait_time.get("time")->updateUint(phase_switch_wait_time_);
+    phase_switch_wait_time.get("time")->updateUint(d.phase_switch_wait_time);
 #endif
 
     // get_energy_meter_display_backlight. Only relevant with Iskra WM3M4/WM3M4C energy meters.
@@ -1350,20 +1375,20 @@ void EVSEV2::update_all_data()
 #endif
 
 #if MODULE_OVE_R37_AVAILABLE()
-    ove_r37.update_state_from_all_data(ove_r37_state, ove_r37_trip_reason, ove_r37_flags);
+    ove_r37.update_state_from_all_data(d.ove_r37_state, d.ove_r37_trip_reason, d.ove_r37_flags);
 #endif
 }
 
 uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
 {
     uint16_t len = 0;
-    tf_evse_v2_get_all_energy_meter_values(&device, ret_values, &len);
+    io_scheduler.hal_call([&]() { return tf_evse_v2_get_all_energy_meter_values(&device, ret_values, &len); });
     return len;
 }
 
 bool EVSEV2::reset_energy_meter_relative_energy()
 {
-    tf_evse_v2_reset_energy_meter_relative_energy(&device);
+    io_scheduler.hal_call([this]() { return tf_evse_v2_reset_energy_meter_relative_energy(&device); });
     return true;
 }
 
@@ -1374,18 +1399,26 @@ uint8_t EVSEV2::get_energy_meter_type()
 
 void EVSEV2::set_charging_protocol(uint8_t charging_protocol, uint16_t cp_duty_cycle)
 {
-    tf_evse_v2_set_charging_protocol(&device, charging_protocol, cp_duty_cycle);
+    io_scheduler.hal_call([this, charging_protocol, cp_duty_cycle]() { return tf_evse_v2_set_charging_protocol(&device, charging_protocol, cp_duty_cycle); });
 }
 
 void EVSEV2::set_plc_modem(bool enabled)
 {
-    tf_evse_v2_set_plc_modem(&device, enabled);
+    io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_plc_modem(&device, enabled); });
 }
 
 static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)
 {
 #if MODULE_METERS_EVSE_V2_AVAILABLE()
-    meters_evse_v2.energy_meter_values_callback(power, current);
+    // Dispatched from tf_hal_tick on the io task to the main task.
+    const float c0 = current[0];
+    const float c1 = current[1];
+    const float c2 = current[2];
+
+    task_scheduler.scheduleOnce([power, c0, c1, c2]() {
+        float currents[3] = {c0, c1, c2};
+        meters_evse_v2.energy_meter_values_callback(power, currents);
+    });
 #endif
 }
 

@@ -40,6 +40,77 @@ struct EVSEV2MeterData {
     uint32_t error_count[6];
 };
 
+struct EVSEV2AllData {
+    // get_all_data_1
+    uint8_t iec61851_state;
+    uint8_t charger_state;
+    uint8_t contactor_state;
+    uint8_t contactor_error;
+    uint16_t allowed_charging_current;
+    uint8_t error_state;
+    uint8_t lock_state;
+    uint8_t dc_fault_current_state;
+    uint8_t jumper_configuration;
+    bool has_lock_switch;
+    uint8_t evse_version;
+    EVSEV2MeterData meter_data;
+
+    // get_all_data_2
+    uint8_t shutdown_input_configuration;
+    uint8_t input_configuration;
+    uint8_t output_configuration;
+    int16_t indication;
+    uint16_t duration;
+    uint16_t color_h;
+    uint8_t color_s;
+    uint8_t color_v;
+    uint8_t button_cfg;
+    uint32_t button_press_time;
+    uint32_t button_release_time;
+    bool button_pressed;
+    bool ev_wakeup_enabled;
+    bool cp_disconnect;
+    bool boost_mode_enabled;
+    int16_t temperature;
+    uint8_t phases_current;
+    uint8_t phases_requested;
+    uint8_t phases_state;
+    uint8_t phases_info;
+    bool phase_auto_switch_enabled;
+    uint8_t phases_connected;
+    uint8_t enumerate_value;
+    uint32_t enumerate_value_change_time;
+    uint8_t phase_switch_wait_time;
+    uint8_t ove_r37_state;
+    uint8_t ove_r37_trip_reason;
+    uint8_t ove_r37_flags;
+    uint8_t energy_meter_display_backlight;
+
+    // get_low_level_state
+    uint8_t led_state;
+    uint16_t cp_pwm_duty_cycle;
+    uint16_t adc_values[7];
+    int16_t voltages[7];
+    uint32_t resistances[2];
+    bool gpio[24];
+    bool car_stopped_charging;
+    uint32_t time_since_state_change;
+    uint32_t time_since_dc_fault_check;
+    uint32_t uptime;
+
+    // get_all_charging_slots
+    uint16_t max_current[20];
+    uint8_t active_and_clear_on_disconnect[20];
+
+    // get_charging_slot_default(CHARGING_SLOT_EXTERNAL)
+    uint16_t external_default_current;
+    bool external_default_enabled;
+    bool external_default_clear_on_disconnect;
+
+    // Set by fetch_all_data() on success, cleared on failure.
+    bool valid;
+};
+
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          tf_evse_v2_create,
                                          tf_evse_v2_get_bootloader_mode,
@@ -109,6 +180,8 @@ protected:
 // To allow the meters_evse_v2 module to get/set energy meter values
 public:
     void update_all_data() override;
+    void fetch_all_data() override;
+    void publish_all_data() override;
     // End IEvseBackend implementation
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -142,6 +215,10 @@ public:
     bool is_shutdown_input_closed();
 
 private:
+    void get_debug_line_impl(StringBuilder *sb);
+
+    EVSEV2AllData all_data;
+
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;
     ConfigRoot gpio_configuration_update;

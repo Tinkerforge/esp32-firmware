@@ -124,7 +124,7 @@ void EVSE::post_register_urls()
         int16_t resistance_880[14];
         user_calibration.get("resistance_880")->fillInt16Array(resistance_880, ARRAY_SIZE(resistance_880));
 
-        is_in_bootloader(tf_evse_set_user_calibration(&device,
+        is_in_bootloader(io_scheduler.hal_call([&]() { return tf_evse_set_user_calibration(&device,
             0xCA11B4A0,
             user_calibration.get("user_calibration_active")->asBool(),
             user_calibration.get("voltage_diff")->asInt(),
@@ -132,23 +132,23 @@ void EVSE::post_register_urls()
             user_calibration.get("voltage_div")->asInt(),
             user_calibration.get("resistance_2700")->asInt(),
             resistance_880
-            ));
+            ); }));
     }, true);
 }
 
 void EVSE::factory_reset()
 {
-    tf_evse_factory_reset(&device, 0x2342FACD);
+    io_scheduler.hal_call([this]() { return tf_evse_factory_reset(&device, 0x2342FACD); });
 }
 
 void EVSE::set_data_storage(uint8_t page, const uint8_t *data)
 {
-    tf_evse_set_data_storage(&device, page, data);
+    io_scheduler.hal_call([this, page, data]() { return tf_evse_set_data_storage(&device, page, data); });
 }
 
 void EVSE::get_data_storage(uint8_t page, uint8_t *data)
 {
-    tf_evse_get_data_storage(&device, page, data);
+    io_scheduler.hal_call([this, page, data]() { return tf_evse_get_data_storage(&device, page, data); });
 }
 
 void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status)
@@ -157,47 +157,47 @@ void EVSE::set_indicator_led(int16_t indication, uint16_t duration, uint16_t col
     (void)color_h;
     (void)color_s;
     (void)color_v;
-    tf_evse_set_indicator_led(&device, indication, duration, ret_status);
+    io_scheduler.hal_call([&]() { return tf_evse_set_indicator_led(&device, indication, duration, ret_status); });
 }
 
 void EVSE::set_boost_mode(bool enabled)
 {
-    is_in_bootloader(tf_evse_set_boost_mode(&device, enabled));
+    is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_set_boost_mode(&device, enabled); }));
 }
 
 int EVSE::get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc)
 {
-    return tf_evse_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc);
+    return io_scheduler.hal_call([&]() { return tf_evse_get_charging_slot(&device, slot, ret_current, ret_enabled, ret_reset_on_dc); });
 }
 
 int EVSE::set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc)
 {
-    return tf_evse_set_charging_slot(&device, slot, current, enabled, reset_on_dc);
+    return io_scheduler.hal_call([&]() { return tf_evse_set_charging_slot(&device, slot, current, enabled, reset_on_dc); });
 }
 
 void EVSE::set_charging_slot_max_current(uint8_t slot, uint16_t current)
 {
-    is_in_bootloader(tf_evse_set_charging_slot_max_current(&device, slot, current));
+    is_in_bootloader(io_scheduler.hal_call([this, slot, current]() { return tf_evse_set_charging_slot_max_current(&device, slot, current); }));
 }
 
 void EVSE::set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect)
 {
-    is_in_bootloader(tf_evse_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect));
+    is_in_bootloader(io_scheduler.hal_call([this, slot, clear_on_disconnect]() { return tf_evse_set_charging_slot_clear_on_disconnect(&device, slot, clear_on_disconnect); }));
 }
 
 void EVSE::set_charging_slot_active(uint8_t slot, bool enabled)
 {
-    tf_evse_set_charging_slot_active(&device, slot, enabled);
+    io_scheduler.hal_call([this, slot, enabled]() { return tf_evse_set_charging_slot_active(&device, slot, enabled); });
 }
 
 int EVSE::get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect)
 {
-    return tf_evse_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect);
+    return io_scheduler.hal_call([&]() { return tf_evse_get_charging_slot_default(&device, slot, ret_max_current, ret_enabled, ret_clear_on_disconnect); });
 }
 
 int EVSE::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect)
 {
-    return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
+    return io_scheduler.hal_call([&]() { return tf_evse_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect); });
 }
 
 static const char *debug_header =
@@ -275,6 +275,13 @@ size_t EVSE::get_debug_line_length() const
 }
 
 void EVSE::get_debug_line(StringBuilder *sb)
+{
+    if (!io_scheduler.await([this, sb]() { this->get_debug_line_impl(sb); })) {
+        sb->puts("io await failed");
+    }
+}
+
+void EVSE::get_debug_line_impl(StringBuilder *sb)
 {
     uint8_t iec61851_state;
     uint8_t charger_state;
@@ -412,78 +419,49 @@ void EVSE::get_debug_line(StringBuilder *sb)
 
 void EVSE::update_all_data()
 {
+    if (!io_scheduler.await([this]() { this->fetch_all_data(); })) {
+        return;
+    }
+
+    publish_all_data();
+}
+
+void EVSE::fetch_all_data()
+{
+    // Runs on the task owning the HAL. No Config/API access allowed here.
+    EVSEAllData &d = all_data;
+
+    d.valid = false;
+
     if (!initialized)
         return;
 
-    // get_all_data_1
-    uint8_t iec61851_state;
-    uint8_t charger_state;
-    uint8_t contactor_state;
-    uint8_t contactor_error;
-    uint16_t allowed_charging_current;
-    uint8_t error_state;
-    uint8_t lock_state;
-    uint8_t jumper_configuration;
-    bool has_lock_switch;
-    uint8_t evse_version;
-    bool boost_mode_enabled;
-
-    // get_all_data_2
-    int16_t indication;
-    uint16_t duration;
-    uint32_t button_press_time;
-    uint32_t button_release_time;
-    bool button_pressed;
-
-    // get_low_level_state
-    uint8_t led_state;
-    uint16_t cp_pwm_duty_cycle;
-    uint16_t adc_values[2];
-    int16_t voltages[3];
-    uint32_t resistances[2];
-    bool gpio[5];
-    bool car_stopped_charging;
-    uint32_t time_since_state_change;
-    uint32_t uptime;
-
-    // get_all_charging_slots
-    uint16_t max_current[20];
-    uint8_t active_and_clear_on_disconnect[20];
-
-    // get_user_calibration
-    bool user_calibration_active;
-    int16_t voltage_diff;
-    int16_t voltage_mul;
-    int16_t voltage_div;
-    int16_t resistance_2700;
-    int16_t resistance_880[14];
-
     int rc = tf_evse_get_all_data_1(&device,
-                                    &iec61851_state,
-                                    &charger_state,
-                                    &contactor_state,
-                                    &contactor_error,
-                                    &allowed_charging_current,
-                                    &error_state,
-                                    &lock_state,
-                                    &jumper_configuration,
-                                    &has_lock_switch,
-                                    &evse_version,
-                                    &led_state,
-                                    &cp_pwm_duty_cycle,
-                                    adc_values,
-                                    voltages,
-                                    resistances,
-                                    gpio,
-                                    &car_stopped_charging,
-                                    &time_since_state_change,
-                                    &uptime,
-                                    &indication,
-                                    &duration,
-                                    &button_press_time,
-                                    &button_release_time,
-                                    &button_pressed,
-                                    &boost_mode_enabled);
+                                    &d.iec61851_state,
+                                    &d.charger_state,
+                                    &d.contactor_state,
+                                    &d.contactor_error,
+                                    &d.allowed_charging_current,
+                                    &d.error_state,
+                                    &d.lock_state,
+                                    &d.jumper_configuration,
+                                    &d.has_lock_switch,
+                                    &d.evse_version,
+                                    &d.led_state,
+                                    &d.cp_pwm_duty_cycle,
+                                    d.adc_values,
+                                    d.voltages,
+                                    d.resistances,
+                                    d.gpio,
+                                    &d.car_stopped_charging,
+                                    &d.time_since_state_change,
+                                    &d.uptime,
+                                    &d.indication,
+                                    &d.duration,
+                                    &d.button_press_time,
+                                    &d.button_release_time,
+                                    &d.button_pressed,
+                                    &d.boost_mode_enabled);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_1 %d", rc);
@@ -491,7 +469,7 @@ void EVSE::update_all_data()
         return;
     }
 
-    rc = tf_evse_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
+    rc = tf_evse_get_all_charging_slots(&device, d.max_current, d.active_and_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("slots %d", rc);
@@ -499,15 +477,11 @@ void EVSE::update_all_data()
         return;
     }
 
-    uint16_t external_default_current;
-    bool external_default_enabled;
-    bool external_default_clear_on_disconnect;
-
     rc = tf_evse_get_charging_slot_default(&device,
                                            CHARGING_SLOT_EXTERNAL,
-                                           &external_default_current,
-                                           &external_default_enabled,
-                                           &external_default_clear_on_disconnect);
+                                           &d.external_default_current,
+                                           &d.external_default_enabled,
+                                           &d.external_default_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
         logger.printfln("external slot default %d", rc);
@@ -516,18 +490,65 @@ void EVSE::update_all_data()
     }
 
     rc = tf_evse_get_user_calibration(&device,
-                                      &user_calibration_active,
-                                      &voltage_diff,
-                                      &voltage_mul,
-                                      &voltage_div,
-                                      &resistance_2700,
-                                      resistance_880);
+                                      &d.user_calibration_active,
+                                      &d.voltage_diff,
+                                      &d.voltage_mul,
+                                      &d.voltage_div,
+                                      &d.resistance_2700,
+                                      d.resistance_880);
 
     if (rc != TF_E_OK) {
-        logger.printfln("external slot default %d", rc);
+        logger.printfln("user calibration %d", rc);
         is_in_bootloader(rc);
         return;
     }
+
+    d.valid = true;
+}
+
+void EVSE::publish_all_data()
+{
+    if (!all_data.valid) {
+        return;
+    }
+
+    const EVSEAllData &d = all_data;
+
+    const uint8_t iec61851_state = d.iec61851_state;
+    const uint8_t charger_state = d.charger_state;
+    const uint8_t contactor_state = d.contactor_state;
+    const uint8_t contactor_error = d.contactor_error;
+    const uint16_t allowed_charging_current = d.allowed_charging_current;
+    const uint8_t error_state = d.error_state;
+    const uint8_t lock_state = d.lock_state;
+    const uint8_t jumper_configuration = d.jumper_configuration;
+    const bool has_lock_switch = d.has_lock_switch;
+    const uint8_t evse_version = d.evse_version;
+    const bool boost_mode_enabled = d.boost_mode_enabled;
+    const int16_t indication = d.indication;
+    const uint16_t duration = d.duration;
+    const uint32_t button_press_time = d.button_press_time;
+    const uint32_t button_release_time = d.button_release_time;
+    const bool button_pressed = d.button_pressed;
+    const uint8_t led_state = d.led_state;
+    const uint16_t cp_pwm_duty_cycle = d.cp_pwm_duty_cycle;
+    const uint16_t (&adc_values)[2] = d.adc_values;
+    const int16_t (&voltages)[3] = d.voltages;
+    const uint32_t (&resistances)[2] = d.resistances;
+    const bool (&gpio)[5] = d.gpio;
+    const bool car_stopped_charging = d.car_stopped_charging;
+    const uint32_t time_since_state_change = d.time_since_state_change;
+    const uint32_t uptime = d.uptime;
+    const uint16_t (&max_current)[20] = d.max_current;
+    const uint8_t (&active_and_clear_on_disconnect)[20] = d.active_and_clear_on_disconnect;
+    const uint16_t external_default_current = d.external_default_current;
+    const bool external_default_clear_on_disconnect = d.external_default_clear_on_disconnect;
+    const bool user_calibration_active = d.user_calibration_active;
+    const int16_t voltage_diff = d.voltage_diff;
+    const int16_t voltage_mul = d.voltage_mul;
+    const int16_t voltage_div = d.voltage_div;
+    const int16_t resistance_2700 = d.resistance_2700;
+    const int16_t (&resistance_880)[14] = d.resistance_880;
 
     // We don't allow firmware updates when a vehicle is connected,
     // to be sure a potential EVSE firmware update does not interrupt a
