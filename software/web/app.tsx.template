@@ -105,7 +105,8 @@ function login(username: string, password: string): Promise<boolean> {
         }
 
         xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", true, username, password);
-        xhr.setRequestHeader("X-Connection-Id", util.connection_id);
+        if (util.remoteAccessMode)
+            xhr.setRequestHeader("X-Connection-Id", util.connection_id);
         xhr.send();
     });
 }

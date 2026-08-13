@@ -817,7 +817,9 @@ export function upload(url: string, data: Blob | ArrayBuffer, urgent: boolean, p
 
                 xhr.open("POST", url, true);
                 xhr.setRequestHeader("Accept-Language", get_active_language());
-                xhr.setRequestHeader("X-Connection-Id", connection_id);
+                if (remoteAccessMode)
+                    xhr.setRequestHeader("X-Connection-Id", connection_id);
+
                 xhr.timeout = timeout_ms;
                 if (contentType)
                     xhr.setRequestHeader("Content-Type", contentType);
@@ -845,7 +847,11 @@ export function download(url: string, urgent: boolean, timeout_ms: number = 10*1
                     if (remoteAccessMode) {
                         url = path + (url.startsWith("/") ? "" : "/") + url;
                     }
-                    response = await fetch(url, {signal: abort.signal, headers: {"Accept-Language": get_active_language(), "X-Connection-Id": connection_id}});
+                    let headers: HeadersInit = {"Accept-Language": get_active_language()};
+                    if (remoteAccessMode)
+                        headers["X-Connection-Id"] = connection_id;
+
+                    response = await fetch(url, {signal: abort.signal, headers: headers});
                 } catch (e) {
                     window.clearTimeout(timeout);
                     throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
@@ -882,15 +888,22 @@ export function put(url: string, payload: any, urgent: boolean, timeout_ms: numb
                     if (remoteAccessMode) {
                         url = path + (url.startsWith("/") ? "" : "/") + url;
                     }
+
+                    let headers: HeadersInit = {
+                        "Accept-Language": get_active_language(),
+                        "Content-Type": "application/json; charset=utf-8",
+                    };
+
+                    if (remoteAccessMode)
+                        headers["X-Connection-Id"] = connection_id;
+
+                    response = await fetch(url, {signal: abort.signal, headers: headers});
+
                     response = await fetch(url, {
                         signal: abort.signal,
                         method: "PUT",
                         credentials: 'same-origin',
-                        headers: {
-                            "Accept-Language": get_active_language(),
-                            "X-Connection-Id": connection_id,
-                            "Content-Type": "application/json; charset=utf-8",
-                        },
+                        headers: headers,
                         body: JSON.stringify(payload)})
                 } catch (e) {
                     window.clearTimeout(timeout);
