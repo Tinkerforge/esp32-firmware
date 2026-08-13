@@ -897,8 +897,6 @@ export function put(url: string, payload: any, urgent: boolean, timeout_ms: numb
                     if (remoteAccessMode)
                         headers["X-Connection-Id"] = connection_id;
 
-                    response = await fetch(url, {signal: abort.signal, headers: headers});
-
                     response = await fetch(url, {
                         signal: abort.signal,
                         method: "PUT",
