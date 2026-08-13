@@ -641,10 +641,10 @@ export function parseCIDR(ipWithCidr: string): {ip: string, prefix: string} | nu
     if (!cidrMatch) {
         return null;
     }
-    
+
     const ip = cidrMatch[1];
     const prefixLen = parseInt(cidrMatch[2], 10);
-    
+
     // Validate prefix length based on IP version
     const isIPv6 = ip.includes(':');
     if (isIPv6) {
