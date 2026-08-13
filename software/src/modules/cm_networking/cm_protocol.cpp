@@ -175,45 +175,6 @@ static bool endswith(const char *haystack, const char *needle)
     return memcmp(haystack + haystack_len - needle_len, needle, needle_len) == 0;
 }
 
-struct ManagerTaskArgs {
-    int manager_sock;
-    QueueHandle_t manager_queue;
-};
-
-struct ManagerQueueItem {
-    int len;
-    struct cm_state_packet state_pkt;
-    struct sockaddr_storage source_addr;
-};
-
-#define CM_MANAGER_TASK_STACK_SIZE 1536
-
-struct ManagerTaskData {
-    StaticQueue_t xQueueBuffer;
-    StaticTask_t xTaskBuffer;
-    ManagerTaskArgs args;
-    StackType_t xStack[CM_MANAGER_TASK_STACK_SIZE];
-};
-
-static void manager_task(void *arg)
-{
-    ManagerQueueItem item;
-    memset(&item, 0, sizeof(ManagerQueueItem));
-
-    auto manager_sock = ((ManagerTaskArgs *)arg)->manager_sock;
-    auto manager_queue = ((ManagerTaskArgs *)arg)->manager_queue;
-
-    for (;;) {
-        socklen_t socklen = sizeof(item.source_addr);
-        item.len = recvfrom(manager_sock, &item.state_pkt, sizeof(item.state_pkt), 0, (sockaddr *)&item.source_addr, &socklen);
-        if (item.len == -1)
-            item.len = -errno;
-
-        // If the queue is full, just drop the item.
-        xQueueSendToBack(manager_queue, &item, 0);
-    }
-}
-
 void CMNetworking::register_manager(const char *const *const hosts,
                                     size_t device_count,
                                     const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> &client_update_received_cb,
@@ -272,57 +233,13 @@ void CMNetworking::register_manager(const char *const *const hosts,
         }
     }
 
-    manager_data->manager_sock = create_socket(CHARGE_MANAGER_PORT, true);
+    manager_data->manager_sock = create_socket(CHARGE_MANAGER_PORT, false);
     if (manager_data->manager_sock < 0) {
         logger.printfln("Failed to create manager socket");
         return;
     }
 
-    // LWIP stores LWIP_UDP_RECVMBOX_SIZE (configured to 6)
-    // UDP packets in the socket's receive buffer.
-    // Use a separate task to receive state packets
-    // to free the receive mbox as fast as possible.
-    // The tasks resources may be leaked, because
-    // it will run forever.
-
-    ManagerTaskData *task_data = static_cast<ManagerTaskData *>(calloc_dram(1, sizeof(ManagerTaskData)));
-    if (!task_data) {
-        logger.printfln("Failed to allocate task data");
-        return;
-    }
-
-    uint8_t *queue_storage = static_cast<uint8_t *>(calloc_psram_or_dram(manager_data->managed_device_count, sizeof(ManagerQueueItem)));
-    if (!queue_storage) {
-        logger.printfln("Failed to allocate queue storage");
-        free(task_data);
-        return;
-    }
-
-    QueueHandle_t manager_queue = xQueueCreateStatic(
-        manager_data->managed_device_count,
-        sizeof(ManagerQueueItem),
-        queue_storage,
-        &task_data->xQueueBuffer);
-
-    task_data->args.manager_sock  = manager_data->manager_sock;
-    task_data->args.manager_queue = manager_queue;
-
-    TaskHandle_t xTask = xTaskCreateStatic(
-        manager_task,
-        "cm_manager_recv",
-        sizeof(task_data->xStack),
-        &task_data->args,
-        ESP_TASK_TCPIP_PRIO - 1,
-        task_data->xStack,
-        &task_data->xTaskBuffer);
-
-#if MODULE_DEBUG_AVAILABLE()
-    debug.register_task(xTask, sizeof(task_data->xStack));
-#else
-    (void)xTask;
-#endif
-
-    task_scheduler.scheduleUncancelable([this, client_update_received_cb, client_error_cb, manager_queue](){
+    task_scheduler.scheduleUncancelable([this, client_update_received_cb, client_error_cb](){
         static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
         static bool initialized = false;
         if (!initialized) {
@@ -330,22 +247,21 @@ void CMNetworking::register_manager(const char *const *const hosts,
             initialized = true; // FIXME: delayed initialization doesn't show in frontend
         }
 
-        ManagerQueueItem item;
+        struct cm_state_packet state_pkt;
+        struct sockaddr_storage source_addr;
 
-        // Try to receive up to four packets in one go to catch up on the backlog.
+        // LWIP stores CONFIG_LWIP_UDP_RECVMBOX_SIZE UDP packets in the socket's receive buffer.
+        // Try to receive multiple packets in one go to catch up on the backlog.
         // Don't receive every available packet to smooth out bursts of packets.
         static_assert(MAX_CONTROLLED_CHARGERS <= 64);
         for (int poll_ctr = 0; poll_ctr < 10; ++poll_ctr) {
-            if (!xQueueReceive(manager_queue, &item, 0))
-                return;
-
-            int len = item.len;
-            struct cm_state_packet &state_pkt = item.state_pkt;
-            struct sockaddr_storage &source_addr = item.source_addr;
+            socklen_t socklen = sizeof(source_addr);
+            int len = recvfrom(manager_data->manager_sock, &state_pkt, sizeof(state_pkt), MSG_DONTWAIT, (sockaddr *)&source_addr, &socklen);
 
             if (len < 0) {
-                if (len != -EAGAIN && len != -EWOULDBLOCK)
-                    logger.printfln("recvfrom failed: %s", strerror(-len));
+                if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                    logger.printfln("recvfrom failed: %s (%i)", strerror(errno), errno);
+                }
                 return;
             }
 
@@ -440,7 +356,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 this->send_state_packet(&state_pkt);
             }
         }
-    }, 50_ms, 50_ms);
+    }, 50_ms, manager_data->managed_device_count > 8 ? 50_ms : 100_ms);
 
 #if MODULE_NETWORK_AVAILABLE()
     // Must schedule a task because this runs before the REGISTER_EVENTS stage.
