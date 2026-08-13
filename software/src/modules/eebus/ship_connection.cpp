@@ -306,10 +306,6 @@ void ShipConnection::send_current_outgoing_message()
 
 void ShipConnection::send_string(const char *str, const int length, const int msg_classifier)
 {
-    if (!message_outgoing) {
-        message_outgoing = make_unique_psram<Message>();
-        eebus.trace_fmtln("ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
-    }
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
     eebus.trace_strln(str, length);
