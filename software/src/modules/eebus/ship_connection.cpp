@@ -271,12 +271,13 @@ void ShipConnection::send_current_outgoing_message()
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("Sending Websocket message");
 #endif
-    if (message_outgoing->length == 0) {
-        return;
-    }
+
     if (!message_outgoing) {
         eebus.trace_fmtln("message_outgoing is NULL!");
         logger.printfln("an error occurred while sending a message. Check tracelog for details.");
+        return;
+    }
+    if (message_outgoing->length == 0) {
         return;
     }
     if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
