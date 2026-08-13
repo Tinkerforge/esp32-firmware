@@ -33,6 +33,9 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+void meters_rs485_publish_on_main(std::function<void(void)> &&fn);
+void meters_rs485_bump_error_counter(Config *errors, const char *key);
+
 class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
                                                       tf_rs485_create,
                                                       tf_rs485_get_bootloader_mode,

@@ -62,15 +62,44 @@ void RtcBricklet::set_time(const tm &date_time, int32_t microseconds)
     if (wday == 0)
         wday = 7;
 
-    auto ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, csec, wday);
+    int ret = 0;
+    auto set = [&]() {
+        ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, csec, wday);
+    };
+
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    if (!io_scheduler.await(std::move(set))) {
+        logger.printfln("Setting RTC failed: IO task did not run the request");
+        return;
+    }
+#else
+    set();
+#endif
+
     if (ret)
         logger.printfln("Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed with code %i", year, mon, day, hour, min, sec, wday, ret);
 }
 
 struct timeval RtcBricklet::get_time()
 {
-    int64_t ts;
-    int ret = tf_real_time_clock_v2_get_timestamp(&device, &ts);
+    int64_t ts = 0;
+    int ret = 0;
+    auto get = [&]() {
+        ret = tf_real_time_clock_v2_get_timestamp(&device, &ts);
+    };
+
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    if (!io_scheduler.await(std::move(get))) {
+        logger.printfln("Reading RTC failed: IO task did not run the request");
+        struct timeval tmp;
+        tmp.tv_sec = 0;
+        tmp.tv_usec = 0;
+        return tmp;
+    }
+#else
+    get();
+#endif
+
     if (ret) {
         logger.printfln("Reading RTC failed with code %i", ret);
         struct timeval tmp;

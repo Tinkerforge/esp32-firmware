@@ -839,7 +839,11 @@ void API::register_urls()
 
             // Ignore await results here:
             // Half a debug report is better than nothing.
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+            (void)io_scheduler.await([&json](){
+#else
             (void)task_scheduler.await([&json](){
+#endif
                 uint16_t i = 0;
                 char uid_str[7] = {0};
                 // We need a string below. tf_hal_get_device_info will only write the first char.
@@ -861,7 +865,11 @@ void API::register_urls()
                 json.endArray();
             });
 
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+            (void)io_scheduler.await([&json](){
+#else
             (void)task_scheduler.await([&json](){
+#endif
                 json.addMemberArray("error_counters");
                 for (char c = 'A'; c <= 'F'; ++c) {
                     uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;

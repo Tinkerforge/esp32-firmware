@@ -40,14 +40,10 @@ void NFCBricklet::setup()
     if (!device_found)
         return;
 
+    // nfc.register_backend() schedules the periodic check_state() call.
     nfc.register_backend(this);
 
     api.addFeature("nfc");
-
-
-    task_scheduler.scheduleUncancelable([this]() {
-        this->check_state();
-    }, 5_min, 5_min);
 
     initialized = true;
 }

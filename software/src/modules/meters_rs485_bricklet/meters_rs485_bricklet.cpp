@@ -29,6 +29,22 @@
 
 //#include "gcc_warnings.h"
 
+void meters_rs485_publish_on_main(std::function<void(void)> &&fn)
+{
+    if (running_in_main_task()) {
+        fn();
+    } else {
+        task_scheduler.scheduleOnce(std::move(fn));
+    }
+}
+
+void meters_rs485_bump_error_counter(Config *errors, const char *key)
+{
+    meters_rs485_publish_on_main([errors, key]() {
+        errors->get(key)->updateUint(errors->get(key)->asUint() + 1);
+    });
+}
+
 MetersRS485Bricklet::MetersRS485Bricklet() : DeviceModule(rs485_bricklet_firmware_bin_data,
                                                           rs485_bricklet_firmware_bin_length,
                                                           "rs485",
@@ -113,20 +129,21 @@ void MetersRS485Bricklet::setupRS485()
 
 void MetersRS485Bricklet::checkRS485State()
 {
+    // Runs on the IO task.
     uint8_t mode = 0;
     int result = tf_rs485_get_mode(&device, &mode);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
             logger.printfln("Failed to get RS485 mode, rc: %d", result);
             if (meter_instance != nullptr)
-                meter_instance->errors->get("bricklet")->updateUint(meter_instance->errors->get("bricklet")->asUint() + 1);
+                meters_rs485_bump_error_counter(meter_instance->errors, "bricklet");
         }
         return;
     }
     if (mode != TF_RS485_MODE_MODBUS_MASTER_RTU) {
         logger.printfln("RS485 mode invalid (%u). Did the Bricklet reset?", mode);
         if (meter_instance != nullptr)
-            meter_instance->errors->get("bricklet_reset")->updateUint(meter_instance->errors->get("bricklet_reset")->asUint() + 1);
+            meters_rs485_bump_error_counter(meter_instance->errors, "bricklet_reset");
         setupRS485();
     } else if (meter_instance != nullptr && meter_instance->meter_in_use == nullptr) {
         // Bricklet is fine, but reading the energy meter's type failed.
@@ -137,12 +154,16 @@ void MetersRS485Bricklet::checkRS485State()
 void MetersRS485Bricklet::setup()
 {
     setupRS485();
-    if (!device_found)
+    if (!device_found) {
         return;
+    }
 
-    task_scheduler.scheduleUncancelable([this](){
-        this->checkRS485State();
-    }, 10_s, 10_s);
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() { this->checkRS485State(); },
+        nullptr,
+        10_s, 10_s
+    );
 }
 
 void MetersRS485Bricklet::register_urls()

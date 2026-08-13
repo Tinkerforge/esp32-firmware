@@ -61,19 +61,26 @@ void ESP32EthernetV2CoBricklet::setup()
 
     rtc.register_backend(this);
 
-    task_scheduler.scheduleUncancelable([this](){
-        int16_t temperature = 0;
-        const int rc = tf_warp_esp32_ethernet_v2_co_get_temperature(&device, &temperature);
-        if (rc != TF_E_OK) {
-            logger.printfln("Failed to get temperature: error %i", rc);
-        } else {
-            state.get("temperature")->updateInt(temperature);
-        }
-    }, 1_s, 1_s);
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() {
+            const int rc = tf_warp_esp32_ethernet_v2_co_get_temperature(&device, &temperature_staging);
+
+            temperature_valid = rc == TF_E_OK;
+
+            if (rc != TF_E_OK) {
+                logger.printfln("Failed to get temperature: error %i", rc);
+            }
+        },
+        [this]() {
+            if (temperature_valid) {
+                state.get("temperature")->updateInt(temperature_staging);
+            }
+        },
+        1_s, 1_s);
 
     initialized = true;
 }
-
 
 void ESP32EthernetV2CoBricklet::register_urls()
 {
@@ -82,16 +89,18 @@ void ESP32EthernetV2CoBricklet::register_urls()
 
 void ESP32EthernetV2CoBricklet::set_time(const tm &date_time, int32_t microseconds)
 {
-    const int rc = tf_warp_esp32_ethernet_v2_co_set_date_time(
-        &device,
-        static_cast<uint8_t >(date_time.tm_sec),
-        static_cast<uint8_t >(date_time.tm_min),
-        static_cast<uint8_t >(date_time.tm_hour),
-        static_cast<uint8_t >(date_time.tm_mday - 1),
-        static_cast<uint8_t >(date_time.tm_wday),
-        static_cast<uint8_t >(date_time.tm_mon),
-        static_cast<uint16_t>(date_time.tm_year)
-    );
+    const int rc = io_scheduler.hal_call([&]() {
+        return tf_warp_esp32_ethernet_v2_co_set_date_time(
+            &device,
+            static_cast<uint8_t >(date_time.tm_sec),
+            static_cast<uint8_t >(date_time.tm_min),
+            static_cast<uint8_t >(date_time.tm_hour),
+            static_cast<uint8_t >(date_time.tm_mday - 1),
+            static_cast<uint8_t >(date_time.tm_wday),
+            static_cast<uint8_t >(date_time.tm_mon),
+            static_cast<uint16_t>(date_time.tm_year)
+        );
+    });
 
     if (rc != TF_E_OK) {
         logger.printfln("Failed to set datetime: error %i", rc);
@@ -114,7 +123,9 @@ struct timeval ESP32EthernetV2CoBricklet::get_time()
     uint8_t tm_mon;
     uint16_t tm_year;
 
-    const int rc = tf_warp_esp32_ethernet_v2_co_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
+    const int rc = io_scheduler.hal_call([&]() {
+        return tf_warp_esp32_ethernet_v2_co_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
+    });
 
     if (rc != TF_E_OK) {
         logger.printfln("Failed to get datetime: error %i", rc);
@@ -157,7 +168,10 @@ void ESP32EthernetV2CoBricklet::set_blue_led(const bool on)
         return;
     }
 
-    const int rc = tf_warp_esp32_ethernet_v2_co_set_led(&device, on ? TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_ON : TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_OFF);
+    const int rc = io_scheduler.hal_call([&]() {
+        return tf_warp_esp32_ethernet_v2_co_set_led(&device, on ? TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_ON : TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_OFF);
+    });
+
     if (rc != TF_E_OK) {
         logger.printfln("Failed to set led: error %i", rc);
     }

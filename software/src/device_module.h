@@ -27,6 +27,8 @@
 #include "TFTools/Micros.h"
 #include "bindings/hal_common.h"
 
+void device_module_run_on_hal_owner(std::function<void(void)> &&fn);
+
 class DeviceModuleBase : public IModule
 {
 public:
@@ -99,7 +101,7 @@ public:
 
     void reset() override
     {
-        reset_function(&device);
+        device_module_run_on_hal_owner([this]() { reset_function(&device); });
     }
 
     int init(const char *id, TF_HAL *hal) override

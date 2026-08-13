@@ -245,9 +245,17 @@ void NFC::register_backend(INfcBackend *_backend)
 
     backend = _backend;
 
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() { this->backend->check_state(); },
+        nullptr,
+        5_min, 5_min);
+#else
     task_scheduler.scheduleUncancelable([this]() {
         this->backend->check_state();
     }, 5_min, 5_min);
+#endif
 }
 
 int16_t NFC::get_user_id(const tag_t &tag)
@@ -334,14 +342,17 @@ void NFC::remote_tag_seen(uint8_t tag_type, const uint8_t *tag_id, uint8_t tag_i
 #endif
 }
 
-void NFC::update_seen_tags()
+void NFC::fetch_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
         if (!backend || !backend->get_tag_id(i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen)) {
             continue;
         }
     }
+}
 
+void NFC::update_seen_tags()
+{
     // The NFC bricklet removes tags after 24h. Do the same with injected tags.
     if (last_tag_injection == 0_us || deadline_elapsed(last_tag_injection + 24_h)) {
         last_tag_injection = 0_us;
@@ -472,9 +483,18 @@ void NFC::setup()
     automation.set_enabled(AutomationActionID::NFCInjectTag, true);
 #endif
 
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() { this->fetch_seen_tags(); },
+        [this]() { this->update_seen_tags(); },
+        0_ms, 300_ms);
+#else
     task_scheduler.scheduleUncancelable([this]() {
+        this->fetch_seen_tags();
         this->update_seen_tags();
     }, 300_ms);
+#endif
 
     initialized = true;
 }

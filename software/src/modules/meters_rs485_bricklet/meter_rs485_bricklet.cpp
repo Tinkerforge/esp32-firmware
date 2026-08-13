@@ -21,6 +21,8 @@
 
 #include "meter_rs485_bricklet.h"
 
+#include <atomic>
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "meters_rs485_bricklet.h"
@@ -36,6 +38,11 @@
 
 static uint16_t write_buf[100];
 static uint16_t registers[400];
+
+// While set, the main task reads values directly out of registers[], so the
+// IO task must not issue Modbus reads.
+// Set on the IO task, cleared on the main task.
+static std::atomic<bool> publish_in_flight = false;
 
 static const MeterInfo * const supported_meters[] = {
     &sdm72dm,
@@ -63,15 +70,19 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
     }
 
     this->meter_type = this->meter_in_use->meter_type;
-    state->get("type")->updateUint(meter_type);
-
-    meters.declare_value_ids(slot, ids, id_count);
 
     value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
     value_index_energy_rel = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSumResettable);
     value_index_energy_abs = meters_find_id_index(ids, id_count, MeterValueID::EnergyActiveLSumImExSum);
     value_index_current_l1 = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
     value_index_voltage_l1 = meters_find_id_index(ids, id_count, MeterValueID::VoltageL1N);
+
+    // Config/API state has to be written on the main task.
+    // "ids" points into a static table, so the pointer stays valid.
+    meters_rs485_publish_on_main([this, ids, id_count]() {
+        state->get("type")->updateUint(meter_type);
+        meters.declare_value_ids(slot, ids, id_count);
+    });
 }
 
 void MeterRS485Bricklet::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length) {
@@ -233,9 +244,12 @@ void MeterRS485Bricklet::setup(Config *ephemeral_config)
         return;
     }
 
-    task_scheduler.scheduleUncancelable([this]() {
-        this->tick();
-    }, 10_ms);
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() { this->tick(); },
+        nullptr,
+        0_ms, 10_ms
+    );
 }
 
 bool MeterRS485Bricklet::reset()
@@ -306,7 +320,9 @@ void MeterRS485Bricklet::tick()
         reset_requested = false;
 
         if (this->meter_in_use->custom_reset_fn != nullptr) {
-            this->meter_in_use->custom_reset_fn(slot, sdm630_reset);
+            meters_rs485_publish_on_main([this, m = meter_in_use]() {
+                m->custom_reset_fn(slot, sdm630_reset);
+            });
         } else {
             callback_data.done = UserDataDone::NOT_DONE;
             callback_data.value_to_write = nullptr;
@@ -321,27 +337,54 @@ void MeterRS485Bricklet::tick()
         return;
     }
 
-    bool trigger_fast_read_done;
-    bool trigger_slow_read_done;
-    const RegRead *next_read = getNextRead(&trigger_fast_read_done, &trigger_slow_read_done);
+    if (publish_in_flight) {
+        // Main task is accessing registers[]
+        return;
+    }
+
+    bool trigger_fast_read_done = false;
+    bool trigger_slow_read_done = false;
+    const RegRead *next_read = deferred_read;
+
+    if (next_read != nullptr) {
+        deferred_read = nullptr;
+    } else {
+        next_read = getNextRead(&trigger_fast_read_done, &trigger_slow_read_done);
+    }
 
     auto last_callback_data_done = callback_data.done;
 
-    callback_data.value_to_write = &registers[next_read->start - 1];
-    callback_data.done = UserDataDone::NOT_DONE;
-    callback_data.expected_request_id = 0;
-    /*TODO is_in_bootloader(*/tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id)/*)*/;
-    if (callback_data.expected_request_id == 0) {
-        logger.printfln_meter("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
-        generator->checkRS485State();
-    }
+    if (trigger_fast_read_done || trigger_slow_read_done) {
+        // A read cycle completed. Publish directly from registers[] on the
+        // main task and defer the first read of the new cycle until the
+        // publish is done.
+        deferred_read = next_read;
+        publish_in_flight = true;
 
-    if (trigger_fast_read_done) {
-        this->meter_in_use->fast_read_done_fn(registers, slot, value_index_power, value_index_energy_rel, value_index_energy_abs, value_index_current_l1, value_index_voltage_l1);
-    }
+        callback_data.done = UserDataDone::DONE;
+        callback_data.value_to_write = nullptr;
+        callback_data.expected_request_id = 0;
 
-    if (trigger_slow_read_done) {
-        this->meter_in_use->slow_read_done_fn(registers, slot, sdm630_reset);
+        task_scheduler.scheduleOnce([this, m = meter_in_use, fast_done = trigger_fast_read_done, slow_done = trigger_slow_read_done]() {
+            if (fast_done) {
+                m->fast_read_done_fn(registers, slot, value_index_power, value_index_energy_rel, value_index_energy_abs, value_index_current_l1, value_index_voltage_l1);
+            }
+
+            if (slow_done) {
+                m->slow_read_done_fn(registers, slot, sdm630_reset);
+            }
+
+            publish_in_flight = false;
+        });
+    } else {
+        callback_data.value_to_write = &registers[next_read->start - 1];
+        callback_data.done = UserDataDone::NOT_DONE;
+        callback_data.expected_request_id = 0;
+        /*TODO is_in_bootloader(*/tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id)/*)*/;
+        if (callback_data.expected_request_id == 0) {
+            logger.printfln_meter("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
+            generator->checkRS485State();
+        }
     }
 
     if (last_callback_data_done == UserDataDone::DONE) {
@@ -354,10 +397,10 @@ void MeterRS485Bricklet::tick()
         }
     } else if (last_callback_data_done == UserDataDone::ERROR) {
         next_read_deadline = now_us() + 500_ms;
-        errors->get("meter")->updateUint(errors->get("meter")->asUint() + 1);
+        meters_rs485_bump_error_counter(errors, "meter");
     } else {
         next_read_deadline = now_us() + 500_ms;
-        errors->get("bricklet")->updateUint(errors->get("bricklet")->asUint() + 1);
+        meters_rs485_bump_error_counter(errors, "bricklet");
     }
 
     // This protects against lost callback responses.

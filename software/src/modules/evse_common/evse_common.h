@@ -116,6 +116,9 @@ protected:
     // End: Pass through to bindings functions
 
     virtual void update_all_data() = 0;
+
+    virtual void fetch_all_data() = 0;
+    virtual void publish_all_data() = 0;
 };
 
 class EvseCommon final : public IModule
