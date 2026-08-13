@@ -806,6 +806,7 @@ WebServerHandler *WebServer::addHandler(uint16_t port,
 
 void WebServer::register_extra_port(WebServerExtraPortData *port_data)
 {
+#if HTTPS_AVAILABLE()
     if (boot_stage > BootStage::SETUP) {
         esp_system_abort("Extra ports can only be registered in (pre)setup");
     }
@@ -814,6 +815,10 @@ void WebServer::register_extra_port(WebServerExtraPortData *port_data)
 
     port_data->next = extra_ports;
     extra_ports = port_data;
+#else
+    logger.printfln("Extra ports require HTTPS support. Not listening on port %hu", port_data->port);
+    free(port_data);
+#endif
 }
 
 #if HTTPS_AVAILABLE()
