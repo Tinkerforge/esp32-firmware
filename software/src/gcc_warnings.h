@@ -15,6 +15,20 @@
 
 // We have to add the switch default to satisfy GCC.
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
+
+// flags that are ignored in GCC
+// Also ignore those in Clang.
+// Don't ignore flags that are ignored in GCC because they create too much errors.
+// This prevents us (me) from writing more offending code.
+#pragma clang diagnostic ignored "-Wabi"
+#pragma clang diagnostic ignored "-Wnoexcept-type"
+#pragma clang diagnostic ignored "-Waggregate-return"
+#pragma clang diagnostic ignored "-Wlong-long"
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#ifndef __cplusplus
+#pragma clang diagnostic ignored "-Woverlength-strings"
+#pragma clang diagnostic ignored "-Wsynth"
+#endif
 #endif
 
 // Use check_gcc_warnings.py when updating the compiler to find new warnings to enable.
