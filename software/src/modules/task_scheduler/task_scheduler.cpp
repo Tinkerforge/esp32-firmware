@@ -274,7 +274,7 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
 
     if (!wall_clock_worker_started) {
         wall_clock_worker_started = true;
-        this->scheduleUncancelable([this](){this->wall_clock_worker();}, 0_ms, 1_s /* Don't forward src_location. */); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
+        this->scheduleUncancelable([this](){this->wall_clock_worker();}, 0_ms, 1_s /* Don't forward src_location. */); // The delay will be modified after time sync.
     }
 
     return task_id;
@@ -431,8 +431,18 @@ void TaskScheduler::wall_clock_worker() {
     tm time_struct;
     gmtime_r(&tv.tv_sec, &time_struct);
 
-    if (time_struct.tm_min == last_minute)
+    if (time_struct.tm_min == last_minute) {
+        // If we somehow managed to hit the same minute or this is a leap second, check again in one second.
+        this->currentTask->delay = 1_s;
         return;
+    }
+
+    // Blatantly abuse the fact that we're running in the context of the task scheduler and can modify our own delay.
+    // Schedule the next wall clock worker run right on the next minute.
+    // This ignores the worker's run-time, but as it's in the 1ms range, it should be negligible, considering the system's 1000Hz system timer.
+    // Don't subtract a millisecond as compensation, to avoid accidentally running again before the minute changes.
+    // Sleep at least 524ms, to protect against leap seconds or unexpected underflows.
+    this->currentTask->delay = micros_t{std::max((60l - time_struct.tm_sec) * 1000000l - tv.tv_usec, 524288l)};
 
     auto minutes_since_midnight = minutes_t{time_struct.tm_hour * 60 + time_struct.tm_min};
 
