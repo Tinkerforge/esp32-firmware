@@ -45,10 +45,12 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    typedef std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> ManagerClientUpdateReceivedCallback;
+    typedef std::function<void(uint8_t, ClientError)> ManagerClientErrorCallback;
     void register_manager(const char *const *const hosts,
                           size_t device_count,
-                          const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> &client_update_received_cb,
-                          const std::function<void(uint8_t, ClientError)> &client_error_cb);
+                          ManagerClientUpdateReceivedCallback &&client_update_received_cb,
+                          ManagerClientErrorCallback &&client_error_cb);
 
     bool send_manager_update(uint8_t client_id,
                              bool ignore_allocation,
@@ -61,7 +63,8 @@ public:
                              bool central_user_management_enabled,
                              bool central_charge_logging_enabled);
 
-    void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb);
+    typedef std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> ClientManagerUpdateReceivedCallback;
+    void register_client(ClientManagerUpdateReceivedCallback &&manager_update_received_cb);
     void get_manager_ip(char buf[INET_ADDRSTRLEN]);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
@@ -107,9 +110,13 @@ private:
         HostAddressType host_address_type;
         ResolveState resolve_state;
         uint8_t device_index;
+        uint16_t last_seen_seq_num;
     };
 
     struct manager_data_t {
+        ManagerClientUpdateReceivedCallback client_update_received_cb;
+        ManagerClientErrorCallback client_error_cb;
+
         int manager_sock;
 
         bool connected;

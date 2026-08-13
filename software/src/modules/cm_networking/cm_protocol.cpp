@@ -177,15 +177,20 @@ static bool endswith(const char *haystack, const char *needle)
 
 void CMNetworking::register_manager(const char *const *const hosts,
                                     size_t device_count,
-                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> &client_update_received_cb,
-                                    const std::function<void(uint8_t, ClientError)> &client_error_cb)
+                                    ManagerClientUpdateReceivedCallback &&client_update_received_cb,
+                                    ManagerClientErrorCallback &&client_error_cb)
 {
-    const size_t sz = offsetof(struct manager_data_t, managed_devices) + sizeof(manager_data->managed_devices[0]) * device_count;
+    // This should use offsetof(struct manager_data_t, managed_devices), but that's not allowed due to the std::functions inside the structure.
+    // Using sizeof instead might add a little overhead, depending on trailing padding of the structure.
+    const size_t sz = sizeof(struct manager_data_t) + sizeof(manager_data->managed_devices[0]) * device_count;
     manager_data = static_cast<decltype(manager_data)>(malloc(sz));
     if (!manager_data) {
         logger.printfln("Cannoc allocate memory for manager data");
         return;
     }
+
+    new(&manager_data->client_update_received_cb) ManagerClientUpdateReceivedCallback{std::move(client_update_received_cb)};
+    new(&manager_data->client_error_cb) ManagerClientErrorCallback{std::move(client_error_cb)};
 
     manager_data->dns_resolver_active = false;
     manager_data->connected = false;
@@ -198,6 +203,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
         device->hostname = hostname;
         device->last_resolve_attempt = 0_us;
         device->device_index = i;
+        device->last_seen_seq_num = std::numeric_limits<decltype(device->last_seen_seq_num)>::max();
 
         // Initialize address as sockaddr_in6 for dual-stack socket.
         // IPv4 peers are represented as IPv4-mapped IPv6 addresses (::ffff:x.x.x.x).
@@ -239,14 +245,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
         return;
     }
 
-    task_scheduler.scheduleUncancelable([this, client_update_received_cb, client_error_cb](){
-        static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
-        static bool initialized = false;
-        if (!initialized) {
-            memset(last_seen_seq_num, 255, sizeof(last_seen_seq_num));
-            initialized = true; // FIXME: delayed initialization doesn't show in frontend
-        }
-
+    task_scheduler.scheduleUncancelable([this]() {
         struct cm_state_packet state_pkt;
         struct sockaddr_storage source_addr;
 
@@ -312,25 +311,27 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 source_str,
                                 len,
                                 validation_error.c_str());
-                if (client_error_cb) {
-                    client_error_cb(charger_idx, ClientError::InvalidHeader);
+                if (manager_data->client_error_cb) {
+                    manager_data->client_error_cb(charger_idx, ClientError::InvalidHeader);
                 }
                 return;
             }
 
-            if (seq_num_invalid(state_pkt.header.seq_num, last_seen_seq_num[charger_idx])) {
+            uint16_t *last_seen_seq_num = &manager_data->managed_devices[charger_idx].last_seen_seq_num;
+
+            if (seq_num_invalid(state_pkt.header.seq_num, *last_seen_seq_num)) {
                 char source_str[INET6_ADDRSTRLEN];
                 tf_ipaddr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
                                 get_charger_name(charger_idx),
                                 source_str,
-                                last_seen_seq_num[charger_idx],
+                                *last_seen_seq_num,
                                 state_pkt.header.seq_num);
                 return;
             }
 
-            last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
+            *last_seen_seq_num = state_pkt.header.seq_num;
 
             if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
                 char source_str[INET6_ADDRSTRLEN];
@@ -340,8 +341,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 get_charger_name(charger_idx),
                                 source_str);
 
-                if (client_error_cb) {
-                    client_error_cb(charger_idx, ClientError::NotManaged);
+                if (manager_data->client_error_cb) {
+                    manager_data->client_error_cb(charger_idx, ClientError::NotManaged);
                 }
                 return;
             }
@@ -350,8 +351,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
             em_phase_switcher.filter_state_packet(charger_idx, &state_pkt);
 #endif
 
-            if (client_update_received_cb) {
-                client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr, state_pkt.header.version >= 5 ? &state_pkt.v5 : nullptr);
+            if (manager_data->client_update_received_cb) {
+                manager_data->client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr, state_pkt.header.version >= 5 ? &state_pkt.v5 : nullptr);
             } else {
                 this->send_state_packet(&state_pkt);
             }
@@ -467,7 +468,7 @@ void CMNetworking::get_manager_ip(char buf[INET_ADDRSTRLEN])
     }
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb)
+void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -476,7 +477,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
 
     memset(&manager_addr, 0, sizeof(manager_addr));
 
-    task_scheduler.scheduleUncancelable([this, manager_update_received_cb](){
+    task_scheduler.scheduleUncancelable([this, manager_update_received_cb = std::move(manager_update_received_cb)](){
         static uint16_t last_seen_seq_num = 255;
         static micros_t last_successful_recv = now_us();
 
