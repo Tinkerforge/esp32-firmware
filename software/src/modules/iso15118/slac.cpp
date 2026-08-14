@@ -640,6 +640,13 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         return;
     }
 
+    // Discard a possibly stale IPv6-received flag from a previous session.
+    // The flag is set on every received IPv6 frame (also during LinkDetected,
+    // where it is never cleared), so without this reset a leftover flag can
+    // immediately trigger the WaitForSDP -> LinkDetected transition before the
+    // EV actually joined the new logical network.
+    iso15118.qca700x.check_and_clear_ipv6_received();
+
     // SLAC complete. Wait for "Link detected" (first IPv6/SDP packet from EV).
     next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFICATION_MAX;
     state = SLACState::WaitForSDP;
@@ -650,7 +657,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         link_up_task = 0;
 
         // Only report link_up if we are still waiting for the EV to join the PLC network.
-        if (state != SLACState::WaitForSDP) {
+        if (state != SLACState::WaitForSDP && state != SLACState::LinkDetected) {
             iso15118.trace("SLAC: Skipping stale link_up, state changed");
             return;
         }
