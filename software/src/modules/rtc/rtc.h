@@ -93,6 +93,8 @@ private:
 
     std::vector<IRtcBackend *> backends;
 
+    bool force_full_state_update = true;
+
     Quality last_sync_quality = Quality::None;
     micros_t last_sync = -1000_h;
     micros_t last_sync_ok_deadline = -1000_h;

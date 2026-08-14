@@ -121,24 +121,29 @@ void Rtc::register_urls() {
         if (!timestamp_acceptable(tv))
             return;
 
+        const bool full_update = force_full_state_update;
+        force_full_state_update = false;
+
         struct tm tm{};
         gmtime_r(&tv.tv_sec, &tm);
 
-        time.get("year")->updateUint(tm.tm_year + 1900);
-        time.get("month")->updateUint(tm.tm_mon + 1);
-        time.get("day")->updateUint(tm.tm_mday);
-        time.get("hour")->updateUint(tm.tm_hour);
+        // Run shortly after a full second because we know that the wall clock task runs when the second changes.
+        task_scheduler.updateCurrentTaskDelay(micros_t{std::max(1005000L - tv.tv_usec, 262144L)});
+
+        if (!time.get("second")->updateUint(tm.tm_sec) && !full_update) return;
+        if (!time.get("minute")->updateUint(tm.tm_min) && !full_update) return;
 
 #if MODULE_NTP_AVAILABLE()
-        if (time.get("minute")->updateUint(tm.tm_min))
-            ntp.set_api_time(tv);
-#else
-        time.get("minute")->updateUint(tm.tm_min);
+        ntp.set_api_time(tv);
 #endif
 
-        time.get("second")->updateUint(tm.tm_sec);
+        if (!time.get("hour")->updateUint(tm.tm_hour) && !full_update) return;
+        if (!time.get("day")->updateUint(tm.tm_mday) && !full_update) return;
         time.get("weekday")->updateUint(tm.tm_wday);
-    }, 200_ms);
+
+        if (!time.get("month")->updateUint(tm.tm_mon + 1) && !full_update) return;
+        time.get("year")->updateUint(tm.tm_year + 1900);
+    }, 1_s);
 
     task_scheduler.scheduleUncancelable([this]() {
         update_system_time_from_rtc();
@@ -293,6 +298,9 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             this->update_rtc_from_system_time(0);
         }, millis_t{((1000 * 1000) - time.tv_usec + 999) / 1000});
     }
+
+    force_full_state_update = true;
+
     return true;
 }
 
