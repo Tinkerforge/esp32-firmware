@@ -141,6 +141,7 @@ public:
 
     bool rescheduleNow(uint64_t task_id);
     bool updateDelay(uint64_t task_id, micros_t new_delay);
+    bool updateCurrentTaskDelay(micros_t new_delay);
 
 private:
     bool await(uint64_t task_id, millis_t millis_to_wait = 10_s);

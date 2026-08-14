@@ -323,12 +323,11 @@ uint64_t TaskScheduler::currentTaskId()
         return 0;
     }
 
-    std::lock_guard<std::mutex> lock{this->task_mutex};
     if (this->currentTask != nullptr) {
         if (this->currentTask->task_id != 0) {
             return this->currentTask->task_id;
         }
-        esp_system_abort("Calling currentTaskId is not allowed in an uncancelable task!");
+        esp_system_abort("Calling currentTaskId is not allowed in an uncancelable task!"); // Error message might be obsolete, but the zero-check should stay.
     } else {
         esp_system_abort("Calling currentTaskId is not allowed outside of task code!");
     }
@@ -529,5 +528,23 @@ bool TaskScheduler::updateDelay(uint64_t task_id, micros_t new_delay) {
 
     this->tasks.restoreHeap();
 
+    return true;
+}
+
+bool TaskScheduler::updateCurrentTaskDelay(micros_t new_delay)
+{
+    // Don't allow other threads to modify tasks without knowing their ID.
+    if (!running_in_main_task()) {
+        logger.printfln("Calling TaskScheduler::updateCurrentTaskDelay is only allowed in the main thread!");
+        return false;
+    }
+
+    // If we're the main task, accesses to currentTask don't need to lock task_mutex.
+
+    if (currentTask == nullptr) {
+        esp_system_abort("Calling updateCurrentTaskDelay is not allowed outside of task code!");
+    }
+
+    currentTask->delay = new_delay;
     return true;
 }
