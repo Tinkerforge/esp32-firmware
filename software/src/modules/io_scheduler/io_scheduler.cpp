@@ -30,7 +30,7 @@
 
 #include "gcc_warnings.h"
 
-#define IO_SCHEDULER_STACK_SIZE 8192
+#define IO_SCHEDULER_STACK_SIZE 2560
 
 // The IO task switches between two priorities (pinned to core 1 together
 // with the main loop):
