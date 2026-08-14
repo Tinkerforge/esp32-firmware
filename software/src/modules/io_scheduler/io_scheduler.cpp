@@ -19,8 +19,6 @@
 
 #include "io_scheduler.h"
 
-#include <memory>
-
 #include "bindings/hal_common.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -61,17 +59,11 @@ std::function<void(void)> IoScheduler::make_driver(std::function<bool(void)> &&b
                                                    std::function<void(void)> &&after_io,
                                                    const std::source_location &src_location)
 {
-    struct RoundState {
-        std::function<bool(void)> before_io;
-        std::function<void(void)> during_io;
-        std::function<void(void)> after_io;
-        std::source_location src_location;
-        bool in_flight = false; // Only accessed on the main task.
-    };
+    // Since all drivers are uncancelable there is no need for management of the state.
+    // forward_list nodes never move, so raw pointers to the states stay valid.
+    RoundState *state = &round_states.emplace_front(RoundState{std::move(before_io), std::move(during_io), std::move(after_io), src_location});
 
-    auto state = std::make_shared<RoundState>(RoundState{std::move(before_io), std::move(during_io), std::move(after_io), src_location});
-
-    // Runs on the main task with the cadence given to driveWithFixedDelay/driveUncancelable.
+    // Runs on the main task with the cadence given to driveUncancelable.
     return [this, state]() {
         if (state->in_flight) {
             return;
@@ -95,16 +87,6 @@ std::function<void(void)> IoScheduler::make_driver(std::function<bool(void)> &&b
             }, 0_ms, state->src_location);
         }, 0_ms, state->src_location);
     };
-}
-
-uint64_t IoScheduler::driveWithFixedDelay(std::function<bool(void)> &&before_io,
-                                          std::function<void(void)> &&during_io,
-                                          std::function<void(void)> &&after_io,
-                                          millis_t first_delay_ms,
-                                          millis_t delay_ms,
-                                          const std::source_location &src_location)
-{
-    return task_scheduler.scheduleWithFixedDelay(make_driver(std::move(before_io), std::move(during_io), std::move(after_io), src_location), first_delay_ms, delay_ms, src_location);
 }
 
 uint64_t IoScheduler::driveUncancelable(std::function<bool(void)> &&before_io,

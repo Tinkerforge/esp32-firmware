@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <forward_list>
+
 #include <esp_system.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -45,14 +47,6 @@ public:
     {
         return scheduler.scheduleOnce(std::move(fn), delay_ms, src_location);
     }
-
-    [[nodiscard("Use driveUncancelable if you don't need the returned task ID to cancel the driver later.")]]
-    uint64_t driveWithFixedDelay(std::function<bool(void)> &&before_io,
-                                 std::function<void(void)> &&during_io,
-                                 std::function<void(void)> &&after_io,
-                                 millis_t first_delay_ms,
-                                 millis_t delay_ms,
-                                 const std::source_location &src_location = std::source_location::current());
 
     uint64_t driveUncancelable(std::function<bool(void)> &&before_io,
                                std::function<void(void)> &&during_io,
@@ -98,12 +92,22 @@ private:
     [[noreturn]] void task_loop();
     [[noreturn]] static void task_fn(void *arg);
 
+    struct RoundState {
+        std::function<bool(void)> before_io;
+        std::function<void(void)> during_io;
+        std::function<void(void)> after_io;
+        std::source_location src_location;
+        bool in_flight = false; // Only accessed on the main task.
+    };
+
     std::function<void(void)> make_driver(std::function<bool(void)> &&before_io,
                                           std::function<void(void)> &&during_io,
                                           std::function<void(void)> &&after_io,
                                           const std::source_location &src_location);
 
     TaskScheduler scheduler;
+
+    std::forward_list<RoundState> round_states;
 
     TaskHandle_t task_handle = nullptr;
     int watchdog_handle = -1;
