@@ -19,6 +19,10 @@
 
 #include "io_scheduler.h"
 
+#include <sdkconfig.h>
+#include <esp_http_server.h>
+#include <esp_task.h>
+
 #include "bindings/hal_common.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -46,6 +50,21 @@
 #define IO_SCHEDULER_TASK_PRIORITY_IDLE 2
 #define IO_SCHEDULER_TASK_PRIORITY_JOB 8
 #define IO_SCHEDULER_TASK_CORE 1
+
+// Compile-time checks of the priority assumptions.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+static constexpr httpd_config_t default_httpd_config = HTTPD_DEFAULT_CONFIG();
+static constexpr UBaseType_t httpd_task_priority = default_httpd_config.task_priority;
+static constexpr UBaseType_t mqtt_task_priority = CONFIG_MQTT_TASK_PRIORITY;
+static constexpr UBaseType_t tcpip_task_priority = ESP_TASK_TCPIP_PRIO;
+static_assert(IO_SCHEDULER_TASK_PRIORITY_IDLE < httpd_task_priority, "IO scheduler IDLE priority must be below the httpd task priority");
+static_assert(IO_SCHEDULER_TASK_PRIORITY_IDLE < mqtt_task_priority, "IO scheduler IDLE priority must be below the mqtt task priority");
+static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB > httpd_task_priority, "IO scheduler JOB priority must be above the httpd task priority");
+static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB > mqtt_task_priority, "IO scheduler JOB priority must be above the mqtt task priority");
+static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB < tcpip_task_priority, "IO scheduler JOB priority must be below the tiT (lwIP) task priority");
+#pragma GCC diagnostic pop
 
 extern TF_HAL hal;
 
