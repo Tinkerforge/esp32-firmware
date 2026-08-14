@@ -560,33 +560,33 @@ void EvseCommon::register_urls()
 
 #if MODULE_EVSE_V2_AVAILABLE()
             // Also update evse_common/translation* when changing colors here!
-            constexpr uint16_t h_4[] {
+            static constexpr uint16_t h_4[] {
                 0, 120, 60, 180, 0, 0, 0, 0
             };
-            constexpr uint8_t s_4[] {
+            static constexpr uint8_t s_4[] {
                 255, 255, 255, 255, 0, 0, 0, 0
             };
-            constexpr uint8_t v_4[] {
+            static constexpr uint8_t v_4[] {
                 255, 255, 255, 255, 0, 0, 0, 0
             };
 
-            constexpr uint16_t h_2[] {
+            static constexpr uint16_t h_2[] {
                 0, 180, 0, 0, 0, 0, 0, 0
             };
-            constexpr uint8_t s_2[] {
+            static constexpr uint8_t s_2[] {
                 255, 255, 0, 0, 0, 0, 0, 0
             };
-            constexpr uint8_t v_2[] {
+            static constexpr uint8_t v_2[] {
                 255, 255, 0, 0, 0, 0, 0, 0
             };
 
-            constexpr uint16_t h_0[] {
+            static constexpr uint16_t h_0[] {
                 0, 0, 0, 0, 0, 0, 0, 0
             };
-            constexpr uint8_t s_0[] {
+            static constexpr uint8_t s_0[] {
                 0, 0, 0, 0, 0, 0, 0, 0
             };
-            constexpr uint8_t v_0[] {
+            static constexpr uint8_t v_0[] {
                 0, 0, 0, 0, 0, 0, 0, 0
             };
 
