@@ -174,4 +174,8 @@ void IoScheduler::start_task()
     if (err != pdPASS_nowarn) {
         esp_system_abortf<48>("Failed to create IO task: %i", err);
     }
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.register_task(task_handle, IO_SCHEDULER_STACK_SIZE);
+#endif
 }
