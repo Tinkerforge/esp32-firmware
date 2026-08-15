@@ -33,10 +33,23 @@ export interface remove {
     ski: string;
 }
 
+interface ConfigPeer {
+    ip: string;
+    port: number;
+    trusted: boolean;
+    dns_name: string;
+    id: string;
+    wss_path: string;
+    ski: string;
+    autoregister: boolean;
+    model_brand: string;
+    model_model: string;
+    model_type: string;
+}
+
 export interface config {
     enable: boolean;
-    cert_id: number;
-    key_id: number;
+    peers: ConfigPeer[];
 }
 
 export interface ChargeProcesses {
