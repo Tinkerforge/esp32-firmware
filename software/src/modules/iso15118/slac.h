@@ -599,6 +599,8 @@ private:
 
     Option<micros_t> next_timeout = {};
 
+    micros_t next_modem_initialization_probe = 0_us;
+
     uint64_t link_up_task = 0;
 
     // Retry counter for the SLAC init E/F sequence per [V2G3-M06-07].

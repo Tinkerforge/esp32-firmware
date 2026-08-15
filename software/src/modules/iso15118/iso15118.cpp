@@ -330,7 +330,7 @@ void ISO15118::pre_setup()
                 if (state_machine_task == 0) {
                     state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
                         this->state_machines_loop();
-                    }, 20_ms, 20_ms);
+                    }, ISO15118_STATE_MACHINES_INTERVAL, ISO15118_STATE_MACHINES_INTERVAL);
                 }
 
                 // TODO: Check if charge is currently ongoing:
@@ -561,7 +561,7 @@ void ISO15118::register_urls()
         iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
-        }, 1_s, 20_ms);
+        }, 1_s, ISO15118_STATE_MACHINES_INTERVAL);
     }
 }
 
@@ -805,7 +805,7 @@ void ISO15118::ensure_state_machine_running()
     if (state_machine_task == 0) {
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
-        }, 20_ms, 20_ms);
+        }, ISO15118_STATE_MACHINES_INTERVAL, ISO15118_STATE_MACHINES_INTERVAL);
     }
     is_setup = true;
 }

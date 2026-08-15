@@ -134,6 +134,12 @@ void SLAC::handle_modem_initialization(void)
         return;
     }
 
+    // Probe the modem at a fixed 20 ms pace, independent of the state machine period.
+    if (!deadline_elapsed(next_modem_initialization_probe)) {
+        return;
+    }
+    next_modem_initialization_probe = now_us() + 20_ms;
+
     next_timeout = {};
     api_state.get("atten_char_indication_tries")->updateUint(0);
     api_state.get("received_aag_lists")->updateUint(0);

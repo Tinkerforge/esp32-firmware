@@ -51,6 +51,8 @@ static constexpr int FDS_LISTEN_INDEX = 2;  // DIN/ISO2/ISO20 TCP listen socket
 static constexpr int FDS_ACTIVE_INDEX = 3;  // DIN/ISO2/ISO20 TCP active socket
 static constexpr int FDS_COUNT        = 4;
 
+static constexpr millis_t ISO15118_STATE_MACHINES_INTERVAL = 10_ms;
+
 struct ChargingInformation {
     uint16_t current_ma;
     bool three_phase;
