@@ -23,10 +23,16 @@
 #include <freertos/portmacro.h>
 #include <freertos/projdefs.h>
 #include <freertos/semphr.h>
+#include <freertos/task.h>
 
 constexpr BaseType_t pdFAIL_nowarn        = pdFAIL;         // pdFAIL expands to an old-style cast that is also useless
 constexpr BaseType_t pdPASS_nowarn        = pdPASS;         // pdPASS expands to an old-style cast that is also useless
 constexpr TickType_t portMAX_DELAY_nowarn = portMAX_DELAY;  // portMAX_DELAY expands to an old-style cast
+
+constexpr TickType_t pdMS_TO_TICKS_nowarn(uint32_t time_in_ms)
+{
+    return pdMS_TO_TICKS(time_in_ms);                       // Macro uses old-style casts
+}
 
 inline SemaphoreHandle_t xSemaphoreCreateBinaryStatic_nowarn(StaticSemaphore_t *sem)
 {
@@ -36,4 +42,19 @@ inline SemaphoreHandle_t xSemaphoreCreateBinaryStatic_nowarn(StaticSemaphore_t *
 inline BaseType_t xSemaphoreGive_nowarn(SemaphoreHandle_t sem_handle)
 {
     return xSemaphoreGive(sem_handle);                      // Macro uses an old-style cast that is also useless
+}
+
+inline uint32_t ulTaskNotifyTake_nowarn(BaseType_t clear_count_on_exit, TickType_t ticks_to_wait)
+{
+    return ulTaskNotifyTake(clear_count_on_exit, ticks_to_wait); // Macro uses an old-style cast
+}
+
+inline BaseType_t xTaskNotifyGive_nowarn(TaskHandle_t task_to_notify)
+{
+    return xTaskNotifyGive(task_to_notify);                 // Macro uses old-style casts
+}
+
+inline BaseType_t xTaskNotifyStateClear_nowarn(TaskHandle_t task)
+{
+    return xTaskNotifyStateClear(task);                     // Macro uses an old-style cast
 }
