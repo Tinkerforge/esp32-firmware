@@ -271,15 +271,16 @@ void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
     size_t len = snprintf_u(timestamp, sizeof(timestamp), "%lu ", secs);
     logger.trace_plain(trace_buffer_index_ll, timestamp, len);
 
-    // Hexdump the packet in one go (2 hex chars per byte + null terminator)
-    size_t hex_buf_size = packet_size * 2 + 1;
-    if (hex_buf_size <= 2048) {
-        char hex_buf[2048];
-        len = hexdump(packet, packet_size, hex_buf, hex_buf_size, HexdumpCase::Lower);
+    // Hexdump the packet in chunks
+    char hex_buf[1025]; // 512 bytes per chunk (2 hex chars per byte + null terminator)
+    constexpr size_t chunk_size = sizeof(hex_buf) / 2;
+
+    for (size_t offset = 0; offset < packet_size; offset += chunk_size) {
+        const size_t chunk_len = std::min(chunk_size, packet_size - offset);
+        len = hexdump(packet + offset, chunk_len, hex_buf, sizeof(hex_buf), HexdumpCase::Lower);
         logger.trace_plain(trace_buffer_index_ll, hex_buf, len);
-    } else {
-        logger.printfln("trace_packet: packet too large for hexdump (%zu bytes)", packet_size);
     }
+
     logger.trace_plain(trace_buffer_index_ll, "\n", 1);
 #endif
 }
