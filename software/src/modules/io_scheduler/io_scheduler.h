@@ -19,7 +19,10 @@
 
 #pragma once
 
-#include <forward_list>
+#include <atomic>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 #include <esp_system.h>
 #include <freertos/FreeRTOS.h>
@@ -48,25 +51,43 @@ public:
         return scheduler.scheduleOnce(std::move(fn), delay_ms, src_location);
     }
 
-    uint64_t driveUncancelable(std::function<bool(void)> &&before_io,
-                               std::function<void(void)> &&during_io,
-                               std::function<void(void)> &&after_io,
+    // Registers an uncancelable driven round.
+    // before_io and after_io run on the main task, during_io runs on the IO task.
+    // Pass nullptr for before_io/after_io if unused.
+    template <typename BeforeIo, typename DuringIo, typename AfterIo>
+    uint64_t driveUncancelable(BeforeIo &&before_io,
+                               DuringIo &&during_io,
+                               AfterIo &&after_io,
                                millis_t first_delay_ms,
                                millis_t delay_ms,
-                               const std::source_location &src_location = std::source_location::current());
+                               const std::source_location &src_location = std::source_location::current())
+    {
+        RoundStateBase *state = new RoundState<std::decay_t<BeforeIo>, std::decay_t<DuringIo>, std::decay_t<AfterIo>>(
+            std::forward<BeforeIo>(before_io),
+            std::forward<DuringIo>(during_io),
+            std::forward<AfterIo>(after_io),
+            src_location
+        );
 
-    [[nodiscard]] bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 5_s, const std::source_location &src_location = std::source_location::current())
+        return driveUncancelableImpl(state, first_delay_ms, delay_ms, src_location);
+    }
+
+    // Runs fn on the IO task and blocks until it has completed. The callable stays on the caller's stack.
+    template <typename F>
+    [[nodiscard]] bool await(F &&fn, millis_t millis_to_wait = 5_s, const std::source_location &src_location = std::source_location::current())
     {
         if (task_handle == nullptr || xTaskGetCurrentTaskHandle() == task_handle) {
             fn();
             return true;
         }
 
-        return scheduler.await(std::move(fn), millis_to_wait, src_location);
+        using Callable = std::remove_reference_t<F>;
+        return await_impl(&IoScheduler::invoke_callable<Callable>, const_cast<void *>(static_cast<const void *>(std::addressof(fn))), millis_to_wait, src_location);
     }
 
     // Runs a Bricklet call that returns a tf_* result code
-    int hal_call(std::function<int(void)> &&fn, const std::source_location &src_location = std::source_location::current())
+    template <typename F>
+    int hal_call(F &&fn, const std::source_location &src_location = std::source_location::current())
     {
         int rc = TF_E_TIMEOUT;
 
@@ -92,22 +113,77 @@ private:
     [[noreturn]] void task_loop();
     [[noreturn]] static void task_fn(void *arg);
 
-    struct RoundState {
-        std::function<bool(void)> before_io;
-        std::function<void(void)> during_io;
-        std::function<void(void)> after_io;
-        std::source_location src_location;
+    struct RoundStateBase {
+        const std::source_location src_location;
         bool in_flight = false; // Only accessed on the main task.
+
+        RoundStateBase(const std::source_location &src_location_) : src_location(src_location_) {}
+
+        virtual bool run_before_io() = 0;
+        virtual void run_during_io() = 0;
+        virtual void run_after_io() = 0;
+
+    protected:
+        ~RoundStateBase() = default; // Round states are never destroyed.
     };
 
-    std::function<void(void)> make_driver(std::function<bool(void)> &&before_io,
-                                          std::function<void(void)> &&during_io,
-                                          std::function<void(void)> &&after_io,
-                                          const std::source_location &src_location);
+    // Stores the callables of a driven round in a single allocation.
+    template <typename BeforeIo, typename DuringIo, typename AfterIo>
+    struct RoundState final : public RoundStateBase {
+        BeforeIo before_io;
+        DuringIo during_io;
+        AfterIo after_io;
+
+        RoundState(BeforeIo before_io_, DuringIo during_io_, AfterIo after_io_, const std::source_location &src_location_) :
+            RoundStateBase(src_location_),
+            before_io(std::move(before_io_)),
+            during_io(std::move(during_io_)),
+            after_io(std::move(after_io_)) {}
+
+        bool run_before_io() override
+        {
+            if constexpr (std::is_same_v<BeforeIo, std::nullptr_t>) {
+                return true;
+            } else {
+                return before_io();
+            }
+        }
+
+        void run_during_io() override
+        {
+            during_io();
+        }
+
+        void run_after_io() override
+        {
+            if constexpr (!std::is_same_v<AfterIo, std::nullptr_t>) {
+                after_io();
+            }
+        }
+    };
+
+    // Handoff content for await(). Lives on the awaiting task's stack.
+    struct AwaitRequest {
+        void (*invoke)(void *callable);
+        void *callable;
+        TaskHandle_t caller;
+        bool executed = false; // Written by the IO task before notifying the caller.
+    };
+
+    template <typename Callable>
+    static void invoke_callable(void *callable)
+    {
+        (*static_cast<Callable *>(callable))();
+    }
+
+    uint64_t driveUncancelableImpl(RoundStateBase *state, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location);
+    void drive(RoundStateBase *state);
+    bool await_impl(void (*invoke)(void *callable), void *callable, millis_t millis_to_wait, const std::source_location &src_location);
 
     TaskScheduler scheduler;
 
-    std::forward_list<RoundState> round_states;
+    std::atomic<AwaitRequest *> pending_await{nullptr};
+    std::atomic<bool> rebooting{false};
 
     TaskHandle_t task_handle = nullptr;
     int watchdog_handle = -1;

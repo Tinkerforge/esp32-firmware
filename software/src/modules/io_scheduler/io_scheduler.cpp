@@ -72,52 +72,86 @@ extern TF_HAL hal;
 
 void IoScheduler::pre_reboot()
 {
+    rebooting = true;
     scheduler.pre_reboot();
 }
 
-std::function<void(void)> IoScheduler::make_driver(std::function<bool(void)> &&before_io,
-                                                   std::function<void(void)> &&during_io,
-                                                   std::function<void(void)> &&after_io,
-                                                   const std::source_location &src_location)
+uint64_t IoScheduler::driveUncancelableImpl(RoundStateBase *state, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
 {
-    // Since all drivers are uncancelable there is no need for management of the state.
-    // forward_list nodes never move, so raw pointers to the states stay valid.
-    RoundState *state = &round_states.emplace_front(RoundState{std::move(before_io), std::move(during_io), std::move(after_io), src_location});
-
     // Runs on the main task with the cadence given to driveUncancelable.
-    return [this, state]() {
-        if (state->in_flight) {
-            return;
-        }
-
-        if (state->before_io && !state->before_io()) {
-            return;
-        }
-
-        state->in_flight = true;
-
-        this->scheduleOnce([state]() {
-            state->during_io();
-
-            task_scheduler.scheduleOnce([state]() {
-                if (state->after_io) {
-                    state->after_io();
-                }
-
-                state->in_flight = false;
-            }, 0_ms, state->src_location);
-        }, 0_ms, state->src_location);
-    };
+    // [this, state] fits into std::function's inline buffer, so there is no allocation.
+    return task_scheduler.scheduleUncancelable([this, state]() { this->drive(state); }, first_delay_ms, delay_ms, src_location);
 }
 
-uint64_t IoScheduler::driveUncancelable(std::function<bool(void)> &&before_io,
-                                        std::function<void(void)> &&during_io,
-                                        std::function<void(void)> &&after_io,
-                                        millis_t first_delay_ms,
-                                        millis_t delay_ms,
-                                        const std::source_location &src_location)
+// Runs on the main task. RoundStates are never freed, so the raw pointer stays valid.
+void IoScheduler::drive(RoundStateBase *state)
 {
-    return task_scheduler.scheduleUncancelable(make_driver(std::move(before_io), std::move(during_io), std::move(after_io), src_location), first_delay_ms, delay_ms, src_location);
+    if (state->in_flight) {
+        return;
+    }
+
+    if (!state->run_before_io()) {
+        return;
+    }
+
+    state->in_flight = true;
+
+    this->scheduleOnce([state]() {
+        state->run_during_io();
+
+        task_scheduler.scheduleOnce([state]() {
+            state->run_after_io();
+            state->in_flight = false;
+        }, 0_ms, state->src_location);
+    }, 0_ms, state->src_location);
+}
+
+bool IoScheduler::await_impl(void (*invoke)(void *callable), void *callable, millis_t millis_to_wait, const std::source_location &src_location)
+{
+    if (rebooting) {
+        return false;
+    }
+
+    AwaitRequest request{invoke, callable, xTaskGetCurrentTaskHandle(), false};
+
+    // No stale notification can be pending here. Every earlier await on this
+    // task either consumed its notification or aborted.
+    xTaskNotifyStateClear_nowarn(nullptr);
+
+    TickType_t ticks_left = pdMS_TO_TICKS_nowarn(millis_to_wait.as<uint32_t>());
+
+    // Post the request. If the slot is occupied by another awaiter's request,
+    // retry until the deadline. Once the request is posted only the IO task
+    // may remove it from the slot (or this task again, on timeout below).
+    AwaitRequest *expected = nullptr;
+
+    while (!pending_await.compare_exchange_strong(expected, &request)) {
+        expected = nullptr;
+
+        if (ticks_left == 0) {
+            return false;
+        }
+
+        vTaskDelay(1);
+        ticks_left--;
+    }
+
+    if (ulTaskNotifyTake_nowarn(true, ticks_left) == 0) {
+        expected = &request;
+
+        if (pending_await.compare_exchange_strong(expected, nullptr)) {
+            // The IO task never picked up the request, fn was not and will not be executed.
+            return false;
+        }
+
+        // The IO task picked up the request but did not signal completion in
+        // time. fn and the request live on this task's stack, so returning now
+        // would let the IO task access a dead stack frame. Abort, like
+        // TaskScheduler::await does for awaited tasks that can't be cancelled.
+        esp_system_abortf<192>("Awaited IO job %s:%lu timed out. Giving up.", src_location.file_name(), src_location.line());
+    }
+
+    return request.executed;
 }
 
 void IoScheduler::task_fn(void *arg)
@@ -141,6 +175,24 @@ void IoScheduler::task_loop()
         // If we increase the amount of callbacks in the future, we should increase the task prio once we get a non-zero byte in the tick
         // and decrease it again once we message is completely received.
         tf_hal_tick(&hal, 0);
+
+        AwaitRequest *request = pending_await.exchange(nullptr);
+
+        if (request != nullptr) {
+            vTaskPrioritySet(nullptr, IO_SCHEDULER_TASK_PRIORITY_JOB);
+
+            if (!rebooting) {
+                request->invoke(request->callable);
+                request->executed = true;
+            }
+
+            // The request lives on the awaiting task's stack and must not be
+            // accessed anymore once the caller was notified.
+            xTaskNotifyGive_nowarn(request->caller);
+
+            vTaskPrioritySet(nullptr, IO_SCHEDULER_TASK_PRIORITY_IDLE);
+            continue; // Another awaiter might be waiting for the slot.
+        }
 
         if (scheduler.timeUntilNextTask(1_ms) == 0_us) {
             // Run one due job with its Bricklet transactions to guaranteed
