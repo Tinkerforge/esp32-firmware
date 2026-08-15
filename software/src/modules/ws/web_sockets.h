@@ -71,6 +71,9 @@ public:
     /// Returns the httpd handle. Only valid after start() has been called.
     httpd_handle_t get_httpd_handle() const { return httpd; }
 
+    /// Request an asynchronous close of a client connection. Callable from any thread.
+    void closeClient_async(int fd) { keepAliveCloseDead_async(fd); }
+
     void notify_unclean_close(struct sock_db *session);
 
 private:
