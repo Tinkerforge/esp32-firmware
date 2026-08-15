@@ -322,7 +322,7 @@ MessageReturn NodeManagementEntity::handle_subscription(HeaderType &header, Spin
             }
         }
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed Subscriptions successfully");
-        return {true, true, CmdClassifierType::reply};
+        return {true, true, CmdClassifierType::result};
     }
 
     return {false};
@@ -343,11 +343,11 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
             }
             EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Binding request was successful");
-            return {true, true, CmdClassifierType::reply};
+            return {true, true, CmdClassifierType::result};
         }
         eebus.trace_fmtln("Binding requested but failed");
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Binding request failed");
-        return {true, true, CmdClassifierType::reply};
+        return {true, true, CmdClassifierType::result};
     }
     // Binding Data as defined in EEBus SPINE TS ProtocolSpecification 7.3.3
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData) {
@@ -362,7 +362,7 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
         if (!data->nodemanagementbindingdeletecalltype && data->nodemanagementbindingdeletecalltype->bindingDelete && data->nodemanagementbindingdeletecalltype->bindingDelete->clientAddress && data->nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
             eebus.trace_fmtln("A binding release was requested but no binding delete information was provided or request was malformed");
             EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Binding release failed");
-            return {true, true, CmdClassifierType::reply};
+            return {true, true, CmdClassifierType::result};
         };
 
         auto optional_equal_or_undefined = [](const auto &a, const auto &b) {
@@ -403,7 +403,7 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
             }
         }
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed bindings successfully");
-        return {true, true, CmdClassifierType::reply};
+        return {true, true, CmdClassifierType::result};
     }
 
     return {false};
