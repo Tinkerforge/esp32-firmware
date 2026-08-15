@@ -223,6 +223,15 @@ esp_err_t tf_websocket_client_append_header(tf_websocket_client_handle_t client,
 esp_err_t tf_websocket_client_start(tf_websocket_client_handle_t client);
 
 /**
+ * @brief      Get handle of websocket task
+ *
+ * @param[in]  client  The client
+ *
+ * @return     The task handle, or NULL if the task was not started.
+ */
+TaskHandle_t tf_websocket_client_get_task_handle(tf_websocket_client_handle_t client);
+
+/**
  * @brief      Stops the WebSocket connection without websocket closing handshake
  *
  * This API stops ws client and closes TCP connection directly without sending
