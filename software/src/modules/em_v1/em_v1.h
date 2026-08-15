@@ -44,6 +44,7 @@ typedef struct {
     bool input[2];
     bool relay;
     uint8_t contactor_check_state;
+    int last_fetch_rc;
 } EnergyManagerAllData;
 
 class EMV1 final : public DeviceModule<TF_WARPEnergyManager,
@@ -129,7 +130,8 @@ private:
     template<typename T>
     void update_all_data_triggers(T id, void *data);
     void update_all_data();
-    void update_all_data_struct();
+    void fetch_all_data();
+    void publish_all_data();
 
     const char *prepare_fmtstr();
 

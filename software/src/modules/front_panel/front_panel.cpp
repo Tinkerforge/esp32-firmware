@@ -121,7 +121,7 @@ void FrontPanel::check_bricklet_state()
 
     const bool enable = config.get("enable")->asBool();
     uint8_t display = 0;
-    int result = tf_warp_front_panel_get_display(&device, &display, nullptr);
+    int result = io_scheduler.hal_call([&]() { return tf_warp_front_panel_get_display(&device, &display, nullptr); });
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
             logger.printfln("Failed to call get_display: %d", result);
@@ -130,12 +130,12 @@ void FrontPanel::check_bricklet_state()
     }
 
     if ((display == TF_WARP_FRONT_PANEL_DISPLAY_OFF) && enable) {
-        result = tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
+        result = io_scheduler.hal_call([this]() { return tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC); });
         if (result != TF_E_OK) {
             logger.printfln("Failed to call set_display(%d): %d", TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC, result);
         }
     } else if((display == TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC) && !enable) {
-        result = tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+        result = io_scheduler.hal_call([this]() { return tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF); });
         if (result != TF_E_OK) {
             logger.printfln("Failed to call set_display(%d): %d", TF_WARP_FRONT_PANEL_DISPLAY_OFF, result);
         }
@@ -149,7 +149,8 @@ void FrontPanel::setup()
         return;
     }
 
-    tf_warp_front_panel_register_flash_data_done_callback(&device, &static_flash_data_done_callback, this);
+    // Note: The flash data done callback will be dispatched from io task.
+    io_scheduler.hal_call([this]() { return tf_warp_front_panel_register_flash_data_done_callback(&device, &static_flash_data_done_callback, this); });
 
     api.restorePersistentConfig("front_panel/config", &config);
 
@@ -238,7 +239,7 @@ void FrontPanel::register_urls()
     });
 
     api.addCommand("front_panel/erase", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
-        int rc = tf_warp_front_panel_erase_flash(&device, NULL);
+        int rc = io_scheduler.hal_call([this]() { return tf_warp_front_panel_erase_flash(&device, NULL); });
         if (rc != TF_E_OK) {
             logger.printfln("Erase failed: %i", rc);
             errmsg = "Erase failed";
@@ -246,7 +247,7 @@ void FrontPanel::register_urls()
     }, true);
 
     api.addCommand("front_panel/redraw", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
-        int rc = tf_warp_front_panel_redraw_everything(&device);
+        int rc = io_scheduler.hal_call([this]() { return tf_warp_front_panel_redraw_everything(&device); });
         if (rc != TF_E_OK) {
             logger.printfln("Redraw failed: %i", rc);
             errmsg = "Redraw failed";
@@ -273,39 +274,45 @@ void FrontPanel::pre_reboot()
     size_t tile_count = config.get("tiles")->count();
     for (size_t i = 0; i < tile_count; ++i) {
         if (i == 1) {
-            tf_warp_front_panel_set_display_front_page_icon(
-                &device,
-                i,
-                true,
-                SPRITE_ICON_WRENCH,
-                "Re-   ",
-                FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-                "start ",
-                FONT_24PX_FREEMONO_WHITE_ON_BLACK
-            );
+            io_scheduler.hal_call([&]() {
+                return tf_warp_front_panel_set_display_front_page_icon(
+                    &device,
+                    i,
+                    true,
+                    SPRITE_ICON_WRENCH,
+                    "Re-   ",
+                    FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+                    "start ",
+                    FONT_24PX_FREEMONO_WHITE_ON_BLACK
+                );
+            });
             continue;
         }
 
         update_front_page_empty_tile(i, TileType::Empty, 0);
     }
 
-    tf_warp_front_panel_set_status_bar(
-        &device,
-        static_cast<std::underlying_type<EthernetState>::type>(EthernetState::NotConfigured),
-        -127 |  (static_cast<std::underlying_type<WifiState>::type>(WifiState::NotConfigured) << 16),
-        0, 0, 0
-    );
+    io_scheduler.hal_call([this]() {
+        return tf_warp_front_panel_set_status_bar(
+            &device,
+            static_cast<std::underlying_type<EthernetState>::type>(EthernetState::NotConfigured),
+            -127 |  (static_cast<std::underlying_type<WifiState>::type>(WifiState::NotConfigured) << 16),
+            0, 0, 0
+        );
+    });
 
     set_led(LEDPattern::Blinking, LEDColor::Yellow);
 }
 
 int FrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
 {
-    int result = tf_warp_front_panel_set_led_state(
-        &device,
-        static_cast<std::underlying_type<LEDPattern>::type>(pattern),
-        static_cast<std::underlying_type<LEDColor>::type>(color)
-    );
+    int result = io_scheduler.hal_call([this, pattern, color]() {
+        return tf_warp_front_panel_set_led_state(
+            &device,
+            static_cast<std::underlying_type<LEDPattern>::type>(pattern),
+            static_cast<std::underlying_type<LEDColor>::type>(color)
+        );
+    });
 
     if (result != TF_E_OK) {
         logger.printfln("Failed to call set_led_state: %d", result);
@@ -318,11 +325,13 @@ int FrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
 {
     uint8_t pattern_raw = 0;
     uint8_t color_raw   = 0;
-    int result = tf_warp_front_panel_get_led_state(
-        &device,
-        &pattern_raw,
-        &color_raw
-    );
+    int result = io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_get_led_state(
+            &device,
+            &pattern_raw,
+            &color_raw
+        );
+    });
 
     if (result == TF_E_OK) {
         *pattern = static_cast<LEDPattern>(pattern_raw);
@@ -336,20 +345,28 @@ int FrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
 
 void FrontPanel::update_wifi()
 {
-    int result = tf_warp_front_panel_set_display_wifi_setup_1(
-        &device,
-        wifi.get_ap_ip(),
-        wifi.get_ap_ssid()
-    );
+    const char *ap_ip         = wifi.get_ap_ip();
+    const char *ap_ssid       = wifi.get_ap_ssid();
+    const char *ap_passphrase = wifi.get_ap_passphrase();
+
+    int result = io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_display_wifi_setup_1(
+            &device,
+            ap_ip,
+            ap_ssid
+        );
+    });
     if (result != TF_E_OK) {
         logger.printfln("Failed to call set_display_wifi_setup_1: %d", result);
         return;
     }
 
-    result = tf_warp_front_panel_set_display_wifi_setup_2(
-        &device,
-        wifi.get_ap_passphrase()
-    );
+    result = io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_display_wifi_setup_2(
+            &device,
+            ap_passphrase
+        );
+    });
     if (result != TF_E_OK) {
         logger.printfln("Failed to call set_display_wifi_setup_2: %d", result);
         return;
@@ -375,14 +392,16 @@ void FrontPanel::update_status_bar()
         seconds = tm.tm_sec;
     }
 
-    int result = tf_warp_front_panel_set_status_bar(
-        &device,
-        static_cast<std::underlying_type<EthernetState>::type>(ethernet_state),
-        (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16),
-        hours,
-        minutes,
-        seconds
-    );
+    int result = io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_status_bar(
+            &device,
+            static_cast<std::underlying_type<EthernetState>::type>(ethernet_state),
+            (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16),
+            hours,
+            minutes,
+            seconds
+        );
+    });
 
     if (result != TF_E_OK) {
         logger.printfln("Failed to call set_status_bar: %d", result);
@@ -399,16 +418,18 @@ int FrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_index
     strncpy(checked_text_1, text_1, PAGE_FRONT_TEXT_MAX_CHAR);
     strncpy(checked_text_2, text_2, PAGE_FRONT_TEXT_MAX_CHAR);
 
-    return tf_warp_front_panel_set_display_front_page_icon(
-        &device,
-        icon_index,
-        active,
-        sprite_index,
-        checked_text_1,
-        font_index_1,
-        checked_text_2,
-        font_index_2
-    );
+    return io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_display_front_page_icon(
+            &device,
+            icon_index,
+            active,
+            sprite_index,
+            checked_text_1,
+            font_index_1,
+            checked_text_2,
+            font_index_2
+        );
+    });
 }
 
 int FrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param)
@@ -437,7 +458,7 @@ int FrontPanel::update_front_page_charger(const uint8_t index, const TileType ty
     size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
         const auto *charger = charge_manager.get_charger_state(param);
-        
+
         if (charger->power_total_count > 0) {
             const int32_t watt = charger->power_total_sum / charger->power_total_count;
             str2 = watt_value_to_display_string(watt);
@@ -604,16 +625,18 @@ int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, con
 
     // TODO: Show error instead if energy manager has an error?
 
-    return tf_warp_front_panel_set_display_front_page_icon(
-        &device,
-        index,
-        true,
-        SPRITE_ICON_WRENCH,
-        str1.c_str(),
-        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        str2.c_str(),
-        FONT_24PX_FREEMONO_WHITE_ON_BLACK
-    );
+    return io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_display_front_page_icon(
+            &device,
+            index,
+            true,
+            SPRITE_ICON_WRENCH,
+            str1.c_str(),
+            FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+            str2.c_str(),
+            FONT_24PX_FREEMONO_WHITE_ON_BLACK
+        );
+    });
 }
 
 int FrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
@@ -650,16 +673,18 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
     }
 #endif
 
-    return tf_warp_front_panel_set_display_front_page_icon(
-        &device,
-        index,
-        true,
-        icon_index,
-        str1.c_str(),
-        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        str2.c_str(),
-        FONT_24PX_FREEMONO_WHITE_ON_BLACK
-    );
+    return io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_set_display_front_page_icon(
+            &device,
+            index,
+            true,
+            icon_index,
+            str1.c_str(),
+            FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+            str2.c_str(),
+            FONT_24PX_FREEMONO_WHITE_ON_BLACK
+        );
+    });
 }
 
 void FrontPanel::update_front_page()
@@ -811,15 +836,17 @@ void FrontPanel::check_flash_metadata()
     uint32_t checksum_flash    = 0;
     uint32_t checksum_bricklet = 0;
 
-    int result = tf_warp_front_panel_get_flash_metadata(
-        &device,
-        &version_flash,
-        &version_bricklet,
-        &length_flash,
-        &length_bricklet,
-        &checksum_flash,
-        &checksum_bricklet
-    );
+    int result = io_scheduler.hal_call([&]() {
+        return tf_warp_front_panel_get_flash_metadata(
+            &device,
+            &version_flash,
+            &version_bricklet,
+            &length_flash,
+            &length_bricklet,
+            &checksum_flash,
+            &checksum_bricklet
+        );
+    });
 
     if (result != TF_E_OK) {
         logger.printfln("Failed to call get_flash_metadata: %d", result);
@@ -865,7 +892,7 @@ void FrontPanel::start_reflash_map()
     logger.printfln("Updating display Flash memory...");
 
     flash_update_in_progress = true;
-    tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+    io_scheduler.hal_call([this]() { return tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF); });
 
     task_scheduler.scheduleOnce([this]() {
         this->reflash_map_start();
@@ -879,7 +906,7 @@ void FrontPanel::reflash_map_start()
         if (!flash_writer) {
             logger.printfln("Allocating flash_writer memory failed");
             flash_update_in_progress = false;
-            tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
+            io_scheduler.hal_call([this]() { return tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC); });
             return;
         }
 
@@ -913,7 +940,7 @@ void FrontPanel::reflash_map_erase()
     flash_writer->write_deadline_us = now_us() + 170_s;
 
     uint8_t status = 255;
-    int rc = tf_warp_front_panel_erase_flash(&device, &status);
+    int rc = io_scheduler.hal_call([&]() { return tf_warp_front_panel_erase_flash(&device, &status); });
     if (rc != TF_E_OK || status != TF_WARP_FRONT_PANEL_FLASH_STATUS_OK) {
         flash_writer->fail_count++;
 
@@ -932,7 +959,7 @@ void FrontPanel::reflash_map_erase()
     flash_writer->fail_count = 0;
 
     // Prepare decompression and writing
-    rc = tf_warp_front_panel_set_flash_index(&device, 0, 0);
+    rc = io_scheduler.hal_call([this]() { return tf_warp_front_panel_set_flash_index(&device, 0, 0); });
     if (rc != TF_E_OK) {
         logger.printfln("Failed to set flash index: %s (%i)", tf_hal_strerror(rc), rc);
         reflash_map_end();
@@ -1027,7 +1054,7 @@ void FrontPanel::reflash_map_write_next()
             uint8_t status;
             int rc;
             for (size_t i = 0; i < 10; i++) {
-                rc = tf_warp_front_panel_set_flash_data(&device, &flash_writer->out_buf[subpage * 64], &next_page_index, &next_sub_page_index, &status);
+                rc = io_scheduler.hal_call([&]() { return tf_warp_front_panel_set_flash_data(&device, &flash_writer->out_buf[subpage * 64], &next_page_index, &next_sub_page_index, &status); });
                 if (rc == TF_E_OK) {
                     break;
                 }
@@ -1044,7 +1071,7 @@ void FrontPanel::reflash_map_write_next()
                     logger.printfln("Writer is busy on unexpected sub-page %u", next_sub_page_index);
 
                     for (size_t i = 0; i < 10; i++) {
-                        rc = tf_warp_front_panel_set_flash_index(&device, next_page_index, 0);
+                        rc = io_scheduler.hal_call([&]() { return tf_warp_front_panel_set_flash_index(&device, next_page_index, 0); });
                         if (rc == TF_E_OK) {
                         break;
                         }
