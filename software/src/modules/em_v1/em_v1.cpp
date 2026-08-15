@@ -186,9 +186,11 @@ void EMV1::setup()
     update_all_data();
 
     // Start this task even if a config error is set below: If only MeterEM::update_all_values runs, there will be 2.5 sec gaps in the meters data.
-    task_scheduler.scheduleUncancelable([this]() {
-        this->update_all_data();
-    }, EM_TASK_DELAY);
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this]() { this->fetch_all_data(); },
+        [this]() { this->publish_all_data(); },
+        EM_TASK_DELAY, EM_TASK_DELAY);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     if (!contactor_installed) {
@@ -257,27 +259,27 @@ void EMV1::get_input_output_states(bool *inputs, size_t *inputs_len, bool *outpu
 
 int EMV1::wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
 {
-    return tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDataPointsLowLevelHandler>(handler), user_data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDataPointsLowLevelHandler>(handler), user_data); });
 }
 
 int EMV1::wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data)
 {
-    return tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDailyDataPointsLowLevelHandler>(handler), user_data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDailyDataPointsLowLevelHandler>(handler), user_data); });
 }
 
 int EMV1::wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data)
 {
-    return tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDataPointsLowLevelHandler>(handler), user_data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDataPointsLowLevelHandler>(handler), user_data); });
 }
 
 int EMV1::wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data)
 {
-    return tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDailyDataPointsLowLevelHandler>(handler), user_data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDailyDataPointsLowLevelHandler>(handler), user_data); });
 }
 
 int EMV1::wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id)
 {
-    return tf_warp_energy_manager_get_sd_information(&device, ret_sd_status, ret_lfs_status, ret_sector_size, ret_sector_count, ret_card_type, ret_product_rev, ret_product_name, ret_manufacturer_id);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_sd_information(&device, ret_sd_status, ret_lfs_status, ret_sector_size, ret_sector_count, ret_card_type, ret_product_rev, ret_product_name, ret_manufacturer_id); });
 }
 
 int EMV1::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, uint16_t power, uint8_t *ret_status)
@@ -286,22 +288,22 @@ int EMV1::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8
         logger.printfln("Losing the upper 8 flags while storing wallbox 5min data point");
     }
 
-    return tf_warp_energy_manager_set_sd_wallbox_data_point(&device, wallbox_id, year, month, day, hour, minute, static_cast<uint8_t>(flags & 0xFF), power, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_sd_wallbox_data_point(&device, wallbox_id, year, month, day, hour, minute, static_cast<uint8_t>(flags & 0xFF), power, ret_status); });
 }
 
 int EMV1::wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_get_sd_wallbox_data_points(&device, wallbox_id, year, month, day, hour, minute, amount, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_sd_wallbox_data_points(&device, wallbox_id, year, month, day, hour, minute, amount, ret_status); });
 }
 
 int EMV1::wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, wallbox_id, year, month, day, energy, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, wallbox_id, year, month, day, energy, ret_status); });
 }
 
 int EMV1::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status); });
 }
 
 int EMV1::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
@@ -310,57 +312,57 @@ int EMV1::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint
         logger.printfln("Losing the upper 8 flags while storing Energy Manager 5min data point");
     }
 
-    return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, static_cast<uint8_t>(flags & 0xFF), power_grid, power_general, price, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, static_cast<uint8_t>(flags & 0xFF), power_grid, power_general, price, ret_status); });
 }
 
 int EMV1::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, hour, minute, amount, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, hour, minute, amount, ret_status); });
 }
 
 int EMV1::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint32_t price, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, price, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, price, ret_status); });
 }
 
 int EMV1::wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, day, amount, ret_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, day, amount, ret_status); });
 }
 
 int EMV1::wem_format_sd(uint32_t password, uint8_t *ret_format_status)
 {
-    return tf_warp_energy_manager_format_sd(&device, password, ret_format_status);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_format_sd(&device, password, ret_format_status); });
 }
 
 int EMV1::wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year)
 {
-    return tf_warp_energy_manager_set_date_time(&device, seconds, minutes, hours, days, days_of_week, month, year);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_date_time(&device, seconds, minutes, hours, days, days_of_week, month, year); });
 }
 
 int EMV1::wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year)
 {
-    return tf_warp_energy_manager_get_date_time(&device, ret_seconds, ret_minutes, ret_hours, ret_days, ret_days_of_week, ret_month, ret_year);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_date_time(&device, ret_seconds, ret_minutes, ret_hours, ret_days, ret_days_of_week, ret_month, ret_year); });
 }
 
 int EMV1::wem_set_data_storage(uint8_t page, const uint8_t data[63])
 {
-    return tf_warp_energy_manager_set_data_storage(&device, page, data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_set_data_storage(&device, page, data); });
 }
 
 int EMV1::wem_get_data_storage(uint8_t page, uint8_t *status, uint8_t ret_data[63])
 {
-    return tf_warp_energy_manager_get_data_storage(&device, page, status, ret_data);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_data_storage(&device, page, status, ret_data); });
 }
 
 int EMV1::wem_reset_energy_meter_relative_energy()
 {
-    return tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
+    return io_scheduler.hal_call([this]() { return tf_warp_energy_manager_reset_energy_meter_relative_energy(&device); });
 }
 
 int EMV1::wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length)
 {
-    return tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, ret_values_length);
+    return io_scheduler.hal_call([&]() { return tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, ret_values_length); });
 }
 
 // for EM Phase Switcher
@@ -382,7 +384,7 @@ bool EMV1::get_is_contactor_installed()
 
 void EMV1::set_contactor_for_em_phase_switcher(bool contactor_value)
 {
-    tf_warp_energy_manager_set_contactor(&device, contactor_value);
+    io_scheduler.hal_call([this, contactor_value]() { return tf_warp_energy_manager_set_contactor(&device, contactor_value); });
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -402,7 +404,19 @@ void EMV1::update_all_data_triggers(T id, void *data_)
 
 void EMV1::update_all_data()
 {
-    update_all_data_struct();
+    fetch_all_data();
+    publish_all_data();
+}
+
+void EMV1::publish_all_data()
+{
+    // Runs on the main task.
+    em_common.check_bricklet_reachable(all_data.last_fetch_rc, "fetch_all_data");
+
+    if (all_data.last_fetch_rc == TF_E_OK) {
+        all_data.common.last_update = now_us();
+        all_data.common.is_valid = true;
+    }
 
     em_common.low_level_state.get("contactor")->updateBool(all_data.contactor_value);
     em_common.low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
@@ -441,9 +455,10 @@ void EMV1::update_all_data()
     }
 }
 
-void EMV1::update_all_data_struct()
+void EMV1::fetch_all_data()
 {
-    int rc = tf_warp_energy_manager_get_all_data_1(
+    // Runs on the task owning the HAL. No Config/API access allowed here.
+    all_data.last_fetch_rc = tf_warp_energy_manager_get_all_data_1(
         &device,
         &all_data.contactor_value,
         &all_data.rgb_value_r,
@@ -459,13 +474,6 @@ void EMV1::update_all_data_struct()
         &all_data.contactor_check_state,
         &all_data.common.uptime
     );
-
-    em_common.check_bricklet_reachable(rc, "update_all_data_struct");
-
-    if (rc == TF_E_OK) {
-        all_data.common.last_update = now_us();
-        all_data.common.is_valid = true;
-    }
 }
 
 void EMV1::update_status_led()
@@ -485,7 +493,7 @@ void EMV1::update_status_led()
 
 void EMV1::set_output(bool output_value)
 {
-    int result = tf_warp_energy_manager_set_output(&device, output_value);
+    int result = io_scheduler.hal_call([this, output_value]() { return tf_warp_energy_manager_set_output(&device, output_value); });
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
@@ -495,7 +503,7 @@ void EMV1::set_output(bool output_value)
 
 void EMV1::set_rgb_led(uint8_t pattern, uint16_t hue)
 {
-    int rc = tf_warp_energy_manager_set_led_state(&device, pattern, hue);
+    int rc = io_scheduler.hal_call([this, pattern, hue]() { return tf_warp_energy_manager_set_led_state(&device, pattern, hue); });
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 

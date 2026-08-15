@@ -38,6 +38,7 @@ typedef struct {
     bool input[4];
     bool output_sg_ready[2];
     bool output_relay[2];
+    int last_fetch_rc;
 } EnergyManagerV2AllData;
 
 class EMV2 final : public DeviceModule<TF_WARPEnergyManagerV2,
@@ -114,7 +115,8 @@ private:
     template<typename T>
     void update_all_data_triggers(T id, void *data);
     void update_all_data();
-    void update_all_data_struct();
+    void fetch_all_data();
+    void publish_all_data();
 
     const char *prepare_fmtstr();
 
