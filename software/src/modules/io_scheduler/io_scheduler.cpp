@@ -57,13 +57,15 @@
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 static constexpr httpd_config_t default_httpd_config = HTTPD_DEFAULT_CONFIG();
 static constexpr UBaseType_t httpd_task_priority = default_httpd_config.task_priority;
-static constexpr UBaseType_t mqtt_task_priority = CONFIG_MQTT_TASK_PRIORITY;
 static constexpr UBaseType_t tcpip_task_priority = ESP_TASK_TCPIP_PRIO;
 static_assert(IO_SCHEDULER_TASK_PRIORITY_IDLE < httpd_task_priority, "IO scheduler IDLE priority must be below the httpd task priority");
-static_assert(IO_SCHEDULER_TASK_PRIORITY_IDLE < mqtt_task_priority, "IO scheduler IDLE priority must be below the mqtt task priority");
 static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB > httpd_task_priority, "IO scheduler JOB priority must be above the httpd task priority");
-static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB > mqtt_task_priority, "IO scheduler JOB priority must be above the mqtt task priority");
 static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB < tcpip_task_priority, "IO scheduler JOB priority must be below the tiT (lwIP) task priority");
+#ifdef CONFIG_MQTT_TASK_PRIORITY // Not defined on platforms whose sdkconfig predates the esp-mqtt task priority option (WARP1)
+static constexpr UBaseType_t mqtt_task_priority = CONFIG_MQTT_TASK_PRIORITY;
+static_assert(IO_SCHEDULER_TASK_PRIORITY_IDLE < mqtt_task_priority, "IO scheduler IDLE priority must be below the mqtt task priority");
+static_assert(IO_SCHEDULER_TASK_PRIORITY_JOB > mqtt_task_priority, "IO scheduler JOB priority must be above the mqtt task priority");
+#endif
 #pragma GCC diagnostic pop
 
 extern TF_HAL hal;
