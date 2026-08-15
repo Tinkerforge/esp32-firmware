@@ -168,7 +168,11 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
                 eebus.trace_fmtln("Usecases: Found entity: %s", get_usecases_name(entity->get_usecase_type()));
 #endif
             } else {
+                // This is not an error. Multiple usecases share an entity address, so every
+                // usecase that doesn't handle this particular message ends up here.
+#ifdef EEBUS_TRACE_SUPER_VERBOSE
                 eebus.trace_fmtln("Usecases: Entity %s could not handle the message", get_usecases_name(entity->get_usecase_type()));
+#endif
             }
         }
     }
