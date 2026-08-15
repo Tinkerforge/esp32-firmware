@@ -49,6 +49,26 @@ SpineConnection::~SpineConnection()
     task_scheduler.cancel(ack_check_timer);
     task_scheduler.cancel(update_api_timer);
     task_scheduler.cancel(initial_peer_discovery_timer);
+
+    // Subscriptions and bindings do not survive the connection (peers re-subscribe
+    // on reconnect). Purge deferred: this destructor may run while ship_connections
+    // is being modified, and another live connection to the device must keep them.
+    for (const FeatureAddressType &addr : known_addresses) {
+        if (addr.device.isNull() || addr.device.get().empty()) {
+            continue;
+        }
+        task_scheduler.scheduleOnce([device = addr.device.get()]() {
+            if (eebus.usecases == nullptr) {
+                return;
+            }
+            for (const auto &conn : eebus.ship.ship_connections) {
+                if (conn->spine && conn->spine->knows_device(device)) {
+                    return;
+                }
+            }
+            eebus.usecases->node_management.remove_entries_for_device(device);
+        });
+    }
 }
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
@@ -207,6 +227,16 @@ void SpineConnection::eebus_active(bool active) const
     }
     eebus.update_peers_state();
 }
+bool SpineConnection::knows_device(const std::string &device) const
+{
+    for (const FeatureAddressType &addr : known_addresses) {
+        if (addr.device.get() == device) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType remote)
 {
     if (!subscription_data_received)

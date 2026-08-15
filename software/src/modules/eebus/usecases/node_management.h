@@ -117,6 +117,8 @@ public:
      */
     void usecase_data_update();
 
+    void remove_entries_for_device(const std::string &device);
+
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::NodeManagement};
