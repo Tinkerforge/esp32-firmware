@@ -409,6 +409,37 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
     return {false};
 }
 
+void NodeManagementEntity::remove_entries_for_device(const std::string &device)
+{
+    if (device.empty()) {
+        return;
+    }
+    size_t removed = 0;
+    if (!subscription_data.subscriptionEntry.isNull()) {
+        auto &subscriptions = subscription_data.subscriptionEntry.get();
+        for (size_t i = subscriptions.size(); i > 0; i--) {
+            const SubscriptionManagementEntryDataType &entry = subscriptions[i - 1];
+            if (entry.clientAddress->device.get() == device || entry.serverAddress->device.get() == device) {
+                subscriptions.erase(subscriptions.begin() + static_cast<ptrdiff_t>(i - 1));
+                removed++;
+            }
+        }
+    }
+    if (!binding_management_entry_list_.bindingManagementEntryData.isNull()) {
+        auto &bindings = binding_management_entry_list_.bindingManagementEntryData.get();
+        for (size_t i = bindings.size(); i > 0; i--) {
+            const BindingManagementEntryDataType &entry = bindings[i - 1];
+            if (entry.clientAddress->device.get() == device || entry.serverAddress->device.get() == device) {
+                bindings.erase(bindings.begin() + static_cast<ptrdiff_t>(i - 1));
+                removed++;
+            }
+        }
+    }
+    if (removed > 0) {
+        eebus.trace_fmtln("EEBUS: Removed %zu subscriptions/bindings of disconnected device %s", removed, device.c_str());
+    }
+}
+
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     return build_entity_info(EntityTypeEnumType::DeviceInformation, "Node Management");

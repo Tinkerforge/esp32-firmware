@@ -125,6 +125,8 @@ public:
     }
 
     bool is_subscribed(FeatureAddressType local, FeatureAddressType remote);
+
+    [[nodiscard]] bool knows_device(const std::string &device) const;
     /**
      * Gets the address of a feature for a given role and use case.
      * @param feature The feature to get the address for.
