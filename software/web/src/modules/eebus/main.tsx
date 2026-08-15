@@ -273,7 +273,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         this.setState({config_enable: cfg.enable}); // avoid round trip time
         // TODO: why is this unchecked? Currently cargo-culted from OCPP and Modbus TCP. Maybe add those API definitions to ocpp/api.ts (or modbus_tcp or eebus) with //APIPath?
         await API.save_unchecked('evse/eebus_enabled', {enabled: cfg.enable}, () => __("eebus.script.save_failed"));
-        await super.sendSave(topic, cfg);
+        // The peers array is not edited by this form: it is mutated out-of-band via
+        // eebus/add and eebus/remove. Always send the firmware's current peers,
+        // otherwise saving a dirty form would restore peers that were removed
+        // (or drop peers that were added) while the form was open.
+        await super.sendSave(topic, {...cfg, peers: API.get('eebus/config').peers});
     }
 
     render(props: {}, state: EEBusState & EEBusConfig) {
