@@ -1448,6 +1448,14 @@ esp_err_t tf_websocket_client_start(tf_websocket_client_handle_t client)
     return ESP_OK;
 }
 
+TaskHandle_t tf_websocket_client_get_task_handle(tf_websocket_client_handle_t client)
+{
+    if (client == NULL) {
+        return NULL;
+    }
+    return client->task_handle;
+}
+
 esp_err_t tf_websocket_client_stop(tf_websocket_client_handle_t client)
 {
     if (client == NULL) {
