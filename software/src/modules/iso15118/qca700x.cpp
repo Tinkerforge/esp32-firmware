@@ -29,6 +29,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <esp_heap_caps.h>
 #include "esp_vfs_l2tap.h"
 #include "esp_netif.h"
 #include "esp_mac.h"
@@ -38,155 +39,335 @@
 #include "lwip/ip_addr.h"
 #include "bindings/hal_common.h"
 
+#include "tools/freertos.h"
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
+
+
+/**** Future considerations ****
+If we need faster QCA data transfer in the future, we can drive the dma trigger by the io_scheduler:
+
+// io_scheduler API (new)
+io_scheduler.register_poll_hook([this]() { qca700x.io_tick(); });
+
+// task_loop becomes:
+for (;;) {
+    watchdog reset
+    tf_hal_tick(&hal, 0);
+    run_poll_hooks(); // <- QCA gets serviced here, every ~1 ms
+    ... pending_await handling ...
+    ... due jobs at JOB priority ...
+}
+
+Ownership: the QCA SPI device becomes io-task-owned, like the Bricklet HAL.
+Frame delivery: esp_netif_receive() and the l2tap filter are already designed to be called from a driver's own task
+
+
+Variant A: IO task only drains, main task parses
+Variant B: Parsing also moves to the io task (full starvation immunity against http task)
+
+Variant B may actually be necessary for ISO 15118-20, because of the TLS timing constraints.
+*/
 
 #define QCA700X_SPI_CHIP_SELECT_PIN 4
 #define QCA700X_SPI_MISO_PIN 39 // SENSOR_VN
 #define QCA700X_SPI_MOSI_PIN 15
 #define QCA700X_SPI_CLOCK_PIN 2
 
-void QCA700x::spi_transceive(const uint8_t *write_buffer, uint8_t *read_buffer, const uint32_t length) {
-    memcpy(read_buffer, write_buffer, length);
-    vspi->transfer(read_buffer, length);
-}
-
-void QCA700x::spi_select()
+bool QCA700x::spi_init()
 {
-    vspi->beginTransaction(spi_settings);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    REG_WRITE(GPIO_OUT_W1TC_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
-#pragma GCC diagnostic pop
-}
+    spi_bus_config_t bus_config = {};
+    bus_config.mosi_io_num     = QCA700X_SPI_MOSI_PIN;
+    bus_config.miso_io_num     = QCA700X_SPI_MISO_PIN;
+    bus_config.sclk_io_num     = QCA700X_SPI_CLOCK_PIN;
+    bus_config.quadwp_io_num   = -1;
+    bus_config.quadhd_io_num   = -1;
+    bus_config.max_transfer_sz = QCA700X_DMA_SCRATCH_SIZE + 4;
 
-void QCA700x::spi_deselect()
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    REG_WRITE(GPIO_OUT_W1TS_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
-#pragma GCC diagnostic pop
-    vspi->endTransaction();
-}
+    esp_err_t err = spi_bus_initialize(SPI3_HOST, &bus_config, SPI_DMA_CH_AUTO);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: spi_bus_initialize failed: %s", esp_err_to_name(err));
+        return false;
+    }
 
-void QCA700x::spi_write(const uint8_t *data, const uint16_t length)
-{
-    uint8_t tmp_read_buf[QCA700X_BUFFER_SIZE] = {0};
-    spi_transceive(data, tmp_read_buf, length);
-}
+    // Mode 3 (CPOL=1, CPHA=1), 1.4 MHz, 16-bit command phase, hardware CS.
+    spi_device_interface_config_t device_config = {};
+    device_config.command_bits   = 16;
+    device_config.mode           = 3;
+    device_config.clock_speed_hz = 1400000;
+    device_config.spics_io_num   = QCA700X_SPI_CHIP_SELECT_PIN;
+    device_config.queue_size     = 1;
 
-void QCA700x::spi_read(uint8_t *data, const uint32_t length)
-{
-    const uint8_t tmp_write_buf[QCA700X_BUFFER_SIZE] = {0};
-    spi_transceive(tmp_write_buf, data, length);
-}
+    err = spi_bus_add_device(SPI3_HOST, &device_config, &spi_dev);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: spi_bus_add_device failed: %s", esp_err_to_name(err));
+        spi_bus_free(SPI3_HOST);
+        spi_dev = nullptr;
+        return false;
+    }
 
-void QCA700x::spi_write_16bit_value(const uint16_t value)
-{
-    const uint8_t value_be[2] = {
-        static_cast<uint8_t>(value >> 8),
-        static_cast<uint8_t>(value & 0xFF)
-    };
+    dma_scratch = static_cast<uint8_t *>(heap_caps_malloc(QCA700X_DMA_SCRATCH_SIZE + 4, MALLOC_CAP_DMA));
+    if (dma_scratch == nullptr) {
+        iso15118.trace("QCA700x: Failed to allocate DMA scratch buffer");
+        spi_bus_remove_device(spi_dev);
+        spi_dev = nullptr;
+        spi_bus_free(SPI3_HOST);
+        return false;
+    }
 
-    spi_write(value_be, 2);
-}
-
-uint16_t QCA700x::spi_read_16bit_value()
-{
-    uint8_t value[2] = {0, 0};
-    spi_read(value, 2);
-
-    return static_cast<uint16_t>((value[0] << 8) | value[1]);
-}
-
-void QCA700x::spi_write_header(const uint16_t length)
-{
-    const uint8_t data[QCA700X_SEND_HEADER_SIZE] = {
-        0xAA, 0xAA, 0xAA, 0xAA,
-        static_cast<uint8_t>( length       & 0xFF),
-        static_cast<uint8_t>((length >> 8) & 0xFF),
-        0, 0
-    };
-    spi_write(data, 8);
-}
-
-void QCA700x::spi_write_footer()
-{
-    const uint8_t data[QCA700X_SEND_FOOTER_SIZE] = {0x55, 0x55};
-    spi_write(data, 2);
-}
-
-void QCA700x::spi_init()
-{
-    pinMode(QCA700X_SPI_CHIP_SELECT_PIN, OUTPUT);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    REG_WRITE(GPIO_OUT_W1TS_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
-#pragma GCC diagnostic pop
-
-    spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
-    vspi = new SPIClass(VSPI);
-    vspi->begin(QCA700X_SPI_CLOCK_PIN, QCA700X_SPI_MISO_PIN, QCA700X_SPI_MOSI_PIN);
+    return true;
 }
 
 uint16_t QCA700x::read_register(const uint16_t reg)
 {
-    spi_select();
-    spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_INTERNAL | reg);
-    const uint16_t value = spi_read_16bit_value();
-    spi_deselect();
+    if (spi_dev == nullptr) {
+        return 0xFFFF; // Same value as reading from a disconnected bus
+    }
 
-    return value;
+    finish_pending_op(true);
+
+    spi_transaction_t transaction = {};
+    transaction.cmd    = static_cast<uint16_t>(QCA700X_SPI_READ | QCA700X_SPI_INTERNAL | reg);
+    transaction.length = 16; // Data phase: 16-bit register value
+    transaction.flags  = SPI_TRANS_USE_RXDATA | SPI_TRANS_USE_TXDATA;
+
+    esp_err_t err = spi_device_polling_transmit(spi_dev, &transaction);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Read of register 0x%04X failed: %s", reg, esp_err_to_name(err));
+        return 0xFFFF;
+    }
+
+    return static_cast<uint16_t>((transaction.rx_data[0] << 8) | transaction.rx_data[1]);
 }
 
 void QCA700x::write_register(const uint16_t reg, const uint16_t value)
 {
-    spi_select();
-    spi_write_16bit_value(QCA700X_SPI_WRITE | QCA700X_SPI_INTERNAL | reg);
-    spi_write_16bit_value(value);
-    spi_deselect();
+    if (spi_dev == nullptr) {
+        return;
+    }
+
+    finish_pending_op(true);
+
+    spi_transaction_t transaction = {};
+    transaction.cmd        = static_cast<uint16_t>(QCA700X_SPI_WRITE | QCA700X_SPI_INTERNAL | reg);
+    transaction.length     = 16; // Data phase: 16-bit register value
+    transaction.flags      = SPI_TRANS_USE_TXDATA;
+    transaction.tx_data[0] = static_cast<uint8_t>(value >> 8);
+    transaction.tx_data[1] = static_cast<uint8_t>(value & 0xFF);
+
+    esp_err_t err = spi_device_polling_transmit(spi_dev, &transaction);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Write of register 0x%04X failed: %s", reg, esp_err_to_name(err));
+    }
 }
 
-uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
+// Reads length bytes from the QCA700x external read buffer into dma_scratch.
+// The BFR_SIZE register write must directly precede the external read, so
+// nothing else may use the SPI device in between.
+bool QCA700x::external_read_to_scratch(const uint16_t length)
 {
+    write_register(QCA700X_SPI_REG_BFR_SIZE, length);
+
+    spi_transaction_t transaction = {};
+    transaction.cmd       = static_cast<uint16_t>(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
+    transaction.length    = static_cast<size_t>(length) * 8;
+    transaction.rx_buffer = dma_scratch;
+
+    esp_err_t err = spi_device_polling_transmit(spi_dev, &transaction);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: External read of %u bytes failed: %s", length, esp_err_to_name(err));
+        return false;
+    }
+
+    return true;
+}
+
+// Starts an asynchronous DMA burst read into dma_scratch if the modem has data available.
+void QCA700x::start_burst_read()
+{
+    if (spi_dev == nullptr || read_in_flight || write_in_flight) {
+        return;
+    }
+
     const uint16_t rdbuf_byte_ava = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA);
 
     // 0xFFFF typically indicates no modem connected (SPI returns all 1s when no device)
     if (rdbuf_byte_ava == 0xFFFF) {
-        return 0;
+        return;
     }
 
-    const uint16_t available = std::min(length, rdbuf_byte_ava);
+    // Cap at the free space in the reassembly buffer and at the DMA scratch
+    // buffer size. A bigger backlog is drained over multiple polls.
+    // Frames split between reads are reassembled in spi_buffer.
+    const uint16_t space = static_cast<uint16_t>(QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - spi_buffer_length);
+    const uint16_t available = std::min({rdbuf_byte_ava, space, static_cast<uint16_t>(QCA700X_DMA_SCRATCH_SIZE)});
     if (available == 0) {
-        return 0;
+        return;
     }
 
+    // The BFR_SIZE register write must directly precede the external read,
+    // so nothing else may use the SPI device until the read completed.
     write_register(QCA700X_SPI_REG_BFR_SIZE, available);
 
-    spi_select();
-    spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
-    spi_read(data, available);
-    spi_deselect();
+    read_transaction           = {};
+    read_transaction.cmd       = static_cast<uint16_t>(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
+    read_transaction.length    = static_cast<size_t>(available) * 8;
+    read_transaction.rx_buffer = dma_scratch;
 
-    iso15118.trace_packet(data, available);
-    return available;
+    esp_err_t err = spi_device_queue_trans(spi_dev, &read_transaction, 0);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Failed to queue burst read of %u bytes: %s", available, esp_err_to_name(err));
+        return;
+    }
+
+    read_length = available;
+    read_in_flight = true;
+}
+
+// Picks up a completed asynchronous burst read and appends the data to spi_buffer.
+// Returns true if no read is in flight.
+bool QCA700x::finish_burst_read(const bool wait)
+{
+    if (!read_in_flight) {
+        return true;
+    }
+
+    spi_transaction_t *finished = nullptr;
+    esp_err_t err = spi_device_get_trans_result(spi_dev, &finished, wait ? portMAX_DELAY_nowarn : 0);
+    if (err == ESP_ERR_TIMEOUT) {
+        return false; // Still running
+    }
+
+    read_in_flight = false;
+
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Burst read of %u bytes failed: %s", read_length, esp_err_to_name(err));
+        return true;
+    }
+
+    memcpy(&spi_buffer[spi_buffer_length], dma_scratch, read_length);
+    spi_buffer_length = static_cast<uint16_t>(spi_buffer_length + read_length);
+
+    iso15118.trace_packet(dma_scratch, read_length);
+
+    return true;
+}
+
+// Starts an asynchronous DMA burst write of the oldest pending TX frame.
+void QCA700x::start_burst_write()
+{
+    if (spi_dev == nullptr || read_in_flight || write_in_flight || tx_queue_count == 0) {
+        return;
+    }
+
+    TxFrame *frame = &tx_queue[tx_queue_head];
+
+    // Modem write buffer flow control at issue time. 0xFFFF indicates no
+    // modem connected. Issue the write anyway (it goes into the void), so
+    // the queue can't clog while the modem is absent or resetting.
+    const uint16_t wrbuf_spc_ava = read_register(QCA700X_SPI_REG_WRBUF_SPC_AVA);
+    if (wrbuf_spc_ava != 0xFFFF && wrbuf_spc_ava < frame->total_length) {
+        // No space yet. Retried on an upcoming poll.
+        return;
+    }
+
+    // The BFR_SIZE register write must directly precede the external write,
+    // so nothing else may use the SPI device until the write completed.
+    write_register(QCA700X_SPI_REG_BFR_SIZE, frame->total_length);
+
+    write_transaction           = {};
+    write_transaction.cmd       = static_cast<uint16_t>(QCA700X_SPI_WRITE | QCA700X_SPI_EXTERNAL);
+    write_transaction.length    = static_cast<size_t>(frame->total_length) * 8;
+    write_transaction.tx_buffer = frame->buffer;
+
+    esp_err_t err = spi_device_queue_trans(spi_dev, &write_transaction, 0);
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Failed to queue burst write of %u bytes: %s", frame->total_length, esp_err_to_name(err));
+        return;
+    }
+
+    write_in_flight = true;
+}
+
+// Picks up a completed asynchronous burst write and frees the sent frame.
+// With wait == false it returns false if the transfer is still running.
+// With wait == true it blocks until the transfer completed.
+// Returns true if no write is in flight.
+bool QCA700x::finish_burst_write(const bool wait)
+{
+    if (!write_in_flight) {
+        return true;
+    }
+
+    spi_transaction_t *finished = nullptr;
+    esp_err_t err = spi_device_get_trans_result(spi_dev, &finished, wait ? portMAX_DELAY_nowarn : 0);
+    if (err == ESP_ERR_TIMEOUT) {
+        return false; // Still running
+    }
+
+    write_in_flight = false;
+
+    TxFrame *frame = &tx_queue[tx_queue_head];
+
+    if (err != ESP_OK) {
+        iso15118.trace("QCA700x: Burst write of %u bytes failed: %s", frame->total_length, esp_err_to_name(err));
+    }
+
+    free(frame->buffer);
+    frame->buffer = nullptr;
+    frame->total_length = 0;
+    tx_queue_head = (tx_queue_head + 1) % QCA700X_TX_QUEUE_LENGTH;
+    tx_queue_count--;
+
+    return true;
+}
+
+// Completes whichever burst transfer is in flight (at most one at a time).
+bool QCA700x::finish_pending_op(const bool wait)
+{
+    if (read_in_flight) {
+        return finish_burst_read(wait);
+    }
+
+    if (write_in_flight) {
+        return finish_burst_write(wait);
+    }
+
+    return true;
+}
+
+// Starts the next asynchronous transfer.
+void QCA700x::start_next_op()
+{
+    if (read_in_flight || write_in_flight) {
+        return;
+    }
+
+    if (tx_queue_count > 0) {
+        start_burst_write();
+    }
+
+    start_burst_read(); // No-op if the write was issued.
 }
 
 void QCA700x::flush_receive_buffer()
 {
     uint16_t total_flushed = 0;
     uint16_t available;
-    uint8_t discard[256];
 
     while ((available = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA)) > 0) {
-        uint16_t to_read = std::min(available, static_cast<uint16_t>(sizeof(discard)));
-        write_register(QCA700X_SPI_REG_BFR_SIZE, to_read);
-        spi_select();
-        spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
-        spi_read(discard, to_read);
-        spi_deselect();
-        total_flushed += to_read;
+        // 0xFFFF indicates no modem connected.
+        if (available == 0xFFFF) {
+            break;
+        }
+
+        const uint16_t to_read = std::min(available, static_cast<uint16_t>(QCA700X_DMA_SCRATCH_SIZE));
+        if (!external_read_to_scratch(to_read)) {
+            break;
+        }
+
+        total_flushed = static_cast<uint16_t>(total_flushed + to_read);
     }
 
     if (total_flushed > 0) {
@@ -234,16 +415,57 @@ int16_t QCA700x::find_sof_marker(const uint8_t *data, uint16_t length)
 
 void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
 {
-    write_register(QCA700X_SPI_REG_BFR_SIZE, length + QCA700X_SEND_HEADER_SIZE + QCA700X_SEND_FOOTER_SIZE);
+    if (spi_dev == nullptr) {
+        return;
+    }
 
-    spi_select();
-    spi_write_16bit_value(QCA700X_SPI_WRITE | QCA700X_SPI_EXTERNAL);
-    spi_write_header(length);
-    spi_write(data, length);
-    spi_write_footer();
-    spi_deselect();
+    constexpr uint16_t max_payload = QCA700X_DMA_SCRATCH_SIZE - QCA700X_SEND_HEADER_SIZE - QCA700X_SEND_FOOTER_SIZE;
+    if (length > max_payload) {
+        iso15118.trace("QCA700x: write_burst frame too long: %u > %u", length, max_payload);
+        return;
+    }
+
+    if (tx_queue_count >= QCA700X_TX_QUEUE_LENGTH) {
+        iso15118.trace("QCA700x: TX queue full, dropping frame of %u bytes", length);
+        return;
+    }
+
+    const uint16_t total_length = static_cast<uint16_t>(length + QCA700X_SEND_HEADER_SIZE + QCA700X_SEND_FOOTER_SIZE);
+
+    // Build [header | payload | footer] contiguously in a DMA-capable
+    // buffer, so everything goes out in a single transaction with CS
+    // continuously asserted, as the QCA700x requires. The buffer is freed
+    // by finish_burst_write() once the frame was sent.
+    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(total_length, MALLOC_CAP_DMA));
+    if (buffer == nullptr) {
+        iso15118.trace("QCA700x: Failed to allocate TX frame of %u bytes", total_length);
+        return;
+    }
+
+    buffer[0] = 0xAA;
+    buffer[1] = 0xAA;
+    buffer[2] = 0xAA;
+    buffer[3] = 0xAA;
+    buffer[4] = static_cast<uint8_t>( length       & 0xFF);
+    buffer[5] = static_cast<uint8_t>((length >> 8) & 0xFF);
+    buffer[6] = 0;
+    buffer[7] = 0;
+    memcpy(&buffer[QCA700X_SEND_HEADER_SIZE], data, length);
+    buffer[QCA700X_SEND_HEADER_SIZE + length]     = 0x55;
+    buffer[QCA700X_SEND_HEADER_SIZE + length + 1] = 0x55;
+
+    TxFrame *frame = &tx_queue[(tx_queue_head + tx_queue_count) % QCA700X_TX_QUEUE_LENGTH];
+    frame->buffer = buffer;
+    frame->total_length = total_length;
+    tx_queue_count++;
 
     iso15118.trace_packet(data, length);
+
+    // Issue immediately when possible to keep TX latency low.
+    if (!write_in_flight) {
+        finish_burst_read(true);
+        start_burst_write();
+    }
 }
 
 // Checks frame validity and returns ethernet frame length if valid.
@@ -549,7 +771,9 @@ void QCA700x::state_machine_loop()
 {
     // Initialize SPI on first use
     if (!spi_initialized) {
-        spi_init();
+        if (!spi_init()) {
+            return;
+        }
         spi_initialized = true;
     }
 
@@ -562,14 +786,17 @@ void QCA700x::state_machine_loop()
         }
     }
 
-    // Poll SPI for data from QCA700x
-    spi_buffer_length += read_burst(&spi_buffer[spi_buffer_length],
-                                    QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - spi_buffer_length);
+    // Pick up a completed burst transfer.
+    // If there is nothing to do the main loop stays free and we check again on the next tick.
+    if (!finish_pending_op(false)) {
+        return;
+    }
 
     // Only process frames if modem has been detected via signature check
     // This prevents processing garbage data when no modem is connected
     if (!modem_detected) {
         spi_buffer_length = 0;
+        start_next_op(); // Keep sending and draining the modem's hardware buffer.
         return;
     }
 
@@ -699,4 +926,7 @@ void QCA700x::state_machine_loop()
             spi_buffer_length = 0;
         }
     }
+
+    // Kick off the next asynchronous transfer.
+    start_next_op();
 }

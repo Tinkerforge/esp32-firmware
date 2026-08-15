@@ -22,7 +22,7 @@
 #include "module.h"
 #include "config.h"
 
-#include <SPI.h>
+#include <driver/spi_master.h>
 
 #include "esp_netif.h"
 #include "esp_eth_netif_glue.h"
@@ -60,6 +60,16 @@
 #define QCA700X_HW_PKT_SIZE 4
 #define QCA700X_MAC_SIZE 6
 
+// Internal-RAM scratch buffer for SPI DMA transfers.
+// The classic ESP32's SPIDMA cannot access PSRAM, so this will end up in DRAM.
+// Sized to hold a full Ethernet frame (1522 bytes) plus
+// the QCA700x send framing (8 byte header + 2 byte footer).
+#define QCA700X_DMA_SCRATCH_SIZE 1536
+
+// Maximum number of frames waiting to be sent to the modem. Writes are
+// asynchronous. Frames are sent in FIFO order. On overflow new frames are dropped.
+#define QCA700X_TX_QUEUE_LENGTH 8
+
 #define QCA700X_SEND_HEADER_SIZE (4+2+2)
 #define QCA700X_SEND_FOOTER_SIZE 2
 
@@ -75,22 +85,38 @@ typedef struct esp_qca700x_netif_driver_s {
 class QCA700x final
 {
 private:
-    void spi_transceive(const uint8_t *write_buffer, uint8_t *read_buffer, const uint32_t length);
-    void spi_select();
-    void spi_deselect();
-    void spi_write_16bit_value(const uint16_t value);
-    uint16_t spi_read_16bit_value();
-    void spi_read(uint8_t *data, const uint32_t length);
-    void spi_write(const uint8_t *data, const uint16_t length);
-    void spi_write_header(const uint16_t length);
-    void spi_write_footer();
-    void spi_init();
+    bool spi_init();
+    bool external_read_to_scratch(const uint16_t length);
+    void start_burst_read();
+    bool finish_burst_read(const bool wait);
+    void start_burst_write();
+    bool finish_burst_write(const bool wait);
+    bool finish_pending_op(const bool wait);
+    void start_next_op();
     void setup_l2tap();
     void flush_receive_buffer();  // Flush hardware buffer only
     int16_t find_sof_marker(const uint8_t *data, uint16_t length);
 
-    SPISettings spi_settings;
-    SPIClass *vspi;
+    spi_device_handle_t spi_dev = nullptr;
+
+    uint8_t *dma_scratch = nullptr;
+
+    // Asynchronous burst read state.
+    bool read_in_flight = false;
+    uint16_t read_length = 0;
+    spi_transaction_t read_transaction = {};
+
+    // Asynchronous burst write state.
+    struct TxFrame {
+        uint8_t *buffer; // DMA-capable, [header | payload | footer]
+        uint16_t total_length;
+    };
+
+    bool write_in_flight = false;
+    spi_transaction_t write_transaction = {};
+    TxFrame tx_queue[QCA700X_TX_QUEUE_LENGTH] = {};
+    size_t tx_queue_head = 0;
+    size_t tx_queue_count = 0;
 
     // SPI receive buffer for polling
     uint8_t *spi_buffer = nullptr;
@@ -124,7 +150,6 @@ public:
     QCA700x(){}
     uint16_t read_register(const uint16_t reg);
     void write_register(const uint16_t reg, const uint16_t value);
-    uint16_t read_burst(uint8_t *data, const uint16_t length);
     void write_burst(const uint8_t *data, const uint16_t length);
     int16_t check_receive_frame(const uint8_t *data, const uint16_t length, uint16_t *total_frame_length_out = nullptr);
 
