@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2024-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,10 +30,6 @@
 #include "tools.h"
 #include "tools/hexdump.h"
 #include "tools/net.h"
-
-#include "esp_transport_ws.h"
-
-static constexpr uint16_t SHIP_PORT = 4712;
 
 static const char cert_begin[] = "-----BEGIN CERTIFICATE-----";
 
@@ -209,9 +205,7 @@ void Ship::disable_ship()
     for (auto &ship_connection : eebus.ship.ship_connections) {
         ship_connection->schedule_close(0_ms, "EEBUS disabled");
     }
-    // If mDNS is not started now,
-    // it was not started while enabling ship
-    // -> We don't have to remove the service in this case
+    // If mDNS is not started, the service was never announced and doesn't need to be removed
     if (network.is_mdns_started() && mdns_service_exists("_ship", "_tcp", NULL)) {
         mdns_service_remove("_ship", "_tcp");
     }
@@ -248,98 +242,258 @@ void Ship::setup_wss()
         eebus.set_own_ski(ship_ski);
     }
 
-    // Websocket initial connection handler
+    // Only copy data and push events on the http tasks
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient *ws_client) {
         if (!eebus.is_enabled()) {
             return false;
         }
 
-        const String peer_ip = tf_peer_address_of_sockfd(ws_client->getFd()).toString();
-
-        // Try to extract the peer's SKI from the TLS client certificate.
-        String tls_ski = extract_peer_ski_from_tls(web_sockets.get_httpd_handle(), ws_client->getFd());
-
-        // Try to find the peer by SKI first, then fall back to IP
-        std::shared_ptr<ShipNode> node;
-        if (!tls_ski.isEmpty()) {
-            node = peer_handler.get_peer_by_ski(tls_ski);
-            if (node != nullptr) {
-                // Peer found by SKI. Update its IP to the current one.
-                peer_handler.update_ip_by_ski(tls_ski, peer_ip, true);
-                eebus.trace_fmtln("Incoming SHIP connection from %s identified by TLS cert SKI %s", peer_ip.c_str(), tls_ski.c_str());
-            } else {
-                // SKI not known yet - create a new peer with this SKI
-                eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", peer_ip.c_str(), tls_ski.c_str());
-                auto *peer = peer_handler.get_or_create_by_ski(tls_ski);
-                if (!peer->contains_ip(peer_ip)) {
-                    peer->ip_address.insert(peer->ip_address.begin(), peer_ip);
-                }
-                node = peer_handler.get_peer_by_ski(tls_ski);
-            }
-        } else {
-            // No TLS client cert available - fall back to IP-based identification
-            node = peer_handler.get_peer_by_ip(peer_ip);
-            if (node != nullptr) {
-                peer_handler.update_ip_by_ski(node->txt_ski, peer_ip, true);
-            } else {
-                eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s (no TLS client cert)", peer_ip.c_str());
-                peer_handler.update_ip_by_ip(peer_ip, peer_ip);
-                node = peer_handler.get_peer_by_ip(peer_ip);
-            }
-        }
-
-        peer_handler.update_state_by_ip(peer_ip, NodeState::Connected);
-        eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", peer_ip.c_str(), node->txt_ski.c_str());
-        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, node)));
-        logger.printfln("New SHIP Client connected from %s", node->node_name().c_str());
-
-        if (ws_client->setCtx(ship_connections.back().get()) != nullptr) {
-            esp_system_abort("Clobbered previously set WebSocketsClient context");
-        }
-        task_scheduler.scheduleOnce(
-            []() {
-                eebus.ship.discover_ship_peers();
-                eebus.update_peers_state();
-            },
-            2_s);
-
+        const int fd = ws_client->getFd();
+        RxEvent event;
+        event.type = RxEvent::Type::Connected;
+        event.role = ShipConnection::Role::Server;
+        event.fd = fd;
+        event.peer_ip = tf_peer_address_of_sockfd(fd).toString();
+        // The TLS session is only guaranteed to be accessible on the httpd task.
+        event.tls_ski = extract_peer_ski_from_tls(web_sockets.get_httpd_handle(), fd);
+        push_rx_event(std::move(event));
         return true;
     });
 
     web_sockets.onDisconnect_HTTPThread([this](WebSocketsClient *client, bool /*clean_close*/) {
-        ShipConnection *ship_connection = static_cast<ShipConnection *>(client->getCtx());
-
-        if (ship_connection == nullptr) {
-            // Connection closed by us, ship connection context already gone.
-            return;
-        }
-
-        eebus.trace_fmtln("onDisconnect_HTTPThread called for %s", ship_connection->peer_node->node_name().c_str());
-        client->setCtx(nullptr);
-        ship_connection->ws_client = nullptr; // Connection already closed, can't use it anymore.
-        ship_connection->schedule_close(0_ms, "Websocket disconnected");
+        RxEvent event;
+        event.type = RxEvent::Type::Disconnected;
+        event.role = ShipConnection::Role::Server;
+        event.fd = client->getFd();
+        event.reason = "Websocket disconnected";
+        push_rx_event(std::move(event));
     });
 
-    // Websocket data received handler
     web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
-        if (!eebus.is_enabled()) {
-            eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
+        RxEvent event;
+        event.type = RxEvent::Type::Frame;
+        event.role = ShipConnection::Role::Server;
+        event.fd = client->getFd();
+        event.fin = ws_pkt->final;
+        event.data_len = ws_pkt->len;
+        event.data.reset(static_cast<uint8_t *>(malloc_psram(ws_pkt->len)));
+        if (!event.data) {
+            eebus.trace_fmtln("onBinaryDataReceived: PSRAM allocation failed, dropping frame (len %zu)", ws_pkt->len);
             return;
         }
-        ShipConnection *ship_connection = static_cast<ShipConnection *>(client->getCtx());
-
-        if (ship_connection == nullptr) {
-            eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection attached to WS client with fd %d", client->getFd());
-            return;
-        }
-        ship_connection->frame_received(ws_pkt);
+        memcpy(event.data.get(), ws_pkt->payload, ws_pkt->len);
+        push_rx_event(std::move(event));
     });
 
-    // Start websocket on the HTTPS server
     web_sockets.start("/ship/", "/eebus/ws", "ship", SHIP_PORT);
     logger.printfln("SHIP started up and accepting connections");
 
     wss_registered = true;
+}
+
+// Callable from any task
+bool Ship::push_rx_event(RxEvent &&event)
+{
+    switch (rx_queue.push(std::move(event))) {
+        case ShipRxQueue::PushResult::PushedToEmpty:
+            task_scheduler.scheduleOnce([this]() {
+                drain_rx_events();
+            });
+            [[fallthrough]];
+        case ShipRxQueue::PushResult::Pushed:
+            return true;
+        default:
+            eebus.trace_fmtln("push_rx_event: queue full, dropping event (type %u, len %zu)", static_cast<unsigned>(event.type), event.data_len);
+            return false;
+    }
+}
+
+void Ship::drain_rx_events()
+{
+    RxEvent event;
+    while (rx_queue.pop(&event)) {
+        process_rx_event(event);
+    }
+}
+
+ShipConnection *Ship::find_connection(const RxEvent &event)
+{
+    for (const auto &conn : ship_connections) {
+        if (conn->closing_scheduled || conn->role != event.role) {
+            continue;
+        }
+        if (event.role == ShipConnection::Role::Server ? conn->ws_fd == event.fd : conn->ws_server == event.ws_handle) {
+            return conn.get();
+        }
+    }
+    return nullptr;
+}
+
+void Ship::process_rx_event(RxEvent &event)
+{
+    if (event.type == RxEvent::Type::Connected) {
+        handle_connected(event);
+        return;
+    }
+
+    ShipConnection *conn = find_connection(event);
+    if (conn == nullptr) {
+        eebus.trace_fmtln("process_rx_event: no connection for event (type %u)", static_cast<unsigned>(event.type));
+        return;
+    }
+
+    switch (event.type) {
+        case RxEvent::Type::Frame:
+            conn->process_frame(event.data.get(), event.data_len, event.fin);
+            break;
+        case RxEvent::Type::Disconnected:
+            conn->ws_fd = -1; // Socket is already gone, don't close it again.
+            conn->schedule_close(0_ms, event.reason);
+            break;
+        case RxEvent::Type::ClientConnected:
+            conn->start_client_confirm();
+            // SHIP v1.1.0 12.2.3: check for duplicates right after the TLS connection is established
+            resolve_duplicate_connections(conn->peer_node);
+            break;
+        default:
+            break;
+    }
+}
+
+void Ship::handle_connected(const RxEvent &event)
+{
+    if (!is_enabled || !eebus.is_enabled()) {
+        ws_close(event.fd);
+        return;
+    }
+
+    // The SKI from the TLS client certificate is the only reliable peer identity
+    // (multiple SHIP peers may share one host IP). SHIP 9.1 requires client certificates.
+    if (event.tls_ski.isEmpty()) {
+        eebus.trace_fmtln("Rejecting incoming SHIP connection from %s: no SKI from TLS client cert", event.peer_ip.c_str());
+        logger.printfln("Rejected SHIP connection from %s: no TLS client certificate", event.peer_ip.c_str());
+        ws_close(event.fd);
+        return;
+    }
+
+    if (peer_handler.get_peer_by_ski(event.tls_ski) != nullptr) {
+        eebus.trace_fmtln("Incoming SHIP connection from %s identified by TLS cert SKI %s", event.peer_ip.c_str(), event.tls_ski.c_str());
+    } else {
+        eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", event.peer_ip.c_str(), event.tls_ski.c_str());
+    }
+    ShipNode *node = peer_handler.get_or_create_by_ski(event.tls_ski);
+    peer_handler.update_ip_by_ski(event.tls_ski, event.peer_ip, true);
+
+    node->state = NodeState::Connected;
+    eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", event.peer_ip.c_str(), node->txt_ski.c_str());
+    ship_connections.push_back(make_unique_psram<ShipConnection>(event.fd, node));
+    logger.printfln("New SHIP Client connected from %s", node->node_name().c_str());
+
+    // SHIP v1.1.0 12.2.3: check for duplicates right after the peer is identified
+    resolve_duplicate_connections(node);
+
+    task_scheduler.scheduleOnce([]() {
+        eebus.ship.discover_ship_peers();
+        eebus.update_peers_state();
+    }, 2_s);
+}
+
+// SHIP v1.1.0 12.2.3: Prevent double connections with SKI comparison.
+void Ship::resolve_duplicate_connections(const ShipNode *node)
+{
+    if (node == nullptr || node->txt_ski.isEmpty()) {
+        return;
+    }
+
+    size_t count = 0;
+    for (const auto &conn : ship_connections) {
+        if (!conn->closing_scheduled && conn->peer_node == node) {
+            count++;
+        }
+    }
+    if (count < 2) {
+        return;
+    }
+
+    String own_ski = eebus.state.get("ski")->asString();
+    String peer_ski = node->txt_ski;
+    own_ski.toLowerCase();
+    peer_ski.toLowerCase();
+
+    if (own_ski == peer_ski) {
+        // Both sides would decide identically, so the tie-break cannot work.
+        // This happens when two peers (mis)use the same certificate.
+        logger.printfln("SHIP: Duplicate connections to %s with SKI equal to our own, cannot resolve. Are two peers sharing one certificate?", node->node_name().c_str());
+        return;
+    }
+
+    // SKIs are equal-length hex strings, so lexicographic comparison of the
+    // normalized strings equals numeric comparison of the 160 bit SKI values.
+    if (own_ski > peer_ski) {
+        eebus.trace_fmtln("SHIP 12.2.3: Duplicate connections to %s, we have the bigger SKI, keeping only the most recent connection", node->node_name().c_str());
+        close_all_but_most_recent(node);
+    } else {
+        // Smaller SKI: give the bigger-SKI peer 3 seconds to resolve the duplicate.
+        // (We skip the spec's optional WebSocket ping liveness check and simply
+        // close the older connections, which the spec permits.)
+        // Capture the SKI, not the node: the node may be erased within the 3 seconds.
+        eebus.trace_fmtln("SHIP 12.2.3: Duplicate connections to %s, waiting 3s for the bigger-SKI peer to resolve", node->node_name().c_str());
+        task_scheduler.scheduleOnce([this, ski = node->txt_ski]() {
+            if (!is_enabled || !eebus.is_enabled()) {
+                return;
+            }
+            const ShipNode *node = peer_handler.get_peer_by_ski(ski);
+            if (node == nullptr) {
+                return; // The peer was removed in the meantime.
+            }
+            size_t remaining = 0;
+            for (const auto &conn : ship_connections) {
+                if (!conn->closing_scheduled && conn->peer_node == node) {
+                    remaining++;
+                }
+            }
+            if (remaining < 2) {
+                return; // The peer resolved the duplicate in time.
+            }
+            eebus.trace_fmtln("SHIP 12.2.3: Bigger-SKI peer %s did not resolve duplicate connections within 3s, closing older connections", node->node_name().c_str());
+            close_all_but_most_recent(node);
+        }, 3_s);
+    }
+}
+
+void Ship::close_all_but_most_recent(const ShipNode *node)
+{
+    // ship_connections is in creation order: the last match is the most recent.
+    ShipConnection *most_recent = nullptr;
+    for (const auto &conn : ship_connections) {
+        if (!conn->closing_scheduled && conn->peer_node == node) {
+            most_recent = conn.get();
+        }
+    }
+
+    for (const auto &conn : ship_connections) {
+        if (conn->closing_scheduled || conn->peer_node != node || conn.get() == most_recent) {
+            continue;
+        }
+        eebus.trace_fmtln("SHIP 12.2.3: Closing duplicate connection to %s (role=%s, established=%d)", node->node_name().c_str(), conn->role == ShipConnection::Role::Client ? "client" : "server", conn->connection_established ? 1 : 0);
+        if (conn->connection_established) {
+            // Already in the data exchange state: terminate gracefully (SHIP 13.4.8).
+            conn->initiate_termination("Duplicate connection resolved per SHIP 12.2.3");
+        } else {
+            conn->schedule_close(0_ms, "Duplicate connection resolved per SHIP 12.2.3");
+        }
+    }
+}
+
+// Callable from the main task
+bool Ship::ws_send(int fd, const char *payload, size_t payload_len)
+{
+    return web_sockets.sendToClient(payload, payload_len, fd, HTTPD_WS_TYPE_BINARY);
+}
+
+void Ship::ws_close(int fd)
+{
+    web_sockets.closeClient_async(fd);
 }
 
 void Ship::connect_trusted_peers()
@@ -355,18 +509,18 @@ void Ship::connect_trusted_peers()
         return;
     }
 
-    auto peers = peer_handler.get_peers();
+    const auto &peers = peer_handler.get_peers();
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("connect_trusted_peers start, %zu peers known", peers.size());
 #endif
     int trusted_peer_count = 0;
 
-    for (auto &node : peers) {
+    for (const auto &node : peers) {
         if (!is_enabled || !eebus.is_enabled()) {
             break;
         }
 
-        if (!node->trusted) {
+        if (!node->trusted || node->pending_removal) {
             continue;
         }
         if (node->state != NodeState::Discovered && node->state != NodeState::Disconnected) {
@@ -384,7 +538,7 @@ void Ship::connect_trusted_peers()
         // Check if we already have an active connection to this peer
         bool already_connected = false;
         for (const auto &conn : ship_connections) {
-            if (conn->peer_node == node && !conn->closing_scheduled) {
+            if (conn->peer_node == node.get() && !conn->closing_scheduled) {
                 already_connected = true;
                 break;
             }
@@ -408,14 +562,15 @@ void Ship::connect_trusted_peers()
         websocket_cfg.subprotocol = "ship"; // SHIP 10.2
         websocket_cfg.disable_auto_reconnect = true;
         websocket_cfg.crt_bundle_attach = eebus_client_crt_bundle_attach;
-        websocket_cfg.task_stack = 8192;
+        websocket_cfg.task_stack = SHIP_CONNECTION_WS_CLIENT_TASK_STACK;
+        websocket_cfg.task_name = "eebus_ws";
 
         eebus.trace_fmtln("Connecting to trusted peer %s at %s:%d%s", node->node_name().c_str(), ip.c_str(), node->port, wss_path.c_str());
 
         node->state = NodeState::Connecting;
         eebus.update_peers_state();
 
-        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, node)));
+        ship_connections.push_back(make_unique_psram<ShipConnection>(websocket_cfg, node.get()));
         ship_connections.back()->start_client();
     }
 
@@ -434,258 +589,49 @@ void Ship::connect_trusted_peers()
 #endif
 }
 
-void Ship::setup_mdns()
-{
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
-    eebus.trace_fmtln("setup_mdns() start");
-#endif
-    if (!network.is_mdns_started()) {
-        logger.printfln("SHIP mDNS setup failed.");
-        eebus.trace_fmtln("setup_mdns() failed; mDNS not started");
-        return;
-    }
-    int ret = 0;
-
-    // SHIP 7.2 Service Name
-    ret = mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
-    if (ret != ESP_OK) {
-        logger.printfln("SHIP mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_add returned %d", ret);
-        return;
-    }
-    // SHIP 7.3.2 TXT Record
-    // Mandatory Fields
-    ret = mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
-    if (ret != ESP_OK) {
-        logger.printfln("SHIP mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for txtvers returned %d", ret);
-        return;
-    }
-    ret = mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str());
-    if (ret != ESP_OK) {
-        logger.printfln("SHIP mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for id returned %d", ret);
-        return;
-    }
-    // ManufaturerName-Model-UniqueID (max 63 bytes)
-    ret = mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
-    if (ret != ESP_OK) {
-        logger.printfln("SHIP mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for path returned %d", ret);
-        return;
-    }
-    ret = mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr());
-    if (ret != ESP_OK) {
-        logger.printfln("SHIP mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for ski returned %d", ret);
-        return;
-    }
-    // 40 byte hexadecimal digits representing the 160 bit SKI value
-
-    ret = mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
-    if (ret != ESP_OK) {
-        logger.printfln("Ship mDNS setup failed");
-        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for register returned %d", ret);
-        return;
-    }
-    // Optional Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER());
-    mdns_service_txt_item_set("_ship", "_tcp", "model", OPTIONS_PRODUCT_NAME());
-    mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
-
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
-    eebus.trace_fmtln("setup_mdns() done");
-#endif
-}
-
-void Ship::check_mdns_results_cb(mdns_search_once_t *)
-{
-    task_scheduler.scheduleOnce([]() {
-        if (!eebus.ship.is_enabled || !eebus.is_enabled()) {
-            return;
-        }
-        eebus.ship.check_mdns_results();
-    });
-}
-void Ship::check_mdns_results()
-{
-    if (!is_enabled || !eebus.is_enabled() || mdns_scan == nullptr) {
-        return;
-    }
-
-    mdns_result_t *results;
-    auto query_results = mdns_query_async_get_results(mdns_scan, 0, &results, nullptr);
-    mdns_query_async_delete(mdns_scan);
-    mdns_scan = nullptr;
-
-    if (!query_results) {
-        eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
-        update_discovery_state(ShipDiscoveryState::ScanDone);
-        return;
-    }
-    mdns_result_t *current = results;
-    while (current) {
-        String ip_address = "";
-        std::vector<String> ip_addresses{};
-        char buf[INET6_ADDRSTRLEN];
-        mdns_ip_addr_t *addr = current->addr;
-        while (addr) {
-            tf_ipaddr_ntoa(&addr->addr, buf, sizeof(buf));
-            ip_addresses.push_back(String(buf));
-            addr = addr->next;
-        }
-        if (ip_addresses.empty()) {
-            current = current->next;
-            continue;
-        }
-        String txt_vers;
-        String txt_id;
-        String txt_wss_path;
-        String txt_ski;
-        bool txt_autoregister = false;
-        String txt_brand;
-        String txt_model;
-        String txt_type;
-        String dns_name;
-        uint16_t port;
-
-        for (int i = 0; i < current->txt_count; i++) {
-            mdns_txt_item_t *txt = &current->txt[i];
-            if (txt->key == NULL || txt->value == NULL) {
-                continue;
-            }
-            // mandatory fields
-            if (strcmp(txt->key, "txtvers") == 0) {
-                txt_vers = txt->value;
-                //peer_handler.update_vers_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "id") == 0) {
-                txt_id = txt->value;
-                //peer_handler.update_id_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "path") == 0) {
-                txt_wss_path = txt->value;
-                //peer_handler.update_wss_path_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "ski") == 0) {
-                txt_ski = txt->value;
-                //peer_handler.update_ski_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "register") == 0) {
-                txt_autoregister = strcmp(txt->value, "true") == 0;
-                // peer_handler.update_autoregister_by_ip(ip_address, strcmp(txt->value, "true") == 0);
-                // Optional Fields
-            } else if (strcmp(txt->key, "brand") == 0) {
-                txt_brand = txt->value;
-                //peer_handler.update_brand_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "model") == 0) {
-                txt_model = txt->value;
-                //peer_handler.update_model_by_ip(ip_address, txt->value);
-            } else if (strcmp(txt->key, "type") == 0) {
-                txt_type = txt->value;
-                //peer_handler.update_type_by_ip(ip_address, txt->value);
-            }
-        }
-        if (txt_model.length() < 1)
-            txt_model = current->instance_name;
-        dns_name = String(current->hostname) + ".local";
-        port = current->port;
-        if (txt_vers.isEmpty() || txt_id.isEmpty() || txt_wss_path.isEmpty() || txt_ski.isEmpty()) {
-            eebus.trace_fmtln("Peer with IP %s missing mandatory TXT records, skipping", ip_addresses.front().c_str());
-            current = current->next;
-            continue;
-        }
-
-        // The SKI is the authoritative peer identity, not the IP. A peers SKI is never
-        // changed after creation: we only ever talk to peers whose SKI we know (the SKI is
-        // learned from the TLS client certificate on connect, and we never connect without
-        // one). Therefore mDNS results are matched by SKI only. If a new SKI shows up for an
-        // already-known IP, we assume its a different peer and it gets its own ShipNode; the IP
-        // may legitimately be shared between several peer entries or the peer may have a new SKI.
-        auto *peer = peer_handler.get_or_create_by_ski(txt_ski);
-        peer->txt_vers = txt_vers;
-        peer->txt_id = txt_id;
-        peer->txt_wss_path = txt_wss_path;
-        peer->txt_model = txt_model;
-        peer->txt_type = txt_type;
-        peer->txt_brand = txt_brand;
-        peer->txt_autoregister = txt_autoregister;
-        peer->dns_name = dns_name;
-        peer->port = port;
-        for (const String &ip : ip_addresses) {
-            peer_handler.update_ip_by_ski(txt_ski, ip);
-        }
-        if (peer->state == NodeState::Disconnected || peer->state == NodeState::LoadedFromConfig) {
-            peer->state = NodeState::Discovered;
-        }
-
-        current = current->next;
-    }
-
-    mdns_query_results_free(results);
-    update_discovery_state(ShipDiscoveryState::ScanDone);
-    eebus.update_peers_state();
-    connect_trusted_peers();
-}
-void Ship::update_discovery_state(ShipDiscoveryState new_state)
-{
-    discovery_state = new_state;
-    eebus.state.get("discovery_state")->updateEnum(new_state);
-}
-
-void Ship::discover_ship_peers()
-{
-    if (!is_enabled || !eebus.is_enabled()) {
-        return;
-    }
-
-    if (discovery_state == ShipDiscoveryState::Scanning) {
-        return;
-    }
-    update_discovery_state(ShipDiscoveryState::Scanning);
-
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
-    eebus.trace_fmtln("discover_ship_peers start");
-#endif
-    if (!network.is_mdns_started()) {
-        logger.printfln("MDNS Query Failed: mDNS is disabled or failed to start");
-        eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
-        update_discovery_state(ShipDiscoveryState::Error);
-        return;
-    }
-
-    const char *service = "_ship";
-    const char *proto = "_tcp";
-    mdns_scan = mdns_query_async_new(NULL, service, proto, MDNS_TYPE_PTR, 1000, INT8_MAX, &check_mdns_results_cb);
-
-    if (!mdns_scan) {
-        logger.printfln("MDNS Query Failed.");
-        update_discovery_state(ShipDiscoveryState::Error);
-    }
-}
-
 void Ship::print_skis(StringBuilder *sb)
 {
-    auto peers = peer_handler.get_peers();
-    for (uint16_t i = 0; i < peers.size(); i++) {
-        peers[i]->as_json(sb);
+    for (const auto &node : peer_handler.get_peers()) {
+        if (node->pending_removal) {
+            continue;
+        }
+        node->as_json(sb);
         sb->putc(',');
     }
 }
 
 void Ship::remove(const ShipConnection &ship_connection)
 {
-    // ship_connections is a vector of unique_ptr, so comparing with a reference won't work directly.
+    ShipNode *node = ship_connection.peer_node;
+
     ship_connections.erase(std::remove_if(ship_connections.begin(),
                                           ship_connections.end(),
                                           [&ship_connection](const unique_ptr_any<ShipConnection> &ptr) {
                                               return ptr.get() == &ship_connection;
                                           }),
                            ship_connections.end());
-    // The unique_ptr will be destroyed here and the memory will be freed.
+
+    // Erase a removed peer once its last connection is gone
+    if (node != nullptr && node->pending_removal) {
+        for (const auto &conn : ship_connections) {
+            if (conn->peer_node == node) {
+                return;
+            }
+        }
+        peer_handler.erase_node(node);
+    }
 }
 
 void Ship::close_connections_by_ski(const String &ski, const String &reason) const
 {
     for (auto &conn : ship_connections) {
-        if (conn->peer_node && conn->peer_node->txt_ski == ski && !conn->closing_scheduled) {
-            conn->schedule_close(0_ms, reason);
+        if (conn->peer_node && conn->peer_node->txt_ski.equalsIgnoreCase(ski) && !conn->closing_scheduled) {
+            if (conn->connection_established) {
+                // Data exchange state: terminate gracefully (SHIP 13.4.8)
+                conn->initiate_termination(reason);
+            } else {
+                conn->schedule_close(0_ms, reason);
+            }
         }
     }
 }
@@ -693,230 +639,8 @@ void Ship::close_connections_by_ski(const String &ski, const String &reason) con
 void Ship::notify_peer_updated(const String &ski) const
 {
     for (auto &conn : ship_connections) {
-        if (conn->peer_node && conn->peer_node->txt_ski == ski && !conn->closing_scheduled) {
+        if (conn->peer_node && conn->peer_node->txt_ski.equalsIgnoreCase(ski) && !conn->closing_scheduled) {
             conn->notify_trust_changed();
         }
     }
-}
-
-void ShipNode::as_json(StringBuilder *sb)
-{
-    size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length() + txt_brand.length() + txt_model.length() + txt_type.length();
-    size_t ips_len = 0;
-    for (const String &ip : ip_address) {
-        ips_len += ip.length();
-    }
-    const size_t capacity = JSON_OBJECT_SIZE(12) + JSON_ARRAY_SIZE(ip_address.size()) + strs_len + ips_len + 128;
-    DynamicJsonDocument doc(capacity);
-    doc["name"] = dns_name.c_str();
-    doc["id"] = txt_id.c_str();
-    doc["ws_path"] = txt_wss_path.c_str();
-    doc["ski"] = txt_ski.c_str();
-    doc["allow_autoregister"] = txt_autoregister;
-    doc["device_manufacturer"] = txt_brand.c_str();
-    doc["device_model"] = txt_model.c_str();
-    doc["device_type"] = txt_type.c_str();
-    doc["trusted"] = trusted;
-    doc["port"] = port;
-    doc["state"] = static_cast<uint8_t>(state);
-
-    JsonArray arr = doc.createNestedArray("ip_address");
-    for (const String &ip : ip_address) {
-        arr.add(ip.c_str());
-    }
-
-    size_t len = measureJson(doc);
-    char *buf = new char[len + 1];
-    serializeJson(doc, buf, len + 1);
-
-    sb->puts(buf);
-    delete[] buf;
-}
-
-String ShipNode::ip_address_as_string() const
-{
-    String ip_concat;
-    size_t len = ip_address.size();
-    if (len > 3) {
-        len = 3;
-    } // Maximum return of the first 3 ips
-    for (size_t i = 0; i < len; ++i) {
-        if (i > 0) {
-            ip_concat += ";";
-        }
-        ip_concat += ip_address[i];
-    }
-    return ip_concat;
-}
-
-String ShipNode::node_name() const
-{
-
-    if (!dns_name.isEmpty() && !txt_ski.isEmpty()) {
-        return dns_name + ", SKI: " + txt_ski;
-    }
-    if (!ip_address.empty()) {
-        return ip_address.front();
-    }
-    return "";
-}
-
-ShipPeerHandler::ShipPeerHandler()
-{
-    peers.clear();
-}
-
-std::shared_ptr<ShipNode> ShipPeerHandler::get_peer_by_ski(const String &ski)
-{
-    for (const auto &n : peers) {
-        if (n->txt_ski.equalsIgnoreCase(ski))
-            return n;
-    }
-    return nullptr;
-}
-
-void ShipPeerHandler::remove_peer_by_ski(const String &ski)
-{
-    peers.erase(std::ranges::remove_if(peers,
-                                       [&ski](const std::shared_ptr<ShipNode> &n) {
-                                           return n->txt_ski == ski;
-                                       })
-                    .begin(),
-                peers.end());
-}
-
-ShipNode *ShipPeerHandler::get_or_create_by_ski(const String &ski)
-{
-    if (auto peer = get_peer_by_ski(ski))
-        return peer.get();
-    new_peer_from_ski(ski);
-    return peers.back().get();
-}
-
-void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, const bool force_front)
-{
-    auto *peer = get_or_create_by_ski(ski);
-    if (!peer->contains_ip(ip)) {
-        if (force_front) {
-            peer->ip_address.insert(peer->ip_address.begin(), ip);
-        } else {
-            peer->ip_address.push_back(ip);
-        }
-    } else if (force_front && !peer->ip_address.empty() && peer->ip_address[0] != ip) {
-        // Move existing ip to front
-        auto it = std::find(peer->ip_address.begin(), peer->ip_address.end(), ip);
-        if (it != peer->ip_address.end()) {
-            std::rotate(peer->ip_address.begin(), it, it + 1);
-        }
-    }
-}
-
-std::shared_ptr<ShipNode> ShipPeerHandler::get_peer_by_ip(const String &ip)
-{
-    auto it = std::find_if(peers.begin(), peers.end(), [&ip](const std::shared_ptr<ShipNode> &n) {
-        return std::any_of(n->ip_address.begin(), n->ip_address.end(), [&ip](const String &s) {
-            return s == ip;
-        });
-    });
-    if (it != peers.end())
-        return *it;
-    return nullptr;
-}
-
-void ShipPeerHandler::remove_peer_by_ip(const String &ip)
-{
-    peers.erase(std::ranges::remove_if(peers,
-                                       [&ip](const std::shared_ptr<ShipNode> &n) {
-                                           return std::any_of(n->ip_address.begin(), n->ip_address.end(), [&ip](const String &s) {
-                                               return s == ip;
-                                           });
-                                       })
-                    .begin(),
-                peers.end());
-}
-
-ShipNode *ShipPeerHandler::get_or_create_by_ip(const String &ip)
-{
-    if (auto peer = get_peer_by_ip(ip))
-        return peer.get();
-    new_peer_from_ip(ip);
-    return peers.back().get();
-}
-
-void ShipPeerHandler::update_state_by_ip(const String &ip, NodeState state)
-{
-    get_or_create_by_ip(ip)->state = state;
-}
-
-void ShipPeerHandler::update_ip_by_ip(const String &ip, const String &new_ip)
-{
-    auto *peer = get_or_create_by_ip(ip);
-    if (!peer->contains_ip(new_ip)) {
-        peer->ip_address.push_back(new_ip);
-    }
-}
-
-void ShipPeerHandler::new_peer_from_ski(const String &ski)
-{
-    const std::shared_ptr<ShipNode> node = std::make_shared<ShipNode>();
-    node->txt_ski = ski;
-    node->persistent = false; // Discovered peers are non-persistent by default
-    peers.push_back(node);
-}
-
-void ShipPeerHandler::new_peer_from_ip(const String &ip)
-{
-    const std::shared_ptr<ShipNode> node = std::make_shared<ShipNode>();
-    node->ip_address.push_back(ip);
-    node->persistent = false; // Discovered peers are non-persistent by default
-    peers.push_back(node);
-}
-void ShipPeerHandler::initialize_from_config()
-{
-    auto config_peers = eebus.config.get("peers");
-
-    const size_t peer_count = config_peers->count();
-    for (size_t i = 0; i < peer_count; i++) {
-        auto peer = config_peers->get(i);
-        auto node = std::make_shared<ShipNode>();
-        node->txt_ski = peer->get("ski")->asString();
-        if (node->txt_ski.isEmpty()) {
-            // Do not add empty SKIs
-            continue;
-        }
-        // Check for duplicate SKIs - skip if peer already exists
-        if (get_peer_by_ski(node->txt_ski) != nullptr) {
-            continue;
-        }
-        node->trusted = peer->get("trusted")->asBool();
-        node->port = static_cast<uint16_t>(peer->get("port")->asUint());
-        node->state = NodeState::LoadedFromConfig;
-        node->dns_name = peer->get("dns_name")->asString();
-        node->txt_id = peer->get("id")->asString();
-        node->txt_wss_path = peer->get("wss_path")->asString();
-        node->txt_autoregister = peer->get("autoregister")->asBool();
-
-        node->txt_brand = peer->get("model_brand")->asString();
-        node->txt_model = peer->get("model_model")->asString();
-        node->txt_type = peer->get("model_type")->asString();
-
-        // Mark peers loaded from config as persistent
-        node->persistent = true;
-
-        String ip_list = peer->get("ip")->asString();
-        size_t start = 0;
-        int end = ip_list.indexOf(';');
-        while (end != ip_list.lastIndexOf(';')) {
-            node->ip_address.push_back(ip_list.substring(start, end));
-            start = end + 1;
-            end = ip_list.indexOf(';', start);
-        }
-        if (start < ip_list.length()) {
-            node->ip_address.push_back(ip_list.substring(start));
-        }
-
-        peers.push_back(node);
-    }
-    // Update state API with all peers after loading from config
-    eebus.update_peers_state();
 }

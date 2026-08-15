@@ -595,7 +595,7 @@ void EEBus::register_urls()
             }
             String ski = add_peer.get("ski")->asString();
 
-            auto *peer = ship.peer_handler.get_or_create_by_ski(ski);
+            ShipNode *peer = ship.peer_handler.get_or_create_by_ski(ski);
             peer->persistent = add_peer.get("persistent")->asBool();
 
             String ip = add_peer.get("ip")->asString();
@@ -611,7 +611,7 @@ void EEBus::register_urls()
             peer->txt_wss_path = add_peer.get("wss_path")->asString();
             peer->persistent = peer->persistent || peer->trusted; // A trusted peer is always persistent
 
-            sync_persistent_peer_to_config(ship.peer_handler.get_peer_by_ski(ski));
+            sync_persistent_peer_to_config(peer);
 
             update_peers_state();
 
@@ -637,7 +637,7 @@ void EEBus::register_urls()
             }
 
             String ski = remove_peer.get("ski")->asString();
-            auto peer = ship.peer_handler.get_peer_by_ski(ski);
+            ShipNode *peer = ship.peer_handler.get_peer_by_ski(ski);
 
             if (peer == nullptr) {
                 eebus.trace_fmtln("Cannot remove peer: Peer with SKI %s not found", ski.c_str());
@@ -647,10 +647,11 @@ void EEBus::register_urls()
             // Check if peer was persistent before removing
             bool was_persistent = peer->persistent;
 
-            // Close all active connections to this peer before removing it
+            // Closing is asynchronous (SHIP 13.4.8 grace period): the node is only
+            // tombstoned here and erased once its last connection is gone.
             ship.close_connections_by_ski(ski, "Peer removed by user");
 
-            ship.peer_handler.remove_peer_by_ski(ski);
+            ship.peer_handler.mark_for_removal(peer);
 
             // Only update config if the peer was persistent
             if (was_persistent) {
@@ -899,8 +900,10 @@ void EEBus::update_peers_state()
         [this]() {
             // Update state API with all peers (both persistent and discovered)
             state.get("peers")->removeAll();
-            auto peers = ship.peer_handler.get_peers();
-            for (const std::shared_ptr<ShipNode> &node : peers) {
+            for (const auto &node : ship.peer_handler.get_peers()) {
+                if (node->pending_removal) {
+                    continue;
+                }
                 auto peer = state.get("peers")->add();
                 peer->get("ip")->updateString(node->ip_address_as_string());
                 peer->get("port")->updateUint(node->port);
@@ -924,10 +927,9 @@ void EEBus::update_peers_config()
 {
     // Only save persistent peers to config to reduce EEPROM wear
     config.get("peers")->removeAll();
-    auto peers = ship.peer_handler.get_peers();
-    for (const std::shared_ptr<ShipNode> &node : peers) {
-        if (!node->persistent) {
-            continue; // Skip non-persistent peers
+    for (const auto &node : ship.peer_handler.get_peers()) {
+        if (!node->persistent || node->pending_removal) {
+            continue;
         }
         auto peer = config.get("peers")->add();
         peer->get("ip")->updateString(node->ip_address_as_string());
@@ -945,7 +947,7 @@ void EEBus::update_peers_config()
     api.writeConfig("eebus/config", &config);
 }
 
-void EEBus::sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node)
+void EEBus::sync_persistent_peer_to_config(const ShipNode *node)
 {
     // Sync a single persistent peer to config (for incremental updates)
     if (!node->persistent) {

@@ -161,7 +161,7 @@ public:
      * Only updates config if the peer data has actually changed.
      * @param node The peer node to sync
      */
-    void sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node);
+    void sync_persistent_peer_to_config(const ShipNode *node);
 
     void set_own_ski(const String &ski);
 
