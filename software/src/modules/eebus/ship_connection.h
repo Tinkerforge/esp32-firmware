@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2024-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,17 +20,14 @@
 #pragma once
 
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
-#include <esp_http_client.h>
 
+#include <cstdint>
+#include <functional>
+#include <source_location>
 #include <utility>
 
 #include "config.h"
 #include "generated/ship_connection_state.enum.h"
-#include "module.h"
-#include "modules/ws/web_sockets.h"
-//#include "ship_types.h"
-#include "TFJson.h"
-//#include "spine_connection.h"
 #include "tools/allocator.h"
 #include "tools/malloc.h"
 #include "tools/tf_websocket_client.h"
@@ -52,33 +49,21 @@
 // Client Timeouts. These are only needed for when we are and using websockets as a client
 #define SHIP_CONNECTION_WS_TIMEOUT_MS 10000
 
-enum class NodeState : uint8_t;
-class SpineConnection; // Forward declaration to avoid circular dependency
-struct ShipNode;       // Forward declaration to avoid circular dependency
+// Stack size of the websocket client task (client role connections).
+// Measured peak usage is ~3.95 KiB during the TLS handshake.
+#define SHIP_CONNECTION_WS_CLIENT_TASK_STACK 5120
 
-//static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
+enum class NodeState : uint8_t;
+class SpineConnection;
+struct ShipNode;
 
 class ShipConnection
 {
 public:
-    enum class WebsocketMode : uint8_t {
-        HttpThreadCb = 0,    // Signal that we are in a HTTP thread callback
-        HttpThreadCbSuccess, // Signal that we are in a HTTP thread callback and the operation was successful
-        HttpThreadCbFail,    // Signal that we are in a HTTP thread callback and the operation failed
-        TaskScheduler,       // Signal that we are in the task scheduler context. This is the default and should be set after the callback is handled.
-    };
-
     // SHIP 13.4.1
     enum class Role : uint8_t {
         Client,
         Server,
-    };
-
-    // SHIP 13.4.4.1.3
-    enum class SubState : uint8_t {
-        Init,
-        Listen,
-        Timeout,
     };
 
     enum class ProtocolState : uint16_t {
@@ -99,16 +84,12 @@ public:
         uint8_t value;
     };
 
-    // With SHIP/EEBus we will always only have to hold at most one incoming and one outgoing message
-    // For now we just use a fixed size buffer for the messages for each connection
-    // This could probably be done more dynamic, but with the heap_caps_calloc_prefer we put it
-    // in PSRAM (which we have plenty of) and with the uinque_ptr we make sure that it is automatically
-    // freed as soon as it is removed from the ShipConnection list in Ship.
+    // With SHIP/EEBus we only ever hold at most one incoming and one outgoing message,
+    // each in a fixed-size buffer allocated in PSRAM.
     struct Message {
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE];
-        size_t length;
-        // If the message is in multiple parts use this
-        size_t multipart_index;
+        size_t length = 0;
+        size_t multipart_index = SIZE_MAX; // SIZE_MAX: no message being assembled
     };
 
     unique_ptr_any<Message> message_incoming;
@@ -117,30 +98,27 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> incoming_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
 
-    WebSocketsClient *ws_client = nullptr;
+    int ws_fd = -1;                                 // Server role: fd of the incoming websocket connection
     tf_websocket_client_handle_t ws_server = nullptr;
     esp_transport_handle_t ext_transport = nullptr; ///< Owned external transport, destroyed on close
     Role role;
-    std::shared_ptr<ShipNode> peer_node;
+    ShipNode *peer_node; // Non-owning, owned by ShipPeerHandler (see there for lifetime rules)
     unique_ptr_any<SpineConnection> spine; // Shall only be initialized after SHIP connection has been established
     bool connection_established = false;
     bool closing_scheduled = false;
-    WebsocketMode ws_mode = WebsocketMode::TaskScheduler;
 
-    // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     /**
      * New ShipConnection where we act as a Server
-     * @param ws_client The incoming connection from the WebSocketsClient
+     * @param ws_fd The socket fd of the incoming websocket connection
      * @param node The ShipNode representing the peer we are connected to
      */
-    ShipConnection(WebSocketsClient *ws_client, std::shared_ptr<ShipNode> node);
-
+    ShipConnection(int ws_fd, ShipNode *node);
     /**
      * New ShipConnection where we act as a Client
      * @param ws_config The WebSocket server handle to connect to
      * @param node The ShipNode representing the peer we are connecting to
      */
-    ShipConnection(tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node);
+    ShipConnection(tf_websocket_client_config_t ws_config, ShipNode *node);
 
     ~ShipConnection();
 
@@ -150,19 +128,26 @@ public:
     // Confirm to the ship Connection that the client has started successfully and it may now begin with CMI
     void start_client_confirm();
 
-    // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
     const ShipConnection &operator=(const ShipConnection &other) = delete;
 
     ShipConnectionState state = ShipConnectionState::CmiInitStart;
     ShipConnectionState previous_state = ShipConnectionState::CmiInitStart;
-    SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
     uint64_t state_machine_task = 0;
 
-    esp_err_t frame_received(httpd_ws_frame_t *ws_pkt);
+    void reschedule_task(uint64_t &task_id, std::function<void()> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
+    void cancel_task(uint64_t &task_id);
 
+    void process_frame(const uint8_t *data, size_t len, bool fin);
     void schedule_close(millis_t delay_ms, const String &reason = "");
+
+    // SHIP 13.4.8: Gracefully terminate the connection by announcing the close
+    // to the peer (connectionClose phase=announce, reason=removedConnection),
+    // then closing the socket shortly after.
+    void initiate_termination(const String &reason);
+
+    void send_raw(const char *payload, size_t payload_len, const char *what);
 
     void send_cmi_message(uint8_t type, uint8_t value);
 
@@ -240,6 +225,8 @@ public:
     void state_sme_protocol_handshake_client_ok();
 
     void state_sme_protocol_handshake_server_ok();
+
+    void start_handshake_timeout();
 
     void state_sme_pin_check_init();
 
@@ -345,15 +332,12 @@ public:
 
     void hello_decide_prolongation();
 
-    /// @brief Check the trust status of the peer and return the appropriate hello phase
-    /// @return ConnectionHelloPhase::Type::Ready if peer is trusted, Pending if not trusted
+    void hello_arm_prolongation_request_timer();
+
     ConnectionHelloPhase::Type hello_check_trust_status();
 
-    /// @brief Start a periodic timer to re-check trust status while in pending state
     void hello_start_trust_check_timer();
 
-    /// @brief Called externally when peer trust status may have changed.
-    /// If in hello pending state, immediately re-checks trust and transitions if needed.
     void notify_trust_changed();
 
     //--------------------------------------------------------------------------------
@@ -401,14 +385,18 @@ public:
     };
 
     struct ProtocolHandshakeType {
-        ProtocolHandshake::Type handshakeType;
-        uint32_t version_major;
-        uint32_t version_minor;
+        // Default to Unknown so an unparseable message is never mistaken
+        // for a valid announceMax (= 0).
+        ProtocolHandshake::Type handshakeType = ProtocolHandshake::Type::Unknown;
+        uint32_t version_major = 0;
+        uint32_t version_minor = 0;
         // Hint: We ignore "formats" parameter completly since we only support UTF-8 and UTF-8 ist mandatory to support for the receiver
         //       Changing the character enconding in the middle of the communication also seems like a bad idea...
     };
 
-    void json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
+    // Parse message_incoming as an SME "protocol handshake" message.
+    // Returns false if the message is not valid.
+    bool json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
 
     void type_to_json_handshake_type(ProtocolHandshakeType *handshake_type);
 
@@ -423,15 +411,14 @@ public:
 
     void common_procedure_enable_data_exchange();
 
-    // Generates a proper json for the accessMethods
-    // that is returned on accessMethodsRequest
+    // Builds the accessMethods reply for an accessMethodsRequest
     void to_json_access_methods_type();
 
     void log_message(const String &state_prefix, Message *msg);
 
-    // We need to handle situations where a frame is received while SHIP is in a state where it does not automatically process it.
-    // To avoid getting stuck waiting for an already arrived frame, we need to check this.
-    // True while incoming is ready in message_incoming and has not been fed into the state machine.
+    // True while a complete message is in message_incoming and has not been
+    // processed by the state machine. Checked by states that would otherwise
+    // get stuck waiting for an already arrived frame.
     bool incoming_message_pending = false;
 
     // Returns true for states whose handler reads and processes message_incoming
