@@ -23,6 +23,25 @@
 
 #include "../generated/module_dependencies.h"
 
+// Transfers up to 4 byte using a polling transaction.
+// This skips the interrupt overhead: queue + ISR + semaphore + context switches at ~15-25us
+// which exceeds the transfer time at ~5.7us/byte.
+//
+// More importantly, blocking on the interrupt transaction is a voluntary
+// yield point. Under CPU load (TLS handshakes) the small 3 byte ACK is
+// actually timing-critical. The XMC slave considers them "sent"
+// as soon as they are loaded into its TX FIFO. If the ESP stalls
+// for more then 5s SPITFP slave triggers a retransmit. This
+// desyncs ESP and Bricklet and results in checksum/frame errors.
+
+// This is not an issue on the non-ESP32 Bricks and the Brickelts since
+// the SPITFP is implemented using interrupts.
+
+// The actual data frames are safe on the interrupt path. A delayed ack
+// at worst means that the message has to be retransmitted.
+static const uint32_t POLLING_TRANSFER_MAX_LENGTH = 4;
+
+
 typedef struct TF_Port {
     char port_name;
 
@@ -130,6 +149,7 @@ int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
     return TF_E_OK;
 }
 
+
 int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer, uint8_t *read_buffer, uint32_t length) {
     if (length == 0) {
         return TF_E_OK;
@@ -140,7 +160,9 @@ int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer,
     transaction.tx_buffer         = write_buffer;
     transaction.rx_buffer         = read_buffer;
 
-    esp_err_t err = spi_device_transmit(hal->hspi_dev, &transaction);
+    esp_err_t err = (length <= POLLING_TRANSFER_MAX_LENGTH)
+                  ? spi_device_polling_transmit(hal->hspi_dev, &transaction)
+                  : spi_device_transmit(hal->hspi_dev, &transaction);
 
     return (err == ESP_OK) ? TF_E_OK : TF_E_NOT_SUPPORTED;
 }
