@@ -428,6 +428,10 @@ void NFC::update_seen_tags()
 void NFC::setup_auth_tags()
 {
     const auto *auth_tags_cfg = (Config *)config.get("authorized_tags");
+
+    // Allways set deadtime, even if there are not tags configured, this is used for autocharge too (ev mac instead of nfc tag).
+    this->deadtime_post_start = seconds_t{config.get("deadtime_post_start")->asUint()};
+
     auth_tag_count = auth_tags_cfg->count();
     if (auth_tag_count == 0) {
         auth_tags = nullptr;
@@ -447,7 +451,6 @@ void NFC::setup_auth_tags()
         auth_tags[i].tag.id_length = string_to_id(auth_tags[i].tag.id_bytes, id.c_str(), id.length());
     }
 
-    this->deadtime_post_start = seconds_t{config.get("deadtime_post_start")->asUint()};
 }
 
 void NFC::setup()
