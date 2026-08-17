@@ -1048,14 +1048,11 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     }
 
     Config *conf_val = static_cast<Config *>(values.get(index));
-    micros_t t_now = now_us();
 
     // Think about ordering and short-circuting issues before changing this!
     float old_value = conf_val->asFloat();
     if (conf_val->updateFloat(new_value) && !isnan(old_value))
-        meter_slot.values_last_changed_at = t_now;
-
-    meter_slot.values_last_updated_at = t_now;
+        meter_slot.values_last_changed_at = now_us();
 
     if (meter_slot.value_combiner_filters_bitmask) {
         float base_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
@@ -1080,7 +1077,6 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
     Config &values = meter_slot.values;
     size_t base_value_count = meter_slot.base_value_count;
-    bool updated_any_value = false;
     bool changed_any_value = false;
 
     for (size_t i = 0; i < base_value_count; i++) {
@@ -1092,8 +1088,6 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
             float old_value = conf_val->asFloat();
             if (conf_val->updateFloat(new_value) && !isnan(old_value))
                 changed_any_value = true;
-
-            updated_any_value = true;
         }
     }
 
@@ -1101,13 +1095,9 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
         apply_filters(meter_slot, base_value_count, new_values);
     }
 
-    micros_t t_now = now_us();
-
-    if (changed_any_value)
-        meter_slot.values_last_changed_at = t_now;
-
-    if (updated_any_value)
-        meter_slot.values_last_updated_at = t_now;
+    if (changed_any_value) {
+        meter_slot.values_last_changed_at = now_us();
+    }
 
     finish_update(slot);
 }
@@ -1142,8 +1132,13 @@ void Meters::finish_update(uint32_t slot)
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
-    float power;
 
+    // Set here so that a meter is only considered fresh when an update cycle finished completely.
+    // If a meter can update some values but can't finish a complete update cycle, it shouldn't be considered fresh.
+    meter_slot.values_last_updated_at = now_us();
+
+    // Check freshness here, even though the last-updated timestamp was just set, because the value can be unavailable.
+    float power;
     if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
         meter_slot.power_history.add_sample(power);
     }
