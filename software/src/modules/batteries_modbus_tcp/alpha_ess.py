@@ -26,7 +26,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('Alpha ESS Hybrid Inverter', 60),
+    ('Alpha ESS Hybrid Inverter', 60),  # dispatch commands use a duration of 90 seconds
 ]
 
 variants = []
