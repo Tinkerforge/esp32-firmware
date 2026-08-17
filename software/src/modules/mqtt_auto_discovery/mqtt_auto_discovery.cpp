@@ -217,8 +217,10 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
             case MqttDiscoveryCheckType::ApiBool: {
                 const Config *cfg = api.getState(info.api_check_path, false);
-                if (cfg != nullptr) {
+                if (cfg != nullptr && info.api_check_key != nullptr) { // if we check the path and a key, get the keys value
                     entity_enabled = cfg->get(info.api_check_key)->asBool();
+                } else if (cfg != nullptr && info.api_check_key == nullptr) { // Case if we just want to check if the path exists -> assume its active
+                    entity_enabled = true;
                 }
                 break;
             }

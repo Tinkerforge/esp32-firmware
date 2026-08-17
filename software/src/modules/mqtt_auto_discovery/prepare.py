@@ -29,6 +29,9 @@ METER_VALUE_IDS = [
 ]
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
+warp_edition = util.get_env_metadata()['options']['hostname_prefix']
+print("[prepare.py] WARP:", warp_edition)
+
 charge_mode_names_de = [
     "Schnell",
     "Aus",
@@ -257,6 +260,7 @@ class Component(Enum):
     BUTTON = "button"
     NUMBER = "number"
     SELECT = "select"
+    TEXT = "text"
 
     def get_discovery_type(self) -> DiscoveryType:
         return {
@@ -266,6 +270,7 @@ class Component(Enum):
             Component.NUMBER: DiscoveryType.STATE_AND_UPDATE,
             Component.BUTTON: DiscoveryType.COMMAND_ONLY,
             Component.SELECT: DiscoveryType.STATE_AND_UPDATE,
+            Component.TEXT: DiscoveryType.STATE_ONLY,
         }[self]
 
 
@@ -279,7 +284,7 @@ class Feature(Enum):
 
 class CheckType(Enum):
     FEATURE = "Feature"  # Check api.hasFeature(feature)
-    API_BOOL = "ApiBool"  # Check API path exists and bool key is true
+    API_BOOL = "ApiBool"  # Check API path exists and bool key is true. bool key is optional. If not present the existence of the path is enough to announce the entity.
     METER_VALUE = "MeterValue"  # Check meter config enabled + value_id present in value_ids
 
 
@@ -847,6 +852,70 @@ entities = [
         },
     ),
 ]
+
+if warp_edition == "warp4":
+    entities.extend([
+        Entity(
+            include_generic=False,
+            component=Component.TEXT,
+            object_id="ev_name",
+            path="ev/state",
+            name_de="Fahrzeugname",
+            name_en="Vehicle name",
+            availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
+            static_info_generic={},
+            static_info_homeassistant={
+                "value_template": "{{value_json.name}}"
+            },
+            check_type=CheckType.API_BOOL,
+            api_check_path="ev/state",
+        ),
+        Entity(
+            include_generic=False,
+            component=Component.TEXT,
+            object_id="ev_mac",
+            path="ev/state",
+            name_de="Fahrzeug MAC Adresse",
+            name_en="Vehicle MAC Address",
+            availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
+            static_info_generic={},
+            static_info_homeassistant={
+                "value_template": "{{value_json.mac}}"
+            },
+            check_type=CheckType.API_BOOL,
+            api_check_path="ev/state",
+        ),
+        Entity(
+            include_generic=False,
+            component=Component.SENSOR,
+            object_id="ev_soc",
+            path="ev/state",
+            name_de="Fahrzeug Ladestand",
+            name_en="Vehicle State of Charge",
+            availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
+            static_info_generic={},
+            static_info_homeassistant={
+                "value_template": "{{value_json.soc | float}}"
+            },
+            check_type=CheckType.API_BOOL,
+            api_check_path="ev/state",
+        ),
+        Entity(
+            include_generic=False,
+            component=Component.SENSOR,
+            object_id="ev_capacity",
+            path="ev/state",
+            name_de="Fahrzeug Akkukapazität",
+            name_en="Vehicle Battery Capacity",
+            availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
+            static_info_generic={},
+            static_info_homeassistant={
+                "value_template": "{{value_json.capacity | float}}"
+            },
+            check_type=CheckType.API_BOOL,
+            api_check_path="ev/state",
+        ),
+    ])
 
 
 # meter value definitions, derived from meters/meter_value_id.csv.
