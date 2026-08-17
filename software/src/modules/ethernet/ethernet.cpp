@@ -193,7 +193,11 @@ void Ethernet::setup()
         return;
     }
 
-    runtime_data->was_connected = false;
+    // Null the runtime data on allocation so all flags have a defined initial state.
+    // In particular ipv6_enabled and connection_state are read by the
+    // ARDUINO_EVENT_ETH_START handler and the deferred apply_ipv6_config() task
+    // before this change the uninitialized memory caused not initializing IPv6 on boot
+    memset(runtime_data, 0, sizeof(*runtime_data));
 
     Network.begin();
 
@@ -468,7 +472,6 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_STOP);
 
     ETH.setTaskStackSize(EMAC_TASK_STACK_SIZE);
-
     apply_config();
 }
 
