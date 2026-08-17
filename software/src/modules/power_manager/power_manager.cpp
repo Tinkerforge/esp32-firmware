@@ -761,27 +761,30 @@ void PowerManager::update_data()
 #endif
 
 
-    float meter_currents[INDEX_CACHE_CURRENT_COUNT];
+    if (dynamic_load_enabled) {
+        float meter_currents[INDEX_CACHE_CURRENT_COUNT];
+
 #if MODULE_METERS_AVAILABLE()
-    MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents, MAX_DYNAMIC_LOAD_METER_AGE);
-    if (ret != MeterValueAvailability::Fresh)
+        MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents, MAX_DYNAMIC_LOAD_METER_AGE);
+        if (ret != MeterValueAvailability::Fresh)
 #else
-    // Unconditionally execute block
+        // Unconditionally execute block
 #endif
-    { // Don't place bracket in sections removed by precompiler to make VSCode happy
-        for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
-            meter_currents[i] = NAN;
+        { // Don't place bracket in sections removed by precompiler to make VSCode happy
+            for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
+                meter_currents[i] = NAN;
+            }
         }
-    }
 
-    for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
-        float meter_current_a = meter_currents[i];
-        if (!isnan(meter_current_a)) {
-            // TODO Store in low_level_state
+        for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
+            float meter_current_a = meter_currents[i];
+            if (!isnan(meter_current_a)) {
+                // TODO Store in low_level_state
 
-            if (dynamic_load_enabled) {
                 int32_t raw_current_ma = static_cast<int32_t>(meter_current_a * 1000);
                 currents_at_meter_raw_ma[i] = raw_current_ma;
+            } else {
+                currents_at_meter_raw_ma[i] = INT32_MAX;
             }
         }
     }
@@ -801,7 +804,7 @@ void PowerManager::update_energy()
 
         if (isnan(power_at_meter_raw_w) || (have_battery && isnan(power_at_battery_raw_w))) {
             if (!printed_skipping_energy_update) {
-                logger.printfln("PV excess charging unavailable because power values are not available yet.");
+                logger.printfln("PV excess charging unavailable because power values are not available (yet).");
                 printed_skipping_energy_update = true;
             }
 
@@ -974,7 +977,7 @@ void PowerManager::update_energy()
 
             if (phase_current_meter_ma == INT32_MAX) {
                 if (!printed_skipping_currents_update && cm_phase == 1) {
-                    logger.printfln("Dynamic load management unavailable because current values are not available yet.");
+                    logger.printfln("Dynamic load management unavailable because current values are not available (yet).");
                     printed_skipping_currents_update = true;
                 }
 
