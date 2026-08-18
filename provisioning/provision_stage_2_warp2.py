@@ -16,7 +16,7 @@ from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
 from pypdf import PdfReader, PdfWriter
-from tinkerforge_util.colored import red, green, blink, cyan
+from tinkerforge_util.colored import red, green, blink, cyan, yellow
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
@@ -698,55 +698,61 @@ def led_wrap():
         print(f"Printing report {report_path_pdf}")
 
         if os.system(f'pdftops {report_path_pdf} - | lpr') != 0:
-            fatal_error(f"Could not print report")
+            fatal_error("Could not print report")
 
         drilling_template_path = os.path.join(WARP_CHARGER_DIRECTORY, 'documents', f'WARP{scanner.qr_hw_version.replace(".0", "").replace(".", "")}_Bohrschablone.pdf')
 
         print(f"Printing drilling template {drilling_template_path}")
 
         if os.system(f'pdftops {drilling_template_path} - | lpr -o scaling=100') != 0:
-            fatal_error(f"Could not print drilling template")
+            fatal_error("Could not print drilling template")
 
         if not scanner.qr_shipping:
-            print(cyan(f'No shipping'))
+            print(cyan('No shipping'))
         else:
             print(cyan(f'Shipping order {scanner.qr_order_id}'))
 
-            packing_slip_path = f"{report_path_prefix}_packing_slip.pdf"
-            shipping_label_path = f"{report_path_prefix}_shipping_label.pdf"
+            shipping_success = False
 
             try:
-                output = subprocess.check_output(f'./ship_order.py --output-prefix={report_path_prefix} {scanner.qr_order_id}', stderr=subprocess.STDOUT, shell=True).rstrip()
+                output = subprocess.check_output(f'./ship_order.py --output-prefix={report_path_prefix} {scanner.qr_order_id}', stderr=subprocess.STDOUT, shell=True).decode('utf-8').rstrip()
+                shipping_success = True
             except subprocess.CalledProcessError as e:
-                print(e.output)
-                fatal_error(f"Could not ship order")
-            except:
-                fatal_error(f"Could not ship order")
+                if e.output == b'Error: NOT INCLUDED\n':
+                    output = yellow('Shipping skipped due to potentially malformed shipping address')
+                else:
+                    output = yellow(f'Shipping skipped due to error: {e.output}')
+            except Exception as e:
+                output = yellow(f'Shipping skipped due to error: {e}')
 
-            print(output.decode('utf-8'))
+            orig_print(output)
 
-            files_to_commit.append(packing_slip_path)
-            files_to_commit.append(shipping_label_path)
+            if shipping_success:
+                packing_slip_path = f"{report_path_prefix}_packing_slip.pdf"
+                shipping_label_path = f"{report_path_prefix}_shipping_label.pdf"
 
-            print(f"Printing packing slip {packing_slip_path}")
+                files_to_commit.append(packing_slip_path)
+                files_to_commit.append(shipping_label_path)
 
-            folding_marks_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'folding_marks.pdf'))
-            folding_marks = PdfReader(folding_marks_path).pages[0]
+                print(f"Printing packing slip {packing_slip_path}")
 
-            pdf_writer = PdfWriter(clone_from=packing_slip_path)
+                folding_marks_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'folding_marks.pdf'))
+                folding_marks = PdfReader(folding_marks_path).pages[0]
 
-            for page in pdf_writer.pages:
-                page.merge_page(folding_marks, over=False)
+                pdf_writer = PdfWriter(clone_from=packing_slip_path)
 
-            pdf_writer.write(packing_slip_path)
+                for page in pdf_writer.pages:
+                    page.merge_page(folding_marks, over=False)
 
-            if os.system(f'pdftops {packing_slip_path} - | lpr') != 0:
-                fatal_error(f"Could not print packing slip")
+                pdf_writer.write(packing_slip_path)
 
-            print(f"Printing shipping slip {shipping_label_path}")
+                if os.system(f'pdftops {packing_slip_path} - | lpr') != 0:
+                    fatal_error("Could not print packing slip")
 
-            if os.system(f'pdftops {shipping_label_path} - | lpr -P Wallbox-DHL') != 0:
-                fatal_error(f"Could not print shipping label")
+                print(f"Printing shipping slip {shipping_label_path}")
+
+                if os.system(f'pdftops {shipping_label_path} - | lpr -P Wallbox-DHL') != 0:
+                    fatal_error("Could not print shipping label")
 
         print('Done!')
     except BaseException as e:
