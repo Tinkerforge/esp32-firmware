@@ -23,14 +23,6 @@ export interface remove_user {
     id: number;
 }
 
-interface KeyObject {
-    charger_public: string;
-    charger_private: string;
-    web_public: string;
-    web_private: string;
-    psk: string;
-}
-
 export interface registration_state {
     state: RegistrationState;
     message: string;
@@ -44,10 +36,6 @@ export interface register {
     public_key?: string;
     user_uuid?: string;
     note: string;
-    mgmt_charger_public: string;
-    mgmt_charger_private: string;
-    mgmt_psk: string;
-    keys: KeyObject[];
 }
 
 export interface add_user {
@@ -58,7 +46,6 @@ export interface add_user {
     login_key?: string;
     auth_token?: string;
     user_uuid?: string;
-    wg_keys: KeyObject[];
 }
 
 interface registration_config {
