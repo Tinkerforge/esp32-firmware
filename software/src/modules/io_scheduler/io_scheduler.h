@@ -31,6 +31,7 @@
 #include "module.h"
 #include "modules/task_scheduler/task_scheduler.h"
 #include "bindings/errors.h"
+#include "tools/malloc.h"
 
 // The IO scheduler is driven by the main task. It only accepts one-shot
 // jobs (scheduleOnce/await). There is deliberately no API to register
@@ -62,7 +63,9 @@ public:
                                millis_t delay_ms,
                                const std::source_location &src_location = std::source_location::current())
     {
-        RoundStateBase *state = new RoundState<std::decay_t<BeforeIo>, std::decay_t<DuringIo>, std::decay_t<AfterIo>>(
+        // RoundStates are never destroyed, so allocate them in the permanent DRAM arena.
+        RoundStateBase *state = perm_new<RoundState<std::decay_t<BeforeIo>, std::decay_t<DuringIo>, std::decay_t<AfterIo>>>(
+            DRAM,
             std::forward<BeforeIo>(before_io),
             std::forward<DuringIo>(during_io),
             std::forward<AfterIo>(after_io),
