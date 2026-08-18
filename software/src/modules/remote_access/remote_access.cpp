@@ -35,6 +35,7 @@
 #include <mbedtls/base64.h>
 #include <sodium.h>
 #include <ctype.h>
+#include <vector>
 
 #include "build.h"
 #include "options.h"
@@ -48,9 +49,11 @@
 
 #include "gcc_warnings.h"
 
+#include <mbedtls/error.h>
+
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-#define WG_KEY_LENGTH 44
+#define WG_KEY_LENGTH 45
 #define KEY_SIZE (3 * WG_KEY_LENGTH)
 #define KEY_DIRECTORY "/remote-access-keys"
 // Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
@@ -129,6 +132,65 @@ fail:
     psk[0] = '\0';
     pub[0] = '\0';
     return false;
+}
+
+static void log_mbedtls_error(int error, const char *msg)
+{
+    char error_buf[128];
+    mbedtls_strerror(error, error_buf, sizeof(error_buf));
+    logger.printfln("RemoteAccess: %s: -0x%04x (%s)", msg, static_cast<unsigned>(-error), error_buf);
+}
+
+// Generate a fresh WireGuard key set: a Curve25519 (X25519) private/public
+// keypair and a 32-byte pre-shared key. Each 32-byte raw key is base64-encoded
+// to a WG_KEY_LENGTH (44 character) string and written into the provided
+// WgKey struct. Returns true on success. Returns false on libsodium
+// initialization failure, low memory, or if base64 encoding fails. The
+// strings are written as wire-format (no NUL terminator) using the length
+// returned by mbedtls_base64_encode.
+static bool generate_wg_key(WgKey &key)
+{
+    if (sodium_init() < 0) {
+        logger.printfln("Failed to initialize libsodium");
+        return false;
+    }
+
+    uint8_t priv_raw[crypto_box_SECRETKEYBYTES];
+    uint8_t pub_raw[crypto_box_PUBLICKEYBYTES];
+    // WireGuard pre-shared keys are 32 random bytes.
+    uint8_t psk_raw[crypto_box_SECRETKEYBYTES];
+
+    crypto_box_keypair(pub_raw, priv_raw);
+    randombytes_buf(psk_raw, sizeof(psk_raw));
+
+    char priv_b64[WG_KEY_LENGTH];
+    char pub_b64[WG_KEY_LENGTH];
+    char psk_b64[WG_KEY_LENGTH];
+
+    size_t priv_len = 0;
+    size_t pub_len  = 0;
+    size_t psk_len  = 0;
+    int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(priv_b64), WG_KEY_LENGTH, &priv_len, priv_raw, sizeof(priv_raw));
+    if (ret != 0) {
+        logger.printfln("out len: %zu", priv_len);
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard private key");
+        return false;
+    }
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(pub_b64), WG_KEY_LENGTH, &pub_len, pub_raw, sizeof(pub_raw));
+    if (ret != 0) {
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard public key");
+        return false;
+    }
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(psk_b64), WG_KEY_LENGTH, &psk_len, psk_raw, sizeof(psk_raw));
+    if (ret != 0) {
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard pre-shared key");
+        return false;
+    }
+
+    key.priv = String(priv_b64, priv_len);
+    key.pub  = String(pub_b64,  pub_len);
+    key.psk  = String(psk_b64,  psk_len);
+    return true;
 }
 
 static int create_sock_and_send_to(const void *payload, size_t payload_len, const ip_addr_t ip, uint16_t port, uint16_t local_port)
@@ -522,6 +584,39 @@ void RemoteAccess::register_urls()
             return request.send_plain(500, "Failed to initialize crypto");
         }
 
+        // Generate the management tunnel key pair and PSK on-device. The
+        // charger-side public key is sent to the relay; the private key and
+        // PSK are kept locally and forwarded to the relay via the
+        // registration JSON.
+        WgKey mgmt_charger;
+        if (!generate_wg_key(mgmt_charger)) {
+            this->request_cleanup();
+            return request.send_plain(500, "Failed to generate WireGuard key");
+        }
+
+        // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
+        // Each tunnel needs two independent Curve25519 keypairs (charger side
+        // and web/relay side) plus a shared PSK. The relay-side private key
+        // is sealed with the relay's seal public key (pk, derived below) and
+        // embedded in the registration JSON.
+        std::vector<WgKey> charger_keys;
+        std::vector<WgKey> relay_keys;
+        charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+        relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            WgKey charger;
+            WgKey relay;
+            if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
+                this->request_cleanup();
+                return request.send_plain(500, "Failed to generate WireGuard key");
+            }
+            // A single PSK is shared by both endpoints of one tunnel; reuse
+            // the PSK that was generated for the charger side.
+            relay.psk = charger.psk;
+            charger_keys.push_back(std::move(charger));
+            relay_keys.push_back(std::move(relay));
+        }
+
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
         if (!doc["secret_key"].isNull()) {
             // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
@@ -567,18 +662,17 @@ void RemoteAccess::register_urls()
         serializer.addObject();
         serializer.addMemberArray("keys");
         {
-            int32_t i = 0;
-            // JsonArray already has reference semantics. No need for &.
-            for (const auto key : doc["keys"].as<JsonArray>()) {
+            for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+                const WgKey &charger = charger_keys[i];
+                const WgKey &relay = relay_keys[i];
                 serializer.addObject();
-                serializer.addMemberStringF("charger_address", "10.123.%li.2", i);
-                serializer.addMemberString("charger_public", key["charger_public"]);
+                serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(i));
+                serializer.addMemberString("charger_public", charger.pub.c_str());
                 serializer.addMemberNumber("connection_no", i);
-                serializer.addMemberStringF("web_address", "10.123.%li.3", i);
+                serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(i));
 
-                const String web_private = key["web_private"];
                 unsigned char encrypted_web_private[44 + crypto_box_SEALBYTES];
-                int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(web_private.c_str()), web_private.length(), pk);
+                int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), relay.priv.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
@@ -592,9 +686,8 @@ void RemoteAccess::register_urls()
                 }
                 serializer.endArray();
 
-                const String psk = key["psk"];
                 unsigned char encrypted_psk[44 + crypto_box_SEALBYTES];
-                ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(psk.c_str()), psk.length(), pk);
+                ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), charger.psk.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt psk: %i", ret);
@@ -609,22 +702,17 @@ void RemoteAccess::register_urls()
                 serializer.endArray();
 
                 serializer.endObject();
-                i++;
-
-                // Ignore rest of keys if there were sent more than we support.
-                if (i == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
-                    break;
             }
         }
         serializer.endArray();
 
         serializer.addMemberObject("charger");
 
-        serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
+        serializer.addMemberString("charger_pub", mgmt_charger.pub.c_str());
         serializer.addMemberString("uid", esp32_common.get_uid_cstr());
         serializer.addMemberString("wg_charger_ip", "10.123.123.2");
         serializer.addMemberString("wg_server_ip", "10.123.123.3");
-        serializer.addMemberString("psk", doc["mgmt_psk"]);
+        serializer.addMemberString("psk", mgmt_charger.psk.c_str());
 
         serializer.endObject();
 
@@ -676,20 +764,16 @@ void RemoteAccess::register_urls()
         std::queue<WgKey> key_cache;
 
         key_cache.push(WgKey{
-            doc["mgmt_charger_private"],
-            doc["mgmt_psk"],
+            mgmt_charger.priv,
+            mgmt_charger.psk,
             "",
         });
 
-        {
-            int i = 0;
-            for (const auto key : doc["keys"].as<JsonArray>()) {
-                key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
-                ++i;
-                // Ignore rest of keys if there were sent more than we support.
-                if (i == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
-                    break;
-            }
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            // For user tunnels the device stores its own private key, the
+            // shared PSK, and the relay-side public key (so the WireGuard
+            // interface has a peer pubkey to hand-shake against).
+            key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
         }
 
         update_registration_state(RegistrationState::InProgress);
@@ -803,6 +887,34 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "No public key provided");
         }
 
+        if (sodium_init() < 0) {
+            this->request_cleanup();
+            logger.printfln("Failed to initialize libsodium");
+            return request.send_plain(500, "Failed to initialize crypto");
+        }
+
+        // Generate one keypair set per user-tunnel slot on-device. The
+        // charger-side private/public pair plus the relay-side public key are
+        // stored locally; the charger-side public key and the (sealed)
+        // relay-side private key plus the shared PSK are forwarded to the
+        // relay. See generate_wg_key for the per-tunnel key generation.
+        std::vector<WgKey> charger_keys;
+        std::vector<WgKey> relay_keys;
+        charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+        relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            WgKey charger;
+            WgKey relay;
+            if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
+                this->request_cleanup();
+                return request.send_plain(500, "Failed to generate WireGuard key");
+            }
+            // A single PSK is shared by both endpoints of one tunnel.
+            relay.psk = charger.psk;
+            charger_keys.push_back(std::move(charger));
+            relay_keys.push_back(std::move(relay));
+        }
+
         const String &note = doc["note"];
         size_t encrypted_note_size = note.length() + crypto_box_SEALBYTES;
         size_t bs64_note_size = 4 * ((note.length() + crypto_box_SEALBYTES) / 3) + 5;
@@ -878,17 +990,17 @@ void RemoteAccess::register_urls()
         serializer.endObject();
 
         serializer.addMemberArray("wg_keys");
-        int32_t i = 0;
-        for (auto key : doc["wg_keys"].as<JsonArray>()) {
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            const WgKey &charger = charger_keys[i];
+            const WgKey &relay = relay_keys[i];
             serializer.addObject();
             int32_t connection_number = (next_user_id - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + i;
-            serializer.addMemberStringF("charger_address", "10.123.%li.2", connection_number);
-            serializer.addMemberStringF("web_address", "10.123.%li.3", connection_number);
-            serializer.addMemberString("charger_public", key["charger_public"]);
+            serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(connection_number));
+            serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(connection_number));
+            serializer.addMemberString("charger_public", charger.pub.c_str());
 
-            const String psk = key["psk"];
             uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(psk.c_str()), 44, pk.get())) {
+            if (crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), 44, pk.get())) {
                 this->request_cleanup();
                 return request.send_plain(500, "Failed to encrypt psk");
             }
@@ -898,9 +1010,8 @@ void RemoteAccess::register_urls()
             }
             serializer.endArray();
 
-            const String web_private = key["web_private"];
             uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(web_private.c_str()), 44, pk.get())) {
+            if (crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), 44, pk.get())) {
                 this->request_cleanup();
                 return request.send_plain(500, "Failed to encrypt web_private");
             }
@@ -911,7 +1022,6 @@ void RemoteAccess::register_urls()
             serializer.endArray();
 
             serializer.addMemberNumber("connection_no", connection_number);
-            i++;
             serializer.endObject();
         }
         serializer.endArray();
@@ -921,13 +1031,11 @@ void RemoteAccess::register_urls()
         const String url = construct_relay_url(config, "/api/allow_user");
 
         std::queue<WgKey> key_cache;
-        int a = 0;
-        for (const auto key : doc["wg_keys"].as<JsonArray>()) {
-            key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
-            ++a;
-            // Ignore rest of keys if there were sent more than we support.
-            if (a == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
-                break;
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            // For user tunnels the device stores its own private key, the
+            // shared PSK, and the relay-side public key (so the WireGuard
+            // interface has a peer pubkey to hand-shake against).
+            key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
         }
 
         uint8_t public_key[50];

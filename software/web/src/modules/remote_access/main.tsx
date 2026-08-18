@@ -34,7 +34,6 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { InputHost } from "../../ts/components/input_host";
 import { __ } from "../../ts/translation";
-import "./wireguard";
 import { add_user, config_update, register, config } from "./api";
 import { ConnectionState } from "./generated/connection_state.enum";
 import { RegistrationState } from "./generated/registration_state.enum";
@@ -332,10 +331,6 @@ export class RemoteAccess extends ConfigComponent<
                 note: "",
                 login_key: "",
                 secret_key: "",
-                mgmt_charger_public: "",
-                mgmt_charger_private: "",
-                mgmt_psk: "",
-                keys: [],
             };
 
             await API.call(
@@ -408,10 +403,6 @@ export class RemoteAccess extends ConfigComponent<
                     note: "",
                     login_key: loginKey,
                     secret_key: "",
-                    mgmt_charger_public: "",
-                    mgmt_charger_private: "",
-                    mgmt_psk: "",
-                    keys: [],
                 });
             } catch (err) {
                 console.error(`Failed to login: ${err}`);
@@ -478,34 +469,6 @@ export class RemoteAccess extends ConfigComponent<
             secret_key_string = await util.blobToBase64(secret_key_blob);
         }
 
-        const mg_charger_keypair = (window as any).wireguard.generateKeypair();
-
-        const keys: util.NoExtraProperties<
-            API.getType["remote_access/register"]["keys"]
-        > = [];
-
-        for (const i of util.range(
-            0,
-            options.REMOTE_ACCESS_MAX_KEYS_PER_USER,
-        )) {
-            const charger_keypair = (window as any).wireguard.generateKeypair();
-            const web_keypair = (window as any).wireguard.generateKeypair();
-
-            const psk: string = (
-                window as any
-            ).wireguard.generatePresharedKey();
-
-            keys.push({
-                charger_public: charger_keypair.publicKey,
-                charger_private: charger_keypair.privateKey,
-                web_public: web_keypair.publicKey,
-                web_private: web_keypair.privateKey,
-                psk: psk,
-            });
-        }
-
-        const psk: string = (window as any).wireguard.generatePresharedKey();
-
         let registration_data: register;
         if (this.state.addUser.auth_token === "") {
             registration_data = {
@@ -513,10 +476,6 @@ export class RemoteAccess extends ConfigComponent<
                 note: this.state.addUser.note,
                 login_key: this.state.login_key,
                 secret_key: secret_key_string,
-                mgmt_charger_public: mg_charger_keypair.publicKey,
-                mgmt_charger_private: mg_charger_keypair.privateKey,
-                mgmt_psk: psk,
-                keys: keys,
             };
         } else {
             registration_data = {
@@ -525,10 +484,6 @@ export class RemoteAccess extends ConfigComponent<
                 auth_token: this.state.addUser.auth_token,
                 public_key: this.state.addUser.public_key,
                 user_uuid: this.state.addUser.user_id,
-                mgmt_charger_private: mg_charger_keypair.privateKey,
-                mgmt_charger_public: mg_charger_keypair.publicKey,
-                mgmt_psk: psk,
-                keys: keys,
             };
         }
 
@@ -621,10 +576,6 @@ export class RemoteAccess extends ConfigComponent<
                     login_key: loginKey,
                     note: "",
                     secret_key: "",
-                    mgmt_charger_public: "",
-                    mgmt_charger_private: "",
-                    mgmt_psk: "",
-                    keys: [],
                 });
             } catch (err) {
                 console.error(`Failed to login: ${err}`);
@@ -690,30 +641,6 @@ export class RemoteAccess extends ConfigComponent<
             secret_key_string = await util.blobToBase64(secret_key_blob);
         }
 
-        const keys: util.NoExtraProperties<
-            API.getType["remote_access/register"]["keys"]
-        > = [];
-
-        for (const i of util.range(
-            0,
-            options.REMOTE_ACCESS_MAX_KEYS_PER_USER,
-        )) {
-            const charger_keypair = (window as any).wireguard.generateKeypair();
-            const web_keypair = (window as any).wireguard.generateKeypair();
-
-            const psk: string = (
-                window as any
-            ).wireguard.generatePresharedKey();
-
-            keys.push({
-                charger_public: charger_keypair.publicKey,
-                charger_private: charger_keypair.privateKey,
-                web_public: web_keypair.publicKey,
-                web_private: web_keypair.privateKey,
-                psk: psk,
-            });
-        }
-
         let add_user_data: add_user;
         if (this.state.addUser.auth_token === "") {
             add_user_data = {
@@ -721,7 +648,6 @@ export class RemoteAccess extends ConfigComponent<
                 login_key: loginKey,
                 note: this.state.addUser.note,
                 email: this.state.addUser.email,
-                wg_keys: keys,
             };
         } else {
             add_user_data = {
@@ -730,7 +656,6 @@ export class RemoteAccess extends ConfigComponent<
                 user_uuid: this.state.addUser.user_id,
                 note: this.state.addUser.note,
                 email: this.state.addUser.email,
-                wg_keys: keys,
             };
         }
 
