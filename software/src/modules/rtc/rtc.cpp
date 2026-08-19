@@ -28,6 +28,8 @@
 #include "build.h"
 #include "musl_libc_timegm.h"
 
+#include "gcc_warnings.h"
+
 static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_min;
 
 static const char *get_quality_name(Rtc::Quality quality)
@@ -38,10 +40,14 @@ static const char *get_quality_name(Rtc::Quality quality)
     case Rtc::Quality::Low:   return "Low";
     case Rtc::Quality::High:  return "High";
     case Rtc::Quality::Force: return "Force";
+    default:                  return "<unknown>";
     }
-
-    return "<unknown>";
 };
+
+// It is expected that one or both of these functions end up not overridden,
+// but some modules override them, so they cannot be final.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-final-methods"
 
 void IRtcBackend::set_time(const timeval &time)
 {
@@ -58,6 +64,8 @@ void IRtcBackend::set_time(const tm &time, int32_t microseconds)
     timeval.tv_usec = microseconds;
     set_time(timeval);
 }
+
+#pragma GCC diagnostic pop
 
 void Rtc::pre_setup()
 {
@@ -89,7 +97,6 @@ void Rtc::setup()
 
 // Allow time to be 24h older than the build timestamp,
 // in case the RTC is set by hand to test something.
-// FIXME not Y2038-safe
 static bool timestamp_acceptable(const struct timeval &time) {
     return time.tv_sec >= static_cast<time_t>(build_timestamp() - 25 * 60 * 60);
 }
@@ -101,13 +108,14 @@ void Rtc::register_urls() {
 
     api.addCommand("rtc/time_update", &time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         struct tm tm{};
-        tm.tm_year = time_update.get("year")->asUint() - 1900;
-        tm.tm_mon  = time_update.get("month")->asUint() - 1;
-        tm.tm_mday = time_update.get("day")->asUint();
-        tm.tm_hour = time_update.get("hour")->asUint();
-        tm.tm_min  = time_update.get("minute")->asUint();
-        tm.tm_sec  = time_update.get("second")->asUint();
-        tm.tm_wday = time_update.get("weekday")->asUint();
+        tm.tm_year = static_cast<int>(time_update.get("year"   )->asUint()) - 1900;
+        tm.tm_mon  = static_cast<int>(time_update.get("month"  )->asUint()) - 1;
+        tm.tm_mday = static_cast<int>(time_update.get("day"    )->asUint());
+        tm.tm_hour = static_cast<int>(time_update.get("hour"   )->asUint());
+        tm.tm_min  = static_cast<int>(time_update.get("minute" )->asUint());
+        tm.tm_sec  = static_cast<int>(time_update.get("second" )->asUint());
+        tm.tm_wday = static_cast<int>(time_update.get("weekday")->asUint());
+
         struct timeval timeval{};
         timeval.tv_sec = timegm(&tm);
 
@@ -130,19 +138,19 @@ void Rtc::register_urls() {
         // Run shortly after a full second because we know that the wall clock task runs when the second changes.
         task_scheduler.updateCurrentTaskDelay(micros_t{std::max(1005000L - tv.tv_usec, 262144L)});
 
-        if (!time.get("second")->updateUint(tm.tm_sec) && !full_update) return;
-        if (!time.get("minute")->updateUint(tm.tm_min) && !full_update) return;
+        if (!time.get("second")->updateUint(static_cast<uint32_t>(tm.tm_sec)) && !full_update) return;
+        if (!time.get("minute")->updateUint(static_cast<uint32_t>(tm.tm_min)) && !full_update) return;
 
 #if MODULE_NTP_AVAILABLE()
         ntp.set_api_time(tv);
 #endif
 
-        if (!time.get("hour")->updateUint(tm.tm_hour) && !full_update) return;
-        if (!time.get("day")->updateUint(tm.tm_mday) && !full_update) return;
-        time.get("weekday")->updateUint(tm.tm_wday);
+        if (!time.get("hour" )->updateUint(static_cast<uint32_t>(tm.tm_hour)) && !full_update) return;
+        if (!time.get("day"  )->updateUint(static_cast<uint32_t>(tm.tm_mday)) && !full_update) return;
+        time.get("weekday"   )->updateUint(static_cast<uint32_t>(tm.tm_wday));
 
-        if (!time.get("month")->updateUint(tm.tm_mon + 1) && !full_update) return;
-        time.get("year")->updateUint(tm.tm_year + 1900);
+        if (!time.get("month")->updateUint(static_cast<uint32_t>(tm.tm_mon + 1)) && !full_update) return;
+        time.get("year"      )->updateUint(static_cast<uint32_t>(tm.tm_year + 1900));
     }, 1_s);
 
     task_scheduler.scheduleUncancelable([this]() {
@@ -200,19 +208,19 @@ void Rtc::reset()
 }
 
 void Rtc::update_rtc_from_system_time(int attempt) {
-    struct timeval time;
-    gettimeofday(&time, nullptr);
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
 
-    if (time.tv_usec > 10000 && attempt < 3) {
+    if (tv.tv_usec > 10000 && attempt < 3) {
         // Schedule this task to run directly after the next second.
-        task_scheduler.scheduleOnce([this, attempt, time]() {
+        task_scheduler.scheduleOnce([this, attempt, tv]() {
             this->update_rtc_from_system_time(attempt + 1);
-        }, millis_t{((1000 * 1000) - time.tv_usec + 999) / 1000});
+        }, millis_t{((1000 * 1000) - tv.tv_usec + 999) / 1000});
         return;
     }
 
     for (auto *backend : backends) {
-        backend->set_time(time);
+        backend->set_time(tv);
     }
 
     if (attempt > 0) {
@@ -220,18 +228,20 @@ void Rtc::update_rtc_from_system_time(int attempt) {
     }
 }
 
-bool Rtc::push_system_time(const timeval &time, Quality quality)
+bool Rtc::push_system_time(const timeval &tv, Quality quality)
 {
-    if (time.tv_sec == 0 && time.tv_usec == 0)
+    if (tv.tv_sec == 0 && tv.tv_usec == 0)
         return false;
 
-    if (!timestamp_acceptable(time))
+    if (!timestamp_acceptable(tv))
         return false;
 
-    micros_t max_age = 0_us;
+    micros_t max_age;
 
     switch(quality) {
         case Quality::None:
+        default:
+            max_age = 0_us;
             break;
         case Quality::RTC:
         case Quality::Low:
@@ -243,7 +253,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             break;
     }
 
-    timeval old_time;
+    timeval old_tv;
     micros_t now;
 
     {
@@ -253,42 +263,43 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             return false;
         }
 
-        gettimeofday(&old_time, NULL);
+        gettimeofday(&old_tv, NULL);
         now = now_us();
-        settimeofday(&time, NULL);
+        settimeofday(&tv, NULL);
 
         last_sync_quality = quality;
         last_sync = now;
         last_sync_ok_deadline = last_sync + max_age;
     }
 
-    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1];
     {
         struct tm timeinfo = {};
-        localtime_r(&time.tv_sec, &timeinfo);
+        localtime_r(&tv.tv_sec, &timeinfo);
 
         size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
-        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ".%03ld", tv.tv_usec / 1000);
     }
 
-    char old_buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
+    char old_buf[EVENT_LOG_TIMESTAMP_LENGTH + 1];
     {
         struct tm timeinfo = {};
-        localtime_r(&old_time.tv_sec, &timeinfo);
+        localtime_r(&old_tv.tv_sec, &timeinfo);
 
         size_t written = strftime(old_buf, ARRAY_SIZE(old_buf), "%F %T", &timeinfo);
-        snprintf(old_buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
+        snprintf(old_buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ".%03ld", old_tv.tv_usec / 1000);
     }
 
     logger.tracefln_plain(this->trace_buffer_index, "Updated time from %s to %s at %llu. Quality %s", old_buf, buf, now.to<millis_t>().as<uint64_t>(), get_quality_name(quality));
 
-    time_t jump = time.tv_sec - old_time.tv_sec;
-
     // Only log if old time was acceptable. If not, this was probably the first sync.
-    if (timestamp_acceptable(old_time) && abs(jump) > 10) {
-        task_scheduler.scheduleOnce([jump]() {
-            logger.printfln("Time jumped %s %lld seconds!", jump > 0 ? "forward" : "backward", abs(jump));
-        });
+    if (timestamp_acceptable(old_tv)) {
+        const time_t jump = tv.tv_sec - old_tv.tv_sec;
+        const time_t jump_abs = abs(jump);
+
+        if (jump_abs > 10) {
+            logger.printfln("Time jumped %s by %lld seconds!", jump > 0 ? "forward" : "backward", jump_abs);
+        }
     }
 
     // Maybe we run in another thread.
@@ -296,7 +307,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
     if (quality != Quality::RTC) {
         task_scheduler.scheduleOnce([this]() {
             this->update_rtc_from_system_time(0);
-        }, millis_t{((1000 * 1000) - time.tv_usec + 999) / 1000});
+        }, millis_t{((1000 * 1000) - tv.tv_usec + 999) / 1000});
     }
 
     force_full_state_update = true;
