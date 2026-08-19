@@ -60,6 +60,7 @@ static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
     {{0x70, 0xB3, 0xD6}, EVCCVendor::Audi},
     {{0x18, 0x4C, 0xAE}, EVCCVendor::Aumovio},      // OBC seen in Renault Megane E-Tech
     {{0x00, 0x01, 0xA9}, EVCCVendor::BMW},
+    {{0x38, 0x1F, 0x26}, EVCCVendor::Bosch},        // OBC seen in Citroën e-C3
     {{0x48, 0x31, 0x33}, EVCCVendor::Bosch},
     {{0xEC, 0xFA, 0x03}, EVCCVendor::FCA},
     {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
