@@ -127,6 +127,12 @@ private:
     void fetch_service_token();
     void parse_service_token();
 
+    // True only when the support team has flipped the support-toggle. Both backend
+    // and frontend use this so the UI button and the /remote_access/service_token_register
+    // endpoint stay in sync. The service_token_timestamp_minutes field is reserved for
+    // future use and is intentionally ignored here.
+    bool service_token_allowed() const;
+
     // Split a decoded authorization-token byte sequence into the fields of
     // authorization_token and log them. Returns false if the buffer is too
     // short to contain the fixed prefix and trailing checksum.
@@ -181,6 +187,13 @@ private:
     void parse_secret();
     void parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email);
     void parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
+    String allow_user_at_relay(const unsigned char *pk,
+                               const String &email,
+                               const String &user_uuid,
+                               const String &login_key,
+                               const String &auth_token,
+                               const String &note,
+                               uint8_t next_user_id);
     void login(const Config &user_config, const String &login_key);
     void update_registration_state(RegistrationState state, const String &message = String());
     void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, ConnectionState state_value);
