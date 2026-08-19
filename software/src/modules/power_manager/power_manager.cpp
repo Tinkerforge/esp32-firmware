@@ -1158,7 +1158,7 @@ uint32_t PowerManager::get_guaranteed_power_w() const
 
 uint32_t PowerManager::get_phase_switching_mode() const
 {
-    return config.get("phase_switching_mode")->asUint();
+    return get_enabled() ? config.get("phase_switching_mode")->asUint() : PHASE_SWITCHING_EXTERNAL_CONTROL;
 }
 
 uint32_t PowerManager::get_phases() const
