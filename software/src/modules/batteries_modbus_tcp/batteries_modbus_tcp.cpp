@@ -444,7 +444,8 @@ void BatteriesModbusTCP::loop()
                                                                test->device_address, test->transaction_id_mask,
         [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
-        });
+        },
+        test->language);
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
