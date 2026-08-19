@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component } from "preact";
@@ -100,22 +102,21 @@ type EvSeenMac = API.getType['ev/seen_macs'][0] & { charger_name?: string | null
 // Get EV MACs seen locally, merged with the EV MACs received from other chargers
 // through central user management. Returns all MACs deduplicated.
 async function get_all_seen_macs(): Promise<EvSeenMac[]> {
-    let central_management_enabled = util.is_central_management_enabled();
-
-    let now = API.get("info/keep_alive").uptime;
-
-    if (!central_management_enabled) {
+//#if MODULE_EVSE_COMMON_AVAILABLE
+    // Local EV session tracking (ev/seen_macs) only exists on chargers.
+    if (!util.is_central_management_enabled()) {
         return (API.get('ev/seen_macs') ?? []).map(m => {
             const seen_mac: EvSeenMac = {...m, charger_name: null};
             return seen_mac;
         });
-    } else {
-        return (await get_charge_manager_auth_info([CMAuthType.EV, CMAuthType.InjectedEV])).map(x => ({
-                mac: (x.auth_info[1] as any).mac,
-                seen_at: x.seen_at,
-                charger_name: x.charger_name,
-            } as EvSeenMac));
     }
+//#endif
+
+    return (await get_charge_manager_auth_info([CMAuthType.EV, CMAuthType.InjectedEV])).map(x => ({
+            mac: (x.auth_info[1] as any).mac,
+            seen_at: x.seen_at,
+            charger_name: x.charger_name,
+        } as EvSeenMac));
 }
 
 interface EvState {
@@ -237,14 +238,17 @@ export class Ev extends Component<{}, EvState> {
             return <SubPage name="ev" />;
 
         const ev_config = API.get("ev/config");
-        const ev_state = API.get("ev/state");
         const seen_macs = state.seenMacs;
+//#if MODULE_EVSE_COMMON_AVAILABLE
+        const ev_state = API.get("ev/state");
         const has_active_ev = ev_state.mac !== "";
         const known_ev_index = has_active_ev ? find_matching_ev(ev_config.evs, ev_state.mac) : -1;
         const is_known_ev = known_ev_index >= 0;
+//#endif
 
         return (
             <SubPage name="ev" title={__("ev.content.ev")}>
+{/*#if MODULE_EVSE_COMMON_AVAILABLE*/}
                 <SubPage.Status collapsed={!has_active_ev}>
                     {has_active_ev ? <>
                         <FormRow label={__("ev.content.currently_connected")}>
@@ -274,6 +278,7 @@ export class Ev extends Component<{}, EvState> {
                         <InputText value={__("ev.content.no_active_ev")} />
                     </FormRow>}
                 </SubPage.Status>
+{/*#endif*/}
 
                 <FormRow label={__("ev.content.ev_profiles")} label_muted={__("ev.content.ev_profiles_desc")}>
                     <Table

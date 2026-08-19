@@ -753,7 +753,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
         if (last_seen >= 1_h) {
             bool expired = true;
-#if MODULE_EV_AVAILABLE()
+#if MODULE_EV_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
             // An EV authentication stays relevant for as long as the EV is connected.
             if (((auth_method == CMAuthType::EV) || (auth_method == CMAuthType::InjectedEV)) &&
                 ev.is_ev_connected(entry->get("auth_info")->get()->get("mac")->asString())) {

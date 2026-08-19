@@ -70,11 +70,13 @@ static bool parse_mac(const char *str, uint8_t *out_mac, uint8_t *out_mask = nul
     return true;
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 static void format_mac_string(const uint8_t *mac, char *out, size_t out_size)
 {
     snprintf(out, out_size, "%02X:%02X:%02X:%02X:%02X:%02X",
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
+#endif
 
 uint16_t Ev::capacity_to_dkwh(float capacity_kwh)
 {
@@ -166,6 +168,7 @@ void Ev::pre_setup()
         return "";
     }};
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
     state = Config::Object({
         {"active_ev_index",     Config::Int(-1, -1, EV_MAX_EVS - 1)},
         {"name",                Config::Str("", 0, 16)},
@@ -213,6 +216,7 @@ void Ev::pre_setup()
 
         return "";
     }};
+#endif
 }
 
 void Ev::setup()
@@ -224,6 +228,8 @@ void Ev::setup()
 void Ev::register_urls()
 {
     api.addPersistentConfig("ev/config", &config, {}, {"mac"});
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
     api.addState("ev/state", &state, {}, {"mac"});
     api.addState("ev/seen_macs", &seen_macs, {}, {"mac"});
 
@@ -251,10 +257,12 @@ void Ev::register_urls()
         }
 #endif
     }, true);
+#endif
 }
 
 void Ev::register_events()
 {
+#if MODULE_EVSE_COMMON_AVAILABLE()
     event.registerEvent("evse/state", {"charger_state"}, [this](const Config *charger_state) {
         if (charger_state->asUint() != 0) {
             // EV connected: Start SoC estimation
@@ -274,8 +282,10 @@ void Ev::register_events()
         }
         return EventResult::OK;
     });
+#endif
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected)
 {
     active_ev_index = -1;
@@ -356,6 +366,7 @@ void Ev::on_ev_disconnected()
     meters_iso15118.clear_values();
 #endif
 }
+#endif
 
 int Ev::find_matching_ev_index(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
 {
@@ -419,6 +430,7 @@ void Ev::remove_user(uint8_t user_id)
     }
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 void Ev::set_soc(float soc)
 {
     session.energy_at_soc_reading = get_session_energy_kwh();
@@ -493,6 +505,7 @@ void Ev::set_remote_charge_parameters(uint16_t capacity_dkwh, uint8_t efficiency
         state.get("charging_efficiency")->updateFloat(session.charging_efficiency);
     }
 }
+#endif
 
 void Ev::get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_t *capacity_dkwh, uint8_t *efficiency_pct)
 {
@@ -515,6 +528,7 @@ void Ev::get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_
     }
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
 bool Ev::is_ev_connected(const String &mac_str)
 {
     const String &current_mac = state.get("mac")->asString();
@@ -523,7 +537,7 @@ bool Ev::is_ev_connected(const String &mac_str)
 
 float Ev::get_session_energy_kwh()
 {
-#if MODULE_CHARGE_TRACKER_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
     float energy_now;
     if (evse_common.get_charger_meter_energy(&energy_now) == MeterValueAvailability::Unavailable) {
         return 0.0f;
@@ -544,7 +558,7 @@ float Ev::get_session_energy_kwh()
     float session_energy = energy_now - meter_start;
     return std::max(0.0f, session_energy);
 #else
-    // TODO: Implement energy tracking for energy manager (without charge_tracker)
+    // TODO: Implement energy tracking for chargers without charge tracker
     return this->session.energy_at_soc_reading; // Returns 0 initially; uses 'this' to avoid -Wsuggest-attribute=const
 #endif
 }
@@ -593,3 +607,4 @@ void Ev::add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
     seen_macs.get(target_idx)->get("mac")->updateString(mac_str);
     seen_macs.get(target_idx)->get("seen_at")->updateUptime(now);
 }
+#endif

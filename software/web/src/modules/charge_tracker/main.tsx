@@ -907,6 +907,8 @@ export class ChargeTrackerStatus extends Component {
         let ev_name = undefined;
         let ev_soc = undefined;
 //#if MODULE_EV_AVAILABLE
+//#if MODULE_EVSE_COMMON_AVAILABLE
+        // The currently connected EV (ev/state) only exists on chargers.
         let ev_state = API.get("ev/state");
         let evs = API.get("ev/config").evs;
         if (ev_state.mac != "") {
@@ -918,6 +920,7 @@ export class ChargeTrackerStatus extends Component {
             ev_name = __("charge_tracker.status.unknown_ev")
         }
         ev_soc = ev_state.soc;
+//#endif
 //#endif
 
 //#if MODULE_EVSE_COMMON_AVAILABLE
