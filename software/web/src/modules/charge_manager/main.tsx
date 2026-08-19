@@ -34,6 +34,11 @@ import { CheckCircle, ChevronRight, Circle, Server, Sliders } from "react-feathe
 //#if MODULE_ECO_AVAILABLE
 import { EcoChart } from "modules/eco/main";
 //#endif
+//#if MODULE_EV_AVAILABLE
+import { get_ev_name } from "modules/ev/main";
+import { CMAuthType } from "modules/cm_networking/generated/cm_auth_type.enum";
+import { ChargeAuth } from "modules/charge_authorization/api";
+//#endif
 import { Button, Collapse } from "react-bootstrap";
 
 import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
@@ -107,6 +112,9 @@ interface ChargeManagerStatusState {
     available_current: API.getType['charge_manager/available_current']
     config: API.getType['charge_manager/config']
     uptime: number
+    // Name of the configured EV profile matching the EV MAC
+    // last reported by that charger, or null if unknown.
+    ev_names?: (string | null)[]
 }
 
 function with_timespan(fn: (timespan: string) => string, timestamp: number) {
@@ -502,6 +510,7 @@ function CMStatusCharger(props: {
         charge_mode: ConfigChargeMode,
         charger_state: API.getType['charge_manager/state']['chargers'][0],
         charger_config: API.getType['charge_manager/config']['chargers'][0],
+        ev_name?: string | null,
         users?: API.getType['users/config']['users'],
         central_auth_enabled?: boolean
     }) {
@@ -518,6 +527,13 @@ function CMStatusCharger(props: {
     // Get the display name of the currently charging user
     let user_display_name = "";
     let show_user_dropdown = false;
+
+    // Get the name of the connected EV, if it was recognized as a configured EV
+    let ev_display_name = "";
+//#if MODULE_EV_AVAILABLE
+    if (c.s != CASState.NoVehicle && props.ev_name)
+        ev_display_name = props.ev_name;
+//#endif
 
 //#ifn OPTIONS_PRODUCT_ID_IS_WARP
     if (c.u >= 1) {
@@ -577,7 +593,9 @@ function CMStatusCharger(props: {
     let user_display_name_div = <></>;
     let user_dropdown = <></>;
 //#ifn OPTIONS_PRODUCT_ID_IS_WARP
-    user_display_name_div = user_display_name ? <div class="text-muted" style="font-size: 0.875rem;">{__("charge_manager.script.currently_charging_user")}: {user_display_name}</div> : null;
+    // Show "Name / Vehicle", or only the known part of user and EV
+    const user_ev_names = [user_display_name, ev_display_name].filter(x => x != "");
+    user_display_name_div = user_ev_names.length > 0 ? <div class="text-muted" style="font-size: 0.875rem;">{user_ev_names.join(" / ")}</div> : null;
 
     user_dropdown = show_user_dropdown ?
         <div class="col-auto">
@@ -663,8 +681,9 @@ function CMStatusCharger(props: {
                     </Collapse>
 {/*#endif*/}
                 </div>
-                <div class="card-footer">
+                <div class="card-footer d-flex justify-content-between flex-wrap">
                     <span>{c_status_text}</span>
+                    {c.soc != 255 ? <span>{__("charge_manager.script.soc")}: {c.soc} %</span> : null}
                 </div>
             </div>
 }
@@ -709,6 +728,12 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         util.addApiEventListener('charge_manager/state', () => {
             this.setState({state: API.get('charge_manager/state')})
+
+//#if MODULE_EV_AVAILABLE
+            if (API.get('charge_manager/state').auth_changed || !this.ev_names_requested)
+            // Auth changed -> refresh names.
+                this.refresh_ev_names();
+//#endif
         });
 
         util.addApiEventListener('charge_manager/available_current', () => {
@@ -722,7 +747,40 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         util.addApiEventListener('info/keep_alive', () => {
             this.setState({uptime: API.get('info/keep_alive').uptime})
         });
+
+//#if MODULE_EV_AVAILABLE
+        util.addApiEventListener('ev/config', () => {
+            // EV profiles (names/MACs) changed -> refresh names.
+            if (this.ev_names_requested)
+                this.refresh_ev_names();
+        });
+//#endif
     }
+
+//#if MODULE_EV_AVAILABLE
+    ev_names_requested = false;
+
+    // Fetch the auth info of all managed chargers and resolve the EV MACs
+    // reported by them (newest entry first) to configured EV profile names.
+    refresh_ev_names = () => {
+        this.ev_names_requested = true;
+
+        util.download("/charge_manager/auth_info", false).then(x => x.text()).then(text => {
+            const auths: ChargeAuth[][] = JSON.parse(text);
+
+            this.setState({ev_names: auths.map(charger_auths => {
+                for (const auth of charger_auths) {
+                    const [auth_type, auth_details] = auth.auth_info;
+                    if (auth_type == CMAuthType.EV || auth_type == CMAuthType.InjectedEV)
+                        return get_ev_name(auth_details.mac);
+                }
+                return null;
+            })});
+        }).catch(e => {
+            console.error("Failed to fetch charge_manager/auth_info:", e);
+        });
+    };
+//#endif
 
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
         if (!render_allowed())
@@ -753,6 +811,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 charge_mode={charge_modes[i]}
                 charger_state={c}
                 charger_config={state.config.chargers[i]}
+//#if MODULE_EV_AVAILABLE
+                ev_name={state.ev_names?.[i]}
+//#endif
 //#ifn OPTIONS_PRODUCT_ID_IS_WARP
                 users={users}
                 central_auth_enabled={central_auth_enabled}

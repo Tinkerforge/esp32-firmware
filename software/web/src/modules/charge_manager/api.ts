@@ -32,6 +32,8 @@ type ChargerState = {
     dc: CurrentDecision,
     /** user_id - ID of the currently authenticated/charging user */
     u: number,
+    /** ev_soc - Last EV SoC reported by this charger in percent. 255 = unknown */
+    soc: number,
 };
 
 interface ServCharger {

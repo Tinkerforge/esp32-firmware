@@ -84,6 +84,12 @@ function find_matching_ev(evs: EvProfile[], mac: string, ignoreIndex?: number): 
     return -1;
 }
 
+export function get_ev_name(mac: string): string | null {
+    const evs = API.get("ev/config").evs;
+    const index = find_matching_ev(evs, mac);
+    return index >= 0 ? evs[index].name : null;
+}
+
 
 type EvProfile = API.getType["ev/config"]["evs"][0];
 

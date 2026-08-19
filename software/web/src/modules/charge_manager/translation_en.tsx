@@ -229,6 +229,8 @@ let x = {
             "ampere_allocated": "allocated",
             "ampere_supported": "supported",
 
+            "soc": "SoC",
+
             "last_update_prefix": "Unavailable for",
             "last_update_suffix": "",
             "save_failed": "Failed to save the charge manager settings.",
@@ -295,7 +297,6 @@ let x = {
             "cd_supported_by_charger": "Charger limit",
             "cd_left_over": "Left over current",
             "cd_user_limit": "User limit",
-            "currently_charging_user": "Charging user",
             "authorize_charger": "Authorize",
             "authorize_charger_for_user": "Authorize charge for user",
             "authorize_charger_no_users": "No users configured",

@@ -29,7 +29,7 @@
 #if MODULE_METERS_ISO15118_AVAILABLE()
 #include "modules/meters_iso15118/generated/ev_data_source.enum.h"
 #else
-enum class EVDataProtocol : uint8_t {
+enum class EVDataSource : uint8_t {
     API = 1
 };
 #endif
@@ -42,6 +42,8 @@ enum class EVDataProtocol : uint8_t {
 static constexpr float EV_DEFAULT_CHARGING_EFFICIENCY = 0.92f;
 static constexpr float EV_DEFAULT_CAPACITY            = 60.0f;
 
+static constexpr uint8_t EV_SOC_UNKNOWN = 255; // CM Protocol representation of an unknown SoC
+
 struct EVSession {
     float soc = NAN;                      // Current SOC (%)
     float soc_initial = NAN;              // Initial SOC for estimation (%)
@@ -49,6 +51,7 @@ struct EVSession {
     float capacity = EV_DEFAULT_CAPACITY; // Battery capacity (kWh)
     float charging_efficiency = EV_DEFAULT_CHARGING_EFFICIENCY;
     float power = NAN;                    // EV current power (W, only iso15118-20)
+    bool capacity_from_ev = false;        // Capacity was reported by the EV itself (iso15118-20).
 };
 
 class Ev final : public IModule
@@ -70,6 +73,14 @@ public:
     void update_estimated_soc();
     void session_updated(EVDataSource source); // Called after writing session fields.
     void add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH]);
+
+    [[gnu::const]] static uint16_t capacity_to_dkwh(float capacity_kwh);
+    [[gnu::const]] static uint8_t efficiency_to_pct(float efficiency);
+    [[gnu::const]] static uint8_t soc_to_pct(float soc);
+
+    void set_remote_charge_parameters(uint16_t capacity_dkwh, uint8_t efficiency_pct);
+    void get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_t *capacity_dkwh, uint8_t *efficiency_pct);
+    bool is_ev_connected(const String &mac_str);
 
     EVSession session;
 

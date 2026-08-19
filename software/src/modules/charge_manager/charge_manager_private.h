@@ -178,6 +178,9 @@ struct ChargerState {
 
     // Last NFC tags seen on this charger (from cm_state_v5)
     cm_auth_info auth_info[3];
+
+    // Last EV SoC reported by this charger (from cm_state_v6).
+    uint8_t ev_soc;
 };
 
 struct ChargerAllocationState {
