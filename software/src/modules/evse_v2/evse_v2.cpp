@@ -1407,17 +1407,30 @@ void EVSEV2::set_plc_modem(bool enabled)
     io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_plc_modem(&device, enabled); });
 }
 
-static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)
+static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool /*phases_active*/[3], bool /*phases_connected*/[3], void * /*user_data*/)
 {
 #if MODULE_METERS_EVSE_V2_AVAILABLE()
     // Dispatched from tf_hal_tick on the io task to the main task.
-    const float c0 = current[0];
-    const float c1 = current[1];
-    const float c2 = current[2];
 
-    task_scheduler.scheduleOnce([power, c0, c1, c2]() {
-        float currents[3] = {c0, c1, c2};
-        meters_evse_v2.energy_meter_values_callback(power, currents);
+    struct values_closure {
+        float current[3];
+        float power;
+    };
+
+    values_closure *values = static_cast<values_closure *>(malloc(sizeof(values_closure)));
+
+    if (values == nullptr) {
+        return;
+    }
+
+    values->current[0] = current[0];
+    values->current[1] = current[1];
+    values->current[2] = current[2];
+    values->power = power;
+
+    task_scheduler.scheduleOnce([values]() {
+        meters_evse_v2.energy_meter_values_callback(values->power, values->current);
+        free(values);
     });
 #endif
 }
