@@ -87,10 +87,10 @@ static const char FLICKR_BASE58_ALPHABET[] = "123456789abcdefghijkmnopqrstuvwxyz
 static inline uint16_t validate_http_body(WebServerRequest &request, size_t &out_len) {
     out_len = request.contentLength();
     if (out_len == 0) {
-        return 400; // Empty request body
+        return 400;
     }
     if (out_len > MAX_HTTP_BODY_BYTES) {
-        return 413; // Payload Too Large
+        return 413;
     }
     return 0;
 }
@@ -623,7 +623,10 @@ static String construct_relay_url(const Config& config, const char* endpoint, co
 
 // Build the /api/charger/add or /api/add_with_token relay request: generate
 // on-device WireGuard keys, seal them with pk, serialize the JSON payload and
-// dispatch it. The response is consumed by parse_registration.
+// dispatch it. The response is consumed by parse_registration. All early
+// failures are reported via request.send_plain; the shared work lives in
+// register_with_relay so it can be reused from flows that don't have a live
+// WebServerRequest (e.g. /remote_access/service_token_register).
 WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerRequest request,
                                                                  const Config &relay_config,
                                                                  const unsigned char *pk,
@@ -632,6 +635,25 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
                                                                  const String *auth_user_id,
                                                                  const String *auth_token,
                                                                  const String &email)
+{
+    String error = register_with_relay(relay_config, pk, note, endpoint, auth_user_id, auth_token, email);
+    if (!error.isEmpty()) {
+        return request.send_plain(500, error);
+    }
+    return request.send_plain(200);
+}
+
+// Same work as add_charger_to_relay, but with no WebServerRequest. The caller
+// decides how to surface failures: the handler returns send_plain(500, …)
+// while an async caller (parse_service_token) sets the registration state to
+// Error and clears request state. Returns an empty string on success.
+String RemoteAccess::register_with_relay(const Config &relay_config,
+                                         const unsigned char *pk,
+                                         const String &note,
+                                         const char *endpoint,
+                                         const String *auth_user_id,
+                                         const String *auth_token,
+                                         const String &email)
 {
     const String &name = api.getState("info/display_name")->get("display_name")->asString();
 
@@ -643,18 +665,18 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
     auto ptr = heap_alloc_array<char>(json_size);
 
     if (ptr == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return String("Low memory");
     }
 
     if (sodium_init() < 0) {
         logger.printfln("Failed to initialize libsodium");
-        return request.send_plain(500, "Failed to initialize crypto");
+        return String("Failed to initialize crypto");
     }
 
     // Generate the management tunnel key pair and PSK on-device.
     WgKey mgmt_charger;
     if (!generate_wg_key(mgmt_charger)) {
-        return request.send_plain(500, "Failed to generate WireGuard key");
+        return String("Failed to generate WireGuard key");
     }
 
     // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
@@ -667,7 +689,7 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
         WgKey charger;
         WgKey relay;
         if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
-            return request.send_plain(500, "Failed to generate WireGuard key");
+            return String("Failed to generate WireGuard key");
         }
         // A single PSK is shared by both endpoints of one tunnel.
         relay.psk = charger.psk;
@@ -692,7 +714,7 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
             int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), relay.priv.length(), pk);
             if (ret < 0) {
                 logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
-                return request.send_plain(500, "Failed to encrypt WireGuard keys.");
+                return String("Failed to encrypt WireGuard keys.");
             }
 
             // TODO: maybe base64 encode?
@@ -706,7 +728,7 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
             ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), charger.psk.length(), pk);
             if (ret < 0) {
                 logger.printfln("Failed to encrypt psk: %i", ret);
-                return request.send_plain(500, "Failed to encrypt psk");
+                return String("Failed to encrypt psk");
             }
 
             // TODO: maybe base64 encode?
@@ -733,12 +755,12 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
 
     std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
     if (encrypted_name == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return String("Low memory");
     }
     crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk);
     auto bs64_name = heap_alloc_array<char>(bs64_name_size);
     if (bs64_name == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return String("Low memory");
     }
     size_t olen;
     mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
@@ -747,12 +769,12 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
 
     std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
     if (encrypted_note == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return String("Low memory");
     }
     crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk);
     auto bs64_note = heap_alloc_array<char>(bs64_note_size);
     if (bs64_note == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return String("Low memory");
     }
     mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
 
@@ -797,8 +819,163 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
     https_client->set_header("Content-Type", "application/json");
     this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, relay_config, std::move(next_stage));
 
+    return String();
+}
+
+#if signature_sodium_public_key_length != 0
+// /remote_access/service_token_register: the device asks the configured relay
+// for a signed authorization token, verifies it against the embedded Tinkerforge
+// public key and uses the recovered token to register on the relay. The whole
+// flow is async: the handler returns 200 once the GET has been kicked off.
+WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebServerRequest request)
+{
+    this->management_request_allowed = false;
+    authorization_token = AuthorizationToken{};
+    this->fetch_service_token();
     return request.send_plain(200);
 }
+
+void RemoteAccess::fetch_service_token()
+{
+    update_registration_state(RegistrationState::InProgress);
+
+    const String url = construct_relay_url(config, "/api/auth/service_token");
+
+    if (https_client == nullptr) {
+        https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+    }
+
+    run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this](const Config &/*cfg*/) {
+        this->parse_service_token();
+    });
+}
+
+// Parse the signed authorization-token message returned by /auth/service_token,
+// verify its signature against the embedded Tinkerforge public key and hand off
+// to the existing add_with_token flow. On any failure the registration state is
+// set to Error and the per-request state is cleared so the next attempt can
+// run.
+void RemoteAccess::parse_service_token()
+{
+    // The relay returns the signed authorization token as a plain
+    // base64-encoded body (no JSON wrapping). Strip any trailing
+    // whitespace added by the HTTP transport and bail out on an empty
+    // response before doing anything else.
+    response_body.trim();
+    if (response_body.length() == 0) {
+        update_registration_state(RegistrationState::Error, String("Empty service_token response"));
+        this->request_cleanup();
+        return;
+    }
+
+    const size_t signed_str_len = response_body.length();
+    size_t decoded_max = (signed_str_len / 4) * 3 + 4;
+    std::unique_ptr<uint8_t[]> signed_data = heap_alloc_array<uint8_t>(decoded_max);
+    if (signed_data == nullptr) {
+        update_registration_state(RegistrationState::Error, String("Low memory"));
+        this->request_cleanup();
+        return;
+    }
+
+    size_t decoded_size = 0;
+    int b64_ret = mbedtls_base64_decode(signed_data.get(),
+                                        decoded_max,
+                                        &decoded_size,
+                                        reinterpret_cast<const unsigned char *>(response_body.c_str()),
+                                        signed_str_len);
+    if (b64_ret != 0) {
+        log_mbedtls_error(b64_ret, "Failed to decode service_token base64");
+        update_registration_state(RegistrationState::Error, String("Failed to decode service_token base64"));
+        this->request_cleanup();
+        return;
+    }
+
+    response_body.clear();
+
+    if (decoded_size <= crypto_sign_BYTES) {
+        update_registration_state(RegistrationState::Error, String("Signed service_token too short"));
+        this->request_cleanup();
+        return;
+    }
+
+    if (sodium_init() < 0) {
+        update_registration_state(RegistrationState::Error, String("Failed to initialize crypto"));
+        this->request_cleanup();
+        return;
+    }
+
+    // libsodium combined signed-string format: signature (crypto_sign_BYTES) || message.
+    std::unique_ptr<unsigned char[]> message = heap_alloc_array<unsigned char>(decoded_size - crypto_sign_BYTES);
+    if (message == nullptr) {
+        update_registration_state(RegistrationState::Error, String("Low memory"));
+        this->request_cleanup();
+        return;
+    }
+
+    unsigned long long extracted_len = 0;
+    int verify_ret = crypto_sign_open(message.get(),
+                                      &extracted_len,
+                                      signed_data.get(),
+                                      static_cast<unsigned long long>(decoded_size),
+                                      signature_sodium_public_key_data);
+    if (verify_ret != 0) {
+        update_registration_state(RegistrationState::Error, String("Service token signature verification failed"));
+        this->request_cleanup();
+        return;
+    }
+
+    const char *token = reinterpret_cast<const char *>(message.get());
+    const size_t token_str_len = static_cast<size_t>(extracted_len);
+
+    size_t decoded_token_len = 0;
+    std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(token, token_str_len, token_str_len, &decoded_token_len);
+    if (token_bytes == nullptr) {
+        update_registration_state(RegistrationState::Error, String("Failed to decode service token base58"));
+        this->request_cleanup();
+        return;
+    }
+
+    if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
+        update_registration_state(RegistrationState::Error, String("Authorization token too short"));
+        this->request_cleanup();
+        return;
+    }
+
+    authorization_token.valid = true;
+
+    // The service-token endpoint replaces the on-device enable step that
+    // config_update would normally perform, matching the verify_signature
+    // endpoint.
+    config.get("enable")->updateBool(true);
+
+    uint8_t token_b64[50];
+    size_t olen;
+    if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
+        update_registration_state(RegistrationState::Error, String("Failed to base64-encode authorization token"));
+        this->request_cleanup();
+        return;
+    }
+    const String token_str(reinterpret_cast<const char *>(token_b64), olen);
+    const String user_id_str(authorization_token.user_uuid);
+
+    String relay_error = register_with_relay(config,
+                                             authorization_token.user_public_key,
+                                             String(),
+                                             "/api/add_with_token",
+                                             &user_id_str,
+                                             &token_str,
+                                             authorization_token.user_email);
+    if (!relay_error.isEmpty()) {
+        update_registration_state(RegistrationState::Error, relay_error);
+        this->request_cleanup();
+        return;
+    }
+
+    // The PUT is in flight. parse_registration takes over and will clear
+    // request state once the relay response arrives.
+    response_body.clear();
+}
+#endif
 
 void RemoteAccess::register_urls()
 {
@@ -1066,6 +1243,12 @@ void RemoteAccess::register_urls()
                                           auth_token,
                                           registration_config.get("email")->asString());
     });
+
+#if signature_sodium_public_key_length != 0
+    server.on("/remote_access/service_token_register", HTTP_PUT, [this](WebServerRequest request) {
+        return this->handle_service_token_register(request);
+    });
+#endif
 
     server.on("/remote_access/add_user", HTTP_PUT, [this](WebServerRequest request) {
         size_t content_len = 0;
@@ -3095,7 +3278,7 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
     header.length = static_cast<uint16_t>(total_size - sizeof(management_packet_header));
     header.seq_num = 0; // Server doesn't check sequence number for incoming packets
     header.version = 1;
-    header.type = PacketType::MetadataForChargeLog; // Charge log metadata packet type
+    header.type = PacketType::MetadataForChargeLog;
 
     size_t written = charge_log_send_metadata_packet::write_to_buffer(
         buf.get(), total_size,

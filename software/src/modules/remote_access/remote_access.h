@@ -117,11 +117,36 @@ private:
     WebServerRequestReturnProtect handle_register_with_token(WebServerRequest request);
     WebServerRequestReturnProtect handle_decode_auth_token(WebServerRequest request);
 
+    // /remote_access/service_token_register: GET /auth/service_token from the
+    // currently-configured relay, verify the signature on the returned
+    // signed-message and register the device using the recovered token. The
+    // whole flow is async: the handler returns 200 immediately and the
+    // remaining work happens via fetch_service_token -> parse_service_token
+    // -> register_with_relay -> parse_registration.
+    WebServerRequestReturnProtect handle_service_token_register(WebServerRequest request);
+    void fetch_service_token();
+    void parse_service_token();
+
     // Split a decoded authorization-token byte sequence into the fields of
     // authorization_token and log them. Returns false if the buffer is too
     // short to contain the fixed prefix and trailing checksum.
     bool populate_authorization_token(const uint8_t *token_bytes, size_t decoded_token_len);
 #endif
+
+    // On-device shared implementation of add_charger_to_relay. Does the same
+    // key generation, encryption, JSON serialization and dispatch to the relay
+    // but does not need a WebServerRequest (the original HTTP request has
+    // already been answered by the time some callers reach this code, e.g.
+    // parse_service_token). Returns an empty string on success and an error
+    // description on failure. The caller is responsible for surfacing the
+    // error to the user (via request.send_plain or update_registration_state).
+    String register_with_relay(const Config &relay_config,
+                               const unsigned char *pk,
+                               const String &note,
+                               const char *endpoint,
+                               const String *auth_user_id,
+                               const String *auth_token,
+                               const String &email);
 
     // Build the /api/charger/add (or /api/add_with_token) relay request:
     // generate on-device WireGuard keys, seal them with the user's NaCl
