@@ -194,7 +194,7 @@ void IoScheduler::task_loop()
             continue; // Another awaiter might be waiting for the slot.
         }
 
-        if (scheduler.timeUntilNextTask(1_ms) == 0_us) {
+        if (scheduler.nextTaskReady()) {
             // Run one due job with its Bricklet transactions to guaranteed
             // completion, then drop back to IDLE priority.
             vTaskPrioritySet(nullptr, IO_SCHEDULER_TASK_PRIORITY_JOB);

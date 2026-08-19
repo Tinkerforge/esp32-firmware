@@ -234,22 +234,18 @@ void TaskScheduler::custom_loop()
     }
 }
 
-micros_t TaskScheduler::timeUntilNextTask(micros_t if_empty)
+bool TaskScheduler::nextTaskReady()
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
 
     if (tasks.empty()) {
-        return if_empty;
+        return false;
     }
 
     const micros_t next_deadline = tasks.top()->next_deadline;
     const micros_t now = now_us();
 
-    if (next_deadline <= now) {
-        return 0_us;
-    }
-
-    return next_deadline - now;
+    return next_deadline <= now;
 }
 
 uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)

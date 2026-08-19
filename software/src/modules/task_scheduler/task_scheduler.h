@@ -120,7 +120,7 @@ public:
 
     CancelResult cancel(uint64_t task_id);
 
-    micros_t timeUntilNextTask(micros_t if_empty);
+    bool nextTaskReady();
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
