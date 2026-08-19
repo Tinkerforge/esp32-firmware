@@ -268,6 +268,8 @@ void RemoteAccess::pre_setup()
         {"cert_id", Config::Int8(-1)},
         // a mtu of 1240 should be always safe
         {"mtu", Config::Uint16(1240)},
+        {"service_token_active", Config::Bool(false)},
+        {"service_token_timestamp_minutes", Config::Uint32(0)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
 
@@ -835,6 +837,15 @@ WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebSer
     return request.send_plain(200);
 }
 
+// True only when the support team has flipped the support-toggle. Both backend
+// and frontend use this so the UI button and the /remote_access/service_token_register
+// endpoint stay in sync. The service_token_timestamp_minutes field is reserved for
+// future use and is intentionally ignored here.
+bool RemoteAccess::service_token_allowed() const
+{
+    return !config.get("service_token_active")->asBool();
+}
+
 void RemoteAccess::fetch_service_token()
 {
     update_registration_state(RegistrationState::InProgress);
@@ -855,6 +866,12 @@ void RemoteAccess::fetch_service_token()
 // to the existing add_with_token flow. On any failure the registration state is
 // set to Error and the per-request state is cleared so the next attempt can
 // run.
+//
+// If the device is already registered (i.e. config.users is non-empty) we
+// can't go through register_with_relay: parse_registration asserts the users
+// list is empty because that path is meant to register a brand-new charger. In
+// that case we route the request through allow_user_at_relay, which adds the
+// incoming service user to the existing charger via /api/allow_user.
 void RemoteAccess::parse_service_token()
 {
     // The relay returns the signed authorization token as a plain
@@ -958,21 +975,48 @@ void RemoteAccess::parse_service_token()
     const String token_str(reinterpret_cast<const char *>(token_b64), olen);
     const String user_id_str(authorization_token.user_uuid);
 
-    String relay_error = register_with_relay(config,
-                                             authorization_token.user_public_key,
-                                             String(),
-                                             "/api/add_with_token",
-                                             &user_id_str,
-                                             &token_str,
-                                             authorization_token.user_email);
+    // If the device is already registered, the service token must add a new
+    // user to the existing charger via /api/allow_user. Going through
+    // register_with_relay would call parse_registration, which aborts when the
+    // users list is non-empty (the charger is assumed to be new there).
+    String relay_error;
+    if (config.get("users")->count() != 0) {
+        uint8_t next_user_id;
+        for (uint8_t i = 1; i < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; i++) {
+            next_user_id = i;
+            bool found = false;
+            for (const auto &user : config.get("users")) {
+                if (user.get("id")->asUint8() == i) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                break;
+            }
+        }
+
+        relay_error = allow_user_at_relay(authorization_token.user_public_key,
+                                           authorization_token.user_email,
+                                           user_id_str,
+                                           String(),
+                                           token_str,
+                                           String(),
+                                           next_user_id);
+    } else {
+        relay_error = register_with_relay(config,
+                                          authorization_token.user_public_key,
+                                          String(),
+                                          "/api/add_with_token",
+                                          &user_id_str,
+                                          &token_str,
+                                          authorization_token.user_email);
+    }
     if (!relay_error.isEmpty()) {
         update_registration_state(RegistrationState::Error, relay_error);
         this->request_cleanup();
         return;
     }
 
-    // The PUT is in flight. parse_registration takes over and will clear
-    // request state once the relay response arrives.
     response_body.clear();
 }
 #endif
@@ -1246,6 +1290,9 @@ void RemoteAccess::register_urls()
 
 #if signature_sodium_public_key_length != 0
     server.on("/remote_access/service_token_register", HTTP_PUT, [this](WebServerRequest request) {
+        if (!this->service_token_allowed()) {
+            return request.send_plain(403, "Service token registration is not active");
+        }
         return this->handle_service_token_register(request);
     });
 #endif
@@ -1266,20 +1313,6 @@ void RemoteAccess::register_urls()
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
             return request.send_plain(500, "Failed to read request body");
-        }
-
-        uint8_t next_user_id;
-        for (uint8_t i = 1; i < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; i++) {
-            next_user_id = i;
-            bool found = false;
-            for (const auto &user : config.get("users")) {
-                if (user.get("id")->asUint8() == i) {
-                    found = true;
-                }
-            }
-            if (!found) {
-                break;
-            }
         }
 
         // TODO: use TFJsonDeserializer?
@@ -1348,170 +1381,44 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "No public key provided");
         }
 
-        if (sodium_init() < 0) {
-            this->request_cleanup();
-            logger.printfln("Failed to initialize libsodium");
-            return request.send_plain(500, "Failed to initialize crypto");
-        }
+        // Pull the auth credentials out of the request body so the shared
+        // allow_user_at_relay helper can ship them as-is. /api/allow_user
+        // accepts either LoginKey (when the active user is logged in) or
+        // AuthToken (when adding a user via a token).
+        const String login_key = doc["login_key"].isNull() ? String() : doc["login_key"].as<String>();
+        const String auth_token = doc["auth_token"].isNull() ? String() : doc["auth_token"].as<String>();
+        const String note = doc["note"];
 
-        // Generate one keypair set per user-tunnel slot on-device. The
-        // charger-side private/public pair plus the relay-side public key are
-        // stored locally; the charger-side public key and the (sealed)
-        // relay-side private key plus the shared PSK are forwarded to the
-        // relay. See generate_wg_key for the per-tunnel key generation.
-        std::vector<WgKey> charger_keys;
-        std::vector<WgKey> relay_keys;
-        charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-        relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            WgKey charger;
-            WgKey relay;
-            if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
-                this->request_cleanup();
-                return request.send_plain(500, "Failed to generate WireGuard key");
-            }
-            // A single PSK is shared by both endpoints of one tunnel.
-            relay.psk = charger.psk;
-            charger_keys.push_back(std::move(charger));
-            relay_keys.push_back(std::move(relay));
-        }
-
-        const String &note = doc["note"];
-        size_t encrypted_note_size = note.length() + crypto_box_SEALBYTES;
-        size_t bs64_note_size = 4 * ((note.length() + crypto_box_SEALBYTES) / 3) + 5;
-        const String &name = api.getState("info/display_name")->get("display_name")->asString();
-        size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
-        size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
-        size_t json_size = 4500 + bs64_note_size + bs64_name_size;
-        auto json = heap_alloc_array<char>(json_size);
-        if (json == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-
-        TFJsonSerializer serializer{json.get(), json_size};
-        serializer.addObject();
-
-        std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
-        if (encrypted_note == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-
-        if (crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk.get())) {
-            this->request_cleanup();
-            return request.send_plain(500, "Failed to encrypt note");
-        }
-
-        auto bs64_note = heap_alloc_array<char>(bs64_note_size);
-        size_t olen;
-        mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()),
-                              bs64_note_size,
-                              &olen,
-                              encrypted_note.get(),
-                              note.length() + crypto_box_SEALBYTES);
-
-        serializer.addMemberString("note", bs64_note.get());
-
-        std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
-        if (encrypted_name == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-
-        if (crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk.get())) {
-            this->request_cleanup();
-            return request.send_plain(500, "Failed to encrypt name");
-        }
-
-        auto bs64_name = heap_alloc_array<char>(bs64_name_size);
-        mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
-
-        serializer.addMemberString("charger_name", bs64_name.get());
-
-        serializer.addMemberString("charger_id", config.get("uuid")->asEphemeralCStr());
-        serializer.addMemberString("charger_password", config.get("password")->asEphemeralCStr());
-        if (email != "null") {
-            serializer.addMemberString("email", email.c_str());
-        }
-        if (uuid != "null") {
-            serializer.addMemberString("user_uuid", uuid.c_str());
-        }
-
-        serializer.addMemberObject("user_auth");
-
-        if (!doc["login_key"].isNull()) {
-            serializer.addMemberString("LoginKey", doc["login_key"]);
-        } else if (!doc["auth_token"].isNull()) {
-            serializer.addMemberString("AuthToken", doc["auth_token"]);
-        } else {
+        if (login_key.isEmpty() && auth_token.isEmpty()) {
             this->request_cleanup();
             return request.send_plain(400, "No login key or auth token provided");
         }
-        serializer.endObject();
 
-        serializer.addMemberArray("wg_keys");
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            const WgKey &charger = charger_keys[i];
-            const WgKey &relay = relay_keys[i];
-            serializer.addObject();
-            int32_t connection_number = (next_user_id - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + i;
-            serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(connection_number));
-            serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(connection_number));
-            serializer.addMemberString("charger_public", charger.pub.c_str());
-
-            uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), 44, pk.get())) {
-                this->request_cleanup();
-                return request.send_plain(500, "Failed to encrypt psk");
+        uint8_t next_user_id;
+        for (uint8_t i = 1; i < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; i++) {
+            next_user_id = i;
+            bool found = false;
+            for (const auto &user : config.get("users")) {
+                if (user.get("id")->asUint8() == i) {
+                    found = true;
+                }
             }
-            serializer.addMemberArray("psk");
-            for (size_t a = 0; a < ARRAY_SIZE(encrypted_psk); a++) {
-                serializer.addNumber(encrypted_psk[a]);
+            if (!found) {
+                break;
             }
-            serializer.endArray();
-
-            uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), 44, pk.get())) {
-                this->request_cleanup();
-                return request.send_plain(500, "Failed to encrypt web_private");
-            }
-            serializer.addMemberArray("web_private");
-            for (size_t a = 0; a < ARRAY_SIZE(encrypted_web_private); a++) {
-                serializer.addNumber(encrypted_web_private[a]);
-            }
-            serializer.endArray();
-
-            serializer.addMemberNumber("connection_no", connection_number);
-            serializer.endObject();
-        }
-        serializer.endArray();
-        serializer.endObject();
-        uint32_t size = serializer.end();
-
-        const String url = construct_relay_url(config, "/api/allow_user");
-
-        std::queue<WgKey> key_cache;
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
         }
 
-        uint8_t public_key[50];
-        mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk.get(), crypto_box_PUBLICKEYBYTES);
-        const String pub_key(public_key, olen);
-
-        if (https_client == nullptr) {
-            https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+        String error = allow_user_at_relay(pk.get(),
+                                           email,
+                                           uuid,
+                                           login_key,
+                                           auth_token,
+                                           note,
+                                           next_user_id);
+        if (!error.isEmpty()) {
+            this->request_cleanup();
+            return request.send_plain(500, error);
         }
-
-        update_registration_state(RegistrationState::InProgress);
-
-        https_client->set_header("Content-Type", "application/json");
-        auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), next_user_id, email = std::move(email)](const Config &/*cfg*/) mutable {
-            this->parse_add_user(key_cache, pub_key, email, next_user_id);
-        };
-
-        this->run_request_with_next_stage(url, HTTP_METHOD_PUT, json.get(), size, config, std::move(next_stage));
 
         return request.send_plain(200);
     });
@@ -2063,6 +1970,177 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
     api.writeConfig("remote_access/config", &this->config);
     update_registration_state(RegistrationState::Success);
+}
+
+// Build the /api/allow_user relay request: generate on-device WireGuard keys
+// for the new user tunnels, seal them with pk, serialize the JSON payload and
+// dispatch it. The response is consumed by parse_add_user. Shared by
+// /remote_access/add_user (auth-flow) and /remote_access/service_token_register
+// (handled inside parse_service_token when the device is already registered).
+String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
+                                          const String &email,
+                                          const String &user_uuid,
+                                          const String &login_key,
+                                          const String &auth_token,
+                                          const String &note,
+                                          uint8_t next_user_id)
+{
+    if (sodium_init() < 0) {
+        logger.printfln("Failed to initialize libsodium");
+        return String("Failed to initialize crypto");
+    }
+
+    // Generate one keypair set per user-tunnel slot on-device. The
+    // charger-side private/public pair plus the relay-side public key are
+    // stored locally; the charger-side public key and the (sealed) relay-side
+    // private key plus the shared PSK are forwarded to the relay. See
+    // generate_wg_key for the per-tunnel key generation.
+    std::vector<WgKey> charger_keys;
+    std::vector<WgKey> relay_keys;
+    charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+    relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        WgKey charger;
+        WgKey relay;
+        if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
+            return String("Failed to generate WireGuard key");
+        }
+        // A single PSK is shared by both endpoints of one tunnel.
+        relay.psk = charger.psk;
+        charger_keys.push_back(std::move(charger));
+        relay_keys.push_back(std::move(relay));
+    }
+
+    const String &name = api.getState("info/display_name")->get("display_name")->asString();
+    size_t encrypted_note_size = note.length() + crypto_box_SEALBYTES;
+    size_t bs64_note_size = 4 * (encrypted_note_size / 3) + 5;
+    size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
+    size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
+    size_t json_size = 4500 + bs64_note_size + bs64_name_size;
+    auto json = heap_alloc_array<char>(json_size);
+    if (json == nullptr) {
+        return String("Low memory");
+    }
+
+    TFJsonSerializer serializer{json.get(), json_size};
+    serializer.addObject();
+
+    std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
+    if (encrypted_note == nullptr) {
+        return String("Low memory");
+    }
+
+    if (crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk)) {
+        return String("Failed to encrypt note");
+    }
+
+    auto bs64_note = heap_alloc_array<char>(bs64_note_size);
+    size_t olen;
+    mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()),
+                          bs64_note_size,
+                          &olen,
+                          encrypted_note.get(),
+                          note.length() + crypto_box_SEALBYTES);
+
+    serializer.addMemberString("note", bs64_note.get());
+
+    std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+    if (encrypted_name == nullptr) {
+        return String("Low memory");
+    }
+
+    if (crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk)) {
+        return String("Failed to encrypt charger name");
+    }
+
+    auto bs64_name = heap_alloc_array<char>(bs64_name_size);
+    mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+
+    serializer.addMemberString("charger_name", bs64_name.get());
+
+    serializer.addMemberString("charger_id", config.get("uuid")->asEphemeralCStr());
+    serializer.addMemberString("charger_password", config.get("password")->asEphemeralCStr());
+    if (email != "null") {
+        serializer.addMemberString("email", email.c_str());
+    }
+    if (user_uuid != "null") {
+        serializer.addMemberString("user_uuid", user_uuid.c_str());
+    }
+
+    serializer.addMemberObject("user_auth");
+    if (!login_key.isEmpty()) {
+        serializer.addMemberString("LoginKey", login_key.c_str());
+    } else if (!auth_token.isEmpty()) {
+        serializer.addMemberString("AuthToken", auth_token.c_str());
+    } else {
+        // Neither credential was supplied; refuse to send a request without
+        // any user_auth credentials.
+        return String("Missing login_key or auth_token for allow_user request");
+    }
+    serializer.endObject();
+
+    serializer.addMemberArray("wg_keys");
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        const WgKey &charger = charger_keys[i];
+        const WgKey &relay = relay_keys[i];
+        serializer.addObject();
+        int32_t connection_number = (next_user_id - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + i;
+        serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(connection_number));
+        serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(connection_number));
+        serializer.addMemberString("charger_public", charger.pub.c_str());
+
+        uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
+        if (crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), 44, pk)) {
+            return String("Failed to encrypt psk");
+        }
+        serializer.addMemberArray("psk");
+        for (size_t a = 0; a < ARRAY_SIZE(encrypted_psk); a++) {
+            serializer.addNumber(encrypted_psk[a]);
+        }
+        serializer.endArray();
+
+        uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
+        if (crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), 44, pk)) {
+            return String("Failed to encrypt web_private");
+        }
+        serializer.addMemberArray("web_private");
+        for (size_t a = 0; a < ARRAY_SIZE(encrypted_web_private); a++) {
+            serializer.addNumber(encrypted_web_private[a]);
+        }
+        serializer.endArray();
+
+        serializer.addMemberNumber("connection_no", connection_number);
+        serializer.endObject();
+    }
+    serializer.endArray();
+    serializer.endObject();
+    uint32_t size = serializer.end();
+
+    const String url = construct_relay_url(config, "/api/allow_user");
+
+    std::queue<WgKey> key_cache;
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
+    }
+
+    uint8_t public_key[50];
+    mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk, crypto_box_PUBLICKEYBYTES);
+    const String pub_key(reinterpret_cast<const char *>(public_key), olen);
+
+    if (https_client == nullptr) {
+        https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+    }
+
+    update_registration_state(RegistrationState::InProgress);
+
+    https_client->set_header("Content-Type", "application/json");
+    auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), email, next_user_id](const Config &/*cfg*/) mutable {
+        this->parse_add_user(key_cache, pub_key, email, next_user_id);
+    };
+
+    this->run_request_with_next_stage(url, HTTP_METHOD_PUT, json.get(), size, config, std::move(next_stage));
+
+    return String();
 }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
