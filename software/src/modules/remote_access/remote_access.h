@@ -32,6 +32,8 @@
 #include "generated/connection_state.enum.h"
 #include "generated/registration_state.enum.h"
 #include "language.h"
+#include "modules/firmware_update/generated/signature_verify.h"
+#include "modules/web_server/web_server.h"
 #include "remote_access_packets.h"
 
 #define MAX_USER_CONNECTIONS 5
@@ -85,6 +87,24 @@ public:
 
     bool parse_uuid_string(const char *uuid_str, uint8_t *out);
 
+#if signature_sodium_public_key_length != 0
+    // Authorization token extracted from the most recent successful
+    // /remote_access/verify_signature call.
+    //
+    // See https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
+    struct AuthorizationToken {
+        uint8_t authorization[32] = {};   // 32 B authorization token
+        char    user_uuid[37] = {};       // 36 B user UUID, NUL-terminated
+        uint8_t user_public_key[32] = {}; // 32 B user public key
+        String  user_email;               // variable-length user email
+        uint8_t checksum[32] = {};        // 32 B argon2id checksum
+
+        // True once a token was parsed successfully (i.e. signature
+        // verification and all field-level checks passed).
+        bool valid = false;
+    } authorization_token;
+#endif
+
 private:
     void resolve_management();
     void connect_management();
@@ -93,12 +113,48 @@ private:
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
+#if signature_sodium_public_key_length != 0
+    WebServerRequestReturnProtect handle_register_with_token(WebServerRequest request);
+    WebServerRequestReturnProtect handle_decode_auth_token(WebServerRequest request);
+
+    // Split a decoded authorization-token byte sequence into the fields of
+    // authorization_token and log them. Returns false if the buffer is too
+    // short to contain the fixed prefix and trailing checksum.
+    bool populate_authorization_token(const uint8_t *token_bytes, size_t decoded_token_len);
+#endif
+
+    // Build the /api/charger/add (or /api/add_with_token) relay request:
+    // generate on-device WireGuard keys, seal them with the user's NaCl
+    // public key, serialize the JSON payload and dispatch it. Shared by
+    // /remote_access/register (both auth-flow and token-flow paths) and
+    // /remote_access/verify_signature (token flow only).
+    //
+    //   relay_config: config object supplying relay_host / relay_port.
+    //   pk:           32-byte NaCl public key used to seal the WG material
+    //                 (and the encrypted note/name).
+    //   note:         user-provided note string; sealed into the JSON.
+    //   endpoint:     "/api/charger/add" or "/api/add_with_token".
+    //   auth_user_id: user UUID for the token path; nullptr otherwise.
+    //   auth_token:   base64 of the 32-byte authorization field for the token
+    //                 path; nullptr otherwise.
+    //   email:        email for the new user record (taken from the request
+    //                 body in the register endpoint and from the verified
+    //                 token in the verify_signature endpoint, since
+    //                 relay_config does not carry an email field).
+    WebServerRequestReturnProtect add_charger_to_relay(WebServerRequest request,
+                                                      const Config &relay_config,
+                                                      const unsigned char *pk,
+                                                      const String &note,
+                                                      const char *endpoint,
+                                                      const String *auth_user_id,
+                                                      const String *auth_token,
+                                                      const String &email);
     void run_request_with_next_stage(const String &url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
     void get_login_salt(const Config &user_config);
     void parse_login_salt();
     void get_secret(const Config &user_config);
     void parse_secret();
-    void parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key);
+    void parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email);
     void parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
     void login(const Config &user_config, const String &login_key);
     void update_registration_state(RegistrationState state, const String &message = String());

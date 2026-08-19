@@ -46,6 +46,7 @@
 #include "tools.h"
 #include "tools/dns.h"
 #include "tools/net.h"
+#include "modules/firmware_update/generated/signature_verify.h"
 
 #include "gcc_warnings.h"
 
@@ -58,6 +59,28 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define KEY_DIRECTORY "/remote-access-keys"
 // Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
 #define MAX_HTTP_BODY_BYTES 5120
+
+// Authorization token layout as defined by
+// https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
+//
+//   | Authorization | User uuid | User public key | User email | Checksum |
+//   |    32 Bytes   | 36 Bytes  |    32 Bytes     |  Variable  | 32 Bytes |
+//
+// The token is base58-encoded using the FLICKR alphabet.
+#define AUTH_TOKEN_AUTHORIZATION_LEN 32
+#define AUTH_TOKEN_USER_UUID_LEN     36
+#define AUTH_TOKEN_USER_PUBKEY_LEN    32
+#define AUTH_TOKEN_CHECKSUM_LEN       32
+// Fixed prefix before the variable-length email field.
+#define AUTH_TOKEN_FIXED_PREFIX_LEN   (AUTH_TOKEN_AUTHORIZATION_LEN + AUTH_TOKEN_USER_UUID_LEN + AUTH_TOKEN_USER_PUBKEY_LEN)
+// Minimum total token size (with empty email).
+#define AUTH_TOKEN_MIN_LEN            (AUTH_TOKEN_FIXED_PREFIX_LEN + AUTH_TOKEN_CHECKSUM_LEN)
+// FLICKR base58 alphabet (also used by Tinkerforge's tf_base58_* helpers).
+
+
+#if signature_sodium_public_key_length != 0
+static const char FLICKR_BASE58_ALPHABET[] = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+#endif
 
 // Validate HTTP request body length and provide the length to callers.
 // Returns 0 on success, or an HTTP status code (400 for empty, 413 for too large).
@@ -143,11 +166,7 @@ static void log_mbedtls_error(int error, const char *msg)
 
 // Generate a fresh WireGuard key set: a Curve25519 (X25519) private/public
 // keypair and a 32-byte pre-shared key. Each 32-byte raw key is base64-encoded
-// to a WG_KEY_LENGTH (44 character) string and written into the provided
-// WgKey struct. Returns true on success. Returns false on libsodium
-// initialization failure, low memory, or if base64 encoding fails. The
-// strings are written as wire-format (no NUL terminator) using the length
-// returned by mbedtls_base64_encode.
+// and written into the provided WgKey struct as wire-format strings
 static bool generate_wg_key(WgKey &key)
 {
     if (sodium_init() < 0) {
@@ -157,7 +176,6 @@ static bool generate_wg_key(WgKey &key)
 
     uint8_t priv_raw[crypto_box_SECRETKEYBYTES];
     uint8_t pub_raw[crypto_box_PUBLICKEYBYTES];
-    // WireGuard pre-shared keys are 32 random bytes.
     uint8_t psk_raw[crypto_box_SECRETKEYBYTES];
 
     crypto_box_keypair(pub_raw, priv_raw);
@@ -172,7 +190,6 @@ static bool generate_wg_key(WgKey &key)
     size_t psk_len  = 0;
     int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(priv_b64), WG_KEY_LENGTH, &priv_len, priv_raw, sizeof(priv_raw));
     if (ret != 0) {
-        logger.printfln("out len: %zu", priv_len);
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard private key");
         return false;
     }
@@ -216,7 +233,6 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     struct sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(local_addr));
 
-    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(local_port);
     ret = bind(sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
@@ -320,8 +336,254 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
     response_body.concat(static_cast<const uint8_t *>(event->data_chunk), static_cast<unsigned int>(event->data_chunk_len));
 }
 
-// Percent-encode a query string while preserving '=' between keys and values and '&' between pairs.
-// Encodes any byte not in [A-Za-z0-9-_.~=&] using %HH uppercase hex.
+#if signature_sodium_public_key_length != 0
+// Decode a FLICKR-alphabet base58 string into an arbitrary-length byte buffer.
+// Returns nullptr on failure (invalid character, overflow, or buffer too small).
+// On success, *out_len holds the number of decoded bytes (always <= buffer_size).
+static std::unique_ptr<uint8_t[]> decode_flickr_base58(const char *str, size_t str_len, size_t buffer_size, size_t *out_len)
+{
+    if (str == nullptr || str_len == 0 || buffer_size == 0) {
+        return nullptr;
+    }
+
+    static bool lut_ready = false;
+    static uint8_t lut[256];
+    if (!lut_ready) {
+        for (int i = 0; i < 256; ++i) {
+            lut[i] = 0xFF;
+        }
+        for (int i = 0; i < 58; ++i) {
+            lut[static_cast<unsigned char>(FLICKR_BASE58_ALPHABET[i])] = static_cast<uint8_t>(i);
+        }
+        lut_ready = true;
+    }
+
+    // Each leading '1' contributes a leading 0x00 byte in the output
+    // (canonical FLICKR/Bitcoin convention). Count them up front so the
+    // multiply-and-carry loop below does not overwrite earlier zero bytes
+    // once a non-zero digit follows.
+    size_t leading_zeros = 0;
+    while (leading_zeros < str_len && str[leading_zeros] == FLICKR_BASE58_ALPHABET[0]) {
+        ++leading_zeros;
+    }
+
+    std::unique_ptr<uint8_t[]> out = heap_alloc_array<uint8_t>(buffer_size);
+    if (out == nullptr) {
+        return nullptr;
+    }
+    memset(out.get(), 0, buffer_size);
+
+    // Standard base58 decode: for each digit (most significant first),
+    // result = result * 58 + digit. Accumulator is little-endian.
+    size_t out_idx = 0;
+    for (size_t i = leading_zeros; i < str_len; ++i) {
+        const uint8_t digit = lut[static_cast<unsigned char>(str[i])];
+        if (digit == 0xFF) {
+            return nullptr;
+        }
+
+        uint32_t carry = digit;
+        for (size_t j = 0; j < out_idx; ++j) {
+            const uint32_t cur = static_cast<uint32_t>(out[j]) * 58 + carry;
+            out[j] = static_cast<uint8_t>(cur & 0xFF);
+            carry = cur >> 8;
+        }
+        while (carry != 0) {
+            if (out_idx >= buffer_size) {
+                return nullptr;
+            }
+            out[out_idx++] = static_cast<uint8_t>(carry & 0xFF);
+            carry >>= 8;
+        }
+    }
+
+    if (out_idx + leading_zeros > buffer_size) {
+        return nullptr;
+    }
+    for (size_t i = 0; i < leading_zeros; ++i) {
+        out[out_idx++] = 0;
+    }
+
+    // Reverse to MSB-first order (canonical byte order of the encoded sequence).
+    for (size_t i = 0, j = out_idx; i < j; ++i, --j) {
+        const uint8_t tmp = out[i];
+        out[i] = out[j - 1];
+        out[j - 1] = tmp;
+    }
+
+    if (out_len != nullptr) {
+        *out_len = out_idx;
+    }
+    return out;
+}
+
+// Token layout:
+//   [0..32)                              authorization
+//   [32..68)                             user uuid (36 chars)
+//   [68..100)                            user public key
+//   [100..100+email_len)                 user email (variable)
+//   [100+email_len..100+email_len+32)    argon2id checksum
+bool RemoteAccess::populate_authorization_token(const uint8_t *token_bytes, size_t decoded_token_len)
+{
+    static_assert(AUTH_TOKEN_USER_UUID_LEN == 36, "UUID field is 36 bytes");
+
+    if (decoded_token_len < AUTH_TOKEN_MIN_LEN) {
+        return false;
+    }
+    const size_t email_len = decoded_token_len - AUTH_TOKEN_MIN_LEN;
+
+    memcpy(authorization_token.authorization, token_bytes, AUTH_TOKEN_AUTHORIZATION_LEN);
+    memcpy(authorization_token.user_uuid, token_bytes + AUTH_TOKEN_AUTHORIZATION_LEN, AUTH_TOKEN_USER_UUID_LEN);
+    // user_public_key is raw bytes and not NUL-terminated, but the UUID must be
+    // before it can be passed to parse_uuid_string.
+    authorization_token.user_uuid[AUTH_TOKEN_USER_UUID_LEN] = '\0';
+
+    constexpr size_t pubkey_offset = AUTH_TOKEN_AUTHORIZATION_LEN + AUTH_TOKEN_USER_UUID_LEN;
+    memcpy(authorization_token.user_public_key, token_bytes + pubkey_offset, AUTH_TOKEN_USER_PUBKEY_LEN);
+    if (email_len > 0) {
+        authorization_token.user_email = String(reinterpret_cast<const char *>(token_bytes + AUTH_TOKEN_FIXED_PREFIX_LEN), email_len);
+    } else {
+        authorization_token.user_email = String();
+    }
+    const uint8_t *checksum = token_bytes + AUTH_TOKEN_FIXED_PREFIX_LEN + email_len;
+    memcpy(authorization_token.checksum, checksum, AUTH_TOKEN_CHECKSUM_LEN);
+
+    return true;
+}
+
+// Verify the signed auth-token in the request body, decode the base58
+// authorization token, and forward the verified fields to the relay via
+// /api/add_with_token.
+WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServerRequest request)
+{
+    authorization_token = AuthorizationToken{};
+
+    size_t content_len = 0;
+    if (uint16_t s = validate_http_body(request, content_len)) {
+        return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+    }
+
+    std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+    if (req_body == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    if (request.receive(req_body.get(), content_len) <= 0) {
+        return request.send_plain(500, "Failed to read request body");
+    }
+
+    size_t decoded_max = (content_len / 4) * 3 + 4;
+    std::unique_ptr<uint8_t[]> signed_data = heap_alloc_array<uint8_t>(decoded_max);
+    if (signed_data == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+
+    size_t decoded_size = 0;
+    int b64_ret = mbedtls_base64_decode(signed_data.get(),
+                                        decoded_max,
+                                        &decoded_size,
+                                        reinterpret_cast<const unsigned char *>(req_body.get()),
+                                        content_len);
+    if (b64_ret != 0) {
+        return request.send_plain(400, "Failed to decode base64");
+    }
+
+    if (decoded_size <= crypto_sign_BYTES) {
+        return request.send_plain(400, "Signed string too short");
+    }
+
+    if (sodium_init() < 0) {
+        return request.send_plain(500, "Failed to initialize crypto");
+    }
+
+    // libsodium combined signed-string format: signature (crypto_sign_BYTES) || message.
+    std::unique_ptr<unsigned char[]> message = heap_alloc_array<unsigned char>(decoded_size - crypto_sign_BYTES);
+    if (message == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+
+    unsigned long long extracted_len = 0;
+    int verify_ret = crypto_sign_open(message.get(),
+                                      &extracted_len,
+                                      signed_data.get(),
+                                      static_cast<unsigned long long>(decoded_size),
+                                      signature_sodium_public_key_data);
+    if (verify_ret != 0) {
+        return request.send_plain(400, "Signature verification failed");
+    }
+
+    const char *token = reinterpret_cast<const char *>(message.get());
+    const size_t token_str_len = static_cast<size_t>(extracted_len);
+
+    size_t decoded_token_len = 0;
+    std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(token, token_str_len, token_str_len, &decoded_token_len);
+    if (token_bytes == nullptr) {
+        return request.send_plain(400, "Failed to decode token base58");
+    }
+
+    if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
+        return request.send_plain(400, "Authorization token too short");
+    }
+
+    authorization_token.valid = true;
+
+    // The verify_signature endpoint replaces the on-device enable step that
+    // config_update would normally perform.
+    config.get("enable")->updateBool(true);
+
+    uint8_t token_b64[50];
+    size_t olen;
+    if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
+        return request.send_plain(500, "Failed to base64-encode authorization token");
+    }
+    const String token_str(reinterpret_cast<const char *>(token_b64), olen);
+    const String user_id_str(authorization_token.user_uuid);
+
+    return this->add_charger_to_relay(request,
+                                      config,
+                                      authorization_token.user_public_key,
+                                      String(),
+                                      "/api/add_with_token",
+                                      &user_id_str,
+                                      &token_str,
+                                      authorization_token.user_email);
+}
+
+// Decode a base58-encoded authorization token from the request body without
+// verifying any signature. Useful for the web frontend to preview a pasted
+// token before the user commits to the signed-message flow.
+WebServerRequestReturnProtect RemoteAccess::handle_decode_auth_token(WebServerRequest request)
+{
+    authorization_token = AuthorizationToken{};
+
+    size_t content_len = 0;
+    if (uint16_t s = validate_http_body(request, content_len)) {
+        return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+    }
+    std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+    if (req_body == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    if (request.receive(req_body.get(), content_len) <= 0) {
+        return request.send_plain(500, "Failed to read request body");
+    }
+
+    size_t decoded_token_len = 0;
+    std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(req_body.get(), content_len, content_len, &decoded_token_len);
+    if (token_bytes == nullptr) {
+        return request.send_plain(400, "Failed to decode token base58");
+    }
+
+    if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
+        return request.send_plain(400, "Authorization token too short");
+    }
+
+    authorization_token.valid = true;
+    return request.send_plain(200);
+}
+#endif
+
+// Percent-encode a query string while preserving '=' and '&'. Encodes any byte
+// not in [A-Za-z0-9-_.~=&] using %HH uppercase hex.
 static void url_encode_query(const StringWriter *query, StringWriter &out)
 {
     if (query == nullptr) {
@@ -357,6 +619,185 @@ static String construct_relay_url(const Config& config, const char* endpoint, co
     }
 
     return url.toString();
+}
+
+// Build the /api/charger/add or /api/add_with_token relay request: generate
+// on-device WireGuard keys, seal them with pk, serialize the JSON payload and
+// dispatch it. The response is consumed by parse_registration.
+WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerRequest request,
+                                                                 const Config &relay_config,
+                                                                 const unsigned char *pk,
+                                                                 const String &note,
+                                                                 const char *endpoint,
+                                                                 const String *auth_user_id,
+                                                                 const String *auth_token,
+                                                                 const String &email)
+{
+    const String &name = api.getState("info/display_name")->get("display_name")->asString();
+
+    size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
+    size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
+    size_t encrypted_note_size = note.length() + crypto_box_SEALBYTES;
+    size_t bs64_note_size = 4 * (encrypted_note_size / 3) + 5;
+    size_t json_size = 5000 + bs64_name_size + bs64_note_size;
+    auto ptr = heap_alloc_array<char>(json_size);
+
+    if (ptr == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+
+    if (sodium_init() < 0) {
+        logger.printfln("Failed to initialize libsodium");
+        return request.send_plain(500, "Failed to initialize crypto");
+    }
+
+    // Generate the management tunnel key pair and PSK on-device.
+    WgKey mgmt_charger;
+    if (!generate_wg_key(mgmt_charger)) {
+        return request.send_plain(500, "Failed to generate WireGuard key");
+    }
+
+    // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
+    // Each tunnel needs two independent Curve25519 keypairs plus a shared PSK.
+    std::vector<WgKey> charger_keys;
+    std::vector<WgKey> relay_keys;
+    charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+    relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        WgKey charger;
+        WgKey relay;
+        if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
+            return request.send_plain(500, "Failed to generate WireGuard key");
+        }
+        // A single PSK is shared by both endpoints of one tunnel.
+        relay.psk = charger.psk;
+        charger_keys.push_back(std::move(charger));
+        relay_keys.push_back(std::move(relay));
+    }
+
+    TFJsonSerializer serializer{ptr.get(), json_size};
+    serializer.addObject();
+    serializer.addMemberArray("keys");
+    {
+        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+            const WgKey &charger = charger_keys[i];
+            const WgKey &relay = relay_keys[i];
+            serializer.addObject();
+            serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(i));
+            serializer.addMemberString("charger_public", charger.pub.c_str());
+            serializer.addMemberNumber("connection_no", i);
+            serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(i));
+
+            unsigned char encrypted_web_private[44 + crypto_box_SEALBYTES];
+            int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), relay.priv.length(), pk);
+            if (ret < 0) {
+                logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
+                return request.send_plain(500, "Failed to encrypt WireGuard keys.");
+            }
+
+            // TODO: maybe base64 encode?
+            serializer.addMemberArray("web_private");
+            for (size_t a = 0; a < ARRAY_SIZE(encrypted_web_private); a++) {
+                serializer.addNumber(encrypted_web_private[a]);
+            }
+            serializer.endArray();
+
+            unsigned char encrypted_psk[44 + crypto_box_SEALBYTES];
+            ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), charger.psk.length(), pk);
+            if (ret < 0) {
+                logger.printfln("Failed to encrypt psk: %i", ret);
+                return request.send_plain(500, "Failed to encrypt psk");
+            }
+
+            // TODO: maybe base64 encode?
+            serializer.addMemberArray("psk");
+            for (size_t a = 0; a < ARRAY_SIZE(encrypted_psk); a++) {
+                serializer.addNumber(encrypted_psk[a]);
+            }
+            serializer.endArray();
+
+            serializer.endObject();
+        }
+    }
+    serializer.endArray();
+
+    serializer.addMemberObject("charger");
+
+    serializer.addMemberString("charger_pub", mgmt_charger.pub.c_str());
+    serializer.addMemberString("uid", esp32_common.get_uid_cstr());
+    serializer.addMemberString("wg_charger_ip", "10.123.123.2");
+    serializer.addMemberString("wg_server_ip", "10.123.123.3");
+    serializer.addMemberString("psk", mgmt_charger.psk.c_str());
+
+    serializer.endObject();
+
+    std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+    if (encrypted_name == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk);
+    auto bs64_name = heap_alloc_array<char>(bs64_name_size);
+    if (bs64_name == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    size_t olen;
+    mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+
+    serializer.addMemberString("name", bs64_name.get());
+
+    std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
+    if (encrypted_note == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk);
+    auto bs64_note = heap_alloc_array<char>(bs64_note_size);
+    if (bs64_note == nullptr) {
+        return request.send_plain(500, "Low memory");
+    }
+    mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
+
+    serializer.addMemberString("note", bs64_note.get());
+
+    if (auth_user_id != nullptr) {
+        serializer.addMemberString("user_id", auth_user_id->c_str());
+    }
+    if (auth_token != nullptr) {
+        serializer.addMemberString("token", auth_token->c_str());
+    }
+
+    serializer.endObject();
+    size_t size = serializer.end();
+
+    std::queue<WgKey> key_cache;
+
+    key_cache.push(WgKey{
+        mgmt_charger.priv,
+        mgmt_charger.psk,
+        "",
+    });
+
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
+    }
+
+    update_registration_state(RegistrationState::InProgress);
+
+    uint8_t public_key[50];
+    mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk, crypto_box_PUBLICKEYBYTES);
+    auto next_stage = [this, key_cache = std::move(key_cache), public_key, olen, email](const Config &cfg) mutable {
+        const String pub_key(reinterpret_cast<const char *>(public_key), olen);
+        this->parse_registration(cfg, key_cache, pub_key, email);
+    };
+
+    const String url = construct_relay_url(relay_config, endpoint);
+
+    if (https_client == nullptr) {
+        https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+    }
+    https_client->set_header("Content-Type", "application/json");
+    this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, relay_config, std::move(next_stage));
+
+    return request.send_plain(200);
 }
 
 void RemoteAccess::register_urls()
@@ -564,59 +1005,8 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "Calling register without enable beeing true is not supported anymore");
         }
 
-        const String &note = doc["note"];
-        size_t encrypted_note_size = crypto_box_SEALBYTES + note.length();
-        size_t bs64_note_size = 4 * (encrypted_note_size / 3) + 5;
-        const String &name = api.getState("info/display_name")->get("display_name")->asString();
-        size_t encrypted_name_size = crypto_box_SEALBYTES + name.length();
-        size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
-        size_t json_size = 5000 + bs64_name_size + bs64_note_size;
-        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(json_size);
-
-        if (ptr == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-
-        if (sodium_init() < 0) {
-            this->request_cleanup();
-            logger.printfln("Failed to initialize libsodium");
-            return request.send_plain(500, "Failed to initialize crypto");
-        }
-
-        // Generate the management tunnel key pair and PSK on-device. The
-        // charger-side public key is sent to the relay; the private key and
-        // PSK are kept locally and forwarded to the relay via the
-        // registration JSON.
-        WgKey mgmt_charger;
-        if (!generate_wg_key(mgmt_charger)) {
-            this->request_cleanup();
-            return request.send_plain(500, "Failed to generate WireGuard key");
-        }
-
-        // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
-        // Each tunnel needs two independent Curve25519 keypairs (charger side
-        // and web/relay side) plus a shared PSK. The relay-side private key
-        // is sealed with the relay's seal public key (pk, derived below) and
-        // embedded in the registration JSON.
-        std::vector<WgKey> charger_keys;
-        std::vector<WgKey> relay_keys;
-        charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-        relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            WgKey charger;
-            WgKey relay;
-            if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
-                this->request_cleanup();
-                return request.send_plain(500, "Failed to generate WireGuard key");
-            }
-            // A single PSK is shared by both endpoints of one tunnel; reuse
-            // the PSK that was generated for the charger side.
-            relay.psk = charger.psk;
-            charger_keys.push_back(std::move(charger));
-            relay_keys.push_back(std::move(relay));
-        }
-
+        // The token-flow path takes the public key from the verified
+        // authorization_token; here we derive it from the auth-flow material.
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
         if (!doc["secret_key"].isNull()) {
             // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
@@ -658,135 +1048,23 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "No key provided");
         }
 
-        TFJsonSerializer serializer{ptr.get(), json_size};
-        serializer.addObject();
-        serializer.addMemberArray("keys");
-        {
-            for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-                const WgKey &charger = charger_keys[i];
-                const WgKey &relay = relay_keys[i];
-                serializer.addObject();
-                serializer.addMemberStringF("charger_address", "10.123.%li.2", static_cast<long>(i));
-                serializer.addMemberString("charger_public", charger.pub.c_str());
-                serializer.addMemberNumber("connection_no", i);
-                serializer.addMemberStringF("web_address", "10.123.%li.3", static_cast<long>(i));
-
-                unsigned char encrypted_web_private[44 + crypto_box_SEALBYTES];
-                int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), relay.priv.length(), pk);
-                if (ret < 0) {
-                    this->request_cleanup();
-                    logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
-                    return request.send_plain(500, "Failed to encrypt WireGuard keys.");
-                }
-
-                // TODO: maybe base64 encode?
-                serializer.addMemberArray("web_private");
-                for (size_t a = 0; a < ARRAY_SIZE(encrypted_web_private); a++) {
-                    serializer.addNumber(encrypted_web_private[a]);
-                }
-                serializer.endArray();
-
-                unsigned char encrypted_psk[44 + crypto_box_SEALBYTES];
-                ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), charger.psk.length(), pk);
-                if (ret < 0) {
-                    this->request_cleanup();
-                    logger.printfln("Failed to encrypt psk: %i", ret);
-                    return request.send_plain(500, "Failed to encrypt psk");
-                }
-
-                // TODO: maybe base64 encode?
-                serializer.addMemberArray("psk");
-                for (size_t a = 0; a < ARRAY_SIZE(encrypted_psk); a++) {
-                    serializer.addNumber(encrypted_psk[a]);
-                }
-                serializer.endArray();
-
-                serializer.endObject();
-            }
-        }
-        serializer.endArray();
-
-        serializer.addMemberObject("charger");
-
-        serializer.addMemberString("charger_pub", mgmt_charger.pub.c_str());
-        serializer.addMemberString("uid", esp32_common.get_uid_cstr());
-        serializer.addMemberString("wg_charger_ip", "10.123.123.2");
-        serializer.addMemberString("wg_server_ip", "10.123.123.3");
-        serializer.addMemberString("psk", mgmt_charger.psk.c_str());
-
-        serializer.endObject();
-
-        std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
-        if (encrypted_name == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-        crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), reinterpret_cast<unsigned char *>(pk));
-        auto bs64_name = heap_alloc_array<char>(bs64_name_size);
-        if (bs64_name == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-        size_t olen;
-        mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
-
-        serializer.addMemberString("name", bs64_name.get());
-
-        auto encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
-        if (encrypted_note == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-        crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk);
-        auto bs64_note = heap_alloc_array<char>(bs64_note_size);
-        if (bs64_note == nullptr) {
-            this->request_cleanup();
-            return request.send_plain(500, "Low memory");
-        }
-        mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
-
-        serializer.addMemberString("note", bs64_note.get());
-
-        String url;
+        const String &note = doc["note"];
         const String &uuid = doc["user_uuid"];
         const String &token = doc["auth_token"];
-        if (uuid != "null" && token != "null") {
-            serializer.addMemberString("user_id", uuid.c_str());
-            serializer.addMemberString("token", token.c_str());
-            url = construct_relay_url(registration_config, "/api/add_with_token");
-        } else {
-            url = construct_relay_url(registration_config, "/api/charger/add");
-        }
+        const bool use_token_path = uuid != "null" && token != "null";
 
-        serializer.endObject();
-        size_t size = serializer.end();
+        const char *endpoint = use_token_path ? "/api/add_with_token" : "/api/charger/add";
+        const String *auth_user_id = use_token_path ? &uuid : nullptr;
+        const String *auth_token = use_token_path ? &token : nullptr;
 
-        std::queue<WgKey> key_cache;
-
-        key_cache.push(WgKey{
-            mgmt_charger.priv,
-            mgmt_charger.psk,
-            "",
-        });
-
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            // For user tunnels the device stores its own private key, the
-            // shared PSK, and the relay-side public key (so the WireGuard
-            // interface has a peer pubkey to hand-shake against).
-            key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
-        }
-
-        update_registration_state(RegistrationState::InProgress);
-
-        uint8_t public_key[50];
-        mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk, crypto_box_PUBLICKEYBYTES);
-        auto next_stage = [this, key_cache = std::move(key_cache), public_key, olen](const Config &cfg) mutable {
-            const String pub_key(reinterpret_cast<const char *>(public_key), olen);
-            this->parse_registration(cfg, key_cache, pub_key);
-        };
-        this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, registration_config, std::move(next_stage));
-
-        return request.send_plain(200);
+        return this->add_charger_to_relay(request,
+                                          registration_config,
+                                          pk,
+                                          note,
+                                          endpoint,
+                                          auth_user_id,
+                                          auth_token,
+                                          registration_config.get("email")->asString());
     });
 
     server.on("/remote_access/add_user", HTTP_PUT, [this](WebServerRequest request) {
@@ -1032,9 +1310,6 @@ void RemoteAccess::register_urls()
 
         std::queue<WgKey> key_cache;
         for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            // For user tunnels the device stores its own private key, the
-            // shared PSK, and the relay-side public key (so the WireGuard
-            // interface has a peer pubkey to hand-shake against).
             key_cache.push(WgKey{charger_keys[i].priv, charger_keys[i].psk, relay_keys[i].pub});
         }
 
@@ -1147,7 +1422,6 @@ void RemoteAccess::register_urls()
         return;
     }
 
-    // Check if NTP sync is disabled and log a warning
     const Config *ntp_config = api.getState("ntp/config", false);
     if (ntp_config != nullptr && !ntp_config->get("enable")->asBool()) {
         logger.printfln("WARNING: Remote Access is enabled but NTP sync is disabled.");
@@ -1166,12 +1440,12 @@ void RemoteAccess::start_timeout_task()
 {
     const millis_t random_delay = millis_t{esp_random() % 4096};
     this->timeout_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-        // Check if we got unlucky timing and management request ran
-        // without the management connection getting connected afterwards
+        // Catches the case where the management request finished but the
+        // management connection never became alive afterwards.
         if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
             logger.printfln("Management connection timed out");
 
-            // Reset the timeout to prevent log and reconnect spamming
+            // Reset the timeout to prevent log and reconnect spamming.
             this->last_mgmt_alive = now_us();
             this->management_request_done = false;
         }
@@ -1180,19 +1454,16 @@ void RemoteAccess::start_timeout_task()
 
 void RemoteAccess::apply_config()
 {
-    // Cancel periodic resolve task if running.
     if (this->task_id) {
         task_scheduler.cancel(this->task_id);
         this->task_id = 0;
     }
 
-    // Cancel management polling task if running.
     if (this->management_task_id) {
         task_scheduler.cancel(this->management_task_id);
         this->management_task_id = 0;
     }
 
-    // Tear down the management WireGuard tunnel and all remote connections.
     if (this->management != nullptr) {
         in_seq_number = 0;
         this->close_all_remote_connections();
@@ -1203,13 +1474,11 @@ void RemoteAccess::apply_config()
         this->management = nullptr;
     }
 
-    // Reset state flags.
     this->management_auth_failed = false;
     this->management_request_failed = false;
     this->management_request_done = false;
 
     if (config.get("enable")->asBool() && network.is_connected()) {
-        // Start periodic resolve_management task.
         const millis_t random_delay = millis_t{esp_random() % 4096};
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             if (!this->management_request_done && !this->management_auth_failed) {
@@ -1217,7 +1486,6 @@ void RemoteAccess::apply_config()
             }
         }, random_delay, 30_s + random_delay);
     } else {
-        // Reset connection state to disconnected.
         for (uint8_t i = 0; i < MAX_USER_CONNECTIONS + 1; i++) {
             connection_state.get(i)->get("state")->updateEnum(ConnectionState::Disconnected);
         }
@@ -1495,7 +1763,7 @@ void RemoteAccess::parse_secret()
     }
 
     secret_nonce = heap_alloc_array<uint8_t>(crypto_secretbox_NONCEBYTES);
-    if (encrypted_secret == nullptr) {
+    if (secret_nonce == nullptr) {
         update_registration_state(RegistrationState::Error, String("Low memory"));
         this->request_cleanup();
         return;
@@ -1527,7 +1795,7 @@ void RemoteAccess::parse_secret()
     update_registration_state(RegistrationState::Success, String(reinterpret_cast<char *>(encoded_secret_salt)));
 }
 
-void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key)
+void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email)
 {
     StaticJsonDocument<256> resp_doc;
     DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
@@ -1571,7 +1839,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
         esp_system_abort("Expected 'users' to be empty");
     }
     auto new_user = users->add();
-    new_user->get("email")->updateString(user_config.get("email")->asString());
+    new_user->get("email")->updateString(email);
     new_user->get("id")->updateUint(1);
     new_user->get("public_key")->updateString(public_key);
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
@@ -1680,7 +1948,6 @@ void RemoteAccess::resolve_management()
         for (const auto &user : config.get("users")) {
             serializer.addObject();
 
-            // Check if we already have the user_id and use it
             const String &user_id = user.get("uuid")->asString();
             if (user_id.length() != 0) {
                 serializer.addMemberString("user_id", user_id.c_str());
@@ -1789,7 +2056,6 @@ void RemoteAccess::resolve_management()
         this->management_request_done = true;
         this->last_mgmt_alive = now_us();
         this->request_cleanup();
-        // Don't reconnect if authentication failed
         if (!this->management_auth_failed) {
             this->start_timeout_task();
             this->connect_management();
@@ -1834,7 +2100,6 @@ static int management_filter_out(struct pbuf *packet)
 {
     uint8_t *payload = static_cast<uint8_t *>(packet->payload);
 
-    // Allow ICMP (0x1), TCP (0x6) packets, and UDP (0x11)
     if (payload[9] == 0x1 || payload[9] == 0x6 || payload[9] == 0x11) {
         return ERR_OK;
     } else {
@@ -1854,7 +2119,6 @@ static bool port_valid(uint16_t port)
     struct sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(local_addr));
 
-    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(port);
     int ret = bind(sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
@@ -1865,10 +2129,10 @@ static bool port_valid(uint16_t port)
     return port_valid;
 }
 
-// returning 0 means no free port found
+// Returns 0 if no free port is found.
 static uint16_t find_next_free_port(uint16_t port)
 {
-    // the largest port we call this function with is 51825 so simply adding 100 is safe
+    // The largest port we call this function with is 51825, so adding 100 is safe.
     const uint16_t start_port = port;
     while (!port_valid(port) && port < start_port + 100) {
         port++;
@@ -1927,15 +2191,14 @@ void RemoteAccess::connect_management()
     const IPAddress internal_ip     { 10,123,123,2};
     const IPAddress internal_subnet {255,255,255,0};
     const IPAddress internal_gateway{ 10,123,123,1};
-    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
+    const IPAddress allowed_ip      (IPv4);
+    const IPAddress allowed_subnet  (IPv4);
 
     auto key_buf = heap_alloc_array<char>(3 * (WG_KEY_LENGTH + 1));
     char *private_key       = key_buf.get() + 0 * (WG_KEY_LENGTH + 1);
     char *psk               = key_buf.get() + 1 * (WG_KEY_LENGTH + 1);
     char *remote_public_key = key_buf.get() + 2 * (WG_KEY_LENGTH + 1);
 
-    // WireGuard decodes those (base64 encoded) keys and stores them.
     if (!get_key(0, 0, private_key, psk, remote_public_key)) {
         logger.printfln("Can't connect to management server: no WireGuard key installed!");
         return;
@@ -1954,7 +2217,7 @@ void RemoteAccess::connect_management()
         return;
     }
     this->setup_inner_socket();
-    // management->begin copys the keys.
+    // management->begin copies the keys.
     management->begin(internal_ip,
                       internal_subnet,
                       local_port,
@@ -2005,10 +2268,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
     const IPAddress internal_ip     { 10,123,  i,2};
     const IPAddress internal_subnet {255,255,255,0};
     const IPAddress internal_gateway{ 10,123,  i,1};
-    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
+    const IPAddress allowed_ip      (IPv4);
+    const IPAddress allowed_subnet  (IPv4);
 
-    // WireGuard decodes those (base64 encoded) keys and stores them.
     char private_key[WG_KEY_LENGTH + 1];
     char psk[WG_KEY_LENGTH + 1];
     char remote_public_key[WG_KEY_LENGTH + 1];
@@ -2133,7 +2395,6 @@ void RemoteAccess::setup_inner_socket()
     struct sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(local_addr));
 
-    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address is already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(12345);
     int ret = bind(inner_socket, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
@@ -2187,7 +2448,7 @@ void RemoteAccess::run_management()
         return;
     }
 
-    // Try to feed Ack/Nack packets to the charge tracker's charge log send state machine.
+    // Try to feed Ack/Nack packets to the charge tracker's charge-log send state machine.
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
     if (ret >= static_cast<int>(sizeof(management_packet_header))) {
         const auto *header = reinterpret_cast<const management_packet_header *>(buf);
@@ -2233,7 +2494,6 @@ void RemoteAccess::run_management()
     switch (command->command_id) {
         case management_command_id::Connect: {
             remote_connections[conn_idx].id = static_cast<uint8_t>(command->connection_no);
-            // Check if connection is already established or currently being set up
             if (conn != nullptr || remote_connections[conn_idx].in_progress) {
                 return;
             }
@@ -2269,7 +2529,6 @@ void RemoteAccess::run_management()
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no, conn_idx](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
                 connect_remote_access(conn_no, local_port);
-                // Clear in_progress flag after connection setup is initiated
                 remote_connections[conn_idx].in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
@@ -2302,7 +2561,6 @@ void RemoteAccess::close_all_remote_connections() {
         now.tv_sec = 0;
     }
     for (uint8_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
-        // Always clear in_progress flag when closing all connections
         remote_connections[i].in_progress = false;
         if (remote_connections[i].conn != nullptr) {
             auto conn_state = connection_state.get(i + 1);
@@ -2439,13 +2697,11 @@ bool RemoteAccess::parse_uuid_string(const char *uuid_str, uint8_t *out)
 {
     if (strnlen(uuid_str, 37) != 36) return false;
 
-    // Check dashes are at the correct positions
     if (uuid_str[8] != '-' || uuid_str[13] != '-' || uuid_str[18] != '-' || uuid_str[23] != '-') return false;
 
-    // Check version field (position 14 must be '4' for UUID v4)
     if (uuid_str[14] != '4') return false;
 
-    // Check variant bits (position 19 must be 8, 9, a, b, A, or B)
+    // UUID variant bits: position 19 must be 8, 9, a, b, A, or B.
     char variant = uuid_str[19];
     if (variant != '8' && variant != '9' &&
         variant != 'a' && variant != 'b' &&
@@ -2457,7 +2713,7 @@ bool RemoteAccess::parse_uuid_string(const char *uuid_str, uint8_t *out)
         char hex[3] = {uuid_str[i], uuid_str[i + 1], '\0'};
         if (!isxdigit(uuid_str[i]) || !isxdigit(uuid_str[i + 1])) return false;
         out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
-        i++; // Skip the second hex digit
+        i++;
     }
     return out_idx == 16;
 }
@@ -2509,8 +2765,6 @@ int RemoteAccess::poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reas
             }
             return -1;
         }
-
-        // Ignore other packet types that might arrive
     }
 
     return 0; // timeout
@@ -2537,17 +2791,14 @@ int RemoteAccess::begin_charge_log_send(
         return -2;
     }
 
-    // Parse user UUID
     uint8_t user_uuid[16];
     if (!parse_uuid_string(user_uuid_str, user_uuid)) {
         logger.printfln("Cannot send charge log: invalid user UUID '%s'", user_uuid_str);
         return -3;
     }
 
-    // Take over inner socket from run_management
     auto await_ret = task_scheduler.await([this]() {
         this->charge_log_sending = true;
-        // Flush any pending data
         uint8_t dummy[128];
         while (recvfrom(inner_socket, dummy, sizeof(dummy), 0, nullptr, nullptr) > 0) {}
     });
@@ -2686,7 +2937,7 @@ int RemoteAccess::begin_charge_log_send(
     struct sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(local_addr));
     local_addr.sin_family = AF_INET;
-    local_addr.sin_port = 0; // Let OS assign a port
+    local_addr.sin_port = 0;
     local_addr.sin_addr.s_addr = inet_addr("10.123.123.2");
 
     ret = bind(tcp_sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
@@ -2781,36 +3032,30 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -7;
     }
 
-    // Parse and validate UUID v4 string to binary conversion
-    // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
     // where y is one of 8, 9, a, b (variant bits)
     auto parse_uuid = [](const String &uuid_str, uint8_t *out) -> bool {
         if (uuid_str.length() != 36) return false;
 
         const char *p = uuid_str.c_str();
 
-        // Check dashes are at the correct positions
         if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
 
-        // Check version field (position 14 must be '4' for UUID v4)
         if (p[14] != '4') return false;
 
-        // Check variant bits (position 19 must be 8, 9, a, b, A, or B)
+        // UUID variant bits: position 19 must be 8, 9, a, b, A, or B.
         char variant = p[19];
         if (variant != '8' && variant != '9' &&
             variant != 'a' && variant != 'b' &&
             variant != 'A' && variant != 'B') return false;
 
-        logger.printfln("Parsing UUID: %s", p);
         size_t out_idx = 0;
         for (size_t i = 0; i < 35 && out_idx < 16; i++) {
             if (p[i] == '-') continue;
-            logger.printfln("i: %zu", i);
             char hex[3] = {p[i], p[i + 1], '\0'};
-            logger.printfln("Hex: %s", hex);
             if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
             out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
-            i++; // Skip the second hex digit
+            i++;
         }
         return out_idx == 16;
     };
@@ -2820,7 +3065,6 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -9;
     }
 
-    // Calculate buffer size needed the fixed size is at least 31 bytes
     size_t total_size = 31 + filename_len + display_name_len;
     std::unique_ptr<uint8_t[]> buf = heap_alloc_array<uint8_t>(total_size);
     if (buf == nullptr) {
@@ -2828,7 +3072,6 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -10;
     }
 
-    // Convert language enum to ISO 639-1 language code (2 characters)
     const char *lang_str;
     switch (language) {
         case Language::German:
@@ -2847,7 +3090,6 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
     lang[0] = static_cast<uint8_t>(lang_str[0]);
     lang[1] = static_cast<uint8_t>(lang_str[1]);
 
-    // Build the header
     management_packet_header header;
     header.magic = 0x1234;
     header.length = static_cast<uint16_t>(total_size - sizeof(management_packet_header));
@@ -2870,12 +3112,10 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -11;
     }
 
-    // Send the packet through the inner socket to the management server
     struct sockaddr_in dest_addr;
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(12345);
-    // Management server is at 10.123.123.3
     dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
 
     int ret = sendto(inner_socket, buf.get(), written, 0, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
