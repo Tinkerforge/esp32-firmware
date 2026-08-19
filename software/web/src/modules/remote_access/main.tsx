@@ -318,6 +318,37 @@ export class RemoteAccess extends ConfigComponent<
         this.setState({ status_modal_string: "" });
     }
 
+    async runServiceTokenRegister() {
+        this.setState({
+            status_modal_string: __(
+                "remote_access.content.service_token_register_in_progress",
+            ),
+        });
+        const registrationPromise: Promise<void> = new Promise(
+            (resolve, reject) => {
+                this.resolve = resolve;
+                this.reject = reject;
+            },
+        );
+
+        await API.call("remote_access/service_token_register", {}, () =>
+            __("remote_access.script.save_failed"),
+        );
+        try {
+            await registrationPromise;
+        } catch (err) {
+            util.add_alert(
+                "service_token_register",
+                "danger",
+                () => __("remote_access.content.service_token_register_failed"),
+                () => err as string,
+            );
+            throw err;
+        } finally {
+            this.setState({ status_modal_string: "" });
+        }
+    }
+
     async registerCharger(
         cfg: util.NoExtraProperties<
             API.getType["remote_access/register"]["config"]
@@ -843,6 +874,35 @@ export class RemoteAccess extends ConfigComponent<
                                 }}
                             />
                         </FormRow>
+                        {users.length === 0 && (
+                            <FormRow
+                                label={__(
+                                    "remote_access.content.service_token_register",
+                                )}
+                                label_muted={__(
+                                    "remote_access.content.service_token_register_desc",
+                                )(this.state.relay_host)}
+                            >
+                                <Button
+                                    className="w-100"
+                                    disabled={
+                                        this.state.relay_host === "" ||
+                                        this.state.relay_host == undefined
+                                    }
+                                    onClick={async () => {
+                                        try {
+                                            await this.runServiceTokenRegister();
+                                        } catch {
+                                            // The alert is already shown by runServiceTokenRegister.
+                                        }
+                                    }}
+                                >
+                                    {__(
+                                        "remote_access.content.service_token_register",
+                                    )}
+                                </Button>
+                            </FormRow>
+                        )}
                         <FormRow label={__("remote_access.content.user")}>
                             <Table
                                 columnNames={[
