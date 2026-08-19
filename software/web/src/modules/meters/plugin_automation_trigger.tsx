@@ -30,6 +30,7 @@ import { METER_VALUE_INFOS, MeterValueID } from "./generated/meter_value_id";
 import { Comparator } from "./generated/comparator.enum";
 import { translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
+import { translate_meter_display_name } from "./main";
 
 export type MeterValueAutomationTrigger = [
     AutomationTriggerID.MeterValue,
@@ -44,8 +45,9 @@ export type MeterValueAutomationTrigger = [
 
 function get_meter_name(slot: number): string {
     const meter = API.get_unchecked(`meters/${slot}/config`);
+
     if (meter[1]) {
-        return meter[1].display_name;
+        return translate_meter_display_name(meter[0], meter[1].display_name);
     }
     return __("meters.content.unknown_slot")(slot) as string;
 }
@@ -106,7 +108,7 @@ function get_meter_value_edit_children(trigger: MeterValueAutomationTrigger, on_
     for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
         const meter = API.get_unchecked(`meters/${i}/config`);
         if (meter[1]) {
-            meter_items.push([i.toString(), meter[1].display_name]);
+            meter_items.push([i.toString(), get_meter_name(i)]);
         }
     }
 
