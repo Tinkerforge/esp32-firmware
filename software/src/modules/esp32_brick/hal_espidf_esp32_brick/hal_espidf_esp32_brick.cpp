@@ -190,8 +190,8 @@ int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer,
     transaction.rx_buffer         = read_buffer;
 
     esp_err_t err = (length <= POLLING_TRANSFER_MAX_LENGTH)
-                  ? spi_device_polling_transmit(hal->hspi_dev, &transaction)
-                  : spi_device_transmit(hal->hspi_dev, &transaction);
+                  ? spi_device_polling_transmit(dev, &transaction)
+                  : spi_device_transmit(dev, &transaction);
 
     return (err == ESP_OK) ? TF_E_OK : TF_E_NOT_SUPPORTED;
 }
