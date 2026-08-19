@@ -63,34 +63,41 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    void on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected = false);
-    void on_ev_disconnected();
-
     int16_t get_user_id(const uint8_t mac[EV_MAC_ADDRESS_LENGTH]);
     void remove_user(uint8_t user_id);
+
+    [[gnu::const]] static uint16_t capacity_to_dkwh(float capacity_kwh);
+    [[gnu::const]] static uint8_t efficiency_to_pct(float efficiency);
+    [[gnu::const]] static uint8_t soc_to_pct(float soc);
+
+    void get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_t *capacity_dkwh, uint8_t *efficiency_pct);
+
+// Everything related to the locally connected EV  only exists on chargers.
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    void on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected = false);
+    void on_ev_disconnected();
 
     void set_soc(float soc); // Overwrites current and initial soc
     void update_estimated_soc();
     void session_updated(EVDataSource source); // Called after writing session fields.
     void add_seen_mac_address(const uint8_t mac[EV_MAC_ADDRESS_LENGTH]);
 
-    [[gnu::const]] static uint16_t capacity_to_dkwh(float capacity_kwh);
-    [[gnu::const]] static uint8_t efficiency_to_pct(float efficiency);
-    [[gnu::const]] static uint8_t soc_to_pct(float soc);
-
     void set_remote_charge_parameters(uint16_t capacity_dkwh, uint8_t efficiency_pct);
-    void get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_t *capacity_dkwh, uint8_t *efficiency_pct);
     bool is_ev_connected(const String &mac_str);
 
     EVSession session;
+#endif
 
 private:
-    float get_session_energy_kwh();
-    void clear_session();
     int find_matching_ev_index(const uint8_t mac[EV_MAC_ADDRESS_LENGTH]);
 
     ConfigRoot config;
     Config ev_config_prototype;
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    float get_session_energy_kwh();
+    void clear_session();
+
     ConfigRoot state;
     ConfigRoot inject_soc;
     ConfigRoot inject_ev;
@@ -101,6 +108,7 @@ private:
     int active_ev_index = -1; // Index into config evs array, -1 = no match / unknown EV
 
     uint64_t soc_estimation_task = 0;
+#endif
 };
 
 #include "generated/module_available_end.h"
