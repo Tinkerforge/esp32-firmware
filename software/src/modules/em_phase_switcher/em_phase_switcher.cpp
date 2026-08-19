@@ -224,6 +224,10 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         return;
     }
 
+    if (CM_COMMAND_FLAGS_IGNORE_ALLOCATION_IS_SET(command_packet->v1.command_flags)) {
+        return;
+    }
+
     if (!charger_usable) {
         return;
     }
