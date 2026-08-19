@@ -1283,7 +1283,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                         get_battery_name(this.state.configs, battery_slot),
                                         config_plugins[config[0]].name(),
                                         get_battery_state_name(this.state.configs, this.state.states, battery_slot, battery_control_mode, this.state.warnings[battery_slot],
-                                                               (warning: ComponentChild) => {console.log("warning", warning); this.setState({warnings: {...this.state.warnings, [battery_slot]: warning}})}),
+                                                               (warning: ComponentChild) => this.setState({warnings: {...this.state.warnings, [battery_slot]: warning}})),
                                     ],
                                     extraValue: this.state.warnings[battery_slot],
                                     extraKey: `extra-${battery_slot}`,
