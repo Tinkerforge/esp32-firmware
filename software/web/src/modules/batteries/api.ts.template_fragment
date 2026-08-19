@@ -1,6 +1,7 @@
 //APIPath:batteries/{{{battery_id}}}/
 export type config___{{{battery_id}}} = BatteryConfig;
 
+// FIXME: this state is specific to the batteries_modbus_tcp module
 export interface state___{{{battery_id}}} {
     effective_mode: number,
 }
