@@ -188,6 +188,7 @@ void ChargeManager::pre_setup()
          * u >= 1 user authorized
          */
         {"u", Config::Int16(0)},
+        {"soc", Config::Uint8(CM_STATE_V6_EV_SOC_UNKNOWN)}, // Last EV SoC reported by this charger in percent. 255 = unknown.
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -638,6 +639,18 @@ bool ChargeManager::send_client_packet(uint8_t i) {
         phases = 0; // 0 phases are ignored except with WARP* firmware == 2.6.0. 2.6.1 fixed this two weeks later
     }
 
+    // Charge parameters of the connected EV.
+    uint16_t ev_capacity = 0;           // 0.1 kWh, 0 = unknown
+    uint8_t ev_charging_efficiency = 0; // percent, 0 = unknown
+#if MODULE_EV_AVAILABLE()
+    for (const cm_auth_info &info : this->charger_state[i].auth_info) {
+        if ((info.auth_method == CMAuthType::EV || info.auth_method == CMAuthType::InjectedEV) && info.last_seen_s != 0) {
+            ev.get_charge_parameters(info.ev.mac, &ev_capacity, &ev_charging_efficiency);
+            break;
+        }
+    }
+#endif
+
     return cm_networking.send_manager_update(i,
                                              ignore_allocation,
                                              current,
@@ -647,14 +660,16 @@ bool ChargeManager::send_client_packet(uint8_t i) {
                                              this->supported_charge_mode_bitmask,
                                              auth_feedback,
                                              this->ca_config->enable_central_management,
-                                             this->ca_config->enable_central_management);
+                                             this->ca_config->enable_central_management,
+                                             ev_capacity,
+                                             ev_charging_efficiency);
 }
 
 void ChargeManager::start_manager_task()
 {
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
-    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4, cm_state_v5 *v5) mutable {
+    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4, cm_state_v5 *v5, cm_state_v6 *v6) mutable {
             if (is_packet_stale(
                     client_id,
                     v1,
@@ -667,6 +682,8 @@ void ChargeManager::start_manager_task()
             update_uid(client_id, v1, &this->config, this->charger_state);
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
+
+            this->charger_state[client_id].ev_soc = (v6 != nullptr) ? v6->ev_soc : CM_STATE_V6_EV_SOC_UNKNOWN;
 
             this->auth_info_changed |= update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
             this->auth_info_chargers_seen |= uint64_t{1} << client_id;
@@ -941,6 +958,7 @@ void ChargeManager::setup()
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
         charger_state[i].authenticated_user_id = NOT_AUTHORIZED;
+        charger_state[i].ev_soc = CM_STATE_V6_EV_SOC_UNKNOWN;
     }
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
@@ -1641,6 +1659,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("uid")->updateUint(charger.uid);
 
     charger_cfg->get("u")->updateInt(charger.authenticated_user_id);
+    charger_cfg->get("soc")->updateUint(charger.ev_soc);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);

@@ -91,6 +91,7 @@ static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 and v2.
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v4),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v5), // cm_command_v5 redefined v4._padding. Size is still the same and cm_command_packet holds a union of v4 and v5.
 };
 static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSION + 1), "Unexpected amount of command packet length versions.");
 
@@ -101,6 +102,7 @@ static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v4),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v5), // cm_state_v5 redefined v4._padding. Size is still the same and cm_state_packet holds a union of v4 and v5.
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v6) + sizeof(struct cm_state_v5), // cm_state_v6 redefined v3.padding. Size is still the same and cm_state_packet holds a union of v3 and v6.
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
@@ -352,7 +354,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 #endif
 
             if (manager_data->client_update_received_cb) {
-                manager_data->client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr, state_pkt.header.version >= 5 ? &state_pkt.v5 : nullptr);
+                manager_data->client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr, state_pkt.header.version >= 5 ? &state_pkt.v5 : nullptr, state_pkt.header.version >= 6 ? &state_pkt.v6 : nullptr);
             } else {
                 this->send_state_packet(&state_pkt);
             }
@@ -391,7 +393,9 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
                                        std::array<uint8_t, 2> supported_charge_mode_bitmask,
                                        CMAuthFeedback auth_feedback,
                                        bool central_user_management_enabled,
-                                       bool central_charge_logging_enabled)
+                                       bool central_charge_logging_enabled,
+                                       uint16_t ev_capacity,
+                                       uint8_t ev_charging_efficiency)
 {
     static uint16_t next_seq_num = 1;
 
@@ -415,7 +419,10 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
         command_pkt.v3.supported_charge_modes[i] = supported_charge_mode_bitmask[i];
 
     command_pkt.v4.auth_feedback = auth_feedback;
-    memset(command_pkt.v4._padding, 0, sizeof(command_pkt.v4._padding));
+
+    // cm_command_v5 redefines cm_command_v4._padding, so all bytes are covered.
+    command_pkt.v5.ev_charging_efficiency = ev_charging_efficiency;
+    command_pkt.v5.ev_capacity = ev_capacity;
 
     return send_command_packet(client_id, &command_pkt);
 }
@@ -536,7 +543,7 @@ void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager
             if (!this->manager_addr_valid) {
                 // Block charging
                 if (manager_update_received_cb) {
-                    manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None);
+                    manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None, 0, 0);
                 }
 
                 return;
@@ -552,7 +559,7 @@ void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager
                 } else {
                     // Block charging
                     if (manager_update_received_cb) {
-                        manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None);
+                        manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0, CMAuthFeedback::None, 0, 0);
                     }
 
                     return;
@@ -590,7 +597,9 @@ void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
                             command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Default,
                             supported_charge_modes, supported_charge_mode_length,
-                            auth_feedback);
+                            auth_feedback,
+                            command_pkt.header.version >= 5 ? command_pkt.v5.ev_capacity : 0,
+                            command_pkt.header.version >= 5 ? command_pkt.v5.ev_charging_efficiency : 0);
         } else {
             this->send_command_packet(0, &command_pkt);
         }
@@ -614,7 +623,8 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       bool currently_switching_phases,
                                       ConfigChargeMode requested_charge_mode,
                                       bool urgent,
-                                      bool request_reallocation)
+                                      bool request_reallocation,
+                                      uint8_t ev_soc)
 {
     static uint16_t next_seq_num = 0;
 
@@ -735,10 +745,25 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
         auto last_seen = now_us() - entry->get("seen_at")->asUptime();
         // seen_at == 0 is interpreted as "no tag seen"
-        if (entry->get("seen_at")->asUptime() == 0_us || last_seen >= 1_h)
+        if (entry->get("seen_at")->asUptime() == 0_us) {
             continue;
+        }
 
         const CMAuthType auth_method = entry->get("auth_info")->getTag<CMAuthType>();
+
+        if (last_seen >= 1_h) {
+            bool expired = true;
+#if MODULE_EV_AVAILABLE()
+            // An EV authentication stays relevant for as long as the EV is connected.
+            if (((auth_method == CMAuthType::EV) || (auth_method == CMAuthType::InjectedEV)) &&
+                ev.is_ev_connected(entry->get("auth_info")->get()->get("mac")->asString())) {
+                expired = false;
+            }
+#endif
+            if (expired) {
+                continue;
+            }
+        }
 
         if (auth_method == CMAuthType::NFC || auth_method == CMAuthType::InjectedNFC) {
             ai.auth_method = auth_method;
@@ -760,7 +785,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
             ai.nfc.tag_id_len = id_len;
         } else if (auth_method == CMAuthType::EV || auth_method == CMAuthType::InjectedEV) {
             ai.auth_method = auth_method;
-            ai.last_seen_s = last_seen.to<seconds_t>().as<uint16_t>();
+            // EV entries can be older than an hour (see above), so clamp instead
+            // of truncating to avoid wrapping into "just seen" values.
+            ai.last_seen_s = last_seen >= seconds_t{65535} ? 65535 : last_seen.to<seconds_t>().as<uint16_t>();
             if (ai.last_seen_s == 0) {
                 ai.last_seen_s = 1;
             }
@@ -777,6 +804,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 #endif
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
+
+    state_pkt.v6.ev_soc = ev_soc;
+    memset(state_pkt.v6._padding2, 0, sizeof(state_pkt.v6._padding2));
 
     return send_state_packet(&state_pkt);
 }

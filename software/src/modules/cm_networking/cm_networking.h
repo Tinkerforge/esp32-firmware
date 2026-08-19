@@ -45,7 +45,7 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    typedef std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> ManagerClientUpdateReceivedCallback;
+    typedef std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *, cm_state_v6 *)> ManagerClientUpdateReceivedCallback;
     typedef std::function<void(uint8_t, ClientError)> ManagerClientErrorCallback;
     void register_manager(const char *const *const hosts,
                           size_t device_count,
@@ -61,9 +61,11 @@ public:
                              std::array<uint8_t, 2> supported_charge_mode_bitmask,
                              CMAuthFeedback auth_feedback,
                              bool central_user_management_enabled,
-                             bool central_charge_logging_enabled);
+                             bool central_charge_logging_enabled,
+                             uint16_t ev_capacity,
+                             uint8_t ev_charging_efficiency);
 
-    typedef std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> ClientManagerUpdateReceivedCallback;
+    typedef std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback, uint16_t /* ev_capacity */, uint8_t /* ev_charging_efficiency */)> ClientManagerUpdateReceivedCallback;
     void register_client(ClientManagerUpdateReceivedCallback &&manager_update_received_cb);
     void get_manager_ip(char buf[INET_ADDRSTRLEN]);
     bool send_client_update(uint32_t esp32_uid,
@@ -82,7 +84,8 @@ public:
                             bool currently_switching_phases,
                             ConfigChargeMode requested_charge_mode,
                             bool urgent,
-                            bool request_reallocation);
+                            bool request_reallocation,
+                            uint8_t ev_soc);
 
     void notify_charger_unresponsive(uint8_t charger_idx);
 

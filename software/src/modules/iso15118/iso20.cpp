@@ -982,6 +982,7 @@ void ISO20::handle_ac_charge_loop_req()
             // Convert from rational number (value * 10^exponent) to kWh
             // The original value is in Wh.
             ev.session.capacity = physical_value_to_float(&req->DisplayParameters.BatteryEnergyCapacity) / 1000.0f;
+            ev.session.capacity_from_ev = true;
         }
     }
 

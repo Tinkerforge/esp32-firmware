@@ -206,6 +206,8 @@ let x = {
             "ampere_allocated": "zugeteilt",
             "ampere_supported": "unterstützt",
 
+            "soc": "Ladestand",
+
             "last_update_prefix": "Gestört seit ",
             "last_update_suffix": "",
             "save_failed": "Speichern der Lastmanager-Einstellungen fehlgeschlagen.",
@@ -273,7 +275,6 @@ let x = {
             "cd_supported_by_charger": "Wallboxlimit",
             "cd_left_over": "Reststrom",
             "cd_user_limit": "Nutzerlimit",
-            "currently_charging_user": "Ladender Benutzer",
             "authorize_charger": "Freigeben",
             "authorize_charger_for_user": "Ladevorgang für Benutzer freigeben",
             "authorize_charger_no_users": "Keine Benutzer konfiguriert",

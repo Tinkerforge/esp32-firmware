@@ -40,8 +40,8 @@
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
 // Increment when changing packet structs
-#define CM_COMMAND_VERSION 4
-#define CM_STATE_VERSION 5
+#define CM_COMMAND_VERSION 5
+#define CM_STATE_VERSION 6
 
 // Minimum protocol version supported
 #define CM_COMMAND_VERSION_MIN 1
@@ -103,7 +103,16 @@ struct cm_command_v3 {
 
 struct cm_command_v4 {
     CMAuthFeedback auth_feedback;
-    uint8_t _padding[3];
+    uint8_t _padding[3]; // In use for cm_command_v5 ev_charging_efficiency and ev_capacity
+};
+
+// Charge parameters of the connected EV.
+// The client uses them to estimate the current SoC (reported back via cm_state_v6).
+// Redefines cm_command_v4._padding; cm_command_packet holds a union of v4 and v5.
+struct cm_command_v5 {
+    uint8_t _padding;               // In use for cm_command_v4 auth_feedback
+    uint8_t ev_charging_efficiency; // percent, 0 = unknown
+    uint16_t ev_capacity;           // 0.1 kWh, 0 = unknown
 };
 
 // Before adding cm_command_v4: Check whether more (supported) charge modes are to be added in the foreseeable future!
@@ -124,6 +133,11 @@ static_assert(to_underlying(ConfigChargeMode::_max) == 9);
 #define CM_COMMAND_V4_LENGTH (sizeof(cm_command_v4))
 static_assert(CM_COMMAND_V4_LENGTH == 4, "Unexpected CM_COMMAND_V4_LENGTH");
 
+#define CM_COMMAND_V5_LENGTH (sizeof(cm_command_v5))
+static_assert(CM_COMMAND_V5_LENGTH == 4, "Unexpected CM_COMMAND_V5_LENGTH");
+static_assert(CM_COMMAND_V5_LENGTH == CM_COMMAND_V4_LENGTH, "cm_command_v5 must redefine cm_command_v4's padding without changing the size");
+static_assert(offsetof(cm_command_v5, _padding) == offsetof(cm_command_v4, auth_feedback), "Unexpected offset of cm_command_v5._padding");
+
 struct cm_command_packet {
     cm_packet_header header;
     union {
@@ -131,7 +145,10 @@ struct cm_command_packet {
         cm_command_v2 v2;
     };
     cm_command_v3 v3;
-    cm_command_v4 v4;
+    union {
+        cm_command_v4 v4;
+        cm_command_v5 v5;
+    };
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
@@ -259,7 +276,7 @@ struct cm_state_v3 {
     // bit 2: can switch phases now
     // bit 0-1: phases "connected"
     uint8_t phases;
-    uint8_t padding[3];
+    uint8_t padding[3]; // padding[0] in use for cm_state_v6 ev_soc
 };
 
 #define CM_STATE_V3_CURRENTLY_SWITCHING_BIT_POS 3
@@ -330,11 +347,32 @@ struct cm_state_v5 {
 #define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
 static_assert(CM_STATE_V5_LENGTH == 48, "Unexpected CM_STATE_V5_LENGTH");
 
+#define CM_STATE_V6_EV_SOC_UNKNOWN 255
+
+// Current SoC of the connected EV, estimated by the client from the
+// charge parameters received via cm_command_v5 (or known locally),
+// or with ISO 15118-20 reported directly by the EV.
+// Note: senders with version < 6 don't zero cm_state_v3.padding, so this
+// field must only be interpreted if header.version >= 6.
+struct cm_state_v6 {
+    uint8_t _padding; // In use for cm_state_v3 phases
+    uint8_t ev_soc;   // percent (0-100), 255 = unknown
+    uint8_t _padding2[2];
+};
+
+#define CM_STATE_V6_LENGTH (sizeof(cm_state_v6))
+static_assert(CM_STATE_V6_LENGTH == 4, "Unexpected CM_STATE_V6_LENGTH");
+static_assert(CM_STATE_V6_LENGTH == CM_STATE_V3_LENGTH, "cm_state_v6 must redefine cm_state_v3's padding without changing the size");
+static_assert(offsetof(cm_state_v6, _padding) == offsetof(cm_state_v3, phases), "Unexpected offset of cm_state_v6._padding");
+
 struct cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
     cm_state_v2 v2;
-    cm_state_v3 v3;
+    union {
+        cm_state_v3 v3;
+        cm_state_v6 v6;
+    };
     union {
         cm_state_v4 v4;
         cm_state_v5 v5;

@@ -76,6 +76,39 @@ static void format_mac_string(const uint8_t *mac, char *out, size_t out_size)
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
+uint16_t Ev::capacity_to_dkwh(float capacity_kwh)
+{
+    if (isnan(capacity_kwh) || (capacity_kwh <= 0.0f)) {
+        return 0;
+    }
+
+    const float dkwh = roundf(capacity_kwh * 10.0f);
+    return dkwh > 65535.0f ? 65535 : static_cast<uint16_t>(dkwh);
+}
+
+uint8_t Ev::efficiency_to_pct(float efficiency)
+{
+    if (isnan(efficiency) || (efficiency <= 0.0f)) {
+        return 0;
+    }
+
+    const float pct = roundf(efficiency * 100.0f);
+    return pct > 100.0f ? 100 : static_cast<uint8_t>(pct);
+}
+
+uint8_t Ev::soc_to_pct(float soc)
+{
+    if (isnan(soc)) {
+        return EV_SOC_UNKNOWN;
+    }
+
+    const float pct = roundf(soc);
+    if (pct < 0.0f) {
+        return 0;
+    }
+    return pct > 100.0f ? 100 : static_cast<uint8_t>(pct);
+}
+
 void Ev::pre_setup()
 {
     ev_config_prototype = Config::Object({
@@ -439,6 +472,53 @@ void Ev::session_updated(EVDataSource source)
         source
     );
 #endif
+}
+
+void Ev::set_remote_charge_parameters(uint16_t capacity_dkwh, uint8_t efficiency_pct)
+{
+    bool changed = false;
+
+    if ((capacity_dkwh > 0) && !session.capacity_from_ev && (capacity_to_dkwh(session.capacity) != capacity_dkwh)) {
+        session.capacity = static_cast<float>(capacity_dkwh) / 10.0f;
+        changed = true;
+    }
+
+    if ((efficiency_pct > 0) && (efficiency_to_pct(session.charging_efficiency) != efficiency_pct)) {
+        session.charging_efficiency = static_cast<float>(efficiency_pct) / 100.0f;
+        changed = true;
+    }
+
+    if (changed) {
+        state.get("capacity")->updateFloat(session.capacity);
+        state.get("charging_efficiency")->updateFloat(session.charging_efficiency);
+    }
+}
+
+void Ev::get_charge_parameters(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], uint16_t *capacity_dkwh, uint8_t *efficiency_pct)
+{
+    *capacity_dkwh = capacity_to_dkwh(EV_DEFAULT_CAPACITY);
+    *efficiency_pct = efficiency_to_pct(EV_DEFAULT_CHARGING_EFFICIENCY);
+
+    int index = find_matching_ev_index(mac);
+    if (index < 0) {
+        return;
+    }
+
+    const Config *entry = static_cast<const Config *>(config.get("evs")->get(index));
+    uint16_t capacity = capacity_to_dkwh(entry->get("capacity")->asFloat());
+    if (capacity > 0) {
+        *capacity_dkwh = capacity;
+    }
+    uint8_t efficiency = efficiency_to_pct(entry->get("charging_efficiency")->asFloat());
+    if (efficiency > 0) {
+        *efficiency_pct = efficiency;
+    }
+}
+
+bool Ev::is_ev_connected(const String &mac_str)
+{
+    const String &current_mac = state.get("mac")->asString();
+    return (current_mac.length() != 0) && current_mac.equalsIgnoreCase(mac_str);
 }
 
 float Ev::get_session_energy_kwh()

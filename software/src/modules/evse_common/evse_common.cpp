@@ -448,6 +448,12 @@ void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
 
     const uint32_t phases = backend->get_phases();
 
+    uint8_t ev_soc = CM_STATE_V6_EV_SOC_UNKNOWN;
+#if MODULE_EV_AVAILABLE()
+    static_assert(EV_SOC_UNKNOWN == CM_STATE_V6_EV_SOC_UNKNOWN);
+    ev_soc = Ev::soc_to_pct(ev.session.soc);
+#endif
+
     cm_networking.send_client_update(
         esp32_common.get_uid_num(),
         state.get("iec61851_state")->asUint(),
@@ -465,7 +471,8 @@ void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
         backend->get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Busy,
         deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->charge_mode.get("mode")->asEnum<ConfigChargeMode>(),
         urgent,
-        request_reallocation
+        request_reallocation,
+        ev_soc
     );
 
     next_cm_send_deadline = now_us() + 2500_ms;
@@ -510,7 +517,7 @@ void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback) {
+    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback, uint16_t ev_capacity, uint8_t ev_charging_efficiency) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -519,6 +526,13 @@ void EvseCommon::register_urls()
         this->management_state.get("manager_ip")->updateString(String(manager_ip_buf));
 
         this->handle_auth_feedback(auth_feedback);
+
+#if MODULE_EV_AVAILABLE()
+        ev.set_remote_charge_parameters(ev_capacity, ev_charging_efficiency);
+#else
+        (void)ev_capacity;
+        (void)ev_charging_efficiency;
+#endif
 
         if (!ignore_allocation) {
             set_managed_current(current);
