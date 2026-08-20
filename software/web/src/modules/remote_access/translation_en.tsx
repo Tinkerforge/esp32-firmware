@@ -50,6 +50,7 @@ let x = {
             "service_token_register_desc": /*FFN*/(host: string) => <>Ask the relay server at <a href={`https://${host}/`}>{host}</a> for a signed authorization token and register the device with it. Use this if the relay has already issued a service token for this device.</> /*NF*/,
             "service_token_register_failed": "Service token registration failed:",
             "service_token_register_in_progress": "Requesting service token from relay",
+            "service_token_badge": "Service",
             "ping": "Ping",
             "start_ping": "Start ping",
             "stop_ping": "Stop ping",
