@@ -112,6 +112,13 @@ public:
         }
     }
 
+    [[gnu::always_inline]]
+    void assert_task_inactive(const char *error_message) const {
+        if (xTaskGetCurrentTaskHandle() == task_handle) {
+            esp_system_abort(error_message);
+        }
+    }
+
 private:
     [[noreturn]] void task_loop();
     [[noreturn]] static void task_fn(void *arg);

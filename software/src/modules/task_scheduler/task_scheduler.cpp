@@ -374,6 +374,11 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
     if (strcmp(pcTaskGetName(nullptr), TCPIP_THREAD_NAME) == 0) {
         esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
     }
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    // This is dangerous because the main task calls IoScheduler::await frequently.
+    // If the main task waits for the Io Scheduler and the scheduler waits for the main task, we deadlock.
+    io_scheduler.assert_task_inactive("Calling TaskScheduler::await is not allowed in the Io Scheduler thread!");
+#endif
 #endif
     if (task_id == 0) {
         logger.printfln("Attempted to await task 0");
