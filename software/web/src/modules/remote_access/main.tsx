@@ -895,35 +895,6 @@ export class RemoteAccess extends ConfigComponent<
                                 }}
                             />
                         </FormRow>
-                        {this.isServiceTokenAllowed() && (
-                            <FormRow
-                                label={__(
-                                    "remote_access.content.service_token_register",
-                                )}
-                                label_muted={__(
-                                    "remote_access.content.service_token_register_desc",
-                                )(this.state.relay_host)}
-                            >
-                                <Button
-                                    className="w-100"
-                                    disabled={
-                                        this.state.relay_host === "" ||
-                                        this.state.relay_host == undefined
-                                    }
-                                    onClick={async () => {
-                                        try {
-                                            await this.runServiceTokenRegister();
-                                        } catch {
-                                            // The alert is already shown by runServiceTokenRegister.
-                                        }
-                                    }}
-                                >
-                                    {__(
-                                        "remote_access.content.service_token_register",
-                                    )}
-                                </Button>
-                            </FormRow>
-                        )}
                         <FormRow label={__("remote_access.content.user")}>
                             <Table
                                 columnNames={[
@@ -1184,6 +1155,33 @@ export class RemoteAccess extends ConfigComponent<
                             />
                         </FormRow>
                         <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
+                            <FormRow
+                                label={__(
+                                    "remote_access.content.service_token_register",
+                                )}
+                                label_muted={__(
+                                    "remote_access.content.service_token_register_desc",
+                                )(this.state.relay_host)}
+                            >
+                                <Button
+                                    className="w-100"
+                                    disabled={
+                                        this.state.relay_host === "" ||
+                                        this.state.service_token_user_uuid !== ""
+                                    }
+                                    onClick={async () => {
+                                        try {
+                                            await this.runServiceTokenRegister();
+                                        } catch {
+                                            // The alert is already shown by runServiceTokenRegister.
+                                        }
+                                    }}
+                                >
+                                    {__(
+                                        "remote_access.content.service_token_register",
+                                    )}
+                                </Button>
+                            </FormRow>
                             <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
                                 <InputHost
                                     required
