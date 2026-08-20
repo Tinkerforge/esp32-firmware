@@ -297,3 +297,11 @@ private:
     [[gnu::always_inline]]
     T *get_ptr() const { return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(this->ptr) & (~BITMASK)); }
 };
+
+// std::aligned_storage is deprecated in C++23.
+// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf
+// Use this as an replacement.
+template <typename T>
+struct aligned_storage {
+    alignas(T) std::byte buf[sizeof(T)];
+};

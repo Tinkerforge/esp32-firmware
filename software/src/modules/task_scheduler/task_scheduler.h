@@ -46,8 +46,20 @@ struct Task {
     // Task is currently running while another thread (or fn itself) called rescheduleNow with this task's ID.
     // Will be executed as next task again.
     bool immediate_reschedule;
+    // Task was allocated by the task scheduler.
+    bool owned = true;
 
     Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once);
+};
+
+// https://stackoverflow.com/a/50957671
+// This specializes the default deleter used by std::unique_ptr to only delete a Task if it is owned.
+template <>
+struct std::default_delete<Task> {
+    default_delete() = default;
+    template <class U>
+    constexpr default_delete(default_delete<U>) noexcept {}
+    void operator()(Task* p) const noexcept { if (p->owned) delete p; }
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
@@ -123,6 +135,7 @@ public:
     bool nextTaskReady();
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
+    uint64_t scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current(), bool transfer_task_ownership = false);
 
     [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later. Cast to void if you intend to write a self-canceling task that will use task_scheduler.currentTaskId()")]]
     inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), 0_ms, delay_ms, src_location);}

@@ -248,12 +248,19 @@ bool TaskScheduler::nextTaskReady()
     return next_deadline <= now;
 }
 
-uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
+uint64_t TaskScheduler::scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location, bool transfer_task_ownership)
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, src_location.file_name(), src_location.line(), true));
+    Task *ptr = new(task_buffer) Task(std::move(fn), task_id, delay_ms, 0_us, src_location.file_name(), src_location.line(), true);
+    ptr->owned = transfer_task_ownership;
+    tasks.emplace(ptr);
     return task_id;
+}
+
+uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
+{
+    return this->scheduleOnceNoAlloc(new aligned_storage<Task>, std::move(fn), delay_ms, src_location, true);
 }
 
 uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
@@ -268,7 +275,9 @@ uint64_t TaskScheduler::scheduleUncancelable(std::function<void(void)> &&fn, mil
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id | (1ull << 62ull);
-    tasks.emplace(perm_new<Task>(DRAM, std::move(fn), task_id, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false));
+    auto *task = perm_new<Task>(DRAM, std::move(fn), task_id, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false);
+    task->owned = false;
+    tasks.emplace(task);
     return task_id;
 }
 

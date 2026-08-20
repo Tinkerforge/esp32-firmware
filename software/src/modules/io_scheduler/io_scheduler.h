@@ -52,6 +52,11 @@ public:
         return scheduler.scheduleOnce(std::move(fn), delay_ms, src_location);
     }
 
+    uint64_t scheduleOnceNoAlloc(aligned_storage<Task> *task_buf, std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current())
+    {
+        return scheduler.scheduleOnceNoAlloc(task_buf, std::move(fn), delay_ms, src_location);
+    }
+
     // Registers an uncancelable driven round.
     // before_io and after_io run on the main task, during_io runs on the IO task.
     // Pass nullptr for before_io/after_io if unused.
@@ -124,6 +129,8 @@ private:
     [[noreturn]] static void task_fn(void *arg);
 
     struct RoundStateBase {
+        aligned_storage<Task> during_io_task_buf;
+        aligned_storage<Task> after_io_task_buf;
         const std::source_location src_location;
         bool in_flight = false; // Only accessed on the main task.
 
