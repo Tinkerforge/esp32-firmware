@@ -268,7 +268,7 @@ void RemoteAccess::pre_setup()
         {"cert_id", Config::Int8(-1)},
         // a mtu of 1240 should be always safe
         {"mtu", Config::Uint16(1240)},
-        {"service_token_active", Config::Bool(false)},
+        {"service_token_user_uuid", Config::Str("", 0, 36)},
         {"service_token_timestamp_minutes", Config::Uint32(0)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
@@ -837,13 +837,9 @@ WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebSer
     return request.send_plain(200);
 }
 
-// True only when the support team has flipped the support-toggle. Both backend
-// and frontend use this so the UI button and the /remote_access/service_token_register
-// endpoint stay in sync. The service_token_timestamp_minutes field is reserved for
-// future use and is intentionally ignored here.
 bool RemoteAccess::service_token_allowed() const
 {
-    return !config.get("service_token_active")->asBool();
+    return config.get("service_token_user_uuid")->asString().isEmpty();
 }
 
 void RemoteAccess::fetch_service_token()
@@ -1462,6 +1458,10 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "User does not exist");
         }
 
+        if (config.get("service_token_user_uuid")->asString() == config.get("users")->get(idx)->get("uuid")->asString()) {
+            config.get("service_token_user_uuid")->updateString("");
+        }
+
         config.get("users")->remove(idx);
         for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
             remove_key(req_id, i);
@@ -1934,6 +1934,8 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     new_user->get("public_key")->updateString(public_key);
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
 
+    this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+
     API::writeConfig("remote_access/config", &this->config);
     this->apply_config();
     update_registration_state(RegistrationState::Success);
@@ -1968,6 +1970,9 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
     new_user->get("id")->updateUint(next_user_id);
     new_user->get("public_key")->updateString(pub_key);
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
+
+    this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+
     api.writeConfig("remote_access/config", &this->config);
     update_registration_state(RegistrationState::Success);
 }
@@ -2289,6 +2294,9 @@ void RemoteAccess::resolve_management()
 
             if (doc["configured_users"][idx] == 0) {
                 uint8_t user_id = user->get("id")->asUint8();
+                if (config.get("service_token_user_uuid")->asString() == user->get("uuid")->asString()) {
+                    config.get("service_token_user_uuid")->updateString("");
+                }
                 for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                     remove_key(user_id, i);
                 }

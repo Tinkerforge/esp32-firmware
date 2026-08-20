@@ -9,7 +9,7 @@ export interface config {
     relay_port: number;
     cert_id: number;
     mtu: number;
-    service_token_active: boolean;
+    service_token_user_uuid: string;
     service_token_timestamp_minutes: number;
     users: user[];
 }

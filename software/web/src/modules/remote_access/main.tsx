@@ -182,12 +182,8 @@ export class RemoteAccess extends ConfigComponent<
         });
     }
 
-    // Mirrors RemoteAccess::service_token_allowed() in the backend: the
-    // /remote_access/service_token_register button is only shown once the
-    // support team has flipped the toggle. The service_token_timestamp_minutes
-    // field is reserved for future use and is intentionally ignored here.
     isServiceTokenAllowed(): boolean {
-        return !this.state.service_token_active;
+        return this.state.service_token_user_uuid === "";
     }
 
     async parseAuthorizationToken(authToken: string) {
