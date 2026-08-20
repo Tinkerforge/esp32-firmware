@@ -305,6 +305,20 @@ void RemoteAccess::setup()
     api.restorePersistentConfig("remote_access/config", &config);
     initialized = true;
 
+    if (!config.get("service_token_user_uuid")->asString().isEmpty()) {
+        const uint32_t reg_min = config.get("service_token_timestamp_minutes")->asUint();
+        const uint32_t now_min = rtc.timestamp_minutes();
+        if (reg_min != 0) {
+            const uint32_t deadline_min = reg_min + 24 * 60;
+            if (now_min >= deadline_min) {
+                schedule_service_token_removal(0_ms);
+            } else {
+                const uint32_t remaining_min = deadline_min - now_min;
+                schedule_service_token_removal(millis_t(static_cast<int64_t>(remaining_min * 60 * 1000)));
+            }
+        }
+    }
+
     if (!config.get("enable")->asBool())
         return;
 
@@ -547,7 +561,8 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
                                       "/api/add_with_token",
                                       &user_id_str,
                                       &token_str,
-                                      authorization_token.user_email);
+                                      authorization_token.user_email,
+                                      true);
 }
 
 // Decode a base58-encoded authorization token from the request body without
@@ -623,12 +638,6 @@ static String construct_relay_url(const Config& config, const char* endpoint, co
     return url.toString();
 }
 
-// Build the /api/charger/add or /api/add_with_token relay request: generate
-// on-device WireGuard keys, seal them with pk, serialize the JSON payload and
-// dispatch it. The response is consumed by parse_registration. All early
-// failures are reported via request.send_plain; the shared work lives in
-// register_with_relay so it can be reused from flows that don't have a live
-// WebServerRequest (e.g. /remote_access/service_token_register).
 WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerRequest request,
                                                                  const Config &relay_config,
                                                                  const unsigned char *pk,
@@ -636,9 +645,10 @@ WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerReques
                                                                  const char *endpoint,
                                                                  const String *auth_user_id,
                                                                  const String *auth_token,
-                                                                 const String &email)
+                                                                 const String &email,
+                                                                 bool is_service_token)
 {
-    String error = register_with_relay(relay_config, pk, note, endpoint, auth_user_id, auth_token, email);
+    String error = register_with_relay(relay_config, pk, note, endpoint, auth_user_id, auth_token, email, is_service_token);
     if (!error.isEmpty()) {
         return request.send_plain(500, error);
     }
@@ -655,7 +665,8 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
                                          const char *endpoint,
                                          const String *auth_user_id,
                                          const String *auth_token,
-                                         const String &email)
+                                         const String &email,
+                                         bool is_service_token)
 {
     const String &name = api.getState("info/display_name")->get("display_name")->asString();
 
@@ -808,9 +819,9 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
 
     uint8_t public_key[50];
     mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk, crypto_box_PUBLICKEYBYTES);
-    auto next_stage = [this, key_cache = std::move(key_cache), public_key, olen, email](const Config &cfg) mutable {
+    auto next_stage = [this, key_cache = std::move(key_cache), public_key, olen, email, is_service_token](const Config &cfg) mutable {
         const String pub_key(reinterpret_cast<const char *>(public_key), olen);
-        this->parse_registration(cfg, key_cache, pub_key, email);
+        this->parse_registration(cfg, key_cache, pub_key, email, is_service_token);
     };
 
     const String url = construct_relay_url(relay_config, endpoint);
@@ -825,10 +836,6 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
 }
 
 #if signature_sodium_public_key_length != 0
-// /remote_access/service_token_register: the device asks the configured relay
-// for a signed authorization token, verifies it against the embedded Tinkerforge
-// public key and uses the recovered token to register on the relay. The whole
-// flow is async: the handler returns 200 once the GET has been kicked off.
 WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebServerRequest request)
 {
     this->management_request_allowed = false;
@@ -857,23 +864,8 @@ void RemoteAccess::fetch_service_token()
     });
 }
 
-// Parse the signed authorization-token message returned by /auth/service_token,
-// verify its signature against the embedded Tinkerforge public key and hand off
-// to the existing add_with_token flow. On any failure the registration state is
-// set to Error and the per-request state is cleared so the next attempt can
-// run.
-//
-// If the device is already registered (i.e. config.users is non-empty) we
-// can't go through register_with_relay: parse_registration asserts the users
-// list is empty because that path is meant to register a brand-new charger. In
-// that case we route the request through allow_user_at_relay, which adds the
-// incoming service user to the existing charger via /api/allow_user.
 void RemoteAccess::parse_service_token()
 {
-    // The relay returns the signed authorization token as a plain
-    // base64-encoded body (no JSON wrapping). Strip any trailing
-    // whitespace added by the HTTP transport and bail out on an empty
-    // response before doing anything else.
     response_body.trim();
     if (response_body.length() == 0) {
         update_registration_state(RegistrationState::Error, String("Empty service_token response"));
@@ -961,6 +953,11 @@ void RemoteAccess::parse_service_token()
     // endpoint.
     config.get("enable")->updateBool(true);
 
+    struct timeval now;
+    if (rtc.clock_synced(&now)) {
+        config.get("service_token_timestamp_minutes")->updateUint(static_cast<uint32_t>(now.tv_sec / 60));
+    }
+
     uint8_t token_b64[50];
     size_t olen;
     if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
@@ -971,10 +968,6 @@ void RemoteAccess::parse_service_token()
     const String token_str(reinterpret_cast<const char *>(token_b64), olen);
     const String user_id_str(authorization_token.user_uuid);
 
-    // If the device is already registered, the service token must add a new
-    // user to the existing charger via /api/allow_user. Going through
-    // register_with_relay would call parse_registration, which aborts when the
-    // users list is non-empty (the charger is assumed to be new there).
     String relay_error;
     if (config.get("users")->count() != 0) {
         uint8_t next_user_id;
@@ -997,7 +990,8 @@ void RemoteAccess::parse_service_token()
                                            String(),
                                            token_str,
                                            String(),
-                                           next_user_id);
+                                           next_user_id,
+                                           true);
     } else {
         relay_error = register_with_relay(config,
                                           authorization_token.user_public_key,
@@ -1005,7 +999,8 @@ void RemoteAccess::parse_service_token()
                                           "/api/add_with_token",
                                           &user_id_str,
                                           &token_str,
-                                          authorization_token.user_email);
+                                          authorization_token.user_email,
+                                          true);
     }
     if (!relay_error.isEmpty()) {
         update_registration_state(RegistrationState::Error, relay_error);
@@ -1013,9 +1008,123 @@ void RemoteAccess::parse_service_token()
         return;
     }
 
+    schedule_service_token_removal(24_h);
+
     response_body.clear();
 }
 #endif
+
+void RemoteAccess::cancel_service_token_removal()
+{
+    if (this->service_token_removal_task_id != 0) {
+        task_scheduler.cancel(this->service_token_removal_task_id);
+        this->service_token_removal_task_id = 0;
+    }
+}
+
+void RemoteAccess::schedule_service_token_removal(millis_t delay)
+{
+    cancel_service_token_removal();
+    this->service_token_removal_task_id = task_scheduler.scheduleOnce([this]() {
+        this->remove_service_token_user();
+    }, delay);
+}
+
+
+void RemoteAccess::remove_service_token_user()
+{
+    logger.printfln("Removing service token user");
+    this->service_token_removal_task_id = 0;
+
+    const String service_uuid = config.get("service_token_user_uuid")->asString();
+    if (service_uuid.isEmpty()) {
+        return;
+    }
+
+    uint8_t user_id = 0;
+    bool found = false;
+    for (const auto &user : config.get("users")) {
+        if (user.get("uuid")->asString() == service_uuid) {
+            user_id = user.get("id")->asUint8();
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        this->remove_user(user_id);
+    }
+
+    config.get("service_token_user_uuid")->updateString("");
+    config.get("service_token_timestamp_minutes")->updateUint(0);
+}
+
+void RemoteAccess::remove_user(uint8_t id)
+{
+    size_t idx = 0;
+    for (const auto &user : config.get("users")) {
+        if (user.get("id")->asUint8() == id) {
+            break;
+        }
+        idx++;
+    }
+    if (idx >= config.get("users")->count()) {
+        return;
+    }
+
+    if (config.get("service_token_user_uuid")->asString() == config.get("users")->get(idx)->get("uuid")->asString()) {
+        config.get("service_token_user_uuid")->updateString("");
+        config.get("service_token_timestamp_minutes")->updateUint(0);
+        cancel_service_token_removal();
+    }
+
+    config.get("users")->remove(idx);
+    for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+        remove_key(id, i);
+    }
+
+    bool one_left = false;
+    for (const auto &user : config.get("users")) {
+        if (user.get("id")->asUint8() != 255) {
+            one_left = true;
+            break;
+        }
+    }
+
+    if (!one_left) {
+        char json[256];
+        TFJsonSerializer serializer{json, sizeof(json)};
+        serializer.addObject();
+        serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
+        serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+        serializer.endObject();
+        size_t json_size = serializer.end();
+
+        if (https_client == nullptr) {
+            https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+        }
+        https_client->set_header("Content-Type", "application/json");
+
+        const String url = construct_relay_url(config, "/api/selfdestruct");
+        run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](const Config &/*cfg*/) {
+            this->request_cleanup();
+        });
+
+        remove_key(0, 0);
+
+        config.get("enable")->updateBool(false);
+    }
+
+    API::writeConfig("remote_access/config", &config);
+
+    if (!one_left) {
+        task_scheduler.scheduleOnce([this]() { this->apply_config(); });
+    } else if (!this->management_request_done && !this->management_auth_failed) {
+        // Inform the relay that the user is gone so its allowed_user / wg_keys
+        // entries are cleaned up on the server side as well.
+        this->resolve_management();
+    }
+}
 
 void RemoteAccess::register_urls()
 {
@@ -1281,7 +1390,8 @@ void RemoteAccess::register_urls()
                                           endpoint,
                                           auth_user_id,
                                           auth_token,
-                                          registration_config.get("email")->asString());
+                                          registration_config.get("email")->asString(),
+                                          use_token_path);
     });
 
 #if signature_sodium_public_key_length != 0
@@ -1410,7 +1520,8 @@ void RemoteAccess::register_urls()
                                            login_key,
                                            auth_token,
                                            note,
-                                           next_user_id);
+                                           next_user_id,
+                                           false);
         if (!error.isEmpty()) {
             this->request_cleanup();
             return request.send_plain(500, error);
@@ -1458,52 +1569,7 @@ void RemoteAccess::register_urls()
             return request.send_plain(400, "User does not exist");
         }
 
-        if (config.get("service_token_user_uuid")->asString() == config.get("users")->get(idx)->get("uuid")->asString()) {
-            config.get("service_token_user_uuid")->updateString("");
-        }
-
-        config.get("users")->remove(idx);
-        for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-            remove_key(req_id, i);
-        }
-
-        bool one_left = false;
-        for (const auto &user : config.get("users")) {
-            if (user.get("id")->asUint8() != 255) {
-                one_left = true;
-                break;
-            }
-        }
-
-        if (!one_left) {
-            char json[256];
-            TFJsonSerializer serializer{json, sizeof(json)};
-            serializer.addObject();
-            serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
-            serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
-            serializer.endObject();
-            size_t json_size = serializer.end();
-
-            if (https_client == nullptr) {
-                https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
-            }
-            https_client->set_header("Content-Type", "application/json");
-
-            const String url = construct_relay_url(config, "/api/selfdestruct");
-            run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](const Config &/*cfg*/) {
-                this->request_cleanup();
-            });
-
-            remove_key(0, 0);
-
-            config.get("enable")->updateBool(false);
-        }
-
-        API::writeConfig("remote_access/config", &config);
-
-        if (!one_left) {
-            task_scheduler.scheduleOnce([this]() { this->apply_config(); });
-        }
+        this->remove_user(req_id);
 
         return request.send_plain(200);
     });
@@ -1885,7 +1951,7 @@ void RemoteAccess::parse_secret()
     update_registration_state(RegistrationState::Success, String(reinterpret_cast<char *>(encoded_secret_salt)));
 }
 
-void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email)
+void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email, bool is_service_token)
 {
     StaticJsonDocument<256> resp_doc;
     DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
@@ -1934,7 +2000,9 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     new_user->get("public_key")->updateString(public_key);
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
 
-    this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+    if (is_service_token) {
+        this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+    }
 
     API::writeConfig("remote_access/config", &this->config);
     this->apply_config();
@@ -1942,7 +2010,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     this->request_cleanup();
 }
 
-void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id)
+void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id, bool is_service_token)
 {
     for (uint8_t i = 0; !key_cache.empty() && i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++, key_cache.pop()) {
         const WgKey &key = key_cache.front();
@@ -1971,7 +2039,9 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
     new_user->get("public_key")->updateString(pub_key);
     new_user->get("uuid")->updateString(resp_doc["user_id"]);
 
-    this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+    if (is_service_token) {
+        this->config.get("service_token_user_uuid")->updateString(resp_doc["user_id"]);
+    }
 
     api.writeConfig("remote_access/config", &this->config);
     update_registration_state(RegistrationState::Success);
@@ -1988,7 +2058,8 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
                                           const String &login_key,
                                           const String &auth_token,
                                           const String &note,
-                                          uint8_t next_user_id)
+                                          uint8_t next_user_id,
+                                          bool is_service_token)
 {
     if (sodium_init() < 0) {
         logger.printfln("Failed to initialize libsodium");
@@ -2139,8 +2210,8 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
     update_registration_state(RegistrationState::InProgress);
 
     https_client->set_header("Content-Type", "application/json");
-    auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), email, next_user_id](const Config &/*cfg*/) mutable {
-        this->parse_add_user(key_cache, pub_key, email, next_user_id);
+    auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), email, next_user_id, is_service_token](const Config &/*cfg*/) mutable {
+        this->parse_add_user(key_cache, pub_key, email, next_user_id, is_service_token);
     };
 
     this->run_request_with_next_stage(url, HTTP_METHOD_PUT, json.get(), size, config, std::move(next_stage));
@@ -2296,6 +2367,8 @@ void RemoteAccess::resolve_management()
                 uint8_t user_id = user->get("id")->asUint8();
                 if (config.get("service_token_user_uuid")->asString() == user->get("uuid")->asString()) {
                     config.get("service_token_user_uuid")->updateString("");
+                    config.get("service_token_timestamp_minutes")->updateUint(0);
+                    cancel_service_token_removal();
                 }
                 for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                     remove_key(user_id, i);

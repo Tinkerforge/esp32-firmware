@@ -98,9 +98,6 @@ public:
         uint8_t user_public_key[32] = {}; // 32 B user public key
         String  user_email;               // variable-length user email
         uint8_t checksum[32] = {};        // 32 B argon2id checksum
-
-        // True once a token was parsed successfully (i.e. signature
-        // verification and all field-level checks passed).
         bool valid = false;
     } authorization_token;
 #endif
@@ -116,62 +113,26 @@ private:
 #if signature_sodium_public_key_length != 0
     WebServerRequestReturnProtect handle_register_with_token(WebServerRequest request);
     WebServerRequestReturnProtect handle_decode_auth_token(WebServerRequest request);
-
-    // /remote_access/service_token_register: GET /auth/service_token from the
-    // currently-configured relay, verify the signature on the returned
-    // signed-message and register the device using the recovered token. The
-    // whole flow is async: the handler returns 200 immediately and the
-    // remaining work happens via fetch_service_token -> parse_service_token
-    // -> register_with_relay -> parse_registration.
     WebServerRequestReturnProtect handle_service_token_register(WebServerRequest request);
     void fetch_service_token();
     void parse_service_token();
-
-    // True only when the support team has flipped the support-toggle. Both backend
-    // and frontend use this so the UI button and the /remote_access/service_token_register
-    // endpoint stay in sync. The service_token_timestamp_minutes field is reserved for
-    // future use and is intentionally ignored here.
     bool service_token_allowed() const;
-
-    // Split a decoded authorization-token byte sequence into the fields of
-    // authorization_token and log them. Returns false if the buffer is too
-    // short to contain the fixed prefix and trailing checksum.
     bool populate_authorization_token(const uint8_t *token_bytes, size_t decoded_token_len);
 #endif
 
-    // On-device shared implementation of add_charger_to_relay. Does the same
-    // key generation, encryption, JSON serialization and dispatch to the relay
-    // but does not need a WebServerRequest (the original HTTP request has
-    // already been answered by the time some callers reach this code, e.g.
-    // parse_service_token). Returns an empty string on success and an error
-    // description on failure. The caller is responsible for surfacing the
-    // error to the user (via request.send_plain or update_registration_state).
+    void schedule_service_token_removal(millis_t delay);
+    void cancel_service_token_removal();
+    void remove_service_token_user();
+    void remove_user(uint8_t id);
     String register_with_relay(const Config &relay_config,
                                const unsigned char *pk,
                                const String &note,
                                const char *endpoint,
                                const String *auth_user_id,
                                const String *auth_token,
-                               const String &email);
+                               const String &email,
+                               bool is_service_token);
 
-    // Build the /api/charger/add (or /api/add_with_token) relay request:
-    // generate on-device WireGuard keys, seal them with the user's NaCl
-    // public key, serialize the JSON payload and dispatch it. Shared by
-    // /remote_access/register (both auth-flow and token-flow paths) and
-    // /remote_access/verify_signature (token flow only).
-    //
-    //   relay_config: config object supplying relay_host / relay_port.
-    //   pk:           32-byte NaCl public key used to seal the WG material
-    //                 (and the encrypted note/name).
-    //   note:         user-provided note string; sealed into the JSON.
-    //   endpoint:     "/api/charger/add" or "/api/add_with_token".
-    //   auth_user_id: user UUID for the token path; nullptr otherwise.
-    //   auth_token:   base64 of the 32-byte authorization field for the token
-    //                 path; nullptr otherwise.
-    //   email:        email for the new user record (taken from the request
-    //                 body in the register endpoint and from the verified
-    //                 token in the verify_signature endpoint, since
-    //                 relay_config does not carry an email field).
     WebServerRequestReturnProtect add_charger_to_relay(WebServerRequest request,
                                                       const Config &relay_config,
                                                       const unsigned char *pk,
@@ -179,21 +140,23 @@ private:
                                                       const char *endpoint,
                                                       const String *auth_user_id,
                                                       const String *auth_token,
-                                                      const String &email);
+                                                      const String &email,
+                                                      bool is_service_token);
     void run_request_with_next_stage(const String &url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
     void get_login_salt(const Config &user_config);
     void parse_login_salt();
     void get_secret(const Config &user_config);
     void parse_secret();
-    void parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email);
-    void parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
+    void parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key, const String &email, bool is_service_token);
+    void parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id, bool is_service_token);
     String allow_user_at_relay(const unsigned char *pk,
                                const String &email,
                                const String &user_uuid,
                                const String &login_key,
                                const String &auth_token,
                                const String &note,
-                               uint8_t next_user_id);
+                               uint8_t next_user_id,
+                               bool is_service_token);
     void login(const Config &user_config, const String &login_key);
     void update_registration_state(RegistrationState state, const String &message = String());
     void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, ConnectionState state_value);
@@ -226,6 +189,7 @@ private:
     uint64_t task_id = 0;
     uint64_t management_task_id = 0;
     uint64_t timeout_task_id = 0;
+    uint64_t service_token_removal_task_id = 0;
 
     esp_ping_handle_t ping = nullptr;
     micros_t ping_start = 0_us;
