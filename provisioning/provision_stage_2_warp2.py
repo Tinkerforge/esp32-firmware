@@ -243,8 +243,8 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
         if scanner.qr_custom_type2_power != None:
             expected_power = scanner.qr_custom_type2_power
         else:
-            # test charger without type-2 cable as 22kW
-            expected_power = "22"
+            # test charger without type-2 cable as 11kW
+            expected_power = "11"
 
     if expected_power == "11" and jumper_config != 3:
         fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 3, expected_power))
