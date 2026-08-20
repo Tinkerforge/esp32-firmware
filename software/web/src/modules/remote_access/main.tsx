@@ -819,8 +819,25 @@ export class RemoteAccess extends ConfigComponent<
 
         let users: TableRow[] = [];
         for (const user of this.state.users) {
+            const isServiceTokenUser =
+                user.uuid === this.state.service_token_user_uuid;
             const row: TableRow = {
-                columnValues: [user.email],
+                columnValues: [
+                    <>
+                        {user.email}
+                        {isServiceTokenUser && (
+                            <span
+                                class="badge rounded-pill bg-info ms-2 p-1"
+                                style="font-size: 0.7em; padding: 0.2em 0.5em;"
+                                title={__(
+                                    "remote_access.content.service_token_register",
+                                )}
+                            >
+                                {__("remote_access.content.service_token_badge")}
+                            </span>
+                        )}
+                    </>,
+                ],
                 onRemoveClick: async () => {
                     this.setState({
                         users: this.state.users.filter((u) => u.id != user.id),
