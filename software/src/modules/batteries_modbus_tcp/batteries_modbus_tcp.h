@@ -66,9 +66,9 @@ private:
         CreateDiscover,
         DestroyDiscover,
         Discovering,
-        CreateTableWriter,
-        DestroyTableWriter,
-        TableWriting,
+        CreateWriter,
+        DestroyWriter,
+        Writing,
     };
 
     void test_flush_log();
@@ -84,7 +84,6 @@ private:
 
     ConfigRoot test_config;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> test_table_prototypes;
-    ConfigRoot test_state;
     ConfigRoot test_continue_config;
     ConfigRoot test_stop_config;
 
@@ -104,7 +103,7 @@ private:
         Config *discover_table_config = nullptr;
         BatteryModbusTCP::DiscoverContext *discover_ctx = nullptr;
         BatteryModbusTCP::TableSpec *table = nullptr;
-        BatteryModbusTCP::TableWriter *writer = nullptr;
+        BatteryModbusTCP::WriterContext *writer_ctx = nullptr;
         TestState state;
         TestState state_after_discover;
         char printfln_buffer[512] = "";

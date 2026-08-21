@@ -188,7 +188,7 @@ for spec in specs:
     if variant != None:
         variant = util.FlavoredName(variant).get()
         variant_name_under = f'_{variant.under}'
-        variant_name_slash = f'/ {variant.space}'
+        variant_name_slash = f' / {variant.space}'
 
     mode = util.FlavoredName(spec['mode']).get()
     effective_mode = util.FlavoredName(spec.get('effective_mode', spec['mode'])).get()
@@ -199,7 +199,7 @@ for spec in specs:
 
     for i, register_block in enumerate(spec['register_blocks']):
         if register_block['description'] in register_block_descs:
-            print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} is duplicate')
+            print(f'Error: Register block {group.space} / {mode.space} / {register_block["description"]} is duplicate')
             sys.exit(1)
 
         register_block_descs.append(register_block['description'])
@@ -207,12 +207,12 @@ for spec in specs:
         values_count = len(register_block['values'])
 
         if values_count == 0:
-            print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has no values')
+            print(f'Error: Register block {group.space} / {mode.space} / {register_block["description"]} has no values')
             sys.exit(1)
 
         function_code = register_block['function_code']
 
-        if function_code == 'WriteSingleCoil' or function_code == 'WriteMultipleCoils':
+        if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils']:
             total_buffer_length += (values_count + 7) // 8
         else:
             total_buffer_length += values_count * 2
@@ -242,11 +242,11 @@ for spec in specs:
             values_count = len(register_block['values'])
 
             if values_count == 0:
-                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has no values')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has no values')
                 sys.exit(1)
 
             if start_address < 0 or start_address + values_count > 65535 + 1:
-                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid start address {start_address}')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid start address {start_address}')
                 sys.exit(1)
 
             function_code = register_block['function_code']
@@ -263,7 +263,7 @@ for spec in specs:
                         specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1].replace('32', '')}();\r')
                         break
 
-            if function_code == 'WriteSingleCoil' or function_code == 'WriteMultipleCoils':
+            if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils']:
                 buffer_length = (values_count + 7) // 8
             else:
                 buffer_length = values_count * 2
@@ -272,41 +272,67 @@ for spec in specs:
                 specs_cpp.append('        uint8_t values[1];')
 
                 if values_count != 1:
-                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value count')
                     sys.exit(1)
 
                 if not isinstance(register_block['values'][0], str) and register_block['values'][0] not in [0, 1]:
-                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value')
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
                     sys.exit(1)
 
                 specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
-            elif function_code == 'WriteMultipleCoils':
+            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils']:
                 specs_cpp.append(f'        uint8_t values[{values_count}];')
 
-                for k, _ in enumerate(register_block['values']):
-                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
-            elif function_code in ['WriteSingleRegister', 'WriteMultipleRegisters']:
+                for k, value in enumerate(register_block['values']):
+                    if not isinstance(value, str) and value not in [0, 1]:
+                        print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                        sys.exit(1)
+
+                    specs_cpp.append(f'        values[{k}] = {value};\r')
+            elif function_code == 'WriteSingleRegister':
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
-                for k, _ in enumerate(register_block['values']):
-                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+                if values_count != 1:
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value count')
+                    sys.exit(1)
+
+                if not isinstance(register_block['values'][0], str) and (register_block['values'][0] < 0 or register_block['values'][0] > 65535):
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
+            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteMultipleRegisters']:
+                specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
+
+                for k, value in enumerate(register_block['values']):
+                    if not isinstance(value, str) and (value < 0 or value > 65535):
+                        print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                        sys.exit(1)
+
+                    specs_cpp.append(f'        values[{k}] = {value};\r')
             elif function_code in ['MaskWriteRegister', 'ReadMaskWriteSingleRegister']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
-                for k, _ in enumerate(register_block['values']):
-                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+                if values_count != 2:
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
+                    sys.exit(1)
+
+                for k, value in enumerate(register_block['values']):
+                    if not isinstance(value, str) and (value < 0 or value > 65535):
+                        print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value')
+                        sys.exit(1)
+
+                    specs_cpp.append(f'        values[{k}] = {value};\r')
             elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
 
-            #specs_cpp[-1] = specs_cpp[-1].rstrip()
-
             if function_code == 'WriteSingleCoil':
                 specs_cpp.append(f'        uint8_t *coils_buffer = static_cast<uint8_t *>(register_blocks[{i}].buffer);\n\n'
                                   '        coils_buffer[0] = values[0] ? 1 : 0;')
-            elif function_code == 'WriteMultipleCoils':
+            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils']:
                 specs_cpp.append(f'        uint8_t *coils_buffer = static_cast<uint8_t *>(register_blocks[{i}].buffer);\n\n'
                                  f'        coils_buffer[{buffer_length - 1}] = 0;\n\n'
                                  f'        for (uint16_t k = 0; k < {values_count}; ++k) {{\n'
@@ -342,7 +368,11 @@ for spec in specs:
                 start_address = register_block['start_address']
 
             if len(register_block['values']) == 0:
-                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has no values')
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has no values')
+                sys.exit(1)
+
+            if start_address < 0 or start_address + values_count > 65535 + 1:
+                print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid start address {start_address}')
                 sys.exit(1)
 
             function_code = register_block['function_code']
@@ -358,7 +388,7 @@ for spec in specs:
                     sys.exit(1)
 
                 specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {register_block['values'][0]} }};')
-            elif function_code == 'WriteMultipleCoils':
+            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils']:
                 values = [0] * ((len(register_block['values']) + 7) // 8)
 
                 for k, bit in enumerate(register_block['values']):
@@ -369,7 +399,7 @@ for spec in specs:
                     values[k // 8] |= bit << (k % 8)
 
                 specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in values])}\n}};')
-            elif function_code in ['WriteSingleRegister', 'WriteMultipleRegisters']:
+            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteSingleRegister', 'WriteMultipleRegisters']:
                 specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
             elif function_code == 'MaskWriteRegister':
                 if len(register_block['values']) != 2:
@@ -445,7 +475,6 @@ for group, modes in all_modes.items():
             specs_cpp.append(f'    case {group.camel}Variant::{variant.camel}:\r')
 
         specs_cpp.append(f'{indent}    switch (mode) {{\n'
-                         f'{indent}    case BatteryMode::Discover:\n'
                          f'{indent}    case BatteryMode::None:\n'
                          f'{indent}        esp_system_abortf<64>("Invalid battery mode for loading table: %d", static_cast<int>(mode));')
 

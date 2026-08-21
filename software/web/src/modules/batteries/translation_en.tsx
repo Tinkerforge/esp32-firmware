@@ -16,9 +16,6 @@ let x = {
 
             "battery": /*SFN*/(slot: number|"?") => "Battery #" + slot/*NF*/,
 
-            "test_warnings": "Tests",
-            "test_warning": /*SFN*/(display_name: string, mode_name: string) => `A test is running for battery storage ${display_name}: ${mode_name}.`/*NF*/,
-
             "battery_mode_block": "Block",
             "battery_mode_normal": "Normal",
             "battery_mode_block_discharge": "Block discharge",
@@ -33,8 +30,7 @@ let x = {
             "battery_mode_long_block_charge": "Block charge, discharge normally",
             "battery_mode_long_force_discharge": "Block charge, force discharge",
 
-            "battery_state_discover": "Discover",
-            "battery_state_none": "N/A",
+            "battery_state_none": "No active control",
             "battery_state_blocked": "Blocked",
             "battery_state_normal": "Normal",
             "battery_state_discharge_blocked": "Discharge blocked",
@@ -43,7 +39,6 @@ let x = {
             "battery_state_discharge_forced": "Discharge forced",
             "battery_state_by_mode": /*SFN*/(mode: BatteryMode) => {
                 return [
-                    __("batteries.content.battery_state_discover"),
                     __("batteries.content.battery_state_none"),
                     __("batteries.content.battery_state_blocked"),
                     __("batteries.content.battery_state_normal"),
@@ -51,7 +46,7 @@ let x = {
                     __("batteries.content.battery_state_charge_forced"),
                     __("batteries.content.battery_state_charge_blocked"),
                     __("batteries.content.battery_state_discharge_forced"),
-                ][mode + 2];
+                ][mode + 1];
             }/*NF*/,
 
             "status_charge": "Charging",

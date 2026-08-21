@@ -39,15 +39,11 @@
 
 static char get_battery_mode_as_char(BatteryMode mode)
 {
-    if (mode == BatteryMode::Discover) {
-        return 'd';
-    }
-    else if (mode == BatteryMode::None) {
+    if (mode == BatteryMode::None) {
         return 'n';
     }
-    else {
-        return '0' + static_cast<char>(mode);
-    }
+
+    return '0' + static_cast<char>(mode);
 }
 
 static const char *get_battery_mode_description(BatteryMode mode, BatteryMode effective_mode, Language language, char *buf, size_t buf_len)
@@ -71,7 +67,6 @@ static const char *get_battery_mode_description(BatteryMode mode, BatteryMode ef
 const char *BatteryModbusTCP::get_battery_mode_display_name(BatteryMode mode, Language language)
 {
     switch (mode) {
-    case BatteryMode::Discover:
     case BatteryMode::None:           esp_system_abortf<64>("Invalid battery mode for display name lookup: %d", static_cast<int>(mode));
     case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
     case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
@@ -100,7 +95,9 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
         ModbusFunctionCode function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
         uint16_t values_count = static_cast<uint16_t>(register_block_config->get("vals")->count());
 
-        if (function_code == ModbusFunctionCode::WriteSingleCoil
+        if (function_code == ModbusFunctionCode::ReadCoils
+         || function_code == ModbusFunctionCode::ReadDiscreteInputs
+         || function_code == ModbusFunctionCode::WriteSingleCoil
          || function_code == ModbusFunctionCode::WriteMultipleCoils) {
             total_buffer_length += (values_count + 7u) / 8u;
         }
@@ -130,7 +127,9 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
         register_block->buffer       = total_buffer + total_buffer_offset;
         register_block->values_count = values_count;
 
-        if (register_block->function_code == ModbusFunctionCode::WriteSingleCoil
+        if (register_block->function_code == ModbusFunctionCode::ReadCoils
+         || register_block->function_code == ModbusFunctionCode::ReadDiscreteInputs
+         || register_block->function_code == ModbusFunctionCode::WriteSingleCoil
          || register_block->function_code == ModbusFunctionCode::WriteMultipleCoils) {
             buffer_length = (values_count + 7u) / 8u;
         }
@@ -138,7 +137,9 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
             buffer_length = values_count * 2u;
         }
 
-        if (register_block->function_code == ModbusFunctionCode::WriteSingleCoil
+        if (register_block->function_code == ModbusFunctionCode::ReadCoils
+         || register_block->function_code == ModbusFunctionCode::ReadDiscreteInputs
+         || register_block->function_code == ModbusFunctionCode::WriteSingleCoil
          || register_block->function_code == ModbusFunctionCode::WriteMultipleCoils) {
             uint8_t *coils_buffer = const_cast<uint8_t *>(static_cast<const uint8_t *>(register_block->buffer));
 
@@ -184,80 +185,174 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
 }
 
 [[gnu::format(__printf__, 3, 4)]]
-static void table_writer_logfln(BatteryModbusTCP::TableWriter *writer, bool error, const char *fmt, ...)
+static void writer_logfln(BatteryModbusTCP::WriterContext *ctx, bool error, const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
-    writer->vlogfln(error, fmt, args);
+    ctx->vlogfln(error, fmt, args);
     va_end(args);
 }
 
-static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer);
+static void next_writer_step(BatteryModbusTCP::WriterContext *ctx);
 
-static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool success)
+static void last_writer_step(BatteryModbusTCP::WriterContext *ctx, bool success)
 {
-    if (writer->destroy_requested) {
-        delete writer;
+    if (ctx->destroy_requested) {
+        delete ctx;
         return;
     }
 
-    millis_t delay = success ? seconds_t{writer->repeat_interval} : 5_s;
+    if (success && ctx->battery != nullptr) {
+        ctx->battery->set_state_mode(ctx->mode, ctx->table->effective_mode);
+    }
+
+    millis_t delay = success ? seconds_t{ctx->repeat_interval} : 5_s;
 
     if (delay == 0_s) {
-        writer->finished();
+        ctx->finished();
         return;
     }
 
-    writer->task_id = task_scheduler.scheduleOnce([writer]() {
-        if (writer->destroy_requested) {
-            delete writer;
+    ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
+        if (ctx->destroy_requested) {
+            delete ctx;
             return;
         }
 
-        writer->task_id = 0;
-        ++writer->repeat_count;
-        writer->index = 0;
-
-        trace("b%lu t%d ww m%c em%c r%zu",
-              writer->slot,
-              writer->test ? 1 : 0,
-              get_battery_mode_as_char(writer->mode),
-              get_battery_mode_as_char(writer->table->effective_mode),
-              writer->repeat_count);
+        ctx->task_id = 0;
 
         char description[128];
 
-        table_writer_logfln(writer, false,
-                            writer->language == Language::English
-                            ? "Setting mode %s (repeat %zu)"
-                            : "Setze Modus %s (Wiederholung %zu)",
-                            get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
-                            writer->repeat_count);
+        if (ctx->first_non_precondition_index != 0 and !ctx->precondition_met) {
+            ctx->index = 0;
 
-        next_table_writer_step(writer);
+            trace("b%lu t%d ww m%c em%c pcc",
+                  ctx->slot,
+                  ctx->test ? 1 : 0,
+                  get_battery_mode_as_char(ctx->mode),
+                  get_battery_mode_as_char(ctx->table->effective_mode));
+        }
+        else {
+            ++ctx->repeat_count;
+            ctx->index = ctx->first_non_precondition_index;
+
+            trace("b%lu t%d ww m%c em%c r%zu",
+                  ctx->slot,
+                  ctx->test ? 1 : 0,
+                  get_battery_mode_as_char(ctx->mode),
+                  get_battery_mode_as_char(ctx->table->effective_mode),
+                  ctx->repeat_count);
+
+            writer_logfln(ctx, false,
+                          ctx->language == Language::English
+                          ? "Setting mode %s (repeat %zu)"
+                          : "Setze Modus %s (Wiederholung %zu)",
+                          get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
+                          ctx->repeat_count);
+        }
+
+        next_writer_step(ctx);
     }, delay);
 }
 
-static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
+static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 {
-    if (writer->destroy_requested) {
-        delete writer;
+    if (ctx->destroy_requested) {
+        delete ctx;
         return;
     }
 
-    if (writer->index >= writer->table->register_blocks_count) {
-        last_table_writer_step(writer, true);
+    if (ctx->index >= ctx->table->register_blocks_count) {
+        last_writer_step(ctx, true);
         return;
     }
 
-    const BatteryModbusTCP::RegisterBlockSpec *register_block = &writer->table->register_blocks[writer->index];
+    const BatteryModbusTCP::RegisterBlockSpec *register_block = &ctx->table->register_blocks[ctx->index];
     TFModbusTCPFunctionCode function_code;
     uint16_t data_count;
     const void *buffer;
+    void *buffer_to_compare = nullptr;
+    size_t buffer_to_compare_len = 0;
     void *buffer_to_free = nullptr;
 
     switch (register_block->function_code) {
+    case ModbusFunctionCode::ReadCoils:
+        function_code = TFModbusTCPFunctionCode::ReadCoils;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        break;
+
+    case ModbusFunctionCode::ReadDiscreteInputs:
+        function_code = TFModbusTCPFunctionCode::ReadDiscreteInputs;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        break;
+
+    case ModbusFunctionCode::ReadHoldingRegisters:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        break;
+
+    case ModbusFunctionCode::ReadInputRegisters:
+        function_code = TFModbusTCPFunctionCode::ReadInputRegisters;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        break;
+
     case ModbusFunctionCode::WriteSingleCoil:
         function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
         data_count = register_block->values_count;
@@ -296,80 +391,143 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            table_writer_logfln(writer, true,
-                                writer->language == Language::English
-                                ? "Could not allocate read buffer"
-                                : "Konnte Lesepuffer nicht allokieren");
-            last_table_writer_step(writer, false);
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
             return;
         }
 
         break;
 
-    case ModbusFunctionCode::ReadCoils:
-    case ModbusFunctionCode::ReadDiscreteInputs:
-    case ModbusFunctionCode::ReadHoldingRegisters:
-    case ModbusFunctionCode::ReadInputRegisters:
     default:
-        table_writer_logfln(writer, true,
-                            writer->language == Language::English
-                            ? "Unsupported function code: %u"
-                            : "Funktionscode nicht unterstüzt: %u",
-                            static_cast<uint8_t>(register_block->function_code));
-        last_table_writer_step(writer, false);
+        writer_logfln(ctx, true,
+                      ctx->language == Language::English
+                      ? "Unknown function code: %u"
+                      : "Funktionscode unbekannt: %u",
+                      static_cast<uint8_t>(register_block->function_code));
+        last_writer_step(ctx, false);
         return;
     }
 
-    writer->transact_pending = true;
+    ctx->transact_pending = true;
 
-    static_cast<TFModbusTCPSharedClient *>(writer->client)->transact(writer->device_address,
-                                                                     function_code,
-                                                                     register_block->start_address,
-                                                                     data_count,
-                                                                     const_cast<void *>(buffer),
-                                                                     2_s,
-    [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
-        if (writer->destroy_requested) {
+    static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
+                                                                  function_code,
+                                                                  register_block->start_address,
+                                                                  data_count,
+                                                                  const_cast<void *>(buffer),
+                                                                  2_s,
+    [ctx, register_block, data_count, buffer, buffer_to_compare, buffer_to_compare_len, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
+        if (ctx->destroy_requested) {
+            ctx->transact_pending = false;
+
             free(buffer_to_free);
-            delete writer;
+            delete ctx;
             return;
         }
 
+        char description[128];
         bool has_step2 = register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
                       || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
             trace("b%lu t%d ww m%c em%c i%zu/%zu%s e%d%s%s",
-                  writer->slot,
-                  writer->test ? 1 : 0,
-                  get_battery_mode_as_char(writer->mode),
-                  get_battery_mode_as_char(writer->table->effective_mode),
-                  writer->index + 1,
-                  writer->table->register_blocks_count,
+                  ctx->slot,
+                  ctx->test ? 1 : 0,
+                  get_battery_mode_as_char(ctx->mode),
+                  get_battery_mode_as_char(ctx->table->effective_mode),
+                  ctx->index + 1,
+                  ctx->table->register_blocks_count,
                   has_step2 ? " s1/2" : "",
                   static_cast<int>(result),
                   error_message != nullptr ? " / " : "",
                   error_message != nullptr ? error_message : "");
 
-            char description[128];
+            writer_logfln(ctx,
+                          true,
+                          ctx->language == Language::English
+                          ? (buffer_to_compare != nullptr ? "Check of precondition for mode %s failed at register block %zu of %zu: %s (%d)%s%s" : "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s")
+                          : (buffer_to_compare != nullptr ? "Prüfen der Vorbedingung des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s" : "Setzen des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s"),
+                          get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
+                          ctx->index + 1, ctx->table->register_blocks_count,
+                          get_tf_modbus_tcp_client_transaction_result_name(result),
+                          static_cast<int>(result),
+                          error_message != nullptr ? " / " : "",
+                          error_message != nullptr ? error_message : "");
 
-            table_writer_logfln(writer,
-                                true,
-                                writer->language == Language::English
-                                ? "Setting mode %s failed at %zu of %zu: %s (%d)%s%s"
-                                : "Setzen des Modus %s schlug fehl bei %zu von %zu: %s (%d)%s%s",
-                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
-                                writer->index + 1, writer->table->register_blocks_count,
-                                get_tf_modbus_tcp_client_transaction_result_name(result),
-                                static_cast<int>(result),
-                                error_message != nullptr ? " / " : "",
-                                error_message != nullptr ? error_message : "");
-
-            writer->transact_pending = false;
+            ctx->transact_pending = false;
 
             free(buffer_to_free);
-            last_table_writer_step(writer, false);
+            last_writer_step(ctx, false);
             return;
+        }
+
+        if (buffer_to_compare != nullptr) {
+            ctx->precondition_met = memcmp(buffer, buffer_to_compare, buffer_to_compare_len) == 0;
+
+            if (ctx->precondition_met) {
+                ctx->last_precondition_not_met_index_plus_one = 0;
+
+                if (ctx->index + 1 >= ctx->first_non_precondition_index) {
+                    trace("b%lu t%d ww m%c em%c i%zu/%zu pcm",
+                          ctx->slot,
+                          ctx->test ? 1 : 0,
+                          get_battery_mode_as_char(ctx->mode),
+                          get_battery_mode_as_char(ctx->table->effective_mode),
+                          ctx->index + 1,
+                          ctx->table->register_blocks_count);
+
+                    if (ctx->battery != nullptr) {
+                        ctx->battery->set_state_checking(false);
+                    }
+
+                    if (ctx->repeat_interval > 0) {
+                        writer_logfln(ctx, false,
+                                      ctx->language == Language::English
+                                      ? "Setting mode %s (will repeat in %u second%s)"
+                                      : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                                      get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
+                                      ctx->repeat_interval,
+                                      ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
+                    }
+                    else {
+                        writer_logfln(ctx, false,
+                                      ctx->language == Language::English
+                                      ? "Setting mode %s (once)"
+                                      : "Setze Modus %s (einmalig)",
+                                      get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
+                    }
+                }
+            }
+            else {
+                trace("b%lu t%d ww m%c em%c i%zu/%zu pcnm",
+                      ctx->slot,
+                      ctx->test ? 1 : 0,
+                      get_battery_mode_as_char(ctx->mode),
+                      get_battery_mode_as_char(ctx->table->effective_mode),
+                      ctx->index + 1,
+                      ctx->table->register_blocks_count);
+
+                if (ctx->last_precondition_not_met_index_plus_one != ctx->index + 1) {
+                    ctx->last_precondition_not_met_index_plus_one = ctx->index + 1;
+
+                    writer_logfln(ctx,
+                                  true,
+                                  ctx->language == Language::English
+                                  ? "Precondition for mode %s not met at register block %zu of %zu"
+                                  : "Vorbedingung des Modus %s nicht erfüllt bei Registerblock %zu von %zu",
+                                  get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
+                                  ctx->index + 1, ctx->table->register_blocks_count);
+                }
+
+                ctx->transact_pending = false;
+
+                free(buffer_to_free);
+                last_writer_step(ctx, false);
+                return;
+            }
         }
 
         if (has_step2) {
@@ -389,82 +547,85 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                 step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
             }
 
-            static_cast<TFModbusTCPSharedClient *>(writer->client)->transact(writer->device_address,
-                                                                             step2_function_code,
-                                                                             register_block->start_address,
-                                                                             data_count,
-                                                                             const_cast<void *>(buffer),
-                                                                             2_s,
-            [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
-                if (writer->destroy_requested) {
+            static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
+                                                                          step2_function_code,
+                                                                          register_block->start_address,
+                                                                          data_count,
+                                                                          const_cast<void *>(buffer),
+                                                                          2_s,
+            [ctx, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+                if (ctx->destroy_requested) {
+                    ctx->transact_pending = false;
+
                     free(buffer_to_free);
-                    delete writer;
+                    delete ctx;
                     return;
                 }
 
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
                     trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 e%d%s%s",
-                          writer->slot,
-                          writer->test ? 1 : 0,
-                          get_battery_mode_as_char(writer->mode),
-                          get_battery_mode_as_char(writer->table->effective_mode),
-                          writer->index + 1,
-                          writer->table->register_blocks_count,
+                          ctx->slot,
+                          ctx->test ? 1 : 0,
+                          get_battery_mode_as_char(ctx->mode),
+                          get_battery_mode_as_char(ctx->table->effective_mode),
+                          ctx->index + 1,
+                          ctx->table->register_blocks_count,
                           static_cast<int>(step2_result),
                           step2_error_message != nullptr ? " / " : "",
                           step2_error_message != nullptr ? step2_error_message : "");
 
-                    char description[128];
+                    char description_[128];
 
-                    table_writer_logfln(writer,
-                                        true,
-                                        writer->language == Language::English
-                                        ? "Setting mode %s failed at %zu of %zu: %s (%d)%s%s"
-                                        : "Setzen des Modus %s (Schritt 2) schlug fehl bei %zu von %zu: %s (%d)%s%s",
-                                        get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
-                                        writer->index + 1, writer->table->register_blocks_count,
-                                        get_tf_modbus_tcp_client_transaction_result_name(step2_result),
-                                        static_cast<int>(step2_result),
-                                        step2_error_message != nullptr ? " / " : "",
-                                        step2_error_message != nullptr ? step2_error_message : "");
+                    writer_logfln(ctx,
+                                  true,
+                                  ctx->language == Language::English
+                                  ? "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s"
+                                  : "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
+                                  get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description_, std::size(description_)),
+                                  ctx->index + 1, ctx->table->register_blocks_count,
+                                  get_tf_modbus_tcp_client_transaction_result_name(step2_result),
+                                  static_cast<int>(step2_result),
+                                  step2_error_message != nullptr ? " / " : "",
+                                  step2_error_message != nullptr ? step2_error_message : "");
 
-                    writer->transact_pending = false;
+                    ctx->transact_pending = false;
 
                     free(buffer_to_free);
-                    last_table_writer_step(writer, false);
+                    last_writer_step(ctx, false);
                     return;
                 }
 
-                ++writer->index;
-                writer->transact_pending = false;
+                ++ctx->index;
+                ctx->transact_pending = false;
 
                 free(buffer_to_free);
-                next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
+                next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
             },
-            writer->transaction_id_mask);
+            ctx->transaction_id_mask);
         }
         else {
-            ++writer->index;
-            writer->transact_pending = false;
+            ++ctx->index;
+            ctx->transact_pending = false;
 
             free(buffer_to_free);
-            next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
+            next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
         }
     },
-    writer->transaction_id_mask);
+    ctx->transaction_id_mask);
 }
 
-BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t slot,
-                                                                     bool test,
-                                                                     TFModbusTCPSharedClient *client,
-                                                                     uint8_t device_address,
-                                                                     uint16_t transaction_id_mask,
-                                                                     uint16_t repeat_interval, // seconds
-                                                                     BatteryMode mode,
-                                                                     TableSpec *table,
-                                                                     VLogFLnFunction &&vlogfln,
-                                                                     TableWriterFinishedFunction &&finished,
-                                                                     Language language /*= Language::English*/)
+BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTCP *battery,
+                                                                 uint32_t slot,
+                                                                 bool test,
+                                                                 TFModbusTCPSharedClient *client,
+                                                                 uint8_t device_address,
+                                                                 uint16_t transaction_id_mask,
+                                                                 uint16_t repeat_interval, // seconds
+                                                                 BatteryMode mode,
+                                                                 TableSpec *table,
+                                                                 VLogFLnFunction &&vlogfln,
+                                                                 WriterFinishedFunction &&finished,
+                                                                 Language language /*= Language::English*/)
 {
     trace("b%lu t%d wc m%c em%c",
           slot,
@@ -472,88 +633,138 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
           get_battery_mode_as_char(mode),
           table != nullptr ? get_battery_mode_as_char(table->effective_mode) : '?');
 
-    TableWriter *writer = new TableWriter;
+    WriterContext *ctx = new WriterContext;
 
-    writer->language = language;
-    writer->slot = slot;
-    writer->client = client;
-    writer->device_address = device_address;
-    writer->transaction_id_mask = transaction_id_mask;
-    writer->repeat_interval = repeat_interval;
-    writer->mode = mode;
-    writer->table = table;
-    writer->vlogfln = std::move(vlogfln);
-    writer->finished = std::move(finished);
-    writer->test = test;
-    writer->task_id = task_scheduler.scheduleOnce([writer]() {
-        if (writer->destroy_requested) {
-            delete writer;
+    ctx->language = language;
+    ctx->battery = battery;
+    ctx->slot = slot;
+    ctx->client = client;
+    ctx->device_address = device_address;
+    ctx->transaction_id_mask = transaction_id_mask;
+    ctx->repeat_interval = repeat_interval;
+    ctx->mode = mode;
+    ctx->table = table;
+    ctx->vlogfln = std::move(vlogfln);
+    ctx->finished = std::move(finished);
+    ctx->test = test;
+    ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
+        if (ctx->destroy_requested) {
+            delete ctx;
             return;
         }
 
-        writer->task_id = 0;
+        ctx->task_id = 0;
 
-        if (writer->table == nullptr || writer->table->register_blocks_count == 0) {
-            table_writer_logfln(writer, false,
-                                writer->language == Language::English
-                                ? "Table is empty, nothing to do"
-                                : "Tabelle ist leer, nichts zu tun");
+        // FIXME: don't allow missing tables and also use empty tables to be able to test them,
+        //        otherwise the test immidiatly ends and global battery control resumes
+        if (ctx->table == nullptr || ctx->table->register_blocks_count == 0) {
+            writer_logfln(ctx, false,
+                          ctx->language == Language::English
+                          ? "Table is empty, nothing to do"
+                          : "Tabelle ist leer, nichts zu tun");
 
-            writer->finished();
+            ctx->finished();
             return;
         }
 
         trace("b%lu t%d ww m%c em%c %c",
-              writer->slot,
-              writer->test ? 1 : 0,
-              get_battery_mode_as_char(writer->mode),
-              get_battery_mode_as_char(writer->table->effective_mode),
-              writer->repeat_interval > 0 ? 'f' : 'o');
+              ctx->slot,
+              ctx->test ? 1 : 0,
+              get_battery_mode_as_char(ctx->mode),
+              get_battery_mode_as_char(ctx->table->effective_mode),
+              ctx->repeat_interval > 0 ? 'f' : 'o');
+
+        for (size_t i = 0; i < ctx->table->register_blocks_count; ++i) {
+            const BatteryModbusTCP::RegisterBlockSpec *register_block = &ctx->table->register_blocks[i];
+
+            switch (register_block->function_code) {
+            case ModbusFunctionCode::ReadCoils:
+            case ModbusFunctionCode::ReadDiscreteInputs:
+            case ModbusFunctionCode::ReadHoldingRegisters:
+            case ModbusFunctionCode::ReadInputRegisters:
+                ctx->first_non_precondition_index = i + 1;
+                break;
+
+            case ModbusFunctionCode::WriteSingleCoil:
+            case ModbusFunctionCode::WriteSingleRegister:
+            case ModbusFunctionCode::WriteMultipleCoils:
+            case ModbusFunctionCode::WriteMultipleRegisters:
+            case ModbusFunctionCode::MaskWriteRegister:
+            case ModbusFunctionCode::ReadMaskWriteSingleRegister:
+            case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+                break;
+
+            default:
+                writer_logfln(ctx, true,
+                              ctx->language == Language::English
+                              ? "Unknown function code: %u"
+                              : "Funktionscode unbekannt: %u",
+                              static_cast<uint8_t>(register_block->function_code));
+
+                ctx->finished();
+                return;
+            }
+        }
+
+        if (ctx->battery != nullptr && ctx->first_non_precondition_index != 0) {
+            ctx->battery->set_state_checking(true);
+        }
 
         char description[128];
 
-        if (writer->repeat_interval > 0) {
-            table_writer_logfln(writer, false,
-                                writer->language == Language::English
-                                ? "Setting mode %s (will repeat in %u second%s)"
-                                : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
-                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)),
-                                writer->repeat_interval,
-                                writer->repeat_interval > 1 ? (writer->language == Language::English ? "s" : "n") : "");
+        if (ctx->first_non_precondition_index != 0) {
+            writer_logfln(ctx, false,
+                          ctx->language == Language::English
+                          ? "Checking precondition for mode %s"
+                          : "Prüfe Vorbedingung für Modus %s",
+                          get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
+        }
+        else if (ctx->repeat_interval > 0) {
+            writer_logfln(ctx, false,
+                          ctx->language == Language::English
+                          ? "Setting mode %s (will repeat in %u second%s)"
+                          : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                          get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
+                          ctx->repeat_interval,
+                          ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
         }
         else {
-            table_writer_logfln(writer, false,
-                                writer->language == Language::English
-                                ? "Setting mode %s (once)"
-                                : "Setze Modus %s (einmalig)",
-                                get_battery_mode_description(writer->mode, writer->table->effective_mode, writer->language, description, std::size(description)));
+            writer_logfln(ctx, false,
+                          ctx->language == Language::English
+                          ? "Setting mode %s (once)"
+                          : "Setze Modus %s (einmalig)",
+                          get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
         }
 
-        next_table_writer_step(writer);
+        next_writer_step(ctx);
     });
 
-    return writer;
+    return ctx;
 }
 
-void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *writer)
+void BatteryModbusTCP::destroy_writer(BatteryModbusTCP::WriterContext *ctx)
 {
-    if (writer == nullptr) {
+    if (ctx == nullptr) {
         return;
     }
 
     trace("b%lu t%d wd m%c em%c",
-          writer->slot,
-          writer->test ? 1 : 0,
-          get_battery_mode_as_char(writer->mode),
-          writer->table != nullptr ? get_battery_mode_as_char(writer->table->effective_mode) : '?');
+          ctx->slot,
+          ctx->test ? 1 : 0,
+          get_battery_mode_as_char(ctx->mode),
+          ctx->table != nullptr ? get_battery_mode_as_char(ctx->table->effective_mode) : '?');
 
-    if (writer->transact_pending) {
-        writer->destroy_requested = true;
+    if (ctx->battery != nullptr && ctx->first_non_precondition_index != 0) {
+        ctx->battery->set_state_checking(false);
+    }
+
+    if (ctx->transact_pending) {
+        ctx->destroy_requested = true;
         return;
     }
 
-    task_scheduler.cancel(writer->task_id);
-    delete writer;
+    task_scheduler.cancel(ctx->task_id);
+    delete ctx;
 }
 
 [[gnu::format(__printf__, 3, 4)]]
@@ -633,7 +844,8 @@ static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext 
     ctx->transaction_id_mask);
 }
 
-BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(uint32_t slot,
+BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(BatteryModbusTCP *battery,
+                                                                     uint32_t slot,
                                                                      bool test,
                                                                      TFModbusTCPSharedClient *client,
                                                                      uint8_t device_address,
@@ -643,58 +855,67 @@ BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(uint32_t sl
 {
     trace("b%lu t%d dc", slot, test ? 1 : 0);
 
-    DiscoverContext *ctx = new DiscoverContext;
+    DiscoverContext *discover = new DiscoverContext;
 
-    ctx->language = language;
-    ctx->slot = slot;
-    ctx->client = client;
-    ctx->device_address = device_address;
-    ctx->transaction_id_mask = transaction_id_mask;
-    ctx->vlogfln = std::move(vlogfln);
-    ctx->test = test;
+    discover->language = language;
+    discover->battery = battery;
+    discover->slot = slot;
+    discover->client = client;
+    discover->device_address = device_address;
+    discover->transaction_id_mask = transaction_id_mask;
+    discover->vlogfln = std::move(vlogfln);
+    discover->test = test;
 
-    return ctx;
+    if (discover->battery != nullptr) {
+        discover->battery->set_state_discovering(true);
+    }
+
+    return discover;
 }
 
-void BatteryModbusTCP::destroy_discover(DiscoverContext *ctx)
+void BatteryModbusTCP::destroy_discover(DiscoverContext *discover)
 {
-    if (ctx == nullptr) {
+    if (discover == nullptr) {
         return;
     }
 
-    trace("b%lu t%d dd", ctx->slot, ctx->test ? 1 : 0);
+    trace("b%lu t%d dd", discover->slot, discover->test ? 1 : 0);
 
-    if (ctx->transact_pending) {
-        ctx->destroy_requested = true;
+    if (discover->battery != nullptr) {
+        discover->battery->set_state_discovering(false);
+    }
+
+    if (discover->transact_pending) {
+        discover->destroy_requested = true;
         return;
     }
 
-    task_scheduler.cancel(ctx->task_id);
-    free_discover(ctx);
+    task_scheduler.cancel(discover->task_id);
+    free_discover(discover);
 }
 
-void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
+void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *discover, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
 {
-    ctx->buffer = malloc(sizeof(uint16_t));
-    ctx->complete = [ctx, callback = std::move(callback)](DiscoverContext *ctx_) {
-        uint16_t byte_order = *static_cast<uint16_t *>(ctx_->buffer);
+    discover->buffer = malloc(sizeof(uint16_t));
+    discover->complete = [discover, callback = std::move(callback)](DiscoverContext *discover_) {
+        uint16_t byte_order = *static_cast<uint16_t *>(discover_->buffer);
 
         if (byte_order == 0) {
-            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
+            trace("b%lu t%d dr k le", discover->slot, discover->test ? 1 : 0);
 
-            discover_logfln(ctx_, false,
-                            ctx_->language == Language::English
-                            ? "KOSTAL PLENTICORE plus G2 reports little endian byte order"
+            discover_logfln(discover_, false,
+                            discover_->language == Language::English
+                            ? "KOSTAL PLENTICORE plus G2 reports little  byte order"
                             : "KOSTAL PLENTICORE plus G2 meldet Little-Endian Byte-Reihenfolge");
 
             callback(KostalPlenticorePlusG2Variant::LittleEndian);
             return false;
         }
         else if (byte_order == 1) {
-            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
+            trace("b%lu t%d dr k be", discover->slot, discover->test ? 1 : 0);
 
-            discover_logfln(ctx_, false,
-                            ctx_->language == Language::English
+            discover_logfln(discover_, false,
+                            discover_->language == Language::English
                             ? "KOSTAL PLENTICORE plus G2 reports big endian byte order"
                             : "KOSTAL PLENTICORE plus G2 meldet Big-Endian Byte-Reihenfolge");
 
@@ -702,10 +923,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContex
             return false;
         }
         else {
-            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
+            trace("b%lu t%d dr k u%u", discover->slot, discover->test ? 1 : 0, byte_order);
 
-            discover_logfln(ctx_, true,
-                            ctx_->language == Language::English
+            discover_logfln(discover_, true,
+                            discover_->language == Language::English
                             ? "KOSTAL PLENTICORE plus G2 reports unknown byte order: %u"
                             : "KOSTAL PLENTICORE plus G2 meldet unbekannte Byte-Reihenfolge: %u",
                             byte_order);
@@ -714,20 +935,20 @@ void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContex
         }
     };
 
-    read_kostal_plenticore_byte_order(ctx);
+    read_kostal_plenticore_byte_order(discover);
 }
 
-void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ctx, std::function<void(KostalPlenticoreG3Variant variant)> &&callback)
+void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *discover, std::function<void(KostalPlenticoreG3Variant variant)> &&callback)
 {
-    ctx->buffer = malloc(sizeof(uint16_t));
-    ctx->complete = [ctx, callback = std::move(callback)](DiscoverContext *ctx_) {
-        uint16_t byte_order = *static_cast<uint16_t *>(ctx_->buffer);
+    discover->buffer = malloc(sizeof(uint16_t));
+    discover->complete = [discover, callback = std::move(callback)](DiscoverContext *discover_) {
+        uint16_t byte_order = *static_cast<uint16_t *>(discover_->buffer);
 
         if (byte_order == 0) {
-            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
+            trace("b%lu t%d dr k le", discover->slot, discover->test ? 1 : 0);
 
-            discover_logfln(ctx_, false,
-                            ctx_->language == Language::English
+            discover_logfln(discover_, false,
+                            discover_->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports little endian byte order"
                             : "KOSTAL PLENTICORE G3 meldet Little-Endian Byte-Reihenfolge");
 
@@ -735,10 +956,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ct
             return false;
         }
         else if (byte_order == 1) {
-            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
+            trace("b%lu t%d dr k be", discover->slot, discover->test ? 1 : 0);
 
-            discover_logfln(ctx_, false,
-                            ctx_->language == Language::English
+            discover_logfln(discover_, false,
+                            discover_->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports big endian byte order"
                             : "KOSTAL PLENTICORE G3 meldet Big-Endian Byte-Reihenfolge");
 
@@ -746,10 +967,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ct
             return false;
         }
         else {
-            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
+            trace("b%lu t%d dr k u%u", discover->slot, discover->test ? 1 : 0, byte_order);
 
-            discover_logfln(ctx_, true,
-                            ctx_->language == Language::English
+            discover_logfln(discover_, true,
+                            discover_->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports unknown byte order: %u"
                             : "KOSTAL PLENTICORE G3 meldet unbekannte Byte-Reihenfolge: %u",
                             byte_order);
@@ -758,7 +979,7 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ct
         }
     };
 
-    read_kostal_plenticore_byte_order(ctx);
+    read_kostal_plenticore_byte_order(discover);
 }
 
 BatteryClassID BatteryModbusTCP::get_class() const
@@ -826,9 +1047,7 @@ void BatteryModbusTCP::pre_reboot()
 
 void BatteryModbusTCP::set_mode(BatteryMode mode)
 {
-    if (mode == BatteryMode::Discover) {
-        esp_system_abort("BatteryMode::Discover not allowed for set_mode call");
-    }
+    // FIXME: why is setting mode none accepted here?
 
     if (requested_mode == mode) {
         return;
@@ -836,18 +1055,43 @@ void BatteryModbusTCP::set_mode(BatteryMode mode)
 
     requested_mode = mode;
 
-    update_active_mode();
+    update_pending_mode();
 }
 
-void BatteryModbusTCP::set_paused(bool paused_)
+void BatteryModbusTCP::set_testing(bool testing_)
 {
-    if (this->paused == paused_) {
+    state->get("testing")->updateBool(testing_);
+
+    if (this->testing == testing_) {
         return;
     }
 
-    this->paused = paused_;
+    if (!testing_) {
+        // clear active/effective mode in case the test is ending. if the
+        // global battery control is active it will control the battery
+        // immediatly after the test has ended and set the mode again
+        set_state_mode(BatteryMode::None, BatteryMode::None);
+    }
 
-    update_active_mode();
+    this->testing = testing_;
+
+    update_pending_mode();
+}
+
+void  BatteryModbusTCP::set_state_mode(BatteryMode active_mode, BatteryMode effective_mode)
+{
+    state->get("active_mode")->updateEnum(active_mode);
+    state->get("effective_mode")->updateEnum(effective_mode);
+}
+
+void  BatteryModbusTCP::set_state_discovering(bool discovering)
+{
+    state->get("discovering")->updateBool(discovering);
+}
+
+void  BatteryModbusTCP::set_state_checking(bool checking)
+{
+    state->get("checking")->updateBool(checking);
 }
 
 void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
@@ -860,17 +1104,17 @@ void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, 
 
     if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
      || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
-        discover = true; // (re-)discover after (re-)connect
+        discover_pending = true; // (re-)discover after (re-)connect
     }
 
-    update_active_mode();
+    update_pending_mode();
 }
 
 void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
     trace("b%lu t0 cd%d sl%d", slot, static_cast<int>(reason), static_cast<int>(share_level));
 
-    update_active_mode();
+    update_pending_mode();
 }
 
 void BatteryModbusTCP::load_tables(const Config *table_config)
@@ -905,64 +1149,61 @@ void BatteryModbusTCP::load_tables(const Config *table_config)
     }
 }
 
-void BatteryModbusTCP::update_active_mode()
+void BatteryModbusTCP::update_pending_mode()
 {
-    BatteryMode next_mode;
-    BatteryMode effective_mode;
     TableSpec *table;
+    bool start_discover;
+    BatteryMode next_mode;
 
-    if (requested_mode == BatteryMode::None || connected_client == nullptr || paused) {
+    if (requested_mode == BatteryMode::None || connected_client == nullptr || testing) {
+        table = nullptr;
+        start_discover = false;
         next_mode = BatteryMode::None;
-        effective_mode = BatteryMode::None;
-        table = nullptr;
     }
-    else if (discover) {
-        next_mode = BatteryMode::Discover;
-        effective_mode = BatteryMode::Discover;
+    else if (discover_pending) {
         table = nullptr;
+        start_discover = true;
+        next_mode = BatteryMode::None;
     }
     else {
         table = tables[static_cast<size_t>(requested_mode)];
+        start_discover = false;
 
         if (table == nullptr) {
             next_mode = BatteryMode::None;
-            effective_mode = BatteryMode::None;
         }
         else {
             next_mode = requested_mode;
-            effective_mode = table->effective_mode;
         }
     }
 
-    state->get("effective_mode")->updateEnum(effective_mode);
-
-    if (active_mode == next_mode) {
+    if (pending_mode == next_mode && (discover_ctx != nullptr) == start_discover) {
         return;
     }
 
     destroy_discover(discover_ctx);
     discover_ctx = nullptr;
 
-    destroy_table_writer(active_writer);
-    active_writer = nullptr;
+    destroy_writer(writer_ctx);
+    writer_ctx = nullptr;
 
-    trace("b%lu t0 %s r%c%s m%c->%c em%c",
+    trace("b%lu t0 %s r%c%s m%c->%c%s",
           slot,
           connected_client != nullptr ? "ce" : "nc",
           get_battery_mode_as_char(requested_mode),
-          paused ? " p" : "",
-          get_battery_mode_as_char(active_mode),
+          testing ? " tg" : "",
+          get_battery_mode_as_char(pending_mode),
           get_battery_mode_as_char(next_mode),
-          get_battery_mode_as_char(effective_mode));
+          start_discover ? " sd" : "");
 
-    active_mode = next_mode;
+    pending_mode = next_mode;
 
-    if (active_mode == BatteryMode::Discover) {
+    if (start_discover) {
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        discover_ctx = create_discover(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+        discover_ctx = create_discover(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
                                        device_address, transaction_id_mask,
         [this](bool error, const char *fmt, va_list args) {
             char message[256];
@@ -981,7 +1222,7 @@ void BatteryModbusTCP::update_active_mode()
                 load_tables(discover_table_config);
 
                 task_scheduler.scheduleOnce([this]() {
-                    discover = false;
+                    discover_pending = false;
 
                     // destroy the discover context on the main task.
                     // calling destroy_discover in the outer lambda
@@ -989,7 +1230,7 @@ void BatteryModbusTCP::update_active_mode()
                     destroy_discover(discover_ctx);
                     discover_ctx = nullptr;
 
-                    update_active_mode();
+                    update_pending_mode();
                 });
             });
         }
@@ -1000,7 +1241,7 @@ void BatteryModbusTCP::update_active_mode()
                 load_tables(discover_table_config);
 
                 task_scheduler.scheduleOnce([this]() {
-                    discover = false;
+                    discover_pending = false;
 
                     // destroy the discover context on the main task.
                     // calling destroy_discover in the outer lambda
@@ -1008,7 +1249,7 @@ void BatteryModbusTCP::update_active_mode()
                     destroy_discover(discover_ctx);
                     discover_ctx = nullptr;
 
-                    update_active_mode();
+                    update_pending_mode();
                 });
             });
         }
@@ -1021,8 +1262,8 @@ void BatteryModbusTCP::update_active_mode()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
-                                            device_address, transaction_id_mask, repeat_interval, active_mode, table,
+        writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+                                   device_address, transaction_id_mask, repeat_interval, pending_mode, table,
         [this](bool error, const char *fmt, va_list args) {
             if (!error) {
                 return;
@@ -1034,7 +1275,7 @@ void BatteryModbusTCP::update_active_mode()
             logger.printfln_battery("%s", message);
         },
         [this]() {
-            update_active_mode();
+            update_pending_mode();
         });
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop

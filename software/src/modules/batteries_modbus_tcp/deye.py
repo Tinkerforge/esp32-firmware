@@ -36,7 +36,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('Deye Hybrid Inverter', 60),
+    ('Deye Hybrid Inverter', 60),  # Deye has no watchdog, but the repeat is for the robustness of the battery control
 ]
 
 variants = []

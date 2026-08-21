@@ -136,7 +136,11 @@ void BatteriesModbusTCP::pre_setup()
     });
 
     state_prototype = Config::Object({
+        {"active_mode", Config::Enum(BatteryMode::None)},
         {"effective_mode", Config::Enum(BatteryMode::None)},
+        {"discovering", Config::Bool(false)},
+        {"checking", Config::Bool(false)},
+        {"testing", Config::Bool(false)},
     });
 
     /*errors_prototype = Config::Object({
@@ -170,11 +174,6 @@ void BatteriesModbusTCP::pre_setup()
             static_cast<uint8_t>(test_table_prototypes.size())
         )},
         {"cookie", Config::Uint32(0)},
-    })};
-
-    test_state = ConfigRoot{Config::Object({
-        {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS())},
-        {"mode", Config::Enum(BatteryMode::None)},
     })};
 
     test_continue_config = ConfigRoot{Config::Object({
@@ -252,8 +251,6 @@ void BatteriesModbusTCP::register_urls()
                       BatteryModbusTCP::get_battery_mode_display_name(test->mode, language));
     }, true);
 
-    api.addState("batteries_modbus_tcp/test_state", &test_state);
-
     api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language language, String &errmsg) {
         if (test == nullptr) {
             return;
@@ -311,7 +308,7 @@ void BatteriesModbusTCP::loop()
     switch (test->state) {
     case TestState::Start:
         if (instances[test->slot] != nullptr) {
-            instances[test->slot]->set_paused(true);
+            instances[test->slot]->set_testing(true);
         }
 
         test->state = TestState::Connect;
@@ -349,7 +346,7 @@ void BatteriesModbusTCP::loop()
                 test->state = TestState::CreateDiscover;
             }
             else {
-                test->state = TestState::CreateTableWriter;
+                test->state = TestState::CreateWriter;
             }
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
@@ -373,12 +370,12 @@ void BatteriesModbusTCP::loop()
                 test->discover_ctx = nullptr;
             }
             else {
-                test->state = TestState::DestroyTableWriter;
+                test->state = TestState::DestroyWriter;
 
                 // immediately destroy the writer to stop the separate
                 // writer task from accessing the disconnected client
-                BatteryModbusTCP::destroy_table_writer(test->writer);
-                test->writer = nullptr;
+                BatteryModbusTCP::destroy_writer(test->writer_ctx);
+                test->writer_ctx = nullptr;
             }
         });
 
@@ -418,7 +415,7 @@ void BatteriesModbusTCP::loop()
 #endif
 
             if (instances[test->slot] != nullptr) {
-                instances[test->slot]->set_paused(false);
+                instances[test->slot]->set_testing(false);
             }
 
             delete test->discover_table_config;
@@ -440,7 +437,7 @@ void BatteriesModbusTCP::loop()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->discover_ctx = BatteryModbusTCP::create_discover(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+        test->discover_ctx = BatteryModbusTCP::create_discover(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
                                                                test->device_address, test->transaction_id_mask,
         [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
@@ -458,7 +455,7 @@ void BatteriesModbusTCP::loop()
                 test_load_table(test->discover_table_config);
 
                 test->state = TestState::DestroyDiscover;
-                test->state_after_discover = TestState::CreateTableWriter;
+                test->state_after_discover = TestState::CreateWriter;
             });
         }
         else if (test->table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
@@ -469,7 +466,7 @@ void BatteriesModbusTCP::loop()
                 test_load_table(test->discover_table_config);
 
                 test->state = TestState::DestroyDiscover;
-                test->state_after_discover = TestState::CreateTableWriter;
+                test->state_after_discover = TestState::CreateWriter;
             });
         }
         else {
@@ -494,29 +491,26 @@ void BatteriesModbusTCP::loop()
 
         break;
 
-    case TestState::CreateTableWriter:
+    case TestState::CreateWriter:
         if (test->stop) {
             test->state = TestState::Disconnect;
             break;
         }
 
-        test_state.get("slot")->updateUint(test->slot);
-        test_state.get("mode")->updateEnum(test->mode);
-
-        test->state = TestState::TableWriting;
+        test->state = TestState::Writing;
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer = BatteryModbusTCP::create_table_writer(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
-                                                             test->device_address, test->transaction_id_mask, test->repeat_interval,
-                                                             test->mode, test->table,
+        test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+                                                           test->device_address, test->transaction_id_mask, test->repeat_interval,
+                                                           test->mode, test->table,
         [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
         [this]() {
-            test->state = TestState::DestroyTableWriter;
+            test->state = TestState::DestroyWriter;
         },
         test->language);
 #if defined(__GNUC__)
@@ -525,17 +519,14 @@ void BatteriesModbusTCP::loop()
 
         break;
 
-    case TestState::DestroyTableWriter:
-        BatteryModbusTCP::destroy_table_writer(test->writer);
-        test->writer = nullptr;
+    case TestState::DestroyWriter:
+        BatteryModbusTCP::destroy_writer(test->writer_ctx);
+        test->writer_ctx = nullptr;
 
         if (!test->reconnect) {
             BatteryModbusTCP::free_table(test->table);
             test->table = nullptr;
         }
-
-        test_state.get("slot")->updateUint(test->slot);
-        test_state.get("mode")->updateEnum(BatteryMode::None);
 
         if (test->client != nullptr) {
             test->state = TestState::Disconnect;
@@ -549,9 +540,9 @@ void BatteriesModbusTCP::loop()
 
         break;
 
-    case TestState::TableWriting:
+    case TestState::Writing:
         if (test->stop) {
-            test->state = TestState::DestroyTableWriter;
+            test->state = TestState::DestroyWriter;
             break;
         }
 

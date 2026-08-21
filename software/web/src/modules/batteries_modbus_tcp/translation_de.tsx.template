@@ -19,6 +19,9 @@ let x = {
             "host_invalid": "Host ist ungültig",
             "port": "Port",
             "port_muted": "typischerweise 502 oder 1502",
+            "discovering": "Einrichtung läuft",
+            "checking": "prüfe Vorbedingung",
+            "testing": "Test läuft",
             "table": "Registertabelle",
             "table_custom": "Benutzerdefiniert",
             {{{tables}}},
@@ -28,10 +31,11 @@ let x = {
             "sax_power_home_basic_mode_degradation_warning": <><p>Bedingt durch die limitierte Steuerbarkeit des SAX Power Home Batteriespeichers, können das Laden und Entladen nicht erzwungen werden. Stattdessen wird in diesen Fällen das Laden bzw. Entladen auf normal belassen und das Entladen bzw. Laden blockiert.</p></>,
             "kostal_plenticore_warning": <><p>Bitte sicherstellen, dass die "Batteriesteuerung" im KOSTAL Wechselrichter auf "Extern über Protokoll (Modbus TCP)" konfiguriert ist. Für eine optimale Reaktionszeit der Batterie, bitte sicherstellen, dass der "Timeout ext. Batteriesteuerung [s]" so kurz wie möglich, aber nicht kürzer als 30 Sekunden, konfiguriert ist.</p>
                                            <p>Bedingt durch das Verhalten der externen Batteriesteuerung von KOSTAL Wechselrichtern kann der Wechsel zwischen den verschiedenen Modi um den "Timeout ext. Batteriesteuerung [s]" verzögert sein.</p></>,
-            "kostal_plenticore_discover_warning": <><p>Die Modbus/TCP-Byte-Reihenfolge des KOSTAL Wechselrichters wird ermittelt. Sollte dieser Zustand mehr als ein paar Sekunden anhalten, dann liegt vermutlich ein Kommunikationsproblem mit dem Wechselrichter vor.</p></>,
-            "kostal_plenticore_plus_g2_degradation_warning": <><p>Bedingt durch das Verhalten der externen Batteriesteuerung von KOSTAL PLENTICORE plus G2 Wechselrichtern, können aktuell das Laden und Entladen nicht unabhängig von einander blockiert werden. Stattdessen werden das Laden und Entladen immer zusammen blockiert.</p></>,
+            "kostal_plenticore_discovering_warning": <><p>Die Modbus/TCP-Byte-Reihenfolge des KOSTAL Wechselrichters wird ermittelt. Sollte dieser Zustand mehr als ein paar Sekunden anhalten, dann liegt vermutlich ein Kommunikationsproblem mit dem Wechselrichter vor.</p></>,
+            "kostal_plenticore_plus_g2_checking_warning": <><p>Bedingt durch das Verhalten der externen Batteriesteuerung von KOSTAL PLENTICORE plus G2 Wechselrichtern, muss beim Verlassen der Modi "Laden erzwingen" und "Entladen erzwingen" die Batteriesteuerung pausiert werden bis der "Timeout ext. Batteriesteuerung [s]" des Wechselrichters abgelaufen ist. Erst danach kann die Batteriesteuerung in den neuen Modus wechseln.</p></>,
             "kostal_plenticore_g3_firmware_warning": <><p>Bitte sicherstellen, das mindestens Software Version 03.05.xxxxx auf dem Wechselrichter installiert ist.</p></>,
-            "custom_mode_degradation_warning": <><p>Der effektive Zustand weicht vom aktiven Zustand ab, bedingt durch explizite Auswahl in der benutzerdefinierten Registertabelle für diesen Batteriespeicher.</p></>,
+            "custom_mode_degradation_warning": <><p>Der effektive Modus weicht vom aktiven Modus ab, bedingt durch explizite Auswahl in der benutzerdefinierten Registertabelle für diesen Batteriespeicher.</p></>,
+            "testing_warning": <><p>Durch den laufenden Test kann der aktive Modus dieses Batteriespeichers vom globalen Modus der Batteriesteuerung abweichen.</p></>,
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
@@ -63,6 +67,10 @@ let x = {
             "register_blocks_desc": "Beschreibung",
             "register_blocks_desc_muted": "optional",
             "register_blocks_function_code": "Funktionscode",
+            "register_blocks_function_code_read_coils": "1 – Coils lesen",
+            "register_blocks_function_code_read_discrete_inputs": "2 – Discrete Inputs lesen",
+            "register_blocks_function_code_read_holding_registers": "3 – Holding Register lesen",
+            "register_blocks_function_code_read_input_registers": "4 – Input Register lesen",
             "register_blocks_function_code_write_single_coil": "5 – Einzelne Coil schreiben",
             "register_blocks_function_code_write_single_register": "6 – Einzelnes Register schreiben",
             "register_blocks_function_code_write_multiple_coils": "15 – Mehrere Coils schreiben",
@@ -87,11 +95,33 @@ let x = {
             "register_blocks_masks_muted": "kommagetrennt",
             "register_blocks_masks_invalid": "Die Bitmasken müssen eine kommagetrennte Liste von Folgen von 0, 1 oder x sein.",
             "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
+                let action = "";
                 let rtyp = "Unbekannt";
 
                 switch (func) {
+                case 1:
+                    action = "Prüfe";
+                    rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
+                    break;
+
+                case 2:
+                    action = "Prüfe";
+                    rtyp = values.indexOf(",") >= 0 ? "Discrete Inputs" : "Discrete Input";
+                    break;
+
+                case 3:
+                    action = "Prüfe";
+                    rtyp = "Holding Register";
+                    break;
+
+                case 4:
+                    action = "Prüfe";
+                    rtyp = "Input Register";
+                    break;
+
                 case 5:
                 case 15:
+                    action = "Setze";
                     rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
                     break;
 
@@ -100,11 +130,12 @@ let x = {
                 case 22:
                 case 9:
                 case 19:
+                    action = "Setze";
                     rtyp = "Register";
                     break;
                 }
 
-                return "Setze " + (values.indexOf(",") >= 0 ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
+                return action + " " + (values.indexOf(",") >= 0 ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
             }/*NF*/,
             "register_effective_mode": "Effektiver Modus",
             "register_effective_mode_matching": "Übereinstimmend",

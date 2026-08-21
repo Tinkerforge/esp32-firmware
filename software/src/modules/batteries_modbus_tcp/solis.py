@@ -41,7 +41,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('Solis Hybrid Inverter', 60),  # Solis watchdog duration is 5 minutes
+    ('Solis Hybrid Inverter', 60),  # Solis watchdog duration is 300 seconds
 ]
 
 variants = []

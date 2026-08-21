@@ -36,7 +36,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('Sungrow Hybrid Inverter', 60),
+    ('Sungrow Hybrid Inverter', 60),  # Sungrow has no watchdog, but the repeat is for the robustness of the battery control
 ]
 
 variants = []

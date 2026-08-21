@@ -55,7 +55,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('SAX Power Home Basic Mode', 60),
+    ('SAX Power Home Basic Mode', 60),  # SAX Power has no watchdog, but the repeat is for the robustness of the battery control
 ]
 
 variants = []

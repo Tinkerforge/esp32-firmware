@@ -37,7 +37,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('Victron Energy GX', 60),
+    ('Victron Energy GX', 60),  # Victron Energy has no watchdog, but the repeat is for the robustness of the battery control
 ]
 
 variants = []

@@ -52,12 +52,13 @@ public:
     struct DiscoverContext;
 
     typedef std::function<void(bool error, const char *fmt, va_list args)> VLogFLnFunction;
-    typedef std::function<void(void)> TableWriterFinishedFunction;
+    typedef std::function<void(void)> WriterFinishedFunction;
     typedef std::function<bool(DiscoverContext *ctx)> DiscoverCompleteFunction;
 
-    struct TableWriter {
+    struct WriterContext {
         Language language;
         uint64_t task_id = 0;
+        BatteryModbusTCP *battery;
         uint32_t slot;
         TFModbusTCPSharedClient *client;
         uint8_t device_address;
@@ -67,10 +68,13 @@ public:
         TableSpec *table;
         size_t repeat_count = 0;
         size_t index = 0;
+        size_t first_non_precondition_index = 0; // == index + 1 of the last register block with a read* function code, 0 == no precondition
+        size_t last_precondition_not_met_index_plus_one = 0;
         VLogFLnFunction vlogfln;
-        TableWriterFinishedFunction finished;
+        WriterFinishedFunction finished;
         bool transact_pending = false;
         bool destroy_requested = false;
+        bool precondition_met = false;
         bool test;
     };
 
@@ -78,15 +82,16 @@ public:
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
-    static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
-                                            uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
-                                            BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
-                                            TableWriterFinishedFunction &&finished, Language language = Language::English);
-    static void destroy_table_writer(TableWriter *writer);
+    static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+                                        uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
+                                        BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
+                                        WriterFinishedFunction &&finished, Language language = Language::English);
+    static void destroy_writer(WriterContext *ctx);
 
     struct DiscoverContext {
         Language language;
         uint64_t task_id = 0;
+        BatteryModbusTCP *battery;
         uint32_t slot;
         TFModbusTCPSharedClient *client;
         uint8_t device_address;
@@ -99,7 +104,7 @@ public:
         bool test;
     };
 
-    static DiscoverContext *create_discover(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+    static DiscoverContext *create_discover(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
                                             uint16_t transaction_id_mask, VLogFLnFunction &&vlogfln, Language language = Language::English);
     static void destroy_discover(DiscoverContext *ctx);
     static void discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback);
@@ -115,13 +120,17 @@ public:
 
     void set_mode(BatteryMode mode) override;
 
-    void set_paused(bool paused);
+    void set_testing(bool testing);
+
+    void set_state_mode(BatteryMode active_mode, BatteryMode effective_mode);
+    void set_state_discovering(bool discovering);
+    void set_state_checking(bool checking);
 
 private:
     void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
     void load_tables(const Config *table_config);
-    void update_active_mode();
+    void update_pending_mode();
 
     uint32_t slot;
     Config *state;
@@ -134,10 +143,10 @@ private:
     uint16_t transaction_id_mask = UINT16_MAX;
     uint16_t repeat_interval; // seconds
     BatteryMode requested_mode = BatteryMode::None;
-    bool discover = false;
-    bool paused = false;
-    BatteryMode active_mode = BatteryMode::None;
-    TableWriter *active_writer = nullptr;
+    bool discover_pending = false;
+    bool testing = false;
+    BatteryMode pending_mode = BatteryMode::None;
+    WriterContext *writer_ctx = nullptr;
     Config *discover_table_config = nullptr; // FIXME: leaking this, because as of right now battery instances don't get destroyed
     DiscoverContext *discover_ctx = nullptr;
     union {

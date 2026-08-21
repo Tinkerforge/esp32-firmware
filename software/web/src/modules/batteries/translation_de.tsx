@@ -16,9 +16,6 @@ let x = {
 
             "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/,
 
-            "test_warnings": "Tests",
-            "test_warning": /*SFN*/(display_name: string, mode_name: string) => `Für Batteriespeicher ${display_name} läuft ein Test: ${mode_name}.`/*NF*/,
-
             "battery_mode_block": "Blockieren",
             "battery_mode_normal": "Normal",
             "battery_mode_block_discharge": "Entladen blockieren",
@@ -33,8 +30,7 @@ let x = {
             "battery_mode_long_block_charge": "Laden blockieren, normal Entladen",
             "battery_mode_long_force_discharge": "Laden blockieren, Entladen erzwingen",
 
-            "battery_state_discover": "Einrichten",
-            "battery_state_none": "N/A",
+            "battery_state_none": "Keine aktive Steuerung",
             "battery_state_blocked": "Blockiert",
             "battery_state_normal": "Normal",
             "battery_state_discharge_blocked": "Entladen blockiert",
@@ -43,7 +39,6 @@ let x = {
             "battery_state_discharge_forced": "Entladen erzwungen",
             "battery_state_by_mode": /*SFN*/(mode: BatteryMode) => {
                 return [
-                    __("batteries.content.battery_state_discover"),
                     __("batteries.content.battery_state_none"),
                     __("batteries.content.battery_state_blocked"),
                     __("batteries.content.battery_state_normal"),
@@ -51,7 +46,7 @@ let x = {
                     __("batteries.content.battery_state_charge_forced"),
                     __("batteries.content.battery_state_charge_blocked"),
                     __("batteries.content.battery_state_discharge_forced"),
-                ][mode + 2];
+                ][mode + 1];
             }/*NF*/,
 
             "status_charge": "Laden",

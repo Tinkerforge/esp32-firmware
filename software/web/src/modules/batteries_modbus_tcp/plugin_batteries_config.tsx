@@ -24,7 +24,7 @@ import { h, Fragment, Component, ComponentChild, ComponentChildren } from "preac
 import { Button, Dropdown, Alert } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/generated/battery_class_id.enum";
-import { BatteryConfig } from "../batteries/types";
+import { BatteryConfig, BatteryState } from "../batteries/types";
 import { BatteryMode } from "../batteries/generated/battery_mode.enum";
 import { BatteryModbusTCPTableID } from "./generated/battery_modbus_tcp_table_id.enum";
 import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./generated/battery_modbus_tcp_specs";
@@ -97,6 +97,22 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         let values_filter = (v: string) => v;
 
         switch (this.state.register_block.func) {
+        case ModbusFunctionCode.ReadCoils:
+        case ModbusFunctionCode.ReadDiscreteInputs:
+            values_pattern = `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
+            values_label = __("batteries_modbus_tcp.content.register_blocks_values");
+            values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
+
+        case ModbusFunctionCode.ReadHoldingRegisters:
+        case ModbusFunctionCode.ReadInputRegisters:
+            values_pattern = `^ *${util.UINT16_PATTERN} *(?:, *${util.UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
+            values_label = __("batteries_modbus_tcp.content.register_blocks_values");
+            values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
+
         case ModbusFunctionCode.WriteSingleCoil:
             values_pattern = "^ *[01] *$";
             values_label = __("batteries_modbus_tcp.content.register_blocks_value");
@@ -156,6 +172,10 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 <InputSelect
                     required
                     items={[
+                        [ModbusFunctionCode.ReadCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_coils")],
+                        [ModbusFunctionCode.ReadDiscreteInputs.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_discrete_inputs")],
+                        [ModbusFunctionCode.ReadHoldingRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_holding_registers")],
+                        [ModbusFunctionCode.ReadInputRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_input_registers")],
                         [ModbusFunctionCode.WriteSingleCoil.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_single_coil")],
                         [ModbusFunctionCode.WriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_single_register")],
                         [ModbusFunctionCode.WriteMultipleCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_multiple_coils")],
@@ -212,7 +232,11 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     format_vals(function_code: number, vals: number[]) {
         let values = "";
 
-        if (function_code == ModbusFunctionCode.WriteSingleCoil
+        if (function_code == ModbusFunctionCode.ReadCoils
+         || function_code == ModbusFunctionCode.ReadDiscreteInputs
+         || function_code == ModbusFunctionCode.ReadHoldingRegisters
+         || function_code == ModbusFunctionCode.ReadInputRegisters
+         || function_code == ModbusFunctionCode.WriteSingleCoil
          || function_code == ModbusFunctionCode.WriteSingleRegister
          || function_code == ModbusFunctionCode.WriteMultipleCoils
          || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
@@ -247,28 +271,48 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     parse_values(function_code: number, values_str: string) {
         let vals: number[] = [];
 
-        if (function_code == ModbusFunctionCode.WriteSingleCoil
+        if (function_code == ModbusFunctionCode.ReadCoils
+         || function_code == ModbusFunctionCode.ReadDiscreteInputs
+         || function_code == ModbusFunctionCode.ReadHoldingRegisters
+         || function_code == ModbusFunctionCode.ReadInputRegisters
+         || function_code == ModbusFunctionCode.WriteSingleCoil
          || function_code == ModbusFunctionCode.WriteSingleRegister
          || function_code == ModbusFunctionCode.WriteMultipleCoils
          || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
             let max_values = 0;
-            let mac_value = 0;
+            let max_value = 0;
 
-            if (function_code == ModbusFunctionCode.WriteSingleCoil) {
+            if (function_code == ModbusFunctionCode.ReadCoils) {
+                max_values = 2000;
+                max_value = 1;
+            }
+            else if (function_code == ModbusFunctionCode.ReadDiscreteInputs) {
+                max_values = 2000;
+                max_value = 1;
+            }
+            else if (function_code == ModbusFunctionCode.ReadHoldingRegisters) {
+                max_values = 125;
+                max_value = 65535;
+            }
+            else if (function_code == ModbusFunctionCode.ReadInputRegisters) {
+                max_values = 125;
+                max_value = 65535;
+            }
+            else if (function_code == ModbusFunctionCode.WriteSingleCoil) {
                 max_values = 1;
-                mac_value = 1;
+                max_value = 1;
             }
             else if (function_code == ModbusFunctionCode.WriteSingleRegister) {
                 max_values = 1;
-                mac_value = 65535;
+                max_value = 65535;
             }
             else if (function_code == ModbusFunctionCode.WriteMultipleCoils) {
                 max_values = 1968;
-                mac_value = 1;
+                max_value = 1;
             }
             else if (function_code == ModbusFunctionCode.WriteMultipleRegisters) {
                 max_values = 123;
-                mac_value = 65535;
+                max_value = 65535;
             }
 
             let values_dec = values_str.split(",");
@@ -286,7 +330,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     return [];
                 }
 
-                if (value > mac_value) {
+                if (value > max_value) {
                     return [];
                 }
 
@@ -851,12 +895,50 @@ export function pre_init() {
 
                 return clone;
             },
-            report_test_mode: (callback: (battery_slot: number, mode: number) => void) => {
-                util.addApiEventListener('batteries_modbus_tcp/test_state', () => {
-                    let state = API.get('batteries_modbus_tcp/test_state');
+            get_state_info: (battery_slot: number, config: BatteryConfig, battery_state: BatteryState): {state_name: string, warning: ComponentChild} => {
+                if (!util.hasValue(config[1].table)) {
+                    return undefined;
+                }
 
-                    callback(state.slot, state.mode);
-                });
+                let state_name = __("batteries.content.battery_state_by_mode")(battery_state.effective_mode);
+                let warning = [];
+
+                if (battery_state.active_mode != battery_state.effective_mode) {
+                    if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
+                        warning.push(__("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning"));
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.Custom) {
+                        warning.push(__("batteries_modbus_tcp.content.custom_mode_degradation_warning"));
+                    }
+                }
+
+                if (battery_state.discovering) {
+                    state_name += ', ' + __("batteries_modbus_tcp.content.discovering");
+
+                    if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2
+                     || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
+                        warning.push(__("batteries_modbus_tcp.content.kostal_plenticore_discovering_warning"));
+                    }
+                }
+
+                if (battery_state.checking) {
+                    state_name += ', ' + __("batteries_modbus_tcp.content.checking");
+
+                    if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
+                        warning.push(__("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_checking_warning"));
+                    }
+                }
+
+                if (battery_state.testing) {
+                    state_name += ', ' + __("batteries_modbus_tcp.content.testing");
+                    warning.push(__("batteries_modbus_tcp.content.testing_warning"));
+                }
+
+                if (warning.length == 0) {
+                    warning = undefined;
+                }
+
+                return {state_name: state_name, warning: warning};
             },
             get_edit_children: (battery_slot: number, config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
                 let table_items: [string, string][] = [
@@ -961,7 +1043,6 @@ export function pre_init() {
                             <FormRow>
                                 <Alert variant="warning" className="mb-0">
                                     {__("batteries_modbus_tcp.content.kostal_plenticore_warning")}
-                                    {__("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_degradation_warning")}
                                 </Alert>
                             </FormRow>);
                     }
@@ -1480,37 +1561,6 @@ export function pre_init() {
                 }
 
                 return edit_children;
-            },
-            get_effective_mode_warning: (config: BatteryConfig, mode: BatteryMode, effective_mode: BatteryMode): ComponentChild => {
-                if (!util.hasValue(config[1].table)) {
-                    return undefined;
-                }
-
-                if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
-                    if (effective_mode != BatteryMode.None) {
-                        return __("batteries_modbus_tcp.content.sax_power_home_basic_mode_degradation_warning");
-                    }
-                }
-                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
-                    if (effective_mode == BatteryMode.Discover) {
-                        return __("batteries_modbus_tcp.content.kostal_plenticore_discover_warning");
-                    }
-                    else if (effective_mode != BatteryMode.None) {
-                        return __("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_degradation_warning");
-                    }
-                }
-                else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
-                    if (effective_mode == BatteryMode.Discover) {
-                        return __("batteries_modbus_tcp.content.kostal_plenticore_discover_warning");
-                    }
-                }
-                else if (config[1].table[0] == BatteryModbusTCPTableID.Custom) {
-                    if (effective_mode != BatteryMode.None) {
-                        return __("batteries_modbus_tcp.content.custom_mode_degradation_warning");
-                    }
-                }
-
-                return undefined;
             },
         },
     };

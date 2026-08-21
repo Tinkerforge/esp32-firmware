@@ -64,9 +64,9 @@ variants = [
     ('Kostal Plenticore G3', ['Big Endian', 'Little Endian']),
 ]
 
-# FIXME: register 1034 cannot actively be cleared. it can only be cleared passively by the
-#        watchdog, but any write to the register in the 1026 to 1044 range resets the watchdog,
-#        keeping register 1034 at its last written value, even if we stop writing it
+# register 1034 cannot actively be cleared. it can only be cleared passively by the
+# watchdog, but any write to the registers in the 1026 to 1044 range resets the watchdog,
+# keeping register 1034 at its last written value, even if we stop writing it
 
 plenticore_plus_g2_specs = [
     {
@@ -74,8 +74,10 @@ plenticore_plus_g2_specs = [
         'mode': 'Block',
         'register_blocks': [
             {
+                # it's not possible to actively clear a previous force charge/discharge
+                # to gain normal charge/discharge again, wait for watchdog to clear it
                 'description': 'Battery charge power DC setpoint absolute [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'ReadHoldingRegisters',
                 'start_address': 1034,
                 'f32_values': [
                     0,
@@ -103,18 +105,27 @@ plenticore_plus_g2_specs = [
         'group': 'Kostal Plenticore Plus G2',
         'mode': 'Normal',
         'register_blocks': [
-            # don't write register 1034, 1038, 1040 to let the watchdog clear any previous
-            # force/block charge/discharge to gain normal charge/discharge
+            {
+                # it's not possible to actively clear a previous force charge/discharge
+                # to gain normal charge/discharge again, wait for watchdog to clear it
+                'description': 'Battery charge power DC setpoint absolute [W]',
+                'function_code': 'ReadHoldingRegisters',
+                'start_address': 1034,
+                'f32_values': [
+                    0,
+                ],
+            },
         ],
     },
     {
         'group': 'Kostal Plenticore Plus G2',
         'mode': 'Block Discharge',
-        'effective_mode': 'Block',  # it's not possible to actively clear a previous force charge/discharge to gain normal charge again, so block charge too
         'register_blocks': [
             {
+                # it's not possible to actively clear a previous force charge/discharge
+                # to gain normal charge/discharge again, wait for watchdog to clear it
                 'description': 'Battery charge power DC setpoint absolute [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'ReadHoldingRegisters',
                 'start_address': 1034,
                 'f32_values': [
                     0,
@@ -171,11 +182,12 @@ plenticore_plus_g2_specs = [
     {
         'group': 'Kostal Plenticore Plus G2',
         'mode': 'Block Charge',
-        'effective_mode': 'Block',  # it's not possible to actively clear a previous force charge/discharge to gain normal discharge again, so block discharge too
         'register_blocks': [
             {
+                # it's not possible to actively clear a previous force charge/discharge
+                # to gain normal charge/discharge again, wait for watchdog to clear it
                 'description': 'Battery charge power DC setpoint absolute [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'ReadHoldingRegisters',
                 'start_address': 1034,
                 'f32_values': [
                     0,
