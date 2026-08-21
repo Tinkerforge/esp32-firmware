@@ -185,12 +185,12 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
 }
 
 [[gnu::format(__printf__, 3, 4)]]
-static void writer_logfln(BatteryModbusTCP::WriterContext *ctx, bool error, const char *fmt, ...)
+static void writer_logfln(BatteryModbusTCP::WriterContext *ctx, bool event_log, const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
-    ctx->vlogfln(error, fmt, args);
+    ctx->vlogfln(event_log, fmt, args);
     va_end(args);
 }
 
@@ -445,8 +445,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                   error_message != nullptr ? " / " : "",
                   error_message != nullptr ? error_message : "");
 
-            writer_logfln(ctx,
-                          true,
+            writer_logfln(ctx, true,
                           ctx->language == Language::English
                           ? (buffer_to_compare != nullptr ? "Check of precondition for mode %s failed at register block %zu of %zu: %s (%d)%s%s" : "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s")
                           : (buffer_to_compare != nullptr ? "Prüfen der Vorbedingung des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s" : "Setzen des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s"),
@@ -575,8 +574,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 
                     char description_[128];
 
-                    writer_logfln(ctx,
-                                  true,
+                    writer_logfln(ctx, true,
                                   ctx->language == Language::English
                                   ? "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s"
                                   : "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
@@ -767,12 +765,12 @@ void BatteryModbusTCP::destroy_writer(BatteryModbusTCP::WriterContext *ctx)
 }
 
 [[gnu::format(__printf__, 3, 4)]]
-static void discover_logfln(BatteryModbusTCP::DiscoverContext *ctx, bool error, const char *fmt, ...)
+static void discover_logfln(BatteryModbusTCP::DiscoverContext *ctx, bool event_log, const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
-    ctx->vlogfln(error, fmt, args);
+    ctx->vlogfln(event_log, fmt, args);
     va_end(args);
 }
 
@@ -1204,7 +1202,11 @@ void BatteryModbusTCP::update_pending_mode()
 #endif
         discover_ctx = create_discover(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
                                        device_address, transaction_id_mask,
-        [this](bool error, const char *fmt, va_list args) {
+        [this](bool event_log, const char *fmt, va_list args) {
+            if (!event_log) {
+                return;
+            }
+
             char message[256];
 
             vsnprintf(message, sizeof(message), fmt, args);
@@ -1263,8 +1265,8 @@ void BatteryModbusTCP::update_pending_mode()
 #endif
         writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
                                    device_address, transaction_id_mask, repeat_interval, pending_mode, table,
-        [this](bool error, const char *fmt, va_list args) {
-            if (!error) {
+        [this](bool event_log, const char *fmt, va_list args) {
+            if (!event_log) {
                 return;
             }
 

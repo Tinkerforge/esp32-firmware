@@ -49,7 +49,7 @@ public:
         size_t register_blocks_count;
     };
 
-    typedef std::function<void(bool error, const char *fmt, va_list args)> VLogFLnFunction;
+    typedef std::function<void(bool event_log, const char *fmt, va_list args)> VLogFLnFunction;
     typedef std::function<void(void)> WriterFinishedFunction;
     typedef std::function<bool()> DiscoverCompleteFunction;
 

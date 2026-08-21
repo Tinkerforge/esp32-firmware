@@ -439,7 +439,7 @@ void BatteriesModbusTCP::loop()
 #endif
         test->discover_ctx = BatteryModbusTCP::create_discover(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
                                                                test->device_address, test->transaction_id_mask,
-        [this](bool error, const char *fmt, va_list args) {
+        [this](bool event_log, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
         test->language);
@@ -506,7 +506,7 @@ void BatteriesModbusTCP::loop()
         test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
                                                            test->device_address, test->transaction_id_mask, test->repeat_interval,
                                                            test->mode, test->table,
-        [this](bool error, const char *fmt, va_list args) {
+        [this](bool event_log, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
         [this]() {
