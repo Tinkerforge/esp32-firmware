@@ -513,8 +513,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                 if (ctx->last_precondition_not_met_index_plus_one != ctx->index + 1) {
                     ctx->last_precondition_not_met_index_plus_one = ctx->index + 1;
 
-                    writer_logfln(ctx,
-                                  true,
+                    writer_logfln(ctx, false,
                                   ctx->language == Language::English
                                   ? "Precondition for mode %s not met at register block %zu of %zu"
                                   : "Vorbedingung des Modus %s nicht erfüllt bei Registerblock %zu von %zu",
