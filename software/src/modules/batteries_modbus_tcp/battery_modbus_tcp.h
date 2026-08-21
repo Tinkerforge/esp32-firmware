@@ -49,11 +49,9 @@ public:
         size_t register_blocks_count;
     };
 
-    struct DiscoverContext;
-
     typedef std::function<void(bool error, const char *fmt, va_list args)> VLogFLnFunction;
     typedef std::function<void(void)> WriterFinishedFunction;
-    typedef std::function<bool(DiscoverContext *ctx)> DiscoverCompleteFunction;
+    typedef std::function<bool()> DiscoverCompleteFunction;
 
     struct WriterContext {
         Language language;

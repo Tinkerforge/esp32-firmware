@@ -812,7 +812,7 @@ static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext 
         bool error;
 
         if (result == TFModbusTCPClientTransactionResult::Success) {
-            error = ctx->complete(ctx);
+            error = ctx->complete();
         }
         else {
             trace("b%lu t%d dr k e%d%s%s",
@@ -893,28 +893,28 @@ void BatteryModbusTCP::destroy_discover(DiscoverContext *discover)
     free_discover(discover);
 }
 
-void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *discover, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
+void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
 {
-    discover->buffer = malloc(sizeof(uint16_t));
-    discover->complete = [discover, callback = std::move(callback)](DiscoverContext *discover_) {
-        uint16_t byte_order = *static_cast<uint16_t *>(discover_->buffer);
+    ctx->buffer = malloc(sizeof(uint16_t));
+    ctx->complete = [ctx, callback = std::move(callback)]() {
+        uint16_t byte_order = *static_cast<uint16_t *>(ctx->buffer);
 
         if (byte_order == 0) {
-            trace("b%lu t%d dr k le", discover->slot, discover->test ? 1 : 0);
+            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
 
-            discover_logfln(discover_, false,
-                            discover_->language == Language::English
-                            ? "KOSTAL PLENTICORE plus G2 reports little  byte order"
+            discover_logfln(ctx, false,
+                            ctx->language == Language::English
+                            ? "KOSTAL PLENTICORE plus G2 reports little endian byte order"
                             : "KOSTAL PLENTICORE plus G2 meldet Little-Endian Byte-Reihenfolge");
 
             callback(KostalPlenticorePlusG2Variant::LittleEndian);
             return false;
         }
         else if (byte_order == 1) {
-            trace("b%lu t%d dr k be", discover->slot, discover->test ? 1 : 0);
+            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
 
-            discover_logfln(discover_, false,
-                            discover_->language == Language::English
+            discover_logfln(ctx, false,
+                            ctx->language == Language::English
                             ? "KOSTAL PLENTICORE plus G2 reports big endian byte order"
                             : "KOSTAL PLENTICORE plus G2 meldet Big-Endian Byte-Reihenfolge");
 
@@ -922,10 +922,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContex
             return false;
         }
         else {
-            trace("b%lu t%d dr k u%u", discover->slot, discover->test ? 1 : 0, byte_order);
+            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
 
-            discover_logfln(discover_, true,
-                            discover_->language == Language::English
+            discover_logfln(ctx, true,
+                            ctx->language == Language::English
                             ? "KOSTAL PLENTICORE plus G2 reports unknown byte order: %u"
                             : "KOSTAL PLENTICORE plus G2 meldet unbekannte Byte-Reihenfolge: %u",
                             byte_order);
@@ -934,20 +934,20 @@ void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContex
         }
     };
 
-    read_kostal_plenticore_byte_order(discover);
+    read_kostal_plenticore_byte_order(ctx);
 }
 
-void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *discover, std::function<void(KostalPlenticoreG3Variant variant)> &&callback)
+void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *ctx, std::function<void(KostalPlenticoreG3Variant variant)> &&callback)
 {
-    discover->buffer = malloc(sizeof(uint16_t));
-    discover->complete = [discover, callback = std::move(callback)](DiscoverContext *discover_) {
-        uint16_t byte_order = *static_cast<uint16_t *>(discover_->buffer);
+    ctx->buffer = malloc(sizeof(uint16_t));
+    ctx->complete = [ctx, callback = std::move(callback)]() {
+        uint16_t byte_order = *static_cast<uint16_t *>(ctx->buffer);
 
         if (byte_order == 0) {
-            trace("b%lu t%d dr k le", discover->slot, discover->test ? 1 : 0);
+            trace("b%lu t%d dr k le", ctx->slot, ctx->test ? 1 : 0);
 
-            discover_logfln(discover_, false,
-                            discover_->language == Language::English
+            discover_logfln(ctx, false,
+                            ctx->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports little endian byte order"
                             : "KOSTAL PLENTICORE G3 meldet Little-Endian Byte-Reihenfolge");
 
@@ -955,10 +955,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *di
             return false;
         }
         else if (byte_order == 1) {
-            trace("b%lu t%d dr k be", discover->slot, discover->test ? 1 : 0);
+            trace("b%lu t%d dr k be", ctx->slot, ctx->test ? 1 : 0);
 
-            discover_logfln(discover_, false,
-                            discover_->language == Language::English
+            discover_logfln(ctx, false,
+                            ctx->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports big endian byte order"
                             : "KOSTAL PLENTICORE G3 meldet Big-Endian Byte-Reihenfolge");
 
@@ -966,10 +966,10 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *di
             return false;
         }
         else {
-            trace("b%lu t%d dr k u%u", discover->slot, discover->test ? 1 : 0, byte_order);
+            trace("b%lu t%d dr k u%u", ctx->slot, ctx->test ? 1 : 0, byte_order);
 
-            discover_logfln(discover_, true,
-                            discover_->language == Language::English
+            discover_logfln(ctx, true,
+                            ctx->language == Language::English
                             ? "KOSTAL PLENTICORE G3 reports unknown byte order: %u"
                             : "KOSTAL PLENTICORE G3 meldet unbekannte Byte-Reihenfolge: %u",
                             byte_order);
@@ -978,7 +978,7 @@ void BatteryModbusTCP::discover_kostal_plenticore_g3_variant(DiscoverContext *di
         }
     };
 
-    read_kostal_plenticore_byte_order(discover);
+    read_kostal_plenticore_byte_order(ctx);
 }
 
 BatteryClassID BatteryModbusTCP::get_class() const
