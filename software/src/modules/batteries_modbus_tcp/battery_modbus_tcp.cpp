@@ -210,7 +210,6 @@ static void last_writer_step(BatteryModbusTCP::WriterContext *ctx, bool success)
     millis_t delay = success ? seconds_t{ctx->repeat_interval} : 5_s;
 
     if (delay == 0_s) {
-        ctx->finished();
         return;
     }
 
@@ -621,14 +620,14 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
                                                                  BatteryMode mode,
                                                                  TableSpec *table,
                                                                  VLogFLnFunction &&vlogfln,
-                                                                 WriterFinishedFunction &&finished,
+                                                                 WriterFailureFunction &&failure,
                                                                  Language language /*= Language::English*/)
 {
     trace("b%lu t%d wc m%c em%c",
           slot,
           test ? 1 : 0,
           get_battery_mode_as_char(mode),
-          table != nullptr ? get_battery_mode_as_char(table->effective_mode) : '?');
+          get_battery_mode_as_char(table->effective_mode));
 
     WriterContext *ctx = new WriterContext;
 
@@ -642,7 +641,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
     ctx->mode = mode;
     ctx->table = table;
     ctx->vlogfln = std::move(vlogfln);
-    ctx->finished = std::move(finished);
+    ctx->failure = std::move(failure);
     ctx->test = test;
     ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
         if (ctx->destroy_requested) {
@@ -651,18 +650,6 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
         }
 
         ctx->task_id = 0;
-
-        // FIXME: don't allow missing tables and also use empty tables to be able to test them,
-        //        otherwise the test immidiatly ends and global battery control resumes
-        if (ctx->table == nullptr || ctx->table->register_blocks_count == 0) {
-            writer_logfln(ctx, false,
-                          ctx->language == Language::English
-                          ? "Table is empty, nothing to do"
-                          : "Tabelle ist leer, nichts zu tun");
-
-            ctx->finished();
-            return;
-        }
 
         trace("b%lu t%d ww m%c em%c %c",
               ctx->slot,
@@ -698,7 +685,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
                               : "Funktionscode unbekannt: %u",
                               static_cast<uint8_t>(register_block->function_code));
 
-                ctx->finished();
+                ctx->failure();
                 return;
             }
         }
@@ -749,7 +736,7 @@ void BatteryModbusTCP::destroy_writer(BatteryModbusTCP::WriterContext *ctx)
           ctx->slot,
           ctx->test ? 1 : 0,
           get_battery_mode_as_char(ctx->mode),
-          ctx->table != nullptr ? get_battery_mode_as_char(ctx->table->effective_mode) : '?');
+          get_battery_mode_as_char(ctx->table->effective_mode));
 
     if (ctx->battery != nullptr && ctx->first_non_precondition_index != 0) {
         ctx->battery->set_state_checking(false);
@@ -1165,13 +1152,7 @@ void BatteryModbusTCP::update_pending_mode()
     else {
         table = tables[static_cast<size_t>(requested_mode)];
         start_discover = false;
-
-        if (table == nullptr) {
-            next_mode = BatteryMode::None;
-        }
-        else {
-            next_mode = requested_mode;
-        }
+        next_mode = requested_mode;
     }
 
     if (pending_mode == next_mode && (discover_ctx != nullptr) == start_discover) {

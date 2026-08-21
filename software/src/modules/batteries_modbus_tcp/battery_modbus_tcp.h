@@ -50,8 +50,8 @@ public:
     };
 
     typedef std::function<void(bool event_log, const char *fmt, va_list args)> VLogFLnFunction;
-    typedef std::function<void(void)> WriterFinishedFunction;
-    typedef std::function<bool()> DiscoverCompleteFunction;
+    typedef std::function<void(void)> WriterFailureFunction;
+    typedef std::function<bool(void)> DiscoverCompleteFunction;
 
     struct WriterContext {
         Language language;
@@ -69,7 +69,7 @@ public:
         size_t first_non_precondition_index = 0; // == index + 1 of the last register block with a read* function code, 0 == no precondition
         size_t last_precondition_not_met_index_plus_one = 0;
         VLogFLnFunction vlogfln;
-        WriterFinishedFunction finished;
+        WriterFailureFunction failure;
         bool transact_pending = false;
         bool destroy_requested = false;
         bool precondition_met = false;
@@ -83,7 +83,7 @@ public:
     static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
                                         uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
                                         BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
-                                        WriterFinishedFunction &&finished, Language language = Language::English);
+                                        WriterFailureFunction &&failure, Language language = Language::English);
     static void destroy_writer(WriterContext *ctx);
 
     struct DiscoverContext {

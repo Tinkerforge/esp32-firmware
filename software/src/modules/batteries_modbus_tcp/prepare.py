@@ -184,6 +184,7 @@ for spec in specs:
     group = util.FlavoredName(spec['group']).get()
     variant = spec.get('variant')
     variant_name_under = ''
+    variant_name_slash = ''
 
     if variant != None:
         variant = util.FlavoredName(variant).get()
@@ -471,7 +472,13 @@ for group, modes in all_modes.items():
         indent = ''
 
     for variant in variants.get(group, [None]):
+        variant_name_under = ''
+        variant_name_slash = ''
+
         if variant != None:
+            variant_name_under = f'_{variant.under}'
+            variant_name_slash = f' / {variant.space}'
+
             specs_cpp.append(f'    case {group.camel}Variant::{variant.camel}:\r')
 
         specs_cpp.append(f'{indent}    switch (mode) {{\n'
@@ -490,11 +497,6 @@ for group, modes in all_modes.items():
 
             specs_cpp.append(f'{indent}    case BatteryMode::{mode.camel}:\r')
 
-            if variant != None:
-                variant_name_under = f'_{variant.under}'
-            else:
-                variant_name_under = ''
-
             if has_mapping:
                 specs_cpp.append(f'{indent}        *table_ptr = load_{group.under}{variant_name_under}_{mode.under}_table(config);\n'
                                  f'{indent}        break;')
@@ -503,9 +505,8 @@ for group, modes in all_modes.items():
                                  f'{indent}        break;')
 
         for mode in expected_modes:
-            specs_cpp.append(f'{indent}    case BatteryMode::{mode.camel}:\n'
-                             f'{indent}        *table_ptr = nullptr;\n'
-                             f'{indent}        break;')
+            print(f'Error: Mode {group.space}{variant_name_slash} / {mode.space} is missing')
+            sys.exit(1)
 
         specs_cpp.append(f'{indent}    default:\n'
                          f'{indent}        esp_system_abortf<64>("Unknown battery mode in loading table call: %d", static_cast<int>(mode));\n'
@@ -517,8 +518,7 @@ for group, modes in all_modes.items():
 
     if has_any_variant:
         specs_cpp.append(f'    default:\n'
-                          '        *table_ptr = nullptr;\n'
-                          '        break;\n'
+                          '        esp_system_abortf<64>("Unknown variant in loading table call: %d", static_cast<int>(variant));\n'
                           '    }\r')
 
     specs_cpp.append('}')
@@ -538,7 +538,8 @@ for group, modes in all_modes.items():
         specs_cpp.append(f'    load_{group.under}_table(&tables[static_cast<size_t>(BatteryMode::{mode.camel})]{", variant" if has_any_variant else ""}, BatteryMode::{mode.camel}{", config" if has_any_mapping else ""});\r')
 
     for mode in expected_modes:
-        specs_cpp.append(f'    tables[static_cast<size_t>(BatteryMode::{mode.camel})] = nullptr;\r')
+        print(f'Error: Mode {group.space}{variant_name_slash} / {mode.space} is missing')
+        sys.exit(1)
 
     specs_cpp.append('}')
 

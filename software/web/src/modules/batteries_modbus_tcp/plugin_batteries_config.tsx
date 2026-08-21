@@ -655,9 +655,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
     }
 
     render() {
-        let start_button_disabled = this.props.host.trim().length == 0
-                                 || !util.hasValue(this.props.port)
-                                 || (util.hasValue(this.props.register_blocks) && this.props.register_blocks.length == 0);
+        let start_button_disabled = this.props.host.trim().length == 0 || !util.hasValue(this.props.port);
 
         return <>
             <FormRow label={__("batteries_modbus_tcp.content.test")} label_muted={__("batteries_modbus_tcp.content.test_muted")}>
