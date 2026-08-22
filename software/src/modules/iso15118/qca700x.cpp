@@ -85,7 +85,8 @@ bool QCA700x::spi_init()
     bus_config.quadhd_io_num   = -1;
     bus_config.max_transfer_sz = QCA700X_DMA_SCRATCH_SIZE + 4;
 
-    esp_err_t err = spi_bus_initialize(SPI3_HOST, &bus_config, SPI_DMA_CH_AUTO);
+    // Note: SPI3 does not work with DMA_CH1. Don't use DMA_CH_AUTO here.
+    esp_err_t err = spi_bus_initialize(SPI3_HOST, &bus_config, SPI_DMA_CH2);
     if (err != ESP_OK) {
         iso15118.trace("QCA700x: spi_bus_initialize failed: %s", esp_err_to_name(err));
         return false;
