@@ -18,6 +18,58 @@
 #include "errors.h"
 #include "hal_common.h"
 
+// #define TF_SPITFP_DEBUG_ERROR_DUMP
+// Record recv buffer contents on SPITFP checksum/frame errors
+#ifdef TF_SPITFP_DEBUG_ERROR_DUMP
+#define TF_SPITFP_DEBUG_DUMP_RING_SIZE 16
+
+typedef struct {
+    uint32_t time_us;
+    char port;
+    uint8_t kind; // 0 = frame error, 1 = checksum error
+    uint8_t packet_len;
+    uint8_t expected_checksum;
+    uint8_t real_checksum;
+    uint8_t used;
+    uint8_t data[TF_PACKET_BUFFER_SIZE];
+} TF_SPITFPDebugDump;
+
+static TF_SPITFPDebugDump tf_spitfp_debug_dump_ring[TF_SPITFP_DEBUG_DUMP_RING_SIZE];
+static volatile uint32_t tf_spitfp_debug_dump_produced = 0;
+
+uint32_t tf_spitfp_debug_dump_count(void);
+uint32_t tf_spitfp_debug_dump_count(void) {
+    return tf_spitfp_debug_dump_produced;
+}
+
+bool tf_spitfp_debug_dump_get(uint32_t seq, TF_SPITFPDebugDump *out);
+bool tf_spitfp_debug_dump_get(uint32_t seq, TF_SPITFPDebugDump *out) {
+    *out = tf_spitfp_debug_dump_ring[seq & (TF_SPITFP_DEBUG_DUMP_RING_SIZE - 1)];
+
+    return tf_spitfp_debug_dump_produced - seq <= TF_SPITFP_DEBUG_DUMP_RING_SIZE;
+}
+
+static void tf_spitfp_dump_error(TF_SPITFP *spitfp, uint8_t kind, uint8_t packet_len, uint8_t expected_checksum, uint8_t real_checksum) {
+    TF_PacketBuffer *buf = &spitfp->recv_buf;
+    TF_SPITFPDebugDump *dump = &tf_spitfp_debug_dump_ring[tf_spitfp_debug_dump_produced & (TF_SPITFP_DEBUG_DUMP_RING_SIZE - 1)];
+
+    dump->time_us = tf_hal_current_time_us(spitfp->hal);
+    dump->port = tf_hal_get_port_name(spitfp->hal, spitfp->port_id);
+    dump->kind = kind;
+    dump->packet_len = packet_len;
+    dump->expected_checksum = expected_checksum;
+    dump->real_checksum = real_checksum;
+    dump->used = tf_packet_buffer_get_used(buf);
+
+    for (uint8_t i = 0; i < dump->used; i++) {
+        tf_packet_buffer_peek_offset(buf, &dump->data[i], i);
+    }
+
+    tf_spitfp_debug_dump_produced++;
+}
+#endif // TF_SPITFP_DEBUG_ERROR_DUMP
+
+
 #define STATE_IDLE 0
 #define STATE_TRANSCEIVE 1
 #define STATE_WAIT_FOR_ACK 2
@@ -77,6 +129,9 @@ static uint8_t bytes_to_recv(TF_SPITFP *spitfp, uint8_t bytes_missing, uint8_t b
 
 static bool process_packets(TF_SPITFP *spitfp, uint8_t *bytes_missing) {
     TF_PacketBuffer *buf = &(spitfp->recv_buf);
+#ifdef TF_SPITFP_DEBUG_ERROR_DUMP
+    bool error_dumped = false;
+#endif
 
     if (bytes_missing != NULL) {
         *bytes_missing = 0;
@@ -89,6 +144,12 @@ static bool process_packets(TF_SPITFP *spitfp, uint8_t *bytes_missing) {
         if (packet_len > TF_SPITFP_MAX_MESSAGE_LENGTH || (packet_len < TF_SPITFP_MIN_MESSAGE_LENGTH && packet_len != TF_SPITFP_PROTOCOL_OVERHEAD)) {
             //This can't be the start of a packet.
             if (packet_len != 0) {
+#ifdef TF_SPITFP_DEBUG_ERROR_DUMP
+                if (!error_dumped) {
+                    tf_spitfp_dump_error(spitfp, 0, packet_len, 0, 0);
+                    error_dumped = true;
+                }
+#endif
                 ++spitfp->error_count_frame;
             }
 
@@ -124,6 +185,12 @@ static bool process_packets(TF_SPITFP *spitfp, uint8_t *bytes_missing) {
                 return true;
             }
         } else {
+#ifdef TF_SPITFP_DEBUG_ERROR_DUMP
+            if (!error_dumped) {
+                tf_spitfp_dump_error(spitfp, 1, packet_len, packet_checksum, real_checksum);
+                error_dumped = true;
+            }
+#endif
             // checksum was wrong, advance one byte
             tf_packet_buffer_remove(buf, 1);
             ++spitfp->error_count_checksum;

@@ -41,6 +41,10 @@ private:
     uint32_t device_uids[MAX_DEVICES];
     size_t device_count = 0;
 
+    uint32_t nfc_uid = 0;
+    char nfc_uid_str[7] = {0};
+    bool nfc_mode_set = false;
+
     static constexpr uint32_t HIST_BOUNDS_US[] = {5000, 10000, 20000, 50000, 100000};
     static constexpr size_t HIST_BUCKETS = (sizeof(HIST_BOUNDS_US) / sizeof(HIST_BOUNDS_US[0])) + 1;
 
