@@ -60,7 +60,7 @@ bool ESP32Brick::initHAL()
     int result = tf_hal_create(&hal);
     if (result != TF_E_OK)
         return false;
-    tf_hal_set_timeout(&hal, 100000);
+    tf_hal_set_timeout(&hal, 250000);
     return true;
 }
 

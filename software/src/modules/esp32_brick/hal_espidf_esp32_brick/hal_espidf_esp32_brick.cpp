@@ -92,7 +92,8 @@ int tf_hal_create(TF_HAL *hal) {
     hspi_bus_config.quadhd_io_num = -1;
     hspi_bus_config.max_transfer_sz = TF_SPITFP_MAX_MESSAGE_LENGTH;
 
-    esp_err_t err = spi_bus_initialize(TF_SPI_BUS_HSPI, &hspi_bus_config, SPI_DMA_CH_AUTO);
+    // The ESP32 SPI DMA requires 4 byte aligned addresses and lengths, so we use the FIFO intead.
+    esp_err_t err = spi_bus_initialize(TF_SPI_BUS_HSPI, &hspi_bus_config, SPI_DMA_DISABLED);
 
     if (err != ESP_OK) {
         return TF_E_NOT_SUPPORTED;
@@ -107,7 +108,7 @@ int tf_hal_create(TF_HAL *hal) {
     vspi_bus_config.quadhd_io_num    = -1;
     vspi_bus_config.max_transfer_sz  = TF_SPITFP_MAX_MESSAGE_LENGTH;
 
-    err = spi_bus_initialize(TF_SPI_BUS_VSPI, &vspi_bus_config, SPI_DMA_CH_AUTO);
+    err = spi_bus_initialize(TF_SPI_BUS_VSPI, &vspi_bus_config, SPI_DMA_DISABLED);
 
     if (err != ESP_OK) {
         spi_bus_free(TF_SPI_BUS_HSPI);
@@ -184,16 +185,31 @@ int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer,
 
     spi_device_handle_t dev = get_spi_device(hal, port_id);
 
-    spi_transaction_t transaction = {};
-    transaction.length            = length * 8;  // Transaction length in bits
-    transaction.tx_buffer         = write_buffer;
-    transaction.rx_buffer         = read_buffer;
+    // Without DMA a transaction is limited to the 64 byte SPI FIFO.
+    static const uint32_t CHUNK_MAX = 64;
 
-    esp_err_t err = (length <= POLLING_TRANSFER_MAX_LENGTH)
-                  ? spi_device_polling_transmit(dev, &transaction)
-                  : spi_device_transmit(dev, &transaction);
+    while (length > 0) {
+        uint32_t chunk = (length > CHUNK_MAX) ? CHUNK_MAX : length;
 
-    return (err == ESP_OK) ? TF_E_OK : TF_E_NOT_SUPPORTED;
+        spi_transaction_t transaction = {};
+        transaction.length            = chunk * 8;  // Transaction length in bits
+        transaction.tx_buffer         = write_buffer;
+        transaction.rx_buffer         = read_buffer;
+
+        esp_err_t err = (chunk <= POLLING_TRANSFER_MAX_LENGTH)
+                      ? spi_device_polling_transmit(dev, &transaction)
+                      : spi_device_transmit(dev, &transaction);
+
+        if (err != ESP_OK) {
+            return TF_E_NOT_SUPPORTED;
+        }
+
+        write_buffer += chunk;
+        read_buffer  += chunk;
+        length       -= chunk;
+    }
+
+    return TF_E_OK;
 }
 
 uint32_t tf_hal_current_time_us(TF_HAL *hal) {
