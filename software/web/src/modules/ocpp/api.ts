@@ -1,5 +1,6 @@
 export interface config {
     enable: boolean;
+    protocol: number;
     url: string;
     identity: string;
     enable_auth: boolean;
