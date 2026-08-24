@@ -18,6 +18,9 @@ let x = {
             "ocpp": "OCPP",
             "enable_ocpp": "OCPP aktiviert",
             "enable_ocpp_desc": "Erlaubt dem konfigurierten OCPP-Server diese Wallbox zu steuern",
+            "protocol": "Protokollversion",
+            "protocol_16": "OCPP 1.6",
+            "protocol_21": "OCPP 2.1",
             "endpoint_url": "Endpoint-URL",
             "endpoint_url_invalid": "Die Endpoint-URL muss mit entweder ws:// (unverschlüsselt) oder wss:// (verschlüsselt) beginnen und darf nicht mit einem / enden.",
             "identity": "Ladepunkt-Identität",
@@ -80,6 +83,11 @@ let x = {
             "charge_point_state_6": "Fehler",
             "charge_point_state_7": "Soft Reset",
             "charge_point_state_8": "Hard Reset",
+
+            "charge_point_state21_0": "Serverregistrierung läuft",
+            "charge_point_state21_1": "Serverregistrierung läuft",
+            "charge_point_state21_2": "Serverregistrierung abgelehnt",
+            "charge_point_state21_3": "Verfügbar",
 
             "status_0": "Verfügbar",
             "status_1": "Bereite vor",
