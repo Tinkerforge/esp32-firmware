@@ -41,6 +41,9 @@ public:
 
     bool on_tag_seen(const char *tag_id);
 
+    bool get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out);
+    std::unique_ptr<char[]> get_iso15118_root_bundle(bool oem);
+
     void (*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;
 

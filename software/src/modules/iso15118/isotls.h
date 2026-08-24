@@ -75,9 +75,6 @@
 // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
 // =============================================================================
 
-// Define this to use embedded test certificates instead of LittleFS
-#define USE_EMBEDDED_TLS_CERTS
-
 // TLS handshake state machine
 enum class TlsHandshakeState : uint8_t {
     NOT_STARTED,
@@ -112,6 +109,9 @@ public:
     bool is_initialized() const { return initialized; }
     bool is_session_active() const { return session_active; }
     TlsHandshakeState get_handshake_state() const { return handshake_state; }
+
+    // Set when the certificate source changed, triggers a reload before the next TLS connection
+    bool certs_dirty = false;
 
     // Mutual TLS authentication control (ISO 15118-20)
     // When enabled (default), TLS 1.3 handshakes request and verify the EVCC
