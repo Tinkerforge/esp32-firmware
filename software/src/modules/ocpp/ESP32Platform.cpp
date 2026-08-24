@@ -82,7 +82,13 @@ struct PlatformContext {
     std::unique_ptr<unsigned char[]> client_key = nullptr;
     bool use_cert_bundle = false;
     bool recreate_client = false;
+
+    std::unique_ptr<char[]> frag_buf = nullptr;
 };
+
+// The largest messages currently seen are CertificateSigned chains, Get15118EVCertificate EXI responses
+// TODO: Measure how big the max message really is
+#define OCPP_RECV_MESSAGE_MAX 32768
 
 // EVSE, meter and identity state is shared: the hooks for these take no
 // context and only the connection controlling the EVSE uses them.
@@ -128,8 +134,29 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             if (!ctx_alive(p)) {
                 return;
             }
-            p->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, p->recv_cb_userdata);
-        });
+
+            if (data->payload_offset == 0 && data->data_len == data->payload_len) {
+                p->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, p->recv_cb_userdata);
+                return;
+            }
+
+            // The message exceeds the websocket rx buffer and arrives in chunks
+            if (data->payload_offset == 0) {
+                p->frag_buf = data->payload_len <= OCPP_RECV_MESSAGE_MAX ? heap_alloc_array<char>(data->payload_len) : nullptr;
+                if (p->frag_buf == nullptr) {
+                    logger.printfln("Dropping oversized message (%d bytes)", data->payload_len);
+                }
+            }
+            if (p->frag_buf == nullptr || data->payload_offset + data->data_len > data->payload_len) {
+                p->frag_buf = nullptr;
+                return;
+            }
+            memcpy(p->frag_buf.get() + data->payload_offset, data->data_ptr, data->data_len);
+            if (data->payload_offset + data->data_len == data->payload_len) {
+                p->recv_cb(p->frag_buf.get(), data->payload_len, p->recv_cb_userdata);
+                p->frag_buf = nullptr;
+            }
+        }, 60_s); // TODO: 60s timeout -> measure how long we actually need. Have seen >10s with CertificateSigned / secp521r1
         break;
     case WEBSOCKET_EVENT_PONG:
         task_scheduler.scheduleOnce([p](){
@@ -1048,6 +1075,14 @@ void platform_set_charging_phases(int32_t connectorId, uint8_t phases)
             last_phases = phases;
         }
     }
+#endif
+}
+
+void platform_cert_store_changed21(void *ctx)
+{
+    (void)ctx;
+#if MODULE_ISO15118_AVAILABLE()
+    iso15118.common.tls.certs_dirty = true;
 #endif
 }
 

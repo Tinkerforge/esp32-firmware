@@ -28,25 +28,13 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <string.h>
+#include <memory>
 
 #include "mbedtls/error.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/ssl_ciphersuites.h"
 #include "mbedtls/version.h"
 #include "mbedtls/x509_crt.h"
-
-#ifndef USE_EMBEDDED_TLS_CERTS
-#include <LittleFS.h>
-// Certificate paths for ISO 15118-2
-#define ISO15118_2_CERT_CHAIN_PATH "/iso15118/iso2/secc_cert_chain.pem"
-#define ISO15118_2_PRIVATE_KEY_PATH "/iso15118/iso2/secc_key.pem"
-// Certificate paths for ISO 15118-20
-#define ISO15118_20_CERT_CHAIN_PATH "/iso15118/iso20/secc_cert_chain.pem"
-#define ISO15118_20_PRIVATE_KEY_PATH "/iso15118/iso20/secc_key.pem"
-// Trusted root CA paths for mutual TLS (ISO 15118-20)
-#define ISO15118_20_OEM_ROOT_CA_PATH "/iso15118/iso20/oem_root_ca.pem"
-#define ISO15118_20_V2G_ROOT_CA_PATH "/iso15118/iso20/v2g_root_ca.pem"
-#endif
 
 #include "gcc_warnings.h"
 
@@ -168,213 +156,56 @@ static int tls_net_recv(void *ctx, unsigned char *buf, size_t len)
 
 #pragma GCC diagnostic pop
 
+static uint8_t *copy_pem(const char *pem, size_t *len_out)
+{
+    size_t len = strlen(pem) + 1;
+    uint8_t *buf = static_cast<uint8_t*>(calloc_psram_or_dram(len, 1));
+    if (buf != nullptr) {
+        memcpy(buf, pem, len);
+        *len_out = len;
+    }
+    return buf;
+}
+
 bool ISOTLS::load_certificates()
 {
-#ifdef USE_EMBEDDED_TLS_CERTS
-    iso15118.trace("ISOTLS: Using embedded dev certificates");
+    // Certs from the OCPP certificate store wins per item, the embedded dev certificates are the fallback.
+    // TODO: Once we have a stable/easy way to provision the certs through ocpp for development, we should remove the dev certs completely.
+    std::unique_ptr<char[]> live_chain_iso2,  live_key_iso2;
+    std::unique_ptr<char[]> live_chain_iso20, live_key_iso20;
+    std::unique_ptr<char[]> live_v2g_roots,   live_oem_roots;
+#if MODULE_OCPP_AVAILABLE()
+    ocpp.get_iso15118_secc_chain(false, &live_chain_iso2,  &live_key_iso2);
+    ocpp.get_iso15118_secc_chain(true,  &live_chain_iso20, &live_key_iso20);
+    live_v2g_roots = ocpp.get_iso15118_root_bundle(false);
+    live_oem_roots = ocpp.get_iso15118_root_bundle(true);
+#endif
 
-    // Load ISO 15118-2 certificates (secp256r1)
-    cert_chain_pem_len_iso2 = strlen(dev_cert_chain_pem_iso2) + 1;
-    cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
-    if (cert_chain_pem_iso2 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
+    cert_chain_pem_iso2   = copy_pem(live_chain_iso2  ? live_chain_iso2.get()  : dev_cert_chain_pem_iso2,   &cert_chain_pem_len_iso2);
+    private_key_pem_iso2  = copy_pem(live_key_iso2    ? live_key_iso2.get()    : dev_private_key_pem_iso2,  &private_key_pem_len_iso2);
+    cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : dev_cert_chain_pem_iso20,  &cert_chain_pem_len_iso20);
+    private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : dev_private_key_pem_iso20, &private_key_pem_len_iso20);
+    oem_root_ca_pem_iso20 = copy_pem(live_oem_roots   ? live_oem_roots.get()   : dev_oem_root_ca_pem_iso20, &oem_root_ca_pem_len_iso20);
+    v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots   ? live_v2g_roots.get()   : dev_v2g_root_ca_pem_iso20, &v2g_root_ca_pem_len_iso20);
+
+    if ((cert_chain_pem_iso2 == nullptr)   || (private_key_pem_iso2 == nullptr)  ||
+        (cert_chain_pem_iso20 == nullptr)  || (private_key_pem_iso20 == nullptr) ||
+        (oem_root_ca_pem_iso20 == nullptr) || (v2g_root_ca_pem_iso20 == nullptr)) {
+        iso15118.trace("ISOTLS: Failed to allocate memory for certificates");
         return false;
     }
-    memcpy(cert_chain_pem_iso2, dev_cert_chain_pem_iso2, cert_chain_pem_len_iso2);
 
-    private_key_pem_len_iso2 = strlen(dev_private_key_pem_iso2) + 1;
-    private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
-    if (private_key_pem_iso2 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 private key");
-        return false;
-    }
-    memcpy(private_key_pem_iso2, dev_private_key_pem_iso2, private_key_pem_len_iso2);
-    iso15118.trace("ISOTLS: Loaded ISO 15118-2 certs (secp256r1): chain=%zu bytes, key=%zu bytes",
+    iso15118.trace("ISOTLS: ISO 15118-2 SECC chain (secp256r1) from %s: chain=%zu bytes, key=%zu bytes",
+                    live_chain_iso2 ? "OCPP store" : "dev certs",
                     cert_chain_pem_len_iso2 - 1, private_key_pem_len_iso2 - 1);
-
-    // Load ISO 15118-20 certificates (secp521r1)
-    cert_chain_pem_len_iso20 = strlen(dev_cert_chain_pem_iso20) + 1;
-    cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
-    if (cert_chain_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
-        return false;
-    }
-    memcpy(cert_chain_pem_iso20, dev_cert_chain_pem_iso20, cert_chain_pem_len_iso20);
-
-    private_key_pem_len_iso20 = strlen(dev_private_key_pem_iso20) + 1;
-    private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
-    if (private_key_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 private key");
-        return false;
-    }
-    memcpy(private_key_pem_iso20, dev_private_key_pem_iso20, private_key_pem_len_iso20);
-    iso15118.trace("ISOTLS: Loaded ISO 15118-20 certs (secp521r1): chain=%zu bytes, key=%zu bytes",
+    iso15118.trace("ISOTLS: ISO 15118-20 SECC chain (secp521r1) from %s: chain=%zu bytes, key=%zu bytes",
+                    live_chain_iso20 ? "OCPP store" : "dev certs",
                     cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
-
-    // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
-    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
-    // [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
-    oem_root_ca_pem_len_iso20 = strlen(dev_oem_root_ca_pem_iso20) + 1;
-    oem_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(oem_root_ca_pem_len_iso20, 1));
-    if (oem_root_ca_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 OEM Root CA");
-        return false;
-    }
-    memcpy(oem_root_ca_pem_iso20, dev_oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
-
-    v2g_root_ca_pem_len_iso20 = strlen(dev_v2g_root_ca_pem_iso20) + 1;
-    v2g_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(v2g_root_ca_pem_len_iso20, 1));
-    if (v2g_root_ca_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 V2G Root CA");
-        return false;
-    }
-    memcpy(v2g_root_ca_pem_iso20, dev_v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20);
-
-    iso15118.trace("ISOTLS: Loaded trusted root CAs for ISO 15118-20 mutual TLS: OEM=%zu bytes, V2G=%zu bytes",
-                    oem_root_ca_pem_len_iso20 - 1, v2g_root_ca_pem_len_iso20 - 1);
+    iso15118.trace("ISOTLS: Trusted roots for ISO 15118-20 mutual TLS: OEM from %s (%zu bytes), V2G from %s (%zu bytes)",
+                    live_oem_roots ? "OCPP store" : "dev certs", oem_root_ca_pem_len_iso20 - 1,
+                    live_v2g_roots ? "OCPP store" : "dev certs", v2g_root_ca_pem_len_iso20 - 1);
 
     return true;
-
-#else // !USE_EMBEDDED_TLS_CERTS
-    // Load ISO 15118-2 certificate chain from LittleFS
-    if (!LittleFS.exists(ISO15118_2_CERT_CHAIN_PATH)) {
-        iso15118.trace("ISOTLS: ISO2 certificate chain file not found: %s", ISO15118_2_CERT_CHAIN_PATH);
-        return false;
-    }
-
-    File cert_file = LittleFS.open(ISO15118_2_CERT_CHAIN_PATH, "r");
-    if (!cert_file) {
-        iso15118.trace("ISOTLS: Failed to open ISO2 certificate chain file");
-        return false;
-    }
-
-    cert_chain_pem_len_iso2 = cert_file.size() + 1;
-    cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
-    if (cert_chain_pem_iso2 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
-        cert_file.close();
-        return false;
-    }
-
-    size_t bytes_read = cert_file.read(cert_chain_pem_iso2, cert_chain_pem_len_iso2 - 1);
-    cert_chain_pem_iso2[bytes_read] = 0;
-    cert_file.close();
-
-    if (!LittleFS.exists(ISO15118_2_PRIVATE_KEY_PATH)) {
-        iso15118.trace("ISOTLS: ISO2 private key file not found: %s", ISO15118_2_PRIVATE_KEY_PATH);
-        return false;
-    }
-
-    File key_file = LittleFS.open(ISO15118_2_PRIVATE_KEY_PATH, "r");
-    if (!key_file) {
-        iso15118.trace("ISOTLS: Failed to open ISO2 private key file");
-        return false;
-    }
-
-    private_key_pem_len_iso2 = key_file.size() + 1;
-    private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
-    if (private_key_pem_iso2 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO2 private key");
-        key_file.close();
-        return false;
-    }
-
-    bytes_read = key_file.read(private_key_pem_iso2, private_key_pem_len_iso2 - 1);
-    private_key_pem_iso2[bytes_read] = 0;
-    key_file.close();
-
-    iso15118.trace("ISOTLS: Loaded ISO 15118-2 certs from LittleFS");
-
-    // Load ISO 15118-20 certificate chain from LittleFS
-    if (!LittleFS.exists(ISO15118_20_CERT_CHAIN_PATH)) {
-        iso15118.trace("ISOTLS: ISO20 certificate chain file not found: %s", ISO15118_20_CERT_CHAIN_PATH);
-        return false;
-    }
-
-    cert_file = LittleFS.open(ISO15118_20_CERT_CHAIN_PATH, "r");
-    if (!cert_file) {
-        iso15118.trace("ISOTLS: Failed to open ISO20 certificate chain file");
-        return false;
-    }
-
-    cert_chain_pem_len_iso20 = cert_file.size() + 1;
-    cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
-    if (cert_chain_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
-        cert_file.close();
-        return false;
-    }
-
-    bytes_read = cert_file.read(cert_chain_pem_iso20, cert_chain_pem_len_iso20 - 1);
-    cert_chain_pem_iso20[bytes_read] = 0;
-    cert_file.close();
-
-    if (!LittleFS.exists(ISO15118_20_PRIVATE_KEY_PATH)) {
-        iso15118.trace("ISOTLS: ISO20 private key file not found: %s", ISO15118_20_PRIVATE_KEY_PATH);
-        return false;
-    }
-
-    key_file = LittleFS.open(ISO15118_20_PRIVATE_KEY_PATH, "r");
-    if (!key_file) {
-        iso15118.trace("ISOTLS: Failed to open ISO20 private key file");
-        return false;
-    }
-
-    private_key_pem_len_iso20 = key_file.size() + 1;
-    private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
-    if (private_key_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for ISO20 private key");
-        key_file.close();
-        return false;
-    }
-
-    bytes_read = key_file.read(private_key_pem_iso20, private_key_pem_len_iso20 - 1);
-    private_key_pem_iso20[bytes_read] = 0;
-    key_file.close();
-
-    iso15118.trace("ISOTLS: Loaded ISO 15118-20 certs from LittleFS");
-
-    // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
-    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
-    // These are optional - if not present, mutual auth will be disabled
-    if (LittleFS.exists(ISO15118_20_OEM_ROOT_CA_PATH)) {
-        File ca_file = LittleFS.open(ISO15118_20_OEM_ROOT_CA_PATH, "r");
-        if (ca_file) {
-            oem_root_ca_pem_len_iso20 = ca_file.size() + 1;
-            oem_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(oem_root_ca_pem_len_iso20, 1));
-            if (oem_root_ca_pem_iso20 != nullptr) {
-                bytes_read = ca_file.read(oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20 - 1);
-                oem_root_ca_pem_iso20[bytes_read] = 0;
-                iso15118.trace("ISOTLS: Loaded OEM Root CA from LittleFS");
-            }
-            ca_file.close();
-        }
-    } else {
-        iso15118.trace("ISOTLS: OEM Root CA not found at %s (mutual TLS will use V2G Root CA only)", ISO15118_20_OEM_ROOT_CA_PATH);
-    }
-
-    if (LittleFS.exists(ISO15118_20_V2G_ROOT_CA_PATH)) {
-        File ca_file = LittleFS.open(ISO15118_20_V2G_ROOT_CA_PATH, "r");
-        if (ca_file) {
-            v2g_root_ca_pem_len_iso20 = ca_file.size() + 1;
-            v2g_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(v2g_root_ca_pem_len_iso20, 1));
-            if (v2g_root_ca_pem_iso20 != nullptr) {
-                bytes_read = ca_file.read(v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20 - 1);
-                v2g_root_ca_pem_iso20[bytes_read] = 0;
-                iso15118.trace("ISOTLS: Loaded V2G Root CA from LittleFS");
-            }
-            ca_file.close();
-        }
-    } else {
-        iso15118.trace("ISOTLS: V2G Root CA not found at %s (mutual TLS will use OEM Root CA only)", ISO15118_20_V2G_ROOT_CA_PATH);
-    }
-
-    if (oem_root_ca_pem_iso20 == nullptr && v2g_root_ca_pem_iso20 == nullptr) {
-        iso15118.trace("ISOTLS: WARNING: No trusted root CAs found for ISO 15118-20 mutual TLS");
-    }
-
-    return true;
-#endif // USE_EMBEDDED_TLS_CERTS
 }
 
 bool ISOTLS::setup()
