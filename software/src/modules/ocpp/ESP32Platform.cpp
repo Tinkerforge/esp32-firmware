@@ -960,8 +960,10 @@ EvseState21 platform_get_evse_state21(void *_ctx, int32_t evse_id)
             return EvseState21::NotConnected;
 
         case CHARGER_STATE_WAITING_FOR_RELEASE:
-        case CHARGER_STATE_READY_TO_CHARGE:
             return EvseState21::Connected;
+
+        case CHARGER_STATE_READY_TO_CHARGE:
+            return EvseState21::ReadyToCharge;
 
         case CHARGER_STATE_CHARGING:
             return EvseState21::Charging;
@@ -970,6 +972,31 @@ EvseState21 platform_get_evse_state21(void *_ctx, int32_t evse_id)
         default:
             return EvseState21::Faulted;
     }
+}
+
+void platform_tag_expected21(void *_ctx, int32_t evse_id)
+{
+    platform_tag_expected(evse_id);
+}
+
+void platform_clear_tag_expected21(void *_ctx, int32_t evse_id)
+{
+    platform_clear_tag_expected(evse_id);
+}
+
+void platform_tag_accepted21(void *_ctx, int32_t evse_id, const char *tag)
+{
+    platform_tag_accepted(evse_id, tag);
+}
+
+void platform_tag_rejected21(void *_ctx, int32_t evse_id, const char *tag, TagRejectionType21 trt)
+{
+    platform_tag_rejected(evse_id, tag, (TagRejectionType)(size_t)trt);
+}
+
+void platform_tag_timed_out21(void *_ctx, int32_t evse_id)
+{
+    platform_tag_timed_out(evse_id);
 }
 
 void platform_set_charging_allowed21(void *_ctx, int32_t evse_id, bool allowed)
