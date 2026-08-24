@@ -306,17 +306,19 @@ void RemoteAccess::setup()
     initialized = true;
 
     if (!config.get("service_token_user_uuid")->asString().isEmpty()) {
-        const uint32_t reg_min = config.get("service_token_timestamp_minutes")->asUint();
-        const uint32_t now_min = rtc.timestamp_minutes();
-        if (reg_min != 0) {
-            const uint32_t deadline_min = reg_min + 24 * 60;
-            if (now_min >= deadline_min) {
-                schedule_service_token_removal(0_ms);
-            } else {
-                const uint32_t remaining_min = deadline_min - now_min;
-                schedule_service_token_removal(millis_t(static_cast<int64_t>(remaining_min * 60 * 1000)));
+        task_scheduler.scheduleOnce([this] {
+            const uint32_t reg_min = config.get("service_token_timestamp_minutes")->asUint();
+            const uint32_t now_min = rtc.timestamp_minutes();
+            if (reg_min != 0) {
+                const uint32_t deadline_min = reg_min + 24 * 60;
+                if (now_min >= deadline_min) {
+                    schedule_service_token_removal(0_ms);
+                } else {
+                    const uint32_t remaining_min = deadline_min - now_min;
+                    schedule_service_token_removal(millis_t(static_cast<int64_t>(remaining_min * 60 * 1000)));
+                }
             }
-        }
+        });
     }
 
     if (!config.get("enable")->asBool())
