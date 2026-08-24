@@ -133,6 +133,7 @@ interface RemoteAccessState {
     authMethod: string;
     invalidFeedback: string;
     authToken: string;
+    service_token_remaining_minutes: number | null;
 }
 
 export class RemoteAccess extends ConfigComponent<
@@ -142,6 +143,8 @@ export class RemoteAccess extends ConfigComponent<
 > {
     resolve: (arg0?: any) => void;
     reject: (arg0?: any) => void;
+    service_token_remaining_interval_id: number = undefined;
+
     constructor() {
         super(
             "remote_access/config",
@@ -179,7 +182,51 @@ export class RemoteAccess extends ConfigComponent<
             authMethod: "password",
             invalidFeedback: "",
             authToken: "",
+            service_token_remaining_minutes: null,
         });
+    }
+
+    override componentDidUpdate(prevProps: never, prevState: API.getType["remote_access/config"] & RemoteAccessState & { internal_isDirty: boolean }) {
+        if (prevState.service_token_user_uuid !== this.state.service_token_user_uuid ||
+            prevState.service_token_timestamp_minutes !== this.state.service_token_timestamp_minutes) {
+            this.update_service_token_remaining();
+        }
+    }
+
+    override componentWillUnmount() {
+        if (this.service_token_remaining_interval_id !== undefined) {
+            window.clearInterval(this.service_token_remaining_interval_id);
+            this.service_token_remaining_interval_id = undefined;
+        }
+    }
+
+    get_service_token_remaining_minutes(): number | null {
+        if (this.state.service_token_user_uuid === "" ||
+            this.state.service_token_timestamp_minutes === 0) {
+            return null;
+        }
+
+        const deadline_min = this.state.service_token_timestamp_minutes + 24 * 60;
+        const now_min = Math.floor(util.get_date_now_1m_update_rate() / 60000);
+        return Math.max(0, deadline_min - now_min);
+    }
+
+    update_service_token_remaining() {
+        const remaining = this.get_service_token_remaining_minutes();
+
+        this.setState({ service_token_remaining_minutes: remaining });
+
+        if (remaining !== null) {
+            if (this.service_token_remaining_interval_id === undefined) {
+                this.service_token_remaining_interval_id = window.setInterval(
+                    () => this.setState({ service_token_remaining_minutes: this.get_service_token_remaining_minutes() }),
+                    5000,
+                );
+            }
+        } else if (this.service_token_remaining_interval_id !== undefined) {
+            window.clearInterval(this.service_token_remaining_interval_id);
+            this.service_token_remaining_interval_id = undefined;
+        }
     }
 
     isServiceTokenAllowed(): boolean {
@@ -1156,12 +1203,20 @@ export class RemoteAccess extends ConfigComponent<
                         </FormRow>
                         <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
                             <FormRow
-                                label={__(
-                                    "remote_access.content.service_token_register",
-                                )}
-                                label_muted={__(
-                                    "remote_access.content.service_token_register_desc",
-                                )(this.state.relay_host)}
+                                label={__("remote_access.content.service_token_register")}
+                                label_muted={
+                                    this.state.service_token_remaining_minutes !== null
+                                        ? __("remote_access.content.service_token_register_active_desc")(
+                                              this.state.relay_host,
+                                              this.state.service_token_remaining_minutes,
+                                          )
+                                        : undefined
+                                }
+                                help={
+                                    this.state.service_token_remaining_minutes === null
+                                        ? __("remote_access.content.service_token_register_desc")(this.state.relay_host)
+                                        : undefined
+                                }
                             >
                                 <Button
                                     className="w-100"
