@@ -867,8 +867,9 @@ Examples:
     signal.signal(signal.SIGTERM, cleanup_handler)
 
     # Setup TLS if requested
-    # Note: TLS is always supported by the charger. When the EV requests TLS in SDP,
-    # the charger will respond with TLS. No need to enable it on the charger side.
+    # Note: The charger only offers TLS in its SDP response when charging via
+    # ISO 15118-20 is enabled in its iso15118 config (charge_via_iso15118).
+    # Without it the charger answers with security = no TLS.
     use_tls = getattr(args, 'tls', False)
     pki_path = None
 
@@ -892,6 +893,7 @@ Examples:
         # Set PKI_PATH environment variable for iso15118 library
         os.environ["PKI_PATH"] = str(pki_path)
         print(f"  TLS enabled, PKI_PATH={pki_path}")
+        print("  Note: the charger only offers TLS when charge_via_iso15118 is enabled in its iso15118 config")
     elif has_iso20:
         print("\nWarning: ISO 15118-20 protocols selected without --tls.")
         print("  ISO 15118-20 requires TLS 1.3. Consider adding --tls.")

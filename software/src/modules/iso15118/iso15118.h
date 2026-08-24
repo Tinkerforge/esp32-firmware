@@ -117,6 +117,10 @@ public:
     // retrying C_SEQU_RETRY times with State E/F cycling.
     bool is_fast_timeout() const { return config.get("fast_timeout")->asBool(); }
 
+    // Returns true if TLS may be offered in the SDP response. TLS is tied to
+    // charging via ISO 15118-20.
+    bool is_tls_enabled() const { return config.get("charge_via_iso15118")->asBool(); }
+
     // Experimental DC->AC fallback methods for EVs that refuse to
     // start basic AC charging after a graceful ISO 15118 session stop.
     // When true, begin_iec_transition() uses the ISO 15118-3 error teardown
