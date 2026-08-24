@@ -19,10 +19,16 @@
 
 #pragma once
 
-#include <ocpp/ChargePoint.h>
+#include <ocpp16/ChargePoint16.h>
+#include <ocpp21/ChargePoint21.h>
 
 #include "module.h"
 #include "config.h"
+
+enum class OcppProtocolVersion : uint8_t {
+    V16 = 0,
+    V21 = 1,
+};
 
 class Ocpp final : public IModule
 {
@@ -47,6 +53,7 @@ private:
     void apply_config();
 
     bool start_client();
+    bool start_client_21();
 
     ConfigRoot change_configuration;
 
@@ -54,4 +61,5 @@ private:
     bool client_started = false;
 
     std::unique_ptr<OcppChargePoint> cp;
+    std::unique_ptr<Ocpp21::ChargePoint> cp21;
 };
