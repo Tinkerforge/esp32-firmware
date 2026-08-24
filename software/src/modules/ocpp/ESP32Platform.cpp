@@ -999,6 +999,25 @@ void platform_tag_timed_out21(void *_ctx, int32_t evse_id)
     platform_tag_timed_out(evse_id);
 }
 
+void platform_register_stop_callback21(void *_ctx, void (*cb)(int32_t, StopReason21, void *), void *user_data)
+{
+    (void)_ctx;
+    (void)cb;
+    (void)user_data;
+}
+
+void platform_lock_cable21(void *_ctx, int32_t evse_id)
+{
+    (void)_ctx;
+    (void)evse_id;
+}
+
+void platform_unlock_cable21(void *_ctx, int32_t evse_id)
+{
+    (void)_ctx;
+    (void)evse_id;
+}
+
 void platform_set_charging_allowed21(void *_ctx, int32_t evse_id, bool allowed)
 {
     uint16_t current = allowed ? 32000 : 0;
