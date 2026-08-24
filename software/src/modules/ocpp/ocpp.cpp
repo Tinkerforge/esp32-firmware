@@ -26,8 +26,10 @@
 #include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
+#include "tools.h"
 #include "tools/fs.h"
 
+#include "common/Platform.h"
 #include "ocpp16/Configuration16.h"
 
 static void reset_state(Config *state) {
@@ -234,6 +236,7 @@ void Ocpp::apply_config() {
 
     cp = nullptr;
     cp21 = nullptr;
+    platform_cert_store_changed21(nullptr);
 
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0) {
         return;
@@ -250,6 +253,7 @@ void Ocpp::apply_config() {
             return;
         }
 
+        platform_cert_store_changed21(nullptr);
         task_id = task_scheduler.scheduleWithFixedDelay([this](){
             cp21->tick();
             // The 2.1 stack has no state callbacks yet: poll the
@@ -273,6 +277,87 @@ void Ocpp::apply_config() {
     task_id = task_scheduler.scheduleWithFixedDelay([this](){
         cp->tick();
     }, 100_ms, 100_ms);
+}
+
+bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+
+    // One chain per anchoring V2G root can be stored.
+    // Prefer a chain that is currently valid and the freshest one on a tie.
+    auto group = iso20 ? Ocpp21::CertGroup::V2G20Chain : Ocpp21::CertGroup::V2GChain;
+    time_t now = platform_get_system_time(cp21->connection.platform_ctx);
+    const Ocpp21::CertEntry *best = nullptr;
+    bool best_valid = false;
+    for (const auto &e : cp21->cert_store.all()) {
+        if (e.group != group) {
+            continue;
+        }
+        bool valid = e.not_before <= now && now <= e.not_after;
+        if (best == nullptr || (valid && !best_valid) || (valid == best_valid && e.not_before > best->not_before)) {
+            best = &e;
+            best_valid = valid;
+        }
+    }
+    if (best == nullptr) {
+        return false;
+    }
+
+    auto chain = heap_alloc_array<char>(OCPP21_CERT_PEM_MAX + 1);
+    if (chain == nullptr || cp21->cert_store.readPem(*best, chain.get(), OCPP21_CERT_PEM_MAX + 1) == 0) {
+        return false;
+    }
+
+    static constexpr size_t key_pem_max = 2048;
+    auto key = heap_alloc_array<char>(key_pem_max + 1);
+    if (key == nullptr) {
+        return false;
+    }
+    size_t key_len = platform_read_file(cp21->cert_store.keyPath(best->id).c_str(), key.get(), key_pem_max);
+    if (key_len == 0) {
+        return false;
+    }
+    key.get()[key_len] = '\0';
+
+    *chain_pem_out = std::move(chain);
+    *key_pem_out = std::move(key);
+    return true;
+}
+
+std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(bool oem)
+{
+    if (!cp21 || !client_started) {
+        return nullptr;
+    }
+
+    auto group = oem ? Ocpp21::CertGroup::OEMRoot : Ocpp21::CertGroup::V2GRoot;
+    size_t count = 0;
+    for (const auto &e : cp21->cert_store.all()) {
+        if (e.group == group) {
+            ++count;
+        }
+    }
+    if (count == 0) {
+        return nullptr;
+    }
+
+    auto bundle = heap_alloc_array<char>(count * OCPP21_ROOT_PEM_MAX + 1);
+    if (bundle == nullptr) {
+        return nullptr;
+    }
+    size_t used = 0;
+    for (const auto &e : cp21->cert_store.all()) {
+        if (e.group != group) {
+            continue;
+        }
+        used += cp21->cert_store.readPem(e, bundle.get() + used, OCPP21_ROOT_PEM_MAX + 1);
+    }
+    if (used == 0) {
+        return nullptr;
+    }
+    return bundle;
 }
 
 void Ocpp::setup()
