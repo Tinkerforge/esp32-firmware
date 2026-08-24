@@ -720,7 +720,10 @@ bool ISOTLS::do_handshake()
     }
 
     if (ret == 0) {
-        if (verification_context->intermediates_valid) {
+        // verification_context only exists for mutual auth handshakes
+        // (TLS 1.3 with trusted CAs). A plain TLS 1.2 handshake completes
+        // without it and has no intermediates to check here.
+        if (verification_context == nullptr || verification_context->intermediates_valid) {
             // Handshake completed successfully
             handshake_state = TlsHandshakeState::COMPLETED;
             session_active = true;
@@ -730,7 +733,7 @@ bool ISOTLS::do_handshake()
 
             iso15118.trace("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
 
-            if (!verification_context->leaf_cert_cached) {
+            if (verification_context != nullptr && !verification_context->leaf_cert_cached) {
                 cache_leaf_cert();
             }
 
