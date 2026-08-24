@@ -17,10 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <ocpp/Platform.h>
-#include <ocpp/ChargePoint.h>
-#include <ocpp/Configuration.h>
-#include <ocpp/Types.h>
+#include <common/Platform.h>
+#include <ocpp16/Platform16.h>
+#include <ocpp16/ChargePoint16.h>
+#include <ocpp16/Configuration16.h>
+#include <ocpp16/Types16.h>
+#include <ocpp21/Platform21.h>
 #include <time.h>
 #define URL_PARSER_IMPLEMENTATION_STATIC
 #include <lib/url.h>
@@ -55,61 +57,86 @@ struct PlatformMeterCache {
     uint32_t current_offered_l3_idx;
 };
 
+// Per connection state, one instance per platform_init. The pointer is
+// threaded through the platform API as void *ctx.
 struct PlatformContext {
-    bool feature_evse = false;
-    bool feature_phase_switch = false;
-
     void(*recv_cb)(char *, size_t, void *) = nullptr;
     void *recv_cb_userdata = nullptr;
 
     void (*pong_cb)(void *) = nullptr;
     void *pong_cb_userdata = nullptr;
 
+    void (*conn_error_cb)(PlatformConnectionError, void *) = nullptr;
+    void *conn_error_cb_userdata = nullptr;
+
     tf_websocket_client_handle_t client = nullptr;
     bool client_running = false;
     std::unique_ptr<String[]> auth_headers = nullptr;
     size_t auth_headers_count = 0;
     size_t next_auth_header = 0;
-    PlatformMeterCache meter_cache;
-    std::unique_ptr<unsigned char[]> cert = nullptr;
 
-    OcppDirEnt dir_ent{};
-
-    char model[21] = {};
+    String url;
+    String subprotocol;
+    std::unique_ptr<unsigned char[]> ca_cert = nullptr;
+    std::unique_ptr<unsigned char[]> client_cert = nullptr;
+    std::unique_ptr<unsigned char[]> client_key = nullptr;
+    bool use_cert_bundle = false;
+    bool recreate_client = false;
 };
 
-// TODO: It's ugly to hold the context pointer here,
-// but tfocpp only passes the void *ctx in some functions.
-// Once that's fixed, we can rely on the passed pointer.
-static std::unique_ptr<PlatformContext> ctx;
+// EVSE, meter and identity state is shared: the hooks for these take no
+// context and only the connection controlling the EVSE uses them.
+static bool feature_evse = false;
+static bool feature_phase_switch = false;
+static PlatformMeterCache meter_cache;
+static char model_buf[21] = {};
 
-#define REQUIRE_FEATURE(x, default_val) do { if (!ctx->feature_##x && !api.hasFeature(#x)) { return default_val; } ctx->feature_##x = true;} while(0)
+// Active contexts. Callbacks scheduled from the websocket task validate
+// their context here, platform_destroy may run before they execute.
+#define MAX_PLATFORM_CONTEXTS 4
+static PlatformContext *active_ctxs[MAX_PLATFORM_CONTEXTS] = {};
+
+static bool ctx_alive(PlatformContext *p)
+{
+    for (auto *c : active_ctxs) {
+        if (c == p) {
+            return true;
+        }
+    }
+    return false;
+}
+
+#define REQUIRE_FEATURE(x, default_val) do { if (!feature_##x && !api.hasFeature(#x)) { return default_val; } feature_##x = true;} while(0)
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
+    PlatformContext *p = (PlatformContext *)handler_args;
     tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_DATA:
-        if (data->payload_len == 0)
+        if (data->payload_len == 0) {
             return;
-        if (data->op_code != WS_TRANSPORT_OPCODES_TEXT)
+        } if (data->op_code != WS_TRANSPORT_OPCODES_TEXT) {
             return;
+        }
 
         // const cast is safe here:
         // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
         // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
         // - client->rx_buffer is char * (so not const)
-        (void)task_scheduler.await([data, c=&ctx](){
-            if (!*c)
+        (void)task_scheduler.await([data, p](){
+            if (!ctx_alive(p)) {
                 return;
-            (*c)->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, (*c)->recv_cb_userdata);
+            }
+            p->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, p->recv_cb_userdata);
         });
         break;
     case WEBSOCKET_EVENT_PONG:
-        task_scheduler.scheduleOnce([c=&ctx](){
-            if (!*c)
+        task_scheduler.scheduleOnce([p](){
+            if (!ctx_alive(p)) {
                 return;
-            (*c)->pong_cb((*c)->pong_cb_userdata);
+            }
+            p->pong_cb(p->pong_cb_userdata);
         });
         break;
     }
@@ -117,25 +144,84 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials, size_t credentials_length)
+#define PATH_PREFIX String("/ocpp/")
+
+// Loads a PEM buffer from a TLS file locator. "certid:<n>" refers to a
+// certificate of the certs module, everything else is a platform file name.
+static std::unique_ptr<unsigned char[]> load_tls_pem(const char *locator)
 {
-    ctx = std::make_unique<PlatformContext>();
+    if (locator == nullptr) {
+        return nullptr;
+    }
 
-    tf_websocket_client_config_t websocket_cfg = {};
-    websocket_cfg.uri = websocket_url;
-    websocket_cfg.subprotocol = "ocpp1.6";
-    int8_t cert_id = ocpp.config.get("cert_id")->asInt();
-    if (cert_id == -1)
-        websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
-    else {
+    if (strncmp(locator, "certid:", 7) == 0) {
         size_t cert_len = 0;
-        ctx->cert = certs.get_cert(cert_id, &cert_len);
-        if (ctx->cert == nullptr) {
-            logger.printfln("OCPP platform: Configured TLS certificate does not exist!");
-            return nullptr;
+        auto result = certs.get_cert((uint8_t)atoi(locator + 7), &cert_len);
+        if (result == nullptr) {
+            logger.printfln("OCPP platform: TLS certificate %s does not exist!", locator);
         }
+        return result;
+    }
 
-        websocket_cfg.cert_pem = (const char *)ctx->cert.get();
+    auto path = PATH_PREFIX + locator;
+    if (!LittleFS.exists(path)) {
+        logger.printfln("OCPP platform: TLS file %s does not exist!", locator);
+        return nullptr;
+    }
+
+    File f = LittleFS.open(path);
+    size_t size = f.size();
+    auto buf = heap_alloc_array<unsigned char>(size + 1);
+    if (f.read(buf.get(), size) != size) {
+        return nullptr;
+    }
+    buf[size] = '\0';
+    return buf;
+}
+
+static bool load_tls_config(PlatformContext *p, const PlatformTlsConfig *tls)
+{
+    p->use_cert_bundle = false;
+    p->ca_cert = nullptr;
+    p->client_cert = nullptr;
+    p->client_key = nullptr;
+
+    if (tls == nullptr || tls->ca_cert_file == nullptr) {
+        // No CA configured: verify wss connections against the bundled roots.
+        p->use_cert_bundle = true;
+    } else {
+        p->ca_cert = load_tls_pem(tls->ca_cert_file);
+        if (p->ca_cert == nullptr) {
+            return false;
+        }
+    }
+
+    if (tls != nullptr && tls->client_cert_file != nullptr && tls->client_key_file != nullptr) {
+        p->client_cert = load_tls_pem(tls->client_cert_file);
+        p->client_key = load_tls_pem(tls->client_key_file);
+        if ((p->client_cert == nullptr) || (p->client_key == nullptr)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool create_client(PlatformContext *p)
+{
+    tf_websocket_client_config_t websocket_cfg = {};
+    websocket_cfg.uri = p->url.c_str();
+    websocket_cfg.subprotocol = p->subprotocol.c_str();
+
+    if (p->ca_cert != nullptr) {
+        websocket_cfg.cert_pem = (const char *)p->ca_cert.get();
+    } else if (p->use_cert_bundle) {
+        websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+    }
+
+    if (p->client_cert != nullptr && p->client_key != nullptr) {
+        websocket_cfg.client_cert = (const char *)p->client_cert.get();
+        websocket_cfg.client_key = (const char *)p->client_key.get();
     }
 
     websocket_cfg.disable_auto_reconnect = true;
@@ -151,47 +237,139 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     //websocket_cfg.password = basic_auth_pass;
     // Instead create and pass the authorization header(s) directly.
 
-    if (credentials_length > 0) {
-        ctx->auth_headers = heap_alloc_array<String>(credentials_length);
-        ctx->auth_headers_count = credentials_length;
-
-        for(size_t i = 0; i < credentials_length; ++i) {
-            String header = "Authorization: Basic ";
-            auto &cred = credentials[i];
-
-            size_t user_len = strlen(cred.user.get());
-            size_t buf_len = user_len + cred.pass_length + 1; // +1 for ':'
-            std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
-            memcpy(buf.get(), cred.user.get(), user_len);
-            buf[user_len] = ':';
-            memcpy(buf.get() + user_len + 1, cred.pass.get(), cred.pass_length);
-
-            size_t written = 0;
-            mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
-
-            std::unique_ptr<char[]> base64_buf = heap_alloc_array<char>(written + 1);
-            mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
-            base64_buf[written] = '\0';
-
-            header += base64_buf.get();
-            header += "\r\n";
-
-            ctx->auth_headers[i] = header;
-        }
-
-        websocket_cfg.headers = ctx->auth_headers[0].c_str();
-        ctx->next_auth_header = (ctx->next_auth_header + 1) % ctx->auth_headers_count;
+    if (p->auth_headers_count > 0) {
+        websocket_cfg.headers = p->auth_headers[0].c_str();
+        p->next_auth_header = 1 % p->auth_headers_count;
     }
 
-    ctx->client = tf_websocket_client_init(&websocket_cfg);
-    tf_websocket_register_events(ctx->client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ctx->client);
+    p->client = tf_websocket_client_init(&websocket_cfg);
+    if (p->client == nullptr) {
+        return false;
+    }
+
+    tf_websocket_register_events(p->client, WEBSOCKET_EVENT_ANY, websocket_event_handler, p);
+    p->recreate_client = false;
+    return true;
+}
+
+static void build_auth_headers(PlatformContext *p, BasicAuthCredentials *credentials, size_t credentials_length)
+{
+    p->auth_headers = nullptr;
+    p->auth_headers_count = 0;
+    p->next_auth_header = 0;
+
+    if (credentials_length == 0) {
+        return;
+    }
+
+    p->auth_headers = heap_alloc_array<String>(credentials_length);
+    p->auth_headers_count = credentials_length;
+
+    for(size_t i = 0; i < credentials_length; ++i) {
+        String header = "Authorization: Basic ";
+        auto &cred = credentials[i];
+
+        size_t user_len = strlen(cred.user.get());
+        size_t buf_len = user_len + cred.pass_length + 1; // +1 for ':'
+        std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
+        memcpy(buf.get(), cred.user.get(), user_len);
+        buf[user_len] = ':';
+        memcpy(buf.get() + user_len + 1, cred.pass.get(), cred.pass_length);
+
+        size_t written = 0;
+        mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
+
+        std::unique_ptr<char[]> base64_buf = heap_alloc_array<char>(written + 1);
+        mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
+        base64_buf[written] = '\0';
+
+        header += base64_buf.get();
+        header += "\r\n";
+
+        p->auth_headers[i] = header;
+    }
+}
+
+void *platform_init(const char *websocket_url, const char *subprotocol, BasicAuthCredentials *credentials, size_t credentials_length, const PlatformTlsConfig *tls)
+{
+    size_t slot = 0;
+    while (slot < MAX_PLATFORM_CONTEXTS && active_ctxs[slot] != nullptr) {
+        ++slot;
+    }
+    if (slot == MAX_PLATFORM_CONTEXTS) {
+        logger.printfln("OCPP platform: All %d connection contexts in use!", MAX_PLATFORM_CONTEXTS);
+        return nullptr;
+    }
+
+    std::unique_ptr<PlatformContext> p{new PlatformContext()};
+
+    p->url = websocket_url;
+    p->subprotocol = subprotocol;
+
+    // The 1.6 stack passes no TLS config: keep the historic behavior of
+    // verifying against the configured certificate of the certs module.
+    if (tls == nullptr) {
+        int8_t cert_id = ocpp.config.get("cert_id")->asInt();
+        if (cert_id >= 0) {
+            char locator[16];
+            snprintf(locator, sizeof(locator), "certid:%d", cert_id);
+            p->ca_cert = load_tls_pem(locator);
+            if (p->ca_cert == nullptr) {
+                return nullptr;
+            }
+        } else {
+            p->use_cert_bundle = true;
+        }
+    } else if (!load_tls_config(p.get(), tls)) {
+        return nullptr;
+    }
+
+    build_auth_headers(p.get(), credentials, credentials_length);
+
+    if (!create_client(p.get())) {
+        return nullptr;
+    }
 
     if (network.is_connected()) {
-        tf_websocket_client_start(ctx->client);
-        ctx->client_running = true;
+        tf_websocket_client_start(p->client);
+        p->client_running = true;
     }
 
-    return ctx->client;
+    active_ctxs[slot] = p.get();
+    return p.release();
+}
+
+void platform_update_credentials(void *_ctx, BasicAuthCredentials *credentials, size_t credentials_length)
+{
+    PlatformContext *p = (PlatformContext *)_ctx;
+    build_auth_headers(p, credentials, credentials_length);
+
+    if (p->auth_headers_count > 0) {
+        tf_websocket_client_set_headers(p->client, p->auth_headers[0].c_str());
+        p->next_auth_header = 1 % p->auth_headers_count;
+    } else {
+        tf_websocket_client_set_headers(p->client, "");
+    }
+}
+
+void platform_update_tls(void *_ctx, const PlatformTlsConfig *tls)
+{
+    PlatformContext *p = (PlatformContext *)_ctx;
+    if (!load_tls_config(p, tls)) {
+        logger.printfln("OCPP platform: Failed to load updated TLS configuration");
+        return;
+    }
+
+    // Certificate buffers are baked into the transport at client creation,
+    // so the client is recreated on the next reconnect.
+    p->recreate_client = true;
+}
+
+void platform_update_url(void *_ctx, const char *websocket_url)
+{
+    PlatformContext *p = (PlatformContext *)_ctx;
+    p->url = websocket_url;
+    p->recreate_client = true;
 }
 
 bool platform_has_fixed_cable(int32_t connectorId)
@@ -201,63 +379,92 @@ bool platform_has_fixed_cable(int32_t connectorId)
 
 void platform_disconnect(void *_ctx)
 {
-    if (ctx->client_running) {
-        tf_websocket_client_close(ctx->client, pdMS_TO_TICKS(1000));
-        ctx->client_running = false;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    if (p->client_running) {
+        tf_websocket_client_close(p->client, pdMS_TO_TICKS(1000));
+        p->client_running = false;
     }
 }
 
 void platform_reconnect(void *_ctx)
 {
-    if (ctx->client_running) {
-        tf_websocket_client_stop(ctx->client);
-        ctx->client_running = false;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    if (p->client_running) {
+        tf_websocket_client_stop(p->client);
+        p->client_running = false;
     }
 
-    // Try next set of credentials if available.
-    if (ctx->auth_headers_count > 0) {
-        tf_websocket_client_set_headers(ctx->client, ctx->auth_headers[ctx->next_auth_header].c_str());
-        ctx->next_auth_header = (ctx->next_auth_header + 1) % ctx->auth_headers_count;
+    if (p->recreate_client) {
+        tf_websocket_client_destroy(p->client);
+        p->client = nullptr;
+        if (!create_client(p)) {
+            logger.printfln("OCPP platform: Failed to recreate websocket client");
+            return;
+        }
+    } else if (p->auth_headers_count > 0) {
+        // Try next set of credentials if available.
+        tf_websocket_client_set_headers(p->client, p->auth_headers[p->next_auth_header].c_str());
+        p->next_auth_header = (p->next_auth_header + 1) % p->auth_headers_count;
     }
 
     if (network.is_connected()) {
-        tf_websocket_client_start(ctx->client);
-        ctx->client_running = true;
+        tf_websocket_client_start(p->client);
+        p->client_running = true;
     }
 }
 
 void platform_destroy(void *_ctx)
 {
-    tf_websocket_client_destroy(ctx->client);
+    PlatformContext *p = (PlatformContext *)_ctx;
+    for (size_t i = 0; i < MAX_PLATFORM_CONTEXTS; ++i) {
+        if (active_ctxs[i] == p) {
+            active_ctxs[i] = nullptr;
+        }
+    }
 
-    ctx = nullptr;
+    tf_websocket_client_destroy(p->client);
+    delete p;
 }
 
 bool platform_ws_connected(void *_ctx)
 {
-    return tf_websocket_client_is_connected(ctx->client);
+    PlatformContext *p = (PlatformContext *)_ctx;
+    return tf_websocket_client_is_connected(p->client);
 }
 
 bool platform_ws_send(void *_ctx, const char *buf, size_t buf_len)
 {
-    return tf_websocket_client_send_text(ctx->client, buf, buf_len, pdMS_TO_TICKS(1000)) == buf_len;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    return tf_websocket_client_send_text(p->client, buf, buf_len, pdMS_TO_TICKS(1000)) == buf_len;
 }
 
 bool platform_ws_send_ping(void *_ctx)
 {
-    return tf_websocket_client_send_ping(ctx->client, pdMS_TO_TICKS(1000)) >= 0;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    return tf_websocket_client_send_ping(p->client, pdMS_TO_TICKS(1000)) >= 0;
 }
 
 void platform_ws_register_receive_callback(void *_ctx, void (*cb)(char *, size_t, void *), void *user_data)
 {
-    ctx->recv_cb = cb;
-    ctx->recv_cb_userdata = user_data;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    p->recv_cb = cb;
+    p->recv_cb_userdata = user_data;
 }
 
 void platform_ws_register_pong_callback(void *_ctx, void (*cb)(void *), void *user_data)
 {
-    ctx->pong_cb = cb;
-    ctx->pong_cb_userdata = user_data;
+    PlatformContext *p = (PlatformContext *)_ctx;
+    p->pong_cb = cb;
+    p->pong_cb_userdata = user_data;
+}
+
+void platform_ws_register_connection_error_callback(void *_ctx, void (*cb)(PlatformConnectionError, void *), void *user_data)
+{
+    // Stored but not fired yet: classifying TLS handshake failures needs
+    // error details from the transport layer.
+    PlatformContext *p = (PlatformContext *)_ctx;
+    p->conn_error_cb = cb;
+    p->conn_error_cb_userdata = user_data;
 }
 
 uint32_t platform_now_ms()
@@ -391,30 +598,34 @@ bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand 
 }
 
 static bool platform_meter_available(int32_t connector_id) {
-    if (connector_id != 1)
+    if (connector_id != 1) {
         return false;
+    }
 
-    if (ctx->meter_cache.value_ids != nullptr)
+    if (meter_cache.value_ids != nullptr) {
         return true;
+    }
 
-    if (ctx->meter_cache.charger_meter_slot == UINT32_MAX) {
+    if (meter_cache.charger_meter_slot == UINT32_MAX) {
         REQUIRE_FEATURE(evse, false);
-        ctx->meter_cache.charger_meter_slot = evse_common.get_charger_meter();
+        meter_cache.charger_meter_slot = evse_common.get_charger_meter();
     }
 
     size_t value_ids_length;
-    auto result = meters.get_value_ids_extended(ctx->meter_cache.charger_meter_slot, nullptr, &value_ids_length);
-    if (result != MeterValueAvailability::Fresh)
+    auto result = meters.get_value_ids_extended(meter_cache.charger_meter_slot, nullptr, &value_ids_length);
+    if (result != MeterValueAvailability::Fresh) {
         return false;
+    }
 
     auto value_ids = heap_alloc_array<MeterValueID>(value_ids_length);
-    result = meters.get_value_ids_extended(ctx->meter_cache.charger_meter_slot, value_ids.get(), &value_ids_length);
+    result = meters.get_value_ids_extended(meter_cache.charger_meter_slot, value_ids.get(), &value_ids_length);
 
-    if (result != MeterValueAvailability::Fresh)
+    if (result != MeterValueAvailability::Fresh) {
         return false;
+    }
 
-    ctx->meter_cache.value_ids = std::move(value_ids);
-    ctx->meter_cache.value_ids_length = value_ids_length;
+    meter_cache.value_ids = std::move(value_ids);
+    meter_cache.value_ids_length = value_ids_length;
     return true;
 }
 
@@ -427,33 +638,42 @@ static constexpr MeterValueID CURRENT_OFFERED_L3 = (MeterValueID)((size_t)(Meter
 
 static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p) {
     if (m == SampledValueMeasurand::POWER_OFFERED) {
-        if (p == SampledValuePhase::L1)
+        if (p == SampledValuePhase::L1) {
             return POWER_OFFERED_L1;
-        if (p == SampledValuePhase::L2)
+        }
+        if (p == SampledValuePhase::L2) {
             return POWER_OFFERED_L2;
-        if (p == SampledValuePhase::L3)
+        }
+        if (p == SampledValuePhase::L3) {
             return POWER_OFFERED_L3;
+        }
     }
     if (m == SampledValueMeasurand::CURRENT_OFFERED) {
-        if (p == SampledValuePhase::L1)
+        if (p == SampledValuePhase::L1) {
             return CURRENT_OFFERED_L1;
-        if (p == SampledValuePhase::L2)
+        }
+        if (p == SampledValuePhase::L2) {
             return CURRENT_OFFERED_L2;
-        if (p == SampledValuePhase::L3)
+        }
+        if (p == SampledValuePhase::L3) {
             return CURRENT_OFFERED_L3;
+        }
     }
 
     for (size_t mvidx = 0; mvidx < ARRAY_SIZE(mvid_to_measurand); ++mvidx) {
         const auto entry = mvid_to_measurand[mvidx];
-        if (entry.measurand == SampledValueMeasurand::NONE)
+        if (entry.measurand == SampledValueMeasurand::NONE) {
             continue;
+        }
 
-        if (entry.measurand != m || entry.phase != p)
+        if (entry.measurand != m || entry.phase != p) {
             continue;
+        }
 
-        for (size_t i = 0; i < ctx->meter_cache.value_ids_length; ++i)
-            if (ctx->meter_cache.value_ids[i] == (MeterValueID)mvidx)
+        for (size_t i = 0; i < meter_cache.value_ids_length; ++i)
+            if (meter_cache.value_ids[i] == (MeterValueID)mvidx) {
                 return (MeterValueID) mvidx;
+            }
     }
 
     return MeterValueID::NotSupported;
@@ -464,8 +684,9 @@ bool platform_supports_measurand(int32_t connector_id, SampledValueMeasurand m, 
 }
 
 static size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len) {
-    if (!platform_meter_available(connector_id))
+    if (!platform_meter_available(connector_id)) {
         return 0;
+    }
 
     size_t result = 0;
 
@@ -490,8 +711,9 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
             }
         }
 
-        if (supports_phase_values)
+        if (supports_phase_values) {
             continue;
+        }
 
         // If no phase values are supported, use the NONE value as fallback
         if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE)) {
@@ -531,20 +753,26 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
 
 void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index) {
     if (m == SampledValueMeasurand::POWER_OFFERED) {
-        if (p == SampledValuePhase::L1)
-            ctx->meter_cache.power_offered_l1_idx = index;
-        if (p == SampledValuePhase::L2)
-            ctx->meter_cache.power_offered_l2_idx = index;
-        if (p == SampledValuePhase::L3)
-            ctx->meter_cache.power_offered_l3_idx = index;
+        if (p == SampledValuePhase::L1) {
+            meter_cache.power_offered_l1_idx = index;
+        }
+        if (p == SampledValuePhase::L2) {
+            meter_cache.power_offered_l2_idx = index;
+        }
+        if (p == SampledValuePhase::L3) {
+            meter_cache.power_offered_l3_idx = index;
+        }
     }
     if (m == SampledValueMeasurand::CURRENT_OFFERED) {
-        if (p == SampledValuePhase::L1)
-            ctx->meter_cache.current_offered_l1_idx = index;
-        if (p == SampledValuePhase::L2)
-            ctx->meter_cache.current_offered_l2_idx = index;
-        if (p == SampledValuePhase::L3)
-            ctx->meter_cache.current_offered_l3_idx = index;
+        if (p == SampledValuePhase::L1) {
+            meter_cache.current_offered_l1_idx = index;
+        }
+        if (p == SampledValuePhase::L2) {
+            meter_cache.current_offered_l2_idx = index;
+        }
+        if (p == SampledValuePhase::L3) {
+            meter_cache.current_offered_l3_idx = index;
+        }
     }
 }
 
@@ -557,25 +785,31 @@ float get_custom_value(uint32_t index) {
 
     float current = evse_common.get_state().get("allowed_charging_current")->asUint() / 1000.0f;
 
-    if (index == ctx->meter_cache.power_offered_l1_idx)
+    if (index == meter_cache.power_offered_l1_idx) {
         return current * (phases >= 1 ? 1 : 0) * 230;
-    if (index == ctx->meter_cache.power_offered_l2_idx)
+    }
+    if (index == meter_cache.power_offered_l2_idx) {
         return current * (phases >= 2 ? 1 : 0) * 230;
-    if (index == ctx->meter_cache.power_offered_l3_idx)
+    }
+    if (index == meter_cache.power_offered_l3_idx) {
         return current * (phases >= 3 ? 1 : 0) * 230;
+    }
 
-    if (index == ctx->meter_cache.current_offered_l1_idx)
+    if (index == meter_cache.current_offered_l1_idx) {
         return current * (phases >= 1 ? 1 : 0);
-    if (index == ctx->meter_cache.current_offered_l2_idx)
+    }
+    if (index == meter_cache.current_offered_l2_idx) {
         return current * (phases >= 2 ? 1 : 0);
-    if (index == ctx->meter_cache.current_offered_l3_idx)
+    }
+    if (index == meter_cache.current_offered_l3_idx) {
         return current * (phases >= 3 ? 1 : 0);
+    }
 
     return 0.0f;
 }
 
 static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len) {
-    ctx->meter_cache.idx_cache = heap_alloc_array<uint32_t>(result_len);
+    meter_cache.idx_cache = heap_alloc_array<uint32_t>(result_len);
 
     auto mvids = heap_alloc_array<MeterValueID>(result_len);
 
@@ -588,13 +822,15 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
         if (phase != SampledValuePhase::NONE) {
             MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase);
             if (mvid != MeterValueID::NotSupported) {
-                if (written >= result_len)
+                if (written >= result_len) {
                     goto done;
+                }
 
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, phase, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
-                if (mvid > MeterValueID::_max)
+                if (mvid > MeterValueID::_max) {
                     add_custom_value_to_cache(measurand, phase, written);
+                }
 
                 ++written;
                 continue;
@@ -607,13 +843,15 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
         for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
             MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p);
             if (mvid != MeterValueID::NotSupported) {
-                if (written >= result_len)
+                if (written >= result_len) {
                     goto done;
+                }
 
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, (SampledValuePhase)p, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
-                if (mvid > MeterValueID::_max)
+                if (mvid > MeterValueID::_max) {
                     add_custom_value_to_cache(measurand, (SampledValuePhase)p, written);
+                }
 
                 ++written;
 
@@ -621,54 +859,61 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
             }
         }
 
-        if (supports_phase_values)
+        if (supports_phase_values) {
             continue;
+        }
 
         // If no phase values are supported, use the NONE value as fallback
         MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE);
         if (mvid != MeterValueID::NotSupported) {
-            if (written >= result_len)
+            if (written >= result_len) {
                 goto done;
+            }
 
             mvids[written] = mvid;
             result[written] = SupportedMeasurand{measurand, SampledValuePhase::NONE, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
-            if (mvid > MeterValueID::_max)
+            if (mvid > MeterValueID::_max) {
                 add_custom_value_to_cache(measurand, phase, written);
+            }
 
             ++written;
         }
     }
 
 done:
-    meters.fill_index_cache(ctx->meter_cache.charger_meter_slot, written, mvids.get(), ctx->meter_cache.idx_cache.get());
+    meters.fill_index_cache(meter_cache.charger_meter_slot, written, mvids.get(), meter_cache.idx_cache.get());
     return written;
 }
 
 bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t measurand_count, std::unique_ptr<SupportedMeasurand[]> &out_supported_measurands, size_t *out_supported_measurand_count) {
-    if (!platform_meter_available(connector_id))
+    if (!platform_meter_available(connector_id)) {
         return false;
+    }
 
     *out_supported_measurand_count = platform_get_supported_measurand_count(connector_id, measurands, phases, measurand_count);
     out_supported_measurands = heap_alloc_array<SupportedMeasurand>(*out_supported_measurand_count);
 
     auto written = platform_prepare_meter_cache(connector_id, measurands, phases, measurand_count, out_supported_measurands.get(), *out_supported_measurand_count);
 
-    if (*out_supported_measurand_count != written)
+    if (*out_supported_measurand_count != written) {
         printf("!!!! %zu != %zu und jetzt?", measurand_count, written);
+    }
 
     return true;
 }
 
 
 float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx) {
-    if (ctx->meter_cache.idx_cache == nullptr)
+    if (meter_cache.idx_cache == nullptr) {
         return 0.0f;
+    }
 
-    if (ctx->meter_cache.idx_cache[measurand_idx] == UINT32_MAX)
+    if (meter_cache.idx_cache[measurand_idx] == UINT32_MAX) {
         return get_custom_value(measurand_idx);
+    }
 
     float result = 0.0f;
-    meters.get_value_by_index(ctx->meter_cache.charger_meter_slot, ctx->meter_cache.idx_cache[measurand_idx], &result);
+    meters.get_value_by_index(meter_cache.charger_meter_slot, meter_cache.idx_cache[measurand_idx], &result);
     return result;
 }
 
@@ -687,12 +932,60 @@ void platform_unlock_cable(int32_t connectorId)
 void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 {
     uint16_t current = (uint16_t)std::min(32000ul, (uint32_t)milliAmps);
-    if (evse_common.get_ocpp_current() != current)
+    if (evse_common.get_ocpp_current() != current) {
         evse_common.set_ocpp_current(current);
+    }
 }
 
 bool platform_supports_phase_switch() {
     return api.hasFeature("phase_switch");
+}
+
+// OCPP 2.1 specific hooks (Platform21.h). The tag callback is shared
+// with the 1.6 stack, only one stack runs at a time.
+
+void platform_register_tag_seen_callback21(void *_ctx, void (*cb)(int32_t, const char *, void *), void *user_data)
+{
+    ocpp.tag_seen_cb = cb;
+    ocpp.tag_seen_cb_user_data = user_data;
+}
+
+EvseState21 platform_get_evse_state21(void *_ctx, int32_t evse_id)
+{
+    REQUIRE_FEATURE(evse, EvseState21::Faulted);
+
+    auto state = api.getState("evse/state")->get("charger_state")->asUint();
+    switch (state) {
+        case CHARGER_STATE_NOT_PLUGGED_IN:
+            return EvseState21::NotConnected;
+
+        case CHARGER_STATE_WAITING_FOR_RELEASE:
+        case CHARGER_STATE_READY_TO_CHARGE:
+            return EvseState21::Connected;
+
+        case CHARGER_STATE_CHARGING:
+            return EvseState21::Charging;
+
+        case CHARGER_STATE_ERROR:
+        default:
+            return EvseState21::Faulted;
+    }
+}
+
+void platform_set_charging_allowed21(void *_ctx, int32_t evse_id, bool allowed)
+{
+    uint16_t current = allowed ? 32000 : 0;
+    if (evse_common.get_ocpp_current() != current) {
+        evse_common.set_ocpp_current(current);
+    }
+}
+
+float platform_get_energy_wh21(void *_ctx, int32_t evse_id)
+{
+    REQUIRE_FEATURE(evse, 0);
+    float result = 0;
+    evse_common.get_charger_meter_energy(&result);
+    return result * 1000;
 }
 
 static uint8_t last_phases = 0;
@@ -703,27 +996,28 @@ void platform_set_charging_phases(int32_t connectorId, uint8_t phases)
     String errmsg;
     if (last_phases == 0 || last_phases != phases) {
         power_manager.switch_phases(phases, errmsg, false);
-        if (!errmsg.isEmpty())
+        if (!errmsg.isEmpty()) {
             logger.printfln("Failed to switch phases: %s", errmsg.c_str());
-        else
+        } else {
             last_phases = phases;
+        }
     }
 #endif
 }
 
-#define PATH_PREFIX String("/ocpp/")
-
 size_t platform_read_file(const char *name, char *buf, size_t len)
 {
     auto path = PATH_PREFIX + name;
-    if (!LittleFS.exists(path))
+    if (!LittleFS.exists(path)) {
         return 0;
+    }
 
     File f = LittleFS.open(path);
     size_t read = f.read((uint8_t *)buf, len);
     // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
-    if (read > len)
+    if (read > len) {
         return 0;
+    }
     return read;
 }
 bool platform_write_file(const char *name, char *buf, size_t len)
@@ -743,15 +1037,19 @@ void *platform_open_dir(const char *name)
     return f;
 }
 
+// File scope: the 2.1 stack scans its certificate store before
+// platform_init has created the context.
+static OcppDirEnt dir_ent;
+
 // return nullptr if no more files
 OcppDirEnt *platform_read_dir(void *dir_fd)
 {
     File *dir = (File *)dir_fd;
     File f;
     while ((f = dir->openNextFile())) {
-        ctx->dir_ent.is_dir = f.isDirectory();
-        strncpy(ctx->dir_ent.name, f.name(), ARRAY_SIZE(ctx->dir_ent.name) - 1);
-        return &ctx->dir_ent;
+        dir_ent.is_dir = f.isDirectory();
+        strncpy(dir_ent.name, f.name(), ARRAY_SIZE(dir_ent.name) - 1);
+        return &dir_ent;
     }
     return nullptr;
 }
@@ -764,8 +1062,9 @@ void platform_close_dir(void *dir_fd)
 void platform_remove_file(const char *name)
 {
     auto path = PATH_PREFIX + name;
-    if (!LittleFS.exists(path))
+    if (!LittleFS.exists(path)) {
         return;
+    }
 
     LittleFS.remove(path);
 }
@@ -801,8 +1100,8 @@ const char *platform_get_charge_point_vendor()
 const char *platform_get_charge_point_model()
 {
 #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-    device_name.get20CharDisplayType().toCharArray(ctx->model, ARRAY_SIZE(ctx->model));
-    return ctx->model;
+    device_name.get20CharDisplayType().toCharArray(model_buf, ARRAY_SIZE(model_buf));
+    return model_buf;
 #else
     #warning "platform_get_charge_point_model implementation missing for this product"
     return "Unknown Device";
@@ -863,8 +1162,9 @@ void platform_update_connector_state(int32_t connector_id,
                                      bool txn_with_invalid_id,
                                      bool unavailable_requested)
 {
-    if (connector_id != 1)
+    if (connector_id != 1) {
         return;
+    }
 
     auto now = now_us().to<millis_t>().as<uint32_t>();
 
@@ -911,8 +1211,7 @@ void platform_update_connection_state(CallAction message_in_flight_type,
     ocpp.state.get("pong_timeout")->updateUint(pong_deadline == 0 ? 0xFFFFFFFF : (pong_deadline - now));
 }
 
-void platform_update_config_state(ConfigKey key,
-                                  const char *value) {
+void platform_update_config_state(ConfigKey key, const char *value) {
     ocpp.configuration.get(config_keys[(size_t) key])->updateString(value);
 }
 #endif

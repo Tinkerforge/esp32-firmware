@@ -18,6 +18,9 @@ let x = {
             "ocpp": "OCPP",
             "enable_ocpp": "OCPP enabled",
             "enable_ocpp_desc": "Enables the configured OCPP server to control this charger",
+            "protocol": "Protocol version",
+            "protocol_16": "OCPP 1.6",
+            "protocol_21": "OCPP 2.1",
             "endpoint_url": "Endpoint URL",
             "endpoint_url_invalid": "The endpoint URL has to start with either ws:// (unencrypted) or wss:// (encrypted) and must not end with a /",
             "identity": "Charge point identity",
@@ -80,6 +83,11 @@ let x = {
             "charge_point_state_6": "Faulted",
             "charge_point_state_7": "Soft reset",
             "charge_point_state_8": "Hard reset",
+
+            "charge_point_state21_0": "Server registration pending",
+            "charge_point_state21_1": "Server registration pending",
+            "charge_point_state21_2": "Server registration rejected",
+            "charge_point_state21_3": "Available",
 
             "status_0": "Available",
             "status_1": "Preparing",

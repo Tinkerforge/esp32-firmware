@@ -102,6 +102,15 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
+                    <FormRow label={__("ocpp.content.protocol")}>
+                        <InputSelect items={[
+                                ["0", __("ocpp.content.protocol_16")],
+                                ["1", __("ocpp.content.protocol_21")],
+                            ]}
+                            value={state.protocol}
+                            onValue={(v) => this.setState({protocol: parseInt(v)})}
+                        />
+                    </FormRow>
                     <FormRow label={__("ocpp.content.endpoint_url")}>
                         <InputTextPatterned required
                                    maxLength={128}
@@ -160,6 +169,16 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                         </Button>
                     </FormRow>
 
+                    {API.get('ocpp/config').protocol == 1 ?
+                    <CollapsedSection>
+                        <FormRow label={__("ocpp.content.charge_point_state")}>
+                            <InputText value={translate_unchecked(`ocpp.content.charge_point_state21_${state.state.charge_point_state}`)} />
+                        </FormRow>
+                        <FormRow label={__("ocpp.content.is_connected")}>
+                            <InputText value={__("ocpp.content.connection_state_since")(state.state.connected, util.timestamp_sec_to_date(state.state.connected_change_time, __("ocpp.content.never_connected_since_reboot")))} />
+                        </FormRow>
+                    </CollapsedSection>
+                    : <>
                     <CollapsedSection>
                         <FormRow label={__("ocpp.content.charge_point_state")}>
                             <InputText value={translate_unchecked(`ocpp.content.charge_point_state_${state.state.charge_point_state}`)} />
@@ -264,6 +283,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                 </FormRow>)
                         )}
                     </CollapsedSection>
+                    </>}
                 </ConfigForm>
             </SubPage>
         );
@@ -289,6 +309,20 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
     }
 
     getConnectionState() {
+        if (this.state.config.protocol == 1) {
+            // 0 PowerOn, 1 Pending, 2 Rejected, 3 Idle
+            switch (this.state.state.charge_point_state) {
+                case 0:
+                case 1:
+                    return 0;
+                case 3:
+                    return this.state.state.connected ? 1 : 0;
+                case 2:
+                default:
+                    return 2;
+            }
+        }
+
         // TODO: we need some mechanism to get access to backend module magic numbers/defines/enums.
         switch (this.state.state.charge_point_state) {
             case 0:
@@ -307,6 +341,10 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
 
     getStatusPrefix() {
         let ocpp = this.state.state;
+
+        if (this.state.config.protocol == 1)
+            return translate_unchecked(`ocpp.content.charge_point_state21_${ocpp.charge_point_state}`);
+
         switch (ocpp.charge_point_state) {
             case 0:
             case 1:
@@ -334,6 +372,9 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
     }
 
     getStatusLine() {
+        if (this.state.config.protocol == 1)
+            return this.getStatusPrefix();
+
         let result = ""
 
         if (this.state.state.last_rejected_tag != "")
@@ -388,6 +429,27 @@ export function init() {
 
             if (!config?.enable) {
                 return {status: ModuleStatus.Disabled};
+            }
+
+            if (config?.protocol == 1) {
+                // 0 PowerOn, 1 Pending, 2 Rejected, 3 Idle
+                const cps21 = state?.charge_point_state;
+                if (cps21 === 3 && state?.connected) {
+                    return {
+                        status: ModuleStatus.Ok,
+                        text: () => __("ocpp.status.connected")
+                    };
+                } else if (cps21 === 2) {
+                    return {
+                        status: ModuleStatus.Error,
+                        text: () => __("ocpp.status.error")
+                    };
+                } else {
+                    return {
+                        status: ModuleStatus.Warning,
+                        text: () => __("ocpp.status.connecting")
+                    };
+                }
             }
 
             // Based on charge_point_state and connected

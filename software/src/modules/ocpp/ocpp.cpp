@@ -28,7 +28,7 @@
 #include "options.h"
 #include "tools/fs.h"
 
-#include "ocpp/Configuration.h"
+#include "ocpp16/Configuration16.h"
 
 static void reset_state(Config *state) {
     state->get("charge_point_state")->updateUint(0);
@@ -69,6 +69,7 @@ void Ocpp::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
+        {"protocol", Config::Enum(OcppProtocolVersion::V16, OcppProtocolVersion::V16, OcppProtocolVersion::V21)},
         {"url", Config::Str("", 0, 128)},
         {"identity", Config::Str("", 0, 64)},
         {"enable_auth",Config::Bool(false)},
@@ -189,6 +190,34 @@ bool Ocpp::start_client()
     return cp->start(config.get("url")->asEphemeralCStr(), config.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length(), BasicAuthPassType::TRY_BOTH);
 }
 
+bool Ocpp::start_client_21()
+{
+    const String &url = config.get("url")->asString();
+    bool is_tls = url.startsWith("wss://");
+
+    // The TLS file locators are interpreted by the platform:
+    // "certid:<n>" refers to a certificate of the certs module, nullptr
+    // means verification against the bundled roots.
+    char ca_locator[16];
+    PlatformTlsConfig tls;
+    int32_t security_profile = 1;
+    if (is_tls) {
+        security_profile = 2;
+        int8_t cert_id = config.get("cert_id")->asInt();
+        if (cert_id >= 0) {
+            snprintf(ca_locator, sizeof(ca_locator), "certid:%d", cert_id);
+            tls.ca_cert_file = ca_locator;
+        }
+    }
+
+    const char *pass = nullptr;
+    if (config.get("enable_auth")->asBool()) {
+        pass = config.get("pass")->asEphemeralCStr();
+    }
+
+    return cp21->start(url.c_str(), config.get("identity")->asEphemeralCStr(), pass, security_profile, is_tls ? &tls : nullptr);
+}
+
 void Ocpp::apply_config() {
     task_scheduler.cancel(task_id);
     task_id = 0;
@@ -198,10 +227,36 @@ void Ocpp::apply_config() {
         reset_state(&state);
     }
 
-    if (cp)
-        cp = nullptr;
+    if (cp21 && client_started) {
+        cp21->stop();
+        reset_state(&state);
+    }
+
+    cp = nullptr;
+    cp21 = nullptr;
 
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0) {
+        return;
+    }
+
+    if (config.get("protocol")->asEnum<OcppProtocolVersion>() == OcppProtocolVersion::V21) {
+        cp21 = std::unique_ptr<Ocpp21::ChargePoint>(new Ocpp21::ChargePoint());
+
+        client_started = start_client_21();
+        if (!client_started) {
+            state.get("charge_point_state")->updateUint((uint32_t)OcppState::Faulted);
+            logger.printfln("Failed to start OCPP 2.1 client. Check configuration!");
+            cp21 = nullptr;
+            return;
+        }
+
+        task_id = task_scheduler.scheduleWithFixedDelay([this](){
+            cp21->tick();
+            // The 2.1 stack has no state callbacks yet: poll the
+            // connection and registration state instead.
+            state.get("connected")->updateBool(platform_ws_connected(cp21->connection.platform_ctx));
+            state.get("charge_point_state")->updateUint((uint32_t)cp21->state);
+        }, 100_ms, 100_ms);
         return;
     }
 
@@ -256,8 +311,9 @@ void Ocpp::register_urls()
 #if MODULE_NFC_AVAILABLE()
 bool Ocpp::on_tag_seen(const char *tag_id)
 {
-    if (tag_seen_cb == nullptr)
+    if (tag_seen_cb == nullptr) {
         return false;
+    }
 
     tag_seen_cb(1, tag_id, tag_seen_cb_user_data);
     return true;
@@ -268,5 +324,9 @@ void Ocpp::pre_reboot() {
     if (cp) {
         cp->stop();
         cp = nullptr;
+    }
+    if (cp21) {
+        cp21->stop();
+        cp21 = nullptr;
     }
 }
