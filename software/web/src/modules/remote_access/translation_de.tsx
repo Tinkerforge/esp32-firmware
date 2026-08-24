@@ -49,6 +49,7 @@ let x = {
             "service_token_register": "Mit Service-Token registrieren",
             "service_token_register_desc": /*FFN*/(host: string) => <>Fordert beim Relay-Server <a href={`https://${host}/`}>{host}</a> ein signiertes Autorisierungstoken an und registriert das Gerät damit. Dies sollte verwendet werden, wenn der Relay-Server bereits ein Service-Token für dieses Gerät ausgestellt hat.</> /*NF*/,
             "service_token_register_active_desc": /*FFN*/(host: string, remaining: number) => <>Service-Token bei <a href={`https://${host}/`}>{host}</a> registriert. Das Service-Konto wird in {Math.floor(remaining / 60)} h {remaining % 60} min automatisch entfernt.</> /*NF*/,
+            "service_token_extend": "Service-Token um 24 h verlängern",
             "service_token_register_failed": "Service-Token-Registrierung fehlgeschlagen:",
             "service_token_register_in_progress": "Fordere Service-Token vom Relay an",
             "service_token_badge": "Service",

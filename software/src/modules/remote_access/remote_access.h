@@ -116,7 +116,6 @@ private:
     WebServerRequestReturnProtect handle_service_token_register(WebServerRequest request);
     void fetch_service_token();
     void parse_service_token();
-    bool service_token_allowed() const;
     bool populate_authorization_token(const uint8_t *token_bytes, size_t decoded_token_len);
 #endif
 

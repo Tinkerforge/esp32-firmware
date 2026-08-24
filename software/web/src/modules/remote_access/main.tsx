@@ -1220,10 +1220,7 @@ export class RemoteAccess extends ConfigComponent<
                             >
                                 <Button
                                     className="w-100"
-                                    disabled={
-                                        this.state.relay_host === "" ||
-                                        this.state.service_token_user_uuid !== ""
-                                    }
+                                    disabled={this.state.relay_host === ""}
                                     onClick={async () => {
                                         try {
                                             await this.runServiceTokenRegister();
@@ -1232,9 +1229,9 @@ export class RemoteAccess extends ConfigComponent<
                                         }
                                     }}
                                 >
-                                    {__(
-                                        "remote_access.content.service_token_register",
-                                    )}
+                                    {this.state.service_token_remaining_minutes === null
+                                        ? __("remote_access.content.service_token_register")
+                                        : __("remote_access.content.service_token_extend")}
                                 </Button>
                             </FormRow>
                             <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
