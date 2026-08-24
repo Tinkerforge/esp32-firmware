@@ -1381,6 +1381,23 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
     uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
     uint32_t seqnum = history_request_seqnum++;
+    StreamMetadata *metadata = &metadata_array[0];
+
+    metadata->response = response;
+    metadata->response_ownership = response_ownership;
+    metadata->response_owner_id = response_owner_id;
+    metadata->call_begin = true;
+    metadata->write_comma = false;
+    metadata->next_offset = 0;
+    metadata->seqnum = seqnum;
+    metadata->uid = uid;
+    metadata->utc_end_year = utc_end_year;
+    metadata->utc_end_month = utc_end_month;
+    metadata->utc_end_day = utc_end_day;
+    metadata->utc_end_slots = utc_start_slots > 0 ? utc_end_slots : 0;
+
+    em_common.wem_register_sd_wallbox_data_points_low_level_callback(wallbox_5min_data_points_handler, metadata);
+
     uint8_t status;
     int rc;
 
@@ -1402,13 +1419,14 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
                                                       utc_end_minute,
                                                       utc_end_slots,
                                                       &status);
-        utc_end_slots = 0;
     }
 
     //logger.printfln("history_wallbox_5min_response: u%u %d-%02d-%02d",
     //                uid, 2000 + year, month, day);
 
     if (rc != TF_E_OK || status != 0) {
+        em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
+
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
@@ -1428,24 +1446,6 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
             write_result &= response->flush();
             response->end(write_result);
         }
-    }
-    else {
-        StreamMetadata *metadata = &metadata_array[0];
-
-        metadata->response = response;
-        metadata->response_ownership = response_ownership;
-        metadata->response_owner_id = response_owner_id;
-        metadata->call_begin = true;
-        metadata->write_comma = false;
-        metadata->next_offset = 0;
-        metadata->seqnum = seqnum;
-        metadata->uid = uid;
-        metadata->utc_end_year = utc_end_year;
-        metadata->utc_end_month = utc_end_month;
-        metadata->utc_end_day = utc_end_day;
-        metadata->utc_end_slots = utc_end_slots;
-
-        em_common.wem_register_sd_wallbox_data_points_low_level_callback(wallbox_5min_data_points_handler, metadata);
     }
 }
 
@@ -1564,6 +1564,18 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
     uint8_t month = history_wallbox_daily.get("month")->asUint();
 
     uint32_t seqnum = history_request_seqnum++;
+    StreamMetadata *metadata = &metadata_array[1];
+
+    metadata->response = response;
+    metadata->response_ownership = response_ownership;
+    metadata->response_owner_id = response_owner_id;
+    metadata->call_begin = true;
+    metadata->write_comma = false;
+    metadata->next_offset = 0;
+    metadata->seqnum = seqnum;
+
+    em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(wallbox_daily_data_points_handler, metadata);
+
     uint8_t status;
     int rc = em_common.wem_get_sd_wallbox_daily_data_points(uid, year, month, 1, days_per_month(2000 + year, month), &status);
 
@@ -1571,6 +1583,8 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
     //                uid, 2000 + year, month);
 
     if (rc != TF_E_OK || status != 0) {
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
+
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
@@ -1590,19 +1604,6 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
             write_result &= response->flush();
             response->end(write_result);
         }
-    }
-    else {
-        StreamMetadata *metadata = &metadata_array[1];
-
-        metadata->response = response;
-        metadata->response_ownership = response_ownership;
-        metadata->response_owner_id = response_owner_id;
-        metadata->call_begin = true;
-        metadata->write_comma = false;
-        metadata->next_offset = 0;
-        metadata->seqnum = seqnum;
-
-        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(wallbox_daily_data_points_handler, metadata);
     }
 }
 
@@ -1818,6 +1819,22 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
     uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
     uint32_t seqnum = history_request_seqnum++;
+    StreamMetadata *metadata = &metadata_array[2];
+
+    metadata->response = response;
+    metadata->response_ownership = response_ownership;
+    metadata->response_owner_id = response_owner_id;
+    metadata->call_begin = true;
+    metadata->write_comma = false;
+    metadata->next_offset = 0;
+    metadata->seqnum = seqnum;
+    metadata->utc_end_year = utc_end_year;
+    metadata->utc_end_month = utc_end_month;
+    metadata->utc_end_day = utc_end_day;
+    metadata->utc_end_slots = utc_start_slots > 0 ? utc_end_slots : 0;
+
+    em_common.wem_register_sd_energy_manager_data_points_low_level_callback(energy_manager_5min_data_points_handler, metadata);
+
     uint8_t status;
     int rc;
 
@@ -1838,14 +1855,14 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
                                                              utc_end_minute,
                                                              utc_end_slots,
                                                              &status);
-
-        utc_end_slots = 0;
     }
 
     //logger.printfln("history_energy_manager_5min_response: %d-%02d-%02d",
     //                2000 + year, month, day);
 
     if (rc != TF_E_OK || status != 0) {
+        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
+
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
@@ -1865,23 +1882,6 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
             write_result &= response->flush();
             response->end(write_result);
         }
-    }
-    else {
-        StreamMetadata *metadata = &metadata_array[2];
-
-        metadata->response = response;
-        metadata->response_ownership = response_ownership;
-        metadata->response_owner_id = response_owner_id;
-        metadata->call_begin = true;
-        metadata->write_comma = false;
-        metadata->next_offset = 0;
-        metadata->seqnum = seqnum;
-        metadata->utc_end_year = utc_end_year;
-        metadata->utc_end_month = utc_end_month;
-        metadata->utc_end_day = utc_end_day;
-        metadata->utc_end_slots = utc_end_slots;
-
-        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(energy_manager_5min_data_points_handler, metadata);
     }
 }
 
@@ -2025,6 +2025,18 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
     uint8_t month = history_energy_manager_daily.get("month")->asUint();
 
     uint32_t seqnum = history_request_seqnum++;
+    StreamMetadata *metadata = &metadata_array[3];
+
+    metadata->response = response;
+    metadata->response_ownership = response_ownership;
+    metadata->response_owner_id = response_owner_id;
+    metadata->call_begin = true;
+    metadata->write_comma = false;
+    metadata->next_offset = 0;
+    metadata->seqnum = seqnum;
+
+    em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(energy_manager_daily_data_points_handler, metadata);
+
     uint8_t status;
     int rc = em_common.wem_get_sd_energy_manager_daily_data_points(year, month, 1, days_per_month(2000 + year, month), &status);
 
@@ -2032,6 +2044,8 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
     //                2000 + year, month);
 
     if (rc != TF_E_OK || status != 0) {
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
+
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
@@ -2051,18 +2065,5 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
             write_result &= response->flush();
             response->end(write_result);
         }
-    }
-    else {
-        StreamMetadata *metadata = &metadata_array[3];
-
-        metadata->response = response;
-        metadata->response_ownership = response_ownership;
-        metadata->response_owner_id = response_owner_id;
-        metadata->call_begin = true;
-        metadata->write_comma = false;
-        metadata->next_offset = 0;
-        metadata->seqnum = seqnum;
-
-        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(energy_manager_daily_data_points_handler, metadata);
     }
 }
