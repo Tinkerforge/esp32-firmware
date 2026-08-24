@@ -842,13 +842,21 @@ WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebSer
 {
     this->management_request_allowed = false;
     authorization_token = AuthorizationToken{};
+
+    if (!config.get("service_token_user_uuid")->asString().isEmpty()) {
+        struct timeval now;
+        if (rtc.clock_synced(&now)) {
+            config.get("service_token_timestamp_minutes")->updateUint(static_cast<uint32_t>(now.tv_sec / 60));
+        }
+        api.writeConfig("remote_access/config", &config);
+        schedule_service_token_removal(24_h);
+        update_registration_state(RegistrationState::InProgress);
+        update_registration_state(RegistrationState::Success);
+        return request.send_plain(200);
+    }
+
     this->fetch_service_token();
     return request.send_plain(200);
-}
-
-bool RemoteAccess::service_token_allowed() const
-{
-    return config.get("service_token_user_uuid")->asString().isEmpty();
 }
 
 void RemoteAccess::fetch_service_token()
@@ -1398,9 +1406,6 @@ void RemoteAccess::register_urls()
 
 #if signature_sodium_public_key_length != 0
     server.on("/remote_access/service_token_register", HTTP_PUT, [this](WebServerRequest request) {
-        if (!this->service_token_allowed()) {
-            return request.send_plain(403, "Service token registration is not active");
-        }
         return this->handle_service_token_register(request);
     });
 #endif
