@@ -1834,10 +1834,12 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
         rc = em_common.wem_get_sd_energy_manager_data_points(utc_end_year,
                                                              utc_end_month,
                                                              utc_end_day,
-                                                             utc_start_hour,
-                                                             utc_start_minute,
-                                                             utc_start_slots,
+                                                             utc_end_hour,
+                                                             utc_end_minute,
+                                                             utc_end_slots,
                                                              &status);
+
+        utc_end_slots = 0;
     }
 
     //logger.printfln("history_energy_manager_5min_response: %d-%02d-%02d",
