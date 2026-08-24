@@ -223,6 +223,15 @@ void Common::handle_socket()
         if (tls_requested_by_ev) {
             iso15118.trace("Common: TLS requested, starting handshake");
 
+            // The certificate source changed, reload before this connection
+            if (tls.certs_dirty) {
+                tls.certs_dirty = false;
+                if (tls.is_initialized()) {
+                    iso15118.trace("Common: Certificates changed, reloading TLS setup");
+                    tls.cleanup();
+                }
+            }
+
             // Setup TLS if not already done
             if (!tls.is_initialized()) {
                 if (!tls.setup()) {
