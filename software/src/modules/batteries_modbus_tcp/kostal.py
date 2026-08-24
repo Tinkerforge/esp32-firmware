@@ -117,12 +117,15 @@ plenticore_plus_g2_specs = [
         'mode': 'Block Discharge',
         'register_blocks': [
             {
-                # it's not possible to actively clear a previous force charge/discharge
-                # to gain normal charge/discharge again, wait for watchdog to clear it
+                # it's not possible to actively clear a previous force charge
+                # to gain normal charge again, wait for watchdog to clear it
                 'description': 'Battery charge power DC setpoint absolute [W]',
                 'function_code': 'ReadHoldingRegisters',
                 'start_address': 1034,
                 'f32_values': [
+                    # FIXME: allow to write code here because if register 1034 is positive
+                    #        (force discharge), then this can be ignored as a force discharge
+                    #        will be blocked by register 1040 being set to 0
                     0,
                 ],
             },
@@ -179,12 +182,15 @@ plenticore_plus_g2_specs = [
         'mode': 'Block Charge',
         'register_blocks': [
             {
-                # it's not possible to actively clear a previous force charge/discharge
-                # to gain normal charge/discharge again, wait for watchdog to clear it
+                # it's not possible to actively clear a previous force discharge
+                # to gain normal discharge again, wait for watchdog to clear it
                 'description': 'Battery charge power DC setpoint absolute [W]',
                 'function_code': 'ReadHoldingRegisters',
                 'start_address': 1034,
                 'f32_values': [
+                    # FIXME: allow to write code here because if register 1034 is negative
+                    #        (force charge), then this can be ignored as a force charge will
+                    #        be blocked by register 1038 being set to 0
                     0,
                 ],
             },
@@ -270,8 +276,16 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Normal',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous
-            # force charge/discharge to gain normal charge/discharge
+            {
+                # it's not possible to actively clear a previous force charge/discharge
+                # to gain normal charge/discharge again, wait for watchdog to clear it
+                'description': 'Battery charge power DC setpoint absolute [W]',
+                'function_code': 'ReadHoldingRegisters',
+                'start_address': 1034,
+                'f32_values': [
+                    0,
+                ],
+            },
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -294,8 +308,19 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Block Discharge',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous
-            # force charge/discharge to gain normal charge/discharge
+            {
+                # it's not possible to actively clear a previous force charge
+                # to gain normal charge again, wait for watchdog to clear it
+                'description': 'Battery charge power DC setpoint absolute [W]',
+                'function_code': 'ReadHoldingRegisters',
+                'start_address': 1034,
+                'f32_values': [
+                    # FIXME: allow to write code here because if register 1034 is positive
+                    #        (force discharge), then this can be ignored as a force discharge
+                    #        will be blocked by register 1282 being set to 0
+                    0,
+                ],
+            },
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -348,8 +373,19 @@ plenticore_g3_specs = [
         'group': 'Kostal Plenticore G3',
         'mode': 'Block Charge',
         'register_blocks': [
-            # don't write register 1034 to let the watchdog clear any previous
-            # force charge/discharge to gain normal charge/discharge
+            {
+                # it's not possible to actively clear a previous force discharge
+                # to gain normal discharge again, wait for watchdog to clear it
+                'description': 'Battery charge power DC setpoint absolute [W]',
+                'function_code': 'ReadHoldingRegisters',
+                'start_address': 1034,
+                'f32_values': [
+                    # FIXME: allow to write code here because if register 1034 is negative
+                    #        (force charge), then this can be ignored as a force charge will
+                    #        be blocked by register 1280 being set to 0
+                    0,
+                ],
+            },
             {
                 'description': 'Max battery charge power [W]',
                 'function_code': 'WriteMultipleRegisters',
