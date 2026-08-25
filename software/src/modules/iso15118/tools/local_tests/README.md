@@ -1,0 +1,23 @@
+# ISO 15118 local tests
+
+Manual test scripts for the ISO 15118 TLS server and its OCPP wiring, written
+against a bare ESP32 Ethernet Brick with WARP4 firmware in iso debug mode.
+
+## Prerequisites
+
+* ESP flashed with a warp4 build, reachable via HTTP (SDP runs over IPv6 link-local multicast)
+* `charge_via_iso15118` enabled in the charger iso15118 config
+  `curl -X PUT -d '{"enable":false,"current":6000,"phases":3}' http://<ip>/iso15118/debug_update`
+* A dev PKI in `../certs/output` that matches the firmware embedded dev_certs.cpp.
+* `openssl` CLI for the TLS probes
+* The evsim venv for the EXI codec based tests (see ../evsim/README.md)
+
+## Tests
+
+These are not automated tests, they are meant as helpers for probing HUB20-533-001/002/003/004/005 by hand
+
+`local_test_client_hello_parser.sh`: Extracts classify_client_hello from isotls.cpp, compiles it with ASan/UBSan and checks it against ClientHellos captured live from the local OpenSSL plus synthetic edge cases, including a full prefix sweep
+`local_test_tls_probes.sh <charger-ip>`: openssl s_client probes: TLS 1.3 group policing (HRR on X25519 first, secp256r1/X25519 only refused per HUB20-533-003/005), sig alg restriction (HUB20-533-001/002), TLS 1.2 curve/cipher/sig alg refusals
+`local_test_alerts.py --charger <ip>`: Captures ClientHellos locally and replays them raw to verify the refusals carry a fatal handshake_failure alert on the wire (HUB20-533-002/004)
+`local_test_sap_tls12.py --charger <ip>`: supportedAppProtocol over a real TLS 1.2 handshake via the EXI codec: only -20 offered answers Failed_NoNegotiation (V2G20-2356), -2 wins next to -20, -20 with VersionNumberMajor 2 is ignored. Also runs a -2 SessionSetup and prints the EVSEID
+`local_test_ocpp_ctrlr.py --charger <ip>`: Runs an embedded OCPP 2.1 CSMS, points the charger at it and checks the ISO15118Ctrlr wiring: ProtocolSupported instances, defaults, ISO15118EvseId consumed in SessionSetupRes, EnforceTlsEnabled SDP refusal round trip (HUB20-52-001) |
