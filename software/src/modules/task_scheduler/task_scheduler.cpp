@@ -202,12 +202,19 @@ void TaskScheduler::custom_loop()
 
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
-        defer {this->currentTask = nullptr;};
 
-        if (this->currentTask->awaited_by != nullptr) {
-            xTaskNotifyGive(this->currentTask->awaited_by);
-            this->currentTask->awaited_by = nullptr;
-        }
+        // Copy awaited_by to be able to call xTaskNotifyGive after clearing currentTask.
+        auto *awaited_by = this->currentTask->awaited_by;
+        this->currentTask->awaited_by = nullptr;
+
+        defer {
+            this->currentTask = nullptr;
+            // Notify waiting thread when everything else is done.
+            // This allows stack-allocating tasks that are awaited.
+            if (awaited_by != nullptr) {
+                xTaskNotifyGive(awaited_by);
+            }
+        };
 
         if (this->currentTask->once) {
             if (!IS_WALL_CLOCK_TASK_ID(this->currentTask->task_id))
@@ -254,12 +261,15 @@ uint64_t TaskScheduler::scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, 
     uint64_t task_id = ++last_task_id;
     Task *ptr = new(task_buffer) Task(std::move(fn), task_id, delay_ms, 0_us, src_location.file_name(), src_location.line(), true);
     ptr->owned = transfer_task_ownership;
+    //if (!ptr->owned)
+        //printf("no alloc %s:%lu %s\n", src_location.file_name(), src_location.line(), src_location.function_name());
     tasks.emplace(ptr);
     return task_id;
 }
 
 uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
 {
+    //printf("alloc %s:%lu %s\n", src_location.file_name(), src_location.line(), src_location.function_name());
     return this->scheduleOnceNoAlloc(new aligned_storage<Task>, std::move(fn), delay_ms, src_location, true);
 }
 
@@ -458,7 +468,8 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 
 bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
-    return await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait);
+    aligned_storage<Task> task_buf;
+    return await(scheduleOnceNoAlloc(&task_buf, std::move(fn), 0_ms, src_location), millis_to_wait);
 }
 
 void TaskScheduler::await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
