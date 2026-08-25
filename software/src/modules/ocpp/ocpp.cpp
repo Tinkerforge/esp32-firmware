@@ -197,6 +197,13 @@ bool Ocpp::start_client_21()
     const String &url = config.get("url")->asString();
     bool is_tls = url.startsWith("wss://");
 
+#if MODULE_ISO15118_AVAILABLE()
+    // Fill ISO15118Ctrlr.ProtocolSupported instances from the SAP protocol list
+    for (size_t i = 0; i < ARRAY_SIZE(iso15118_supported_protocols) && i < OCPP21_SUPPORTED_PROTOCOLS; i++) {
+        snprintf(cp21->device_model.protocol_supported[i], sizeof(cp21->device_model.protocol_supported[i]), "%s", iso15118_supported_protocols[i]);
+    }
+#endif
+
     // The TLS file locators are interpreted by the platform:
     // "certid:<n>" refers to a certificate of the certs module, nullptr
     // means verification against the bundled roots.
@@ -358,6 +365,18 @@ std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(bool oem)
         return nullptr;
     }
     return bundle;
+}
+
+bool Ocpp::get_iso15118_ctrlr(Iso15118CtrlrValues *out)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+
+    out->enforce_tls = cp21->device_model.enforce_tls_enabled;
+    out->pwm_charging_fallback_timeout_s = cp21->device_model.pwm_charging_fallback_timeout_s;
+    snprintf(out->evse_id, sizeof(out->evse_id), "%s", cp21->device_model.iso15118_evse_id);
+    return true;
 }
 
 void Ocpp::setup()

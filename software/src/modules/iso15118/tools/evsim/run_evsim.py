@@ -77,6 +77,31 @@ except ImportError:
     HAS_REQUESTS = False
 
 
+def patch_tls13_group():
+    """
+    The EcoG library restricts the client TLS groups to secp256r1
+    (set_ecdh_curve("prime256v1") in get_ssl_context). In TLS 1.3 that offers
+    a secp256r1 key_share, which the charger refuses per HUB20-533-005
+    (TLS 1.3 must use the ISO 15118-20 Table 7 groups secp521r1/x448).
+    Override the group with x448 when TLS 1.3 is enabled. TLS 1.2 keeps
+    secp256r1 per [V2G2-006].
+    """
+    from iso15118.shared import security as shared_security
+    from iso15118.shared.settings import SettingKey, shared_settings
+    from iso15118.evcc.transport import tcp_client
+
+    orig_get_ssl_context = shared_security.get_ssl_context
+
+    def patched_get_ssl_context(server_side):
+        ctx = orig_get_ssl_context(server_side)
+        if ctx is not None and not server_side and shared_settings[SettingKey.ENABLE_TLS_1_3]:
+            ctx.set_ecdh_curve("X448")
+        return ctx
+
+    shared_security.get_ssl_context = patched_get_ssl_context
+    tcp_client.get_ssl_context = patched_get_ssl_context
+
+
 # Protocol mappings - individual protocols
 PROTOCOLS = {
     "din": "DIN_SPEC_70121",
@@ -484,6 +509,7 @@ async def run_evcc(config: EVCCConfig, interface: str):
 
     # Load shared settings (required for EXI codec and message logging)
     load_shared_settings()
+    patch_tls13_group()
 
     # Create and start the EVCC handler
     handler = EVCCHandler(

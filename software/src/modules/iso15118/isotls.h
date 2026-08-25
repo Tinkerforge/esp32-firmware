@@ -157,6 +157,7 @@ private:
     };
 
     bool load_certificates();
+    bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
     void verify_intermediate_certs();
@@ -167,6 +168,7 @@ private:
     bool initialized = false;
     bool session_active = false;
     bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
+    bool group_policy_applied = false; // HUB20-533-005
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
 
     // Async verification
