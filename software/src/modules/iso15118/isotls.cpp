@@ -28,6 +28,7 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <string.h>
+#include <algorithm>
 #include <memory>
 
 #include "mbedtls/error.h"
@@ -51,20 +52,43 @@ static const int iso15118_ciphersuites[] = {
     0
 };
 
-// ISO 15118 named groups (ISO 15118-2 + ISO 15118-20)
-// [V2G20-2674] secp521r1 (ISO 15118-20 primary signature curve)
-// [V2G20-2319] x448 (ISO 15118-20 alternative)
-// [V2G2-006]   secp256r1 (ISO 15118-2)
-// X25519 is listed first: most EV TLS stacks (OpenSSL-based) offer an X25519
-// key_share in their initial ClientHello. Preferring it avoids a
-// HelloRetryRequest (an extra network round-trip). X25519 is only used for
-// ephemeral key exchange; certificate signatures remain secp521r1.
-static const uint16_t iso15118_curves[] = {
-    MBEDTLS_SSL_IANA_TLS_GROUP_X25519,     // Fast ECDHE, avoids HRR with most clients
-    MBEDTLS_SSL_IANA_TLS_GROUP_X448,       // ISO 15118-20 alternative, faster than secp256r1
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1,  // ISO 15118-2
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,  // ISO 15118-20 primary, extremely slow
+// ISO 15118 named groups, version dependent per HUB20-533-003/005.
+// mbedTLS has a single group list for both TLS versions, so the list is
+// selected per connection from the peeked ClientHello (see apply_group_policy).
+//
+// TLS 1.3 (ISO 15118-20 Table 7):
+// [V2G20-2674] secp521r1 (primary signature curve)
+// [V2G20-2319] x448 (alternative)
+// A secp256r1 key_share must never be accepted in TLS 1.3 (HUB20-533-005).
+// Clients whose initial key_share is not in this list (e.g. X25519) get a
+// HelloRetryRequest.
+static const uint16_t iso15118_groups_tls13[] = {
+    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,
+    MBEDTLS_SSL_IANA_TLS_GROUP_X448,
     MBEDTLS_SSL_IANA_TLS_GROUP_NONE
+};
+
+// TLS 1.2 (ISO 15118-2):
+// [V2G2-006] secp256r1
+// The -20 groups stay allowed, HUB20-533-003 permits the union of both sets.
+static const uint16_t iso15118_groups_tls12[] = {
+    MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1,
+    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,
+    MBEDTLS_SSL_IANA_TLS_GROUP_X448,
+    MBEDTLS_SSL_IANA_TLS_GROUP_NONE
+};
+
+// ISO 15118 signature algorithms (HUB20-533-001/002):
+// ISO 15118-20 Table 8: ecdsa_secp521r1_sha512, ed448.
+// ISO 15118-2 [V2G2-006]: ECDSA with SHA256 (secp256r1 leaf), TLS 1.2 only.
+// Ed448 is currently not supported by mbedTLS and filtered out at runtime.
+// NOTE: The explicit list is required because a our mbedTLS patch that
+// widens the default TLS 1.2 list with the TLS 1.3 algorithms.
+static const uint16_t iso15118_sig_algs[] = {
+    MBEDTLS_TLS1_3_SIG_ECDSA_SECP521R1_SHA512,
+    MBEDTLS_TLS1_3_SIG_ED448, // HUB: "Support for Ed448-based SECC certificates may be introduced in a future revision."
+    MBEDTLS_TLS1_3_SIG_ECDSA_SECP256R1_SHA256,
+    MBEDTLS_TLS1_3_SIG_NONE
 };
 
 // Certificate verification profile: a copy of the default profile, except that
@@ -165,6 +189,146 @@ static uint8_t *copy_pem(const char *pem, size_t *len_out)
         *len_out = len;
     }
     return buf;
+}
+
+// Classification of a peeked ClientHello: Does the client offer TLS 1.3
+enum class ClientHelloVersion : uint8_t {
+    Incomplete, // Not enough data peeked yet, more may arrive
+    Tls13,      // TLS 1.3 offered, or undeterminable from a complete or capped record
+    NoTls13,    // TLS 1.2 or lower only
+};
+
+// Parses the first TLS record of a ClientHello, without consuming it.
+// Returns Incomplete only while more data may still arrive (record incomplete
+// and below cap). Whenever the answer can not be determined from the available
+// data, Tls13 is returned so that the stricter TLS 1.3 group policy applies.
+static ClientHelloVersion classify_client_hello(const uint8_t *buf, size_t len, size_t cap)
+{
+    if (len < 5) {
+        return ClientHelloVersion::Incomplete;
+    }
+
+    if (buf[0] != 0x16) { // Not a TLS handshake record, the TLS stack will reject it
+        return ClientHelloVersion::NoTls13;
+    }
+
+    const size_t record_len = (static_cast<size_t>(buf[3]) << 8) | buf[4];
+    const bool record_complete = (len - 5) >= record_len;
+    const uint8_t *p = buf + 5;
+    const uint8_t *end = p + std::min(len - 5, record_len);
+
+    // Out of data inside the record: wait for more, otherwise assume TLS 1.3
+    const ClientHelloVersion out_of_data = (!record_complete && len < cap) ? ClientHelloVersion::Incomplete : ClientHelloVersion::Tls13;
+
+    // Handshake header: type (1), length (3)
+    if (static_cast<size_t>(end - p) < 4) {
+        return out_of_data;
+    }
+    if (p[0] != 0x01) { // Not a ClientHello
+        return ClientHelloVersion::NoTls13;
+    }
+    p += 4;
+
+    // legacy_version (2), random (32)
+    if (static_cast<size_t>(end - p) < 34) {
+        return out_of_data;
+    }
+    p += 34;
+
+    // session_id, cipher_suites, compression_methods
+    for (int field = 0; field < 3; field++) {
+        const size_t len_size = (field == 1) ? 2 : 1; // cipher_suites has a 2 byte length
+        if (static_cast<size_t>(end - p) < len_size) {
+            return out_of_data;
+        }
+        size_t field_len = (len_size == 2) ? ((static_cast<size_t>(p[0]) << 8) | p[1]) : p[0];
+        p += len_size;
+        if (static_cast<size_t>(end - p) < field_len) {
+            return out_of_data;
+        }
+        p += field_len;
+    }
+
+    if (p == end && record_complete) {
+        return ClientHelloVersion::NoTls13; // No extensions at all
+    }
+
+    if (static_cast<size_t>(end - p) < 2) {
+        return out_of_data;
+    }
+    size_t extensions_len = (static_cast<size_t>(p[0]) << 8) | p[1];
+    p += 2;
+
+    const uint8_t *extensions_end = (static_cast<size_t>(end - p) < extensions_len) ? end : p + extensions_len;
+    const bool extensions_complete = (static_cast<size_t>(end - p) >= extensions_len) && record_complete;
+
+    while (p < extensions_end) {
+        if (static_cast<size_t>(extensions_end - p) < 4) {
+            return extensions_complete ? ClientHelloVersion::NoTls13 : out_of_data;
+        }
+        const uint16_t ext_type = static_cast<uint16_t>((p[0] << 8) | p[1]);
+        const size_t ext_len = (static_cast<size_t>(p[2]) << 8) | p[3];
+        p += 4;
+        if (static_cast<size_t>(extensions_end - p) < ext_len) {
+            return out_of_data;
+        }
+
+        if (ext_type == 43) { // supported_versions
+            if (ext_len < 1) {
+                return ClientHelloVersion::NoTls13;
+            }
+            const size_t list_len = std::min(static_cast<size_t>(p[0]), ext_len - 1);
+            for (size_t i = 0; i + 1 < list_len; i += 2) {
+                if (p[1 + i] == 0x03 && p[2 + i] == 0x04) {
+                    return ClientHelloVersion::Tls13;
+                }
+            }
+            return ClientHelloVersion::NoTls13;
+        }
+
+        p += ext_len;
+    }
+
+    // All available extensions seen without supported_versions
+    return extensions_complete ? ClientHelloVersion::NoTls13 : out_of_data;
+}
+
+// Peeks the ClientHello and selects the group list for this connection: TLS 1.3 capable
+// clients must not get a secp256r1 key exchange (HUB20-533-005), TLS 1.2 only
+// clients need secp256r1 [V2G2-006].
+// Returns false while the ClientHello is not fully peeked yet.
+bool ISOTLS::apply_group_policy()
+{
+    static constexpr size_t peek_cap = 1024;
+
+    uint8_t *buf = static_cast<uint8_t*>(malloc_psram_or_dram(peek_cap));
+    ClientHelloVersion result = ClientHelloVersion::Tls13;
+
+    if (buf != nullptr) {
+        ssize_t len = recv(socket_fd, buf, peek_cap, MSG_PEEK);
+        if (len < 0) {
+            free_any(buf);
+            if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                return false; // No data yet
+            }
+            // Socket error: proceed, the handshake will report it
+        } else if (len == 0) {
+            free_any(buf); // Peer closed: proceed, the handshake will report it
+        } else {
+            result = classify_client_hello(buf, static_cast<size_t>(len), peek_cap);
+            free_any(buf);
+            if (result == ClientHelloVersion::Incomplete) {
+                return false;
+            }
+        }
+    }
+
+    const bool tls13 = (result == ClientHelloVersion::Tls13);
+    mbedtls_ssl_conf_groups(ssl_conf, tls13 ? iso15118_groups_tls13 : iso15118_groups_tls12);
+    iso15118.trace("ISOTLS: ClientHello offers %s, using the %s group list",
+                    tls13 ? "TLS 1.3" : "TLS 1.2 or lower", tls13 ? "TLS 1.3" : "TLS 1.2");
+    group_policy_applied = true;
+    return true;
 }
 
 bool ISOTLS::load_certificates()
@@ -352,7 +516,9 @@ bool ISOTLS::setup()
     mbedtls_ssl_conf_min_tls_version(ssl_conf, MBEDTLS_SSL_VERSION_TLS1_2);
     mbedtls_ssl_conf_max_tls_version(ssl_conf, MBEDTLS_SSL_VERSION_TLS1_3);
     mbedtls_ssl_conf_ciphersuites(ssl_conf, iso15118_ciphersuites);
-    mbedtls_ssl_conf_groups(ssl_conf, iso15118_curves);
+    // Strict default, replaced per connection in apply_group_policy()
+    mbedtls_ssl_conf_groups(ssl_conf, iso15118_groups_tls13);
+    mbedtls_ssl_conf_sig_algs(ssl_conf, iso15118_sig_algs);
 
     // Default authmode: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
     // For TLS 1.3 / ISO 15118-20, mutual authentication is enabled
@@ -505,6 +671,7 @@ bool ISOTLS::start_session(int fd)
 
     handshake_state = TlsHandshakeState::IN_PROGRESS;
     session_active = false;
+    group_policy_applied = false;
 
     iso15118.trace("ISOTLS: Starting TLS session on socket %d", fd);
     return true;
@@ -515,6 +682,17 @@ void ISOTLS::end_session()
     if (session_active && ssl != nullptr) {
         // Send close_notify alert (best effort, ignore errors)
         mbedtls_ssl_close_notify(ssl);
+    }
+
+    // Free a stale verification context from an aborted handshake. The next
+    // handshake would otherwise inherit it in mid-handshake state.
+    if (verification_context != nullptr) {
+        if (verification_context->async_started) {
+            xQueueSemaphoreTake(verification_context->sem_handle, portMAX_DELAY_nowarn);
+        }
+        vQueueDelete(static_cast<QueueHandle_t>(verification_context->sem_handle));
+        free(verification_context);
+        verification_context = nullptr;
     }
 
     session_active = false;
@@ -535,6 +713,11 @@ bool ISOTLS::do_handshake()
 {
     if (!initialized || ssl == nullptr) {
         iso15118.trace("ISOTLS: TLS not initialized");
+        return false;
+    }
+
+    // The group policy needs the peeked ClientHello before the handshake starts
+    if (!group_policy_applied && !apply_group_policy()) {
         return false;
     }
 
@@ -608,6 +791,12 @@ bool ISOTLS::do_handshake()
     } else {
         // Handshake failed
         log_mbedtls_error(ret, "Handshake failed");
+
+        // HUB20-533-004 requires a handshake_failure alert
+        if (ret == MBEDTLS_ERR_SSL_HANDSHAKE_FAILURE) {
+            mbedtls_ssl_send_alert_message(ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL, MBEDTLS_SSL_ALERT_MSG_HANDSHAKE_FAILURE);
+        }
+
         handshake_state = TlsHandshakeState::FAILED;
 
         return false;
@@ -898,21 +1087,27 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
                 mbedtls_ssl_set_hs_ca_chain(ssl_ctx, trusted_ca_iso20, nullptr);
                 mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_REQUIRED);
 
-                assert(verification_context == nullptr);
-
-                verification_context = static_cast<decltype(verification_context)>(heap_caps_calloc(1, sizeof(*verification_context), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-
                 if (verification_context == nullptr) {
-                    return MBEDTLS_ERR_SSL_ALLOC_FAILED;
-                }
+                    verification_context = static_cast<decltype(verification_context)>(heap_caps_calloc(1, sizeof(*verification_context), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
 
-                verification_context->sem_handle = xSemaphoreCreateBinaryStatic_nowarn(&verification_context->sem_buf);
+                    if (verification_context == nullptr) {
+                        return MBEDTLS_ERR_SSL_ALLOC_FAILED;
+                    }
 
-                if (verification_context->sem_handle == nullptr) {
-                    free(verification_context);
-                    verification_context = nullptr;
+                    verification_context->sem_handle = xSemaphoreCreateBinaryStatic_nowarn(&verification_context->sem_buf);
 
-                    return MBEDTLS_ERR_SSL_ALLOC_FAILED;
+                    if (verification_context->sem_handle == nullptr) {
+                        free(verification_context);
+                        verification_context = nullptr;
+
+                        return MBEDTLS_ERR_SSL_ALLOC_FAILED;
+                    }
+                } else {
+                    // Second ClientHello after a HelloRetryRequest, the callback runs once per ClientHello. Reuse the context.
+                    memset(verification_context->certs, 0, sizeof(verification_context->certs));
+                    verification_context->leaf_cert_cached = false;
+                    verification_context->async_started = false;
+                    verification_context->intermediates_valid = false;
                 }
 
                 mbedtls_ssl_set_verify(ssl_ctx, &cert_verify, this);

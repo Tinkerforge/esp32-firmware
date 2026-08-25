@@ -44,6 +44,13 @@ public:
     bool get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out);
     std::unique_ptr<char[]> get_iso15118_root_bundle(bool oem);
 
+    struct Iso15118CtrlrValues {
+        bool enforce_tls;
+        int32_t pwm_charging_fallback_timeout_s;
+        char evse_id[OCPP21_ISO15118_EVSE_ID_MAX_LEN + 1];
+    };
+    bool get_iso15118_ctrlr(Iso15118CtrlrValues *out);
+
     void (*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;
 
