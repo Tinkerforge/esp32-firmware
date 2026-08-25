@@ -475,6 +475,9 @@ void Common::handle_supported_app_protocol_req()
     // V2G communication has started
     iso15118.communication_setup_deadline = 0_us;
 
+    // One EVSEID per session
+    iso15118.refresh_evseid();
+
     // Check all schemas for DIN, ISO2 and ISO20
     iso15118.trace("EV supports %u protocols", req->AppProtocol.arrayLen);
     api_state.get("supported_protocols")->removeAll();
@@ -496,8 +499,11 @@ void Common::handle_supported_app_protocol_req()
             iso2_schema_id = req->AppProtocol.array[i].SchemaID;
             iso2_index     = i;
         } else if(strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:-20:AC", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
-            iso20_schema_id = req->AppProtocol.array[i].SchemaID;
-            iso20_index     = i;
+            // We implement ISO 15118-20 version 1 (VersionNumberMajor 1)
+            if (req->AppProtocol.array[i].VersionNumberMajor == 1) {
+                iso20_schema_id = req->AppProtocol.array[i].SchemaID;
+                iso20_index     = i;
+            }
         }
 
         iso15118.trace("%d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
@@ -505,6 +511,13 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
 
         detect_evcc_vendor_from_protocol(req->AppProtocol.array[i].ProtocolNamespace.characters, req->AppProtocol.array[i].ProtocolNamespace.charactersLen);
+    }
+
+    // [V2G20-2356] After a TLS 1.2 handshake ISO 15118-20 must not be selected
+    const bool tls13_active = tls.is_session_active() && tls.is_tls13_active();
+    if (tls.is_session_active() && !tls13_active && iso20_schema_id != UINT8_MAX) {
+        iso15118.trace("Not selecting ISO 15118-20 after TLS 1.2 handshake [V2G20-2356]");
+        iso20_schema_id = UINT8_MAX;
     }
 
     const bool no_protocol_match = (din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX);
@@ -534,10 +547,17 @@ void Common::handle_supported_app_protocol_req()
         // detect the EV closing TCP, which triggers early modem shutdown.
         iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
     } else {
-        // Priority: ISO2 > DIN > ISO20. ISO20 is currently testing-only.
+        // Priority after a TLS 1.3 handshake: ISO20 > ISO2 > DIN, the EV
+        // negotiated TLS 1.3 for ISO 15118-20. Otherwise (plaintext or
+        // TLS 1.2): ISO2 > DIN > ISO20, ISO20 without TLS 1.3 is testing-only.
         uint8_t schema_id = 0;
         uint8_t index     = 0;
-        if (iso2_schema_id != UINT8_MAX) {
+        if (tls13_active && iso20_schema_id != UINT8_MAX) {
+            schema_id  = iso20_schema_id;
+            index      = iso20_index;
+            exi_in_use = ExiType::Iso20;
+            iso15118.trace("Using ISO 15118-20:AC (TLS 1.3)");
+        } else if (iso2_schema_id != UINT8_MAX) {
             schema_id  = iso2_schema_id;
             index      = iso2_index;
             exi_in_use = ExiType::Iso2;

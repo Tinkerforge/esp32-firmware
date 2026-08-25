@@ -297,6 +297,37 @@ void ISO15118::trace(const char *fmt, ...)
 #endif
 }
 
+seconds_t ISO15118::get_slac_init_timeout() const
+{
+#if MODULE_OCPP_AVAILABLE()
+    Ocpp::Iso15118CtrlrValues ctrlr;
+    if (ocpp.get_iso15118_ctrlr(&ctrlr)) {
+        return seconds_t{ctrlr.pwm_charging_fallback_timeout_s < 1 ? 1 : ctrlr.pwm_charging_fallback_timeout_s};
+    }
+#endif
+    return SLAC_TT_EVSE_SLAC_INIT;
+}
+
+// EVSEID used in SessionSetupRes and the -2 charging loop responses.
+// ISO15118Ctrlr.ISO15118EvseId while the OCPP 2.1 client runs, the
+// default EVSE ID otherwise.
+void ISO15118::refresh_evseid()
+{
+#if MODULE_OCPP_AVAILABLE()
+    Ocpp::Iso15118CtrlrValues ctrlr;
+    if (ocpp.get_iso15118_ctrlr(&ctrlr) && ctrlr.evse_id[0] != '\0') {
+        const size_t len = strlen(ctrlr.evse_id);
+        if (len < sizeof(evseid_iso)) {
+            memcpy(evseid_iso, ctrlr.evse_id, len + 1);
+            evseid_iso_len = static_cast<uint16_t>(len);
+            return;
+        }
+    }
+#endif
+    memcpy(evseid_iso, evseid_iso_default, evseid_iso_default_len + 1u);
+    evseid_iso_len = evseid_iso_default_len;
+}
+
 void ISO15118::pre_setup()
 {
     this->trace_buffer_index    = logger.alloc_trace_buffer("iso15118", 256 * 1024);
@@ -379,14 +410,15 @@ void ISO15118::setup()
 
     api.restorePersistentConfig("iso15118/config", &config);
 
-    // Generate EVSEID for ISO 15118-2 / ISO 15118-20
+    // Generate default EVSEID for ISO 15118-2 / ISO 15118-20
     // Format: "DEWRPE" + base32(local_uid_num)
     // "DE" = country code (Germany), "WRP" = EVSE operator ID, "E" = ID type (EVSE)
     // base32 encoding uses RFC 4648 alphabet (A-Z, 2-7) for an unambiguous 7-char outlet ID.
     const uint32_t local_uid_num = esp32_common.get_uid_num();
-    strcpy(evseid_iso, "DEWRPE");
-    encode_iso_evseid(local_uid_num, evseid_iso + 6);
-    evseid_iso_len = 13;
+    strcpy(evseid_iso_default, "DEWRPE");
+    encode_iso_evseid(local_uid_num, evseid_iso_default + 6);
+    evseid_iso_default_len = 13;
+    refresh_evseid();
 
     // Generate EVSEID for DIN 70121
     // Format: "49*000*" + decimal(local_uid_num), nibble-encoded per DIN SPEC 91286
