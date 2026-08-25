@@ -688,6 +688,33 @@ def led_wrap():
 
         files_to_commit.append(report_path_json)
 
+        print(green('WARP Charger test successful. Aftermath pending...'))
+    except BaseException as e:
+        print(red('WARP Charger test failed!'))
+
+        result['failure_exception'] = str(e)
+        result['failure_traceback'] = traceback.format_exc()
+
+        if power_off_on_error:
+            stage3.power_off()
+
+        stage3.set_led_strip_color((255, 0, 0))
+        stage3.beep_failure()
+
+        report_path_json = report_path_prefix + "_failure.json"
+
+        try:
+            with mkdir_open(report_path_json, "w") as f:
+                json.dump(result, f, indent=4)
+        except Exception as e2:
+            print(red(f'Failed to write failure report: {e2}'))
+
+        commit_message += ' (test failure)'
+        files_to_commit.append(report_path_json)
+
+        raise
+
+    try:
         report_path_pdf = report_path_prefix + ".pdf"
 
         if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:
@@ -754,33 +781,20 @@ def led_wrap():
                 if os.system(f'pdftops {shipping_label_path} - | lpr -P Wallbox-DHL') != 0:
                     fatal_error("Could not print shipping label")
 
-        print('Done!')
-    except BaseException as e:
-        result['failure_exception'] = str(e)
-        result['failure_traceback'] = traceback.format_exc()
-
-        if power_off_on_error:
-            stage3.power_off()
+        print(green('Done!'))
+    except BaseException:
+        print(red('Aftermath failed!'))
 
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
 
-        report_path_json = report_path_prefix + "_failure.json"
-
-        try:
-            with mkdir_open(report_path_json, "w") as f:
-                json.dump(result, f, indent=4)
-        except Exception as e:
-            print(red(f'Failed to write failure report: {e}'))
-
-        commit_message += ' (Failure)'
-        files_to_commit.append(report_path_json)
+        commit_message += ' (aftermath failure)'
 
         raise
-    else:
-        stage3.power_off()
-        stage3.set_led_strip_color((0, 255, 0))
-        stage3.beep_success()
+
+    stage3.power_off()
+    stage3.set_led_strip_color((0, 255, 0))
+    stage3.beep_success()
 
     dprint("exit led_wrap")
 
