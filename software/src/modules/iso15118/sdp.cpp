@@ -200,6 +200,20 @@ void SDP::handle_socket()
             return;
         }
 
+        // [HUB20-52-001] With ISO15118Ctrlr.EnforceTlsEnabled a no-TLS SDP
+        // request closes the PLC connection instead of being answered.
+#if MODULE_OCPP_AVAILABLE()
+        if (request->security != SDP_SECURITY_TLS) {
+            Ocpp::Iso15118CtrlrValues ctrlr;
+            if (ocpp.get_iso15118_ctrlr(&ctrlr) && ctrlr.enforce_tls) {
+                iso15118.trace("SDP: EnforceTlsEnabled is set and EV requested no TLS, closing PLC connection");
+                iso15118.qca700x.link_down();
+                iso15118.slac.state = SLACState::ModemReset;
+                return;
+            }
+        }
+#endif
+
         // Determine security mode for response
         // If TLS is enabled in the config and the EV requests TLS (security=0x00), respond with TLS.
         // Otherwise respond with no security.

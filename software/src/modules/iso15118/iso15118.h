@@ -53,6 +53,15 @@ static constexpr int FDS_COUNT        = 4;
 
 static constexpr millis_t ISO15118_STATE_MACHINES_INTERVAL = 10_ms;
 
+// SAP protocols served by this stack as "uri,major,minor". Matches
+// Common::handle_supported_app_protocol_req, reported via
+// ISO15118Ctrlr.ProtocolSupported when the OCPP 2.1 client runs.
+static constexpr const char *iso15118_supported_protocols[] = {
+    "urn:din:70121:2012:MsgDef,2,0",
+    "urn:iso:15118:2:2013:MsgDef,2,0",
+    "urn:iso:std:iso:15118:-20:AC,1,0",
+};
+
 struct ChargingInformation {
     uint16_t current_ma;
     bool three_phase;
@@ -116,6 +125,10 @@ public:
     // Returns true if SLAC init should fall back after one attempt instead of
     // retrying C_SEQU_RETRY times with State E/F cycling.
     bool is_fast_timeout() const { return config.get("fast_timeout")->asBool(); }
+
+    // TT_EVSE_SLAC_init value: ISO15118Ctrlr.PWMChargingFallbackTimeout while
+    // the OCPP 2.1 client runs (HUB20-51-002)
+    seconds_t get_slac_init_timeout() const;
 
     // Returns true if TLS may be offered in the SDP response. TLS is tied to
     // charging via ISO 15118-20.
@@ -186,8 +199,13 @@ public:
     DebugMode debug_mode;
     PibManager pib_manager;
 
-    char evseid_iso[14];
+    char evseid_iso[38];
     uint16_t evseid_iso_len;
+
+    char evseid_iso_default[14];
+    uint16_t evseid_iso_default_len;
+
+    void refresh_evseid();
 
     uint8_t evseid_din[16];
     uint16_t evseid_din_len;
