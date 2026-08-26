@@ -136,6 +136,8 @@ public:
     // Returns 0 on success, non-zero on failure.
     int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
 
+    bool get_ocsp_staple(size_t index, const unsigned char **der, size_t *der_len) const;
+
 private:
     static constexpr size_t CERTS_MAX_VERIFY = 8;
 
@@ -169,6 +171,7 @@ private:
     bool session_active = false;
     bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
     bool group_policy_applied = false; // HUB20-533-005
+    bool iso20_allowed = true;
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
 
     // Async verification
@@ -211,4 +214,9 @@ private:
     size_t oem_root_ca_pem_len_iso20 = 0;
     uint8_t *v2g_root_ca_pem_iso20 = nullptr;
     size_t v2g_root_ca_pem_len_iso20 = 0;
+
+    // Raw OCSP responses for the -20 SECC chain (leaf first), stapled into the TLS 1.3 Certificate message [V2G20-2388]
+    static constexpr size_t OCSP_STAPLE_MAX = 4;
+    uint8_t *staple_der[OCSP_STAPLE_MAX] = {};
+    size_t staple_der_len[OCSP_STAPLE_MAX] = {};
 };

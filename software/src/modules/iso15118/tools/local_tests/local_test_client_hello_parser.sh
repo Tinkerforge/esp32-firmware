@@ -3,7 +3,7 @@
 #
 # Extracts the parser from the module source (fails to compile if the source
 # markers drift), captures real ClientHellos from the local OpenSSL via
-# capture_hellos.py and runs the checks in client_hello_parser_main.cpp under
+# capture_hellos.py and runs the checks in client_hello_parser_main.cpp.inc under
 # ASan/UBSan.
 set -eu
 cd "$(dirname "$0")"
@@ -21,6 +21,6 @@ fi
 python3 capture_hellos.py "$BUILD/hellos.inc"
 
 g++ -Wall -Wextra -O1 -fsanitize=address,undefined -I"$BUILD" \
-    -o "$BUILD/client_hello_parser" client_hello_parser_main.cpp
+    -o "$BUILD/client_hello_parser" -x c++ client_hello_parser_main.cpp.inc
 
 "$BUILD/client_hello_parser"
