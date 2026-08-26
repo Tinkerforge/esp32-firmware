@@ -10,6 +10,9 @@ Provisions the certificate store step by step and checks the TLS server behavior
   4. a Good OCSP response for the -20 leaf (signed by the dev CPO sub
      CA 2, delivered via GetCertificateStatus) enables TLS 1.3 and the
      staple DER shows up in the trace log
+  5. openssl s_client -status sees the response stapled to the leaf
+     CertificateEntry in the TLS 1.3 handshake (needs firmware built
+     against libs with the stapling patch)
 
 Run this in evsim venv:
 ../../../../../.venv-evsim/bin/python local_test_ocsp_gating.py --charger <ip>
@@ -134,6 +137,20 @@ def trace_log(charger):
         return f.read().decode(errors="replace")
 
 
+def s_client_status(charger, iface):
+    """TLS 1.3 handshake with status_request, returns the s_client output."""
+    res = common.sdp_request(iface)
+    if res is None:
+        raise SystemExit("SDP request timed out, is ISO debug mode enabled?")
+    return subprocess.run(
+        ["openssl", "s_client", "-connect", f'[{res["secc_ll"]}%{iface}]:{res["port"]}',
+         "-tls1_3", "-status",
+         "-CAfile", str(CERTS / "iso20" / "certs" / "v2gRootCACert.pem"),
+         "-cert", str(CERTS / "iso20" / "certs" / "oemCertChain.pem"),
+         "-key", str(CERTS / "iso20" / "private_keys" / "oemLeaf.key"), "-pass", "pass:12345"],
+        input="Q", capture_output=True, text=True, timeout=60).stdout
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--charger", required=True)
@@ -216,6 +233,15 @@ def main():
         log = trace_log(args.charger)
         check("staple DER loaded into the TLS server",
               f"OCSP staple for -20 chain certificate 0: {len(der)} bytes" in log)
+
+        serial = run(["openssl", "x509", "-in", str(workdir / "leaf20.pem"),
+                      "-noout", "-serial"]).stdout.strip().split("=")[1]
+        time.sleep(1)
+        out = s_client_status(args.charger, iface)
+        check("stapled OCSP response on the wire",
+              "OCSP Response Status: successful" in out and "Cert Status: good" in out
+              and serial in out,
+              "" if "OCSP Response Status" in out else "no OCSP response in the handshake")
     finally:
         try:
             disabled = dict(saved_config)
