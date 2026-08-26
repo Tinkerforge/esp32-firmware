@@ -31,6 +31,7 @@
 #include "cbv2g/iso_20/iso20_AC_Encoder.h"
 
 #include "common.h"
+#include "pnc.h"
 #include "sdp.h"  // For V2GTPPayloadType
 #include "generated/iso20_state.enum.h"
 
@@ -119,4 +120,19 @@ private:
     uint16_t selected_service_id = 0;
     uint16_t selected_parameter_set_id = 0;
     bool is_selected_three_phase() const { return selected_parameter_set_id == ISO20_PARAM_SET_THREE_PHASE; }
+
+    // PnC session state
+    bool pnc_offered = false;
+    bool pnc_verified = false;
+    bool cert_install_offered = false;
+    uint8_t gen_challenge[PNC_CHALLENGE_LEN];
+    PncVerifyJob *pnc_job = nullptr;
+
+    // Plug and Charge, implemented in iso20_pnc.cpp
+    void reset_pnc_session();
+    void offer_pnc(struct iso20_AuthorizationSetupResType *res);
+    void authorize_pnc(const struct iso20_AuthorizationReqType *req, struct iso20_AuthorizationResType *res);
+    bool start_pnc_verify(const struct iso20_AuthorizationReqType *req);
+    void handle_certificate_installation_req();
+    void fill_cert_installation_dummy(struct iso20_CertificateInstallationResType *res, iso20_responseCodeType code, iso20_processingType processing);
 };

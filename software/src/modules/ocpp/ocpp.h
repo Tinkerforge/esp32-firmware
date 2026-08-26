@@ -42,7 +42,13 @@ public:
     bool on_tag_seen(const char *tag_id);
 
     bool get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out);
-    std::unique_ptr<char[]> get_iso15118_root_bundle(bool oem);
+
+    enum class RootGroup : uint8_t {
+        V2G,
+        OEM,
+        MO,
+    };
+    std::unique_ptr<char[]> get_iso15118_root_bundle(RootGroup group);
 
     bool is_iso15118_store_live();
     bool is_iso20_tls_ready();
@@ -62,6 +68,18 @@ public:
     bool request_iso15118_vehicle_chain_status(const VehicleChainCertDer *chain, size_t chain_len, const uint8_t *root_der, size_t root_len);
     VehicleChainCheck get_iso15118_vehicle_chain_check();
     void on_vehicle_chain_status_result(bool response_received);
+
+    enum class EvCertStatus : uint8_t {
+        Idle,
+        Pending,
+        Accepted,
+        Failed,
+    };
+    bool request_iso15118_ev_certificate(bool iso20, bool update, const uint8_t *exi, size_t exi_len, int32_t max_contract_chains);
+    EvCertStatus get_iso15118_ev_cert_status();
+    bool take_iso15118_ev_cert_response(std::unique_ptr<uint8_t[]> *exi_out, size_t *exi_len_out, int32_t *remaining_out);
+    void on_ev_cert_result(bool accepted, const char *exi_response, int32_t remaining_contracts);
+    bool is_iso15118_contract_install_enabled();
 
     struct Iso15118CtrlrValues {
         bool enforce_tls;
@@ -90,6 +108,11 @@ private:
     size_t vehicle_chain_count = 0;
     bool vehicle_chain_response_received = false;
     bool vehicle_chain_request_failed = false;
+
+    EvCertStatus ev_cert_status = EvCertStatus::Idle;
+    std::unique_ptr<uint8_t[]> ev_cert_exi;
+    size_t ev_cert_exi_len = 0;
+    int32_t ev_cert_remaining = 0;
 
     ConfigRoot change_configuration;
 

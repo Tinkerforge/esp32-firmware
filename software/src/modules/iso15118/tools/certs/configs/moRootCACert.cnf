@@ -1,0 +1,14 @@
+[req]
+prompt              = no
+distinguished_name  = ca_dn
+
+[ca_dn]
+commonName          = MORootCA
+organizationName    = WARP
+countryName         = DE
+domainComponent     = MO
+
+[ext]
+basicConstraints    = critical,CA:true
+keyUsage            = critical,keyCertSign,cRLSign
+subjectKeyIdentifier = hash

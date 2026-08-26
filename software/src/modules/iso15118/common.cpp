@@ -336,6 +336,8 @@ void Common::prepare_iso2_header(struct iso2_MessageHeaderType *header)
 void Common::send_exi(ExiType type)
 {
     memset(exi_data, 0, EXI_DATA_SIZE);
+    rx_exi = nullptr;
+    rx_exi_len = 0;
 
     exi_bitstream exi;
     exi_bitstream_init(&exi, exi_data, EXI_DATA_SIZE, sizeof(V2GTP_Header), nullptr);
@@ -404,6 +406,48 @@ void Common::send_exi(ExiType type)
     }
 }
 
+// Send an externally produced EXI document (e.g. a CSMS provided
+// CertificateInstallationRes) verbatim. We need to add the V2GTP framing.
+void Common::send_exi_raw(const uint8_t *exi, size_t exi_len, ExiType type)
+{
+    if (exi_len + sizeof(V2GTP_Header) > EXI_DATA_SIZE) {
+        iso15118.trace("Common: Raw EXI payload too large: %zu", exi_len);
+        return;
+    }
+
+    rx_exi = nullptr;
+    rx_exi_len = 0;
+    memmove(exi_data + sizeof(V2GTP_Header), exi, exi_len);
+
+    V2GTP_Header *header = reinterpret_cast<V2GTP_Header*>(exi_data);
+    header->protocol_version         = 0x01;
+    header->inverse_protocol_version = 0xFE;
+
+    V2GTPPayloadType payload_type = V2GTPPayloadType::SAP;
+    if (type == ExiType::Iso20) {
+        payload_type = V2GTPPayloadType::ISO20Common;
+    } else if (type == ExiType::Iso20Ac) {
+        payload_type = V2GTPPayloadType::ISO20AC;
+    }
+    header->payload_type             = htons(static_cast<uint16_t>(payload_type));
+    header->payload_length           = htonl(exi_len);
+
+    const size_t total_length = exi_len + sizeof(V2GTP_Header);
+    ssize_t send_ret;
+
+    if (tls.is_session_active()) {
+        send_ret = tls.write(exi_data, total_length);
+    } else {
+        send_ret = send(active_socket, exi_data, total_length, 0);
+    }
+
+    if (send_ret < 0) {
+        iso15118.trace("Common: Failed to send data: %zd (errno %d)", send_ret, errno);
+        reset_active_socket();
+        return;
+    }
+}
+
 void Common::decode(uint8_t *data, const size_t length)
 {
     // A short frame would underflow the payload size below (exi_bitstream_init).
@@ -434,6 +478,8 @@ void Common::decode(uint8_t *data, const size_t length)
 
     exi_bitstream exi;
     exi_bitstream_init(&exi, &data[sizeof(V2GTP_Header)], length - sizeof(V2GTP_Header), 0, nullptr);
+    rx_exi = &data[sizeof(V2GTP_Header)];
+    rx_exi_len = length - sizeof(V2GTP_Header);
 
     if (exi_in_use == ExiType::AppHand) {
         // Lazy-alloc appHand buffers on first use; they stay allocated for the session lifetime.
