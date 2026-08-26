@@ -338,6 +338,8 @@ void ISO20::handle_authorization_req()
     iso20DocEnc->AuthorizationRes_isUsed = 1;
     prepare_header(&res->Header);
 
+    res->EVSEProcessing = iso20_processingType_Finished;
+
     // Only accept EIM authorization
     if (req->SelectedAuthorizationService == iso20_authorizationType_EIM) {
         res->ResponseCode = iso20_responseCodeType_OK;
@@ -347,11 +349,52 @@ void ISO20::handle_authorization_req()
         iso15118.trace("ISO20: PnC authorization not supported, sending warning");
     }
 
-    // Authorization is immediately finished (no waiting for external authorization)
-    res->EVSEProcessing = iso20_processingType_Finished;
+    bool close_session = false;
+
+#if MODULE_OCPP_AVAILABLE()
+    // [HUB20-432-004][HUB20-536-002] After a mutual TLS handshake the
+    // authorization stays Ongoing until the vehicle chain OCSP status is
+    // verified. Revoked or Unknown fail the authorization and close the
+    // TLS session (HUB20-432-008/009/010, missing status entries and
+    // failed requests count as Unknown).
+    if (res->ResponseCode == iso20_responseCodeType_OK && iso15118.common.tls.is_mutual_auth_session()) {
+        switch (ocpp.get_iso15118_vehicle_chain_check()) {
+            case Ocpp::VehicleChainCheck::NotRequired:
+            case Ocpp::VehicleChainCheck::Good:
+                break;
+
+            case Ocpp::VehicleChainCheck::Pending:
+                res->EVSEProcessing = iso20_processingType_Ongoing;
+                break;
+
+            case Ocpp::VehicleChainCheck::Revoked:
+                iso15118.trace("ISO20: Vehicle chain revoked, failing authorization");
+                res->ResponseCode = iso20_responseCodeType_FAILED;
+                close_session = true;
+                break;
+
+            case Ocpp::VehicleChainCheck::Unknown:
+            default:
+                iso15118.trace("ISO20: Vehicle chain status unknown, failing authorization");
+                res->ResponseCode = iso20_responseCodeType_FAILED;
+                close_session = true;
+                break;
+        }
+    }
+#endif
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
     state = ISO20State::Authorization;
+
+    if (close_session) {
+        // [HUB20-432-008/009] Close the TLS session, delayed so the failed AuthorizationRes reaches the EV first
+        int socket_to_close = iso15118.common.get_active_socket();
+        task_scheduler.scheduleOnce([socket_to_close]() {
+            if (iso15118.common.get_active_socket() == socket_to_close) {
+                iso15118.common.reset_active_socket();
+            }
+        }, 2_s);
+    }
 }
 
 void ISO20::handle_service_discovery_req()
