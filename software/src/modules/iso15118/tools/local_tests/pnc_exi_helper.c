@@ -1,7 +1,9 @@
 // Encode an ISO 15118 xmldsig SignedInfo fragment with libcbv2g.
-// EcoG's encoder generates incompatible binary for this fragment.
-// It is currently unclear if there is a bug in EcoG or libcbv2g.
-// We will find out during certification and fix libcbv2g if necessary.
+// EcoG's encoder generates different (also schema-valid) EXI for the
+// iso20 fragment. Verified against a production CPS: its -20 signatures
+// verify over the libcbv2g encoding and not over EcoG's, so libcbv2g
+// matches the ecosystem. For the -2 SignedInfo both encoders produce
+// identical bytes.
 //
 // Usage: pnc_exi_helper <2|20> <digest_hex>
 // Prints the SignedInfo EXI as hex.
