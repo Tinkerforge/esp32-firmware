@@ -286,12 +286,8 @@ void Ocpp::apply_config() {
     }, 100_ms, 100_ms);
 }
 
-bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out)
+const Ocpp21::CertEntry *Ocpp::best_iso15118_secc_chain(bool iso20, bool *valid_out)
 {
-    if (!cp21 || !client_started) {
-        return false;
-    }
-
     // One chain per anchoring V2G root can be stored.
     // Prefer a chain that is currently valid and the freshest one on a tie.
     auto group = iso20 ? Ocpp21::CertGroup::V2G20Chain : Ocpp21::CertGroup::V2GChain;
@@ -308,6 +304,19 @@ bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pe
             best_valid = valid;
         }
     }
+    if (valid_out != nullptr) {
+        *valid_out = best_valid;
+    }
+    return best;
+}
+
+bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+
+    const Ocpp21::CertEntry *best = best_iso15118_secc_chain(iso20, nullptr);
     if (best == nullptr) {
         return false;
     }
@@ -376,6 +385,61 @@ bool Ocpp::get_iso15118_ctrlr(Iso15118CtrlrValues *out)
     out->enforce_tls = cp21->device_model.enforce_tls_enabled;
     out->pwm_charging_fallback_timeout_s = cp21->device_model.pwm_charging_fallback_timeout_s;
     snprintf(out->evse_id, sizeof(out->evse_id), "%s", cp21->device_model.iso15118_evse_id);
+    return true;
+}
+
+bool Ocpp::is_iso15118_store_live()
+{
+    return cp21 && client_started;
+}
+
+// HUB20-532-002: TLS 1.3 with the -20 chain is only offered with a
+// time valid chain and Good OCSP status for every chain
+// certificate. The OCSP condition is waived in a private
+// environment (PrivateEnviromentEnabled).
+bool Ocpp::is_iso20_tls_ready()
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+
+    bool valid = false;
+    const Ocpp21::CertEntry *best = best_iso15118_secc_chain(true, &valid);
+    if (best == nullptr || !valid) {
+        return false;
+    }
+    if (cp21->device_model.private_environment_enabled) {
+        return true;
+    }
+    return cp21->seccChainOcspStatus(best->id) == OcppOcspStatus21::Good;
+}
+
+// V2G20-2388: raw OCSP response for one certificate of the served
+// -20 SECC chain (0 = leaf), copied for TLS 1.3 stapling.
+bool Ocpp::get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+
+    const Ocpp21::CertEntry *best = best_iso15118_secc_chain(true, nullptr);
+    if (best == nullptr) {
+        return false;
+    }
+
+    const uint8_t *der = nullptr;
+    size_t der_len = 0;
+    if (!cp21->seccChainOcspResponse(best->id, cert_idx, &der, &der_len)) {
+        return false;
+    }
+
+    auto copy = heap_alloc_array<uint8_t>(der_len);
+    if (copy == nullptr) {
+        return false;
+    }
+    memcpy(copy.get(), der, der_len);
+    *der_out = std::move(copy);
+    *der_len_out = der_len;
     return true;
 }
 

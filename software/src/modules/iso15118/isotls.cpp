@@ -134,6 +134,21 @@ static int tls_cert_selection_callback(mbedtls_ssl_context *ssl)
     return s_isotls_instance->select_certificate_for_handshake(ssl);
 }
 
+// Override of the hook added by mbedTLS OCSP stapling patch.
+// Called while the TLS 1.3 Certificate message is written and
+// the client sent a status_request extension.
+// Returning 0 staples the DER OCSPResponse into the CertificateEntry [V2G20-2388].
+extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size_t index, const unsigned char **der, size_t *der_len);
+
+extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size_t index, const unsigned char **der, size_t *der_len)
+{
+    (void)ssl;
+    if (s_isotls_instance == nullptr || !s_isotls_instance->get_ocsp_staple(index, der, der_len)) {
+        return -1;
+    }
+    return 0;
+}
+
 // EWOULDBLOCK and EAGAIN can be the same value depending on compiler version
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
@@ -333,41 +348,83 @@ bool ISOTLS::apply_group_policy()
 
 bool ISOTLS::load_certificates()
 {
-    // Certs from the OCPP certificate store wins per item, the embedded dev certificates are the fallback.
-    // TODO: Once we have a stable/easy way to provision the certs through ocpp for development, we should remove the dev certs completely.
+    // With a live OCPP certificate store the store is authoritative.
+    // TLS 1.3 with the -20 chain is only served when the chain is time valid and its OCSP status is good
+    // or a private environment waives the OCSP obligation [HUB20-532-002].
+    // The embedded dev certificates only serve on bench and development setups.
     std::unique_ptr<char[]> live_chain_iso2,  live_key_iso2;
     std::unique_ptr<char[]> live_chain_iso20, live_key_iso20;
     std::unique_ptr<char[]> live_v2g_roots,   live_oem_roots;
+    bool store_live = false;
+    iso20_allowed = true;
 #if MODULE_OCPP_AVAILABLE()
+    store_live = ocpp.is_iso15118_store_live();
     ocpp.get_iso15118_secc_chain(false, &live_chain_iso2,  &live_key_iso2);
     ocpp.get_iso15118_secc_chain(true,  &live_chain_iso20, &live_key_iso20);
     live_v2g_roots = ocpp.get_iso15118_root_bundle(false);
     live_oem_roots = ocpp.get_iso15118_root_bundle(true);
+    if (store_live) {
+        iso20_allowed = ocpp.is_iso20_tls_ready() && live_chain_iso20 && live_key_iso20;
+    }
 #endif
 
-    cert_chain_pem_iso2   = copy_pem(live_chain_iso2  ? live_chain_iso2.get()  : dev_cert_chain_pem_iso2,   &cert_chain_pem_len_iso2);
-    private_key_pem_iso2  = copy_pem(live_key_iso2    ? live_key_iso2.get()    : dev_private_key_pem_iso2,  &private_key_pem_len_iso2);
-    cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : dev_cert_chain_pem_iso20,  &cert_chain_pem_len_iso20);
-    private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : dev_private_key_pem_iso20, &private_key_pem_len_iso20);
-    oem_root_ca_pem_iso20 = copy_pem(live_oem_roots   ? live_oem_roots.get()   : dev_oem_root_ca_pem_iso20, &oem_root_ca_pem_len_iso20);
-    v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots   ? live_v2g_roots.get()   : dev_v2g_root_ca_pem_iso20, &v2g_root_ca_pem_len_iso20);
+    if (store_live && (!live_chain_iso2 || !live_key_iso2)) {
+        iso15118.trace("ISOTLS: OCPP store live but no -2 SECC chain installed, TLS unavailable");
+        return false;
+    }
 
-    if ((cert_chain_pem_iso2 == nullptr)   || (private_key_pem_iso2 == nullptr)  ||
-        (cert_chain_pem_iso20 == nullptr)  || (private_key_pem_iso20 == nullptr) ||
-        (oem_root_ca_pem_iso20 == nullptr) || (v2g_root_ca_pem_iso20 == nullptr)) {
+    cert_chain_pem_iso2   = copy_pem(live_chain_iso2 ? live_chain_iso2.get() : dev_cert_chain_pem_iso2,  &cert_chain_pem_len_iso2);
+    private_key_pem_iso2  = copy_pem(live_key_iso2   ? live_key_iso2.get()   : dev_private_key_pem_iso2, &private_key_pem_len_iso2);
+    if (iso20_allowed) {
+        cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : dev_cert_chain_pem_iso20,  &cert_chain_pem_len_iso20);
+        private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : dev_private_key_pem_iso20, &private_key_pem_len_iso20);
+    }
+    if (live_oem_roots || !store_live) {
+        oem_root_ca_pem_iso20 = copy_pem(live_oem_roots ? live_oem_roots.get() : dev_oem_root_ca_pem_iso20, &oem_root_ca_pem_len_iso20);
+    }
+    if (live_v2g_roots || !store_live) {
+        v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots ? live_v2g_roots.get() : dev_v2g_root_ca_pem_iso20, &v2g_root_ca_pem_len_iso20);
+    }
+
+    if ((cert_chain_pem_iso2 == nullptr) || (private_key_pem_iso2 == nullptr) ||
+        (iso20_allowed && ((cert_chain_pem_iso20 == nullptr) || (private_key_pem_iso20 == nullptr)))) {
         iso15118.trace("ISOTLS: Failed to allocate memory for certificates");
         return false;
     }
 
+#if MODULE_OCPP_AVAILABLE()
+    // Retained OCSP responses of the served -20 chain, leaf first, for stapling into the TLS 1.3 Certificate message [V2G20-2388]
+    if (iso20_allowed && store_live) {
+        for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
+            std::unique_ptr<uint8_t[]> der;
+            size_t der_len = 0;
+            if (!ocpp.get_iso15118_ocsp_staple(static_cast<uint8_t>(i), &der, &der_len)) {
+                continue;
+            }
+            staple_der[i] = static_cast<uint8_t*>(calloc_psram_or_dram(der_len, 1));
+            if (staple_der[i] == nullptr) {
+                continue;
+            }
+            memcpy(staple_der[i], der.get(), der_len);
+            staple_der_len[i] = der_len;
+            iso15118.trace("ISOTLS: OCSP staple for -20 chain certificate %zu: %zu bytes", i, der_len);
+        }
+    }
+#endif
+
     iso15118.trace("ISOTLS: ISO 15118-2 SECC chain (secp256r1) from %s: chain=%zu bytes, key=%zu bytes",
                     live_chain_iso2 ? "OCPP store" : "dev certs",
                     cert_chain_pem_len_iso2 - 1, private_key_pem_len_iso2 - 1);
-    iso15118.trace("ISOTLS: ISO 15118-20 SECC chain (secp521r1) from %s: chain=%zu bytes, key=%zu bytes",
-                    live_chain_iso20 ? "OCPP store" : "dev certs",
-                    cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
+    if (iso20_allowed) {
+        iso15118.trace("ISOTLS: ISO 15118-20 SECC chain (secp521r1) from %s: chain=%zu bytes, key=%zu bytes",
+                        live_chain_iso20 ? "OCPP store" : "dev certs",
+                        cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
+    } else {
+        iso15118.trace("ISOTLS: -20 SECC chain missing, expired or without good OCSP status, offering TLS 1.2 only [HUB20-532-002]");
+    }
     iso15118.trace("ISOTLS: Trusted roots for ISO 15118-20 mutual TLS: OEM from %s (%zu bytes), V2G from %s (%zu bytes)",
-                    live_oem_roots ? "OCPP store" : "dev certs", oem_root_ca_pem_len_iso20 - 1,
-                    live_v2g_roots ? "OCPP store" : "dev certs", v2g_root_ca_pem_len_iso20 - 1);
+                    live_oem_roots ? "OCPP store" : "dev certs", oem_root_ca_pem_len_iso20 > 0 ? oem_root_ca_pem_len_iso20 - 1 : 0,
+                    live_v2g_roots ? "OCPP store" : "dev certs", v2g_root_ca_pem_len_iso20 > 0 ? v2g_root_ca_pem_len_iso20 - 1 : 0);
 
     return true;
 }
@@ -442,22 +499,24 @@ bool ISOTLS::setup()
     }
     iso15118.trace("ISOTLS: ISO 15118-2 certificates parsed successfully (secp256r1)");
 
-    // Parse ISO 15118-20 certificates (secp521r1)
-    ret = mbedtls_x509_crt_parse(cert_chain_iso20, cert_chain_pem_iso20, cert_chain_pem_len_iso20);
-    if (ret != 0) {
-        iso15118.trace("ISOTLS: ISO20 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
-        cleanup();
-        return false;
-    }
+    // Parse ISO 15118-20 certificates (secp521r1) only when the -20 chain may be served [HUB20-532-002]
+    if (iso20_allowed) {
+        ret = mbedtls_x509_crt_parse(cert_chain_iso20, cert_chain_pem_iso20, cert_chain_pem_len_iso20);
+        if (ret != 0) {
+            iso15118.trace("ISOTLS: ISO20 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
+            cleanup();
+            return false;
+        }
 
-    ret = mbedtls_pk_parse_key(private_key_iso20, private_key_pem_iso20, private_key_pem_len_iso20,
-                               nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
-    if (ret != 0) {
-        iso15118.trace("ISOTLS: ISO20 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
-        cleanup();
-        return false;
+        ret = mbedtls_pk_parse_key(private_key_iso20, private_key_pem_iso20, private_key_pem_len_iso20,
+                                   nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
+        if (ret != 0) {
+            iso15118.trace("ISOTLS: ISO20 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
+            cleanup();
+            return false;
+        }
+        iso15118.trace("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
     }
-    iso15118.trace("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
 
     // Parse trusted root CA certificates for mutual TLS (ISO 15118-20)
     // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
@@ -513,8 +572,9 @@ bool ISOTLS::setup()
 
     // Allow both TLS 1.2 and 1.3, let client negotiate
     // [V2G20-2356] If TLS 1.2 negotiated, SECC shall not select ISO 15118-20
+    // Without a servable -20 chain only TLS 1.2 is offered [HUB20-532-002]
     mbedtls_ssl_conf_min_tls_version(ssl_conf, MBEDTLS_SSL_VERSION_TLS1_2);
-    mbedtls_ssl_conf_max_tls_version(ssl_conf, MBEDTLS_SSL_VERSION_TLS1_3);
+    mbedtls_ssl_conf_max_tls_version(ssl_conf, iso20_allowed ? MBEDTLS_SSL_VERSION_TLS1_3 : MBEDTLS_SSL_VERSION_TLS1_2);
     mbedtls_ssl_conf_ciphersuites(ssl_conf, iso15118_ciphersuites);
     // Strict default, replaced per connection in apply_group_policy()
     mbedtls_ssl_conf_groups(ssl_conf, iso15118_groups_tls13);
@@ -650,6 +710,14 @@ void ISOTLS::cleanup()
         free_any(v2g_root_ca_pem_iso20);
         v2g_root_ca_pem_iso20 = nullptr;
         v2g_root_ca_pem_len_iso20 = 0;
+    }
+
+    for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
+        if (staple_der[i] != nullptr) {
+            free_any(staple_der[i]);
+            staple_der[i] = nullptr;
+        }
+        staple_der_len[i] = 0;
     }
 
     initialized = false;
@@ -1072,7 +1140,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
 
-    if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
+    if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && iso20_allowed && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
         iso15118.trace("ISOTLS: cert_cb: TLS 1.3 negotiated, selecting ISO 15118-20 cert (secp521r1)");
         int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso20, private_key_iso20);
         if (ret != 0) {
@@ -1138,6 +1206,16 @@ void ISOTLS::set_mutual_auth_enabled(bool enabled)
 {
     mutual_auth_enabled = enabled;
     iso15118.trace("ISOTLS: Mutual TLS authentication %s", enabled ? "enabled" : "disabled");
+}
+
+bool ISOTLS::get_ocsp_staple(size_t index, const unsigned char **der, size_t *der_len) const
+{
+    if (index >= OCSP_STAPLE_MAX || staple_der[index] == nullptr || staple_der_len[index] == 0) {
+        return false;
+    }
+    *der = staple_der[index];
+    *der_len = staple_der_len[index];
+    return true;
 }
 
 bool ISOTLS::is_mutual_auth_enabled() const
