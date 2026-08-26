@@ -114,19 +114,17 @@ void ISO20::dispatch_common_messages()
     }
 
     // Implemented message handlers (session already validated)
-    V2G_DISPATCH(doc, AuthorizationSetupReq, handle_authorization_setup_req);
-    V2G_DISPATCH(doc, AuthorizationReq,      handle_authorization_req);
-    V2G_DISPATCH(doc, ServiceDiscoveryReq,   handle_service_discovery_req);
-    V2G_DISPATCH(doc, ServiceDetailReq,      handle_service_detail_req);
-    V2G_DISPATCH(doc, ServiceSelectionReq,   handle_service_selection_req);
-    V2G_DISPATCH(doc, ScheduleExchangeReq,   handle_schedule_exchange_req);
-    V2G_DISPATCH(doc, PowerDeliveryReq,      handle_power_delivery_req);
-    V2G_DISPATCH(doc, SessionStopReq,        handle_session_stop_req);
+    V2G_DISPATCH(doc, AuthorizationSetupReq,      handle_authorization_setup_req);
+    V2G_DISPATCH(doc, AuthorizationReq,           handle_authorization_req);
+    V2G_DISPATCH(doc, CertificateInstallationReq, handle_certificate_installation_req);
+    V2G_DISPATCH(doc, ServiceDiscoveryReq,        handle_service_discovery_req);
+    V2G_DISPATCH(doc, ServiceDetailReq,           handle_service_detail_req);
+    V2G_DISPATCH(doc, ServiceSelectionReq,        handle_service_selection_req);
+    V2G_DISPATCH(doc, ScheduleExchangeReq,        handle_schedule_exchange_req);
+    V2G_DISPATCH(doc, PowerDeliveryReq,           handle_power_delivery_req);
+    V2G_DISPATCH(doc, SessionStopReq,             handle_session_stop_req);
 
     // Not yet implemented
-
-    // This is for Plug&Charge certificate handling, currently not supported
-    V2G_NOT_IMPL("ISO20", doc, CertificateInstallationReq);
 
     // This is to Plug&Charge signed meter data transfer, currently not supported
     V2G_NOT_IMPL("ISO20", doc, MeteringConfirmationReq);
@@ -162,6 +160,11 @@ void ISO20::send_failed_unknown_session()
         prepare_header(&res->Header);
         res->ResponseCode = rc;
         res->EVSEProcessing = iso20_processingType_Finished;
+    } else if (doc.CertificateInstallationReq_isUsed) {
+        auto *res = &iso20DocEnc->CertificateInstallationRes;
+        iso20DocEnc->CertificateInstallationRes_isUsed = 1;
+        prepare_header(&res->Header);
+        fill_cert_installation_dummy(res, rc, iso20_processingType_Finished);
     } else if (doc.ServiceDiscoveryReq_isUsed) {
         auto *res = &iso20DocEnc->ServiceDiscoveryRes;
         iso20DocEnc->ServiceDiscoveryRes_isUsed = 1;
@@ -244,6 +247,7 @@ void ISO20::handle_session_setup_req()
     // Reset soc_read flag for new session
     soc_read = false;
     ev_supports_asymmetric = false;
+    reset_pnc_session();
 
     // Store EVCCID in API state (up to 20 characters)
     char evcc_id_str[21] = {0};
@@ -312,16 +316,15 @@ void ISO20::handle_authorization_setup_req()
 
     res->ResponseCode = iso20_responseCodeType_OK;
 
-    // Offer only EIM (External Identification Means) authorization - no Plug&Charge
     res->AuthorizationServices.array[0] = iso20_authorizationType_EIM;
     res->AuthorizationServices.arrayLen = 1;
-
-    // We don't support certificate installation service
     res->CertificateInstallationService = 0;
-
-    // EIM authorization mode is used (empty structure, but must be marked as used)
+    // The authorization mode is an xs:choice, exactly one is present
     res->EIM_ASResAuthorizationMode_isUsed = 1;
     res->PnC_ASResAuthorizationMode_isUsed = 0;
+
+    // Add PnC and the certificate installation service when available
+    offer_pnc(res);
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
     state = ISO20State::AuthorizationSetup;
@@ -340,13 +343,16 @@ void ISO20::handle_authorization_req()
 
     res->EVSEProcessing = iso20_processingType_Finished;
 
-    // Only accept EIM authorization
     if (req->SelectedAuthorizationService == iso20_authorizationType_EIM) {
         res->ResponseCode = iso20_responseCodeType_OK;
+    } else if ((req->SelectedAuthorizationService == iso20_authorizationType_PnC) && pnc_offered && req->PnC_AReqAuthorizationMode_isUsed) {
+        res->ResponseCode = iso20_responseCodeType_OK;
+        // PnC challenge, chain and signature verification
+        authorize_pnc(req, res);
     } else {
-        // If PnC was selected, respond with warning
+        // [V2G20-2209] Selected service was not offered
         res->ResponseCode = iso20_responseCodeType_WARNING_AuthorizationSelectionInvalid;
-        iso15118.trace("ISO20: PnC authorization not supported, sending warning");
+        iso15118.trace("ISO20: Authorization selection invalid");
     }
 
     bool close_session = false;

@@ -27,6 +27,7 @@
 #include "cbv2g/iso_2/iso2_msgDefEncoder.h"
 
 #include "common.h"
+#include "pnc.h"
 #include "generated/iso2_state.enum.h"
 
 // When true and both charge_via_iso15118 and read_soc are enabled, run a DC session
@@ -55,6 +56,7 @@ public:
         state = ISO2State::Idle;
         soc_read = false;
         soc_shutdown_retries = 0;
+        reset_pnc_session();
     }
 
     ConfigRoot api_state;
@@ -89,4 +91,29 @@ private:
     uint8_t soc_shutdown_retries = 0;   // Count of ChargeParameterDiscoveryReq received after SoC was already read
     bool dc_soc_done = false;           // Set after DC SoC session completes (for charge_via_iso15118 + read_soc)
     bool current_session_is_dc = false; // Tracks whether the current session uses DC (set in ChargeParameterDiscovery)
+
+    // PnC session state (-2 contract payment, PnC only offered over TLS)
+    static constexpr size_t ISO2_CERT_MAX = 800;
+    bool pnc_offered = false;
+    bool cert_service_offered = false;
+    bool contract_selected = false;
+    bool contract_validated = false;
+    uint8_t contract_leaf[ISO2_CERT_MAX];
+    uint16_t contract_leaf_len = 0;
+    uint8_t gen_challenge[PNC_CHALLENGE_LEN];
+
+    // Plug and Charge, implemented in iso2_pnc.cpp
+    void reset_pnc_session();
+    void offer_pnc(struct iso2_ServiceDiscoveryResType *res);
+    void authorize_pnc(const struct iso2_AuthorizationReqType *req, struct iso2_AuthorizationResType *res);
+    void handle_service_detail_req();
+    void handle_payment_details_req();
+    void handle_certificate_installation_req();
+    void handle_certificate_update_req();
+    void start_cert_forward(bool update);
+    void poll_cert_forward(bool update, int socket, uint8_t attempts);
+    void send_cert_forward_result(bool update, bool failed);
+    bool verify_authorization_signature(const struct iso2_AuthorizationReqType *req, const struct iso2_MessageHeaderType *header);
+    void fill_cert_installation_res_dummy(struct iso2_CertificateInstallationResType *res, iso2_responseCodeType rc);
+    void fill_cert_update_res_dummy(struct iso2_CertificateUpdateResType *res, iso2_responseCodeType rc);
 };

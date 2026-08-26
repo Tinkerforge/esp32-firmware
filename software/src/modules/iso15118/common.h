@@ -107,6 +107,8 @@ public:
     ExiType exi_in_use = ExiType::AppHand;
 
     void send_exi(ExiType type);
+    void send_exi_raw(const uint8_t *exi, size_t exi_len, ExiType type);
+    const uint8_t *get_rx_exi(size_t *len_out) const { *len_out = rx_exi_len; return rx_exi; }
     void prepare_din_header(struct din_MessageHeaderType *header);
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
     void reset_active_socket();
@@ -137,6 +139,8 @@ private:
     socklen_t addr_len = sizeof(source_addr);
 
     uint8_t *exi_data = nullptr;
+    const uint8_t *rx_exi = nullptr;
+    size_t rx_exi_len = 0;
 
     CommonState state = CommonState::Idle;
 };
@@ -161,6 +165,9 @@ static inline ScaledPower encode_milliwatts(uint32_t milliwatts)
 
 // ServiceID for EV Charging (DIN Table 105, ISO2 Table 105, ISO20 Table 203)
 static constexpr uint16_t V2G_SERVICE_ID_CHARGING = 1;
+
+// ServiceID for the ContractCertificate service (ISO2 Table 105)
+static constexpr uint16_t V2G_SERVICE_ID_CERTIFICATE = 2;
 
 // V2G_SECC_Sequence_Timeout = 60s (DIN TS 70121:2024-11 Table 76, ISO 15118-2 Table 109)
 static constexpr auto V2G_SECC_SEQUENCE_TIMEOUT = 60_s;

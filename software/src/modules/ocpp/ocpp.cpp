@@ -254,6 +254,9 @@ void Ocpp::apply_config() {
 
     if (config.get("protocol")->asEnum<OcppProtocolVersion>() == OcppProtocolVersion::V21) {
         cp21 = std::unique_ptr<Ocpp21::ChargePoint>(new Ocpp21::ChargePoint());
+        cp21->register15118EVCertificateResult([](bool accepted, const char *exi_response, int32_t remaining_contracts, void *user_data) {
+            static_cast<Ocpp *>(user_data)->on_ev_cert_result(accepted, exi_response, remaining_contracts);
+        }, this);
 
         client_started = start_client_21();
         if (!client_started) {
@@ -345,16 +348,22 @@ bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pe
     return true;
 }
 
-std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(bool oem)
+std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(RootGroup group)
 {
     if (!cp21 || !client_started) {
         return nullptr;
     }
 
-    auto group = oem ? Ocpp21::CertGroup::OEMRoot : Ocpp21::CertGroup::V2GRoot;
+    Ocpp21::CertGroup cert_group;
+    switch (group) {
+        case RootGroup::OEM: cert_group = Ocpp21::CertGroup::OEMRoot; break;
+        case RootGroup::MO:  cert_group = Ocpp21::CertGroup::MORoot;  break;
+        case RootGroup::V2G:
+        default:             cert_group = Ocpp21::CertGroup::V2GRoot; break;
+    }
     size_t count = 0;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group == group) {
+        if (e.group == cert_group) {
             ++count;
         }
     }
@@ -368,7 +377,7 @@ std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(bool oem)
     }
     size_t used = 0;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group != group) {
+        if (e.group != cert_group) {
             continue;
         }
         used += cp21->cert_store.readPem(e, bundle.get() + used, OCPP21_ROOT_PEM_MAX + 1);
@@ -583,6 +592,85 @@ Ocpp::VehicleChainCheck Ocpp::get_iso15118_vehicle_chain_check()
         }
     }
     return result;
+}
+
+// M01.FR.01/02/03, M02: forward the EV CertificateInstallationReq or
+// CertificateUpdateReq EXI stream to the CSMS. maximumContractCertificateChains is only passed for -20.
+bool Ocpp::request_iso15118_ev_certificate(bool iso20, bool update, const uint8_t *exi, size_t exi_len, int32_t max_contract_chains)
+{
+    ev_cert_status = EvCertStatus::Failed;
+    ev_cert_exi = nullptr;
+    ev_cert_exi_len = 0;
+    ev_cert_remaining = 0;
+
+    if (!cp21 || !client_started || (exi == nullptr) || (exi_len == 0)) {
+        return false;
+    }
+
+    size_t b64_cap = (exi_len + 2) / 3 * 4 + 1;
+    auto b64 = heap_alloc_array<char>(b64_cap);
+    size_t b64_len = 0;
+    if (b64 == nullptr || mbedtls_base64_encode(reinterpret_cast<uint8_t *>(b64.get()), b64_cap, &b64_len, exi, exi_len) != 0) {
+        return false;
+    }
+    b64.get()[b64_len] = '\0';
+
+    const char *schema = iso20 ? "urn:iso:std:iso:15118:-20:CommonMessages" : "urn:iso:15118:2:2013:MsgDef";
+    if (!cp21->request15118EVCertificate(schema, update, b64.get(), iso20 ? max_contract_chains : -1)) {
+        return false;
+    }
+    ev_cert_status = EvCertStatus::Pending;
+    return true;
+}
+
+void Ocpp::on_ev_cert_result(bool accepted, const char *exi_response, int32_t remaining_contracts)
+{
+    if (ev_cert_status != EvCertStatus::Pending) {
+        return;
+    }
+    ev_cert_status = EvCertStatus::Failed;
+    if (!accepted || (exi_response == nullptr)) {
+        return;
+    }
+
+    size_t b64_len = strlen(exi_response);
+    size_t exi_cap = (b64_len / 4 + 1) * 3;
+    auto exi = heap_alloc_array<uint8_t>(exi_cap);
+    size_t exi_len = 0;
+    if (exi == nullptr || mbedtls_base64_decode(exi.get(), exi_cap, &exi_len, reinterpret_cast<const uint8_t *>(exi_response), b64_len) != 0 || exi_len == 0) {
+        return;
+    }
+
+    ev_cert_exi = std::move(exi);
+    ev_cert_exi_len = exi_len;
+    ev_cert_remaining = remaining_contracts;
+    ev_cert_status = EvCertStatus::Accepted;
+}
+
+Ocpp::EvCertStatus Ocpp::get_iso15118_ev_cert_status()
+{
+    if (!cp21 || !client_started) {
+        return EvCertStatus::Failed;
+    }
+    return ev_cert_status;
+}
+
+bool Ocpp::take_iso15118_ev_cert_response(std::unique_ptr<uint8_t[]> *exi_out, size_t *exi_len_out, int32_t *remaining_out)
+{
+    if ((ev_cert_status != EvCertStatus::Accepted) || (ev_cert_exi == nullptr)) {
+        return false;
+    }
+    *exi_out = std::move(ev_cert_exi);
+    *exi_len_out = ev_cert_exi_len;
+    *remaining_out = ev_cert_remaining;
+    ev_cert_exi_len = 0;
+    ev_cert_status = EvCertStatus::Idle;
+    return true;
+}
+
+bool Ocpp::is_iso15118_contract_install_enabled()
+{
+    return cp21 && client_started && cp21->device_model.iso15118_enabled && cp21->device_model.contract_cert_install_enabled;
 }
 
 void Ocpp::setup()

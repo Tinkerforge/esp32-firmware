@@ -32,6 +32,13 @@ VALIDITY_OEM_ROOT_CERT=3650      # 10 years
 VALIDITY_OEM_SUBCA1_CERT=1460    # 4 years
 VALIDITY_OEM_SUBCA2_CERT=365     # 1 year
 VALIDITY_OEM_LEAF_CERT=60        # 60 days
+VALIDITY_MO_ROOT_CERT=3650       # 10 years
+VALIDITY_MO_SUBCA1_CERT=1460     # 4 years
+VALIDITY_MO_SUBCA2_CERT=365      # 1 year
+VALIDITY_CONTRACT_LEAF_CERT=60   # 60 days
+VALIDITY_CPS_SUBCA1_CERT=1460    # 4 years
+VALIDITY_CPS_SUBCA2_CERT=365     # 1 year
+VALIDITY_CPS_LEAF_CERT=90        # 90 days
 
 # Default password for private keys (for testing only!)
 PASSWORD="${1:-12345}"
@@ -238,6 +245,151 @@ generate_oem_cert_chain() {
     echo "[$ISO_VERSION] OEM certificate generation complete!"
 }
 
+# Function to generate the MO (mobility operator) chain with the contract
+# leaf used for Plug and Charge.
+#
+# Chain: MO Root CA -> MO Sub-CA 1 -> MO Sub-CA 2 -> Contract Leaf
+#
+# Arguments: $1 = iso_version (iso2 or iso20), $2 = ec_curve, $3 = serial_base
+generate_mo_cert_chain() {
+    local ISO_VERSION=$1
+    local EC_CURVE=$2
+    local SERIAL_BASE=$3
+    local SYMMETRIC_CIPHER=-aes-128-cbc
+    local SHA=-sha256
+
+    echo ""
+    echo "[$ISO_VERSION] Generating MO certificate chain..."
+
+    local OUTPUT_DIR="$SCRIPT_DIR/output/$ISO_VERSION"
+    local CERT_PATH="$OUTPUT_DIR/certs"
+    local KEY_PATH="$OUTPUT_DIR/private_keys"
+    local CSR_PATH="$OUTPUT_DIR/csrs"
+
+    echo "[$ISO_VERSION] [MO 1/4] Creating MO Root CA..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/moRootCA.key"
+    openssl req -new -key "$KEY_PATH/moRootCA.key" -passin pass:$PASSWORD \
+        -config configs/moRootCACert.cnf -out "$CSR_PATH/moRootCA.csr"
+    openssl x509 -req -in "$CSR_PATH/moRootCA.csr" \
+        -extfile configs/moRootCACert.cnf -extensions ext \
+        -signkey "$KEY_PATH/moRootCA.key" -passin pass:$PASSWORD $SHA \
+        -set_serial $((SERIAL_BASE + 0)) -out "$CERT_PATH/moRootCACert.pem" -days $VALIDITY_MO_ROOT_CERT
+
+    echo "[$ISO_VERSION] [MO 2/4] Creating MO Sub-CA 1..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/moSubCA1.key"
+    openssl req -new -key "$KEY_PATH/moSubCA1.key" -passin pass:$PASSWORD \
+        -config configs/moSubCA1Cert.cnf -out "$CSR_PATH/moSubCA1.csr"
+    openssl x509 -req -in "$CSR_PATH/moSubCA1.csr" \
+        -extfile configs/moSubCA1Cert.cnf -extensions ext \
+        -CA "$CERT_PATH/moRootCACert.pem" -CAkey "$KEY_PATH/moRootCA.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 1)) \
+        -out "$CERT_PATH/moSubCA1Cert.pem" -days $VALIDITY_MO_SUBCA1_CERT
+
+    echo "[$ISO_VERSION] [MO 3/4] Creating MO Sub-CA 2..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/moSubCA2.key"
+    openssl req -new -key "$KEY_PATH/moSubCA2.key" -passin pass:$PASSWORD \
+        -config configs/moSubCA2Cert.cnf -out "$CSR_PATH/moSubCA2.csr"
+    openssl x509 -req -in "$CSR_PATH/moSubCA2.csr" \
+        -extfile configs/moSubCA2Cert.cnf -extensions ext \
+        -CA "$CERT_PATH/moSubCA1Cert.pem" -CAkey "$KEY_PATH/moSubCA1.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 2)) \
+        -out "$CERT_PATH/moSubCA2Cert.pem" -days $VALIDITY_MO_SUBCA2_CERT
+
+    echo "[$ISO_VERSION] [MO 4/4] Creating Contract Leaf Certificate..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/contractLeaf.key"
+    openssl req -new -key "$KEY_PATH/contractLeaf.key" -passin pass:$PASSWORD \
+        -config configs/contractLeafCert.cnf -out "$CSR_PATH/contractLeafCert.csr"
+    openssl x509 -req -in "$CSR_PATH/contractLeafCert.csr" \
+        -extfile configs/contractLeafCert.cnf -extensions ext \
+        -CA "$CERT_PATH/moSubCA2Cert.pem" -CAkey "$KEY_PATH/moSubCA2.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 3)) \
+        -out "$CERT_PATH/contractLeafCert.pem" -days $VALIDITY_CONTRACT_LEAF_CERT
+
+    echo "$PASSWORD" > "$KEY_PATH/contractLeafPassword.txt"
+    echo "$PASSWORD" > "$KEY_PATH/moSubCA2LeafPassword.txt"
+
+    echo "[$ISO_VERSION] MO certificate generation complete!"
+}
+
+# Function to generate the CPS (certificate provisioning service) chain
+# used to sign CertificateInstallationRes. Anchored to the V2G Root CA.
+#
+# Chain: V2G Root CA -> CPS Sub-CA 1 -> CPS Sub-CA 2 -> CPS Leaf
+#
+# Arguments: $1 = iso_version (iso2 or iso20), $2 = ec_curve, $3 = serial_base
+generate_cps_cert_chain() {
+    local ISO_VERSION=$1
+    local EC_CURVE=$2
+    local SERIAL_BASE=$3
+    local SYMMETRIC_CIPHER=-aes-128-cbc
+
+    echo ""
+    echo "[$ISO_VERSION] Generating CPS certificate chain..."
+
+    local OUTPUT_DIR="$SCRIPT_DIR/output/$ISO_VERSION"
+    local CERT_PATH="$OUTPUT_DIR/certs"
+    local KEY_PATH="$OUTPUT_DIR/private_keys"
+    local CSR_PATH="$OUTPUT_DIR/csrs"
+
+    echo "[$ISO_VERSION] [CPS 1/3] Creating CPS Sub-CA 1..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/cpsSubCA1.key"
+    openssl req -new -key "$KEY_PATH/cpsSubCA1.key" -passin pass:$PASSWORD \
+        -config configs/cpsSubCA1Cert.cnf -out "$CSR_PATH/cpsSubCA1.csr"
+    openssl x509 -req -in "$CSR_PATH/cpsSubCA1.csr" \
+        -extfile configs/cpsSubCA1Cert.cnf -extensions ext \
+        -CA "$CERT_PATH/v2gRootCACert.pem" -CAkey "$KEY_PATH/v2gRootCA.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 0)) \
+        -out "$CERT_PATH/cpsSubCA1Cert.pem" -days $VALIDITY_CPS_SUBCA1_CERT
+
+    echo "[$ISO_VERSION] [CPS 2/3] Creating CPS Sub-CA 2..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/cpsSubCA2.key"
+    openssl req -new -key "$KEY_PATH/cpsSubCA2.key" -passin pass:$PASSWORD \
+        -config configs/cpsSubCA2Cert.cnf -out "$CSR_PATH/cpsSubCA2.csr"
+    openssl x509 -req -in "$CSR_PATH/cpsSubCA2.csr" \
+        -extfile configs/cpsSubCA2Cert.cnf -extensions ext \
+        -CA "$CERT_PATH/cpsSubCA1Cert.pem" -CAkey "$KEY_PATH/cpsSubCA1.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 1)) \
+        -out "$CERT_PATH/cpsSubCA2Cert.pem" -days $VALIDITY_CPS_SUBCA2_CERT
+
+    echo "[$ISO_VERSION] [CPS 3/3] Creating CPS Leaf Certificate..."
+    openssl ecparam -genkey -name $EC_CURVE | \
+        openssl ec $SYMMETRIC_CIPHER -passout pass:$PASSWORD -out "$KEY_PATH/cpsLeaf.key"
+    openssl req -new -key "$KEY_PATH/cpsLeaf.key" -passin pass:$PASSWORD \
+        -config configs/cpsLeafCert.cnf -out "$CSR_PATH/cpsLeafCert.csr"
+    openssl x509 -req -in "$CSR_PATH/cpsLeafCert.csr" \
+        -extfile configs/cpsLeafCert.cnf -extensions ext \
+        -CA "$CERT_PATH/cpsSubCA2Cert.pem" -CAkey "$KEY_PATH/cpsSubCA2.key" \
+        -passin pass:$PASSWORD -set_serial $((SERIAL_BASE + 2)) \
+        -out "$CERT_PATH/cpsLeafCert.pem" -days $VALIDITY_CPS_LEAF_CERT
+
+    echo "$PASSWORD" > "$KEY_PATH/cpsLeafPassword.txt"
+
+    echo "[$ISO_VERSION] CPS certificate generation complete!"
+}
+
+# Function to create DER copies of all certificates for the iso15118
+# Python library (evsim), which loads Plug and Charge material as DER.
+# Arguments: $1 = iso_version (iso2 or iso20)
+generate_der_copies() {
+    local ISO_VERSION=$1
+    local CERT_PATH="$SCRIPT_DIR/output/$ISO_VERSION/certs"
+
+    echo "[$ISO_VERSION] Creating DER copies..."
+    local NAMES="v2gRootCACert oemRootCACert oemSubCA1Cert oemSubCA2Cert oemLeafCert \
+                 moRootCACert moSubCA1Cert moSubCA2Cert contractLeafCert \
+                 cpsSubCA1Cert cpsSubCA2Cert cpsLeafCert \
+                 cpoSubCA1Cert cpoSubCA2Cert seccLeafCert"
+    for name in $NAMES; do
+        openssl x509 -in "$CERT_PATH/$name.pem" -outform der -out "$CERT_PATH/$name.der"
+    done
+}
+
 # Function to convert a PEM file to C string literal lines.
 # Each line of the PEM file becomes: "line\n"
 # Output is written to stdout.
@@ -379,12 +531,18 @@ echo "Password: $PASSWORD"
 # [V2G2-007] Key length for ECC shall be 256 bit
 generate_cert_chain "iso2" "prime256v1" 12345
 generate_oem_cert_chain "iso2" "prime256v1" 32345
+generate_mo_cert_chain "iso2" "prime256v1" 52345
+generate_cps_cert_chain "iso2" "prime256v1" 62345
+generate_der_copies "iso2"
 
 # Generate ISO 15118-20 certificates (secp521r1)
 # [V2G20-2674] Primary: secp521r1 with ECDSA signature algorithm
 # [V2G20-2675] Key length for ECC shall be 521 bit
 generate_cert_chain "iso20" "secp521r1" 22345
 generate_oem_cert_chain "iso20" "secp521r1" 42345
+generate_mo_cert_chain "iso20" "secp521r1" 72345
+generate_cps_cert_chain "iso20" "secp521r1" 82345
+generate_der_copies "iso20"
 
 # Update dev_certs.cpp with the freshly generated certificates
 update_dev_certs_cpp
