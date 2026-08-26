@@ -566,6 +566,15 @@ void Common::handle_supported_app_protocol_req()
         iso20_schema_id = UINT8_MAX;
     }
 
+    // [V2G20-2677] Only full-handshake TLS carries V2G communication.
+    // A session resumed via a ticket PSK could only serve VAS, which we do not offer.
+    if (tls.is_session_active() && tls.is_resumed_session()) {
+        iso15118.trace("No V2G on a resumed TLS session [V2G20-2677]");
+        din70121_schema_id = UINT8_MAX;
+        iso2_schema_id = UINT8_MAX;
+        iso20_schema_id = UINT8_MAX;
+    }
+
     const bool no_protocol_match = (din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX);
     const bool force_nonegotiation = iso15118.nonegotiation_pending ||
                                      (iso15118.is_autocharge_only() && iso15118.opt_nonegotiation_autocharge);
