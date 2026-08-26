@@ -32,6 +32,13 @@
 #include "mbedtls/pk.h"
 #include "mbedtls/net_sockets.h"
 
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C) && defined(MBEDTLS_SSL_PROTO_TLS1_3)
+#define ISO15118_TLS_TICKETS 1
+#include "mbedtls/ssl_ticket.h"
+#else
+#define ISO15118_TLS_TICKETS 0
+#endif
+
 #include "TFTools/Micros.h"
 
 // =============================================================================
@@ -125,6 +132,7 @@ public:
     bool is_tls13_active() const;
 
     bool is_mutual_auth_session() const { return mutual_auth_session; }
+    bool is_resumed_session() const { return resumed_session; }
 
     // Returns the negotiated TLS version string (e.g., "TLSv1.2", "TLSv1.3")
     // Only valid after handshake completes
@@ -170,6 +178,16 @@ private:
     void hand_off_vehicle_chain();
     static void verify_certs_task(void *ctx);
     static int cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *flags);
+
+#if ISO15118_TLS_TICKETS
+    static constexpr uint32_t TICKET_LIFETIME_S = 3600;
+    bool setup_tickets();
+    static int ticket_write_cb(void *ctx, const mbedtls_ssl_session *session, unsigned char *start, const unsigned char *end, size_t *tlen, uint32_t *lifetime);
+    static int ticket_parse_cb(void *ctx, mbedtls_ssl_session *session, unsigned char *buf, size_t len);
+    mbedtls_ssl_ticket_context *ticket_ctx = nullptr;
+#endif
+    bool ticket_psk_accepted = false;
+    bool resumed_session = false;
 
     // State
     bool initialized = false;
