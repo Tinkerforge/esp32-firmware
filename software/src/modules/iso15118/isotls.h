@@ -124,6 +124,8 @@ public:
     // TLS version queries
     bool is_tls13_active() const;
 
+    bool is_mutual_auth_session() const { return mutual_auth_session; }
+
     // Returns the negotiated TLS version string (e.g., "TLSv1.2", "TLSv1.3")
     // Only valid after handshake completes
     const char *get_tls_version_string() const;
@@ -149,6 +151,7 @@ private:
         bool leaf_cert_cached;
         bool async_started;
         bool intermediates_valid;
+        mbedtls_x509_crt *anchor_root; // trust store root the chain verified against
     };
 
     struct cert_cache_entry {
@@ -163,6 +166,8 @@ private:
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
     void verify_intermediate_certs();
+    mbedtls_x509_crt *find_anchor_by_name(const mbedtls_x509_crt *topmost) const;
+    void hand_off_vehicle_chain();
     static void verify_certs_task(void *ctx);
     static int cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *flags);
 
@@ -170,6 +175,7 @@ private:
     bool initialized = false;
     bool session_active = false;
     bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
+    bool mutual_auth_session = false;
     bool group_policy_applied = false; // HUB20-533-005
     bool iso20_allowed = true;
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;

@@ -22,6 +22,9 @@
 #include <ctype.h>
 #include <string.h>
 
+#include <algorithm>
+#include <mbedtls/base64.h>
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
@@ -441,6 +444,145 @@ bool Ocpp::get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]>
     *der_out = std::move(copy);
     *der_len_out = der_len;
     return true;
+}
+
+static size_t cert_der_to_pem(const uint8_t *der, size_t der_len, char *pem, size_t pem_cap)
+{
+    size_t b64_cap = (der_len + 2) / 3 * 4 + 1;
+    auto b64 = heap_alloc_array<uint8_t>(b64_cap);
+    size_t b64_len = 0;
+
+    if (b64 == nullptr || mbedtls_base64_encode(b64.get(), b64_cap, &b64_len, der, der_len) != 0) {
+        return 0;
+    }
+
+    const char *begin = "-----BEGIN CERTIFICATE-----\n";
+    const char *end = "-----END CERTIFICATE-----\n";
+    size_t need = strlen(begin) + strlen(end) + b64_len + (b64_len + 63) / 64 + 1;
+    if (need > pem_cap) {
+        return 0;
+    }
+
+    size_t pos = static_cast<size_t>(snprintf(pem, pem_cap, "%s", begin));
+    for (size_t i = 0; i < b64_len; i += 64) {
+        size_t chunk = std::min<size_t>(64, b64_len - i);
+        memcpy(pem + pos, b64.get() + i, chunk);
+        pos += chunk;
+        pem[pos++] = '\n';
+    }
+    pos += static_cast<size_t>(snprintf(pem + pos, pem_cap - pos, "%s", end));
+    return pos;
+}
+
+bool Ocpp::request_iso15118_vehicle_chain_status(const VehicleChainCertDer *chain, size_t chain_len, const uint8_t *root_der, size_t root_len)
+{
+    vehicle_chain_count = 0;
+    vehicle_chain_response_received = false;
+    vehicle_chain_request_failed = true; // Cleared once the request is under way or served from cache
+
+    if (!cp21 || !client_started) {
+        return false;
+    }
+    if (chain == nullptr || chain_len == 0 || chain_len > OCPP21_VEHICLE_OCSP_CACHE_SIZE || root_der == nullptr) {
+        return false;
+    }
+
+    // One PEM bundle: Chain leaf first, the anchoring root appended as issuer of the topmost certificate.
+    static constexpr size_t pem_max = 4096;
+    size_t bundle_cap = (chain_len + 1) * pem_max;
+    auto bundle = heap_alloc_array<char>(bundle_cap);
+    if (bundle == nullptr) {
+        return false;
+    }
+    size_t used = 0;
+    for (size_t i = 0; i < chain_len; ++i) {
+        size_t len = cert_der_to_pem(chain[i].der, chain[i].len, bundle.get() + used, bundle_cap - used);
+        if (len == 0) {
+            return false;
+        }
+        used += len;
+    }
+    if (cert_der_to_pem(root_der, root_len, bundle.get() + used, bundle_cap - used) == 0) {
+        return false;
+    }
+
+    char urls[OCPP21_VEHICLE_OCSP_CACHE_SIZE][256];
+    const char *url_ptrs[OCPP21_VEHICLE_OCSP_CACHE_SIZE];
+    for (size_t i = 0; i < chain_len; ++i) {
+        if (!platform_cert_hash_data21(bundle.get(), i, bundle.get(), i + 1, &vehicle_chain_hashes[i])) {
+            return false;
+        }
+        if (!platform_cert_ocsp_url21(bundle.get(), i, urls[i], sizeof(urls[i]))) {
+            urls[i][0] = '\0';
+        }
+        url_ptrs[i] = urls[i];
+    }
+    vehicle_chain_count = chain_len;
+
+    // HUB20-432-003/007: The request may only be skipped when every chain
+    // certificate has a currently valid cached status.
+    // Otherwise the full chain is requested.
+    time_t now = platform_get_system_time(cp21->connection.platform_ctx);
+    bool all_cached = true;
+    for (size_t i = 0; i < chain_len; ++i) {
+        const Ocpp21::VehicleOcspStatus *entry = cp21->vehicleChainStatus(vehicle_chain_hashes[i]);
+        if (entry == nullptr || entry->next_update <= now) {
+            all_cached = false;
+            break;
+        }
+    }
+    if (all_cached) {
+        vehicle_chain_request_failed = false;
+        vehicle_chain_response_received = true;
+        return true;
+    }
+
+    if (!cp21->requestVehicleChainStatus(vehicle_chain_hashes, url_ptrs, chain_len)) {
+        return false;
+    }
+    vehicle_chain_request_failed = false;
+    return true;
+}
+
+void Ocpp::on_vehicle_chain_status_result(bool response_received)
+{
+    if (response_received) {
+        vehicle_chain_response_received = true;
+    } else {
+        vehicle_chain_request_failed = true;
+    }
+}
+
+Ocpp::VehicleChainCheck Ocpp::get_iso15118_vehicle_chain_check()
+{
+    if (!cp21 || !client_started) {
+        return VehicleChainCheck::NotRequired;
+    }
+    // OCSP checks are optional for private environments without PnC support [HUB20-532-002].
+    if (cp21->device_model.private_environment_enabled) {
+        return VehicleChainCheck::NotRequired;
+    }
+    if (vehicle_chain_count == 0 || vehicle_chain_request_failed) {
+        return VehicleChainCheck::Unknown;
+    }
+    if (!vehicle_chain_response_received) {
+        return VehicleChainCheck::Pending;
+    }
+
+    // HUB20-432-008/009/010: Revoked dominates, everything not currently cached as Good counts as Unknown.
+    using Status = Ocpp21::GetCertificateChainStatusResponseCertificateStatusEntryEntriesStatus;
+    time_t now = platform_get_system_time(cp21->connection.platform_ctx);
+    VehicleChainCheck result = VehicleChainCheck::Good;
+    for (size_t i = 0; i < vehicle_chain_count; ++i) {
+        const Ocpp21::VehicleOcspStatus *entry = cp21->vehicleChainStatus(vehicle_chain_hashes[i]);
+        if (entry != nullptr && entry->status == Status::REVOKED) {
+            return VehicleChainCheck::Revoked;
+        }
+        if (entry == nullptr || entry->next_update <= now || entry->status != Status::GOOD) {
+            result = VehicleChainCheck::Unknown;
+        }
+    }
+    return result;
 }
 
 void Ocpp::setup()

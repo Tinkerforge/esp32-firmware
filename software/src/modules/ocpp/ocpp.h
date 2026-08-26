@@ -48,6 +48,21 @@ public:
     bool is_iso20_tls_ready();
     bool get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out);
 
+    enum class VehicleChainCheck : uint8_t {
+        NotRequired, // no live 2.1 client or private environment
+        Pending,     // response not received yet
+        Good,
+        Revoked,
+        Unknown,     // Unknown/missing/expired status or failed request
+    };
+    struct VehicleChainCertDer {
+        const uint8_t *der;
+        size_t len;
+    };
+    bool request_iso15118_vehicle_chain_status(const VehicleChainCertDer *chain, size_t chain_len, const uint8_t *root_der, size_t root_len);
+    VehicleChainCheck get_iso15118_vehicle_chain_check();
+    void on_vehicle_chain_status_result(bool response_received);
+
     struct Iso15118CtrlrValues {
         bool enforce_tls;
         int32_t pwm_charging_fallback_timeout_s;
@@ -70,6 +85,11 @@ private:
     bool start_client_21();
 
     const Ocpp21::CertEntry *best_iso15118_secc_chain(bool iso20, bool *valid_out);
+
+    OcppCertHashData21 vehicle_chain_hashes[OCPP21_VEHICLE_OCSP_CACHE_SIZE];
+    size_t vehicle_chain_count = 0;
+    bool vehicle_chain_response_received = false;
+    bool vehicle_chain_request_failed = false;
 
     ConfigRoot change_configuration;
 
