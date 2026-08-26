@@ -28,7 +28,12 @@ except ImportError:
 
 
 class Csms:
-    def __init__(self, port):
+    def __init__(self, port, interactive=()):
+        # Device calls whose action is in interactive are queued for
+        # expect() and must be answered via respond(), everything except
+        # boot and heartbeat is auto acknowledged otherwise.
+        self.interactive = set(interactive)
+        self.requests = queue.Queue()
         self.responses = queue.Queue()
         self.ws = None
         self.connected = threading.Event()
@@ -52,6 +57,8 @@ class Csms:
                     elif action == "Heartbeat":
                         ws.send(json.dumps([3, msg_id, {
                             "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}]))
+                    elif action in self.interactive:
+                        self.requests.put((action, payload, msg_id))
                     else:
                         ws.send(json.dumps([3, msg_id, {}]))
                 elif msg[0] == 3:
@@ -70,6 +77,17 @@ class Csms:
             if rid == msg_id:
                 return resp
         raise TimeoutError(action)
+
+    def expect(self, action, timeout=60):
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            act, payload, msg_id = self.requests.get(timeout=deadline - time.time())
+            if act == action:
+                return payload, msg_id
+        raise TimeoutError(action)
+
+    def respond(self, msg_id, payload):
+        self.ws.send(json.dumps([3, msg_id, payload]))
 
     def get_variables(self, requests):
         payload = {"getVariableData": [

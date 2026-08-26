@@ -44,6 +44,10 @@ public:
     bool get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out);
     std::unique_ptr<char[]> get_iso15118_root_bundle(bool oem);
 
+    bool is_iso15118_store_live();
+    bool is_iso20_tls_ready();
+    bool get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out);
+
     struct Iso15118CtrlrValues {
         bool enforce_tls;
         int32_t pwm_charging_fallback_timeout_s;
@@ -64,6 +68,8 @@ private:
 
     bool start_client();
     bool start_client_21();
+
+    const Ocpp21::CertEntry *best_iso15118_secc_chain(bool iso20, bool *valid_out);
 
     ConfigRoot change_configuration;
 
