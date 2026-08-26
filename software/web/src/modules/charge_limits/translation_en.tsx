@@ -31,9 +31,9 @@ let x = {
             "custom_energy_limit_label": "Energy limit",
             "custom_energy_limit_cost_label": "Price ~",
 
-            "soc_target": "SoC target",
+            "soc_target": "Target state of charge",
             "soc_target_muted": "May be overwritten for a charge on the status page.",
-            "override_soc": "SoC target",
+            "override_soc": "Target state of charge",
             "soc_currently": "currently"
         },
         "automation": {
@@ -41,7 +41,7 @@ let x = {
             "charge_limits_expiration": "Charge limit expired",
             "energy": "Energy limit",
             "duration": "Duration limit",
-            "soc_target": "SoC target",
+            "soc_target": "Target state of charge",
             "charge_limits": "Set charge limits",
             "unlimited": "Unlimited",
             "unchanged": "Unchanged",
@@ -93,11 +93,11 @@ let x = {
 
                         let soc_part = <></>;
                         if (soc_target_pct === -1) {
-                            soc_part = <> and allow the current SoC target again</>;
+                            soc_part = <> and allow the current target state of charge again</>;
                         } else if (soc_target_pct > 0) {
-                            soc_part = <> and set the SoC target to <b>{soc_target_pct} %</b></>;
+                            soc_part = <> and set the target state of charge to <b>{soc_target_pct} %</b></>;
                         } else if (soc_target_pct === 0) {
-                            soc_part = <> and remove the SoC target</>;
+                            soc_part = <> and remove the target state of charge</>;
                         }
 
                         return (
@@ -131,11 +131,11 @@ let x = {
 
                 let soc_part = <></>;
                 if (soc_target_pct === -1) {
-                    soc_part = <> and leave the SoC target unchanged</>;
+                    soc_part = <> and leave the target state of charge unchanged</>;
                 } else if (soc_target_pct > 0) {
-                    soc_part = <> and set the SoC target to <b>{soc_target_pct} %</b></>;
+                    soc_part = <> and set the target state of charge to <b>{soc_target_pct} %</b></>;
                 } else if (soc_target_pct === 0) {
-                    soc_part = <> and remove the SoC target</>;
+                    soc_part = <> and remove the target state of charge</>;
                 }
 
                 return (

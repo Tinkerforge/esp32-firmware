@@ -31,9 +31,9 @@ let x = {
             "custom_energy_limit_label": "Energielimit",
             "custom_energy_limit_cost_label": "Preis ~",
 
-            "soc_target": "SoC-Ziel",
+            "soc_target": "Ziel-Ladestand",
             "soc_target_muted": "Kann auf der Statusseite für einen Ladevorgang überschrieben werden.",
-            "override_soc": "SoC-Ziel",
+            "override_soc": "Ziel-Ladestand",
             "soc_currently": "aktuell"
         },
         "automation": {
@@ -41,7 +41,7 @@ let x = {
             "charge_limits_expiration": "Ladelimit abgelaufen",
             "energy": "Energielimit",
             "duration": "Zeitlimit",
-            "soc_target": "SoC-Ziel",
+            "soc_target": "Ziel-Ladestand",
             "charge_limits": "Setze Ladelimit",
             "unlimited": "Unbegrenzt",
             "unchanged": "Unverändert",
@@ -93,11 +93,11 @@ let x = {
 
                     let soc_part = <></>;
                     if (soc_target_pct === -1) {
-                        soc_part = <> und erlaube das aktuelle SoC-Ziel nochmal</>;
+                        soc_part = <> und erlaube das aktuelle Ziel-Ladestand nochmal</>;
                     } else if (soc_target_pct > 0) {
-                        soc_part = <> und setze das SoC-Ziel auf <b>{soc_target_pct} %</b></>;
+                        soc_part = <> und setze das Ziel-Ladestand auf <b>{soc_target_pct} %</b></>;
                     } else if (soc_target_pct === 0) {
-                        soc_part = <> und entferne das SoC-Ziel</>;
+                        soc_part = <> und entferne das Ziel-Ladestand</>;
                     }
 
                     return (
@@ -131,11 +131,11 @@ let x = {
 
                 let soc_part = <></>;
                 if (soc_target_pct === -1) {
-                    soc_part = <> und lasse das SoC-Ziel unverändert</>;
+                    soc_part = <> und lasse den Ziel-Ladestand unverändert</>;
                 } else if (soc_target_pct > 0) {
-                    soc_part = <> und setze das SoC-Ziel auf <b>{soc_target_pct} %</b></>;
+                    soc_part = <> und setze den Ziel-Ladestand auf <b>{soc_target_pct} %</b></>;
                 } else if (soc_target_pct === 0) {
-                    soc_part = <> und entferne das SoC-Ziel</>;
+                    soc_part = <> und entferne den Ziel-Ladestand</>;
                 }
 
                 return (
