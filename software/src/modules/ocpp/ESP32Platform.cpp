@@ -1086,6 +1086,12 @@ void platform_cert_store_changed21(void *ctx)
 #endif
 }
 
+void platform_vehicle_chain_status_result21(void *ctx, bool response_received)
+{
+    (void)ctx;
+    ocpp.on_vehicle_chain_status_result(response_received);
+}
+
 size_t platform_read_file(const char *name, char *buf, size_t len)
 {
     auto path = PATH_PREFIX + name;

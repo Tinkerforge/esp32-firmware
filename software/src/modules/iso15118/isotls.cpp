@@ -740,6 +740,7 @@ bool ISOTLS::start_session(int fd)
     handshake_state = TlsHandshakeState::IN_PROGRESS;
     session_active = false;
     group_policy_applied = false;
+    mutual_auth_session = false;
 
     iso15118.trace("ISOTLS: Starting TLS session on socket %d", fd);
     return true;
@@ -764,6 +765,7 @@ void ISOTLS::end_session()
     }
 
     session_active = false;
+    mutual_auth_session = false;
     handshake_state = TlsHandshakeState::NOT_STARTED;
     socket_fd = -1;
 }
@@ -835,6 +837,11 @@ bool ISOTLS::do_handshake()
                         mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", verify_flags);
                         iso15118.trace("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
                     }
+                }
+
+                if (verification_context != nullptr) {
+                    mutual_auth_session = true;
+                    hand_off_vehicle_chain();
                 }
             } else {
                 iso15118.trace("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
@@ -1023,18 +1030,83 @@ static bool cert_signature_is_valid(const mbedtls_x509_crt *child, mbedtls_x509_
     return false;
 }
 
+mbedtls_x509_crt *ISOTLS::find_anchor_by_name(const mbedtls_x509_crt *topmost) const
+{
+    for (mbedtls_x509_crt *root = trusted_ca_iso20; root != nullptr; root = root->next) {
+        if (topmost->issuer_raw.len == root->subject_raw.len
+         && memcmp(topmost->issuer_raw.p, root->subject_raw.p, root->subject_raw.len) == 0) {
+            return root;
+        }
+    }
+
+    return nullptr;
+}
+
+void ISOTLS::hand_off_vehicle_chain()
+{
+#if MODULE_OCPP_AVAILABLE()
+    // HUB20-432-001/002: The vehicle chain status request is sent right
+    // after the handshake completes, the -20 authorization loop polls the
+    // result. A missing anchor fails the request, which the poll reports
+    // as Unknown (fail closed).
+    mbedtls_x509_crt **certs = verification_context->certs;
+    size_t count = 0;
+
+    while (count < CERTS_MAX_VERIFY && certs[count] != nullptr) {
+        count++;
+    }
+
+    if (count == 0) {
+        return;
+    }
+
+    // mbedTLS appends the trust anchor to the presented chain, so the
+    // topmost entry is the self-signed root. The root is the anchor, not
+    // part of the vehicle chain whose revocation status is checked
+    // (HUB20-432-006: Leaf, Sub2, Sub1).
+    mbedtls_x509_crt *root = verification_context->anchor_root;
+    size_t chain_len = count;
+    mbedtls_x509_crt *topmost = certs[count - 1];
+
+    if (topmost->issuer_raw.len == topmost->subject_raw.len
+     && memcmp(topmost->issuer_raw.p, topmost->subject_raw.p, topmost->subject_raw.len) == 0) {
+        root = topmost;
+        chain_len = count - 1;
+    } else if (root == nullptr) {
+        // Cached leaf shortcut, the verify task did not run
+        root = find_anchor_by_name(topmost);
+    }
+
+    if (chain_len == 0) {
+        return;
+    }
+
+    Ocpp::VehicleChainCertDer chain[CERTS_MAX_VERIFY];
+
+    for (size_t i = 0; i < chain_len; i++) {
+        chain[i] = {certs[i]->raw.p, certs[i]->raw.len};
+    }
+
+    bool ok = ocpp.request_iso15118_vehicle_chain_status(chain, chain_len,
+                                                         root != nullptr ? root->raw.p : nullptr,
+                                                         root != nullptr ? root->raw.len : 0);
+    iso15118.trace("ISOTLS: Vehicle chain status check %s (%zu certificates)", ok ? "started" : "not started", chain_len);
+#endif
+}
+
 void ISOTLS::verify_intermediate_certs()
 {
     mbedtls_x509_crt **certs = verification_context->certs;
     bool success = true;
+    size_t topmost_idx = CERTS_MAX_VERIFY - 1;
 
-    // Check all intermediate certificates; first is leaf, last is root
+    // Check all intermediate certificates; first is leaf, last is topmost
     for (size_t i = 1; i < CERTS_MAX_VERIFY - 1; i++) {
         mbedtls_x509_crt *child  = certs[i];
         mbedtls_x509_crt *parent = certs[i + 1];
 
         if (parent == nullptr) {
-            // End of chain, don't check root signature
+            topmost_idx = i;
             break;
         }
 
@@ -1042,6 +1114,32 @@ void ISOTLS::verify_intermediate_certs()
             iso15118.trace("ISOTLS: Intermediate certificate %zu failed verification", i);
             success = false;
             break;
+        }
+    }
+
+    // The chain must anchor to the trust store by key, not just by name.
+    // The topmost presented certificate has to be verified against the
+    // matching trusted root here. Roots sharing a subject name are all
+    // tried, the successful one becomes the anchor.
+    if (success) {
+        mbedtls_x509_crt *topmost = certs[topmost_idx];
+        success = false;
+
+        for (mbedtls_x509_crt *root = trusted_ca_iso20; root != nullptr; root = root->next) {
+            if (topmost->issuer_raw.len != root->subject_raw.len
+             || memcmp(topmost->issuer_raw.p, root->subject_raw.p, root->subject_raw.len) != 0) {
+                continue;
+            }
+
+            if (cert_signature_is_valid(topmost, root)) {
+                verification_context->anchor_root = root;
+                success = true;
+                break;
+            }
+        }
+
+        if (!success) {
+            iso15118.trace("ISOTLS: Topmost certificate failed verification against the trust store");
         }
     }
 
@@ -1102,20 +1200,17 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
         return 0;
     }
 
-    if (verify_ctx->certs[2] == nullptr) {
-        // No intermediate certificates to check
-        verify_ctx->intermediates_valid = true;
+    // The verify task checks the intermediate signatures and the trust
+    // store anchoring of the topmost certificate, so it runs even when the chain has no intermediates.
+    const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 3072, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
+
+    if (ret == pdPASS_nowarn) {
+        verify_ctx->async_started = true;
     } else {
-        const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 3072, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
+        iso15118.trace("ISOTLS: verify_certs task could not be created");
 
-        if (ret == pdPASS_nowarn) {
-            verify_ctx->async_started = true;
-        } else {
-            iso15118.trace("ISOTLS: verify_certs task could not be created");
-
-            // Verify certs now. This will probably cause the peer to time out.
-            isotls->verify_intermediate_certs();
-        }
+        // Verify certs now. This will probably cause the peer to time out.
+        isotls->verify_intermediate_certs();
     }
 
     // Verify leaf certificate
@@ -1176,6 +1271,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
                     verification_context->leaf_cert_cached = false;
                     verification_context->async_started = false;
                     verification_context->intermediates_valid = false;
+                    verification_context->anchor_root = nullptr;
                 }
 
                 mbedtls_ssl_set_verify(ssl_ctx, &cert_verify, this);
