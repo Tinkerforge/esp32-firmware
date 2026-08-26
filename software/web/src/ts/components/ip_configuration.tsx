@@ -44,7 +44,7 @@ interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
     hideSubnet?: boolean
     hideGateway?: boolean
     hideDns2?: boolean
-    value: IPConfig
+    value: Readonly<IPConfig>
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
 
@@ -81,8 +81,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, IPConfigura
     }
 
     onUpdate<T extends keyof IPConfig>(k: T, v: IPConfig[T]) {
-        this.props.value[k] = v;
-        this.props.onValue(this.props.value);
+        this.props.onValue({...this.props.value, [k]: v});
     }
 
     onIpUpdate(v: string) {
