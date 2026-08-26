@@ -92,7 +92,7 @@ let x = {
             "flash_id": "Flash ID",
             "flash_id_muted": "manufacturer, device",
 
-            "websocket_header": "Websockets",
+            "websocket_header": "WebSockets",
             "websocket_connection": "WebSocket connection",
             "websocket_connection_muted": "of this browser tab",
             "websocket_pause": "Pause",
