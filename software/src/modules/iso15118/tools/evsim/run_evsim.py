@@ -360,6 +360,35 @@ def setup_pki_for_tls(use_tls13: bool = False) -> Optional[Path]:
             _symlink_to_pki(secc_leaf_password, target_secc_password)
             print(f"  Linked SECC leaf password -> {secc_leaf_password}")
 
+    # Plug and Charge material: contract chain (MO), OEM provisioning certs
+    # and the roots as DER. Symlinked when present so a PnC session (the
+    # EVCC selects PnC automatically when the SECC offers Contract over
+    # TLS) finds its files. Missing files are fine for plain TLS sessions.
+    pnc_certs = [
+        "contractLeafCert.der", "moSubCA1Cert.der", "moSubCA2Cert.der", "moRootCACert.der",
+        "oemLeafCert.der", "oemSubCA1Cert.der", "oemSubCA2Cert.der", "oemRootCACert.der",
+        "cpsLeafCert.der", "cpsSubCA1Cert.der", "cpsSubCA2Cert.der",
+        "v2gRootCACert.der",
+    ]
+    pnc_keys = [
+        "contractLeaf.key", "contractLeafPassword.txt",
+        "oemLeaf.key", "oemLeafPassword.txt",
+        "cpsLeaf.key", "cpsLeafPassword.txt",
+    ]
+    linked = 0
+    for name in pnc_certs:
+        source = source_certs_dir / name
+        if source.exists():
+            _symlink_to_pki(source, certs_path / name)
+            linked += 1
+    for name in pnc_keys:
+        source = source_keys_dir / name
+        if source.exists():
+            _symlink_to_pki(source, keys_path / name)
+            linked += 1
+    if linked > 0:
+        print(f"  Linked {linked} PnC certificate files")
+
     print(f"  Using {cert_label} certificates")
     print(f"  PKI directory: {pki_path}")
     return pki_path
@@ -461,6 +490,7 @@ def build_evcc_config(
     charge_loop_cycles: int = 10,
     use_tls: bool = False,
     enforce_tls: bool = False,
+    cert_install: bool = False,
 ) -> EVCCConfig:
     """
     Build an EVCCConfig object from parameters.
@@ -472,12 +502,13 @@ def build_evcc_config(
         charge_loop_cycles: Number of charge loop iterations
         use_tls: Request TLS in SDP (security byte = 0x00)
         enforce_tls: Require TLS even if SECC doesn't offer it
+        cert_install: Send CertificateInstallationReq (PnC contract installation)
     """
     config_dict = {
         "supportedProtocols": protocols,
         "supportedEnergyServices": energy_services,
         "energyTransferMode": energy_transfer_mode,
-        "isCertInstallNeeded": False,
+        "isCertInstallNeeded": cert_install,
         "useTls": use_tls,
         "enforceTls": enforce_tls,
         "chargeLoopCycle": charge_loop_cycles,
@@ -819,6 +850,12 @@ Examples:
     )
 
     parser.add_argument(
+        "--pnc",
+        action="store_true",
+        help="Request contract certificate installation (PnC, requires --tls and PnC PKI files)",
+    )
+
+    parser.add_argument(
         "--list-interfaces",
         action="store_true",
         help="List available network interfaces and exit",
@@ -942,6 +979,7 @@ Examples:
         charge_loop_cycles=args.loops,
         use_tls=use_tls,
         enforce_tls=use_tls,  # If TLS requested, enforce it
+        cert_install=getattr(args, 'pnc', False),
     )
 
     # Print what we're offering

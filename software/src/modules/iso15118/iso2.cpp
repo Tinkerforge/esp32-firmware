@@ -103,7 +103,11 @@ void ISO2::dispatch_messages()
 
     // Implemented message handlers (session already validated)
     V2G_DISPATCH(body, ServiceDiscoveryReq,         handle_service_discovery_req);
+    V2G_DISPATCH(body, ServiceDetailReq,            handle_service_detail_req);
     V2G_DISPATCH(body, PaymentServiceSelectionReq,  handle_payment_service_selection_req);
+    V2G_DISPATCH(body, PaymentDetailsReq,           handle_payment_details_req);
+    V2G_DISPATCH(body, CertificateInstallationReq,  handle_certificate_installation_req);
+    V2G_DISPATCH(body, CertificateUpdateReq,        handle_certificate_update_req);
     V2G_DISPATCH(body, AuthorizationReq,            handle_authorization_req);
     V2G_DISPATCH(body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
     V2G_DISPATCH(body, PowerDeliveryReq,            handle_power_delivery_req);
@@ -116,14 +120,6 @@ void ISO2::dispatch_messages()
     V2G_DISPATCH(body, PreChargeReq,     handle_pre_charge_req);
     V2G_DISPATCH(body, CurrentDemandReq, handle_current_demand_req);
 
-    // VAS (Value Added Services). Not used in practice.
-    V2G_NOT_IMPL("ISO2", body, ServiceDetailReq);
-
-    // These are for Plug&Charge. In practice PnC is mostly
-    // done via ISO 15118-20, we don't support PnC via ISO 15118-2.
-    V2G_NOT_IMPL("ISO2", body, PaymentDetailsReq);
-    V2G_NOT_IMPL("ISO2", body, CertificateInstallationReq);
-    V2G_NOT_IMPL("ISO2", body, CertificateUpdateReq);
     V2G_NOT_IMPL("ISO2", body, MeteringReceiptReq);
 
     // This is for DC charging only.
@@ -214,6 +210,25 @@ void ISO2::send_failed_unknown_session()
     } else if (body_dec.PaymentServiceSelectionReq_isUsed) {
         body_enc.PaymentServiceSelectionRes_isUsed = 1;
         body_enc.PaymentServiceSelectionRes.ResponseCode = rc;
+    } else if (body_dec.ServiceDetailReq_isUsed) {
+        auto *res = &body_enc.ServiceDetailRes;
+        body_enc.ServiceDetailRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->ServiceID = body_dec.ServiceDetailReq.ServiceID;
+        res->ServiceParameterList_isUsed = 0;
+    } else if (body_dec.PaymentDetailsReq_isUsed) {
+        auto *res = &body_enc.PaymentDetailsRes;
+        body_enc.PaymentDetailsRes_isUsed = 1;
+        res->ResponseCode = rc;
+        res->GenChallenge.bytesLen = PNC_CHALLENGE_LEN;
+        memset(res->GenChallenge.bytes, 0, PNC_CHALLENGE_LEN);
+        res->EVSETimeStamp = 0;
+    } else if (body_dec.CertificateInstallationReq_isUsed) {
+        body_enc.CertificateInstallationRes_isUsed = 1;
+        fill_cert_installation_res_dummy(&body_enc.CertificateInstallationRes, rc);
+    } else if (body_dec.CertificateUpdateReq_isUsed) {
+        body_enc.CertificateUpdateRes_isUsed = 1;
+        fill_cert_update_res_dummy(&body_enc.CertificateUpdateRes, rc);
     } else if (body_dec.AuthorizationReq_isUsed) {
         body_enc.AuthorizationRes_isUsed = 1;
         body_enc.AuthorizationRes.ResponseCode = rc;
@@ -296,6 +311,7 @@ void ISO2::handle_session_setup_req()
     // Reset SoC tracking for the new session
     soc_read = false;
     soc_shutdown_retries = 0;
+    reset_pnc_session();
 
     api_state.get("evcc_id")->removeAll();
     for (uint16_t i = 0; i < std::min(static_cast<uint16_t>(sizeof(req->EVCCID.bytes)), req->EVCCID.bytesLen); i++) {
@@ -358,7 +374,6 @@ void ISO2::handle_service_discovery_req()
                 iso15118.trace("ISO2: ServiceCategory Internet unsupported");
                 break;
             case iso2_serviceCategoryType_ContractCertificate:
-                iso15118.trace("ISO2: ServiceCategory ContractCertificate unsupported");
                 break;
             case iso2_serviceCategoryType_OtherCustom:
                 iso15118.trace("ISO2: ServiceCategory OtherCustom unsupported");
@@ -374,12 +389,12 @@ void ISO2::handle_service_discovery_req()
     iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed = 1;
     res->ResponseCode = iso2_responseCodeType_OK;
 
-    // One payment option: EVSE handles payment
     res->PaymentOptionList.PaymentOption.array[0] = iso2_paymentOptionType_ExternalPayment;
     res->PaymentOptionList.PaymentOption.arrayLen = 1;
-
-    // No other services then charging
     res->ServiceList_isUsed = 0;
+
+    // Add Contract payment and the certificate service when PnC is available
+    offer_pnc(res);
 
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
@@ -426,17 +441,27 @@ void ISO2::handle_payment_service_selection_req()
     iso2_PaymentServiceSelectionReqType *req = &iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq;
     iso2_PaymentServiceSelectionResType *res = &iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes;
 
-    if (req->SelectedPaymentOption == iso2_paymentOptionType_ExternalPayment) {
-        iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes_isUsed = 1;
-        res->ResponseCode = iso2_responseCodeType_OK;
+    iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes_isUsed = 1;
 
-        iso15118.common.send_exi(Common::ExiType::Iso2);
-        state = ISO2State::PaymentServiceSelection;
+    contract_selected = false;
+    if (req->SelectedPaymentOption == iso2_paymentOptionType_ExternalPayment) {
+        res->ResponseCode = iso2_responseCodeType_OK;
+    } else if ((req->SelectedPaymentOption == iso2_paymentOptionType_Contract) && pnc_offered) {
+        res->ResponseCode = iso2_responseCodeType_OK;
+        contract_selected = true;
+        iso15118.trace("ISO2: Contract payment selected");
+    } else {
+        // [V2G2-465] Selected payment option was not offered
+        res->ResponseCode = iso2_responseCodeType_FAILED_PaymentSelectionInvalid;
     }
+
+    iso15118.common.send_exi(Common::ExiType::Iso2);
+    state = ISO2State::PaymentServiceSelection;
 }
 
 void ISO2::handle_authorization_req()
 {
+    iso2_AuthorizationReqType *req = &iso2DocDec->V2G_Message.Body.AuthorizationReq;
     iso2_AuthorizationResType *res = &iso2DocEnc->V2G_Message.Body.AuthorizationRes;
 
     iso2DocEnc->V2G_Message.Body.AuthorizationRes_isUsed = 1;
@@ -445,6 +470,12 @@ void ISO2::handle_authorization_req()
     // We want to go on ChargeParameterDiscovery to read the SoC and then use Ongoing.
     res->ResponseCode = iso2_responseCodeType_OK;
     res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+
+    if (contract_selected) {
+        // PnC challenge and signature checks
+        authorize_pnc(req, res);
+    }
+
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
     state = ISO2State::Authorization;

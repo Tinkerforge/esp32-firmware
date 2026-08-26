@@ -361,8 +361,8 @@ bool ISOTLS::load_certificates()
     store_live = ocpp.is_iso15118_store_live();
     ocpp.get_iso15118_secc_chain(false, &live_chain_iso2,  &live_key_iso2);
     ocpp.get_iso15118_secc_chain(true,  &live_chain_iso20, &live_key_iso20);
-    live_v2g_roots = ocpp.get_iso15118_root_bundle(false);
-    live_oem_roots = ocpp.get_iso15118_root_bundle(true);
+    live_v2g_roots = ocpp.get_iso15118_root_bundle(Ocpp::RootGroup::V2G);
+    live_oem_roots = ocpp.get_iso15118_root_bundle(Ocpp::RootGroup::OEM);
     if (store_live) {
         iso20_allowed = ocpp.is_iso20_tls_ready() && live_chain_iso20 && live_key_iso20;
     }
