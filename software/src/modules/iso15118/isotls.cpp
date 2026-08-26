@@ -601,6 +601,12 @@ bool ISOTLS::setup()
     mbedtls_ssl_conf_cert_cb(ssl_conf, tls_cert_selection_callback);
     iso15118.trace("ISOTLS: Registered certificate selection callback");
 
+#if ISO15118_TLS_TICKETS
+    if (!setup_tickets()) {
+        iso15118.trace("ISOTLS: Session tickets unavailable, continuing without resumption");
+    }
+#endif
+
     // Setup SSL context with configuration
     ret = mbedtls_ssl_setup(ssl, ssl_conf);
     if (ret != 0) {
@@ -633,6 +639,14 @@ void ISOTLS::cleanup()
         free_any(ssl_conf);
         ssl_conf = nullptr;
     }
+
+#if ISO15118_TLS_TICKETS
+    if (ticket_ctx != nullptr) {
+        mbedtls_ssl_ticket_free(ticket_ctx);
+        free_any(ticket_ctx);
+        ticket_ctx = nullptr;
+    }
+#endif
 
     if (cert_chain_iso2 != nullptr) {
         mbedtls_x509_crt_free(cert_chain_iso2);
@@ -723,6 +737,76 @@ void ISOTLS::cleanup()
     initialized = false;
 }
 
+#if ISO15118_TLS_TICKETS
+// TLS 1.3 session resumption via psk_dhe_ke session tickets [V2G20-1675 ff].
+// The SECC issues one NewSessionTicket after a full TLS 1.3 handshake and
+// accepts the resulting PSK only together with an ephemeral key share
+// (psk_dhe_ke, Table 9 of ISO 15118-20).
+// Early data is rejected (MBEDTLS_SSL_EARLY_DATA off) [V2G20-1612/2031].
+// PSKs only ever come from tickets, so a PSK handshake can only resume a
+// previously established session [V2G20-1679].
+bool ISOTLS::setup_tickets()
+{
+    ticket_ctx = static_cast<mbedtls_ssl_ticket_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_ssl_ticket_context)));
+    if (ticket_ctx == nullptr) {
+        return false;
+    }
+
+    mbedtls_ssl_ticket_init(ticket_ctx);
+
+    // [V2G20-2024..2026] lifetime within 20 s and 86400 s. Expired tickets
+    // fail the parse and fall back to a full handshake [V2G20-2033]
+    int ret = mbedtls_ssl_ticket_setup(ticket_ctx, mbedtls_ctr_drbg_random, ctr_drbg, MBEDTLS_CIPHER_AES_256_GCM, TICKET_LIFETIME_S);
+    if (ret != 0) {
+        iso15118.trace("ISOTLS: mbedtls_ssl_ticket_setup failed: -0x%04x", static_cast<unsigned>(-ret));
+        mbedtls_ssl_ticket_free(ticket_ctx);
+        free_any(ticket_ctx);
+        ticket_ctx = nullptr;
+        return false;
+    }
+
+    mbedtls_ssl_conf_session_tickets_cb(ssl_conf, ticket_write_cb, ticket_parse_cb, this);
+    // One ticket per full handshake, we offer no VAS [V2G20-2023]
+    mbedtls_ssl_conf_new_session_tickets(ssl_conf, 1);
+    // psk_dhe_ke only besides the certificate based ephemeral mode [V2G20-1678]
+    mbedtls_ssl_conf_tls13_key_exchange_modes(ssl_conf, MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL | MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_PSK_EPHEMERAL);
+
+    iso15118.trace("ISOTLS: TLS 1.3 session tickets enabled (lifetime %us)", static_cast<unsigned>(TICKET_LIFETIME_S));
+    return true;
+}
+
+int ISOTLS::ticket_write_cb(void *ctx, const mbedtls_ssl_session *session, unsigned char *start, const unsigned char *end, size_t *tlen, uint32_t *lifetime)
+{
+    ISOTLS *self = static_cast<ISOTLS*>(ctx);
+
+    // Tickets are TLS 1.3 only.
+    if ((self->ssl == nullptr) || (mbedtls_ssl_get_version_number(self->ssl) != MBEDTLS_SSL_VERSION_TLS1_3)) {
+        *tlen = 0;
+        *lifetime = 0;
+        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    return mbedtls_ssl_ticket_write(self->ticket_ctx, session, start, end, tlen, lifetime);
+}
+
+int ISOTLS::ticket_parse_cb(void *ctx, mbedtls_ssl_session *session, unsigned char *buf, size_t len)
+{
+    ISOTLS *self = static_cast<ISOTLS*>(ctx);
+
+    if (self->ssl == nullptr || mbedtls_ssl_get_version_number(self->ssl) != MBEDTLS_SSL_VERSION_TLS1_3) {
+        return MBEDTLS_ERR_SSL_INVALID_MAC;
+    }
+
+    int ret = mbedtls_ssl_ticket_parse(self->ticket_ctx, session, buf, len);
+    if (ret == 0) {
+        // The EV offered a valid ticket PSK. Will become "resumed_session" once the handshake completed
+        self->ticket_psk_accepted = true;
+    }
+
+    return ret;
+}
+#endif
+
 bool ISOTLS::start_session(int fd)
 {
     if (!initialized || ssl == nullptr) {
@@ -741,6 +825,8 @@ bool ISOTLS::start_session(int fd)
     session_active = false;
     group_policy_applied = false;
     mutual_auth_session = false;
+    ticket_psk_accepted = false;
+    resumed_session = false;
 
     iso15118.trace("ISOTLS: Starting TLS session on socket %d", fd);
     return true;
@@ -766,6 +852,8 @@ void ISOTLS::end_session()
 
     session_active = false;
     mutual_auth_session = false;
+    ticket_psk_accepted = false;
+    resumed_session = false;
     handshake_state = TlsHandshakeState::NOT_STARTED;
     socket_fd = -1;
 }
@@ -804,10 +892,13 @@ bool ISOTLS::do_handshake()
     }
 
     if (ret == 0) {
-        // verification_context only exists for mutual auth handshakes
-        // (TLS 1.3 with trusted CAs). A plain TLS 1.2 handshake completes
-        // without it and has no intermediates to check here.
-        if (verification_context == nullptr || verification_context->intermediates_valid) {
+        // The verification context is allocated per mutual auth ClientHello,
+        // but certificates only arrive on a full handshake. A TLS 1.3 session
+        // resumed via ticket PSK completes without any certificate exchange,
+        // mbedTLS fails a full VERIFY_REQUIRED handshake without client certs
+        // itself, so an empty context here can only be a PSK resumption.
+        const bool certs_presented = verification_context != nullptr && verification_context->certs[0] != nullptr;
+        if (!certs_presented || verification_context->intermediates_valid) {
             // Handshake completed successfully
             handshake_state = TlsHandshakeState::COMPLETED;
             session_active = true;
@@ -817,16 +908,22 @@ bool ISOTLS::do_handshake()
 
             iso15118.trace("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
 
-            if (verification_context != nullptr && !verification_context->leaf_cert_cached) {
+            if (certs_presented && !verification_context->leaf_cert_cached) {
                 cache_leaf_cert();
             }
 
             // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
             if (is_tls13_active()) {
-                iso15118.trace("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
+                // Accepted ticket PSK and no presented client chain: This was a PSK resumption [V2G20-2677]
+                resumed_session = ticket_psk_accepted && !certs_presented;
+                if (resumed_session) {
+                    iso15118.trace("ISOTLS: TLS 1.3 session resumed via ticket PSK - no V2G allowed [V2G20-2677]");
+                } else {
+                    iso15118.trace("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
+                }
 
                 // Log mutual authentication result
-                if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
+                if (!resumed_session && mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
                     uint32_t verify_flags = mbedtls_ssl_get_verify_result(ssl);
                     if (verify_flags == 0) {
                         iso15118.trace("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
@@ -839,7 +936,7 @@ bool ISOTLS::do_handshake()
                     }
                 }
 
-                if (verification_context != nullptr) {
+                if (certs_presented) {
                     mutual_auth_session = true;
                     hand_off_vehicle_chain();
                 }
