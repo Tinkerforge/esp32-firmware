@@ -40,11 +40,11 @@ void ISO20::reset_pnc_session()
         pnc_job->result = PncVerifyResult::Idle;
     }
 #if MODULE_OCPP_AVAILABLE()
-    // Drop a certificate response of a previous session
-    std::unique_ptr<uint8_t[]> stale;
-    size_t stale_len = 0;
-    int32_t stale_remaining = 0;
-    ocpp.take_iso15118_ev_cert_response(&stale, &stale_len, &stale_remaining);
+    // A terminal result belongs to the previous V2G session. Pending requests
+    // remain owned by their OCPP callback until they complete.
+    if (ocpp.get_iso15118_ev_cert_status() != Ocpp::EvCertStatus::Pending) {
+        ocpp.reset_iso15118_ev_cert_response();
+    }
 #endif
 }
 
