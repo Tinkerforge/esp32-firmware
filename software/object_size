@@ -39,4 +39,4 @@ else:
 
 print(f'Using firmware: {firmware}')
 
-os.system("nm -l --demangle --print-size --size-sort --radix=d --format sysv -s {}{}".format(firmware, "" if args.all else "| grep -v '|.flash'"))
+os.system("uv run pio pkg exec xtensa-esp32-elf-nm -- -l --demangle --print-size --size-sort --radix=d --format sysv -s {}{}".format(firmware, "" if args.all else "| grep -v '|.flash'"))
