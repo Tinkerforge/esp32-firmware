@@ -44,6 +44,9 @@ ISO20_AC = {
     "Priority": 1,
 }
 
+V2GTP_ISO20_COMMON = 0x8002
+V2GTP_ISO20_AC = 0x8003
+
 
 def route_interface(host: str) -> str:
     result = subprocess.run(
@@ -283,12 +286,18 @@ class EVTestClient:
             data.extend(chunk)
         return bytes(data)
 
-    def exchange(self, sock, request, namespace):
+    def exchange(self, sock, request, namespace, payload_type: int = 0x8001):
         payload = self.codec().encode(json.dumps(request), namespace)
-        sock.sendall(struct.pack("!BBHI", 0x01, 0xFE, 0x8001, len(payload)) + payload)
+        sock.sendall(struct.pack("!BBHI", 0x01, 0xFE, payload_type, len(payload)) + payload)
         header = self._recv_exact(sock, 8)
         if header[:2] != b"\x01\xfe":
             raise ValueError(f"Unexpected V2GTP header: {header.hex()}")
+        response_payload_type = struct.unpack("!H", header[2:4])[0]
+        if response_payload_type != payload_type:
+            raise ValueError(
+                f"Unexpected V2GTP payload type 0x{response_payload_type:04x}, "
+                f"expected 0x{payload_type:04x}"
+            )
         payload_len = struct.unpack("!I", header[4:8])[0]
         return json.loads(self.codec().decode(self._recv_exact(sock, payload_len), namespace))
 
@@ -331,7 +340,9 @@ class CSMSSim:
                 message = json.loads(raw)
                 if message[0] == 2:
                     _, message_id, action, payload = message
-                    if action == "BootNotification":
+                    if action in self.interactive:
+                        self.requests.put((action, payload, message_id))
+                    elif action == "BootNotification":
                         self.respond(message_id, {
                             "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                             "interval": 300,
@@ -341,8 +352,6 @@ class CSMSSim:
                         self.respond(message_id, {
                             "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                         })
-                    elif action in self.interactive:
-                        self.requests.put((action, payload, message_id))
                     else:
                         self.respond(message_id, {})
                 elif message[0] == 3:
@@ -394,10 +403,26 @@ class CSMSSim:
 
 
 class EVSim:
-    def __init__(self, iface: str, protocol: str = "ISO_15118_20_AC", charge_loop_cycles: int = 1):
+    def __init__(
+        self,
+        iface: str,
+        protocol: str = "ISO_15118_20_AC",
+        charge_loop_cycles: int = 1,
+        *,
+        iso20_soc: int | None = None,
+        iso20_capacity_wh: int | None = None,
+        iso20_power_w: int | None = None,
+        pause_after_charge_loop: bool = False,
+    ):
         self.iface = iface
         self.protocol = protocol
         self.charge_loop_cycles = charge_loop_cycles
+        self.iso20_soc = iso20_soc
+        self.iso20_capacity_wh = iso20_capacity_wh
+        self.iso20_power_w = iso20_power_w
+        self.pause_after_charge_loop = pause_after_charge_loop
+        self.charge_loop_reached = threading.Event()
+        self._charge_loop_resume = threading.Event()
         self._pki = None
 
     async def _run(self):
@@ -405,6 +430,7 @@ class EVSim:
         from iso15118.evcc.controller.simulator import SimEVController
         from iso15118.evcc.evcc_config import EVCCConfig
         from iso15118.shared.exificient_exi_codec import ExificientEXICodec
+        from iso15118.shared.messages.iso15118_20.common_types import RationalNumber
         from iso15118.shared.settings import load_shared_settings
 
         use_tls13 = self.protocol.startswith("ISO_15118_20")
@@ -415,8 +441,8 @@ class EVSim:
         load_shared_settings()
 
         if use_tls13:
-            from iso15118.shared import security
             from iso15118.evcc.transport import tcp_client
+            from iso15118.shared import security
 
             original = security.get_ssl_context
 
@@ -444,7 +470,56 @@ class EVSim:
             "maxSupportingPoints": 1024,
         })
         config.load_raw_values()
-        handler = EVCCHandler(config, self.iface, ExificientEXICodec(), SimEVController(config))
+
+        outer = self
+
+        class RunnerSimEVController(SimEVController):
+            def __init__(self):
+                super().__init__(config)
+                self._pause_on_next_continue = False
+                if outer.iso20_soc is not None:
+                    self._soc = outer.iso20_soc
+
+            async def get_display_params(self):
+                params = await super().get_display_params()
+                if outer.iso20_capacity_wh is not None:
+                    params.battery_energy_capacity = RationalNumber(
+                        exponent=0,
+                        value=outer.iso20_capacity_wh,
+                    )
+                return params
+
+            async def get_ac_charge_loop_params_v20(
+                self,
+                control_mode,
+                selected_service,
+            ):
+                params = await super().get_ac_charge_loop_params_v20(
+                    control_mode,
+                    selected_service,
+                )
+                if outer.iso20_power_w is not None:
+                    params.ev_present_active_power = RationalNumber(
+                        exponent=0,
+                        value=outer.iso20_power_w,
+                    )
+                self._pause_on_next_continue = True
+                return params
+
+            async def continue_charging(self):
+                if (
+                    outer.pause_after_charge_loop
+                    and self._pause_on_next_continue
+                    and not outer.charge_loop_reached.is_set()
+                ):
+                    outer.charge_loop_reached.set()
+                    while not outer._charge_loop_resume.is_set():
+                        await asyncio.sleep(0.05)
+                    return False
+                return await super().continue_charging()
+
+        controller = RunnerSimEVController() if use_tls13 else SimEVController(config)
+        handler = EVCCHandler(config, self.iface, ExificientEXICodec(), controller)
         await handler.start()
 
     def run(self, timeout: float = 120):
@@ -455,6 +530,9 @@ class EVSim:
                 import shutil
                 shutil.rmtree(self._pki, ignore_errors=True)
                 self._pki = None
+
+    def resume_charge_loop(self):
+        self._charge_loop_resume.set()
 
     @staticmethod
     def _create_pki(use_tls13: bool):
