@@ -63,7 +63,7 @@ def sign_csr(workdir, csr_pem, iso20, with_aia):
     return chain
 
 
-def ocsp_response_b64(workdir, leaf_pem_path):
+def ocsp_response_b64(workdir, leaf_pem_path, next_update_minutes=None):
     """Good OCSP response for the leaf, signed by the dev CPO sub CA 2 (iso20)."""
     pki = CERTS / "iso20"
     serial = run(["openssl", "x509", "-in", str(leaf_pem_path), "-noout", "-serial"]).stdout.strip().split("=")[1]
@@ -72,13 +72,14 @@ def ocsp_response_b64(workdir, leaf_pem_path):
     index = workdir / "index.txt"
     index.write_text(f"V\t{stamp}\t\t{serial}\tunknown\t/CN=x\n")
     resp = workdir / "resp.der"
+    validity = ["-ndays", "7"] if next_update_minutes is None else ["-nmin", str(next_update_minutes)]
     run(["openssl", "ocsp", "-index", str(index),
-         "-CA", str(pki / "certs" / "cpoSubCA2Cert.pem"),
+          "-CA", str(pki / "certs" / "cpoSubCA2Cert.pem"),
          "-rsigner", str(pki / "certs" / "cpoSubCA2Cert.pem"),
          "-rkey", str(pki / "private_keys" / "cpoSubCA2.key"), "-passin", "pass:12345",
-         "-issuer", str(pki / "certs" / "cpoSubCA2Cert.pem"),
-         "-cert", str(leaf_pem_path),
-         "-reqout", str(workdir / "req.der"), "-respout", str(resp), "-ndays", "7"])
+          "-issuer", str(pki / "certs" / "cpoSubCA2Cert.pem"),
+          "-cert", str(leaf_pem_path),
+          "-reqout", str(workdir / "req.der"), "-respout", str(resp)] + validity)
     return base64.b64encode(resp.read_bytes()).decode(), resp.read_bytes()
 
 
@@ -263,7 +264,7 @@ def main():
         status_req, msg_id = csms.expect("GetCertificateStatus", timeout=120)
         check("GetCertificateStatus for the -20 leaf",
               status_req["ocspRequestData"]["responderURL"] == OCSP_URL)
-        b64, der = ocsp_response_b64(workdir, workdir / "leaf20.pem")
+        b64, der = ocsp_response_b64(workdir, workdir / "leaf20.pem", next_update_minutes=1)
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
@@ -288,8 +289,37 @@ def main():
         time.sleep(3)
         check("OCSP-good chain remains available after returning to public mode",
               try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
+
+        # Advance the station clock through nextUpdate. The stale Good
+        # result and staple must be dropped while replacement is pending.
+        csms.current_time_offset_s = 120
+        assert csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})["status"] == "Accepted"
+        time.sleep(5)
+        expired_log = trace_log(args.charger)
+        check("SECC OCSP cache expires at nextUpdate [HUB20-431-001/V2G20-1021]",
+              "OCSP cache expired for chain certificate" in expired_log)
+        check("expired SECC OCSP forces TLS 1.3 fallback while refresh is pending [HUB20-532-002]",
+              try_tls(args.charger, iface, tls13=True, mutual=True) is None)
+        check("TLS 1.2 remains available after SECC OCSP expiry",
+              try_tls(args.charger, iface, tls13=False) == "TLSv1.2")
+
+        refresh_req, refresh_msg = csms.expect("GetCertificateStatus", timeout=30)
+        check("SECC OCSP expiry triggers an immediate refresh",
+              refresh_req["ocspRequestData"]["responderURL"] == OCSP_URL)
+        fresh_b64, _ = ocsp_response_b64(workdir, workdir / "leaf20.pem")
+        csms.respond(refresh_msg, {"status": "Accepted", "ocspResult": fresh_b64})
+        time.sleep(5)
+        check("fresh SECC OCSP restores TLS 1.3 without reboot",
+              try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
+
+        csms.current_time_offset_s = 0
+        assert csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})["status"] == "Accepted"
+        time.sleep(2)
     finally:
         try:
+            csms.current_time_offset_s = 0
+            if csms.connected.is_set():
+                csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})
             disabled = dict(saved_config)
             disabled["enable"] = False
             common.api_put(args.charger, "ocpp/config_update", disabled)
