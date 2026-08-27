@@ -169,7 +169,8 @@ void EVSEV2::pre_setup()
         AutomationActionID::EVSEGPOutput,
         automation_cfg,
         [this](const Config *config) {
-            is_in_bootloader(io_scheduler.hal_call([this, config]() { return tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1); }));
+            const bool closed = config->get("closed")->asBool();
+            is_in_bootloader(io_scheduler.hal_call([this, closed]() { return tf_evse_v2_set_gp_output(&device, closed ? 0 : 1); }));
         }
     );
 #endif
@@ -220,7 +221,8 @@ void EVSEV2::post_setup()
 void EVSEV2::post_register_urls()
 {
     api.addCommand("evse/reset_dc_fault_current_state", &reset_dc_fault_current_state, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_reset_dc_fault_current_state(&device, reset_dc_fault_current_state.get("password")->asUint()); }));
+        const uint32_t password = reset_dc_fault_current_state.get("password")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, password]() { return tf_evse_v2_reset_dc_fault_current_state(&device, password); }));
     }, true);
 
     api.addCommand("evse/trigger_dc_fault_test", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
@@ -242,30 +244,37 @@ void EVSEV2::post_register_urls()
 
     api.addState("evse/gpio_configuration", &gpio_configuration);
     api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
-                                                                                               gpio_configuration_update.get("input")->asUint(),
-                                                                                               gpio_configuration_update.get("output")->asUint()); }));
+        const uint8_t shutdown_input = gpio_configuration_update.get("shutdown_input")->asUint();
+        const uint8_t input = gpio_configuration_update.get("input")->asUint();
+        const uint8_t output = gpio_configuration_update.get("output")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, shutdown_input, input, output]() {
+            return tf_evse_v2_set_gpio_configuration(&device, shutdown_input, input, output);
+        }));
     }, true);
 
     api.addState("evse/button_configuration", &button_configuration);
     api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()); }));
+        const uint8_t button = button_configuration_update.get("button")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, button]() { return tf_evse_v2_set_button_configuration(&device, button); }));
     }, true);
 
     api.addState("evse/ev_wakeup", &ev_wakeup);
     api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()); }));
+        const bool enabled = ev_wakeup_update.get("enabled")->asBool();
+        is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_ev_wakeup(&device, enabled); }));
     }, true);
 
     api.addState("evse/phase_auto_switch", &phase_auto_switch);
     api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()); }));
+        const bool enabled = phase_auto_switch_update.get("enabled")->asBool();
+        is_in_bootloader(io_scheduler.hal_call([this, enabled]() { return tf_evse_v2_set_phase_auto_switch(&device, enabled); }));
     }, true);
 
 
     api.addState("evse/phases_connected", &phases_connected);
     api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()); }));
+        const uint8_t phases = phases_connected_update.get("phases")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, phases]() { return tf_evse_v2_set_phases_connected(&device, phases); }));
     }, true);
 
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
@@ -274,25 +283,29 @@ void EVSEV2::post_register_urls()
             logger.printfln("Control pilot cannot be (dis)connected by API while charge management is enabled.");
             return;
         }
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr); }));
+        const bool disconnect = control_pilot_disconnect_update.get("disconnect")->asBool();
+        is_in_bootloader(io_scheduler.hal_call([this, disconnect]() { return tf_evse_v2_set_control_pilot_disconnect(&device, disconnect, nullptr); }));
     }, true);
 
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     api.addFeature("evse_gp_output");
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()); }));
+        const uint8_t output = gp_output_update.get("gp_output")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, output]() { return tf_evse_v2_set_gp_output(&device, output); }));
     }, true);
 #endif
 
     api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
     api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()); }));
+        const uint8_t time = phase_switch_wait_time_update.get("time")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, time]() { return tf_evse_v2_set_phase_switch_wait_time(&device, time); }));
     }, true);
 
     api.addState("evse/energy_meter_display_backlight", &energy_meter_display_backlight);
     api.addCommand("evse/energy_meter_display_backlight_update", &energy_meter_display_backlight_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
-        is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_energy_meter_display_backlight(&device, energy_meter_display_backlight_update.get("backlight")->asUint()); }));
+        const uint8_t backlight = energy_meter_display_backlight_update.get("backlight")->asUint();
+        is_in_bootloader(io_scheduler.hal_call([this, backlight]() { return tf_evse_v2_set_energy_meter_display_backlight(&device, backlight); }));
     }, true);
 }
 

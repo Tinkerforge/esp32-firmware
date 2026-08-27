@@ -121,16 +121,21 @@ void EVSE::post_register_urls()
 {
     api.addState("evse/user_calibration", &user_calibration);
     api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](Language /*language*/, String &/*errmsg*/) {
+        const bool user_calibration_active = user_calibration.get("user_calibration_active")->asBool();
+        const int16_t voltage_diff = user_calibration.get("voltage_diff")->asInt();
+        const int16_t voltage_mul = user_calibration.get("voltage_mul")->asInt();
+        const int16_t voltage_div = user_calibration.get("voltage_div")->asInt();
+        const int16_t resistance_2700 = user_calibration.get("resistance_2700")->asInt();
         int16_t resistance_880[14];
         user_calibration.get("resistance_880")->fillInt16Array(resistance_880, ARRAY_SIZE(resistance_880));
 
-        is_in_bootloader(io_scheduler.hal_call([&]() { return tf_evse_set_user_calibration(&device,
+        is_in_bootloader(io_scheduler.hal_call([this, user_calibration_active, voltage_diff, voltage_mul, voltage_div, resistance_2700, &resistance_880]() { return tf_evse_set_user_calibration(&device,
             0xCA11B4A0,
-            user_calibration.get("user_calibration_active")->asBool(),
-            user_calibration.get("voltage_diff")->asInt(),
-            user_calibration.get("voltage_mul")->asInt(),
-            user_calibration.get("voltage_div")->asInt(),
-            user_calibration.get("resistance_2700")->asInt(),
+            user_calibration_active,
+            voltage_diff,
+            voltage_mul,
+            voltage_div,
+            resistance_2700,
             resistance_880
             ); }));
     }, true);
