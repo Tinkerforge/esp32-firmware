@@ -22,12 +22,26 @@ environment = None
 client = None
 csms = None
 saved_ocpp = None
+test_ocpp = None
 saved_values = {}
 
 
 VARIABLES = [
+    ("Enabled", None),
+    ("V2GCertificateInstallationEnabled", None),
+    ("ContractCertificateInstallationEnabled", None),
     ("ISO15118EvseId", None),
     ("EnforceTlsEnabled", None),
+    ("PrivateEnviromentEnabled", None),
+    ("PWMChargingFallbackTimeout", None),
+]
+
+BOOLEAN_VARIABLES = [
+    "Enabled",
+    "V2GCertificateInstallationEnabled",
+    "ContractCertificateInstallationEnabled",
+    "EnforceTlsEnabled",
+    "PrivateEnviromentEnabled",
 ]
 
 
@@ -42,34 +56,89 @@ def get_variables(requests):
     return csms.call("GetVariables", {"getVariableData": data})["getVariableResult"]
 
 
-def set_variable(name, value):
+def set_variable(name, value, instance=None):
     assert csms is not None
+    variable = {"name": name}
+    if instance is not None:
+        variable["instance"] = instance
     result = csms.call("SetVariables", {"setVariableData": [{
         "component": {"name": "ISO15118Ctrlr"},
-        "variable": {"name": name},
+        "variable": variable,
         "attributeValue": value,
     }]})
     return result["setVariableResult"][0]["attributeStatus"]
 
 
+def wait_for_ocpp_disconnected(timeout=30):
+    assert csms is not None
+    deadline = time.monotonic() + timeout
+    while csms.connected.is_set() and time.monotonic() < deadline:
+        time.sleep(0.1)
+    if csms.connected.is_set():
+        raise TimeoutError("WARP4 did not disconnect from CSMSSim")
+
+
+def connect_test_ocpp(tc: TestContext):
+    assert csms is not None
+    assert test_ocpp is not None
+    tc.api("ocpp/config_update", test_ocpp, timeout=5)
+    if not csms.connected.wait(timeout=60):
+        raise TimeoutError("WARP4 did not connect to CSMSSim")
+
+
+def reconnect_test_ocpp(tc: TestContext):
+    assert test_ocpp is not None
+    disabled = dict(test_ocpp)
+    disabled["enable"] = False
+    tc.api("ocpp/config_update", disabled, timeout=5)
+    wait_for_ocpp_disconnected()
+    connect_test_ocpp(tc)
+
+
+def restore_values(tc: TestContext):
+    if not saved_values:
+        return
+
+    errors = []
+    assert csms is not None
+    if not csms.connected.is_set():
+        try:
+            connect_test_ocpp(tc)
+        except Exception as e:
+            errors.append(f"could not reconnect to restore values: {e}")
+
+    if csms.connected.is_set():
+        for name, value in saved_values.items():
+            try:
+                status = set_variable(name, value)
+                if status != "Accepted":
+                    errors.append(f"ISO15118Ctrlr.{name}: {status}")
+            except Exception as e:
+                errors.append(f"ISO15118Ctrlr.{name}: {e}")
+
+    if errors:
+        raise RuntimeError("Could not restore ISO15118Ctrlr values: " + "; ".join(errors))
+
+
 def suite_setup(tc: TestContext):
-    global environment, client, csms, saved_ocpp, saved_values
+    global environment, client, csms, saved_ocpp, test_ocpp, saved_values
     environment = IsoTestEnvironment(tc)
     environment.start()
     client = EVTestClient(environment.host, environment.iface, environment.secc_ll)
     saved_ocpp = tc.api("ocpp/config")
     csms = CSMSSim()
-    config = dict(saved_ocpp)
-    config.update({
+    test_ocpp = dict(saved_ocpp)
+    test_ocpp.update({
         "enable": True,
         "protocol": 1,
         "url": f"ws://{tc.get_local_ip()}:{csms.port}",
         "enable_auth": False,
     })
-    tc.api("ocpp/config_update", config, timeout=5)
-    if not csms.connected.wait(timeout=60):
-        raise TimeoutError("WARP4 did not connect to CSMSSim")
+    connect_test_ocpp(tc)
     results = get_variables(VARIABLES)
+    for (name, _), result in zip(VARIABLES, results):
+        if result["attributeStatus"] != "Accepted":
+            raise RuntimeError(f"Could not save ISO15118Ctrlr.{name}: {result['attributeStatus']}")
     saved_values = {
         name: result["attributeValue"]
         for (name, _), result in zip(VARIABLES, results)
@@ -82,16 +151,18 @@ def setup(tc: TestContext):
 
 
 def teardown(tc: TestContext):
-    for name, value in saved_values.items():
-        if set_variable(name, value) != "Accepted":
-            raise RuntimeError(f"Could not restore ISO15118Ctrlr.{name}")
+    restore_values(tc)
 
 
 def suite_teardown(tc: TestContext):
     errors = []
+    try:
+        restore_values(tc)
+    except Exception as e:
+        errors.append(e)
     if saved_ocpp is not None:
         try:
-            disabled = dict(saved_ocpp)
+            disabled = dict(test_ocpp if test_ocpp is not None else saved_ocpp)
             disabled["enable"] = False
             tc.api("ocpp/config_update", disabled, timeout=5)
             time.sleep(1)
@@ -142,6 +213,37 @@ def test_evseid_set_and_read_back(tc: TestContext):
     result = get_variables([("ISO15118EvseId", None)])[0]
     tc.assert_eq("Accepted", result["attributeStatus"])
     tc.assert_eq(expected, result["attributeValue"])
+
+
+def test_variable_validation_and_persistence(tc: TestContext):
+    tc.assert_eq("Rejected", set_variable("ISO15118EvseId", "Z" * 6))
+    tc.assert_eq("Rejected", set_variable("ISO15118EvseId", "Z" * 38))
+
+    for name in BOOLEAN_VARIABLES:
+        tc.assert_eq("Rejected", set_variable(name, "maybe"))
+
+    tc.assert_eq("Rejected", set_variable("PWMChargingFallbackTimeout", "0"))
+    tc.assert_eq(
+        "Rejected",
+        set_variable("ProtocolSupported", "urn:example,1,0", instance="1"),
+    )
+
+    expected = {
+        name: "false" if saved_values[name] == "true" else "true"
+        for name in BOOLEAN_VARIABLES
+    }
+    expected["ISO15118EvseId"] = "DE*ICE*E*1234567890*1"
+    expected["PWMChargingFallbackTimeout"] = (
+        "15" if saved_values["PWMChargingFallbackTimeout"] != "15" else "16"
+    )
+    for name, value in expected.items():
+        tc.assert_eq("Accepted", set_variable(name, value))
+
+    reconnect_test_ocpp(tc)
+
+    results = get_variables([(name, None) for name in expected])
+    tc.assert_(all(result["attributeStatus"] == "Accepted" for result in results))
+    tc.assert_eq(list(expected.values()), [result["attributeValue"] for result in results])
 
 
 def test_enforce_tls_controls_sdp(tc: TestContext):

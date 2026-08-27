@@ -159,7 +159,7 @@ def main():
     args = p.parse_args()
 
     common.require_iso_tls_config(args.charger)
-    iface = args.iface or common.default_iface(args.charger)
+    iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
     workdir = Path(tempfile.mkdtemp(prefix="ocsp_gating_"))
 

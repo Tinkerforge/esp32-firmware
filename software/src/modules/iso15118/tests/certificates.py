@@ -63,6 +63,9 @@ def run(tc: TestContext, script: str, timeout: float):
     )
     tc.dbg(result.stdout)
     tc.dbg(result.stderr)
+    if result.returncode != 0:
+        print(result.stdout)
+        print(result.stderr, file=sys.stderr)
     tc.assert_eq(0, result.returncode)
 
 
