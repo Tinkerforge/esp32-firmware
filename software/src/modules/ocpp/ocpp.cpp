@@ -655,6 +655,16 @@ Ocpp::EvCertStatus Ocpp::get_iso15118_ev_cert_status()
     return ev_cert_status;
 }
 
+
+void Ocpp::reset_iso15118_ev_cert_response()
+{
+    ev_cert_status = EvCertStatus::Idle;
+    ev_cert_exi = nullptr;
+    ev_cert_exi_len = 0;
+    ev_cert_remaining = 0;
+}
+
+
 bool Ocpp::take_iso15118_ev_cert_response(std::unique_ptr<uint8_t[]> *exi_out, size_t *exi_len_out, int32_t *remaining_out)
 {
     if ((ev_cert_status != EvCertStatus::Accepted) || (ev_cert_exi == nullptr)) {
