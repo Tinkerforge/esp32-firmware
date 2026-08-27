@@ -330,6 +330,7 @@ class CSMSSim:
         self.requests = queue.Queue()
         self.pending_requests = []
         self.responses = queue.Queue()
+        self.security_events = []
         self.connected = threading.Event()
         self.authorization = None
         self.ws = None
@@ -379,6 +380,9 @@ class CSMSSim:
                         self.respond(message_id, {
                             "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                         })
+                    elif action == "SecurityEventNotification":
+                        self.security_events.append(payload)
+                        self.respond(message_id, {})
                     else:
                         self.respond(message_id, {})
                 elif message[0] == 3:
