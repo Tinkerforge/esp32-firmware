@@ -49,6 +49,20 @@ iso15118 = [
     "scapy"
 ]
 
+iso15118-tests = [
+    "aiofile==3.9.0",
+    "iso15118==0.31.2",
+    "websockets==15.0.1",
+]
+
+[tool.uv]
+conflicts = [
+    [
+        { group = "tests" },          # amqtt==0.11.3 requires psutil>=7.
+        { group = "iso15118-tests" }, # iso15118==0.31.2 requires psutil>=6.1.1,<7
+    ],
+]
+
 [tool.pio-hooks]
 requires-node = "24.14.0"
 requires-npm = "11.12.0"
