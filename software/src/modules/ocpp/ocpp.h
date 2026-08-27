@@ -78,6 +78,7 @@ public:
     bool request_iso15118_ev_certificate(bool iso20, bool update, const uint8_t *exi, size_t exi_len, int32_t max_contract_chains);
     EvCertStatus get_iso15118_ev_cert_status();
     bool take_iso15118_ev_cert_response(std::unique_ptr<uint8_t[]> *exi_out, size_t *exi_len_out, int32_t *remaining_out);
+    void reset_iso15118_ev_cert_response();
     void on_ev_cert_result(bool accepted, const char *exi_response, int32_t remaining_contracts);
     bool is_iso15118_contract_install_enabled();
 

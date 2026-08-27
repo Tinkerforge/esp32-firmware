@@ -7,9 +7,10 @@ GetCertificateChainStatus and gates the ISO 15118-20 authorization on
 the result:
   1. while the status is pending the AuthorizationRes carries EVSEProcessing Ongoing (HUB20-432-004)
   2. an all Good chain status lets the next AuthorizationRes finish with OK (HUB20-432-001/007)
-  3. a Revoked certificate fails the authorization and closes the TLS session (HUB20-432-008)
-  4. a missing status entry counts as Unknown, fails the authorization and closes the session (HUB20-432-009/010)
-  5. security: a forged OEM chain with matching subject names but different keys is rejected by the handshake (the chain must anchor
+  3. Revoked at any chain position fails authorization and closes TLS (HUB20-432-008)
+  4. explicit Unknown and a missing entry fail authorization and close TLS (HUB20-432-009/010)
+  5. a valid cache suppresses a repeat request; expired nextUpdate requests the full chain
+  6. security: a forged OEM chain with matching subject names but different keys is rejected by the handshake (the chain must anchor
      to the trust store by key, not by name)
 
 Invoked by certificates.py through the firmware test runner.
@@ -18,17 +19,18 @@ Invoked by certificates.py through the firmware test runner.
 import argparse
 import json
 import os
+import re
+import shutil
 import ssl
 import struct
 import sys
 import tempfile
-import shutil
 import time
 from pathlib import Path
 
 import _common as common
 from _common import CSMSSim as Csms
-from _ocsp_gating import (CERTS, provision_chain, ocsp_response_b64, run)
+from _ocsp_gating import CERTS, ocsp_response_b64, provision_chain, run
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 
@@ -41,8 +43,9 @@ _codec = None
 def codec():
     global _codec
     if _codec is None:
-        from iso15118.shared.settings import load_shared_settings
         from iso15118.shared.exificient_exi_codec import ExificientEXICodec
+        from iso15118.shared.settings import load_shared_settings
+
         load_shared_settings()
         _codec = ExificientEXICodec()
     return _codec
@@ -132,6 +135,24 @@ def authorization(tls, session_id):
                     Namespace.ISO_V20_COMMON_MSG, 0x8002)["AuthorizationRes"]
 
 
+def final_authorization(tls, session_id, timeout=10):
+    """Poll Authorization while the chain status response is being applied."""
+    deadline = time.monotonic() + timeout
+    while True:
+        response = authorization(tls, session_id)
+        if response.get("EVSEProcessing") != "Ongoing" or time.monotonic() >= deadline:
+            return response
+        time.sleep(0.5)
+
+
+def tls_closed(tls, timeout=5):
+    try:
+        tls.settimeout(timeout)
+        return tls.recv(16) == b""
+    except (ssl.SSLError, OSError):
+        return True
+
+
 def open_iso20_session(charger, iface, cert=None, key=None):
     """TLS 1.3 mutual auth, SAP for -20, SessionSetup, AuthorizationSetup.
 
@@ -145,19 +166,55 @@ def open_iso20_session(charger, iface, cert=None, key=None):
     return tls, session_id
 
 
-def chain_status_response(request, statuses):
+def chain_status_response(request, statuses, next_update=None):
     """Builds a GetCertificateChainStatusResponse, statuses per request entry.
 
     A None status omits the entry (HUB20-432-010 missing entry case).
     """
+    if next_update is None:
+        next_update = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3600))
     entries = []
     for req, status in zip(request["certificateStatusRequests"], statuses):
         if status is None:
             continue
         entries.append({"certificateHashData": req["certificateHashData"],
                         "source": "OCSP", "status": status,
-                        "nextUpdate": "2027-01-01T00:00:00Z"})
+                        "nextUpdate": next_update})
     return {"certificateStatus": entries}
+
+
+def certificate_hash_data(cert, issuer):
+    """Derive OCPP CertificateHashData through an independent OCSP request."""
+    output = run(["openssl", "ocsp", "-sha256", "-issuer", str(issuer),
+                  "-cert", str(cert), "-req_text", "-no_nonce"]).stdout
+
+    def value(label):
+        match = re.search(rf"{label}:\s*([0-9A-Fa-f]+)", output)
+        assert match is not None, (label, output)
+        return match.group(1).lower()
+
+    return {"hashAlgorithm": "SHA256",
+            "issuerNameHash": value("Issuer Name Hash"),
+            "issuerKeyHash": value("Issuer Key Hash"),
+            "serialNumber": value("Serial Number").lstrip("0") or "0"}
+
+
+def expected_vehicle_hashes(leaf):
+    pki = CERTS / "iso20" / "certs"
+    return [certificate_hash_data(leaf, pki / "oemSubCA2Cert.pem"),
+            certificate_hash_data(pki / "oemSubCA2Cert.pem", pki / "oemSubCA1Cert.pem"),
+            certificate_hash_data(pki / "oemSubCA1Cert.pem", pki / "oemRootCACert.pem")]
+
+
+def request_hashes(request):
+    keys = ("hashAlgorithm", "issuerNameHash", "issuerKeyHash", "serialNumber")
+    result = []
+    for entry in request["certificateStatusRequests"]:
+        hash_data = {key: entry["certificateHashData"][key] for key in keys}
+        for key in ("issuerNameHash", "issuerKeyHash", "serialNumber"):
+            hash_data[key] = hash_data[key].lower()
+        result.append(hash_data)
+    return result
 
 
 def forge_oem_chain(workdir):
@@ -167,8 +224,6 @@ def forge_oem_chain(workdir):
     handshake must reject.
     """
     pki = CERTS / "iso20" / "certs"
-    subjects = run(["openssl", "x509", "-in", str(pki / "oemRootCACert.pem"),
-                    "-noout", "-subject", "-nameopt", "RFC2253"]).stdout
     # Rebuild root, two sub CAs and a leaf, each with the original subject DN.
     def dn(cert):
         out = run(["openssl", "x509", "-in", str(cert), "-noout", "-subject",
@@ -259,7 +314,7 @@ def main():
     args = p.parse_args()
 
     common.require_iso_tls_config(args.charger)
-    iface = args.iface or common.default_iface(args.charger)
+    iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
     workdir = Path(tempfile.mkdtemp(prefix="vehicle_chain_"))
 
@@ -299,70 +354,114 @@ def main():
         time.sleep(3)
 
         # Make TLS 1.3 ready: answer the SECC leaf OCSP with Good.
-        status_req, msg_id = csms.expect("GetCertificateStatus", timeout=120)
+        _, msg_id = csms.expect("GetCertificateStatus", timeout=120)
         b64, _ = ocsp_response_b64(workdir, workdir / "leaf20.pem")
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
         # 1 and 2: pending gives Ongoing, all Good then finishes.
         cert, key = mint_oem_leaf(workdir, "good")
+        good_hashes = expected_vehicle_hashes(workdir / "oem_good.pem")
         tls, session_id = open_iso20_session(args.charger, iface, cert, key)
         chain_req, chain_msg = csms.expect("GetCertificateChainStatus", timeout=30)
-        serials = [r["certificateHashData"]["serialNumber"] for r in chain_req["certificateStatusRequests"]]
-        check("GetCertificateChainStatus for the full vehicle chain leaf first",
-              len(serials) == 3, f"{len(serials)} certificates")
+        hashes = request_hashes(chain_req)
+        check("GetCertificateChainStatus carries exact leaf-first chain hashes",
+              hashes == good_hashes, hashes)
         auth = authorization(tls, session_id)
         check("authorization Ongoing while the OCSP status is pending [HUB20-432-004]",
               auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Ongoing", auth)
 
         csms.respond(chain_msg, chain_status_response(chain_req, ["Good", "Good", "Good"]))
-        time.sleep(3)
-        auth = authorization(tls, session_id)
+        auth = final_authorization(tls, session_id)
         check("authorization Finished OK after all Good [HUB20-432-001/007]",
               auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Finished", auth)
         tls.close()
-        time.sleep(2)
 
-        # 3: Revoked fails and closes the session.
-        cert, key = mint_oem_leaf(workdir, "revoked")
+        # A currently valid all-Good result suppresses another request for
+        # exactly the same chain before nextUpdate (HUB20-432-003/007).
+        time.sleep(1)
+        tls, session_id = open_iso20_session(args.charger, iface, cert, key)
+        unexpected_request = None
+        try:
+            unexpected_request = csms.expect("GetCertificateChainStatus", timeout=3)
+        except TimeoutError:
+            pass
+        check("valid cache suppresses a second chain status request before nextUpdate",
+              unexpected_request is None)
+        if unexpected_request is not None:
+            unexpected_req, unexpected_msg = unexpected_request
+            csms.respond(unexpected_msg,
+                         chain_status_response(unexpected_req, ["Good", "Good", "Good"]))
+        auth = final_authorization(tls, session_id)
+        check("cached all-Good chain authorizes without another request",
+              auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Finished", auth)
+        tls.close()
+        time.sleep(1)
+
+        def failing_status(tag, statuses, description):
+            cert, key = mint_oem_leaf(workdir, tag)
+            expected_hashes = expected_vehicle_hashes(workdir / f"oem_{tag}.pem")
+            tls, session_id = open_iso20_session(args.charger, iface, cert, key)
+            chain_req, chain_msg = csms.expect("GetCertificateChainStatus", timeout=30)
+            hashes = request_hashes(chain_req)
+            check(f"{description} request carries exact leaf-first chain hashes",
+                  hashes == expected_hashes, hashes)
+            csms.respond(chain_msg, chain_status_response(chain_req, statuses))
+            auth = final_authorization(tls, session_id)
+            check(f"authorization failed on {description}",
+                  auth["ResponseCode"].startswith("FAILED"), auth)
+            check(f"TLS session closed after {description}", tls_closed(tls))
+            try:
+                tls.close()
+            except OSError:
+                pass
+            time.sleep(1)
+
+        # Revocation at every presented chain position must fail closed.
+        failing_status("revoked_leaf", ["Revoked", "Good", "Good"],
+                       "revoked leaf [HUB20-432-008]")
+        failing_status("revoked_sub2", ["Good", "Revoked", "Good"],
+                       "revoked OEM Sub CA 2 [HUB20-432-008]")
+        failing_status("revoked_sub1", ["Good", "Good", "Revoked"],
+                       "revoked OEM Sub CA 1 [HUB20-432-008]")
+
+        # Both an explicit Unknown and an omitted status entry fail closed.
+        failing_status("unknown", ["Unknown", "Good", "Good"],
+                       "explicit Unknown status [HUB20-432-009]")
+        failing_status("missing", [None, "Good", "Good"],
+                       "missing status entry [HUB20-432-009/010]")
+
+        # Expired cache entries fail closed and force a full-chain request
+        # when the same chain reconnects.
+        cert, key = mint_oem_leaf(workdir, "expired")
+        expired_hashes = expected_vehicle_hashes(workdir / "oem_expired.pem")
         tls, session_id = open_iso20_session(args.charger, iface, cert, key)
         chain_req, chain_msg = csms.expect("GetCertificateChainStatus", timeout=30)
-        csms.respond(chain_msg, chain_status_response(chain_req, ["Good", "Good", "Revoked"]))
-        time.sleep(3)
-        auth = authorization(tls, session_id)
-        check("authorization failed on a revoked certificate [HUB20-432-008]",
+        csms.respond(chain_msg, chain_status_response(
+            chain_req, ["Good", "Good", "Good"], "2020-01-01T00:00:00Z"))
+        auth = final_authorization(tls, session_id)
+        check("authorization failed when nextUpdate is expired",
               auth["ResponseCode"].startswith("FAILED"), auth)
-        closed = False
-        try:
-            tls.settimeout(10)
-            closed = tls.recv(16) == b""
-        except (ssl.SSLError, OSError):
-            closed = True
-        check("TLS session closed after revocation [HUB20-432-008]", closed)
+        check("TLS session closed after expired nextUpdate", tls_closed(tls))
         try:
             tls.close()
         except OSError:
             pass
-        time.sleep(2)
+        time.sleep(1)
 
-        # 4: a missing status entry counts as Unknown, same fail closed
-        # path. The leaf carries a fresh serial, so no cached status can
-        # stand in for the omitted response entry (HUB20-432-010).
-        cert, key = mint_oem_leaf(workdir, "missing")
         tls, session_id = open_iso20_session(args.charger, iface, cert, key)
         chain_req, chain_msg = csms.expect("GetCertificateChainStatus", timeout=30)
-        csms.respond(chain_msg, chain_status_response(chain_req, [None, "Good", "Good"]))
-        time.sleep(3)
-        auth = authorization(tls, session_id)
-        check("authorization failed on a missing status entry [HUB20-432-009/010]",
-              auth["ResponseCode"].startswith("FAILED"), auth)
-        try:
-            tls.close()
-        except OSError:
-            pass
-        time.sleep(2)
+        hashes = request_hashes(chain_req)
+        check("expired nextUpdate causes an exact full-chain request",
+              hashes == expired_hashes, hashes)
+        csms.respond(chain_msg, chain_status_response(chain_req, ["Good", "Good", "Good"]))
+        auth = final_authorization(tls, session_id)
+        check("same chain authorizes after expired statuses are refreshed",
+              auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Finished", auth)
+        tls.close()
+        time.sleep(1)
 
-        # 5: forged OEM chain, matching names, different keys.
+        # Forged OEM chain, matching names, different keys.
         forged_chain, forged_key = forge_oem_chain(workdir)
         accepted = try_forged_handshake(args.charger, iface, forged_chain, forged_key)
         check("forged vehicle chain rejected by the handshake", not accepted,
@@ -372,8 +471,7 @@ def main():
         tls, session_id = open_iso20_session(args.charger, iface, cert, key)
         chain_req, chain_msg = csms.expect("GetCertificateChainStatus", timeout=30)
         csms.respond(chain_msg, chain_status_response(chain_req, ["Good", "Good", "Good"]))
-        time.sleep(3)
-        auth = authorization(tls, session_id)
+        auth = final_authorization(tls, session_id)
         check("genuine chain still authorizes after the forged rejection",
               auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Finished", auth)
         tls.close()

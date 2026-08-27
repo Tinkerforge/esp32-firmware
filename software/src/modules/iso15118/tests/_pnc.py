@@ -21,7 +21,9 @@ Invoked by certificates.py through the firmware test runner.
 """
 
 import argparse
+import base64
 import hashlib
+import json
 import struct
 import sys
 import tempfile
@@ -84,14 +86,14 @@ def cbv2g_helper():
         raise SystemExit("libcbv2g not found under .pio/libdeps, build the firmware first")
     lib = libs[0]
     out = Path(tempfile.gettempdir()) / "pnc_exi_helper"
-    srcs = [str(SCRIPT_DIR / "_pnc_exi_helper.c"),
+    srcs = [str(SCRIPT_DIR / "_pnc_exi_helper.c.inc"),
             f"{lib}/lib/cbv2g/common/exi_bitstream.c", f"{lib}/lib/cbv2g/common/exi_basetypes.c",
             f"{lib}/lib/cbv2g/common/exi_basetypes_encoder.c", f"{lib}/lib/cbv2g/common/exi_header.c",
             f"{lib}/lib/cbv2g/iso_20/iso20_CommonMessages_Datatypes.c",
             f"{lib}/lib/cbv2g/iso_20/iso20_CommonMessages_Encoder.c",
             f"{lib}/lib/cbv2g/iso_2/iso2_msgDefDatatypes.c",
             f"{lib}/lib/cbv2g/iso_2/iso2_msgDefEncoder.c"]
-    subprocess.run(["gcc", "-O1", f"-I{lib}/include", *srcs, "-o", str(out)], check=True)
+    subprocess.run(["gcc", "-O1", f"-I{lib}/include", "-x", "c", *srcs, "-o", str(out)], check=True)
     _helper_bin = str(out)
     return _helper_bin
 
@@ -154,6 +156,16 @@ def recv_exi(tls, namespace):
     assert resp[:2] == b"\x01\xfe", resp.hex()
     payload_len = struct.unpack("!I", resp[4:8])[0]
     return EXI().from_exi(resp[8:8 + payload_len], namespace)
+
+
+def recv_exi_json(tls, namespace):
+    from iso15118.shared.exi_codec import EXI
+
+    resp = tls.recv(8192)
+    assert resp[:2] == b"\x01\xfe", resp.hex()
+    payload_len = struct.unpack("!I", resp[4:8])[0]
+    decoded = EXI().get_exi_codec().decode(resp[8:8 + payload_len], namespace)
+    return json.loads(decoded)
 
 
 def exchange20(tls, message, payload_type=0x8002):
@@ -326,6 +338,21 @@ def wrap_v2g2(body, signature=None):
     return V2GMessage(header=header, body=body)
 
 
+def get_variable(csms, name):
+    return csms.call("GetVariables", {"getVariableData": [{
+        "component": {"name": "ISO15118Ctrlr"},
+        "variable": {"name": name},
+    }]})["getVariableResult"][0]
+
+
+def set_variable(csms, name, value):
+    return csms.call("SetVariables", {"setVariableData": [{
+        "component": {"name": "ISO15118Ctrlr"},
+        "variable": {"name": name},
+        "attributeValue": value,
+    }]})["setVariableResult"][0]["attributeStatus"]
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--charger", required=True)
@@ -335,11 +362,12 @@ def main():
 
     setup_codec()
     common.require_iso_tls_config(args.charger)
-    iface = args.iface or common.default_iface(args.charger)
+    iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
     workdir = Path(tempfile.mkdtemp(prefix="pnc_"))
 
     failures = 0
+    saved_pnc_variables = {}
 
     def check(name, ok, detail=""):
         nonlocal failures
@@ -358,6 +386,13 @@ def main():
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
         time.sleep(2)
+        for name in ("Enabled", "ContractCertificateInstallationEnabled"):
+            result = get_variable(csms, name)
+            check(f"ISO15118Ctrlr.{name} is available", result["attributeStatus"] == "Accepted", result)
+            if result["attributeStatus"] == "Accepted":
+                saved_pnc_variables[name] = result["attributeValue"]
+                check(f"ISO15118Ctrlr.{name} can be enabled",
+                      set_variable(csms, name, "true") == "Accepted")
         common.enable_debug_mode(args.charger)
         time.sleep(2)
 
@@ -388,8 +423,16 @@ def main():
         common.enable_debug_mode(args.charger)
         time.sleep(2)
         run_iso20(args, iface, csms, workdir, check)
+        run_service_gating(args, iface, csms, check)
 
     finally:
+        cleanup_errors = []
+        for name, value in saved_pnc_variables.items():
+            try:
+                if set_variable(csms, name, value) != "Accepted":
+                    raise RuntimeError(f"Could not restore ISO15118Ctrlr.{name}")
+            except Exception as e:
+                cleanup_errors.append(e)
         try:
             disabled = dict(saved_config)
             disabled["enable"] = False
@@ -398,7 +441,9 @@ def main():
             common.api_put(args.charger, "ocpp/reset", None)
             common.api_put(args.charger, "ocpp/config_update", saved_config)
         except Exception as e:
-            print(f"cleanup failed, restore the ocpp config manually: {e}")
+            cleanup_errors.append(e)
+        for e in cleanup_errors:
+            print(f"cleanup failed, restore the OCPP state manually: {e}")
             failures += 1
         csms.stop()
         shutil.rmtree(workdir, ignore_errors=True)
@@ -430,6 +475,48 @@ def answer_vehicle_chain_good(csms, timeout=30):
                 "status": "Good", "nextUpdate": "2027-01-01T00:00:00Z"}
                for r in req["certificateStatusRequests"]]
     csms.respond(msg_id, {"certificateStatus": entries})
+
+
+def run_service_gating(args, iface, csms, check):
+    from iso15118.shared.messages.iso15118_2.body import (
+        Body, ServiceDiscoveryReq, SessionSetupReq as SS2)
+    from iso15118.shared.messages.iso15118_2.datatypes import ServiceCategory
+
+    for variable in ("ContractCertificateInstallationEnabled", "Enabled"):
+        check(f"ISO15118Ctrlr.{variable} can be disabled",
+              set_variable(csms, variable, "false") == "Accepted")
+        time.sleep(1)
+
+        tls, session_id, setup = open_session20(args.charger, iface)
+        answer_vehicle_chain_good(csms, timeout=2)
+        check(f"ISO-20 certificate installation is not offered when {variable} is false",
+              not setup.cert_install_service, setup.cert_install_service)
+        tls.close()
+        time.sleep(1)
+
+        tls = connect(args.charger, iface, tls13=False)
+        sap(tls, ISO2)
+        wrap_v2g2.session_id = "00"
+        res = exchange2_body(tls, Body(SessionSetupReq=SS2(evcc_id="0A1B2C3D4E5F")))
+        wrap_v2g2.session_id = res.header.session_id
+        res = exchange2_body(tls, Body(ServiceDiscoveryReq=ServiceDiscoveryReq()))
+        services = res.body.service_discovery_res.service_list
+        has_cert = services is not None and any(
+            service.service_category == ServiceCategory.CERTIFICATE for service in services.services)
+        check(f"ISO-2 certificate service is not offered when {variable} is false", not has_cert)
+        tls.close()
+        time.sleep(1)
+
+        check(f"ISO15118Ctrlr.{variable} can be re-enabled",
+              set_variable(csms, variable, "true") == "Accepted")
+        time.sleep(1)
+
+    tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
+    check("ISO-20 certificate installation is offered again after service gating tests",
+          setup.cert_install_service)
+    tls.close()
+    time.sleep(1)
 
 
 def expect_ev_certificate(csms, timeout=60):
@@ -466,6 +553,22 @@ def run_iso20(args, iface, csms, workdir, check):
           res.response_code == "OK" and res.evse_processing == "Finished", res.response_code)
     tls.close()
     time.sleep(1)
+
+    # Missing and corrupt signatures must not authorize a valid contract chain.
+    for description, corrupt in (("missing", False), ("corrupt", True)):
+        tls, session_id, setup = open_session20(args.charger, iface)
+        answer_vehicle_chain_good(csms, timeout=2)
+        req = build_auth_req20(session_id, setup.pnc_as_res.gen_challenge, leaf, subs, key)
+        if corrupt:
+            value = req.header.signature.signature_value.value
+            req.header.signature.signature_value.value = bytes([value[0] ^ 1]) + value[1:]
+        else:
+            req.header.signature = None
+        res = poll_auth20(tls, session_id, req)
+        check(f"PnC authorization rejects a {description} signature [V2G20-2564]",
+              res.response_code == "WARNING_CertificateValidationError", res.response_code)
+        tls.close()
+        time.sleep(1)
 
     # 3. wrong GenChallenge
     tls, session_id, setup = open_session20(args.charger, iface)
@@ -504,9 +607,46 @@ def run_iso20(args, iface, csms, workdir, check):
     res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
     check("CertificateInstallationRes Ongoing while the CSMS is pending [V2G20-2583]",
           res.evse_processing == "Ongoing", res.evse_processing)
-    # the CSMS reports a failure, the EV re-sends and gets the final response
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_install_res20(session_id),
+                          "remainingContracts": 7})
+    time.sleep(1)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    check("ISO-20 CertificateInstallationRes from the CSMS reaches the EV [M01]",
+          res.response_code == "OK" and res.evse_processing == "Finished", res.response_code)
+    check("ISO-20 CertificateInstallationRes carries remainingContracts [M01.FR.05]",
+          res.remaining_contract_cert_chains == 7, res.remaining_contract_cert_chains)
+    tls.close()
+    time.sleep(1)
+
+    for remaining, expected in ((-17, 0), (300, 255)):
+        tls, session_id, setup = open_session20(args.charger, iface)
+        answer_vehicle_chain_good(csms, timeout=2)
+        cin = build_cert_install_req20(session_id)
+        send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+        ev_req, ev_msg = expect_ev_certificate(csms)
+        recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+        csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_install_res20(session_id),
+                              "remainingContracts": remaining})
+        time.sleep(1)
+        send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+        res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+        check(f"ISO-20 remainingContracts {remaining} clamps to {expected} [M01.FR.05]",
+              res.remaining_contract_cert_chains == expected, res.remaining_contract_cert_chains)
+        tls.close()
+        time.sleep(1)
+
+    run_iso20_malformed_responses(args, iface, csms, check)
+
+    # A failed OCPP result must produce a final ISO response.
+    tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
+    cin = build_cert_install_req20(session_id)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
     csms.respond(ev_msg, {"status": "Failed", "exiResponse": ""})
-    time.sleep(2)
+    time.sleep(1)
     send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
     res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
     check("CertificateInstallationRes fails after a CSMS failure [M01]",
@@ -537,6 +677,141 @@ def build_cert_install_req20(session_id):
         oem_prov_cert_chain=oem_chain,
         root_cert_id_list=RootCertificateIDList(root_cert_ids=[root_id]),
         max_contract_cert_chains=3, prioritized_emaids=None)
+
+
+def build_cert_install_res20(session_id):
+    import time as _t
+    from iso15118.shared.exi_codec import EXI
+    from iso15118.shared.messages.enums import Namespace
+    from iso15118.shared.messages.iso15118_20.common_messages import (
+        CertificateChain, CertificateInstallationRes, ContractCertificateChain,
+        ECDHCurve, SignedInstallationData)
+    from iso15118.shared.messages.iso15118_20.common_types import MessageHeader
+
+    certs = CERTS / "iso20" / "certs"
+    cps_chain = CertificateChain(
+        certificate=(certs / "cpsLeafCert.der").read_bytes(),
+        sub_certificates={"Certificate": [
+            (certs / "cpsSubCA2Cert.der").read_bytes(),
+            (certs / "cpsSubCA1Cert.der").read_bytes(),
+        ]})
+    contract_chain = ContractCertificateChain(
+        certificate=(certs / "contractLeafCert.der").read_bytes(),
+        sub_certificates={"Certificate": [
+            (certs / "moSubCA2Cert.der").read_bytes(),
+            (certs / "moSubCA1Cert.der").read_bytes(),
+        ]})
+    data = SignedInstallationData(
+        id="id1", contract_cert_chain=contract_chain, ecdh_curve=ECDHCurve.secp_521,
+        dh_public_key=b"\x04", secp521_encrypted_private_key=bytes(94))
+    res = CertificateInstallationRes(
+        header=MessageHeader(session_id=session_id, timestamp=int(_t.time())),
+        response_code="OK", evse_processing="Finished", cps_certificate_chain=cps_chain,
+        signed_installation_data=data, remaining_contract_cert_chains=0)
+    return base64.b64encode(EXI().to_exi(res, Namespace.ISO_V20_COMMON_MSG)).decode()
+
+
+def run_iso20_malformed_responses(args, iface, csms, check):
+    from iso15118.shared.exi_codec import EXI
+    from iso15118.shared.messages.enums import Namespace
+
+    def submit(exi_response):
+        tls, session_id, setup = open_session20(args.charger, iface)
+        answer_vehicle_chain_good(csms, timeout=2)
+        cin = build_cert_install_req20(session_id)
+        send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+        ev_req, ev_msg = expect_ev_certificate(csms)
+        recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+        csms.respond(ev_msg, {"status": "Accepted", "exiResponse": exi_response,
+                              "remainingContracts": 1})
+        time.sleep(1)
+        send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+        return tls, recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+
+    tls, res = submit(base64.b64encode(b"\x00").decode())
+    check("ISO-20 rejects an accepted OCPP response with malformed EXI",
+          res.response_code.startswith(("WARNING", "FAILED")), res.response_code)
+    tls.close()
+    time.sleep(1)
+
+    # A schema-valid request is valid EXI but the wrong response message.
+    tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
+    cin = build_cert_install_req20(session_id)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": ev_req["exiRequest"],
+                          "remainingContracts": 1})
+    time.sleep(1)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    check("ISO-20 rejects an accepted OCPP response with the wrong EXI message",
+          res.response_code.startswith(("WARNING", "FAILED")), res.response_code)
+    tls.close()
+    time.sleep(1)
+
+    # A decoded malformed response must not poison the next session.
+    tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
+    cin = build_cert_install_req20(session_id)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_install_res20(session_id),
+                          "remainingContracts": 1})
+    time.sleep(1)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    check("ISO-20 certificate installation recovers in the next session",
+          res.response_code == "OK" and res.remaining_contract_cert_chains == 1, res.response_code)
+    tls.close()
+    time.sleep(1)
+
+    for description, exi_response in (("invalid base64", "%%%"), ("empty", "")):
+        tls, res = submit(exi_response)
+        check(f"ISO-20 rejects an accepted OCPP response with {description}",
+              res.response_code.startswith(("WARNING", "FAILED")), res.response_code)
+        tls.close()
+        time.sleep(1)
+
+        # Base64 failures must reset the OCPP operation for a fresh ISO-20 session.
+        tls, session_id, setup = open_session20(args.charger, iface)
+        answer_vehicle_chain_good(csms, timeout=2)
+        cin = build_cert_install_req20(session_id)
+        send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+        res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+        recovered = res.evse_processing == "Ongoing"
+        if recovered:
+            ev_req, ev_msg = expect_ev_certificate(csms)
+            csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_install_res20(session_id),
+                                  "remainingContracts": 1})
+            time.sleep(1)
+            send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+            res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+            recovered = res.response_code == "OK"
+        check(f"ISO-20 recovers after {description} in the next session", recovered, res.response_code)
+        tls.close()
+        time.sleep(1)
+        if not recovered:
+            clear_ev_cert_state_via_iso2(args, iface, csms)
+
+
+def clear_ev_cert_state_via_iso2(args, iface, csms):
+    """Allow later cases to run after an ISO-20 Failed state recovery defect."""
+    from iso15118.shared.exi_codec import EXI
+    from iso15118.shared.messages.enums import Namespace
+    from iso15118.shared.messages.iso15118_2.body import Body
+
+    cin = build_cert_install_req2()
+    tls = open_cert_session2(args, iface)
+    msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
+    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_res2(ev_req["exiRequest"])})
+    recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
+    tls.close()
+    time.sleep(1)
 
 
 def run_iso2(args, iface, csms, workdir, check):
@@ -591,6 +866,21 @@ def run_iso2(args, iface, csms, workdir, check):
     tls.close()
     time.sleep(1)
 
+    for description, corrupt in (("missing", False), ("corrupt", True)):
+        tls, gen_challenge = open_pnc_session2(args, iface, leaf, subs)
+        auth, sig = build_auth_req2(gen_challenge, key)
+        if corrupt:
+            value = sig.signature_value.value
+            sig.signature_value.value = bytes([value[0] ^ 1]) + value[1:]
+        else:
+            sig = None
+        res = exchange2_body(tls, Body(AuthorizationReq=auth), signature=sig)
+        check(f"ISO-2 AuthorizationReq rejects a {description} signature [V2G2-461]",
+              res.body.authorization_res.response_code == "FAILED_SignatureError",
+              res.body.authorization_res.response_code)
+        tls.close()
+        time.sleep(1)
+
     # forged chain fails PaymentDetails
     tls = connect(args.charger, iface, tls13=False)
     sap(tls, ISO2)
@@ -612,7 +902,32 @@ def run_iso2(args, iface, csms, workdir, check):
     time.sleep(1)
 
     # CertificateInstallationReq forwarded, CSMS answers with a real -2 response
-    run_iso2_cert_install(args, iface, csms, workdir, check)
+    run_iso2_cert_install(args, iface, csms, check)
+
+
+def open_pnc_session2(args, iface, leaf, subs):
+    from iso15118.shared.messages.iso15118_2.body import (
+        Body, PaymentDetailsReq, PaymentServiceSelectionReq, SelectedServiceList,
+        ServiceDiscoveryReq, SessionSetupReq as SS2)
+    from iso15118.shared.messages.datatypes import SelectedService
+    from iso15118.shared.messages.enums import AuthEnum as AuthEnum2
+    from iso15118.shared.messages.iso15118_2.datatypes import (
+        CertificateChain as CC2, SubCertificates as SC2)
+
+    tls = connect(args.charger, iface, tls13=False)
+    sap(tls, ISO2)
+    wrap_v2g2.session_id = "00"
+    res = exchange2_body(tls, Body(SessionSetupReq=SS2(evcc_id="0A1B2C3D4E5F")))
+    wrap_v2g2.session_id = res.header.session_id
+    exchange2_body(tls, Body(ServiceDiscoveryReq=ServiceDiscoveryReq()))
+    exchange2_body(tls, Body(PaymentServiceSelectionReq=PaymentServiceSelectionReq(
+        selected_auth_option=AuthEnum2.PNC_V2,
+        selected_service_list=SelectedServiceList(selected_service=[SelectedService(service_id=1)]))))
+    chain = CC2(certificate=leaf, sub_certificates=SC2(certificates=subs))
+    res = exchange2_body(tls, Body(PaymentDetailsReq=PaymentDetailsReq(
+        emaid="DEWRP123456789A", cert_chain=chain)))
+    assert res.body.payment_details_res.response_code == "OK", res.body.payment_details_res
+    return tls, res.body.payment_details_res.gen_challenge
 
 
 def exchange2_body(tls, body, signature=None):
@@ -623,15 +938,77 @@ def exchange2_body(tls, body, signature=None):
     return recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
 
 
-def run_iso2_cert_install(args, iface, csms, workdir, check):
-    from iso15118.shared.messages.iso15118_2.body import (
-        Body, ServiceDiscoveryReq, PaymentServiceSelectionReq, CertificateInstallationReq,
-        SelectedServiceList, SessionSetupReq as SS2)
-    from iso15118.shared.messages.datatypes import SelectedService
-    from iso15118.shared.messages.enums import AuthEnum as AuthEnum2, Namespace
+def build_cert_install_req2():
+    from iso15118.shared.messages.iso15118_2.body import CertificateInstallationReq
+    from iso15118.shared.messages.iso15118_2.datatypes import RootCertificateIDList
+    from iso15118.shared.messages.xmldsig import X509IssuerSerial
+
+    root_id = X509IssuerSerial(
+        x509_issuer_name="CN=V2GRootCA,O=WARP,C=DE,DC=V2G", x509_serial_number=12345)
+    return CertificateInstallationReq(
+        id="id1", oem_provisioning_cert=(CERTS / "iso2" / "certs" / "oemLeafCert.der").read_bytes(),
+        list_of_root_cert_ids=RootCertificateIDList(x509_issuer_serials=[root_id]))
+
+
+def run_iso2_cert_install(args, iface, csms, check):
+    from iso15118.shared.messages.iso15118_2.body import Body, CertificateUpdateReq
+    from iso15118.shared.messages.enums import Namespace
     from iso15118.shared.messages.iso15118_2.datatypes import RootCertificateIDList
     from iso15118.shared.messages.xmldsig import X509IssuerSerial
     from iso15118.shared.exi_codec import EXI
+
+    certs = CERTS / "iso2" / "certs"
+    from iso15118.shared.messages.iso15118_2.datatypes import SubCertificates as SC2
+    root_id = X509IssuerSerial(x509_issuer_name="CN=V2GRootCA,O=WARP,C=DE,DC=V2G", x509_serial_number=12345)
+    cin = build_cert_install_req2()
+    tls = open_cert_session2(args, iface)
+    msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
+    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    check("ISO-2 CertificateInstallationReq forwarded, no maximumContractCertificateChains [M01.FR.02]",
+          ev_req.get("action") == "Install" and "maximumContractCertificateChains" not in ev_req, ev_req.get("action"))
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_res2(ev_req["exiRequest"])})
+    res = recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
+    check("ISO-2 CertificateInstallationRes forwarded to the EV [M01]",
+          res.body.certificate_installation_res is not None
+          and res.body.certificate_installation_res.response_code == "OK",
+          res.body.certificate_installation_res.response_code if res.body.certificate_installation_res else "none")
+    tls.close()
+    time.sleep(1)
+
+    leaf, subs, key = contract_chain_objs(iso20=False)
+    contract_chain = SC2(certificates=subs)
+    from iso15118.shared.messages.iso15118_2.datatypes import CertificateChain as CC2, EMAID
+    update = CertificateUpdateReq(
+        id="id1", contract_cert_chain=CC2(certificate=leaf, sub_certificates=contract_chain),
+        emaid=EMAID(id="id2", value="DEWRP123456789A"),
+        list_of_root_cert_ids=RootCertificateIDList(x509_issuer_serials=[root_id]))
+    tls = open_cert_session2(args, iface)
+    msg = wrap_v2g2(Body(CertificateUpdateReq=update))
+    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    check("ISO-2 CertificateUpdateReq forwarded with action Update [M02]",
+          ev_req.get("action") == "Update" and "maximumContractCertificateChains" not in ev_req,
+          ev_req.get("action"))
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_res2(
+        ev_req["exiRequest"], update=True, session_id=wrap_v2g2.session_id)})
+    res = recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
+    check("ISO-2 CertificateUpdateRes forwarded to the EV [M02]",
+          res.body.certificate_update_res is not None
+          and res.body.certificate_update_res.response_code == "OK",
+          res.body.certificate_update_res.response_code if res.body.certificate_update_res else "none")
+    tls.close()
+    time.sleep(1)
+
+    run_iso2_malformed_responses(args, iface, csms, cin, check)
+
+
+def open_cert_session2(args, iface):
+    from iso15118.shared.messages.iso15118_2.body import (
+        Body, PaymentServiceSelectionReq, SelectedServiceList, ServiceDiscoveryReq,
+        SessionSetupReq as SS2)
+    from iso15118.shared.messages.datatypes import SelectedService
+    from iso15118.shared.messages.enums import AuthEnum as AuthEnum2
 
     tls = connect(args.charger, iface, tls13=False)
     sap(tls, ISO2)
@@ -643,44 +1020,20 @@ def run_iso2_cert_install(args, iface, csms, workdir, check):
         selected_auth_option=AuthEnum2.PNC_V2,
         selected_service_list=SelectedServiceList(selected_service=[
             SelectedService(service_id=1), SelectedService(service_id=2)]))))
-
-    certs = CERTS / "iso2" / "certs"
-    oem_leaf = (certs / "oemLeafCert.der").read_bytes()
-    oem_sub2 = (certs / "oemSubCA2Cert.der").read_bytes()
-    oem_sub1 = (certs / "oemSubCA1Cert.der").read_bytes()
-    from iso15118.shared.messages.iso15118_2.datatypes import SubCertificates as SC2
-    root_id = X509IssuerSerial(x509_issuer_name="CN=V2GRootCA,O=WARP,C=DE,DC=V2G", x509_serial_number=12345)
-    cin = CertificateInstallationReq(
-        id="id1", oem_provisioning_cert=oem_leaf,
-        list_of_root_cert_ids=RootCertificateIDList(x509_issuer_serials=[root_id]))
-    # forward raw request bytes without a real signature, the charger just relays them
-    msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
-    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
-
-    ev_req, ev_msg = expect_ev_certificate(csms)
-    check("ISO-2 CertificateInstallationReq forwarded, no maximumContractCertificateChains [M01.FR.02]",
-          ev_req.get("action") == "Install" and "maximumContractCertificateChains" not in ev_req, ev_req.get("action"))
-    exi_response = build_cert_install_res2(ev_req["exiRequest"])
-    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": exi_response})
-    res = recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
-    check("ISO-2 CertificateInstallationRes forwarded to the EV [M01]",
-          res.body.certificate_installation_res is not None
-          and res.body.certificate_installation_res.response_code == "OK",
-          res.body.certificate_installation_res.response_code if res.body.certificate_installation_res else "none")
-    tls.close()
+    return tls
 
 
-def build_cert_install_res2(exi_request_b64):
-    """Build a real -2 CertificateInstallationRes signed by the dev CPS chain.
+def build_cert_res2(exi_request_b64, update=False, session_id=None):
+    """Build a real -2 certificate response signed by the dev CPS chain.
 
     Replicates the EcoG SECC backend mock, whose own isinstance guard never
     matches a full V2G message. The response is a genuine, signed
-    CertificateInstallationRes the charger relays to the EV verbatim.
+    CertificateInstallationRes or CertificateUpdateRes the charger relays to the EV verbatim.
     """
-    import base64
     from iso15118.shared.exi_codec import EXI
     from iso15118.shared.messages.enums import Namespace
-    from iso15118.shared.messages.iso15118_2.body import Body, CertificateInstallationRes
+    from iso15118.shared.messages.iso15118_2.body import (
+        Body, CertificateInstallationRes, CertificateUpdateRes)
     from iso15118.shared.messages.iso15118_2.msgdef import V2GMessage as V2GMessageV2
     from iso15118.shared.messages.iso15118_2.header import MessageHeader as MessageHeaderV2
     from iso15118.shared.messages.iso15118_2.datatypes import (
@@ -691,7 +1044,9 @@ def build_cert_install_res2(exi_request_b64):
         CertPath, KeyPath, KeyPasswordPath, KeyEncoding)
 
     setup_pki_symlinks()
-    req_msg = EXI().from_exi(base64.b64decode(exi_request_b64), Namespace.ISO_V2_MSG_DEF)
+    if session_id is None:
+        req_msg = EXI().from_exi(base64.b64decode(exi_request_b64), Namespace.ISO_V2_MSG_DEF)
+        session_id = req_msg.header.session_id
 
     dh_pub_key, enc_priv = encrypt_priv_key(
         oem_prov_cert=load_cert(CertPath.OEM_LEAF_DER),
@@ -708,9 +1063,11 @@ def build_cert_install_res2(exi_request_b64):
                     sub_certificates=SC2(certificates=[load_cert(CertPath.CPS_SUB_CA2_DER),
                                                        load_cert(CertPath.CPS_SUB_CA1_DER)]))
 
-    res = CertificateInstallationRes(
+    response_type = CertificateUpdateRes if update else CertificateInstallationRes
+    res = response_type(
         response_code=RC2.OK, cps_cert_chain=cps_chain, contract_cert_chain=contract_chain,
-        encrypted_private_key=enc_key, dh_public_key=dh, emaid=emaid)
+        encrypted_private_key=enc_key, dh_public_key=dh, emaid=emaid,
+        **({"retry_counter": 0} if update else {}))
 
     elements = [
         (contract_chain.id, EXI().to_exi(contract_chain, Namespace.ISO_V2_MSG_DEF)),
@@ -721,10 +1078,69 @@ def build_cert_install_res2(exi_request_b64):
     signature = create_signature(elements, load_priv_key(
         KeyPath.CPS_LEAF_PEM, KeyEncoding.PEM, KeyPasswordPath.CPS_LEAF_KEY_PASSWORD))
 
-    header = MessageHeaderV2(session_id=req_msg.header.session_id, signature=signature)
-    body = Body.parse_obj({"CertificateInstallationRes": res.dict()})
+    header = MessageHeaderV2(session_id=session_id, signature=signature)
+    response_name = "CertificateUpdateRes" if update else "CertificateInstallationRes"
+    body = Body.parse_obj({response_name: res.dict()})
     exi = EXI().to_exi(V2GMessageV2(header=header, body=body), Namespace.ISO_V2_MSG_DEF)
     return base64.b64encode(exi).decode()
+
+
+def run_iso2_malformed_responses(args, iface, csms, cin, check):
+    from iso15118.shared.exi_codec import EXI
+    from iso15118.shared.messages.enums import Namespace
+    from iso15118.shared.messages.iso15118_2.body import Body
+
+    def check_recovery(description):
+        tls = open_cert_session2(args, iface)
+        msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
+        send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+        ev_req, ev_msg = expect_ev_certificate(csms)
+        csms.respond(ev_msg, {"status": "Accepted", "exiResponse": build_cert_res2(ev_req["exiRequest"])})
+        res = recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
+        cert_res = res.body.certificate_installation_res
+        check(f"ISO-2 recovers after {description} in the next session",
+              cert_res is not None and cert_res.response_code == "OK",
+              cert_res.response_code if cert_res else "none")
+        tls.close()
+        time.sleep(1)
+
+    cases = (("invalid base64", "%%%"), ("empty", ""), ("malformed EXI", base64.b64encode(b"\x00").decode()))
+    for description, exi_response in cases:
+        tls = open_cert_session2(args, iface)
+        msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
+        send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+        ev_req, ev_msg = expect_ev_certificate(csms)
+        csms.respond(ev_msg, {"status": "Accepted", "exiResponse": exi_response})
+        try:
+            res = recv_exi_json(tls, Namespace.ISO_V2_MSG_DEF)
+            cert_res = res["V2G_Message"]["Body"].get("CertificateInstallationRes")
+            response_code = None if cert_res is None else cert_res.get("ResponseCode")
+            rejected = response_code == "FAILED_NoCertificateAvailable"
+            detail = response_code if cert_res is not None else "wrong response message"
+        except Exception as e:
+            rejected, detail = False, e
+        check(f"ISO-2 rejects an accepted OCPP response with {description}", rejected, detail)
+        tls.close()
+        time.sleep(1)
+        check_recovery(description)
+
+    tls = open_cert_session2(args, iface)
+    msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
+    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+    ev_req, ev_msg = expect_ev_certificate(csms)
+    csms.respond(ev_msg, {"status": "Accepted", "exiResponse": ev_req["exiRequest"]})
+    try:
+        res = recv_exi_json(tls, Namespace.ISO_V2_MSG_DEF)
+        cert_res = res["V2G_Message"]["Body"].get("CertificateInstallationRes")
+        response_code = None if cert_res is None else cert_res.get("ResponseCode")
+        rejected = response_code == "FAILED_NoCertificateAvailable"
+        detail = response_code if cert_res is not None else "wrong response message"
+    except Exception as e:
+        rejected, detail = False, e
+    check("ISO-2 rejects an accepted OCPP response with the wrong EXI message", rejected, detail)
+    tls.close()
+    time.sleep(1)
+    check_recovery("the wrong EXI message")
 
 
 def setup_pki_symlinks():
