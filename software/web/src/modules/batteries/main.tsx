@@ -210,16 +210,19 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         return [
                             <FormRow label={__("batteries.content.edit_rule_desc")}>
                                 <InputText
+                                    required
                                     maxLength={32}
                                     value={this.state.edit_rule_config.desc}
                                     onValue={(v) => {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, desc: v}});
-                                    }} />
+                                    }}
+                                />
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_time")}>
                                 <div class="row g-0">
                                     <div class="col-md-4 mb-1 mb-md-0">
                                         <InputSelect
+                                            required
                                             placeholder={__("select")}
                                             items={[
                                                 [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
@@ -310,6 +313,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_th: v}});
                                     }}>
                                     <InputSelect
+                                        required
                                         style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
@@ -341,6 +345,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, price_th: v}});
                                     }}>
                                     <InputSelect
+                                        required
                                         style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
@@ -371,6 +376,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_th: v}});
                                     }}>
                                     <InputSelect
+                                        required
                                         style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
@@ -391,6 +397,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_schedule")}>
                                 <InputSelect
+                                    required
                                     placeholder={__("select")}
                                     items={[
                                         [ScheduleRuleCondition.Ignore.toString(),       __("batteries.content.condition_ignore")],
@@ -413,6 +420,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_fast_chg")}>
                                 <InputSelect
+                                    required
                                     placeholder={__("select")}
                                     items={[
                                         [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
@@ -519,16 +527,19 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                 return [
                     <FormRow label={__("batteries.content.add_rule_desc")}>
                         <InputText
+                            required
                             maxLength={32}
                             value={this.state.add_rule_config.desc}
                             onValue={(v) => {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, desc: v}});
-                            }} />
+                            }}
+                        />
                     </FormRow>,
                     <FormRow label={__("batteries.content.add_rule_time")}>
                         <div class="row g-0">
                             <div class="col-md-4 mb-1 mb-md-0">
                                 <InputSelect
+                                    required
                                     placeholder={__("select")}
                                     items={[
                                         [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
@@ -619,6 +630,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, soc_th: v}});
                             }}>
                             <InputSelect
+                                required
                                 style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
@@ -650,6 +662,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, price_th: v}});
                             }}>
                             <InputSelect
+                                required
                                 style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
@@ -680,6 +693,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, forecast_th: v}});
                             }}>
                             <InputSelect
+                                required
                                 style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
@@ -700,6 +714,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     </FormRow>,
                     <FormRow label={__("batteries.content.add_rule_schedule")}>
                         <InputSelect
+                            required
                             placeholder={__("select")}
                             items={[
                                 [ScheduleRuleCondition.Ignore.toString(),       __("batteries.content.condition_ignore")],
@@ -722,6 +737,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     </FormRow>,
                     <FormRow label={__("batteries.content.add_rule_fast_chg")}>
                         <InputSelect
+                            required
                             placeholder={__("select")}
                             items={[
                                 [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
