@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""M07 vehicle certificate chain OCSP gating on a real charger.
+"""M07 vehicle certificate chain OCSP gating
 
 After a TLS 1.3 mutual auth handshake the charger requests the OCSP
 status of the presented vehicle (OEM) certificate chain via OCPP
@@ -12,8 +12,7 @@ the result:
   5. security: a forged OEM chain with matching subject names but different keys is rejected by the handshake (the chain must anchor
      to the trust store by key, not by name)
 
-Run this in evsim venv:
-../../../../../.venv-evsim/bin/python local_test_vehicle_chain.py --charger <ip>
+Invoked by certificates.py through the firmware test runner.
 """
 
 import argparse
@@ -23,15 +22,15 @@ import ssl
 import struct
 import sys
 import tempfile
+import shutil
 import time
 from pathlib import Path
 
-import common
-from local_test_ocpp_ctrlr import Csms
-from local_test_ocsp_gating import (CERTS, provision_chain, ocsp_response_b64, run)
+import _common as common
+from _common import CSMSSim as Csms
+from _ocsp_gating import (CERTS, provision_chain, ocsp_response_b64, run)
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-sys.path.insert(0, str(SCRIPT_DIR / ".." / "evsim" / "iso15118"))
 
 ISO20_AC = {"ProtocolNamespace": "urn:iso:std:iso:15118:-20:AC", "VersionNumberMajor": 1,
             "VersionNumberMinor": 0, "SchemaID": 2, "Priority": 1}
@@ -278,7 +277,7 @@ def main():
         common.api_put(args.charger, "ocpp/reset", None)
         test_config = dict(saved_config)
         test_config.update({"enable": True, "protocol": 1, "url": f"ws://{local_ip}:{args.port}",
-                            "enable_auth": False, "pass": ""})
+                            "enable_auth": False})
         common.api_put(args.charger, "ocpp/config_update", test_config)
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
@@ -388,7 +387,9 @@ def main():
             common.api_put(args.charger, "ocpp/config_update", saved_config)
         except Exception as e:
             print(f"cleanup failed, restore the ocpp config manually: {e}")
+            failures += 1
         csms.stop()
+        shutil.rmtree(workdir, ignore_errors=True)
 
     print("PASS" if failures == 0 else f"FAIL ({failures} failures)")
     sys.exit(0 if failures == 0 else 1)
