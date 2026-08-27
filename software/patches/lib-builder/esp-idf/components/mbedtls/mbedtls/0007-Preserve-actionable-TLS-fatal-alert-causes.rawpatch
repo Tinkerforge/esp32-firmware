@@ -1,0 +1,45 @@
+diff --git a/include/mbedtls/ssl.h b/include/mbedtls/ssl.h
+--- a/include/mbedtls/ssl.h
++++ b/include/mbedtls/ssl.h
+@@ -78,6 +78,10 @@
+ #define MBEDTLS_ERR_SSL_UNRECOGNIZED_NAME                 -0x7800
+ /** The peer notified us that the connection is going to be closed. */
+ #define MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY                 -0x7880
++/** A protocol_version fatal alert was received from our peer. */
++#define MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION            -0x7900
++/** A handshake_failure or insufficient_security fatal alert was received from our peer. */
++#define MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE                -0x7980
+ /* Error space gap */
+ /* Error space gap */
+ /** Processing of the Certificate handshake message failed. */
+diff --git a/library/error.c b/library/error.c
+--- a/library/error.c
++++ b/library/error.c
+@@ -411,6 +411,10 @@ const char *mbedtls_high_level_strerr(int error_code)
+             return( "SSL - An unexpected message was received from our peer" );
+         case -(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE):
+             return( "SSL - A fatal alert message was received from our peer" );
++        case -(MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION):
++            return( "SSL - A protocol_version fatal alert was received from our peer" );
++        case -(MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE):
++            return( "SSL - A handshake_failure or insufficient_security fatal alert was received from our peer" );
+         case -(MBEDTLS_ERR_SSL_UNRECOGNIZED_NAME):
+             return( "SSL - No server could be identified matching the client's SNI" );
+         case -(MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY):
+diff --git a/library/ssl_msg.c b/library/ssl_msg.c
+--- a/library/ssl_msg.c
++++ b/library/ssl_msg.c
+@@ -5280,6 +5280,13 @@ int mbedtls_ssl_handle_message_type(mbedtls_ssl_context *ssl)
+         if (ssl->in_msg[0] == MBEDTLS_SSL_ALERT_LEVEL_FATAL) {
+             MBEDTLS_SSL_DEBUG_MSG(1, ("is a fatal alert message (msg %d)",
+                                       ssl->in_msg[1]));
++            if (ssl->in_msg[1] == MBEDTLS_SSL_ALERT_MSG_PROTOCOL_VERSION) {
++                return MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION;
++            }
++            if (ssl->in_msg[1] == MBEDTLS_SSL_ALERT_MSG_HANDSHAKE_FAILURE ||
++                ssl->in_msg[1] == MBEDTLS_SSL_ALERT_MSG_INSUFFICIENT_SECURITY) {
++                return MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE;
++            }
+             return MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE;
+         }
+ 

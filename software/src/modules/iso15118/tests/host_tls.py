@@ -35,5 +35,9 @@ def test_ocsp_stapling_patch(tc: TestContext):
     run(tc, "_ocsp_stapling_patch.sh", 600, env)
 
 
+def test_tls_alert_classification_patch(tc: TestContext):
+    run(tc, "_tls_alert_classification.sh", 600)
+
+
 if __name__ == "__main__":
     run_testsuite(locals())
