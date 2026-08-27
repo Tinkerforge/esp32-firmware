@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import contextlib
 import json
 import os
@@ -313,24 +314,50 @@ class EVTestClient:
 
 
 class CSMSSim:
-    def __init__(self, port: int = 0, interactive=()):
+    def __init__(
+        self,
+        port: int = 0,
+        interactive=(),
+        *,
+        certfile: str | None = None,
+        keyfile: str | None = None,
+        expected_basic_auth: tuple[str, str] | None = None,
+    ):
         from websockets.sync.server import serve
 
         self.interactive = set(interactive)
+        self.expected_basic_auth = expected_basic_auth
         self.requests = queue.Queue()
         self.pending_requests = []
         self.responses = queue.Queue()
         self.connected = threading.Event()
+        self.authorization = None
         self.ws = None
+        ssl_context = None
+        if certfile is not None:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_cert_chain(certfile, keyfile)
         self.server = serve(
             self._handler,
             "0.0.0.0",
             port,
+            ssl=ssl_context,
+            process_request=self._process_request if expected_basic_auth is not None else None,
             select_subprotocol=lambda connection, protocols: "ocpp2.1",
         )
         self.port = self.server.socket.getsockname()[1]
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
+
+    def _process_request(self, connection, request):
+        from websockets.http11 import Response
+
+        self.authorization = request.headers.get("Authorization")
+        user, password = self.expected_basic_auth
+        expected = "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
+        if self.authorization == expected:
+            return None
+        return Response(401, "Unauthorized", request.headers, b"")
 
     def _handler(self, ws):
         self.ws = ws
@@ -400,6 +427,62 @@ class CSMSSim:
     def stop(self):
         self.server.shutdown()
         self.thread.join(timeout=5)
+
+
+class LocalCSMSTls:
+    def __init__(self, charger: str, server_ip: str):
+        self.charger = charger
+        self.cert_id = None
+        self._tmpdir = tempfile.TemporaryDirectory(prefix="iso15118-csms-tls-")
+        directory = Path(self._tmpdir.name)
+        ca_key = directory / "ca-key.pem"
+        ca_cert = directory / "ca.pem"
+        server_csr = directory / "server.csr"
+        self.certfile = directory / "server.pem"
+        self.keyfile = directory / "server-key.pem"
+        ext = directory / "server-ext.cnf"
+
+        try:
+            subprocess.run([
+                "openssl", "req", "-x509", "-newkey", "ec",
+                "-pkeyopt", "ec_paramgen_curve:P-256", "-nodes",
+                "-keyout", ca_key, "-out", ca_cert, "-days", "365",
+                "-subj", "/CN=ISO 15118 test CSMS CA",
+                "-addext", "basicConstraints=critical,CA:TRUE",
+            ], check=True, capture_output=True)
+            subprocess.run([
+                "openssl", "req", "-newkey", "ec",
+                "-pkeyopt", "ec_paramgen_curve:P-256", "-nodes",
+                "-keyout", self.keyfile, "-out", server_csr,
+                "-subj", "/CN=iso15118-test-csms",
+            ], check=True, capture_output=True)
+            ext.write_text(f"subjectAltName=IP:{server_ip}\n")
+            subprocess.run([
+                "openssl", "x509", "-req", "-in", server_csr,
+                "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial",
+                "-out", self.certfile, "-days", "365", "-sha256", "-extfile", ext,
+            ], check=True, capture_output=True)
+
+            used = {cert["id"] for cert in api_get(charger, "certs/state")["certs"]}
+            self.cert_id = next((candidate for candidate in range(7, -1, -1) if candidate not in used), None)
+            if self.cert_id is None:
+                raise RuntimeError("ISO 15118 certificate tests need one free TLS certificate slot")
+            api_put(charger, "certs/add", {
+                "id": self.cert_id,
+                "name": "ISO 15118 test CSMS",
+                "cert": ca_cert.read_text(),
+            })
+        except Exception:
+            self.close()
+            raise
+
+    def close(self):
+        if self.cert_id is not None:
+            api_put(self.charger, "certs/remove", {"id": self.cert_id})
+            self.cert_id = None
+        if self._tmpdir is not None:
+            self._tmpdir.cleanup()
+            self._tmpdir = None
 
 
 class EVSim:
