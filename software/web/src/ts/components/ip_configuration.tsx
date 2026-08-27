@@ -44,7 +44,7 @@ interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
     hideSubnet?: boolean
     hideGateway?: boolean
     hideDns2?: boolean
-    value: Readonly<IPConfig>
+    value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
 
