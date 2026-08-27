@@ -148,25 +148,25 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                         subnet_label={__("wireguard.content.internal_subnet")}
                         gateway_label={__("wireguard.content.internal_gateway")}
                         forbidNetwork={[
-                            {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
-                        ].concat(
-                            !API.hasModule("ethernet") || API.get_unchecked("ethernet/config").ip == "0.0.0.0" ? [] :
-                            [{ip: util.parseIP(API.get_unchecked("ethernet/config").ip),
-                            subnet: util.parseIP(API.get_unchecked("ethernet/config").subnet),
-                            name: __("component.ip_configuration.ethernet")}]
-                        ).concat(
-                            !API.hasModule("wifi") || API.get_unchecked("wifi/sta_config").ip == "0.0.0.0" ? [] :
-                            [{ip: util.parseIP(API.get_unchecked("wifi/sta_config").ip),
-                            subnet: util.parseIP(API.get_unchecked("wifi/sta_config").subnet),
-                            name: __("component.ip_configuration.wifi_sta")}]
-                        ).concat(
-                            !API.hasModule("wifi") ? [] :
-                            [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
-                            subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
-                            name: __("component.ip_configuration.wifi_ap")}]
-                        )
-                    }
-                        />
+                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                            ].concat(
+                                !API.hasModule("ethernet") || API.get_unchecked("ethernet/config").ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("ethernet/config").ip),
+                                subnet: util.parseIP(API.get_unchecked("ethernet/config").subnet),
+                                name: __("component.ip_configuration.ethernet")}]
+                            ).concat(
+                                !API.hasModule("wifi") || API.get_unchecked("wifi/sta_config").ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wifi/sta_config").ip),
+                                subnet: util.parseIP(API.get_unchecked("wifi/sta_config").subnet),
+                                name: __("component.ip_configuration.wifi_sta")}]
+                            ).concat(
+                                !API.hasModule("wifi") ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
+                                subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
+                                name: __("component.ip_configuration.wifi_ap")}]
+                            )
+                        }
+                    />
 
                     <FormRow label={__("wireguard.content.remote_host")}>
                         <InputHost required={state.enable}
@@ -204,18 +204,19 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                        value={state.private_key}
                                        onValue={(val) => {
                                             let publicKey = "";
-                                            console.log(val);
-                                            if (val !== null && val !== "") {
+
+                                            if (val === null) {
+                                                publicKey = API.get("wireguard/state").public_key;
+                                            } else if (val !== "") {
                                                 publicKey = (window as any).wireguard.generatePublicKey(val);
                                                 if (publicKey === null) {
                                                     publicKey = __("wireguard.content.invalid_private_key");
                                                 }
-                                            } if (val === null) {
-                                                publicKey = API.get("wireguard/state").public_key;
                                             }
+
                                             this.setState({publicKey: publicKey, private_key: val});
                                        }}
-                                       />
+                        />
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.wireguard_public_key")}>
