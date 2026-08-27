@@ -1,7 +1,7 @@
 #!/bin/bash
 # Host only test for the mbedTLS TLS 1.3 OCSP stapling patch
 # (patches/lib-builder 0006). Applies the patch to a fresh mbedTLS
-# 3.6.6 checkout, builds the library, runs stapling_server.c.inc with
+# 3.6.6 checkout, builds the library, runs _stapling_server.c with
 # the -20 dev PKI and probes with openssl s_client:
 #   1. client with -status gets the stapled response, Cert Status good, chain verified
 #   2. client without -status gets no extension and the hook stays uncalled
@@ -9,10 +9,10 @@
 set -eu
 
 cd "$(dirname "$0")"
-BUILD=/tmp/opencode/local_tests/stapling
-PATCH="$(realpath ../../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/0006-Add-server-side-OCSP-stapling-for-TLS-1.3-via-weak-c.patch)"
-CERTS="$(realpath ../certs/output/iso20)"
-PORT=18443
+BUILD=/tmp/opencode/iso15118_tests/stapling
+PATCH="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/0006-Add-server-side-OCSP-stapling-for-TLS-1.3-via-weak-c.patch)"
+CERTS="$(realpath ../tools/certs/output/iso20)"
+PORT=${PORT:-18443}
 
 [ -f "$CERTS/certs/cpoCertChain.pem" ] || { echo "dev PKI missing, run ../certs/generate_certs.sh first"; exit 1; }
 
@@ -23,7 +23,8 @@ if [ -n "${MBEDTLS_SRC:-}" ]; then
     cp -r "$MBEDTLS_SRC" "$BUILD/mbedtls"
     rm -rf "$BUILD/mbedtls/.git"
 else
-    git clone --quiet --depth 1 --branch v3.6.6 https://github.com/Mbed-TLS/mbedtls "$BUILD/mbedtls"
+    git clone --quiet --depth 1 --branch v3.6.6 --recurse-submodules --shallow-submodules \
+        https://github.com/Mbed-TLS/mbedtls "$BUILD/mbedtls"
 fi
 
 grep -q "3.6.6" "$BUILD/mbedtls/include/mbedtls/build_info.h" || { echo "mbedTLS source is not 3.6.6"; exit 1; }
@@ -35,7 +36,7 @@ echo "--- building mbedTLS (takes a minute) ---"
 make -C "$BUILD/mbedtls" lib -j"$(nproc)" > /dev/null
 
 gcc -Wall -Wextra -O1 -I "$BUILD/mbedtls/include" -o "$BUILD/stapling_server" \
-    -x c stapling_server.c.inc -x none \
+    -x c _stapling_server.c -x none \
     "$BUILD/mbedtls/library/libmbedtls.a" "$BUILD/mbedtls/library/libmbedx509.a" "$BUILD/mbedtls/library/libmbedcrypto.a"
 
 echo "--- generating an OCSP response for the dev leaf ---"
