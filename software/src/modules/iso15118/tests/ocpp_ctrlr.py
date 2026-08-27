@@ -24,12 +24,12 @@ csms = None
 saved_ocpp = None
 test_ocpp = None
 saved_values = {}
+pnc_supported = False
 
 
 VARIABLES = [
     ("Enabled", None),
     ("V2GCertificateInstallationEnabled", None),
-    ("ContractCertificateInstallationEnabled", None),
     ("ISO15118EvseId", None),
     ("EnforceTlsEnabled", None),
     ("PrivateEnviromentEnabled", None),
@@ -39,7 +39,6 @@ VARIABLES = [
 BOOLEAN_VARIABLES = [
     "Enabled",
     "V2GCertificateInstallationEnabled",
-    "ContractCertificateInstallationEnabled",
     "EnforceTlsEnabled",
     "PrivateEnviromentEnabled",
 ]
@@ -121,10 +120,11 @@ def restore_values(tc: TestContext):
 
 
 def suite_setup(tc: TestContext):
-    global environment, client, csms, saved_ocpp, test_ocpp, saved_values
+    global environment, client, csms, saved_ocpp, test_ocpp, saved_values, pnc_supported
     environment = IsoTestEnvironment(tc)
     environment.start()
     client = EVTestClient(environment.host, environment.iface, environment.secc_ll)
+    pnc_supported = "iso15118_pnc" in tc.api("info/features")
     saved_ocpp = tc.api("ocpp/config")
     csms = CSMSSim()
     test_ocpp = dict(saved_ocpp)
@@ -135,13 +135,16 @@ def suite_setup(tc: TestContext):
         "enable_auth": False,
     })
     connect_test_ocpp(tc)
-    results = get_variables(VARIABLES)
-    for (name, _), result in zip(VARIABLES, results):
+    variables = list(VARIABLES)
+    if pnc_supported:
+        variables.append(("ContractCertificateInstallationEnabled", None))
+    results = get_variables(variables)
+    for (name, _), result in zip(variables, results):
         if result["attributeStatus"] != "Accepted":
             raise RuntimeError(f"Could not save ISO15118Ctrlr.{name}: {result['attributeStatus']}")
     saved_values = {
         name: result["attributeValue"]
-        for (name, _), result in zip(VARIABLES, results)
+        for (name, _), result in zip(variables, results)
     }
 
 
@@ -206,6 +209,9 @@ def test_controller_values_available(tc: TestContext):
     tc.assert_search(r"^[A-Z0-9*]{7,37}$", results[1]["attributeValue"])
     tc.assert_in(["true", "false"], results[2]["attributeValue"])
 
+    contract = get_variables([("ContractCertificateInstallationEnabled", None)])[0]
+    tc.assert_eq("Accepted" if pnc_supported else "UnknownVariable", contract["attributeStatus"])
+
 
 def test_evseid_set_and_read_back(tc: TestContext):
     expected = "DE*TNK*E123456"
@@ -219,7 +225,10 @@ def test_variable_validation_and_persistence(tc: TestContext):
     tc.assert_eq("Rejected", set_variable("ISO15118EvseId", "Z" * 6))
     tc.assert_eq("Rejected", set_variable("ISO15118EvseId", "Z" * 38))
 
-    for name in BOOLEAN_VARIABLES:
+    boolean_variables = list(BOOLEAN_VARIABLES)
+    if pnc_supported:
+        boolean_variables.append("ContractCertificateInstallationEnabled")
+    for name in boolean_variables:
         tc.assert_eq("Rejected", set_variable(name, "maybe"))
 
     tc.assert_eq("Rejected", set_variable("PWMChargingFallbackTimeout", "0"))
@@ -230,7 +239,7 @@ def test_variable_validation_and_persistence(tc: TestContext):
 
     expected = {
         name: "false" if saved_values[name] == "true" else "true"
-        for name in BOOLEAN_VARIABLES
+        for name in boolean_variables
     }
     expected["ISO15118EvseId"] = "DE*ICE*E*1234567890*1"
     expected["PWMChargingFallbackTimeout"] = (

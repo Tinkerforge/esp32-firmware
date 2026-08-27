@@ -446,7 +446,7 @@ void ISO2::handle_payment_service_selection_req()
     contract_selected = false;
     if (req->SelectedPaymentOption == iso2_paymentOptionType_ExternalPayment) {
         res->ResponseCode = iso2_responseCodeType_OK;
-    } else if ((req->SelectedPaymentOption == iso2_paymentOptionType_Contract) && pnc_offered) {
+    } else if ((req->SelectedPaymentOption == iso2_paymentOptionType_Contract) && iso15118.supports_pnc() && pnc_offered) {
         res->ResponseCode = iso2_responseCodeType_OK;
         contract_selected = true;
         iso15118.trace("ISO2: Contract payment selected");
@@ -471,7 +471,7 @@ void ISO2::handle_authorization_req()
     res->ResponseCode = iso2_responseCodeType_OK;
     res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
 
-    if (contract_selected) {
+    if (iso15118.supports_pnc() && contract_selected) {
         // PnC challenge and signature checks
         authorize_pnc(req, res);
     }

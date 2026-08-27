@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "options.h"
 #include "lwip/sockets.h"  // For struct pollfd
 #include "qca700x.h"
 #include "slac.h"
@@ -133,6 +134,8 @@ public:
     // Returns true if TLS may be offered in the SDP response. TLS is tied to
     // charging via ISO 15118-20.
     bool is_tls_enabled() const { return config.get("charge_via_iso15118")->asBool(); }
+
+    static constexpr bool supports_pnc() { return OPTIONS_ISO15118_PNC_ENABLED() != 0; }
 
     // Experimental DC->AC fallback methods for EVs that refuse to
     // start basic AC charging after a graceful ISO 15118 session stop.

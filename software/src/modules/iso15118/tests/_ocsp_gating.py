@@ -5,11 +5,11 @@ Provisions the certificate store step by step and checks the TLS server behavior
   1. store live but empty, no TLS handshake possible
   2. -2 and -20 chains provisioned, OCSP unknown: TLS 1.2 works and is
      verified against the dev V2G root, TLS 1.3 refused
-  3. PrivateEnviromentEnabled true waives the OCSP obligation, TLS 1.3
-     works with mutual auth (OEM client chain), false refuses again
+  3. PrivateEnviromentEnabled does not waive OCSP because this station
+     supports PnC; TLS 1.3 remains unavailable while OCSP is unknown
   4. a Good OCSP response for the -20 leaf (signed by the dev CPO sub
-     CA 2, delivered via GetCertificateStatus) enables TLS 1.3 and the
-     staple DER shows up in the trace log
+     CA 2, delivered via GetCertificateStatus) enables TLS 1.3 in both
+     private and public mode and the staple DER shows up in the trace log
   5. openssl s_client -status sees the response stapled to the leaf
      CertificateEntry in the TLS 1.3 handshake (needs firmware built
      against libs with the stapling patch)
@@ -161,6 +161,7 @@ def main():
     common.require_iso_tls_config(args.charger)
     iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
+    pnc_supported = "iso15118_pnc" in common.api_get(args.charger, "info/features")
     workdir = Path(tempfile.mkdtemp(prefix="ocsp_gating_"))
 
     failures = 0
@@ -250,15 +251,13 @@ def main():
             "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnviromentEnabled"},
             "attributeValue": "true"}]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
         time.sleep(3)
-        check("private environment waives OCSP, TLS 1.3 works",
-              try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
-
-        assert csms.call("SetVariables", {"setVariableData": [{
-            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnviromentEnabled"},
-            "attributeValue": "false"}]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
-        time.sleep(3)
-        check("back to public environment, TLS 1.3 refused again",
-              try_tls(args.charger, iface, tls13=True, mutual=True) is None)
+        private_version = try_tls(args.charger, iface, tls13=True, mutual=True)
+        if pnc_supported:
+            check("private PnC environment still requires SECC OCSP [3.2.9/HUB20-532-002]",
+                  private_version is None, private_version)
+        else:
+            check("private non-PnC environment may waive SECC OCSP [3.2.9]",
+                  private_version == "TLSv1.3", private_version)
 
         # The -20 leaf carries an AIA URL, the device asks for its status.
         status_req, msg_id = csms.expect("GetCertificateStatus", timeout=120)
@@ -268,7 +267,7 @@ def main():
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
-        check("OCSP good, TLS 1.3 works",
+        check("OCSP good, TLS 1.3 works in a private PnC environment",
               try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
         log = trace_log(args.charger)
         check("staple DER loaded into the TLS server",
@@ -282,6 +281,13 @@ def main():
               "OCSP Response Status: successful" in out and "Cert Status: good" in out
               and serial in out,
               "" if "OCSP Response Status" in out else "no OCSP response in the handshake")
+
+        assert csms.call("SetVariables", {"setVariableData": [{
+            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnviromentEnabled"},
+            "attributeValue": "false"}]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
+        time.sleep(3)
+        check("OCSP-good chain remains available after returning to public mode",
+              try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
     finally:
         try:
             disabled = dict(saved_config)

@@ -12,6 +12,8 @@ the result:
   5. a valid cache suppresses a repeat request; expired nextUpdate requests the full chain
   6. security: a forged OEM chain with matching subject names but different keys is rejected by the handshake (the chain must anchor
      to the trust store by key, not by name)
+  7. private mode still waits for and fails closed on vehicle OCSP because
+     this station supports PnC (3.2.9, V2G20-2440, HUB20-536-002)
 
 Invoked by certificates.py through the firmware test runner.
 """
@@ -316,6 +318,7 @@ def main():
     common.require_iso_tls_config(args.charger)
     iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
+    pnc_supported = "iso15118_pnc" in common.api_get(args.charger, "info/features")
     workdir = Path(tempfile.mkdtemp(prefix="vehicle_chain_"))
 
     failures = 0
@@ -360,6 +363,56 @@ def main():
         _, msg_id = csms.expect("GetCertificateStatus", timeout=120)
         b64, _ = ocsp_response_b64(workdir, workdir / "leaf20.pem")
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
+        time.sleep(5)
+
+        assert csms.call("SetVariables", {"setVariableData": [{
+            "component": {"name": "ISO15118Ctrlr"},
+            "variable": {"name": "PrivateEnviromentEnabled"},
+            "attributeValue": "true",
+        }]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
+        time.sleep(3)
+
+        cert, key = mint_oem_leaf(workdir, "private_good")
+        tls, session_id = open_iso20_session(args.charger, iface, cert, key)
+        if pnc_supported:
+            private_req, private_msg = csms.expect("GetCertificateChainStatus", timeout=30)
+            auth = authorization(tls, session_id)
+            check("private PnC authorization remains Ongoing while OCSP is pending [HUB20-536-002]",
+                  auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Ongoing", auth)
+            csms.respond(private_msg, chain_status_response(private_req, [None, "Good", "Good"]))
+            auth = final_authorization(tls, session_id)
+            check("private PnC authorization fails on unavailable vehicle status [V2G20-2440]",
+                  auth["ResponseCode"].startswith("FAILED"), auth)
+            check("private PnC TLS session closes after unavailable vehicle status", tls_closed(tls))
+            try:
+                tls.close()
+            except OSError:
+                pass
+            time.sleep(1)
+        else:
+            unexpected_request = None
+            try:
+                unexpected_request = csms.expect("GetCertificateChainStatus", timeout=3)
+            except TimeoutError:
+                pass
+            check("private non-PnC environment skips vehicle OCSP",
+                  unexpected_request is None, unexpected_request)
+            if unexpected_request is not None:
+                private_req, private_msg = unexpected_request
+                csms.respond(private_msg, chain_status_response(private_req, ["Good", "Good", "Good"]))
+            auth = authorization(tls, session_id)
+            check("private non-PnC EIM authorization finishes without vehicle OCSP",
+                  auth["ResponseCode"] == "OK" and auth["EVSEProcessing"] == "Finished", auth)
+            tls.close()
+            time.sleep(1)
+
+        assert csms.call("SetVariables", {"setVariableData": [{
+            "component": {"name": "ISO15118Ctrlr"},
+            "variable": {"name": "PrivateEnviromentEnabled"},
+            "attributeValue": "false",
+        }]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
+        # Let tfocpp finish the preceding M07 response callback before
+        # starting another vehicle-chain request.
         time.sleep(5)
 
         # 1 and 2: pending gives Ongoing, all Good then finishes.

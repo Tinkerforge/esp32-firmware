@@ -345,7 +345,7 @@ void ISO20::handle_authorization_req()
 
     if (req->SelectedAuthorizationService == iso20_authorizationType_EIM) {
         res->ResponseCode = iso20_responseCodeType_OK;
-    } else if ((req->SelectedAuthorizationService == iso20_authorizationType_PnC) && pnc_offered && req->PnC_AReqAuthorizationMode_isUsed) {
+    } else if ((req->SelectedAuthorizationService == iso20_authorizationType_PnC) && iso15118.supports_pnc() && pnc_offered && req->PnC_AReqAuthorizationMode_isUsed) {
         res->ResponseCode = iso20_responseCodeType_OK;
         // PnC challenge, chain and signature verification
         authorize_pnc(req, res);
