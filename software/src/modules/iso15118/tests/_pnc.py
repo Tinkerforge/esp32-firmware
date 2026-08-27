@@ -493,34 +493,48 @@ def run_service_gating(args, iface, csms, check):
         Body, ServiceDiscoveryReq, SessionSetupReq as SS2)
     from iso15118.shared.messages.iso15118_2.datatypes import ServiceCategory
 
-    for variable in ("ContractCertificateInstallationEnabled", "Enabled"):
-        check(f"ISO15118Ctrlr.{variable} can be disabled",
-              set_variable(csms, variable, "false") == "Accepted")
-        time.sleep(1)
+    variable = "ContractCertificateInstallationEnabled"
+    check(f"ISO15118Ctrlr.{variable} can be disabled",
+          set_variable(csms, variable, "false") == "Accepted")
+    time.sleep(1)
 
-        tls, session_id, setup = open_session20(args.charger, iface)
-        answer_vehicle_chain_good(csms, timeout=2)
-        check(f"ISO-20 certificate installation is not offered when {variable} is false",
-              not setup.cert_install_service, setup.cert_install_service)
-        tls.close()
-        time.sleep(1)
+    tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
+    check(f"ISO-20 certificate installation is not offered when {variable} is false",
+          not setup.cert_install_service, setup.cert_install_service)
+    tls.close()
+    time.sleep(1)
 
-        tls = connect(args.charger, iface, tls13=False)
-        sap(tls, ISO2)
-        wrap_v2g2.session_id = "00"
-        res = exchange2_body(tls, Body(SessionSetupReq=SS2(evcc_id="0A1B2C3D4E5F")))
-        wrap_v2g2.session_id = res.header.session_id
-        res = exchange2_body(tls, Body(ServiceDiscoveryReq=ServiceDiscoveryReq()))
-        services = res.body.service_discovery_res.service_list
-        has_cert = services is not None and any(
-            service.service_category == ServiceCategory.CERTIFICATE for service in services.services)
-        check(f"ISO-2 certificate service is not offered when {variable} is false", not has_cert)
-        tls.close()
-        time.sleep(1)
+    tls = connect(args.charger, iface, tls13=False)
+    sap(tls, ISO2)
+    wrap_v2g2.session_id = "00"
+    res = exchange2_body(tls, Body(SessionSetupReq=SS2(evcc_id="0A1B2C3D4E5F")))
+    wrap_v2g2.session_id = res.header.session_id
+    res = exchange2_body(tls, Body(ServiceDiscoveryReq=ServiceDiscoveryReq()))
+    services = res.body.service_discovery_res.service_list
+    has_cert = services is not None and any(
+        service.service_category == ServiceCategory.CERTIFICATE for service in services.services)
+    check(f"ISO-2 certificate service is not offered when {variable} is false", not has_cert)
+    tls.close()
+    time.sleep(1)
 
-        check(f"ISO15118Ctrlr.{variable} can be re-enabled",
-              set_variable(csms, variable, "true") == "Accepted")
-        time.sleep(1)
+    check(f"ISO15118Ctrlr.{variable} can be re-enabled",
+          set_variable(csms, variable, "true") == "Accepted")
+    time.sleep(1)
+
+    check("ISO15118Ctrlr.Enabled can be disabled",
+          set_variable(csms, "Enabled", "false") == "Accepted")
+    time.sleep(1)
+    check("ISO15118Ctrlr.Enabled disables SDP",
+          common.sdp_request(iface, timeout=2) is None)
+    assert_no_ev_certificate_request(
+        csms, check, "no Get15118EVCertificate while ISO15118Ctrlr.Enabled is false")
+    check("ISO15118Ctrlr.Enabled can be re-enabled",
+          set_variable(csms, "Enabled", "true") == "Accepted")
+    deadline = time.monotonic() + 15
+    while common.sdp_request(iface, timeout=1) is None:
+        if time.monotonic() >= deadline:
+            raise TimeoutError("ISO15118Ctrlr.Enabled did not restore SDP")
 
     tls, session_id, setup = open_session20(args.charger, iface)
     answer_vehicle_chain_good(csms, timeout=2)

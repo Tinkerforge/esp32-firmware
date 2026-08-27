@@ -195,12 +195,12 @@ class IsoTestEnvironment:
         errors = []
         if self.saved_debug is not None:
             try:
-                self.tc.api("iso15118/debug_update", self.saved_debug, timeout=5)
+                self.tc.api("iso15118/debug_update", self.saved_debug, timeout=15)
             except Exception as e:
                 errors.append(e)
         if self.saved_config is not None:
             try:
-                self.tc.api("iso15118/config", self.saved_config, timeout=5)
+                self.tc.api("iso15118/config", self.saved_config, timeout=15)
             except Exception as e:
                 errors.append(e)
         if errors:

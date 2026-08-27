@@ -308,6 +308,71 @@ seconds_t ISO15118::get_slac_init_timeout() const
     return SLAC_TT_EVSE_SLAC_INIT;
 }
 
+bool ISO15118::is_enabled() const
+{
+    if (!is_configured()) {
+        return false;
+    }
+#if MODULE_OCPP_AVAILABLE()
+    return ocpp.is_iso15118_enabled();
+#else
+    return true;
+#endif
+}
+
+void ISO15118::reconcile_enabled()
+{
+    if (is_enabled()) {
+        if (debug_mode.is_enabled()) {
+            if (!is_setup) {
+                debug_mode.start();
+                is_setup = true;
+            }
+        } else {
+            if (!is_setup) {
+                sdp.setup_socket();
+                common.setup_socket();
+                is_setup = true;
+                evse_v2.set_plc_modem(true);
+                if (slac.state == SLACState::ModemDisabled) {
+                    slac.api_state.get("modem_initialization_tries")->updateUint(0);
+                    slac.state = SLACState::ModemReset;
+                }
+                set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            }
+        }
+        ensure_state_machine_running();
+        return;
+    }
+
+    if (!is_setup && state_machine_task == 0 && slac.state == SLACState::ModemDisabled) {
+        return;
+    }
+
+    if (state_machine_task != 0) {
+        task_scheduler.cancel(state_machine_task);
+        state_machine_task = 0;
+    }
+    cancel_pending_tasks();
+    slac.cancel_link_up_task();
+    sdp.close_socket();
+    common.close_socket();
+    is_setup = false;
+    nonegotiation_pending = false;
+    reslac_guard_deadline = 0_us;
+    communication_setup_deadline = 0_us;
+    qca700x.link_down();
+    iso2.reset_dc_soc_done();
+    iso2.reset_session();
+    din70121.reset_session();
+    iso20.reset_session();
+    iec_temporary_active = false;
+    slac.state = SLACState::ModemDisabled;
+    slac.api_state.get("modem_found")->updateBool(false);
+    set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
+    evse_v2.set_plc_modem(false);
+}
+
 // EVSEID used in SessionSetupRes and the -2 charging loop responses.
 // ISO15118Ctrlr.ISO15118EvseId while the OCPP 2.1 client runs, the
 // default EVSE ID otherwise.
@@ -340,52 +405,13 @@ void ISO15118::pre_setup()
         {"min_charge_current", Config::Uint16(1000)},
         {"fast_timeout", Config::Bool(false)},
     }), [this](Config &update, ConfigSource source) -> String {
-        const bool was_enabled = is_enabled();
+        const bool was_enabled = is_configured();
         const bool will_be_enabled = update.get("autocharge")->asBool() ||
                                      update.get("read_soc")->asBool() ||
                                      update.get("charge_via_iso15118")->asBool();
 
         if (will_be_enabled != was_enabled) {
-            if (will_be_enabled) {
-                if (!is_setup) {
-                    task_scheduler.scheduleOnce([this]() {
-                        sdp.setup_socket();
-                        common.setup_socket();
-                        is_setup = true;
-                    });
-                }
-
-                if (state_machine_task == 0) {
-                    state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
-                        this->state_machines_loop();
-                    }, ISO15118_STATE_MACHINES_INTERVAL, ISO15118_STATE_MACHINES_INTERVAL);
-                }
-
-                // TODO: Check if charge is currently ongoing:
-                //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
-                //       If no charge is ongoing, we can change the protocol immediately.
-                //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
-                evse_v2.set_plc_modem(true);
-                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-            } else {
-                // TODO: Close sockets and set is_setup = false
-                task_scheduler.cancel(state_machine_task);
-                state_machine_task = 0;
-
-                // Cancel all pending CP/modem tasks and sequence timeouts
-                cancel_pending_tasks();
-                common.reset_active_socket(); // Also cancels sequence timeouts
-                nonegotiation_pending = false;
-                reslac_guard_deadline = 0_us;
-                communication_setup_deadline = 0_us;
-
-                // TODO: Check if charge is currently ongoing:
-                //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
-                //       If no charge is ongoing, we can change the protocol immediately.
-                //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
-                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
-                evse_v2.set_plc_modem(false);
-            }
+            task_scheduler.scheduleOnce([this]() { reconcile_enabled(); });
         }
         return "";
     }};
@@ -441,13 +467,7 @@ void ISO15118::setup()
 
     initialized = true;
 
-    if (is_enabled()) {
-        sdp.setup_socket();
-        common.setup_socket();
-        is_setup = true;
-    } else {
-        is_setup = false;
-    }
+    is_setup = false;
 
 }
 
@@ -583,18 +603,7 @@ void ISO15118::register_urls()
 #pragma GCC diagnostic pop
     });
 
-    // Enable ISO15118 on the EVSE Bricklet
-    if (is_enabled()) {
-        // Ensure PLC modem is enabled. If only the ESP32 restarted while the
-        // EVSE Bricklet kept running with the modem in hardware reset (from a
-        // previous set_plc_modem(false) after SessionStop), the modem would
-        // stay disabled forever.
-        evse_v2.set_plc_modem(true);
-        iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-        state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
-            this->state_machines_loop();
-        }, 1_s, ISO15118_STATE_MACHINES_INTERVAL);
-    }
+    reconcile_enabled();
 }
 
 void ISO15118::register_events()
