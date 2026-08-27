@@ -333,6 +333,7 @@ class CSMSSim:
         self.security_events = []
         self.connected = threading.Event()
         self.authorization = None
+        self.current_time_offset_s = 0
         self.ws = None
         ssl_context = None
         if certfile is not None:
@@ -372,13 +373,13 @@ class CSMSSim:
                         self.requests.put((action, payload, message_id))
                     elif action == "BootNotification":
                         self.respond(message_id, {
-                            "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                            "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + self.current_time_offset_s)),
                             "interval": 300,
                             "status": "Accepted",
                         })
                     elif action == "Heartbeat":
                         self.respond(message_id, {
-                            "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                            "currentTime": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + self.current_time_offset_s)),
                         })
                     elif action == "SecurityEventNotification":
                         self.security_events.append(payload)
