@@ -148,6 +148,8 @@ public:
     // charging via ISO 15118-20.
     bool is_tls_enabled() const { return config.get("charge_via_iso15118")->asBool(); }
 
+    static constexpr bool supports_pnc() { return OPTIONS_ISO15118_PNC_ENABLED() != 0; }
+
     // Experimental DC->AC fallback methods for EVs that refuse to
     // start basic AC charging after a graceful ISO 15118 session stop.
     // When true, begin_iec_transition() uses the ISO 15118-3 error teardown

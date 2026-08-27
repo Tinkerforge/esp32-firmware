@@ -349,8 +349,8 @@ bool ISOTLS::apply_group_policy()
 bool ISOTLS::load_certificates()
 {
     // With a live OCPP certificate store the store is authoritative.
-    // TLS 1.3 with the -20 chain is only served when the chain is time valid and its OCSP status is good
-    // or a private environment waives the OCSP obligation [HUB20-532-002].
+    // TLS 1.3 with the -20 chain is only served when the chain is time valid and its OCSP status is good.
+    // Private mode may waive OCSP only when PnC is not compiled in [HUB20-532-002].
     // The embedded dev certificates only serve on bench and development setups.
     std::unique_ptr<char[]> live_chain_iso2,  live_key_iso2;
     std::unique_ptr<char[]> live_chain_iso20, live_key_iso20;

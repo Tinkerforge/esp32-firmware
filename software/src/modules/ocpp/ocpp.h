@@ -100,6 +100,9 @@ public:
 private:
     void apply_config();
 
+    static constexpr bool supports_iso15118_pnc();
+    bool private_environment_waives_iso15118_ocsp() const;
+
     bool start_client();
     bool start_client_21();
 
