@@ -64,6 +64,7 @@ public:
     ISO20(){}
     void pre_setup();
     void handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type);
+    void reset_session();
 
     ConfigRoot api_state;
 

@@ -401,6 +401,11 @@ bool Ocpp::get_iso15118_ctrlr(Iso15118CtrlrValues *out)
     return true;
 }
 
+bool Ocpp::is_iso15118_enabled()
+{
+    return !cp21 || !client_started || cp21->device_model.iso15118_enabled;
+}
+
 bool Ocpp::is_iso15118_store_live()
 {
     return cp21 && client_started;

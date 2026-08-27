@@ -70,6 +70,8 @@ struct ChargingInformation {
 
 class ISO15118 final : public IModule
 {
+    friend class DebugMode;
+
 private:
     ConfigRoot state_common;
     ConfigRoot state_din70121;
@@ -101,12 +103,15 @@ public:
     [[gnu::format(__printf__, 2, 3)]] void trace(const char *fmt, ...);
     void trace_packet(const uint8_t *packet, const size_t packet_size);
 
-    // Returns true if ISO 15118 is enabled (any of autocharge, read_soc, or charge_via_iso15118 is set)
-    bool is_enabled() const {
+    // Local product configuration, before applying the OCPP master gate.
+    bool is_configured() const {
         return config.get("autocharge")->asBool() ||
                config.get("read_soc")->asBool() ||
                config.get("charge_via_iso15118")->asBool();
     }
+
+    bool is_enabled() const;
+    void reconcile_enabled();
 
     // Keep vehicle exclusions here so the experimental override bypasses all of them.
     bool is_soc_compatible() const {

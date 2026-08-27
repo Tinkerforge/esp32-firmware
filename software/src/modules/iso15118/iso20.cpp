@@ -235,6 +235,16 @@ void ISO20::prepare_header(struct iso20_MessageHeaderType *header)
     header->Signature_isUsed = 0;
 }
 
+void ISO20::reset_session()
+{
+    state = ISO20State::Idle;
+    soc_read = false;
+    ev_supports_asymmetric = false;
+    selected_service_id = 0;
+    selected_parameter_set_id = 0;
+    reset_pnc_session();
+}
+
 void ISO20::handle_session_setup_req()
 {
     // [V2G20-751] The SessionID value returned by the SECC in SessionSetupRes shall not

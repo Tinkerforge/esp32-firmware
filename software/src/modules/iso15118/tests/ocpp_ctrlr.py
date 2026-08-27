@@ -1,6 +1,7 @@
 #!/usr/bin/env -S uv run --locked --group iso15118-tests --script
 
 import time
+import socket
 
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
@@ -269,6 +270,40 @@ def test_enforce_tls_controls_sdp(tc: TestContext):
     response = sdp_request(environment.iface, SDP_SECURITY_NO_TLS)
     tc.assert_(response is not None)
     tc.assert_eq(SDP_SECURITY_NO_TLS, response["security"])
+
+
+def test_enabled_controls_iso15118_runtime(tc: TestContext):
+    assert environment is not None
+    assert client is not None
+
+    tc.assert_eq("Accepted", set_variable("Enabled", "true"))
+    time.sleep(1)
+    active = client.connect_raw()
+
+    tc.assert_eq("Accepted", set_variable("Enabled", "false"))
+    active.settimeout(5)
+    try:
+        tc.assert_eq(b"", active.recv(1))
+    except ConnectionResetError:
+        pass
+    except socket.timeout:
+        tc.assert_(False, "active ISO 15118 socket remained open after disabling the controller")
+    finally:
+        active.close()
+    tc.assert_(sdp_request(environment.iface, timeout=2, expected_from=environment.secc_ll) is None)
+
+    debug = tc.api("iso15118/debug")
+    tc.api("iso15118/debug_update", dict(debug, enable=False), timeout=5)
+    tc.api("iso15118/debug_update", dict(debug, enable=True), timeout=5)
+    tc.assert_(sdp_request(environment.iface, timeout=2, expected_from=environment.secc_ll) is None)
+
+    tc.assert_eq("Accepted", set_variable("Enabled", "true"))
+    tc.wait_for(
+        lambda: tc.assert_(
+            sdp_request(environment.iface, timeout=1, expected_from=environment.secc_ll) is not None
+        ),
+        timeout=15,
+    )
 
 
 if __name__ == "__main__":

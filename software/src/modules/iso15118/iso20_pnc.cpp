@@ -60,7 +60,7 @@ void ISO20::offer_pnc(struct iso20_AuthorizationSetupResType *res)
         return;
     }
 #if MODULE_OCPP_AVAILABLE()
-    if (iso15118.common.tls.is_mutual_auth_session() && ocpp.is_iso15118_store_live()) {
+    if (ocpp.is_iso15118_enabled() && iso15118.common.tls.is_mutual_auth_session() && ocpp.is_iso15118_store_live()) {
         pnc_offered = true;
         cert_install_offered = ocpp.is_iso15118_contract_install_enabled();
     }

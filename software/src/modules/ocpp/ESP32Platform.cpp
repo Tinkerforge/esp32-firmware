@@ -1125,6 +1125,7 @@ void platform_cert_store_changed21(void *ctx)
     (void)ctx;
 #if MODULE_ISO15118_AVAILABLE()
     iso15118.common.tls.certs_dirty = true;
+    task_scheduler.scheduleOnce([]() { iso15118.reconcile_enabled(); });
 #endif
 }
 
