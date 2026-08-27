@@ -93,7 +93,7 @@ void ISO2::offer_pnc(struct iso2_ServiceDiscoveryResType *res)
         return;
     }
 #if MODULE_OCPP_AVAILABLE()
-    if (iso15118.common.tls.is_session_active() && ocpp.is_iso15118_store_live()) {
+    if (ocpp.is_iso15118_enabled() && iso15118.common.tls.is_session_active() && ocpp.is_iso15118_store_live()) {
         pnc_offered = true;
         cert_service_offered = ocpp.is_iso15118_contract_install_enabled();
     }

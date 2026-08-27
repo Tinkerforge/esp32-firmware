@@ -88,6 +88,7 @@ public:
         char evse_id[OCPP21_ISO15118_EVSE_ID_MAX_LEN + 1];
     };
     bool get_iso15118_ctrlr(Iso15118CtrlrValues *out);
+    bool is_iso15118_enabled();
 
     void (*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;

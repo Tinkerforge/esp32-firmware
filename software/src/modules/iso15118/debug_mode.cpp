@@ -47,11 +47,18 @@ void DebugMode::handle_update(Language /*language*/, String &/*error*/)
 
     if (will_be_enabled && !enabled) {
         enabled = true;
-        start();
-        iso15118.ensure_state_machine_running();
+        if (!iso15118.is_enabled()) {
+            iso15118.trace("Debug: ISO15118Ctrlr.Enabled is false, keeping runtime disabled");
+            return;
+        }
+        iso15118.sdp.close_socket();
+        iso15118.common.close_socket();
+        iso15118.is_setup = false;
+        iso15118.reconcile_enabled();
     } else if (!will_be_enabled && enabled) {
         enabled = false;
         stop();
+        iso15118.reconcile_enabled();
     }
 }
 
@@ -70,6 +77,9 @@ ChargingInformation DebugMode::get_charging_information() const
 
 void DebugMode::start()
 {
+    if (!iso15118.is_enabled()) {
+        return;
+    }
     iso15118.trace("Debug: Enabling debug mode");
 
     // Create IPv6 link-local address on the Ethernet interface
@@ -117,6 +127,7 @@ void DebugMode::stop()
     // Close sockets
     iso15118.sdp.close_socket();
     iso15118.common.close_socket();
+    iso15118.is_setup = false;
 
     // Reset SLAC state
     iso15118.slac.state = SLACState::ModemInitialization;
