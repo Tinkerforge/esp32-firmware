@@ -212,9 +212,20 @@ void ISO2::send_cert_forward_result(bool update, bool failed)
         size_t exi_len = 0;
         int32_t remaining = 0;
         if (ocpp.take_iso15118_ev_cert_response(&exi, &exi_len, &remaining)) {
-            iso15118.trace("ISO2: Forwarding Certificate%sRes", update ? "Update" : "Installation");
-            iso15118.common.send_exi_raw(exi.get(), exi_len, Common::ExiType::Iso2);
-            return;
+            exi_bitstream bs;
+            exi_bitstream_init(&bs, exi.get(), exi_len, 0, nullptr);
+            auto response = static_cast<struct iso2_exiDocument *>(calloc_psram_or_dram(1, sizeof(struct iso2_exiDocument)));
+            bool valid = response != nullptr
+                      && decode_iso2_exiDocument(&bs, response) == 0
+                      && (update ? response->V2G_Message.Body.CertificateUpdateRes_isUsed
+                                 : response->V2G_Message.Body.CertificateInstallationRes_isUsed);
+            free(response);
+            if (valid) {
+                iso15118.trace("ISO2: Forwarding Certificate%sRes", update ? "Update" : "Installation");
+                iso15118.common.send_exi_raw(exi.get(), exi_len, Common::ExiType::Iso2);
+                return;
+            }
+            iso15118.trace("ISO2: CSMS EXI response is not a Certificate%sRes", update ? "Update" : "Installation");
         }
         failed = true;
     }
