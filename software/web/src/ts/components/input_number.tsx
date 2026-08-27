@@ -74,6 +74,9 @@ export function InputNumber(props: InputNumberProps) {
                 ref={input}
                 id={id}
                 type="number"
+                min={props.min}
+                max={props.max}
+                step={props.step}
                 onInput={props.onValue === undefined ? undefined : (e) => {
                         // Chrome prints a console warning if NaN is assigned as an input's value; null works.
                         let value = parseInt((e.target as HTMLInputElement).value, 10);
@@ -85,6 +88,7 @@ export function InputNumber(props: InputNumberProps) {
                 value={util.hasValue(props.value) ? props.value : ""}
                 disabled={props.disabled}
                 readonly={props.onValue === undefined || props.readonly}
+                required={props.required}
         />
         {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
         {invalidFeedback}

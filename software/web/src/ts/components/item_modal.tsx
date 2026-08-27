@@ -43,8 +43,17 @@ interface ItemModalProps extends ModalProps {
     export_basename?: string;
 }
 
-export class ItemModal extends Component<ItemModalProps, any> {
+interface ItemModalState {
+    wasValidated: boolean
+}
+
+export class ItemModal extends Component<ItemModalProps, ItemModalState> {
     import_input_ref = createRef();
+
+    constructor() {
+        super();
+        this.state = {wasValidated: false}
+    }
 
     async report_error(title: string, message: string) {
         const modal = util.async_modal_ref.current;
@@ -105,7 +114,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
         util.downloadToFile(json, this.props.export_basename + ".json", "application/json");
     }
 
-    render(props: ItemModalProps) {
+    render(props: ItemModalProps, state: ItemModalState) {
         let {onCheck, onSubmit, onHide, onImport, onExport, show, size, title, children, no_variant, no_text, yes_variant, yes_text, additionalFooterButtons, ...p} = props;
 
         return (
@@ -114,21 +123,34 @@ export class ItemModal extends Component<ItemModalProps, any> {
                 <Modal.Header {...{closeButton: true} as any}>
                     <span class="modal-title form-label">{title}</span>
                 </Modal.Header>
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                <form
+                    class={"needs-validation" + (state.wasValidated ? " was-validated" : "")}
+                    noValidate
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
 
-                    if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
-                        return;
-                    }
+                        this.setState({wasValidated: false});
 
-                    if (onCheck && !await onCheck()) {
-                        return;
-                    }
+                        if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
+                            this.setState({wasValidated: true});
+                            return;
+                        }
 
-                    await onSubmit();
-                    await onHide();
-                }}>
+                        if (onCheck && !await onCheck()) {
+                            this.setState({wasValidated: true});
+                            return;
+                        }
+
+                        try {
+                            await onSubmit();
+                            await onHide();
+                        }
+                        finally {
+                            this.setState({wasValidated: false});
+                        }
+                    }}
+                >
                     <Modal.Body className="pb-0">
                         {children}
                     </Modal.Body>
