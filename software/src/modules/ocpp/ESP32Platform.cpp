@@ -28,6 +28,7 @@
 #include <lib/url.h>
 #include <esp_crt_bundle.h>
 #include <mbedtls/base64.h>
+#include <mbedtls/ssl.h>
 #include <esp_transport_ws.h>
 #include <LittleFS.h>
 
@@ -43,6 +44,15 @@
 #include "modules/meters/meter_defs.h"
 
 #include "generated/mvid_to_measurand.h"
+
+// Added by the certification mbedTLS patch. Keep other ESP32 targets buildable
+// with the stock headers, where these values remain unused error-code gaps.
+#ifndef MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION
+#define MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION -0x7900
+#endif
+#ifndef MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE
+#define MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE -0x7980
+#endif
 
 struct PlatformMeterCache {
     std::unique_ptr<MeterValueID[]> value_ids = nullptr;
@@ -112,6 +122,28 @@ static bool ctx_alive(PlatformContext *p)
     return false;
 }
 
+static PlatformConnectionError classify_connection_error(const tf_websocket_error_codes_t &error)
+{
+    if (error.error_type != WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT) {
+        return PlatformConnectionError::Unknown;
+    }
+    if (error.esp_tls_cert_verify_flags != 0 ||
+        error.esp_tls_stack_err == -MBEDTLS_ERR_X509_CERT_VERIFY_FAILED ||
+        error.esp_tls_stack_err == -MBEDTLS_ERR_SSL_BAD_CERTIFICATE) {
+        return PlatformConnectionError::InvalidCsmsCertificate;
+    }
+
+    switch (-error.esp_tls_stack_err) {
+    case MBEDTLS_ERR_SSL_BAD_PROTOCOL_VERSION:
+    case MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION:
+        return PlatformConnectionError::InvalidTlsVersion;
+    case MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE:
+        return PlatformConnectionError::InvalidTlsCipherSuite;
+    default:
+        return PlatformConnectionError::Unknown;
+    }
+}
+
 #define REQUIRE_FEATURE(x, default_val) do { if (!feature_##x && !api.hasFeature(#x)) { return default_val; } feature_##x = true;} while(0)
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
@@ -119,6 +151,18 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     PlatformContext *p = (PlatformContext *)handler_args;
     tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
+    case WEBSOCKET_EVENT_ERROR: {
+        PlatformConnectionError error = classify_connection_error(data->error_handle);
+        if (error == PlatformConnectionError::Unknown) {
+            break;
+        }
+        task_scheduler.scheduleOnce([p, error](){
+            if (ctx_alive(p) && p->conn_error_cb != nullptr) {
+                p->conn_error_cb(error, p->conn_error_cb_userdata);
+            }
+        });
+        break;
+    }
     case WEBSOCKET_EVENT_DATA:
         if (data->payload_len == 0) {
             return;
@@ -487,8 +531,6 @@ void platform_ws_register_pong_callback(void *_ctx, void (*cb)(void *), void *us
 
 void platform_ws_register_connection_error_callback(void *_ctx, void (*cb)(PlatformConnectionError, void *), void *user_data)
 {
-    // Stored but not fired yet: classifying TLS handshake failures needs
-    // error details from the transport layer.
     PlatformContext *p = (PlatformContext *)_ctx;
     p->conn_error_cb = cb;
     p->conn_error_cb_userdata = user_data;

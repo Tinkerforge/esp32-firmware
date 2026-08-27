@@ -214,7 +214,7 @@ static esp_err_t tf_websocket_client_dispatch_event(tf_websocket_client_handle_t
                                                      int data_len)
 {
     esp_err_t err;
-    tf_websocket_event_data_t event_data;
+    tf_websocket_event_data_t event_data = {0};
 
     event_data.client = client;
     event_data.user_context = client->config->user_context;
@@ -1197,6 +1197,7 @@ static void tf_websocket_client_task(void *pv)
             if (result < 0) {
                 esp_tls_error_handle_t error_handle = esp_transport_get_error_handle(client->transport);
                 client->error_handle.esp_ws_handshake_status_code  = esp_transport_ws_get_upgrade_request_status(client->transport);
+                client->error_handle.error_type = WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT;
                 if (error_handle) {
                     const char *error_name = esp_err_to_name(error_handle->last_error);
                     tf_websocket_client_error(client, "esp_transport_connect() failed with %d, "
