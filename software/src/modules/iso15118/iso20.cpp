@@ -452,7 +452,17 @@ void ISO20::handle_service_detail_req()
     if (req->ServiceID != V2G_SERVICE_ID_CHARGING) {
         res->ResponseCode = iso20_responseCodeType_FAILED_ServiceIDInvalid;
         res->ServiceID = req->ServiceID;
-        res->ServiceParameterList.ParameterSet.arrayLen = 0;
+        // ServiceParameterList and ParameterSet are mandatory in ISO 15118-20,
+        // including failure responses.
+        auto &parameter_set = res->ServiceParameterList.ParameterSet.array[0];
+        parameter_set.ParameterSetID = 0;
+        auto &parameter = parameter_set.Parameter.array[0];
+        memcpy(parameter.Name.characters, "Invalid", 7);
+        parameter.Name.charactersLen = 7;
+        parameter.boolValue = 0;
+        parameter.boolValue_isUsed = 1;
+        parameter_set.Parameter.arrayLen = 1;
+        res->ServiceParameterList.ParameterSet.arrayLen = 1;
         iso15118.common.send_exi(Common::ExiType::Iso20);
         return;
     }
