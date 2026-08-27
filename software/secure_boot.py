@@ -2,6 +2,7 @@ import argparse
 import ctypes
 import ctypes.util
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
@@ -41,6 +42,10 @@ def load_libsodium():
 
 def load_libmbedtls():
     libmbedtls_path = ctypes.util.find_library('mbedtls')
+
+    # Hack for systems that have mbedtls 4 installed
+    if Path("/usr/lib/mbedtls3/libmbedtls.so").exists():
+        libmbedtls_path = "/usr/lib/mbedtls3/libmbedtls.so"
 
     if libmbedtls_path != None:
         libmbedtls = ctypes.cdll.LoadLibrary(libmbedtls_path)
