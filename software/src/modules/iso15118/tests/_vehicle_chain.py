@@ -319,6 +319,7 @@ def main():
     workdir = Path(tempfile.mkdtemp(prefix="vehicle_chain_"))
 
     failures = 0
+    csms_tls = common.LocalCSMSTls(args.charger, local_ip)
 
     def check(name, ok, detail=""):
         nonlocal failures
@@ -327,12 +328,14 @@ def main():
 
     saved_config = common.api_get(args.charger, "ocpp/config")
     csms = Csms(args.port, interactive=("SignCertificate", "GetCertificateStatus",
-                                        "GetCertificateChainStatus"))
+                                        "GetCertificateChainStatus"),
+                certfile=str(csms_tls.certfile), keyfile=str(csms_tls.keyfile))
     try:
         common.api_put(args.charger, "ocpp/reset", None)
         test_config = dict(saved_config)
-        test_config.update({"enable": True, "protocol": 1, "url": f"ws://{local_ip}:{args.port}",
-                            "enable_auth": False})
+        test_config.update({"enable": True, "protocol": 1, "url": f"wss://{local_ip}:{args.port}",
+                            "enable_auth": True, "pass": "iso15118-test-password",
+                            "cert_id": csms_tls.cert_id})
         common.api_put(args.charger, "ocpp/config_update", test_config)
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
@@ -487,6 +490,7 @@ def main():
             print(f"cleanup failed, restore the ocpp config manually: {e}")
             failures += 1
         csms.stop()
+        csms_tls.close()
         shutil.rmtree(workdir, ignore_errors=True)
 
     print("PASS" if failures == 0 else f"FAIL ({failures} failures)")
