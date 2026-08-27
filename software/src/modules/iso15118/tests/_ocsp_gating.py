@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HUB20-532-002 gating and OCSP staple plumbing on a real charger.
+"""HUB20-532-002 gating and OCSP staple plumbing
 
 Provisions the certificate store step by step and checks the TLS server behavior after every step:
   1. store live but empty, no TLS handshake possible
@@ -14,8 +14,7 @@ Provisions the certificate store step by step and checks the TLS server behavior
      CertificateEntry in the TLS 1.3 handshake (needs firmware built
      against libs with the stapling patch)
 
-Run this in evsim venv:
-../../../../../.venv-evsim/bin/python local_test_ocsp_gating.py --charger <ip>
+Invoked by certificates.py through the firmware test runner.
 """
 
 import argparse
@@ -24,15 +23,16 @@ import ssl
 import subprocess
 import sys
 import tempfile
+import shutil
 import time
 import urllib.request
 from pathlib import Path
 
-import common
-from local_test_ocpp_ctrlr import Csms
+import _common as common
+from _common import CSMSSim as Csms, EVTestClient, ISO2, managed_socket
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-CERTS = SCRIPT_DIR / ".." / "certs" / "output"
+CERTS = SCRIPT_DIR / ".." / "tools" / "certs" / "output"
 OCSP_URL = "http://ocsp.test.example/"
 
 
@@ -176,11 +176,20 @@ def main():
         common.api_put(args.charger, "ocpp/reset", None)
         test_config = dict(saved_config)
         test_config.update({"enable": True, "protocol": 1, "url": f"ws://{local_ip}:{args.port}",
-                            "enable_auth": False, "pass": ""})
+                            "enable_auth": False})
         common.api_put(args.charger, "ocpp/config_update", test_config)
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
         time.sleep(2)
+
+        defaults = csms.call("GetVariables", {"getVariableData": [
+            {"component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "ISO15118EvseId"}},
+            {"component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "EnforceTlsEnabled"}},
+        ]})["getVariableResult"]
+        check("ISO15118EvseId default after reset", defaults[0].get("attributeValue") == "ZZ00000",
+              defaults[0].get("attributeValue"))
+        check("EnforceTlsEnabled default after reset", defaults[1].get("attributeValue") == "false",
+              defaults[1].get("attributeValue"))
 
         common.enable_debug_mode(args.charger)
         time.sleep(2)
@@ -197,12 +206,40 @@ def main():
             assert res["status"] == "Accepted", (kind, pem, res)
 
         provision_chain(csms, workdir, iso20=False, with_aia=False)
-        chain20 = provision_chain(csms, workdir, iso20=True, with_aia=True)
-        (workdir / "leaf20.pem").write_text(chain20.split("-----END CERTIFICATE-----")[0] + "-----END CERTIFICATE-----\n")
-        time.sleep(3)
+
+        expected_evseid = "DE*TNK*E123456"
+        set_result = csms.call("SetVariables", {"setVariableData": [{
+            "component": {"name": "ISO15118Ctrlr"},
+            "variable": {"name": "ISO15118EvseId"},
+            "attributeValue": expected_evseid,
+        }]})["setVariableResult"][0]
+        check("ISO15118EvseId accepted", set_result["attributeStatus"] == "Accepted", set_result)
+        common.disable_debug_mode(args.charger)
+        time.sleep(1)
+        common.enable_debug_mode(args.charger)
+        time.sleep(2)
+
+        from iso15118.shared.messages.enums import Namespace
+        client = EVTestClient(args.charger, iface)
+        with managed_socket(client.connect_tls(client.tls12_context())) as tls:
+            sap_res = client.sap(tls, [ISO2])
+            assert sap_res["ResponseCode"] == "OK_SuccessfulNegotiation", sap_res
+            response = client.exchange(tls, {
+                "V2G_Message": {
+                    "Header": {"SessionID": "0000000000000000"},
+                    "Body": {"SessionSetupReq": {"EVCCID": "020000000001"}},
+                },
+            }, Namespace.ISO_V2_MSG_DEF)
+        actual_evseid = response["V2G_Message"]["Body"]["SessionSetupRes"]["EVSEID"]
+        check("SessionSetupRes carries ISO15118EvseId", actual_evseid == expected_evseid, actual_evseid)
+        time.sleep(1)
 
         check("-2 chain live, TLS 1.2 works",
               try_tls(args.charger, iface, tls13=False) == "TLSv1.2")
+
+        chain20 = provision_chain(csms, workdir, iso20=True, with_aia=True)
+        (workdir / "leaf20.pem").write_text(chain20.split("-----END CERTIFICATE-----")[0] + "-----END CERTIFICATE-----\n")
+        time.sleep(3)
         check("OCSP unknown, TLS 1.3 refused [HUB20-532-002]",
               try_tls(args.charger, iface, tls13=True, mutual=True) is None)
 
@@ -252,7 +289,9 @@ def main():
             common.api_put(args.charger, "ocpp/config_update", saved_config)
         except Exception as e:
             print(f"cleanup failed, restore the ocpp config manually: {e}")
+            failures += 1
         csms.stop()
+        shutil.rmtree(workdir, ignore_errors=True)
 
     print("PASS" if failures == 0 else f"FAIL ({failures} failures)")
     sys.exit(0 if failures == 0 else 1)

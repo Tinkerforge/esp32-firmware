@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plug and Charge (M01/M02) on a real charger, ISO 15118-20 and -2.
 
-Drives PnC sessions over the EXI codec against a bench charger:
+Drives PnC sessions over the EXI codec:
 
 ISO 15118-20 (TLS 1.3 mutual auth):
   1. AuthorizationSetupRes offers PnC and CertificateInstallationService with a GenChallenge
@@ -17,8 +17,7 @@ ISO 15118-2 (TLS 1.2):
   8. a signed AuthorizationReq authorizes, a forged chain fails the PaymentDetails
   9. CertificateInstallationReq is forwarded and the CSMS response reaches the EV
 
-Run in evsim venv:
-../../../../../.venv-evsim/bin/python local_test_pnc.py --charger <ip>
+Invoked by certificates.py through the firmware test runner.
 """
 
 import argparse
@@ -26,15 +25,15 @@ import hashlib
 import struct
 import sys
 import tempfile
+import shutil
 import time
 from pathlib import Path
 
-import common
-from local_test_ocpp_ctrlr import Csms
-from local_test_ocsp_gating import CERTS, provision_chain, ocsp_response_b64, run
+import _common as common
+from _common import CSMSSim as Csms
+from _ocsp_gating import CERTS, provision_chain, ocsp_response_b64, run
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-sys.path.insert(0, str(SCRIPT_DIR / ".." / "evsim" / "iso15118"))
 
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
@@ -80,12 +79,12 @@ def cbv2g_helper():
     if _helper_bin is not None:
         return _helper_bin
     import glob, subprocess, tempfile
-    libs = glob.glob(str(SCRIPT_DIR / ".." / ".." / ".." / ".." / ".." / ".pio" / "libdeps" / "*" / "libcbv2g"))
+    libs = glob.glob(str(SCRIPT_DIR.parents[3] / ".pio" / "libdeps" / "*" / "libcbv2g"))
     if not libs:
         raise SystemExit("libcbv2g not found under .pio/libdeps, build the firmware first")
     lib = libs[0]
     out = Path(tempfile.gettempdir()) / "pnc_exi_helper"
-    srcs = [str(SCRIPT_DIR / "pnc_exi_helper.c"),
+    srcs = [str(SCRIPT_DIR / "_pnc_exi_helper.c"),
             f"{lib}/lib/cbv2g/common/exi_bitstream.c", f"{lib}/lib/cbv2g/common/exi_basetypes.c",
             f"{lib}/lib/cbv2g/common/exi_basetypes_encoder.c", f"{lib}/lib/cbv2g/common/exi_header.c",
             f"{lib}/lib/cbv2g/iso_20/iso20_CommonMessages_Datatypes.c",
@@ -354,7 +353,7 @@ def main():
         common.api_put(args.charger, "ocpp/reset", None)
         test_config = dict(saved_config)
         test_config.update({"enable": True, "protocol": 1, "url": f"ws://{local_ip}:{args.port}",
-                            "enable_auth": False, "pass": ""})
+                            "enable_auth": False})
         common.api_put(args.charger, "ocpp/config_update", test_config)
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
@@ -383,8 +382,12 @@ def main():
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
-        run_iso20(args, iface, csms, workdir, check)
         run_iso2(args, iface, csms, workdir, check)
+        common.disable_debug_mode(args.charger)
+        time.sleep(1)
+        common.enable_debug_mode(args.charger)
+        time.sleep(2)
+        run_iso20(args, iface, csms, workdir, check)
 
     finally:
         try:
@@ -396,7 +399,9 @@ def main():
             common.api_put(args.charger, "ocpp/config_update", saved_config)
         except Exception as e:
             print(f"cleanup failed, restore the ocpp config manually: {e}")
+            failures += 1
         csms.stop()
+        shutil.rmtree(workdir, ignore_errors=True)
 
     print("PASS" if failures == 0 else f"FAIL ({failures} failures)")
     sys.exit(0 if failures == 0 else 1)
@@ -415,8 +420,7 @@ def poll_auth20(tls, session_id, req, tries=8):
 def answer_vehicle_chain_good(csms, timeout=30):
     """Answer the vehicle chain OCSP request for the OEM client cert.
 
-    Only the first mutual TLS session triggers it, later sessions reuse
-    the cached Good status (HUB20-432-003).
+    A cached Good status may suppress the request.
     """
     try:
         req, msg_id = csms.expect("GetCertificateChainStatus", timeout=timeout)
@@ -426,6 +430,20 @@ def answer_vehicle_chain_good(csms, timeout=30):
                 "status": "Good", "nextUpdate": "2027-01-01T00:00:00Z"}
                for r in req["certificateStatusRequests"]]
     csms.respond(msg_id, {"certificateStatus": entries})
+
+
+def expect_ev_certificate(csms, timeout=60):
+    deadline = time.monotonic() + timeout
+    while True:
+        action, payload, msg_id = csms.expect_any(
+            {"Get15118EVCertificate", "GetCertificateChainStatus"},
+            timeout=deadline - time.monotonic())
+        if action == "Get15118EVCertificate":
+            return payload, msg_id
+        entries = [{"certificateHashData": r["certificateHashData"], "source": "OCSP",
+                    "status": "Good", "nextUpdate": "2027-01-01T00:00:00Z"}
+                   for r in payload["certificateStatusRequests"]]
+        csms.respond(msg_id, {"certificateStatus": entries})
 
 
 def run_iso20(args, iface, csms, workdir, check):
@@ -451,6 +469,7 @@ def run_iso20(args, iface, csms, workdir, check):
 
     # 3. wrong GenChallenge
     tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
     req = build_auth_req20(session_id, bytes(16), leaf, subs, key)
     res = poll_auth20(tls, session_id, req)
     check("PnC authorization WARNING_ChallengeInvalid on a wrong challenge [V2G20-2216]",
@@ -460,6 +479,7 @@ def run_iso20(args, iface, csms, workdir, check):
 
     # 4. forged contract chain, real names, fresh keys
     tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
     challenge = setup.pnc_as_res.gen_challenge
     f_leaf, f_subs, f_key = forge_contract_chain(workdir, iso20=True)
     req = build_auth_req20(session_id, challenge, f_leaf, f_subs, f_key)
@@ -471,11 +491,12 @@ def run_iso20(args, iface, csms, workdir, check):
 
     # 5. CertificateInstallationReq forwarded to the CSMS
     tls, session_id, setup = open_session20(args.charger, iface)
+    answer_vehicle_chain_good(csms, timeout=2)
     cin = build_cert_install_req20(session_id)
     from iso15118.shared.exi_codec import EXI
     from iso15118.shared.messages.enums import Namespace
     send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
-    ev_req, ev_msg = csms.expect("Get15118EVCertificate", timeout=30)
+    ev_req, ev_msg = expect_ev_certificate(csms)
     check("CertificateInstallationReq forwarded with action Install [M01.FR.01]",
           ev_req.get("action") == "Install", ev_req.get("action"))
     check("Get15118EVCertificate carries maximumContractCertificateChains [M01.FR.03]",
@@ -636,7 +657,7 @@ def run_iso2_cert_install(args, iface, csms, workdir, check):
     msg = wrap_v2g2(Body(CertificateInstallationReq=cin))
     send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
 
-    ev_req, ev_msg = csms.expect("Get15118EVCertificate", timeout=30)
+    ev_req, ev_msg = expect_ev_certificate(csms)
     check("ISO-2 CertificateInstallationReq forwarded, no maximumContractCertificateChains [M01.FR.02]",
           ev_req.get("action") == "Install" and "maximumContractCertificateChains" not in ev_req, ev_req.get("action"))
     exi_response = build_cert_install_res2(ev_req["exiRequest"])
@@ -715,12 +736,14 @@ def setup_pki_symlinks():
     src = CERTS / "iso2"
     for f in (src / "certs").iterdir():
         dst = pki / "certs" / f.name
-        if not dst.exists():
-            os.symlink(f, dst)
+        if dst.is_symlink() or dst.exists():
+            dst.unlink()
+        os.symlink(f.resolve(), dst)
     for f in (src / "private_keys").iterdir():
         dst = pki / "private_keys" / f.name
-        if not dst.exists():
-            os.symlink(f, dst)
+        if dst.is_symlink() or dst.exists():
+            dst.unlink()
+        os.symlink(f.resolve(), dst)
     shared_settings[SettingKey.PKI_PATH] = str(pki.parent)
 
 
