@@ -52,7 +52,8 @@ void ISO2::fill_cert_installation_res_dummy(struct iso2_CertificateInstallationR
     res->DHpublickey.CONTENT.bytesLen = 0;
     res->eMAID.Id.charactersLen = 3;
     memcpy(res->eMAID.Id.characters, "id3", 3);
-    res->eMAID.CONTENT.charactersLen = 0;
+    memcpy(res->eMAID.CONTENT.characters, "DE000000000000", 14);
+    res->eMAID.CONTENT.charactersLen = 14;
 }
 
 void ISO2::fill_cert_update_res_dummy(struct iso2_CertificateUpdateResType *res, iso2_responseCodeType rc)
@@ -68,7 +69,8 @@ void ISO2::fill_cert_update_res_dummy(struct iso2_CertificateUpdateResType *res,
     res->DHpublickey.CONTENT.bytesLen = 0;
     res->eMAID.Id.charactersLen = 3;
     memcpy(res->eMAID.Id.characters, "id3", 3);
-    res->eMAID.CONTENT.charactersLen = 0;
+    memcpy(res->eMAID.CONTENT.characters, "DE000000000000", 14);
+    res->eMAID.CONTENT.charactersLen = 14;
     res->RetryCounter_isUsed = 0;
 }
 
@@ -87,6 +89,9 @@ void ISO2::offer_pnc(struct iso2_ServiceDiscoveryResType *res)
 {
     pnc_offered = false;
     cert_service_offered = false;
+    if (!iso15118.supports_pnc()) {
+        return;
+    }
 #if MODULE_OCPP_AVAILABLE()
     if (iso15118.common.tls.is_session_active() && ocpp.is_iso15118_store_live()) {
         pnc_offered = true;
@@ -402,7 +407,7 @@ bool ISO2::verify_authorization_signature(const struct iso2_AuthorizationReqType
 // verified against the validated contract leaf.
 void ISO2::authorize_pnc(const struct iso2_AuthorizationReqType *req, struct iso2_AuthorizationResType *res)
 {
-    if (!contract_validated) {
+    if (!iso15118.supports_pnc() || !contract_validated) {
         res->ResponseCode = iso2_responseCodeType_FAILED_SequenceError;
     } else if (!req->GenChallenge_isUsed || (req->GenChallenge.bytesLen != PNC_CHALLENGE_LEN) || (memcmp(req->GenChallenge.bytes, gen_challenge, PNC_CHALLENGE_LEN) != 0)) {
         // [V2G2-475]

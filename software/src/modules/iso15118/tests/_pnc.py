@@ -364,6 +364,7 @@ def main():
     common.require_iso_tls_config(args.charger)
     iface = args.iface or common.route_interface(args.charger)
     local_ip = common.local_ip_towards(args.charger)
+    pnc_supported = "iso15118_pnc" in common.api_get(args.charger, "info/features")
     workdir = Path(tempfile.mkdtemp(prefix="pnc_"))
 
     failures = 0
@@ -389,7 +390,10 @@ def main():
         if not csms.connected.wait(timeout=60):
             raise SystemExit("charger did not connect to the embedded CSMS")
         time.sleep(2)
-        for name in ("Enabled", "ContractCertificateInstallationEnabled"):
+        pnc_variables = ["Enabled"]
+        if pnc_supported:
+            pnc_variables.append("ContractCertificateInstallationEnabled")
+        for name in pnc_variables:
             result = get_variable(csms, name)
             check(f"ISO15118Ctrlr.{name} is available", result["attributeStatus"] == "Accepted", result)
             if result["attributeStatus"] == "Accepted":
@@ -420,13 +424,16 @@ def main():
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
-        run_iso2(args, iface, csms, workdir, check)
-        common.disable_debug_mode(args.charger)
-        time.sleep(1)
-        common.enable_debug_mode(args.charger)
-        time.sleep(2)
-        run_iso20(args, iface, csms, workdir, check)
-        run_service_gating(args, iface, csms, check)
+        if pnc_supported:
+            run_iso2(args, iface, csms, workdir, check)
+            common.disable_debug_mode(args.charger)
+            time.sleep(1)
+            common.enable_debug_mode(args.charger)
+            time.sleep(2)
+            run_iso20(args, iface, csms, workdir, check)
+            run_service_gating(args, iface, csms, check)
+        else:
+            run_pnc_disabled(args, iface, csms, check)
 
     finally:
         cleanup_errors = []
@@ -519,6 +526,85 @@ def run_service_gating(args, iface, csms, check):
     answer_vehicle_chain_good(csms, timeout=2)
     check("ISO-20 certificate installation is offered again after service gating tests",
           setup.cert_install_service)
+    tls.close()
+    time.sleep(1)
+
+
+def assert_no_ev_certificate_request(csms, check, description):
+    unexpected = None
+    try:
+        unexpected = csms.expect("Get15118EVCertificate", timeout=2)
+    except TimeoutError:
+        pass
+    check(description, unexpected is None, unexpected)
+
+
+def run_pnc_disabled(args, iface, csms, check):
+    from iso15118.shared.exi_codec import EXI
+    from iso15118.shared.messages.enums import Namespace
+    from iso15118.shared.messages.iso15118_20.common_messages import AuthEnum
+
+    tls, session_id, setup = open_session20(args.charger, iface)
+    check("ISO-20 non-PnC build offers only EIM",
+          setup.auth_services == [AuthEnum.EIM], setup.auth_services)
+    check("ISO-20 non-PnC build omits CertificateInstallationService",
+          not setup.cert_install_service, setup.cert_install_service)
+    leaf, subs, key = contract_chain_objs(iso20=True)
+    req = build_auth_req20(session_id, bytes(16), leaf, subs, key)
+    res = exchange20(tls, req)
+    check("ISO-20 non-PnC build rejects PnC authorization selection",
+          res.response_code == "WARNING_AuthorizationSelectionInvalid", res.response_code)
+
+    cin = build_cert_install_req20(session_id)
+    send_exi(tls, EXI().to_exi(cin, Namespace.ISO_V20_COMMON_MSG), 0x8002)
+    res = recv_exi(tls, Namespace.ISO_V20_COMMON_MSG)
+    check("ISO-20 non-PnC build rejects CertificateInstallationReq",
+          res.response_code.startswith(("WARNING", "FAILED")) and res.evse_processing == "Finished",
+          res.response_code)
+    assert_no_ev_certificate_request(csms, check,
+                                     "ISO-20 non-PnC build does not forward certificate installation")
+    tls.close()
+    time.sleep(1)
+
+    from iso15118.shared.messages.datatypes import SelectedService
+    from iso15118.shared.messages.enums import AuthEnum as AuthEnum2
+    from iso15118.shared.messages.iso15118_2.body import (
+        Body, CertificateInstallationReq, PaymentServiceSelectionReq,
+        SelectedServiceList, ServiceDiscoveryReq, SessionSetupReq,
+    )
+    from iso15118.shared.messages.iso15118_2.datatypes import ServiceCategory
+
+    tls = connect(args.charger, iface, tls13=False)
+    sap(tls, ISO2)
+    wrap_v2g2.session_id = "00"
+    res = exchange2_body(tls, Body(SessionSetupReq=SessionSetupReq(evcc_id="0A1B2C3D4E5F")))
+    wrap_v2g2.session_id = res.header.session_id
+    res = exchange2_body(tls, Body(ServiceDiscoveryReq=ServiceDiscoveryReq()))
+    discovery = res.body.service_discovery_res
+    payment_opts = [str(getattr(option, "value", option)) for option in discovery.auth_option_list.auth_options]
+    check("ISO-2 non-PnC build offers only ExternalPayment",
+          not any("Contract" in option for option in payment_opts), payment_opts)
+    services = discovery.service_list
+    has_certificate_service = services is not None and any(
+        service.service_category == ServiceCategory.CERTIFICATE for service in services.services)
+    check("ISO-2 non-PnC build omits the certificate service", not has_certificate_service)
+
+    res = exchange2_body(tls, Body(PaymentServiceSelectionReq=PaymentServiceSelectionReq(
+        selected_auth_option=AuthEnum2.PNC_V2,
+        selected_service_list=SelectedServiceList(
+            selected_service=[SelectedService(service_id=1)]))))
+    check("ISO-2 non-PnC build rejects Contract payment selection",
+          res.body.payment_service_selection_res.response_code == "FAILED_PaymentSelectionInvalid",
+          res.body.payment_service_selection_res.response_code)
+
+    msg = wrap_v2g2(Body(CertificateInstallationReq=build_cert_install_req2()))
+    send_exi(tls, EXI().to_exi(msg, Namespace.ISO_V2_MSG_DEF), 0x8001)
+    res = recv_exi(tls, Namespace.ISO_V2_MSG_DEF)
+    check("ISO-2 non-PnC build rejects CertificateInstallationReq",
+          res.body.certificate_installation_res.response_code == "FAILED_NoCertificateAvailable",
+          res.body.certificate_installation_res.response_code)
+    assert_no_ev_certificate_request(csms, check,
+                                     "ISO-2 non-PnC build does not forward certificate installation")
     tls.close()
     time.sleep(1)
 

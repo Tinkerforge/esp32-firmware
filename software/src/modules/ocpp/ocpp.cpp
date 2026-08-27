@@ -202,6 +202,7 @@ bool Ocpp::start_client_21()
 
 #if MODULE_ISO15118_AVAILABLE()
     // Fill ISO15118Ctrlr.ProtocolSupported instances from the SAP protocol list
+    cp21->device_model.iso15118_pnc_supported = iso15118.supports_pnc();
     for (size_t i = 0; i < ARRAY_SIZE(iso15118_supported_protocols) && i < OCPP21_SUPPORTED_PROTOCOLS; i++) {
         snprintf(cp21->device_model.protocol_supported[i], sizeof(cp21->device_model.protocol_supported[i]), "%s", iso15118_supported_protocols[i]);
     }
@@ -405,10 +406,23 @@ bool Ocpp::is_iso15118_store_live()
     return cp21 && client_started;
 }
 
+constexpr bool Ocpp::supports_iso15118_pnc()
+{
+#if MODULE_ISO15118_AVAILABLE()
+    return iso15118.supports_pnc();
+#else
+    return false;
+#endif
+}
+
+bool Ocpp::private_environment_waives_iso15118_ocsp() const
+{
+    return cp21 && client_started && cp21->device_model.private_environment_enabled && !supports_iso15118_pnc();
+}
+
 // HUB20-532-002: TLS 1.3 with the -20 chain is only offered with a
 // time valid chain and Good OCSP status for every chain
-// certificate. The OCSP condition is waived in a private
-// environment (PrivateEnviromentEnabled).
+// certificate. Private mode waives OCSP only in builds without PnC.
 bool Ocpp::is_iso20_tls_ready()
 {
     if (!cp21 || !client_started) {
@@ -420,7 +434,7 @@ bool Ocpp::is_iso20_tls_ready()
     if (best == nullptr || !valid) {
         return false;
     }
-    if (cp21->device_model.private_environment_enabled) {
+    if (private_environment_waives_iso15118_ocsp()) {
         return true;
     }
     return cp21->seccChainOcspStatus(best->id) == OcppOcspStatus21::Good;
@@ -491,6 +505,11 @@ bool Ocpp::request_iso15118_vehicle_chain_status(const VehicleChainCertDer *chai
 
     if (!cp21 || !client_started) {
         return false;
+    }
+    if (private_environment_waives_iso15118_ocsp()) {
+        vehicle_chain_request_failed = false;
+        vehicle_chain_response_received = true;
+        return true;
     }
     if (chain == nullptr || chain_len == 0 || chain_len > OCPP21_VEHICLE_OCSP_CACHE_SIZE || root_der == nullptr) {
         return false;
@@ -567,8 +586,7 @@ Ocpp::VehicleChainCheck Ocpp::get_iso15118_vehicle_chain_check()
     if (!cp21 || !client_started) {
         return VehicleChainCheck::NotRequired;
     }
-    // OCSP checks are optional for private environments without PnC support [HUB20-532-002].
-    if (cp21->device_model.private_environment_enabled) {
+    if (private_environment_waives_iso15118_ocsp()) {
         return VehicleChainCheck::NotRequired;
     }
     if (vehicle_chain_count == 0 || vehicle_chain_request_failed) {
@@ -603,7 +621,7 @@ bool Ocpp::request_iso15118_ev_certificate(bool iso20, bool update, const uint8_
     ev_cert_exi_len = 0;
     ev_cert_remaining = 0;
 
-    if (!cp21 || !client_started || (exi == nullptr) || (exi_len == 0)) {
+    if (!supports_iso15118_pnc() || !cp21 || !client_started || (exi == nullptr) || (exi_len == 0)) {
         return false;
     }
 
@@ -680,7 +698,7 @@ bool Ocpp::take_iso15118_ev_cert_response(std::unique_ptr<uint8_t[]> *exi_out, s
 
 bool Ocpp::is_iso15118_contract_install_enabled()
 {
-    return cp21 && client_started && cp21->device_model.iso15118_enabled && cp21->device_model.contract_cert_install_enabled;
+    return supports_iso15118_pnc() && cp21 && client_started && cp21->device_model.iso15118_enabled && cp21->device_model.contract_cert_install_enabled;
 }
 
 void Ocpp::setup()
