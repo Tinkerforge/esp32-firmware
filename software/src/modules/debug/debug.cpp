@@ -347,7 +347,7 @@ void Debug::pre_setup()
     task_scheduler_accounting.init(384);
     //event_accounting.init(64);
 
-    task_handles.reserve(16);
+    task_handles.reserve(20);
     register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
     register_task(xTaskGetIdleTaskHandleForCore(0), sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
     register_task(xTaskGetIdleTaskHandleForCore(1), sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
