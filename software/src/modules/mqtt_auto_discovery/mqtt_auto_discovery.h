@@ -35,7 +35,6 @@ public:
     void register_events() override;
 
     ConfigRoot config;
-    void reschedule_announce_next_topic();
 
 private:
     MqttAutoDiscoveryMode mode;
@@ -50,4 +49,7 @@ private:
     void prepare_topic_lengths();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
     size_t get_discovery_topic(size_t topic_idx, char *buf, size_t buf_len);
+
+    void start();
+    void stop();
 };

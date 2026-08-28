@@ -60,12 +60,19 @@ void MqttAutoDiscovery::pre_setup()
     config = ConfigRoot{Config::Object({
         {"auto_discovery_mode", Config::Enum(MqttAutoDiscoveryMode::Disabled)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
-    }),  [](Config &cfg, ConfigSource source) -> String {
+    }),  [this](Config &cfg, ConfigSource source) -> String {
         const String &global_topic_prefix = mqtt.global_topic_prefix;
         const String &auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
 
         if (global_topic_prefix == auto_discovery_prefix)
             return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
+
+        if (source == ConfigSource::File)
+            return "";
+
+        // Stop with old config, start with new one.
+        this->stop();
+        task_scheduler.scheduleOnce([this](){ this->start(); });
 
         return "";
     }};
@@ -75,19 +82,50 @@ void MqttAutoDiscovery::setup()
 {
     api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
 
+    initialized = true;
+    this->start();
+}
+
+void MqttAutoDiscovery::stop()
+{
+    if (this->mode == MqttAutoDiscoveryMode::Disabled)
+        return;
+
+    task_scheduler.cancel(this->task_id);
+    this->task_id = 0;
+
+    // <discovery_prefix>/+/<node_id>/+/config
+    String discovery_topic;
+    discovery_topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
+
+    discovery_topic.concat(this->prefix);
+    discovery_topic.concat("/+/");
+    discovery_topic.concat(mqtt.client_name);
+    discovery_topic.concat("/+/config");
+    mqtt.unsubscribe(discovery_topic);
+
+    for (size_t topic_num = 0; topic_num < MQTT_DISCOVERY_TOPIC_COUNT; ++topic_num) {
+        CoolString topic;
+        size_t topic_len = this->mqtt_discovery_topic_lengths[topic_num];
+        topic.reserve(topic_len + 1);
+        this->get_discovery_topic(topic_num, topic.begin(), topic_len + 1);
+        topic.setLength(topic_len);
+
+        mqtt.publish(topic, String(), true);
+    }
+
+    mqtt_discovery_topic_lengths = nullptr;
+}
+
+void MqttAutoDiscovery::start()
+{
     this->mode = config.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
     this->prefix = config.get("auto_discovery_prefix")->asString();
-
-    initialized = true;
 
     if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
     prepare_topic_lengths();
-
-    task_id = task_scheduler.scheduleWithFixedDelay([this](){
-        this->announce_next_topic();
-    }, 1_s);
 
     // <discovery_prefix>/+/<node_id>/+/config
     String discovery_topic;
@@ -101,6 +139,10 @@ void MqttAutoDiscovery::setup()
     mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
         check_discovery_topic(topic, topic_len, data_len);
     }, Mqtt::Retained::Accept);
+
+    task_id = task_scheduler.scheduleWithFixedDelay([this](){
+        this->announce_next_topic();
+    }, 1_s);
 }
 
 void MqttAutoDiscovery::register_urls()
@@ -112,7 +154,7 @@ void MqttAutoDiscovery::register_events()
 {
 #if MODULE_SYSTEM_AVAILABLE()
     event.registerEvent("system/i18n_config", {"language"}, [this](const Config */*language*/) {
-        reschedule_announce_next_topic();
+        task_scheduler.rescheduleNow(this->task_id);
         return EventResult::OK;
     });
 #endif
@@ -148,11 +190,6 @@ void MqttAutoDiscovery::prepare_topic_lengths()
 {
     const String &client_name = mqtt.client_name;
 
-    if (this->mode == MqttAutoDiscoveryMode::Disabled) {
-        mqtt_discovery_topic_lengths = nullptr;
-        return;
-    }
-
     mqtt_discovery_topic_lengths = heap_alloc_array<uint8_t>(MQTT_DISCOVERY_TOPIC_COUNT);
 
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
@@ -173,16 +210,6 @@ void MqttAutoDiscovery::prepare_topic_lengths()
 
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)
 {
-    // auto discovery is disabled. remove all entities
-    if (this->mode == MqttAutoDiscoveryMode::Disabled) {
-        if (data_len == 0) //already removed
-            return;
-
-        String tp(topic, topic_len);
-        mqtt.publish(tp, String(), true);
-        return;
-    }
-
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
         if (mqtt_discovery_topic_lengths[i] != topic_len)
             continue;
@@ -205,14 +232,6 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
 
     // Unknown discovery topic with data; needs to be removed by sending a retained empty payload.
     mqtt.publish(tp, String(), true);
-}
-
-void MqttAutoDiscovery::reschedule_announce_next_topic()
-{
-    if (this->mode == MqttAutoDiscoveryMode::Disabled)
-        return;
-
-    task_scheduler.rescheduleNow(task_id);
 }
 
 void MqttAutoDiscovery::announce_next_topic()
