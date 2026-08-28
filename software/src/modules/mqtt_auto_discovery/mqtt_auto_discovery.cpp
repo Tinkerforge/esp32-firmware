@@ -85,8 +85,8 @@ void MqttAutoDiscovery::setup()
 
     prepare_topic_lengths();
 
-    task_id = task_scheduler.scheduleOnce([this](){
-        this->announce_next_topic(0);
+    task_id = task_scheduler.scheduleWithFixedDelay([this](){
+        this->announce_next_topic();
     }, 1_s);
 
     // <discovery_prefix>/+/<node_id>/+/config
@@ -212,191 +212,200 @@ void MqttAutoDiscovery::reschedule_announce_next_topic()
     if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
-    task_scheduler.cancel(task_id);
-    task_id = task_scheduler.scheduleOnce([this](){
-        this->announce_next_topic(0);
-    }, 1_s);
+    task_scheduler.rescheduleNow(task_id);
 }
 
-void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
+void MqttAutoDiscovery::announce_next_topic()
 {
-    seconds_t delay = 0_s;
-
     if (mqtt.state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected) {
-        topic_num = 0;
-        delay = 5_s;
+        this->next_topic = 0;
+        task_scheduler.updateCurrentTaskDelay(5_s);
+        return;
+    }
+
+    auto topic_idx = this->next_topic;
+    if (++this->next_topic >= MQTT_DISCOVERY_TOPIC_COUNT) {
+        this->next_topic = 0;
+        task_scheduler.updateCurrentTaskDelay(15_min);
     } else {
-        // Determine if this topic should be announced based on its check type.
-        const auto &info = mqtt_discovery_topic_infos[topic_num];
-        bool entity_enabled = false;
-        int resolved_meter_index = -1;
+        task_scheduler.updateCurrentTaskDelay(0_us);
+    }
 
-        switch (info.check_type) {
-            case MqttDiscoveryCheckType::Feature:
-                entity_enabled = api.hasFeature(info.feature);
+    // Determine if this topic should be announced based on its check type.
+    const auto &info = mqtt_discovery_topic_infos[topic_idx];
+    bool entity_enabled = false;
+    int resolved_meter_index = -1;
+
+    switch (info.check_type) {
+        case MqttDiscoveryCheckType::Feature:
+            entity_enabled = api.hasFeature(info.feature);
+            break;
+
+        case MqttDiscoveryCheckType::ApiBool: {
+            const Config *cfg = api.getState(info.api_check_path, false);
+            if (cfg == nullptr)
                 break;
 
-            case MqttDiscoveryCheckType::ApiBool: {
-                const Config *cfg = api.getState(info.api_check_path, false);
-                if (cfg != nullptr && info.api_check_key != nullptr) { // if we check the path and a key, get the keys value
-                    entity_enabled = cfg->get(info.api_check_key)->asBool();
-                } else if (cfg != nullptr && info.api_check_key == nullptr) { // Case if we just want to check if the path exists -> assume its active
-                    entity_enabled = true;
-                }
-                break;
+            if (info.api_check_key == nullptr) {
+                // if we just want to check if the path exists -> assume its active
+                entity_enabled = true;
+            } else {
+                // if we check the path and a key, get the keys value
+                entity_enabled = cfg->get(info.api_check_key)->asBool();
             }
-
-            case MqttDiscoveryCheckType::MeterValue: {
-                const Config *cfg = api.getState(info.api_check_path, false);
-                if (cfg != nullptr && cfg->is<Config::ConfUnion>()) {
-                    if (cfg->getTag<MeterClassID>() != MeterClassID::None) {
-                        // Meter is enabled. Now find the value_id index in the value_ids array.
-                        String value_ids_path = info.api_check_path;
-                        int last_slash = value_ids_path.lastIndexOf('/');
-                        if (last_slash >= 0) {
-                            value_ids_path = value_ids_path.substring(0, static_cast<size_t>(last_slash + 1)) + "value_ids";
-                        }
-                        const Config *value_ids_cfg = api.getState(value_ids_path.c_str(), false);
-                        if (value_ids_cfg != nullptr) {
-                            size_t count = value_ids_cfg->count();
-                            for (size_t idx = 0; idx < count; idx++) {
-                                if (value_ids_cfg->get(idx)->asUint() == static_cast<uint32_t>(info.meter_value_id)) {
-                                    entity_enabled = true;
-                                    resolved_meter_index = static_cast<int>(idx);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-            }
-            default:
-                esp_system_abortf<96>("Unknown MqttDiscoveryCheckType %d", static_cast<int>(info.check_type));
+            break;
         }
 
-        CoolString topic;
-        size_t topic_len = this->mqtt_discovery_topic_lengths[topic_num];
-        topic.reserve(topic_len + 1);
-        this->get_discovery_topic(topic_num, topic.begin(), topic_len + 1);
-        topic.setLength(topic_len);
+        case MqttDiscoveryCheckType::MeterValue: {
+            // TODO Use meters.get_path instead of codifying API assumptions here.
 
-        if (entity_enabled) {
-            size_t mode_idx = static_cast<size_t>(this->mode) - 1;
+            const Config *cfg = api.getState(info.api_check_path, false);
+            if (cfg == nullptr || !cfg->is<Config::ConfUnion>() || cfg->getTag<MeterClassID>() == MeterClassID::None)
+                break;
 
-            // Pick language-specific static_info if available, otherwise fall back to the default (German).
-            const char *static_info = info.static_infos[mode_idx];
-            if (default_language == Language::English) {
-                const char *en = info.static_infos_en[mode_idx];
-                if (en != nullptr) {
-                    static_info = en;
+            // Meter is enabled. Now find the value_id index in the value_ids array.
+            String value_ids_path = info.api_check_path;
+            int last_slash = value_ids_path.lastIndexOf('/');
+            if (last_slash >= 0) {
+                value_ids_path = value_ids_path.substring(0, static_cast<size_t>(last_slash + 1)) + "value_ids";
+            }
+            const Config *value_ids_cfg = api.getState(value_ids_path.c_str(), false);
+            if (value_ids_cfg == nullptr)
+                break;
+
+            size_t count = value_ids_cfg->count();
+            for (size_t idx = 0; idx < count; idx++) {
+                if (value_ids_cfg->get(idx)->asUint() == static_cast<uint32_t>(info.meter_value_id)) {
+                    entity_enabled = true;
+                    resolved_meter_index = static_cast<int>(idx);
+                    break;
                 }
             }
+            break;
+        }
+        default:
+            esp_system_abortf<96>("Unknown MqttDiscoveryCheckType %d", static_cast<int>(info.check_type));
+    }
 
-            if (static_info) { // No static info? Skip topic.
-                const String &client_name = mqtt.client_name;
-                const String &topic_prefix = mqtt.global_topic_prefix;
+    CoolString topic;
+    size_t topic_len = this->mqtt_discovery_topic_lengths[topic_idx];
+    topic.reserve(topic_len + 1);
+    this->get_discovery_topic(topic_idx, topic.begin(), topic_len + 1);
+    topic.setLength(topic_len);
 
-                String name = "";
-                if (info.check_type == MqttDiscoveryCheckType::MeterValue) {
-                    String meter_name = api.getState(info.availability[0].topic)->get(1)->get("display_name")->asString();
-                    if (default_language == Language::English) {
-                        name = "Meter " + String(meter_name) + " " + String(info.name_en);
-                    }else {
-                        name = "Zähler " + String(meter_name) + " " + String(info.name_de);
-                    }
-                } else {
-                    name = default_language == Language::English ? info.name_en : info.name_de;
-                }
-                // MQTT_DISCOVERY_MAX_JSON_LENGTH: max length generated by prepare.py
-                // 265: String literals
-                // 7*64: topic_prefix (four times) and client name (thrice)
-                // 13: component (max length is "binary_sensor")
-                // 250: device_info
-                constexpr size_t json_doc_size = MQTT_DISCOVERY_MAX_JSON_LENGTH + 265 + 7 * 64 + 13 + 250;
-
-                char *buf = static_cast<char *>(malloc(json_doc_size));
-                memset(buf, 0, json_doc_size);
-                TFJsonSerializer json(buf, json_doc_size);
-
-                json.addObject();
-
-                json.addMemberString("name", name.c_str());
-
-                json.addMemberStringF("unique_id", "%s-%s", client_name.c_str(), info.object_id);
-                json.addMemberStringF("default_entity_id", "%s.%s-%s", info.component, client_name.c_str(), info.object_id);
-                json.addMemberStringF("object_id", "%s-%s", client_name.c_str(), info.object_id);
-
-                switch (info.type) {
-                    case MqttDiscoveryType::StateAndUpdate:
-                        json.addMemberStringF("command_topic", "%s/%s_update", topic_prefix.c_str(), info.path);
-                    [[fallthrough]];
-                    case MqttDiscoveryType::StateOnly:
-                        json.addMemberStringF("state_topic", "%s/%s", topic_prefix.c_str(), info.path);
-                        break;
-                    case MqttDiscoveryType::CommandOnly:
-                        json.addMemberStringF("command_topic", "%s/%s", topic_prefix.c_str(), info.path);
-                        break;
-                    default:
-                        esp_system_abortf<96>("Unknown MqttDiscoveryType %d", static_cast<int>(info.type));
-                }
-
-                if (info.availability_count > 0) {
-                    json.addMemberArray("availability");
-                    for (uint8_t i = 0; i < info.availability_count; i++) {
-                        const auto &entry = info.availability[i];
-                        json.addObject();
-                        json.addMemberStringF("topic", "%s/%s", topic_prefix.c_str(), entry.topic);
-                        json.addMemberString("value_template", entry.value_template);
-                        json.endObject();
-                    }
-                    json.endArray();
-                    json.addMemberString("availability_mode", "all");
-                }
-
-
-                if (strlen(info.json_attributes_topic) > 0) {
-                    json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), info.json_attributes_topic);
-                    json_write_raw(json, info.json_attributes_info, strlen(info.json_attributes_info));
-                }
-
-                // Inject pre-formatted static_info as raw JSON object members
-                json_write_raw(json, static_info, strlen(static_info));
-
-                // For MeterValue entities, inject dynamically-resolved value_template
-                if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {
-                    assert(info.value_fractional_digits >= 0);
-                    json.addMemberStringF("value_template", "{{value_json[%d] | round(%d)}}", resolved_meter_index, info.value_fractional_digits);
-                }
-
-                json.addMemberObject("device");
-                json.addMemberString("identifiers", mqtt.client_name.c_str());
-                json.addMemberString("manufacturer", OPTIONS_MANUFACTURER_FULL());
-                json.addMemberString("model", OPTIONS_PRODUCT_NAME());
-                json.addMemberStringF("name", "%s (%s)", OPTIONS_PRODUCT_NAME(), mqtt.client_name.c_str());
-                json.endObject();
-
-                json.endObject();
-
-                String json_str = buf;
-                json_str.trim();
-
-                mqtt.publish(topic, json_str, true);
-                free(buf);
-
-            }
-        } else if (topic.length() > 0) { // Broadcast empty topic to delete
+    if (!entity_enabled) {
+        if (topic.length() > 0) {
             // Entity is not enabled; send empty payload to remove it from HA.
             mqtt.publish(topic, String(), true);
         }
+        return;
+    }
 
-        if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
-            topic_num = 0;
-            delay = 15_min;
+    size_t mode_idx = static_cast<size_t>(this->mode) - 1;
+
+    // Pick language-specific static_info if available, otherwise fall back to the default (German).
+    const char *static_info = info.static_infos[mode_idx];
+    if (default_language == Language::English) {
+        const char *en = info.static_infos_en[mode_idx];
+        if (en != nullptr) {
+            static_info = en;
         }
     }
 
-    task_id = task_scheduler.scheduleOnce([this, topic_num](){
-        this->announce_next_topic(topic_num);
-    }, delay);
+    if (!static_info) {
+        // No static info? Skip topic.
+        return;
+    }
+
+    const String &client_name = mqtt.client_name;
+    const String &topic_prefix = mqtt.global_topic_prefix;
+
+    String name = "";
+    if (info.check_type == MqttDiscoveryCheckType::MeterValue) {
+        String meter_name = api.getState(info.availability[0].topic)->get(1)->get("display_name")->asString();
+        if (default_language == Language::English) {
+            name = "Meter " + String(meter_name) + " " + String(info.name_en);
+        }else {
+            name = "Zähler " + String(meter_name) + " " + String(info.name_de);
+        }
+    } else {
+        name = default_language == Language::English ? info.name_en : info.name_de;
+    }
+    // MQTT_DISCOVERY_MAX_JSON_LENGTH: max length generated by prepare.py
+    // 265: String literals
+    // 7*64: topic_prefix (four times) and client name (thrice)
+    // 13: component (max length is "binary_sensor")
+    // 250: device_info
+    constexpr size_t json_doc_size = MQTT_DISCOVERY_MAX_JSON_LENGTH + 265 + 7 * 64 + 13 + 250;
+
+    // TODO: can we afford a 2k stack buffer here?
+
+    char *buf = static_cast<char *>(malloc(json_doc_size));
+    memset(buf, 0, json_doc_size);
+    TFJsonSerializer json(buf, json_doc_size);
+
+    json.addObject();
+
+    json.addMemberString("name", name.c_str());
+
+    json.addMemberStringF("unique_id", "%s-%s", client_name.c_str(), info.object_id);
+    json.addMemberStringF("default_entity_id", "%s.%s-%s", info.component, client_name.c_str(), info.object_id);
+    json.addMemberStringF("object_id", "%s-%s", client_name.c_str(), info.object_id);
+
+    switch (info.type) {
+        case MqttDiscoveryType::StateAndUpdate:
+            json.addMemberStringF("command_topic", "%s/%s_update", topic_prefix.c_str(), info.path);
+        [[fallthrough]];
+        case MqttDiscoveryType::StateOnly:
+            json.addMemberStringF("state_topic", "%s/%s", topic_prefix.c_str(), info.path);
+            break;
+        case MqttDiscoveryType::CommandOnly:
+            json.addMemberStringF("command_topic", "%s/%s", topic_prefix.c_str(), info.path);
+            break;
+        default:
+            esp_system_abortf<96>("Unknown MqttDiscoveryType %d", static_cast<int>(info.type));
+    }
+
+    if (info.availability_count > 0) {
+        json.addMemberArray("availability");
+        for (uint8_t i = 0; i < info.availability_count; i++) {
+            const auto &entry = info.availability[i];
+            json.addObject();
+            json.addMemberStringF("topic", "%s/%s", topic_prefix.c_str(), entry.topic);
+            json.addMemberString("value_template", entry.value_template);
+            json.endObject();
+        }
+        json.endArray();
+        json.addMemberString("availability_mode", "all");
+    }
+
+
+    if (strlen(info.json_attributes_topic) > 0) {
+        json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), info.json_attributes_topic);
+        json_write_raw(json, info.json_attributes_info, strlen(info.json_attributes_info));
+    }
+
+    // Inject pre-formatted static_info as raw JSON object members
+    json_write_raw(json, static_info, strlen(static_info));
+
+    // For MeterValue entities, inject dynamically-resolved value_template
+    if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {
+        assert(info.value_fractional_digits >= 0);
+        json.addMemberStringF("value_template", "{{value_json[%d] | round(%d)}}", resolved_meter_index, info.value_fractional_digits);
+    }
+
+    json.addMemberObject("device");
+    json.addMemberString("identifiers", mqtt.client_name.c_str());
+    json.addMemberString("manufacturer", OPTIONS_MANUFACTURER_FULL());
+    json.addMemberString("model", OPTIONS_PRODUCT_NAME());
+    json.addMemberStringF("name", "%s (%s)", OPTIONS_PRODUCT_NAME(), mqtt.client_name.c_str());
+    json.endObject();
+
+    json.endObject();
+
+    String json_str = buf;
+    json_str.trim();
+
+    mqtt.publish(topic, json_str, true);
+    free(buf);
 }

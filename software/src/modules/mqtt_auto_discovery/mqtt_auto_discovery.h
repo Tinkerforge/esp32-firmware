@@ -44,7 +44,8 @@ private:
     std::unique_ptr<uint8_t[]> mqtt_discovery_topic_lengths = nullptr;
 
     uint64_t task_id = 0;
-    void announce_next_topic(uint32_t next_topic);
+    uint32_t next_topic = 0;
+    void announce_next_topic();
 
     void prepare_topic_lengths();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
