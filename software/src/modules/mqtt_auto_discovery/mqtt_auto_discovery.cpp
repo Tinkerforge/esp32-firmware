@@ -74,12 +74,12 @@ void MqttAutoDiscovery::setup()
 {
     api.restorePersistentConfig("mqtt/auto_discovery_config", &config);
 
-    config_in_use = config;
-    mode = config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
+    this->mode = config.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
+    this->prefix = config.get("auto_discovery_prefix")->asString();
 
     initialized = true;
 
-    if (config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::Disabled)
+    if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
     prepare_topics();
@@ -92,7 +92,7 @@ void MqttAutoDiscovery::setup()
     String discovery_topic;
     discovery_topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
 
-    discovery_topic.concat(config_in_use.get("auto_discovery_prefix")->asString());
+    discovery_topic.concat(this->prefix);
     discovery_topic.concat("/+/");
     discovery_topic.concat(mqtt.client_name);
     discovery_topic.concat("/+/config");
@@ -119,26 +119,24 @@ void MqttAutoDiscovery::register_events()
 
 void MqttAutoDiscovery::prepare_topics()
 {
-    const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
     const String &client_name = mqtt.client_name;
-    const MqttAutoDiscoveryMode mode = config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
     unsigned int topic_length;
 
-    if (mode == MqttAutoDiscoveryMode::Disabled)
+    if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
-        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[(size_t)mode - 1];
+        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[(size_t)this->mode - 1];
         if (!static_info) // No static info? Skip topic.
             continue;
 
         // <discovery_prefix>/<component>/<node_id>/<object_id>/config
-        topic_length = auto_discovery_prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
+        topic_length = this->prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
             + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
 
         mqtt_discovery_topics[i].full_path.reserve(topic_length);
 
-        mqtt_discovery_topics[i].full_path.concat(auto_discovery_prefix);
+        mqtt_discovery_topics[i].full_path.concat(this->prefix);
         mqtt_discovery_topics[i].full_path.concat('/');
         mqtt_discovery_topics[i].full_path.concat(mqtt_discovery_topic_infos[i].component);
         mqtt_discovery_topics[i].full_path.concat('/');
@@ -184,7 +182,7 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
 
 void MqttAutoDiscovery::reschedule_announce_next_topic()
 {
-    if (config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::Disabled)
+    if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
     task_scheduler.cancel(task_id);
@@ -249,7 +247,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         }
 
         if (entity_enabled) {
-            size_t mode_idx = config_in_use.get("auto_discovery_mode")->asUint() - 1;
+            size_t mode_idx = static_cast<size_t>(this->mode) - 1;
 
             // Pick language-specific static_info if available, otherwise fall back to the default (German).
             const char *static_info = info.static_infos[mode_idx];

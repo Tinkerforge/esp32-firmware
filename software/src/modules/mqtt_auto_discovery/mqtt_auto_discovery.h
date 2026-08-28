@@ -35,12 +35,11 @@ public:
     void register_events() override;
 
     ConfigRoot config;
-    ConfigRoot config_in_use;
     void reschedule_announce_next_topic();
 
 private:
-    // Necessary to not access config_in_use in MQTT thread.
     MqttAutoDiscoveryMode mode;
+    String prefix;
 
     struct DiscoveryTopic {
         String full_path;
