@@ -165,13 +165,7 @@ size_t MqttAutoDiscovery::get_discovery_topic(size_t topic_idx, char *buf, size_
     if (size_t topic_len = this->mqtt_discovery_topic_lengths[topic_idx]; topic_len >= buf_len)
         esp_system_abortf<96>("topic length mismatch; expected %zu, got %zu", topic_len, buf_len);
 
-    buf[0] = '\0';
-
     const auto &info = mqtt_discovery_topic_infos[topic_idx];
-
-    const char *static_info = info.static_infos[(size_t)this->mode - 1];
-    if (!static_info) // No static info? Skip topic.
-        return 0;
 
     StringWriter sw{buf, buf_len};
 
@@ -193,10 +187,6 @@ void MqttAutoDiscovery::prepare_topic_lengths()
     mqtt_discovery_topic_lengths = heap_alloc_array<uint8_t>(MQTT_DISCOVERY_TOPIC_COUNT);
 
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
-        const char *static_info = mqtt_discovery_topic_infos[i].static_infos[(size_t)this->mode - 1];
-        if (!static_info) // No static info? Skip topic.
-            continue;
-
         // <discovery_prefix>/<component>/<node_id>/<object_id>/config
         size_t topic_length = this->prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
             + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
