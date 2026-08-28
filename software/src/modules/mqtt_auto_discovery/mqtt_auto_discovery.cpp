@@ -327,8 +327,9 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 json_write_raw(json, static_info, strlen(static_info));
 
                 // For MeterValue entities, inject dynamically-resolved value_template
-                if (info.check_type == MqttDiscoveryCheckType::MeterValue && info.value_template_fmt != nullptr && resolved_meter_index >= 0) {
-                    json.addMemberStringF("value_template", info.value_template_fmt, resolved_meter_index);
+                if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {
+                    assert(info.value_fractional_digits >= 0);
+                    json.addMemberStringF("value_template", "{{value_json[%d] | round(%d)}}", resolved_meter_index, info.value_fractional_digits);
                 }
 
                 json.addMemberObject("device");

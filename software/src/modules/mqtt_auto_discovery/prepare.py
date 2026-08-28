@@ -327,7 +327,7 @@ class Entity:
     api_check_path: str = None  # API path to check (for ApiBool and MeterValue)
     api_check_key: str = None  # Key within the config to check (for ApiBool)
     meter_value_id: int = -1   # MeterValueID to look up in value_ids (for MeterValue)
-    value_template_fmt: str = None  # printf format with %d for resolved index (for MeterValue)
+    value_fractional_digits: int = -1 # -1 = not used
 
     def __post_init__(self):
         if self.json_attributes_info is None:
@@ -465,7 +465,7 @@ topic_template = """    {{
         .api_check_path = {api_check_path},
         .api_check_key = {api_check_key},
         .meter_value_id = {meter_value_id},
-        .value_template_fmt = {value_template_fmt},
+        .value_fractional_digits = {value_fractional_digits},
     }}"""
 
 entities = [
@@ -923,9 +923,6 @@ meter_value_entries = load_meter_value_entries(METER_VALUE_IDS)
 
 for meter_id in range(0, meters_max_slots):
     for suffix, name_de, name_en, value_id, rounding, unit, dev_class, state_class in meter_value_entries:
-        # The value_template_fmt contains a %d placeholder that the C++ code replaces
-        # with the resolved index from meters/N/value_ids at runtime.
-        value_template_fmt = "{{value_json[%d] | round(" + str(rounding) + ")}}"
         static_info = {
             "unit_of_measurement": unit,
             "state_class": state_class,
@@ -948,7 +945,7 @@ for meter_id in range(0, meters_max_slots):
                 check_type=CheckType.METER_VALUE,
                 api_check_path=f"meters/{meter_id}/config",
                 meter_value_id=value_id,
-                value_template_fmt=value_template_fmt,
+                value_fractional_digits=rounding,
             )
         )
 
@@ -973,7 +970,7 @@ topics = [
         api_check_path='"%s"' % x.api_check_path if x.api_check_path else "NULL",
         api_check_key='"%s"' % x.api_check_key if x.api_check_key else "NULL",
         meter_value_id=x.meter_value_id,
-        value_template_fmt='"%s"' % x.value_template_fmt.replace('"', '\\"') if x.value_template_fmt else "NULL",
+        value_fractional_digits=x.value_fractional_digits,
     )
     for x in entities
 ]

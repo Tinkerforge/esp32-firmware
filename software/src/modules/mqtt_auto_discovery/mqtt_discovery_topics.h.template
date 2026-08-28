@@ -36,7 +36,7 @@ struct MqttDiscoveryTopicInfo {
     const char * const api_check_path; // API path to check (for ApiBool and MeterValue)
     const char * const api_check_key;  // Key within the config to check (for ApiBool)
     const int16_t meter_value_id;      // MeterValueID to look up in value_ids (for MeterValue; -1 if unused)
-    const char * const value_template_fmt; // printf format with %d for resolved index (for MeterValue; NULL if unused)
+    const int8_t value_fractional_digits; // -1 if unused
 };
 
 extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];
