@@ -4,8 +4,11 @@
 // Certificate chain: SECC Leaf -> CPO Sub-CA2 -> CPO Sub-CA1
 
 #include "dev_certs.h"
+#include "options.h"
 
 #include "gcc_warnings.h"
+
+#if OPTIONS_ISO15118_DEV_CERTS_ENABLED()
 
 // =============================================================================
 // ISO 15118-2 Certificates (secp256r1/prime256v1, TLS 1.2)
@@ -173,3 +176,5 @@ const char dev_v2g_root_ca_pem_iso20[] =
     "9ocmqwvjg/nj9+yB6he5oMxpPkbedp43Her2paHhT5waZBg08/sI1N0PZSGzH8Pv\n"
     "6SLifwAIcw==\n"
     "-----END CERTIFICATE-----\n";
+
+#endif
