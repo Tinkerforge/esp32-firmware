@@ -33,6 +33,7 @@
 #include "generated/module_dependencies.h"
 #include "language.h"
 #include "options.h"
+#include "tools/string_builder.h"
 
 // Inject RAW, preformatted Json into the serializer. Must be valid JSON otherwise things might break
 static void json_write_raw(TFJsonSerializer &json, const char *raw, size_t len)
@@ -82,7 +83,7 @@ void MqttAutoDiscovery::setup()
     if (this->mode == MqttAutoDiscoveryMode::Disabled)
         return;
 
-    prepare_topics();
+    prepare_topic_lengths();
 
     task_id = task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
@@ -117,13 +118,42 @@ void MqttAutoDiscovery::register_events()
 #endif
 }
 
-void MqttAutoDiscovery::prepare_topics()
+size_t MqttAutoDiscovery::get_discovery_topic(size_t topic_idx, char *buf, size_t buf_len)
+{
+    if (size_t topic_len = this->mqtt_discovery_topic_lengths[topic_idx]; topic_len >= buf_len)
+        esp_system_abortf<96>("topic length mismatch; expected %zu, got %zu", topic_len, buf_len);
+
+    buf[0] = '\0';
+
+    const auto &info = mqtt_discovery_topic_infos[topic_idx];
+
+    const char *static_info = info.static_infos[(size_t)this->mode - 1];
+    if (!static_info) // No static info? Skip topic.
+        return 0;
+
+    StringWriter sw{buf, buf_len};
+
+    sw.puts(this->prefix);
+    sw.putc('/');
+    sw.puts(info.component);
+    sw.putc('/');
+    sw.puts(mqtt.client_name);
+    sw.putc('/');
+    sw.puts(info.object_id);
+    sw.puts("/config");
+    return sw.getLength();
+}
+
+void MqttAutoDiscovery::prepare_topic_lengths()
 {
     const String &client_name = mqtt.client_name;
-    unsigned int topic_length;
 
-    if (this->mode == MqttAutoDiscoveryMode::Disabled)
+    if (this->mode == MqttAutoDiscoveryMode::Disabled) {
+        mqtt_discovery_topic_lengths = nullptr;
         return;
+    }
+
+    mqtt_discovery_topic_lengths = heap_alloc_array<uint8_t>(MQTT_DISCOVERY_TOPIC_COUNT);
 
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
         const char *static_info = mqtt_discovery_topic_infos[i].static_infos[(size_t)this->mode - 1];
@@ -131,19 +161,13 @@ void MqttAutoDiscovery::prepare_topics()
             continue;
 
         // <discovery_prefix>/<component>/<node_id>/<object_id>/config
-        topic_length = this->prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
+        size_t topic_length = this->prefix.length() + strlen(mqtt_discovery_topic_infos[i].component)
             + client_name.length() + strlen(mqtt_discovery_topic_infos[i].object_id) + 10; // "config" + 4*'/' = 10
 
-        mqtt_discovery_topics[i].full_path.reserve(topic_length);
+        if (size_t max_len = std::numeric_limits<decltype(mqtt_discovery_topic_lengths)::element_type>::max(); topic_length > max_len)
+            esp_system_abortf<96>("Topic length too long: is %zu, max allowed %zu", topic_length, max_len);
 
-        mqtt_discovery_topics[i].full_path.concat(this->prefix);
-        mqtt_discovery_topics[i].full_path.concat('/');
-        mqtt_discovery_topics[i].full_path.concat(mqtt_discovery_topic_infos[i].component);
-        mqtt_discovery_topics[i].full_path.concat('/');
-        mqtt_discovery_topics[i].full_path.concat(client_name);
-        mqtt_discovery_topics[i].full_path.concat('/');
-        mqtt_discovery_topics[i].full_path.concat(mqtt_discovery_topic_infos[i].object_id);
-        mqtt_discovery_topics[i].full_path.concat("/config");
+        mqtt_discovery_topic_lengths[i] = topic_length;
     }
 }
 
@@ -160,10 +184,13 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
     }
 
     for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
-        if (mqtt_discovery_topics[i].full_path.length() != topic_len)
+        if (mqtt_discovery_topic_lengths[i] != topic_len)
             continue;
 
-        if (memcmp(mqtt_discovery_topics[i].full_path.c_str(), topic, topic_len) == 0) {
+        char buf[255];
+        this->get_discovery_topic(i, buf, 255);
+
+        if (memcmp(buf, topic, topic_len) == 0) {
             // Discovery topic is known; nothing to do.
             return;
         }
@@ -247,6 +274,12 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
             default:
                 esp_system_abortf<96>("Unknown MqttDiscoveryCheckType %d", static_cast<int>(info.check_type));
         }
+
+        CoolString topic;
+        size_t topic_len = this->mqtt_discovery_topic_lengths[topic_num];
+        topic.reserve(topic_len + 1);
+        this->get_discovery_topic(topic_num, topic.begin(), topic_len + 1);
+        topic.setLength(topic_len);
 
         if (entity_enabled) {
             size_t mode_idx = static_cast<size_t>(this->mode) - 1;
@@ -347,15 +380,14 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 String json_str = buf;
                 json_str.trim();
-                // TODO add mqtt.publish with const char * and size_t to omit a copy here
-                // or add a function to adopt a buffer into a CoolString
-                mqtt.publish(mqtt_discovery_topics[topic_num].full_path, json_str, true);
+
+                mqtt.publish(topic, json_str, true);
                 free(buf);
 
             }
-        } else if (mqtt_discovery_topics[topic_num].full_path.length() > 0) { // Broadcast empty topic to delete
+        } else if (topic.length() > 0) { // Broadcast empty topic to delete
             // Entity is not enabled; send empty payload to remove it from HA.
-            mqtt.publish(mqtt_discovery_topics[topic_num].full_path, String(), true);
+            mqtt.publish(topic, String(), true);
         }
 
         if (++topic_num >= MQTT_DISCOVERY_TOPIC_COUNT) {
