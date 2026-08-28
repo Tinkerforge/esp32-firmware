@@ -30,7 +30,6 @@ METER_VALUE_IDS = [
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
 warp_edition = util.get_env_metadata()['options']['hostname_prefix']
-print("[prepare.py] WARP:", warp_edition)
 
 charge_mode_names_de = [
     "Schnell",
