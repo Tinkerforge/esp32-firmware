@@ -52,6 +52,5 @@ private:
     void announce_next_topic(uint32_t next_topic);
 
     void prepare_topics();
-    void subscribe_to_own();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
 };
