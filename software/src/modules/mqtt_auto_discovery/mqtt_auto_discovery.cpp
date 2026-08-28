@@ -227,15 +227,15 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                         String value_ids_path = info.api_check_path;
                         int last_slash = value_ids_path.lastIndexOf('/');
                         if (last_slash >= 0) {
-                            value_ids_path = value_ids_path.substring(0, last_slash + 1) + "value_ids";
+                            value_ids_path = value_ids_path.substring(0, static_cast<size_t>(last_slash + 1)) + "value_ids";
                         }
                         const Config *value_ids_cfg = api.getState(value_ids_path.c_str(), false);
                         if (value_ids_cfg != nullptr) {
                             size_t count = value_ids_cfg->count();
                             for (size_t idx = 0; idx < count; idx++) {
-                                if (value_ids_cfg->get(idx)->asUint() == (uint32_t)info.meter_value_id) {
+                                if (value_ids_cfg->get(idx)->asUint() == static_cast<uint32_t>(info.meter_value_id)) {
                                     entity_enabled = true;
-                                    resolved_meter_index = (int)idx;
+                                    resolved_meter_index = static_cast<int>(idx);
                                     break;
                                 }
                             }
@@ -244,6 +244,8 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 }
                 break;
             }
+            default:
+                esp_system_abortf<96>("Unknown MqttDiscoveryCheckType %d", static_cast<int>(info.check_type));
         }
 
         if (entity_enabled) {
@@ -295,13 +297,15 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 switch (info.type) {
                     case MqttDiscoveryType::StateAndUpdate:
                         json.addMemberStringF("command_topic", "%s/%s_update", topic_prefix.c_str(), info.path);
-                        /* FALLTHROUGH */
+                    [[fallthrough]];
                     case MqttDiscoveryType::StateOnly:
                         json.addMemberStringF("state_topic", "%s/%s", topic_prefix.c_str(), info.path);
                         break;
                     case MqttDiscoveryType::CommandOnly:
                         json.addMemberStringF("command_topic", "%s/%s", topic_prefix.c_str(), info.path);
                         break;
+                    default:
+                        esp_system_abortf<96>("Unknown MqttDiscoveryType %d", static_cast<int>(info.type));
                 }
 
                 if (info.availability_count > 0) {
