@@ -77,6 +77,10 @@ def test_vehicle_chain_status(tc: TestContext):
     run(tc, "_vehicle_chain.py", 900)
 
 
+def test_v2g2_871_iso2_chain_selection(tc: TestContext):
+    run(tc, "_iso2_chain_selection.py", 900)
+
+
 def test_plug_and_charge(tc: TestContext):
     global environment
     assert environment is not None

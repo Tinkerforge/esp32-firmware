@@ -30,6 +30,7 @@
 // -----------------------------------------------------------------------------
 extern const char dev_cert_chain_pem_iso2[];
 extern const char dev_private_key_pem_iso2[];
+extern const char dev_v2g_root_ca_pem_iso2[];
 
 // -----------------------------------------------------------------------------
 // ISO 15118-20 certificates (secp521r1, TLS 1.3)
