@@ -4,15 +4,13 @@
 set -eu
 
 cd "$(dirname "$0")"
-BUILD=/tmp/opencode/iso15118_tests/alert_classification
+readonly BUILD="$(mktemp -d "${TMPDIR:-/tmp}/iso15118-alert-classification.XXXXXXXX")"
+trap 'rm -rf -- "$BUILD"' EXIT
 PATCH="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/0007-Preserve-actionable-TLS-fatal-alert-causes.rawpatch)"
-
-rm -rf "$BUILD"
-mkdir -p "$BUILD"
 
 if [ -n "${MBEDTLS_SRC:-}" ]; then
     cp -r "$MBEDTLS_SRC" "$BUILD/mbedtls"
-    rm -rf "$BUILD/mbedtls/.git"
+    rm -rf -- "$BUILD/mbedtls/.git"
 else
     git clone --quiet --depth 1 --branch v3.6.6 --recurse-submodules --shallow-submodules \
         https://github.com/Mbed-TLS/mbedtls "$BUILD/mbedtls"

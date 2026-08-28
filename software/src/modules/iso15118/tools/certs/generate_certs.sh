@@ -441,12 +441,13 @@ update_dev_certs_cpp() {
 
     local ISO2_CHAIN="$SCRIPT_DIR/output/iso2/certs/cpoCertChain.pem"
     local ISO2_KEY="$SCRIPT_DIR/output/iso2/private_keys/seccLeaf_unencrypted.key"
+    local ISO2_V2G_ROOT="$SCRIPT_DIR/output/iso2/certs/v2gRootCACert.pem"
     local ISO20_CHAIN="$SCRIPT_DIR/output/iso20/certs/cpoCertChain.pem"
     local ISO20_KEY="$SCRIPT_DIR/output/iso20/private_keys/seccLeaf_unencrypted.key"
     local ISO20_OEM_ROOT="$SCRIPT_DIR/output/iso20/certs/oemRootCACert.pem"
     local ISO20_V2G_ROOT="$SCRIPT_DIR/output/iso20/certs/v2gRootCACert.pem"
 
-    for f in "$ISO2_CHAIN" "$ISO2_KEY" "$ISO20_CHAIN" "$ISO20_KEY" "$ISO20_OEM_ROOT" "$ISO20_V2G_ROOT"; do
+    for f in "$ISO2_CHAIN" "$ISO2_KEY" "$ISO2_V2G_ROOT" "$ISO20_CHAIN" "$ISO20_KEY" "$ISO20_OEM_ROOT" "$ISO20_V2G_ROOT"; do
         if [ ! -f "$f" ]; then
             echo "Error: Required file not found: $f"
             return 1
@@ -458,6 +459,8 @@ update_dev_certs_cpp() {
     ISO2_CHAIN_C=$(cert_chain_to_c_string "$ISO2_CHAIN")
     local ISO2_KEY_C
     ISO2_KEY_C=$(pem_to_c_string "$ISO2_KEY")
+    local ISO2_V2G_ROOT_C
+    ISO2_V2G_ROOT_C=$(pem_to_c_string "$ISO2_V2G_ROOT")
     local ISO20_CHAIN_C
     ISO20_CHAIN_C=$(cert_chain_to_c_string "$ISO20_CHAIN")
     local ISO20_KEY_C
@@ -489,6 +492,10 @@ ${ISO2_CHAIN_C};
 // SECC leaf private key for ISO 15118-2 (unencrypted EC key, secp256r1)
 const char dev_private_key_pem_iso2[] =
 ${ISO2_KEY_C};
+
+// V2G Root CA anchoring the ISO 15118-2 development SECC chain
+const char dev_v2g_root_ca_pem_iso2[] =
+${ISO2_V2G_ROOT_C};
 
 // =============================================================================
 // ISO 15118-20 Certificates (secp521r1, TLS 1.3)

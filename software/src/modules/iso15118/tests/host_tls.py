@@ -39,5 +39,9 @@ def test_tls_alert_classification_patch(tc: TestContext):
     run(tc, "_tls_alert_classification.sh", 600)
 
 
+def test_tls12_v2g_extensions_patch(tc: TestContext):
+    run(tc, "_tls12_v2g_extensions_patch.sh", 600, os.environ.copy())
+
+
 if __name__ == "__main__":
     run_testsuite(locals())
