@@ -146,6 +146,11 @@ public:
     // Returns 0 on success, non-zero on failure.
     int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
 
+    int select_iso2_trusted_ca(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
+    int accept_iso2_status_request_v2(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
+    int iso2_status_request_v2_available(mbedtls_ssl_context *ssl) const;
+    int get_iso2_status_response_v2(mbedtls_ssl_context *ssl, const unsigned char **response_list, size_t *response_list_len);
+
     bool get_ocsp_staple(size_t index, const unsigned char **der, size_t *der_len) const;
 
 private:
@@ -170,6 +175,8 @@ private:
     };
 
     bool load_certificates();
+    bool parse_iso2_candidates();
+    void free_iso2_candidate(size_t index);
     bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
@@ -211,13 +218,34 @@ private:
     mbedtls_entropy_context *entropy = nullptr;
     mbedtls_ctr_drbg_context *ctr_drbg = nullptr;
 
-    // ISO 15118-2 certificates (secp256r1)
-    mbedtls_x509_crt *cert_chain_iso2 = nullptr;
-    mbedtls_pk_context *private_key_iso2 = nullptr;
-    uint8_t *cert_chain_pem_iso2 = nullptr;
-    size_t cert_chain_pem_len_iso2 = 0;
-    uint8_t *private_key_pem_iso2 = nullptr;
-    size_t private_key_pem_len_iso2 = 0;
+    // ISO 15118-2 certificates (secp256r1), freshest candidate first.
+    static constexpr size_t ISO2_CANDIDATE_MAX = 4;
+    static constexpr size_t ISO2_OCSP_MAX = 4;
+    struct iso2_candidate_t {
+        uint32_t chain_id = 0;
+        mbedtls_x509_crt *cert_chain = nullptr;
+        mbedtls_pk_context *private_key = nullptr;
+        mbedtls_x509_crt *root = nullptr;
+        uint8_t *cert_chain_pem = nullptr;
+        size_t cert_chain_pem_len = 0;
+        uint8_t *private_key_pem = nullptr;
+        size_t private_key_pem_len = 0;
+        uint8_t *root_pem = nullptr;
+        size_t root_pem_len = 0;
+        uint8_t root_cert_sha1[20] = {};
+        uint8_t root_key_sha1[20] = {};
+        uint8_t *ocsp_der[ISO2_OCSP_MAX] = {};
+        size_t ocsp_der_len[ISO2_OCSP_MAX] = {};
+        uint8_t *ocsp_response_list = nullptr;
+        size_t ocsp_response_list_len = 0;
+        size_t cert_count = 0;
+        bool ocsp_complete = false;
+    };
+    iso2_candidate_t iso2_candidates[ISO2_CANDIDATE_MAX];
+    size_t iso2_candidate_count = 0;
+    size_t selected_iso2_candidate = 0;
+    bool iso2_store_live = false;
+    bool iso2_status_v2_requested = false;
 
     // ISO 15118-20 certificates (secp521r1)
     mbedtls_x509_crt *cert_chain_iso20 = nullptr;

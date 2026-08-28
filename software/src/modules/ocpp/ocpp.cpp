@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <vector>
 #include <mbedtls/base64.h>
 
 #include "event_log_prefix.h"
@@ -298,8 +299,6 @@ void Ocpp::apply_config() {
 
 const Ocpp21::CertEntry *Ocpp::best_iso15118_secc_chain(bool iso20, bool *valid_out)
 {
-    // One chain per anchoring V2G root can be stored.
-    // Prefer a chain that is currently valid and the freshest one on a tie.
     auto group = iso20 ? Ocpp21::CertGroup::V2G20Chain : Ocpp21::CertGroup::V2GChain;
     time_t now = platform_get_system_time(cp21->connection.platform_ctx);
     const Ocpp21::CertEntry *best = nullptr;
@@ -318,6 +317,62 @@ const Ocpp21::CertEntry *Ocpp::best_iso15118_secc_chain(bool iso20, bool *valid_
         *valid_out = best_valid;
     }
     return best;
+}
+
+// Enumerates up to capacity chains for ISO 15118-2 (iso20=false) or
+// ISO 15118-20 (iso20=true), freshest not_before first. Returns the
+// number written to chains_out.
+size_t Ocpp::get_iso15118_secc_chains(bool iso20, Iso15118SeccChain *chains_out, size_t capacity)
+{
+    if (!cp21 || !client_started || chains_out == nullptr || capacity == 0) {
+        return 0;
+    }
+
+    auto group = iso20 ? Ocpp21::CertGroup::V2G20Chain : Ocpp21::CertGroup::V2GChain;
+    time_t now = platform_get_system_time(cp21->connection.platform_ctx);
+    std::vector<const Ocpp21::CertEntry *> candidates;
+    for (const auto &e : cp21->cert_store.all()) {
+        if (e.group != group || !e.has_anchor || e.not_before > now || now > e.not_after) {
+            continue;
+        }
+        candidates.push_back(&e);
+    }
+    std::sort(candidates.begin(), candidates.end(), [](const Ocpp21::CertEntry *a, const Ocpp21::CertEntry *b) {
+        return a->not_before != b->not_before ? a->not_before > b->not_before : a->id < b->id;
+    });
+
+    static constexpr size_t key_pem_max = 2048;
+    size_t count = 0;
+    for (const auto *entry : candidates) {
+        if (count >= capacity) {
+            break;
+        }
+
+        Iso15118SeccChain candidate;
+        candidate.chain_pem = heap_alloc_array<char>(OCPP21_CERT_PEM_MAX + 1);
+        candidate.key_pem = heap_alloc_array<char>(key_pem_max + 1);
+        std::string root = cp21->cert_store.loadRootByHash(entry->anchor_root);
+        candidate.root_pem = heap_alloc_array<char>(root.size() + 1);
+        if (candidate.chain_pem == nullptr || candidate.key_pem == nullptr || root.empty() || candidate.root_pem == nullptr) {
+            continue;
+        }
+        if (cp21->cert_store.readPem(*entry, candidate.chain_pem.get(), OCPP21_CERT_PEM_MAX + 1) == 0) {
+            continue;
+        }
+        const char *root_ptr = candidate.root_pem.get();
+        memcpy(candidate.root_pem.get(), root.c_str(), root.size() + 1);
+        if (platform_verify_chain21(candidate.chain_pem.get(), &root_ptr, 1, now, nullptr) != OcppChainVerifyResult21::Ok) {
+            continue;
+        }
+        size_t key_len = platform_read_file(cp21->cert_store.keyPath(entry->id).c_str(), candidate.key_pem.get(), key_pem_max);
+        if (key_len == 0) {
+            continue;
+        }
+        candidate.key_pem[key_len] = '\0';
+        candidate.chain_id = entry->id;
+        chains_out[count++] = std::move(candidate);
+    }
+    return count;
 }
 
 bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pem_out, std::unique_ptr<char[]> *key_pem_out)
@@ -345,7 +400,7 @@ bool Ocpp::get_iso15118_secc_chain(bool iso20, std::unique_ptr<char[]> *chain_pe
     if (key_len == 0) {
         return false;
     }
-    key.get()[key_len] = '\0';
+    key[key_len] = '\0';
 
     *chain_pem_out = std::move(chain);
     *key_pem_out = std::move(key);
@@ -448,22 +503,34 @@ bool Ocpp::is_iso20_tls_ready()
     return cp21->seccChainOcspStatus(best->id) == OcppOcspStatus21::Good;
 }
 
-// V2G20-2388: raw OCSP response for one certificate of the served
-// -20 SECC chain (0 = leaf), copied for TLS 1.3 stapling.
-bool Ocpp::get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out)
+bool Ocpp::is_iso20_tls_ready(uint32_t chain_id)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+    const Ocpp21::CertEntry *chain = cp21->cert_store.findSeccChainById(chain_id);
+    time_t now = platform_get_system_time(cp21->connection.platform_ctx);
+    if (chain == nullptr || chain->group != Ocpp21::CertGroup::V2G20Chain || !chain->has_anchor ||
+        chain->not_before > now || now > chain->not_after) {
+        return false;
+    }
+    if (private_environment_waives_iso15118_ocsp()) {
+        return true;
+    }
+    return cp21->seccChainOcspStatus(chain_id) == OcppOcspStatus21::Good;
+}
+
+// Raw OCSP response for one certificate of an explicitly selected SECC
+// chain (0 = leaf), copied so the caller owns it.
+bool Ocpp::get_iso15118_ocsp_staple(uint32_t chain_id, uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out)
 {
     if (!cp21 || !client_started) {
         return false;
     }
 
-    const Ocpp21::CertEntry *best = best_iso15118_secc_chain(true, nullptr);
-    if (best == nullptr) {
-        return false;
-    }
-
     const uint8_t *der = nullptr;
     size_t der_len = 0;
-    if (!cp21->seccChainOcspResponse(best->id, cert_idx, &der, &der_len)) {
+    if (!cp21->seccChainOcspResponse(chain_id, cert_idx, &der, &der_len)) {
         return false;
     }
 
@@ -475,6 +542,18 @@ bool Ocpp::get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]>
     *der_out = std::move(copy);
     *der_len_out = der_len;
     return true;
+}
+
+bool Ocpp::get_iso15118_ocsp_staple(uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out)
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+    const Ocpp21::CertEntry *best = best_iso15118_secc_chain(true, nullptr);
+    if (best == nullptr) {
+        return false;
+    }
+    return get_iso15118_ocsp_staple(best->id, cert_idx, der_out, der_len_out);
 }
 
 static size_t cert_der_to_pem(const uint8_t *der, size_t der_len, char *pem, size_t pem_cap)

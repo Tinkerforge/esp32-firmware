@@ -9,19 +9,25 @@
 set -eu
 
 cd "$(dirname "$0")"
-BUILD=/tmp/opencode/iso15118_tests/stapling
+readonly BUILD="$(mktemp -d "${TMPDIR:-/tmp}/iso15118-ocsp-stapling.XXXXXXXX")"
+SERVER_PID=
+cleanup() {
+    if [ -n "$SERVER_PID" ]; then
+        kill "$SERVER_PID" 2>/dev/null || true
+        wait "$SERVER_PID" 2>/dev/null || true
+    fi
+    rm -rf -- "$BUILD"
+}
+trap cleanup EXIT
 PATCH="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/0006-Add-server-side-OCSP-stapling-for-TLS-1.3-via-weak-c.patch)"
 CERTS="$(realpath ../tools/certs/output/iso20)"
 PORT=${PORT:-18443}
 
 [ -f "$CERTS/certs/cpoCertChain.pem" ] || { echo "dev PKI missing, run ../certs/generate_certs.sh first"; exit 1; }
 
-rm -rf "$BUILD"
-mkdir -p "$BUILD"
-
 if [ -n "${MBEDTLS_SRC:-}" ]; then
     cp -r "$MBEDTLS_SRC" "$BUILD/mbedtls"
-    rm -rf "$BUILD/mbedtls/.git"
+    rm -rf -- "$BUILD/mbedtls/.git"
 else
     git clone --quiet --depth 1 --branch v3.6.6 --recurse-submodules --shallow-submodules \
         https://github.com/Mbed-TLS/mbedtls "$BUILD/mbedtls"
@@ -55,7 +61,6 @@ openssl ocsp -index "$BUILD/index.txt" \
     "$CERTS/private_keys/seccLeaf_unencrypted.key" "$BUILD/leaf_ocsp.der" \
     > "$BUILD/server.log" 2>&1 &
 SERVER_PID=$!
-trap 'kill $SERVER_PID 2>/dev/null' EXIT
 sleep 1
 
 fails=0
