@@ -18,7 +18,10 @@
  */
 
 #include "isotls.h"
+#include "options.h"
+#if OPTIONS_ISO15118_DEV_CERTS_ENABLED()
 #include "dev_certs.h"
+#endif
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -368,22 +371,42 @@ bool ISOTLS::load_certificates()
     }
 #endif
 
+    const char *fallback_chain_iso2 = nullptr;
+    const char *fallback_key_iso2 = nullptr;
+    const char *fallback_chain_iso20 = nullptr;
+    const char *fallback_key_iso20 = nullptr;
+    const char *fallback_oem_roots = nullptr;
+    const char *fallback_v2g_roots = nullptr;
+#if OPTIONS_ISO15118_DEV_CERTS_ENABLED()
+    fallback_chain_iso2 = dev_cert_chain_pem_iso2;
+    fallback_key_iso2 = dev_private_key_pem_iso2;
+    fallback_chain_iso20 = dev_cert_chain_pem_iso20;
+    fallback_key_iso20 = dev_private_key_pem_iso20;
+    fallback_oem_roots = dev_oem_root_ca_pem_iso20;
+    fallback_v2g_roots = dev_v2g_root_ca_pem_iso20;
+#else
+    if (!store_live) {
+        iso15118.trace("ISOTLS: Development certificates disabled and OCPP store unavailable, TLS unavailable");
+        return false;
+    }
+#endif
+
     if (store_live && (!live_chain_iso2 || !live_key_iso2)) {
         iso15118.trace("ISOTLS: OCPP store live but no -2 SECC chain installed, TLS unavailable");
         return false;
     }
 
-    cert_chain_pem_iso2   = copy_pem(live_chain_iso2 ? live_chain_iso2.get() : dev_cert_chain_pem_iso2,  &cert_chain_pem_len_iso2);
-    private_key_pem_iso2  = copy_pem(live_key_iso2   ? live_key_iso2.get()   : dev_private_key_pem_iso2, &private_key_pem_len_iso2);
+    cert_chain_pem_iso2   = copy_pem(live_chain_iso2 ? live_chain_iso2.get() : fallback_chain_iso2, &cert_chain_pem_len_iso2);
+    private_key_pem_iso2  = copy_pem(live_key_iso2   ? live_key_iso2.get()   : fallback_key_iso2,   &private_key_pem_len_iso2);
     if (iso20_allowed) {
-        cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : dev_cert_chain_pem_iso20,  &cert_chain_pem_len_iso20);
-        private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : dev_private_key_pem_iso20, &private_key_pem_len_iso20);
+        cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : fallback_chain_iso20, &cert_chain_pem_len_iso20);
+        private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : fallback_key_iso20,   &private_key_pem_len_iso20);
     }
     if (live_oem_roots || !store_live) {
-        oem_root_ca_pem_iso20 = copy_pem(live_oem_roots ? live_oem_roots.get() : dev_oem_root_ca_pem_iso20, &oem_root_ca_pem_len_iso20);
+        oem_root_ca_pem_iso20 = copy_pem(live_oem_roots ? live_oem_roots.get() : fallback_oem_roots, &oem_root_ca_pem_len_iso20);
     }
     if (live_v2g_roots || !store_live) {
-        v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots ? live_v2g_roots.get() : dev_v2g_root_ca_pem_iso20, &v2g_root_ca_pem_len_iso20);
+        v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots ? live_v2g_roots.get() : fallback_v2g_roots, &v2g_root_ca_pem_len_iso20);
     }
 
     if ((cert_chain_pem_iso2 == nullptr) || (private_key_pem_iso2 == nullptr) ||
