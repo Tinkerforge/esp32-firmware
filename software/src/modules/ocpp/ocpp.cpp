@@ -213,9 +213,12 @@ bool Ocpp::start_client_21()
     // means verification against the bundled roots.
     char ca_locator[16];
     PlatformTlsConfig tls;
+    const bool enable_auth = config.get("enable_auth")->asBool();
     int32_t security_profile = 1;
     if (is_tls) {
-        security_profile = 2;
+        if (enable_auth) {
+            security_profile = 2;
+        }
         int8_t cert_id = config.get("cert_id")->asInt();
         if (cert_id >= 0) {
             snprintf(ca_locator, sizeof(ca_locator), "certid:%d", cert_id);
@@ -224,7 +227,7 @@ bool Ocpp::start_client_21()
     }
 
     const char *pass = nullptr;
-    if (config.get("enable_auth")->asBool()) {
+    if (enable_auth) {
         pass = config.get("pass")->asEphemeralCStr();
     }
 
