@@ -25,9 +25,7 @@
 #include <TFJson.h>
 #include <mqtt_client.h>
 #include <string.h>
-#include <format>
 
-#include "build.h"
 #include "event_log_prefix.h"
 #include "modules/meters/generated/meter_class_id.enum.h"
 #include "generated/module_dependencies.h"
