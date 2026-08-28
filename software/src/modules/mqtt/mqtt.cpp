@@ -56,9 +56,16 @@ int Mqtt::subscribe_internal(const char *topic, int qos) {
     }
     return esp_mqtt_client_subscribe_single(this->client, topic, qos);
 }
+
+int Mqtt::unsubscribe_internal(const char *topic) {
+    if (this->read_only) {
+        return ESP_OK;
+    }
+    return esp_mqtt_client_unsubscribe(this->client, topic);
 }
 
 #undef esp_mqtt_client_subscribe
+#undef esp_mqtt_client_unsubscribe
 #pragma GCC poison esp_mqtt_client_subscribe
 #pragma GCC poison esp_mqtt_client_subscribe_single
 #pragma GCC poison esp_mqtt_client_subscribe_multiple
@@ -173,32 +180,52 @@ void Mqtt::pre_setup()
 #endif
 }
 
+
+String Mqtt::build_topic(const String &path, AddPrefix add_prefix, bool *out_starts_with_global_topic_prefix)
+{
+    if (add_prefix == AddPrefix::No) {
+        *out_starts_with_global_topic_prefix = path.startsWith(global_topic_prefix);
+        return path;
+    }
+
+    String local_topic{};
+    local_topic.reserve(128);
+    local_topic.concat(global_topic_prefix);
+    local_topic.concat('/');
+    local_topic.concat(path);
+
+    *out_starts_with_global_topic_prefix = true;
+    return local_topic;
+}
+
 void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread, AddPrefix add_prefix)
 {
     if (client == nullptr) {
         return;
     }
 
-    const String *topic;
     bool starts_with_global_topic_prefix;
-    String local_topic(static_cast<const char *>(nullptr));
+    const String topic = this->build_topic(path, add_prefix, &starts_with_global_topic_prefix);
 
-    if (add_prefix == AddPrefix::No) {
-        topic = &path;
-        starts_with_global_topic_prefix = path.startsWith(global_topic_prefix);
-    } else {
-        local_topic.reserve(128);
-        local_topic.concat(global_topic_prefix);
-        local_topic.concat('/');
-        local_topic.concat(path);
+    bool subscribed = this->subscribe_internal(topic.c_str(), 0) >= 0;
 
-        topic = &local_topic;
-        starts_with_global_topic_prefix = true;
+    this->commands.push_back({std::move(topic), std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed, false});
+}
+
+bool Mqtt::unsubscribe(const String &path, AddPrefix add_prefix)
+{
+    bool starts_with_global_topic_prefix;
+    const String topic = this->build_topic(path, add_prefix, &starts_with_global_topic_prefix);
+
+    for (size_t i = 0; i < this->commands.size(); ++i) {
+        const auto &cmd = this->commands[i];
+        if (cmd.starts_with_global_topic_prefix == starts_with_global_topic_prefix && cmd.topic == topic) {
+            this->unsubscribe_internal(cmd.topic.c_str());
+            return true;
+        }
     }
 
-    bool subscribed = this->subscribe_internal(topic->c_str(), 0) >= 0;
-
-    this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed, false});
+    return false;
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)

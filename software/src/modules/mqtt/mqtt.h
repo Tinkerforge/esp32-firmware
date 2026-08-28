@@ -69,6 +69,7 @@ public:
     bool publish(const String &topic, const String &payload, bool retain);
 
     void subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
+    bool unsubscribe(const String &path, AddPrefix add_prefix = AddPrefix::No);
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
@@ -140,6 +141,9 @@ private:
     std::unique_ptr<unsigned char[]> client_key_buf  = nullptr;
 
     int subscribe_internal(const char *topic, int qos);
+    int unsubscribe_internal(const char *topic);
+
+    String build_topic(const String &path, AddPrefix add_prefix, bool *out_starts_with_global_topic_prefix);
 };
 
 #include "generated/module_available_end.h"
