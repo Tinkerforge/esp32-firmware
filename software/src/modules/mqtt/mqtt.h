@@ -139,7 +139,7 @@ private:
     std::unique_ptr<unsigned char[]> client_cert_buf = nullptr;
     std::unique_ptr<unsigned char[]> client_key_buf  = nullptr;
 
-    int subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos);
+    int subscribe_internal(const char *topic, int qos);
 };
 
 #include "generated/module_available_end.h"

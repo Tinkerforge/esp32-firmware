@@ -50,11 +50,12 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define MAX_CERT_ID -1
 #endif
 
-int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos) {
+int Mqtt::subscribe_internal(const char *topic, int qos) {
     if (this->read_only) {
         return ESP_OK;
     }
-    return esp_mqtt_client_subscribe_single(client, topic, qos);
+    return esp_mqtt_client_subscribe_single(this->client, topic, qos);
+}
 }
 
 #undef esp_mqtt_client_subscribe
@@ -195,7 +196,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
         starts_with_global_topic_prefix = true;
     }
 
-    bool subscribed = this->subscribe_internal(client, topic->c_str(), 0) >= 0;
+    bool subscribed = this->subscribe_internal(topic->c_str(), 0) >= 0;
 
     this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed, false});
 }
@@ -287,7 +288,7 @@ void Mqtt::resubscribe()
 
     if (!global_topic_prefix_subscribed) {
         String topic = global_topic_prefix + "/#";
-        global_topic_prefix_subscribed = this->subscribe_internal(client, topic.c_str(), 0) >= 0;
+        global_topic_prefix_subscribed = this->subscribe_internal(topic.c_str(), 0) >= 0;
     }
 
     for (auto &cmd : this->commands) {
@@ -299,7 +300,7 @@ void Mqtt::resubscribe()
             continue;
         }
 
-        cmd.subscribed = this->subscribe_internal(client, cmd.topic.c_str(), 0) >= 0;
+        cmd.subscribed = this->subscribe_internal(cmd.topic.c_str(), 0) >= 0;
     }
 }
 
@@ -877,7 +878,7 @@ void Mqtt::subscribe_automation_triggers()
         bool starts_with_prefix = topic.startsWith(global_topic_prefix);
         bool sub_ok = false;
         if (client != nullptr) {
-            sub_ok = this->subscribe_internal(client, topic.c_str(), 0) >= 0;
+            sub_ok = this->subscribe_internal(topic.c_str(), 0) >= 0;
         }
 
         Retained retained = conf.second->get("retain")->asBool() ? Retained::Accept : Retained::IgnoreWarn;
