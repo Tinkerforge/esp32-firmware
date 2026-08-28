@@ -20,6 +20,7 @@ PASSWORD = "trust-store-test-password"
 saved_ocpp = None
 plain = None
 secure = None
+secure_no_auth = None
 tmpdir = None
 ca_pem = None
 cert_id = None
@@ -106,7 +107,7 @@ def listed(csms: CSMSSim):
 
 
 def suite_setup(tc: TestContext):
-    global saved_ocpp, plain, secure, cert_id, cert_added
+    global saved_ocpp, plain, secure, secure_no_auth, cert_id, cert_added
 
     if not tc.device_type().is_warp(4):
         tc.skip("Trust-store security test requires a WARP4")
@@ -136,6 +137,10 @@ def suite_setup(tc: TestContext):
         keyfile=str(server_key),
         expected_basic_auth=(IDENTITY, PASSWORD),
     )
+    secure_no_auth = CSMSSim(
+        certfile=str(server_cert),
+        keyfile=str(server_key),
+    )
 
 
 def suite_teardown(tc: TestContext):
@@ -152,7 +157,7 @@ def suite_teardown(tc: TestContext):
         except Exception as e:  # noqa: BLE001
             errors.append(e)
 
-    for csms in (plain, secure):
+    for csms in (plain, secure, secure_no_auth):
         if csms is not None:
             try:
                 csms.stop()
@@ -174,7 +179,7 @@ def suite_teardown(tc: TestContext):
 
 def test_trust_store_changes_require_security_profile_2(tc: TestContext):
     tc.set_test_timeout(180)
-    assert plain is not None and secure is not None
+    assert plain is not None and secure is not None and secure_no_auth is not None
     assert cert_id is not None
 
     configure(tc, plain, f"ws://{tc.get_local_ip()}:{plain.port}", cert_id=-1, enable_auth=False)
@@ -183,6 +188,12 @@ def test_trust_store_changes_require_security_profile_2(tc: TestContext):
     tc.assert_eq("Rejected", install(plain)["status"])
     tc.assert_eq(baseline, certificate_entries(plain))
     tc.assert_eq("NotFound", listed(plain)["status"])
+
+    configure(tc, secure_no_auth, f"wss://{tc.get_local_ip()}:{secure_no_auth.port}", cert_id=cert_id, enable_auth=False)
+    wait_for_connection(tc, secure_no_auth)
+    tc.assert_eq("Rejected", install(secure_no_auth)["status"])
+    tc.assert_eq(baseline, certificate_entries(secure_no_auth))
+    tc.assert_eq("NotFound", listed(secure_no_auth)["status"])
 
     configure(tc, secure, f"wss://{tc.get_local_ip()}:{secure.port}", cert_id=cert_id, enable_auth=True)
     wait_for_connection(tc, secure)
