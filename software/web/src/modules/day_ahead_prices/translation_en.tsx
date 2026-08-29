@@ -32,6 +32,7 @@ let x = {
             "germany": "Germany",
             "austria": "Austria",
             "luxembourg": "Luxembourg",
+            "belgium": "Belgium",
             "resolution": "Resolution",
             "resolution_muted": "depends on electric utility",
             "minutes15": "15 minutes",

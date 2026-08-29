@@ -44,8 +44,9 @@ static constexpr auto CHECK_INTERVAL = 1_min;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_min;
 
 static const char * const region_str[] {
-    "de", "at", "lu"
+    "de", "at", "lu", "be"
 };
+static_assert(ARRAY_SIZE(region_str) == REGION_COUNT);
 
 static const char * const resolution_str[] {
     "15min", "60min"

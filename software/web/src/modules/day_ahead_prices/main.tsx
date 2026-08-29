@@ -58,7 +58,7 @@ export function is_day_ahead_prices_enabled() {
 }
 
 function region_only_supports_15min(region: number) {
-    return region == Region.DE || region == Region.AT || region == Region.LU;
+    return region == Region.DE || region == Region.AT || region == Region.LU || region == Region.BE;
 }
 
 export function get_price_from_index_as_15min(index: number, incl_vat: boolean = true) {
@@ -512,6 +512,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 ["0", __("day_ahead_prices.content.germany")],
                                 ["1", __("day_ahead_prices.content.austria")],
                                 ["2", __("day_ahead_prices.content.luxembourg")],
+                                ["3", __("day_ahead_prices.content.belgium")],
                             ]}
                             value={dap.region}
                             onValue={(v) => {

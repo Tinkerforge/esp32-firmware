@@ -32,6 +32,7 @@ let x = {
             "germany": "Deutschland",
             "austria": "Österreich",
             "luxembourg": "Luxemburg",
+            "belgium": "Belgien",
             "resolution": "Auflösung",
             "resolution_muted": "abhängig vom Stromanbieter",
             "minutes15": "15 Minuten",
