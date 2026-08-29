@@ -396,6 +396,14 @@ void Common::send_exi(ExiType type)
 
 void Common::decode(uint8_t *data, const size_t length)
 {
+    // A short frame would underflow the payload size below (exi_bitstream_init).
+    // The header checks that follow might not catch it as exi_data is a shared buffer
+    // and the bytes might hold valid data from a previous response we sent.
+    if (length < sizeof(V2GTP_Header)) {
+        iso15118.trace("Common: Truncated V2GTP header: %zu bytes", length);
+        return;
+    }
+
     V2GTP_Header *header = reinterpret_cast<V2GTP_Header*>(data);
     if(header->protocol_version != 0x01) {
         iso15118.trace("Common: Invalid protocol version: %d", header->protocol_version);
