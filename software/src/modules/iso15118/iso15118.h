@@ -95,11 +95,12 @@ public:
                config.get("charge_via_iso15118")->asBool();
     }
 
-    // Returns true if only autocharge is enabled (no read_soc or charge_via_iso15118)
-    // In this mode, we switch to IEC 61851 temporary mode after SLAC completes
+    // Returns true if only autocharge is enabled, or if a Tesla is connected with
+    // autocharge enabled. Teslas cannot start AC charging after the SoC was read.
+    // In this mode, we switch to IEC 61851 temporary mode after SLAC completes.
     bool is_autocharge_only() const {
         return config.get("autocharge")->asBool() &&
-               !config.get("read_soc")->asBool() &&
+               (!config.get("read_soc")->asBool() || (common.get_evcc_vendor() == EVCCVendor::Tesla)) &&
                !config.get("charge_via_iso15118")->asBool();
     }
 
