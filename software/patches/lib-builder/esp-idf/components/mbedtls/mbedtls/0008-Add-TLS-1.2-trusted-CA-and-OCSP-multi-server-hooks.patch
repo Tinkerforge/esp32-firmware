@@ -1,0 +1,352 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Olaf=20L=C3=BCke?= <olaf@tinkerforge.com>
+Date: Thu, 27 Aug 2026 23:33:56 +0200
+Subject: [PATCH] Add TLS 1.2 trusted CA and OCSP multi server hooks
+
+Add weak application hooks for the TLS 1.2 trusted_ca_keys and
+status_request_v2 ClientHello extensions. Accepted extensions are echoed in
+ServerHello and an accepted ocsp_multi request is followed by a transcript-
+covered RFC 6961 CertificateStatus message immediately after Certificate.
+
+The status request is accepted while parsing ClientHello, but its response is
+obtained only after certificate selection. The new state is appended to the
+state enum and all transitions into and out of it are explicit, leaving the
+TLS 1.3 state ordering unchanged.
+---
+ include/mbedtls/ssl.h                 | 62 ++++++++++++++++++
+ library/ssl_debug_helpers_generated.c |  2 +
+ library/ssl_misc.h                    |   5 ++
+ library/ssl_tls12_server.c            | 155 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 224 insertions(+)
+
+diff --git a/include/mbedtls/ssl.h b/include/mbedtls/ssl.h
+index 43d8175..5fa098d 100644
+--- a/include/mbedtls/ssl.h
++++ b/include/mbedtls/ssl.h
+@@ -611,6 +611,7 @@
+ #define MBEDTLS_SSL_HS_CERTIFICATE_VERIFY      15
+ #define MBEDTLS_SSL_HS_CLIENT_KEY_EXCHANGE     16
+ #define MBEDTLS_SSL_HS_FINISHED                20
++#define MBEDTLS_SSL_HS_CERTIFICATE_STATUS      22
+ #define MBEDTLS_SSL_HS_MESSAGE_HASH           254
+ 
+ /*
+@@ -621,6 +622,8 @@
+ 
+ #define MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH          1
+ 
++#define MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS              3 /* RFC 6066 */
++
+ #define MBEDTLS_TLS_EXT_TRUNCATED_HMAC               4
+ #define MBEDTLS_TLS_EXT_STATUS_REQUEST               5 /* RFC 6066 TLS 1.2 and 1.3 */
+ 
+@@ -632,6 +635,7 @@
+ #define MBEDTLS_TLS_EXT_USE_SRTP                    14
+ #define MBEDTLS_TLS_EXT_HEARTBEAT                   15 /* RFC 6520 TLS 1.2 and 1.3 */
+ #define MBEDTLS_TLS_EXT_ALPN                        16
++#define MBEDTLS_TLS_EXT_STATUS_REQUEST_V2           17 /* RFC 6961 TLS 1.2 */
+ 
+ #define MBEDTLS_TLS_EXT_SCT                         18 /* RFC 6962 TLS 1.2 and 1.3 */
+ #define MBEDTLS_TLS_EXT_CLI_CERT_TYPE               19 /* RFC 7250 TLS 1.2 and 1.3 */
+@@ -775,6 +779,7 @@ typedef enum {
+     MBEDTLS_SSL_HANDSHAKE_OVER,
+     MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET,
+     MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET_FLUSH,
++    MBEDTLS_SSL_SERVER_CERTIFICATE_STATUS,
+ }
+ mbedtls_ssl_states;
+ 
+@@ -908,6 +913,63 @@ typedef struct mbedtls_ssl_session mbedtls_ssl_session;
+ typedef struct mbedtls_ssl_context mbedtls_ssl_context;
+ typedef struct mbedtls_ssl_config  mbedtls_ssl_config;
+ 
++/**
++ * \brief          Weak TLS 1.2 server hook for trusted_ca_keys (RFC 6066).
++ *
++ *                 Called while parsing ClientHello, before the configured
++ *                 certificate-selection callback. Applications can provide
++ *                 a strong definition to inspect the exact extension payload
++ *                 and select an appropriate certificate.
++ *
++ * \return         0 if the extension was successfully used and should be
++ *                 echoed empty in ServerHello; nonzero to ignore it.
++ */
++int mbedtls_ssl_tls12_trusted_ca_keys_cb(mbedtls_ssl_context *ssl,
++                                         const unsigned char *data,
++                                         size_t data_len);
++
++/**
++ * \brief          Weak TLS 1.2 server request hook for status_request_v2.
++ *
++ *                 Called while parsing ClientHello, before the configured
++ *                 certificate-selection callback.
++ *
++ * \return         0 if the ocsp_multi request is accepted and extension 17
++ *                 should be echoed empty in ServerHello; nonzero to ignore it.
++ */
++int mbedtls_ssl_tls12_status_request_v2_cb(mbedtls_ssl_context *ssl,
++                                           const unsigned char *data,
++                                           size_t data_len);
++
++/**
++ * \brief          Weak TLS 1.2 server availability hook for status_request_v2.
++ *
++ *                 Called during ServerHello construction, after server
++ *                 certificate selection, if the request hook accepted an
++ *                 ocsp_multi request. This hook must only report whether a
++ *                 response is available for the selected certificate chain.
++ *
++ * \return         0 if extension 17 should be echoed and CertificateStatus
++ *                 should be sent; nonzero to decline the request.
++ */
++int mbedtls_ssl_tls12_status_request_v2_available_cb(
++    mbedtls_ssl_context *ssl);
++
++/**
++ * \brief          Weak TLS 1.2 server response hook for status_request_v2.
++ *
++ *                 Called after server certificate selection while writing
++ *                 CertificateStatus. A strong definition supplies an encoded
++ *                 OCSPResponseList body: ordered uint24-length-prefixed DER
++ *                 OCSPResponse values. The body only needs to remain valid
++ *                 for the duration of this call.
++ *
++ * \return         0 on success; nonzero causes a fatal internal error.
++ */
++int mbedtls_ssl_tls12_status_request_v2_response_cb(
++    mbedtls_ssl_context *ssl, const unsigned char **response_list,
++    size_t *response_list_len);
++
+ /* Defined in library/ssl_misc.h */
+ typedef struct mbedtls_ssl_transform mbedtls_ssl_transform;
+ typedef struct mbedtls_ssl_handshake_params mbedtls_ssl_handshake_params;
+diff --git a/library/ssl_debug_helpers_generated.c b/library/ssl_debug_helpers_generated.c
+index 808fce7..54e1282 100644
+--- a/library/ssl_debug_helpers_generated.c
++++ b/library/ssl_debug_helpers_generated.c
+@@ -167,6 +167,8 @@ const char *mbedtls_ssl_states_str( mbedtls_ssl_states in )
+             return "MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET";
+         case MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET_FLUSH:
+             return "MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET_FLUSH";
++        case MBEDTLS_SSL_SERVER_CERTIFICATE_STATUS:
++            return "MBEDTLS_SSL_SERVER_CERTIFICATE_STATUS";
+         default:
+             return "UNKNOWN_VALUE";
+     }
+diff --git a/library/ssl_misc.h b/library/ssl_misc.h
+index 218a30d..5b330e1 100644
+--- a/library/ssl_misc.h
++++ b/library/ssl_misc.h
+@@ -491,6 +491,11 @@ static inline size_t mbedtls_ssl_get_input_buflen(const mbedtls_ssl_context *ctx)
+  */
+ #define MBEDTLS_TLS_EXT_SUPPORTED_POINT_FORMATS_PRESENT (1 << 0)
+ #define MBEDTLS_TLS_EXT_ECJPAKE_KKPP_OK                 (1 << 1)
++#define MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_SEEN            (1 << 2)
++#define MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_ACCEPTED        (1 << 3)
++#define MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_SEEN          (1 << 4)
++#define MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_REQUESTED     (1 << 5)
++#define MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED      (1 << 6)
+ 
+ /**
+  * \brief        This function checks if the remaining size in a buffer is
+diff --git a/library/ssl_tls12_server.c b/library/ssl_tls12_server.c
+index d2ee9a0..6e7e84a 100644
+--- a/library/ssl_tls12_server.c
++++ b/library/ssl_tls12_server.c
+@@ -21,6 +21,41 @@
+ 
+ #include <string.h>
+ 
++__attribute__((weak)) int mbedtls_ssl_tls12_trusted_ca_keys_cb(
++    mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
++{
++    (void) ssl;
++    (void) data;
++    (void) data_len;
++    return -1;
++}
++
++__attribute__((weak)) int mbedtls_ssl_tls12_status_request_v2_cb(
++    mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
++{
++    (void) ssl;
++    (void) data;
++    (void) data_len;
++    return -1;
++}
++
++__attribute__((weak)) int mbedtls_ssl_tls12_status_request_v2_available_cb(
++    mbedtls_ssl_context *ssl)
++{
++    (void) ssl;
++    return -1;
++}
++
++__attribute__((weak)) int mbedtls_ssl_tls12_status_request_v2_response_cb(
++    mbedtls_ssl_context *ssl, const unsigned char **response_list,
++    size_t *response_list_len)
++{
++    (void) ssl;
++    (void) response_list;
++    (void) response_list_len;
++    return -1;
++}
++
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
+ /* Define a local translating function to save code size by not using too many
+  * arguments in each translating place. */
+@@ -1211,6 +1246,52 @@ static int ssl_parse_client_hello(mbedtls_ssl_context *ssl)
+                 break;
+ #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
+ 
++            case MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS:
++                MBEDTLS_SSL_DEBUG_MSG(3, ("found trusted_ca_keys extension"));
++                if ((ssl->handshake->cli_exts &
++                     MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_SEEN) != 0) {
++                    ssl->handshake->cli_exts &=
++                        (uint8_t) ~MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_ACCEPTED;
++                    mbedtls_ssl_send_alert_message(
++                        ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
++                        MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR);
++                    return MBEDTLS_ERR_SSL_DECODE_ERROR;
++                }
++                ssl->handshake->cli_exts =
++                    (ssl->handshake->cli_exts &
++                     (uint8_t) ~MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_ACCEPTED) |
++                    MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_SEEN;
++                if (mbedtls_ssl_tls12_trusted_ca_keys_cb(
++                        ssl, ext + 4, ext_size) == 0) {
++                    ssl->handshake->cli_exts |=
++                        MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_ACCEPTED;
++                }
++                break;
++
++            case MBEDTLS_TLS_EXT_STATUS_REQUEST_V2:
++                MBEDTLS_SSL_DEBUG_MSG(3, ("found status_request_v2 extension"));
++                if ((ssl->handshake->cli_exts &
++                     MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_SEEN) != 0) {
++                    ssl->handshake->cli_exts &= (uint8_t)
++                        ~(MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_REQUESTED |
++                          MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED);
++                    mbedtls_ssl_send_alert_message(
++                        ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
++                        MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR);
++                    return MBEDTLS_ERR_SSL_DECODE_ERROR;
++                }
++                ssl->handshake->cli_exts =
++                    (ssl->handshake->cli_exts & (uint8_t)
++                     ~(MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_REQUESTED |
++                       MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED)) |
++                    MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_SEEN;
++                if (mbedtls_ssl_tls12_status_request_v2_cb(
++                        ssl, ext + 4, ext_size) == 0) {
++                    ssl->handshake->cli_exts |=
++                        MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_REQUESTED;
++                }
++                break;
++
+             case MBEDTLS_TLS_EXT_RENEGOTIATION_INFO:
+                 MBEDTLS_SSL_DEBUG_MSG(3, ("found renegotiation extension"));
+ #if defined(MBEDTLS_SSL_RENEGOTIATION)
+@@ -1693,6 +1774,36 @@ static void ssl_write_session_ticket_ext(mbedtls_ssl_context *ssl,
+ }
+ #endif /* MBEDTLS_SSL_SESSION_TICKETS */
+ 
++static void ssl_write_v2g_server_hello_exts(mbedtls_ssl_context *ssl,
++                                             unsigned char *buf,
++                                             size_t *olen)
++{
++    unsigned char *p = buf;
++
++    ssl->handshake->cli_exts &=
++        (uint8_t) ~MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED;
++
++    if (ssl->handshake->resume == 0 &&
++        (ssl->handshake->cli_exts &
++         MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS_ACCEPTED) != 0) {
++        MBEDTLS_PUT_UINT16_BE(MBEDTLS_TLS_EXT_TRUSTED_CA_KEYS, p, 0);
++        MBEDTLS_PUT_UINT16_BE(0, p, 2);
++        p += 4;
++    }
++    if (ssl->handshake->resume == 0 &&
++        mbedtls_ssl_ciphersuite_uses_srv_cert(ssl->handshake->ciphersuite_info) &&
++        (ssl->handshake->cli_exts &
++         MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_REQUESTED) != 0 &&
++        mbedtls_ssl_tls12_status_request_v2_available_cb(ssl) == 0) {
++        ssl->handshake->cli_exts |=
++            MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED;
++        MBEDTLS_PUT_UINT16_BE(MBEDTLS_TLS_EXT_STATUS_REQUEST_V2, p, 0);
++        MBEDTLS_PUT_UINT16_BE(0, p, 2);
++        p += 4;
++    }
++    *olen = (size_t) (p - buf);
++}
++
+ static void ssl_write_renegotiation_ext(mbedtls_ssl_context *ssl,
+                                         unsigned char *buf,
+                                         size_t *olen)
+@@ -2183,6 +2294,9 @@ static int ssl_write_server_hello(mbedtls_ssl_context *ssl)
+     /*
+      *  First write extensions, then the total length
+      */
++    ssl_write_v2g_server_hello_exts(ssl, p + 2 + ext_len, &olen);
++    ext_len += olen;
++
+     ssl_write_renegotiation_ext(ssl, p + 2 + ext_len, &olen);
+     ext_len += olen;
+ 
+@@ -3207,6 +3321,39 @@ static int ssl_write_server_key_exchange(mbedtls_ssl_context *ssl)
+     return 0;
+ }
+ 
++MBEDTLS_CHECK_RETURN_CRITICAL
++static int ssl_write_certificate_status(mbedtls_ssl_context *ssl)
++{
++    const unsigned char *response_list = NULL;
++    size_t response_list_len = 0;
++
++    mbedtls_ssl_handshake_set_state(ssl, MBEDTLS_SSL_SERVER_KEY_EXCHANGE);
++
++    if ((ssl->handshake->cli_exts &
++         MBEDTLS_TLS_EXT_STATUS_REQUEST_V2_ACCEPTED) == 0 ||
++        !mbedtls_ssl_ciphersuite_uses_srv_cert(ssl->handshake->ciphersuite_info)) {
++        return 0;
++    }
++    if (mbedtls_ssl_tls12_status_request_v2_response_cb(
++            ssl, &response_list, &response_list_len) != 0 ||
++        response_list == NULL || response_list_len == 0 ||
++        response_list_len > 0xFFFFFF ||
++        response_list_len > MBEDTLS_SSL_OUT_CONTENT_LEN - 8) {
++        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_INTERNAL_ERROR,
++                                     MBEDTLS_ERR_SSL_INTERNAL_ERROR);
++        return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
++    }
++
++    ssl->out_msg[4] = 2; /* CertificateStatusType ocsp_multi */
++    MBEDTLS_PUT_UINT24_BE(response_list_len, ssl->out_msg, 5);
++    memcpy(ssl->out_msg + 8, response_list, response_list_len);
++    ssl->out_msglen = 8 + response_list_len;
++    ssl->out_msgtype = MBEDTLS_SSL_MSG_HANDSHAKE;
++    ssl->out_msg[0] = MBEDTLS_SSL_HS_CERTIFICATE_STATUS;
++
++    return mbedtls_ssl_write_handshake_msg(ssl);
++}
++
+ MBEDTLS_CHECK_RETURN_CRITICAL
+ static int ssl_write_server_hello_done(mbedtls_ssl_context *ssl)
+ {
+@@ -4223,6 +4370,14 @@ int mbedtls_ssl_handshake_server_step(mbedtls_ssl_context *ssl)
+ 
+         case MBEDTLS_SSL_SERVER_CERTIFICATE:
+             ret = mbedtls_ssl_write_certificate(ssl);
++            if (ssl->state == MBEDTLS_SSL_SERVER_KEY_EXCHANGE) {
++                mbedtls_ssl_handshake_set_state(
++                    ssl, MBEDTLS_SSL_SERVER_CERTIFICATE_STATUS);
++            }
++            break;
++
++        case MBEDTLS_SSL_SERVER_CERTIFICATE_STATUS:
++            ret = ssl_write_certificate_status(ssl);
+             break;
+ 
+         case MBEDTLS_SSL_SERVER_KEY_EXCHANGE:
