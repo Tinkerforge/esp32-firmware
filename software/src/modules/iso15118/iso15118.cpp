@@ -175,8 +175,8 @@
 //
 // Per ISO 15118-3 [V2G3-M06-07], we implement the following fallback:
 //
-//   1. After EV connects (IEC State A -> B), start TT_EVSE_SLAC_init
-//      timer (50s, SLAC_TT_EVSE_SLAC_INIT_MAX).
+//   1. After EV connects (IEC State A -> B), start the 7s
+//      TT_EVSE_SLAC_init timer.
 //   2. If no CM_SLAC_PARM.REQ is received within TT_EVSE_SLAC_init:
 //      a. Set CP to State E/F (0% duty, -12V) for T_step_EF (4s).
 //      b. Return to 5% duty cycle and restart TT_EVSE_SLAC_init.
@@ -185,19 +185,16 @@
 //      via begin_iec_transition() and disable PLC modem.
 //
 // Timeline for non-ISO EV:
-//   t=0s    EV plugs in, timeout starts (50s)
-//   t=50s   Timeout #1: CP -> E/F for 4s, then back to 5%
-//   t=104s  Timeout #2: CP -> E/F for 4s, then back to 5%
-//   t=158s  Timeout #3: retries exhausted -> IEC fallback
-//   t=160s  CP -> IEC 61851 PWM, non-ISO EV can charge
+//   t=0s    EV plugs in, timeout starts (7s)
+//   t=7s    Timeout #1: CP -> E/F for 4s, then back to 5%
+//   t=18s   Timeout #2: CP -> E/F for 4s, then back to 5%
+//   t=29s   Timeout #3: retries exhausted -> IEC fallback
+//   t=31s   CP -> IEC 61851 PWM, non-ISO EV can charge
 //
-// This is crazy long... The optional (non-standard) fast_timeout config
-// shortens this to a single 10s attempt without E/F cycling:
-//   t=0s    EV plugs in, timeout starts (10s)
-//   t=10s   Timeout: no retries -> IEC fallback
-//   t=12s   CP -> IEC 61851 PWM, non-ISO EV can charge
-// A spec-conforming EV has to send CM_SLAC_PARM.REQ within TP_EV_SLAC_init
-// (10s), so ISO-capable EVs should still match with fast_timeout enabled.
+// The optional fast_timeout config uses a single attempt without E/F cycling:
+//   t=0s    EV plugs in, timeout starts (7s)
+//   t=7s    Timeout: no retries -> IEC fallback
+//   t=9s    CP -> IEC 61851 PWM, non-ISO EV can charge
 // ============================================================================
 
 #include "iso15118.h"

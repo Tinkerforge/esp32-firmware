@@ -113,9 +113,8 @@ public:
 
     bool is_autocharge() const { return config.get("autocharge")->asBool(); }
 
-    // Returns true if the non-standard fast SLAC init timeout is enabled:
-    // single attempt with SLAC_TT_EVSE_SLAC_INIT_FAST instead of
-    // C_SEQU_RETRY+1 attempts with SLAC_TT_EVSE_SLAC_INIT_MAX.
+    // Returns true if SLAC init should fall back after one attempt instead of
+    // retrying C_SEQU_RETRY times with State E/F cycling.
     bool is_fast_timeout() const { return config.get("fast_timeout")->asBool(); }
 
     // Experimental DC->AC fallback methods for EVs that refuse to
