@@ -253,7 +253,6 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
 
                 if (config_in_use.soc_pct != 0) {
                     soc_placeholder = config_in_use.soc_pct + " %";
-                    console.log(ev_soc);
                     if (ev_soc != null) { // ev_soc is NaN. NaN is serialized as null in JSON.
                         soc_placeholder += " | " + __("charge_limits.content.soc_currently") + " " + util.toLocaleFixed(ev_soc, 0) + " %";
                     }
