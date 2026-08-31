@@ -36,6 +36,7 @@
 
 #include "mbedtls/error.h"
 #include "mbedtls/asn1.h"
+#include "mbedtls/oid.h"
 #include "mbedtls/sha1.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/ssl_ciphersuites.h"
@@ -156,6 +157,11 @@ extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size
 extern "C" int mbedtls_ssl_tls13_certificate_authorities_cb(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
 {
     return s_isotls_instance == nullptr ? -1 : s_isotls_instance->select_iso20_certificate_authority(ssl, data, data_len);
+}
+
+extern "C" int mbedtls_ssl_tls13_write_certificate_authorities_cb(mbedtls_ssl_context *ssl, const unsigned char **data, size_t *data_len)
+{
+    return s_isotls_instance == nullptr ? -1 : s_isotls_instance->get_iso20_certificate_authorities(ssl, data, data_len);
 }
 
 extern "C" int mbedtls_ssl_tls12_trusted_ca_keys_cb(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
@@ -381,6 +387,196 @@ static bool x509_name_equal(const unsigned char *a_der, size_t a_len, const unsi
         }
     }
     return true;
+}
+
+static size_t der_length_size(size_t len)
+{
+    if (len < 128) {
+        return 1;
+    }
+    size_t bytes = 0;
+    for (; len != 0; len >>= 8) {
+        ++bytes;
+    }
+    return 1 + bytes;
+}
+
+static uint8_t *write_der_length(uint8_t *p, size_t len)
+{
+    if (len < 128) {
+        *p++ = static_cast<uint8_t>(len);
+        return p;
+    }
+    const size_t bytes = der_length_size(len) - 1;
+    *p++ = static_cast<uint8_t>(0x80 | bytes);
+    for (size_t i = bytes; i > 0; --i) {
+        *p++ = static_cast<uint8_t>(len >> ((i - 1) * 8));
+    }
+    return p;
+}
+
+struct iso20_dn_field_t {
+    const char *oid;
+    size_t oid_len;
+    int default_tag;
+    const unsigned char *value = nullptr;
+    size_t value_len = 0;
+    int value_tag = 0;
+};
+
+static const mbedtls_x509_name *find_name_field(const mbedtls_x509_name *name, const char *oid, size_t oid_len)
+{
+    for (; name != nullptr; name = name->next) {
+        if ((name->oid.len == oid_len) && (memcmp(name->oid.p, oid, oid_len) == 0)) {
+            return name;
+        }
+    }
+    return nullptr;
+}
+
+static size_t iso20_dn_content_size(const iso20_dn_field_t *fields, size_t count)
+{
+    size_t result = 0;
+    for (size_t i = 0; i < count; ++i) {
+        const size_t oid_tlv = 1 + der_length_size(fields[i].oid_len) + fields[i].oid_len;
+        const size_t value_tlv = 1 + der_length_size(fields[i].value_len) + fields[i].value_len;
+        const size_t attribute = oid_tlv + value_tlv;
+        const size_t attribute_tlv = 1 + der_length_size(attribute) + attribute;
+        result += 1 + der_length_size(attribute_tlv) + attribute_tlv;
+    }
+    return result;
+}
+
+static size_t iso20_dn_size(const iso20_dn_field_t *fields, size_t count)
+{
+    const size_t content = iso20_dn_content_size(fields, count);
+    return 1 + der_length_size(content) + content;
+}
+
+static uint8_t *write_iso20_dn(uint8_t *p, const iso20_dn_field_t *fields, size_t count)
+{
+    const size_t content_len = iso20_dn_content_size(fields, count);
+    *p++ = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+    p = write_der_length(p, content_len);
+
+    for (size_t i = 0; i < count; ++i) {
+        const size_t oid_tlv = 1 + der_length_size(fields[i].oid_len) + fields[i].oid_len;
+        const size_t value_tlv = 1 + der_length_size(fields[i].value_len) + fields[i].value_len;
+        const size_t attribute_len = oid_tlv + value_tlv;
+        const size_t attribute_tlv = 1 + der_length_size(attribute_len) + attribute_len;
+        *p++ = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SET;
+        p = write_der_length(p, attribute_tlv);
+        *p++ = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+        p = write_der_length(p, attribute_len);
+        *p++ = MBEDTLS_ASN1_OID;
+        p = write_der_length(p, fields[i].oid_len);
+        memcpy(p, fields[i].oid, fields[i].oid_len);
+        p += fields[i].oid_len;
+        *p++ = static_cast<uint8_t>(fields[i].value_tag != 0 ? fields[i].value_tag : fields[i].default_tag);
+        p = write_der_length(p, fields[i].value_len);
+        if (fields[i].value_len > 0) {
+            memcpy(p, fields[i].value, fields[i].value_len);
+            p += fields[i].value_len;
+        }
+    }
+    return p;
+}
+
+bool ISOTLS::build_iso20_certificate_authorities()
+{
+    // Reserve CertificateRequest framing and signature_algorithms. All roots
+    // required by V2G20-2401 must fit; partial advertisement is not allowed.
+    constexpr size_t capacity = MBEDTLS_SSL_OUT_CONTENT_LEN - 256;
+    iso20_certificate_authorities = static_cast<uint8_t *>(calloc_psram_or_dram(capacity, 1));
+    if (iso20_certificate_authorities == nullptr) {
+        return false;
+    }
+
+    size_t used = 2;
+    for (const mbedtls_x509_crt *root = trusted_ca_iso20;
+         root != nullptr && root->raw.p != nullptr; root = root->next) {
+        unsigned char serial[40];
+        size_t serial_offset = 0;
+        while (serial_offset + 1 < root->serial.len && root->serial.p[serial_offset] == 0) {
+            ++serial_offset;
+        }
+        const size_t serial_len = root->serial.len - serial_offset;
+        if (serial_len == 0 || serial_len > sizeof(serial) / 2) {
+            iso15118.trace("ISOTLS: Root serial is too large for V2G20-2403 DN");
+            goto fail;
+        }
+        static constexpr char hex[] = "0123456789ABCDEF";
+        for (size_t i = 0; i < serial_len; ++i) {
+            serial[2 * i] = hex[root->serial.p[serial_offset + i] >> 4];
+            serial[2 * i + 1] = hex[root->serial.p[serial_offset + i] & 0x0F];
+        }
+
+        iso20_dn_field_t fields[] = {
+            {MBEDTLS_OID_AT_COUNTRY, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_COUNTRY), MBEDTLS_ASN1_PRINTABLE_STRING},
+            {MBEDTLS_OID_AT_ORGANIZATION, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_ORGANIZATION), MBEDTLS_ASN1_UTF8_STRING},
+            {MBEDTLS_OID_AT_ORG_UNIT, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_ORG_UNIT), MBEDTLS_ASN1_UTF8_STRING},
+            {MBEDTLS_OID_AT_CN, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_CN), MBEDTLS_ASN1_UTF8_STRING},
+            {MBEDTLS_OID_AT_SERIAL_NUMBER, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_SERIAL_NUMBER), MBEDTLS_ASN1_PRINTABLE_STRING,
+             serial, serial_len * 2, MBEDTLS_ASN1_PRINTABLE_STRING},
+        };
+        for (size_t i = 0; i < ARRAY_SIZE(fields) - 1; ++i) {
+            const mbedtls_x509_name *source = find_name_field(&root->issuer, fields[i].oid, fields[i].oid_len);
+            if (source != nullptr) {
+                fields[i].value = source->val.p;
+                fields[i].value_len = source->val.len;
+                fields[i].value_tag = source->val.tag;
+            }
+        }
+
+        uint8_t encoded[512];
+        const size_t dn_len = iso20_dn_size(fields, ARRAY_SIZE(fields));
+        if (dn_len > sizeof(encoded)) {
+            iso15118.trace("ISOTLS: V2G20-2403 root DN is too large: %zu bytes", dn_len);
+            goto fail;
+        }
+        write_iso20_dn(encoded, fields, ARRAY_SIZE(fields));
+
+        bool duplicate = false;
+        const uint8_t *existing = iso20_certificate_authorities + 2;
+        const uint8_t *existing_end = iso20_certificate_authorities + used;
+        while (existing < existing_end) {
+            const size_t existing_len = (static_cast<size_t>(existing[0]) << 8) | existing[1];
+            existing += 2;
+            if (existing_len == dn_len && memcmp(existing, encoded, dn_len) == 0) {
+                duplicate = true;
+                break;
+            }
+            existing += existing_len;
+        }
+        if (duplicate) {
+            continue;
+        }
+        if ((dn_len > UINT16_MAX) || (used > (capacity - 2 - dn_len)) || ((used - 2) > (UINT16_MAX - 2 - dn_len))) {
+            iso15118.trace("ISOTLS: All V2G/OEM root DNs do not fit in CertificateRequest [V2G20-2401]");
+            goto fail;
+        }
+        iso20_certificate_authorities[used++] = static_cast<uint8_t>(dn_len >> 8);
+        iso20_certificate_authorities[used++] = static_cast<uint8_t>(dn_len);
+        memcpy(iso20_certificate_authorities + used, encoded, dn_len);
+        used += dn_len;
+    }
+
+    if (used == 2) {
+        free_any(iso20_certificate_authorities);
+        iso20_certificate_authorities = nullptr;
+        return true; // AMD1: omit the extension when no applicable roots exist.
+    }
+    iso20_certificate_authorities[0] = static_cast<uint8_t>((used - 2) >> 8);
+    iso20_certificate_authorities[1] = static_cast<uint8_t>(used - 2);
+    iso20_certificate_authorities_len = used;
+    iso15118.trace("ISOTLS: Built %zu-byte CertificateRequest root DN list [V2G20-2401/2403]", used);
+    return true;
+
+fail:
+    free_any(iso20_certificate_authorities);
+    iso20_certificate_authorities = nullptr;
+    iso20_certificate_authorities_len = 0;
+    return false;
 }
 
 // Extracts the RFC 6066 subjectPublicKey value from a complete SubjectPublicKeyInfo.
@@ -1030,13 +1226,11 @@ bool ISOTLS::setup()
     }
     mbedtls_x509_crt_init(trusted_ca_iso20);
 
-    int trusted_ca_count = 0;
     if (oem_root_ca_pem_iso20 != nullptr) {
         ret = mbedtls_x509_crt_parse(trusted_ca_iso20, oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
         if (ret != 0) {
             iso15118.trace("ISOTLS: OEM Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
         } else {
-            trusted_ca_count++;
             iso15118.trace("ISOTLS: OEM Root CA parsed successfully");
         }
     }
@@ -1046,13 +1240,21 @@ bool ISOTLS::setup()
         if (ret != 0) {
             iso15118.trace("ISOTLS: V2G Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
         } else {
-            trusted_ca_count++;
             iso15118.trace("ISOTLS: V2G Root CA parsed successfully");
         }
     }
 
+    int trusted_ca_count = 0;
+    for (mbedtls_x509_crt *root = trusted_ca_iso20; root != nullptr && root->raw.p != nullptr; root = root->next) {
+        ++trusted_ca_count;
+    }
     if (trusted_ca_count > 0) {
         iso15118.trace("ISOTLS: %d trusted root CA(s) loaded for ISO 15118-20 mutual TLS", trusted_ca_count);
+        if (!build_iso20_certificate_authorities()) {
+            iso15118.trace("ISOTLS: Failed to build complete V2G20-2401 CertificateRequest CA list");
+            cleanup();
+            return false;
+        }
     } else {
         iso15118.trace("ISOTLS: WARNING: No trusted root CAs loaded - mutual TLS authentication disabled");
         mbedtls_x509_crt_free(trusted_ca_iso20);
@@ -1170,6 +1372,9 @@ void ISOTLS::cleanup()
         free_any(trusted_ca_iso20);
         trusted_ca_iso20 = nullptr;
     }
+    free_any(iso20_certificate_authorities);
+    iso20_certificate_authorities = nullptr;
+    iso20_certificate_authorities_len = 0;
 
     if (entropy != nullptr) {
         mbedtls_entropy_free(entropy);
@@ -1925,6 +2130,16 @@ int ISOTLS::select_iso20_certificate_authority(mbedtls_ssl_context *ssl_ctx, con
     }
 
     iso15118.trace("ISOTLS: No ClientHello certificate_authorities match, retaining ISO20 fallback candidate 0 [V2G20-2399]");
+    return 0;
+}
+
+int ISOTLS::get_iso20_certificate_authorities(mbedtls_ssl_context *ssl_ctx, const unsigned char **data, size_t *data_len) const
+{
+    if ((ssl_ctx != ssl) || (data == nullptr) || (data_len == nullptr) || (iso20_certificate_authorities == nullptr) || (iso20_certificate_authorities_len == 0)) {
+        return -1;
+    }
+    *data = iso20_certificate_authorities;
+    *data_len = iso20_certificate_authorities_len;
     return 0;
 }
 

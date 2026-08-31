@@ -147,6 +147,7 @@ public:
     int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
 
     int select_iso20_certificate_authority(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
+    int get_iso20_certificate_authorities(mbedtls_ssl_context *ssl, const unsigned char **data, size_t *data_len) const;
     int select_iso2_trusted_ca(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
     int accept_iso2_status_request_v2(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
     int iso2_status_request_v2_available(mbedtls_ssl_context *ssl) const;
@@ -180,6 +181,7 @@ private:
     void free_iso2_candidate(size_t index);
     bool parse_iso20_candidates();
     void free_iso20_candidate(size_t index);
+    bool build_iso20_certificate_authorities();
     bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
@@ -282,6 +284,8 @@ private:
     // During TLS 1.3 handshake, the EVCC's vehicle certificate chain is
     // verified against these root CAs.
     mbedtls_x509_crt *trusted_ca_iso20 = nullptr;
+    uint8_t *iso20_certificate_authorities = nullptr;
+    size_t iso20_certificate_authorities_len = 0;
     uint8_t *oem_root_ca_pem_iso20 = nullptr;
     size_t oem_root_ca_pem_len_iso20 = 0;
     uint8_t *v2g_root_ca_pem_iso20 = nullptr;

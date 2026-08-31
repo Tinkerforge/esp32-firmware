@@ -1,0 +1,12 @@
+--- include/mbedtls/ssl.h
++++ include/mbedtls/ssl.h
+@@ -924,6 +924,10 @@ int mbedtls_ssl_tls13_certificate_authorities_cb(
+     mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
+ 
++/** CertificateRequest certificate_authorities hook for V2G20-2401/2403. */
++int mbedtls_ssl_tls13_write_certificate_authorities_cb(
++    mbedtls_ssl_context *ssl, const unsigned char **data, size_t *data_len);
++
+ /**
+  * \brief          Weak TLS 1.2 server hook for trusted_ca_keys (RFC 6066).
+  *
