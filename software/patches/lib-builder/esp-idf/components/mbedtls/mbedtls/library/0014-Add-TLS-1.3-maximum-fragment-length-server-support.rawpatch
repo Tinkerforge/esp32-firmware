@@ -1,0 +1,216 @@
+diff --git a/library/ssl_msg.c b/library/ssl_msg.c
+index b0ab608350..b1c7305147 100644
+--- a/library/ssl_msg.c
++++ b/library/ssl_msg.c
+@@ -2919,6 +2919,55 @@ int mbedtls_ssl_finish_handshake_msg(mbedtls_ssl_context *ssl,
+ 
+     /* Add reserved 4 bytes for handshake header */
+     msg_with_header_len = msg_len + 4;
++
++#if defined(MBEDTLS_SSL_PROTO_TLS1_3) && \
++    defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++    if (ssl->tls_version == MBEDTLS_SSL_VERSION_TLS1_3 &&
++        ssl->transform_out != NULL) {
++        const int max_payload = mbedtls_ssl_get_max_out_record_payload(ssl);
++
++        if (max_payload < 0) {
++            return max_payload;
++        }
++
++        if (msg_with_header_len > (size_t) max_payload) {
++            const unsigned char hs_type = ssl->out_msg[0];
++            unsigned char *message = mbedtls_calloc(1, msg_with_header_len);
++            size_t offset = 0;
++
++            if (message == NULL) {
++                return MBEDTLS_ERR_SSL_ALLOC_FAILED;
++            }
++
++            message[0] = hs_type;
++            message[1] = MBEDTLS_BYTE_2(msg_len);
++            message[2] = MBEDTLS_BYTE_1(msg_len);
++            message[3] = MBEDTLS_BYTE_0(msg_len);
++            memcpy(message + 4, ssl->out_msg + 4, msg_len);
++
++            while (offset < msg_with_header_len) {
++                size_t fragment_len = msg_with_header_len - offset;
++                if (fragment_len > (size_t) max_payload) {
++                    fragment_len = (size_t) max_payload;
++                }
++
++                memcpy(ssl->out_msg, message + offset, fragment_len);
++                ssl->out_msglen = fragment_len;
++                ssl->out_msgtype = MBEDTLS_SSL_MSG_HANDSHAKE;
++                ret = mbedtls_ssl_write_record(ssl, 0);
++                if (ret != 0) {
++                    mbedtls_zeroize_and_free(message, msg_with_header_len);
++                    return ret;
++                }
++                offset += fragment_len;
++            }
++
++            mbedtls_zeroize_and_free(message, msg_with_header_len);
++            return 0;
++        }
++    }
++#endif /* MBEDTLS_SSL_PROTO_TLS1_3 && MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
++
+     ssl->out_msglen = msg_with_header_len;
+     MBEDTLS_SSL_PROC_CHK(mbedtls_ssl_write_handshake_msg_ext(ssl, 0, 0));
+ 
+diff --git a/library/ssl_tls.c b/library/ssl_tls.c
+index 1185b0b283..abe09487b5 100644
+--- a/library/ssl_tls.c
++++ b/library/ssl_tls.c
+@@ -3241,6 +3241,13 @@ size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
+     }
+ #endif
+ 
++    if (ssl->session != NULL) {
++        read_mfl = ssl_mfl_code_to_length(ssl->session->mfl_code);
++        if (read_mfl < max_len) {
++            max_len = read_mfl;
++        }
++    }
++
+     /* Check if a smaller max length was negotiated */
+     if (ssl->session_out != NULL) {
+         read_mfl = ssl_mfl_code_to_length(ssl->session_out->mfl_code);
+@@ -3269,6 +3276,11 @@ size_t mbedtls_ssl_get_output_max_frag_len(const mbedtls_ssl_context *ssl)
+      */
+     max_len = ssl_mfl_code_to_length(ssl->conf->mfl_code);
+ 
++    if (ssl->session != NULL &&
++        ssl_mfl_code_to_length(ssl->session->mfl_code) < max_len) {
++        max_len = ssl_mfl_code_to_length(ssl->session->mfl_code);
++    }
++
+     /* Check if a smaller max length was negotiated */
+     if (ssl->session_out != NULL &&
+         ssl_mfl_code_to_length(ssl->session_out->mfl_code) < max_len) {
+diff --git a/library/ssl_tls13_server.c b/library/ssl_tls13_server.c
+index a72ed25cfa..ec1c53d5e1 100644
+--- a/library/ssl_tls13_server.c
++++ b/library/ssl_tls13_server.c
+@@ -1245,6 +1245,29 @@ static int ssl_tls13_pick_key_cert(mbedtls_ssl_context *ssl)
+ #define SSL_CLIENT_HELLO_HRR_REQUIRED 1
+ #define SSL_CLIENT_HELLO_TLS1_2       2
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++MBEDTLS_CHECK_RETURN_CRITICAL
++static int ssl_tls13_parse_max_fragment_length_ext(mbedtls_ssl_context *ssl,
++                                                   const unsigned char *buf,
++                                                   const unsigned char *end)
++{
++    if (end - buf != 1 ||
++        buf[0] <= MBEDTLS_SSL_MAX_FRAG_LEN_NONE ||
++        buf[0] >= MBEDTLS_SSL_MAX_FRAG_LEN_INVALID) {
++        MBEDTLS_SSL_DEBUG_MSG(1, ("invalid max_fragment_length extension"));
++        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER,
++                                     MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER);
++        return MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER;
++    }
++
++    ssl->session_negotiate->mfl_code = buf[0];
++    MBEDTLS_SSL_DEBUG_MSG(2, ("negotiated max_fragment_length code: %u",
++                              (unsigned int) buf[0]));
++
++    return 0;
++}
++#endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
++
+ MBEDTLS_CHECK_RETURN_CRITICAL
+ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
+                                         const unsigned char *buf,
+@@ -1658,6 +1681,20 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
+                 break;
+ #endif /* MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED */
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++            case MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH:
++                MBEDTLS_SSL_DEBUG_MSG(3, ("found max_fragment_length extension"));
++
++                ret = ssl_tls13_parse_max_fragment_length_ext(
++                    ssl, p, extension_data_end);
++                if (ret != 0) {
++                    MBEDTLS_SSL_DEBUG_RET(
++                        1, ("ssl_tls13_parse_max_fragment_length_ext"), ret);
++                    return ret;
++                }
++                break;
++#endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
++
+ #if defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
+             case MBEDTLS_TLS_EXT_RECORD_SIZE_LIMIT:
+                 MBEDTLS_SSL_DEBUG_MSG(3, ("found record_size_limit extension"));
+@@ -1682,6 +1719,19 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
+         p += extension_data_len;
+     }
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH) && \
++    defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
++    if ((handshake->received_extensions &
++         MBEDTLS_SSL_EXT_MASK(MAX_FRAGMENT_LENGTH)) != 0 &&
++        (handshake->received_extensions &
++         MBEDTLS_SSL_EXT_MASK(RECORD_SIZE_LIMIT)) != 0) {
++        MBEDTLS_SSL_DEBUG_MSG(1, ("max_fragment_length and record_size_limit both received"));
++        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER,
++                                     MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER);
++        return MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER;
++    }
++#endif
++
+     MBEDTLS_SSL_PRINT_EXTS(3, MBEDTLS_SSL_HS_CLIENT_HELLO,
+                            handshake->received_extensions);
+ 
+@@ -2549,6 +2599,35 @@ cleanup:
+  * } EncryptedExtensions;
+  *
+  */
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++MBEDTLS_CHECK_RETURN_CRITICAL
++static int ssl_tls13_write_max_fragment_length_ext(mbedtls_ssl_context *ssl,
++                                                   unsigned char *buf,
++                                                   const unsigned char *end,
++                                                   size_t *out_len)
++{
++    unsigned char *p = buf;
++
++    *out_len = 0;
++    if ((ssl->handshake->received_extensions &
++         MBEDTLS_SSL_EXT_MASK(MAX_FRAGMENT_LENGTH)) == 0 ||
++        ssl->session_negotiate->mfl_code == MBEDTLS_SSL_MAX_FRAG_LEN_NONE) {
++        return 0;
++    }
++
++    MBEDTLS_SSL_CHK_BUF_PTR(p, end, 5);
++    MBEDTLS_PUT_UINT16_BE(MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH, p, 0);
++    MBEDTLS_PUT_UINT16_BE(1, p, 2);
++    p[4] = ssl->session_negotiate->mfl_code;
++    *out_len = 5;
++
++    mbedtls_ssl_tls13_set_hs_sent_ext_mask(
++        ssl, MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH);
++
++    return 0;
++}
++#endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
++
+ MBEDTLS_CHECK_RETURN_CRITICAL
+ static int ssl_tls13_write_encrypted_extensions_body(mbedtls_ssl_context *ssl,
+                                                      unsigned char *buf,
+@@ -2590,6 +2669,14 @@ static int ssl_tls13_write_encrypted_extensions_body(mbedtls_ssl_context *ssl,
+     }
+ #endif /* MBEDTLS_SSL_EARLY_DATA */
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++    ret = ssl_tls13_write_max_fragment_length_ext(ssl, p, end, &output_len);
++    if (ret != 0) {
++        return ret;
++    }
++    p += output_len;
++#endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
++
+ #if defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
+     if (ssl->handshake->received_extensions & MBEDTLS_SSL_EXT_MASK(RECORD_SIZE_LIMIT)) {
+         ret = mbedtls_ssl_tls13_write_record_size_limit_ext(
