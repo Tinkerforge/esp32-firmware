@@ -96,6 +96,22 @@ class Tls13ServerFlight:
     certificate_entries: list[tuple[bytes, dict[int, bytes]]]
 
 
+def certificate_hash_data(certificate, issuer):
+    public_key = issuer.public_key()
+    assert isinstance(public_key, ec.EllipticCurvePublicKey)
+    issuer_key = public_key.public_bytes(
+        serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+    serial = format(certificate.serial_number, "x")
+    if len(serial) % 2:
+        serial = "0" + serial
+    return {
+        "hashAlgorithm": "SHA256",
+        "issuerNameHash": hashlib.sha256(certificate.issuer.public_bytes()).hexdigest(),
+        "issuerKeyHash": hashlib.sha256(issuer_key).hexdigest(),
+        "serialNumber": serial,
+    }
+
+
 def run(cmd, **kwargs):
     return subprocess.run(cmd, check=True, capture_output=True, text=True, **kwargs)
 
@@ -240,6 +256,66 @@ def sign_iso20_chain(workdir, csr_pem):
         issuer_keys=[sub2_key, sub1_key, root_key],
         urls=urls,
     )
+
+
+def sign_iso2_csr_at(csr_pem, not_before):
+    pki = CERTS / "iso2"
+    sub2 = x509.load_pem_x509_certificate(
+        (pki / "certs" / "cpoSubCA2Cert.pem").read_bytes())
+    sub1 = x509.load_pem_x509_certificate(
+        (pki / "certs" / "cpoSubCA1Cert.pem").read_bytes())
+    root = x509.load_pem_x509_certificate(
+        (pki / "certs" / "v2gRootCACert.pem").read_bytes())
+    sub2_key = serialization.load_pem_private_key(
+        (pki / "private_keys" / "cpoSubCA2.key").read_bytes(), b"12345")
+    assert isinstance(sub2_key, ec.EllipticCurvePrivateKey)
+    csr = x509.load_pem_x509_csr(csr_pem.encode("ascii"))
+    assert csr.is_signature_valid
+    public_key = csr.public_key()
+    assert isinstance(public_key, ec.EllipticCurvePublicKey)
+    assert isinstance(public_key.curve, ec.SECP256R1), public_key.curve.name
+    leaf = (
+        x509.CertificateBuilder()
+        .subject_name(csr.subject)
+        .issuer_name(sub2.subject)
+        .public_key(public_key)
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(not_before)
+        .not_valid_after(not_before + timedelta(days=30))
+        .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+        .add_extension(leaf_key_usage(), critical=True)
+        .add_extension(x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False)
+        .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(sub2_key.public_key()), critical=False)
+        .sign(sub2_key, hashes.SHA256())
+    )
+    chain = "".join(
+        certificate.public_bytes(serialization.Encoding.PEM).decode("ascii")
+        for certificate in (leaf, sub2, sub1)
+    )
+    return leaf, sub2, sub1, root, chain
+
+
+def start_v2g_certificate_csr(csms):
+    assert csms.call("TriggerMessage", {
+        "requestedMessage": "SignV2GCertificate",
+    })["status"] == "Accepted"
+    request, message_id = csms.expect("SignCertificate", timeout=60)
+    csms.respond(message_id, {"status": "Accepted"})
+    assert request["certificateType"] == "V2GCertificate", request
+    return request
+
+
+def installed_chain_for_leaf(csms, leaf_hash):
+    response = csms.call("GetInstalledCertificateIds", {
+        "certificateType": ["V2GCertificateChain"],
+    })
+    if response["status"] != "Accepted":
+        return response, []
+    matches = [
+        entry for entry in response["certificateHashDataChain"]
+        if entry["certificateHashData"] == leaf_hash
+    ]
+    return response, matches
 
 
 def ocsp_response_b64(workdir, leaf_pem_path, next_update_minutes=None):
@@ -643,6 +719,66 @@ def main():
 
         provision_chain(csms, workdir, iso20=False, with_aia=False)
 
+        # Exact +300/+301 boundaries run deterministically on both host crypto
+        # backends. Target margins prove the same acceptance/rejection paths
+        # without depending on network and certificate timestamp races.
+        request = start_v2g_certificate_csr(csms)
+        accepted = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) + timedelta(seconds=120))
+        accepted_result = csms.call("CertificateSigned", {
+            "certificateChain": accepted[4],
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("SECC chain starting within 300 seconds is accepted [HUB20-42-001]",
+              accepted_result["status"] == "Accepted", accepted_result)
+        accepted_hash = certificate_hash_data(accepted[0], accepted[1])
+        accepted_response, accepted_matches = installed_chain_for_leaf(csms, accepted_hash)
+        accepted_entries = accepted_response.get("certificateHashDataChain", [])
+        check("accepted future SECC chain replaces the previous same-root chain",
+              len(accepted_matches) == 1 and accepted_entries == accepted_matches,
+              accepted_entries)
+
+        request = start_v2g_certificate_csr(csms)
+        too_early = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) + timedelta(seconds=600))
+        rejected = csms.call("CertificateSigned", {
+            "certificateChain": too_early[4],
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("SECC chain starting beyond 300 seconds is rejected [HUB20-42-001]",
+              rejected["status"] == "Rejected"
+              and rejected.get("statusInfo", {}).get("reasonCode") == "InvalidChain",
+              rejected)
+        future_response, matches_after_future_rejection = installed_chain_for_leaf(csms, accepted_hash)
+        check("future-validity rejection keeps the accepted chain unchanged",
+              len(matches_after_future_rejection) == 1
+              and future_response.get("certificateHashDataChain", []) == accepted_entries,
+              future_response)
+
+        request = start_v2g_certificate_csr(csms)
+        includes_root = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) - timedelta(days=1))
+        root_pem = includes_root[3].public_bytes(serialization.Encoding.PEM).decode("ascii")
+        rejected = csms.call("CertificateSigned", {
+            "certificateChain": includes_root[4] + root_pem,
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("SECC chain including the V2G root is rejected [HUB20-42-004]",
+              rejected["status"] == "Rejected"
+              and rejected.get("statusInfo", {}).get("reasonCode") == "ChainIncludesRoot",
+              rejected)
+        root_response, matches_after_root_rejection = installed_chain_for_leaf(csms, accepted_hash)
+        check("root-inclusion rejection keeps the accepted chain unchanged",
+              len(matches_after_root_rejection) == 1
+              and root_response.get("certificateHashDataChain", []) == accepted_entries,
+              root_response)
+
+        # Restore a currently valid -2 identity before EV-side TLS checks.
+        provision_chain(csms, workdir, iso20=False, with_aia=False)
+
         expected_evseid = "DE*TNK*E123456"
         set_result = csms.call("SetVariables", {"setVariableData": [{
             "component": {"name": "ISO15118Ctrlr"},
@@ -674,6 +810,30 @@ def main():
               try_tls(args.charger, iface, tls13=False) == "TLSv1.2")
 
         chain20 = provision_iso20_chain(csms, workdir)
+        listed = csms.call("GetInstalledCertificateIds", {
+            "certificateType": ["V2GCertificateChain"],
+        })
+        check("M03 accepts the installed V2G certificate chains",
+              listed["status"] == "Accepted", listed)
+        expected_leaf_hash = certificate_hash_data(
+            chain20.certificates[0], chain20.issuers[0])
+        matching_entries = [
+            entry for entry in listed.get("certificateHashDataChain", [])
+            if entry["certificateHashData"] == expected_leaf_hash
+        ]
+        check("M03 includes the ISO 15118-20 SECC leaf hash [M03.FR.04/05]",
+              len(matching_entries) == 1, matching_entries)
+        if matching_entries:
+            expected_children = [
+                certificate_hash_data(chain20.certificates[1], chain20.issuers[1]),
+                certificate_hash_data(chain20.certificates[2], chain20.issuers[2]),
+            ]
+            children = matching_entries[0].get("childCertificateHashData", [])
+            check("M03 child hashes are CPO Sub-CA 2 then CPO Sub-CA 1 [HUB20-412-001]",
+                  children == expected_children, children)
+            root_hash = certificate_hash_data(chain20.issuers[2], chain20.issuers[2])
+            check("M03 does not list the V2G root as a child certificate",
+                  root_hash not in children)
         time.sleep(3)
         check("OCSP unknown, TLS 1.3 refused [HUB20-532-002]",
               try_tls(args.charger, iface, tls13=True, mutual=True) is None)
