@@ -28,7 +28,7 @@ try:
         del env['UV_RUN_RECURSION_DEPTH']
         del env['VIRTUAL_ENV']
 
-        subprocess.call(['bash', '-c', '. esp-idf/export.sh && ./build.sh -s -t esp32'], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, env=env)
+        subprocess.check_call(['bash', '-c', '. esp-idf/export.sh && ./build.sh -s -t esp32'], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, env=env)
 
 finally:
     shutil.move(os.path.join(root, "configs", "defconfig.esp32vanilla"), os.path.join(root, "configs", "defconfig.esp32"))
