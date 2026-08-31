@@ -8,6 +8,11 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 
 from _common import CERTS_DIR, IsoTestEnvironment, sdp_request
+from _ocsp_gating import (
+    TLS_STATUS_REQUEST_V2,
+    capture_tls13_server_flight,
+    parse_extension_vector,
+)
 from software.test_runner.test_context import TestContext, run_testsuite
 
 environment = None
@@ -158,6 +163,49 @@ def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None
     else:
         tc.assert_false(handshake_completed and result.returncode == 0)
     time.sleep(0.2)
+
+
+def test_tls13_ignores_status_request_v2(tc: TestContext):
+    assert environment is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        flight = capture_tls13_server_flight(
+            environment.host,
+            environment.iface,
+            request_status=False,
+            request_status_v2=True,
+        )
+
+        tc.assert_false(TLS_STATUS_REQUEST_V2 in flight.server_hello_extensions)
+        message_types = [message_type for message_type, _ in flight.handshake_messages]
+        tc.assert_(8 in message_types)
+        tc.assert_(13 in message_types)
+        tc.assert_(11 in message_types)
+
+        encrypted_extensions = next(
+            message for message_type, message in flight.handshake_messages
+            if message_type == 8
+        )
+        tc.assert_false(TLS_STATUS_REQUEST_V2 in parse_extension_vector(encrypted_extensions[4:], 0))
+
+        certificate_request = next(
+            message for message_type, message in flight.handshake_messages
+            if message_type == 13
+        )
+        context_length = certificate_request[4]
+        request_extensions = parse_extension_vector(
+            certificate_request[4:], 1 + context_length)
+        tc.assert_false(TLS_STATUS_REQUEST_V2 in request_extensions)
+        tc.assert_(len(flight.certificate_entries) > 0)
+        for _, extensions in flight.certificate_entries:
+            tc.assert_false(TLS_STATUS_REQUEST_V2 in extensions)
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
 
 
 def generate_tests():
