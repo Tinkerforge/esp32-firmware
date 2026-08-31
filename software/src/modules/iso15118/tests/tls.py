@@ -11,6 +11,7 @@ from _common import CERTS_DIR, IsoTestEnvironment, sdp_request
 from _ocsp_gating import (
     TLS_EARLY_DATA,
     TLS_STATUS_REQUEST_V2,
+    capture_tls13_server_random,
     capture_tls13_server_flight,
     parse_extension_vector,
 )
@@ -23,6 +24,8 @@ TLS_STATUS_REQUEST = 5
 TLS_SIGNATURE_ALGORITHMS = 13
 TLS_CERTIFICATE_AUTHORITIES = 47
 TLS_OID_FILTERS = 48
+HELLO_RETRY_REQUEST_RANDOM = bytes.fromhex(
+    "cf21ad74e59a6111be1d8c021e65b891c2a211167abb8c5e079e09e2c8a8339c")
 
 
 CASES = {
@@ -289,6 +292,27 @@ def test_tls13_rejects_early_data(tc: TestContext):
             if message_type == 8
         )
         tc.assert_false(TLS_EARLY_DATA in parse_extension_vector(encrypted_extensions[4:], 0))
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
+
+
+def test_tls13_server_hello_random(tc: TestContext):
+    assert environment is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        samples = [
+            capture_tls13_server_random(environment.host, environment.iface)
+            for _ in range(16)
+        ]
+        tc.assert_(all(len(sample) == 32 for sample in samples))
+        tc.assert_(all(sample != HELLO_RETRY_REQUEST_RANDOM for sample in samples))
+        tc.assert_eq(len(samples), len(set(samples)))
+        tc.assert_(all(any(byte != 0 for byte in sample) for sample in samples))
     finally:
         tc.api("ocpp/config_update", saved_ocpp, timeout=15)
 
