@@ -1155,6 +1155,8 @@ def main():
         '-<modules/iso15118/tests/**>',
         '-<modules/ocpp/tests/**>',
     ]
+    for module_tests_dir in glob.glob('src/modules/*/tests'):
+        build_src_filter.append('-<{}/>'.format(pathlib.PurePath(module_tests_dir).relative_to('src').as_posix()))
 
     if not os.path.isdir("build"):
         os.makedirs("build")
