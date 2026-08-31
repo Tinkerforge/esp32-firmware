@@ -10,22 +10,37 @@ tfutil.create_parent_module(__file__, "software")
 
 from software import util
 
+from software.src.modules.meters.generated.meter_value_id import MVID
+
 
 # Meter value IDs to expose via MQTT auto-discovery (per meter slot).
 # Add IDs from meters/meter_value_id.csv here to make them discoverable.
-# Do not overdo it as this can drastically increase the required memory and flash size (number of meter value ids * meters_max_slots)
 METER_VALUE_IDS = [
-    1,
-    2,
-    3,
-    13,
-    17,
-    21,
-    74,
-    210,
-    212,
-    356,
-    364
+    MVID.VoltageL1N,
+    MVID.VoltageL2N,
+    MVID.VoltageL3N,
+    MVID.CurrentL1ImExDiff,
+    MVID.CurrentL2ImExDiff,
+    MVID.CurrentL3ImExDiff,
+    MVID.PowerActiveLSumImExDiff,
+    MVID.EnergyActiveLSumImport,
+    MVID.EnergyActiveLSumExport,
+
+    MVID.VoltageDC,
+    MVID.CurrentDC,
+    MVID.PowerDC,
+    MVID.EnergyDCImport,
+    MVID.EnergyDCExport,
+
+    MVID.VoltagePVAvg,
+    MVID.CurrentPVSumExport,
+    MVID.PowerPVSumImExDiff,
+    MVID.EnergyPVSumExport,
+
+    MVID.StateOfCharge,
+    MVID.Capacity,
+
+    MVID.FrequencyLAvg
 ]
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
