@@ -25,9 +25,17 @@
 #include <algorithm>
 #include <vector>
 #include <mbedtls/base64.h>
+#include <mbedtls/platform_util.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+
+Ocpp::Iso15118SeccChain::~Iso15118SeccChain()
+{
+    if (key_pem != nullptr) {
+        mbedtls_platform_zeroize(key_pem.get(), key_pem_capacity);
+    }
+}
 #include "build.h"
 #include "options.h"
 #include "tools.h"
@@ -335,6 +343,12 @@ size_t Ocpp::get_iso15118_secc_chains(bool iso20, Iso15118SeccChain *chains_out,
         if (e.group != group || !e.has_anchor || e.not_before > now || now > e.not_after) {
             continue;
         }
+        if (iso20 &&
+            ((e.public_key_curve == OcppCurve21::Ed448 && !cp21->device_model.v2g20_use_ed448) ||
+             (e.public_key_curve == OcppCurve21::Secp521r1 && !cp21->device_model.v2g20_use_secp521r1) ||
+             (e.public_key_curve != OcppCurve21::Ed448 && e.public_key_curve != OcppCurve21::Secp521r1))) {
+            continue;
+        }
         candidates.push_back(&e);
     }
     std::sort(candidates.begin(), candidates.end(), [](const Ocpp21::CertEntry *a, const Ocpp21::CertEntry *b) {
@@ -351,6 +365,7 @@ size_t Ocpp::get_iso15118_secc_chains(bool iso20, Iso15118SeccChain *chains_out,
         Iso15118SeccChain candidate;
         candidate.chain_pem = heap_alloc_array<char>(OCPP21_CERT_PEM_MAX + 1);
         candidate.key_pem = heap_alloc_array<char>(key_pem_max + 1);
+        candidate.key_pem_capacity = candidate.key_pem == nullptr ? 0 : key_pem_max + 1;
         std::string root = cp21->cert_store.loadRootByHash(entry->anchor_root);
         candidate.root_pem = heap_alloc_array<char>(root.size() + 1);
         if (candidate.chain_pem == nullptr || candidate.key_pem == nullptr || root.empty() || candidate.root_pem == nullptr) {
@@ -467,6 +482,28 @@ bool Ocpp::is_iso15118_enabled()
 bool Ocpp::is_iso15118_store_live()
 {
     return cp21 && client_started;
+}
+
+bool Ocpp::is_iso20_suite_enabled(OcppCurve21 curve) const
+{
+    if (!cp21 || !client_started) {
+        return false;
+    }
+    switch (curve) {
+        case OcppCurve21::Secp521r1:
+            return cp21->device_model.v2g20_use_secp521r1;
+        case OcppCurve21::Ed448:
+            return cp21->device_model.v2g20_use_ed448;
+        case OcppCurve21::Secp256r1:
+        case OcppCurve21::Unknown:
+            return false;
+    }
+    return false;
+}
+
+bool Ocpp::is_iso20_ocsp_required() const
+{
+    return !private_environment_waives_iso15118_ocsp();
 }
 
 constexpr bool Ocpp::supports_iso15118_pnc()

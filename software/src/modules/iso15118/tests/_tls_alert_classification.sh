@@ -6,7 +6,7 @@ set -eu
 cd "$(dirname "$0")"
 readonly BUILD="$(mktemp -d "${TMPDIR:-/tmp}/iso15118-alert-classification.XXXXXXXX")"
 trap 'rm -rf -- "$BUILD"' EXIT
-PATCH="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/0007-Preserve-actionable-TLS-fatal-alert-causes.rawpatch)"
+PATCH_ROOT="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls)"
 
 if [ -n "${MBEDTLS_SRC:-}" ]; then
     cp -r "$MBEDTLS_SRC" "$BUILD/mbedtls"
@@ -17,7 +17,10 @@ else
 fi
 
 grep -q "3.6.6" "$BUILD/mbedtls/include/mbedtls/build_info.h" || { echo "mbedTLS source is not 3.6.6"; exit 1; }
-patch -d "$BUILD/mbedtls" -p1 --forward < "$PATCH"
+patch -d "$BUILD/mbedtls/include/mbedtls" --forward \
+    < "$PATCH_ROOT/include/mbedtls/0007-Preserve-actionable-TLS-alert-definitions.rawpatch"
+patch -d "$BUILD/mbedtls/library" --forward \
+    < "$PATCH_ROOT/library/0007-Preserve-actionable-TLS-fatal-alert-causes.rawpatch"
 
 cat > "$BUILD/test.c" <<'EOF'
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS

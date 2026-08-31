@@ -73,6 +73,10 @@ def test_ocsp_gating_and_stapling(tc: TestContext):
     run(tc, "_ocsp_gating.py", 600)
 
 
+def test_ed448_tls(tc: TestContext):
+    run(tc, "_ed448_tls.py", 900)
+
+
 def test_vehicle_chain_status(tc: TestContext):
     run(tc, "_vehicle_chain.py", 900)
 

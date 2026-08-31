@@ -1,0 +1,168 @@
+diff --git mbedtls/check_config.h mbedtls/check_config.h
+index aec5050b70..7320cc76df 100644
+--- mbedtls/check_config.h
++++ mbedtls/check_config.h
+@@ -445,10 +445,15 @@
+ #endif
+ 
+ #if defined(MBEDTLS_PK_C) && \
+-    !defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_PK_HAVE_ECC_KEYS)
++    !defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_PK_HAVE_ECC_KEYS) && \
++    !defined(MBEDTLS_ED448_C)
+ #error "MBEDTLS_PK_C defined, but not all prerequisites"
+ #endif
+ 
++#if defined(MBEDTLS_ED448_C) && !defined(MBEDTLS_PK_C)
++#error "MBEDTLS_ED448_C requires MBEDTLS_PK_C"
++#endif
++
+ #if defined(MBEDTLS_PK_PARSE_C) && \
+     (!defined(MBEDTLS_ASN1_PARSE_C) || \
+      !defined(MBEDTLS_OID_C)        || \
+diff --git mbedtls/mbedtls_config.h mbedtls/mbedtls_config.h
+index 8fa445a132..0c5c29fbd5 100644
+--- mbedtls/mbedtls_config.h
++++ mbedtls/mbedtls_config.h
+@@ -3169,6 +3169,15 @@
+  */
+ #define MBEDTLS_PEM_WRITE_C
+ 
++/**
++ * \def MBEDTLS_ED448_C
++ *
++ * Enable Ed448 PK and X.509 support through the external tf_ed448 provider.
++ *
++ * Requires: MBEDTLS_PK_C
++ */
++//#define MBEDTLS_ED448_C
++
+ /**
+  * \def MBEDTLS_PK_C
+  *
+diff --git mbedtls/pk.h mbedtls/pk.h
+index 68b0f4befa..9e54ab6d12 100644
+--- mbedtls/pk.h
++++ mbedtls/pk.h
+@@ -28,6 +28,10 @@
+ #include "mbedtls/ecdsa.h"
+ #endif
+ 
++#if defined(MBEDTLS_ED448_C)
++#include "mbedtls/ed448.h"
++#endif
++
+ #if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+ #include "psa/crypto.h"
+ #endif
+@@ -79,6 +83,7 @@ typedef enum {
+     MBEDTLS_PK_RSA_ALT,
+     MBEDTLS_PK_RSASSA_PSS,
+     MBEDTLS_PK_OPAQUE,
++    MBEDTLS_PK_ED448,
+ } mbedtls_pk_type_t;
+ 
+ /**
+@@ -139,6 +144,12 @@ typedef struct mbedtls_pk_rsassa_pss_options {
+ #define MBEDTLS_PK_SIGNATURE_MAX_SIZE MBEDTLS_ECDSA_MAX_LEN
+ #endif
+ 
++#if defined(MBEDTLS_ED448_C) && \
++    MBEDTLS_ED448_SIGNATURE_SIZE > MBEDTLS_PK_SIGNATURE_MAX_SIZE
++#undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
++#define MBEDTLS_PK_SIGNATURE_MAX_SIZE MBEDTLS_ED448_SIGNATURE_SIZE
++#endif
++
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
+ #if PSA_SIGNATURE_MAX_SIZE > MBEDTLS_PK_SIGNATURE_MAX_SIZE
+ /* PSA_SIGNATURE_MAX_SIZE is the maximum size of a signature made
+@@ -734,8 +745,10 @@ int mbedtls_pk_copy_public_from_psa(mbedtls_svc_key_id_t key_id, mbedtls_pk_cont
+  *                  &sect;9.2 steps 3&ndash;6. If \p md_alg is a valid hash
+  *                  algorithm then \p hash is the digest itself, and this
+  *                  function calculates the DigestInfo encoding internally.
+- * \param hash      Hash of the message to sign
+- * \param hash_len  Hash length
++ * \param hash      Hash of the message to verify. For #MBEDTLS_PK_ED448,
++ *                  this is the original message and \p md_alg must be
++ *                  #MBEDTLS_MD_NONE.
++ * \param hash_len  Hash length, or message length for #MBEDTLS_PK_ED448.
+  * \param sig       Signature to verify
+  * \param sig_len   Signature length
+  *
+@@ -823,8 +836,10 @@ int mbedtls_pk_verify_ext(mbedtls_pk_type_t type, const void *options,
+  * \param ctx       The PK context to use. It must have been set up
+  *                  with a private key.
+  * \param md_alg    Hash algorithm used (see notes)
+- * \param hash      Hash of the message to sign
+- * \param hash_len  Hash length
++ * \param hash      Hash of the message to sign. For #MBEDTLS_PK_ED448,
++ *                  this is the original message and \p md_alg must be
++ *                  #MBEDTLS_MD_NONE.
++ * \param hash_len  Hash length, or message length for #MBEDTLS_PK_ED448.
+  * \param sig       Place to write the signature.
+  *                  It must have enough room for the signature.
+  *                  #MBEDTLS_PK_SIGNATURE_MAX_SIZE is always enough.
+@@ -1073,6 +1088,15 @@ static inline mbedtls_ecp_keypair *mbedtls_pk_ec(const mbedtls_pk_context pk)
+ }
+ #endif /* MBEDTLS_ECP_C */
+ 
++#if defined(MBEDTLS_ED448_C)
++static inline mbedtls_ed448_context *mbedtls_pk_ed448(const mbedtls_pk_context pk)
++{
++    return mbedtls_pk_get_type(&pk) == MBEDTLS_PK_ED448
++               ? (mbedtls_ed448_context *) pk.MBEDTLS_PRIVATE(pk_ctx)
++               : NULL;
++}
++#endif
++
+ #if defined(MBEDTLS_PK_PARSE_C)
+ /** \ingroup pk_module */
+ /**
+--- /dev/null
++++ mbedtls/ed448.h
+@@ -0,0 +1,46 @@
++/*
++ * Ed448 public-key support backed by tf_ed448.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
++ */
++#ifndef MBEDTLS_ED448_H
++#define MBEDTLS_ED448_H
++
++#include "mbedtls/build_info.h"
++#include "mbedtls/private_access.h"
++
++#include <stddef.h>
++#include <stdint.h>
++
++#define MBEDTLS_ED448_PRIVATE_KEY_SIZE 57
++#define MBEDTLS_ED448_PUBLIC_KEY_SIZE 57
++#define MBEDTLS_ED448_SIGNATURE_SIZE 114
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef struct mbedtls_ed448_context {
++    unsigned char MBEDTLS_PRIVATE(private_seed)[MBEDTLS_ED448_PRIVATE_KEY_SIZE];
++    unsigned char MBEDTLS_PRIVATE(public_key)[MBEDTLS_ED448_PUBLIC_KEY_SIZE];
++    unsigned char MBEDTLS_PRIVATE(has_private);
++    unsigned char MBEDTLS_PRIVATE(has_public);
++} mbedtls_ed448_context;
++
++void mbedtls_ed448_init(mbedtls_ed448_context *ctx);
++void mbedtls_ed448_free(mbedtls_ed448_context *ctx);
++int mbedtls_ed448_import_public(mbedtls_ed448_context *ctx,
++                                const unsigned char *public_key,
++                                size_t public_key_len);
++int mbedtls_ed448_import_private(mbedtls_ed448_context *ctx,
++                                 const unsigned char *private_seed,
++                                 size_t private_seed_len);
++int mbedtls_ed448_gen_key(mbedtls_ed448_context *ctx,
++                          int (*f_rng)(void *, unsigned char *, size_t),
++                          void *p_rng);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif

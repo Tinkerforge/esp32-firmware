@@ -47,6 +47,7 @@ public:
         uint32_t chain_id = 0;
         std::unique_ptr<char[]> chain_pem;
         std::unique_ptr<char[]> key_pem;
+        size_t key_pem_capacity = 0;
         std::unique_ptr<char[]> root_pem;
 
         Iso15118SeccChain() = default;
@@ -54,6 +55,7 @@ public:
         Iso15118SeccChain &operator=(Iso15118SeccChain &&) = default;
         Iso15118SeccChain(const Iso15118SeccChain &) = delete;
         Iso15118SeccChain &operator=(const Iso15118SeccChain &) = delete;
+        ~Iso15118SeccChain();
     };
     size_t get_iso15118_secc_chains(bool iso20, Iso15118SeccChain *chains_out, size_t capacity);
 
@@ -67,6 +69,8 @@ public:
     std::unique_ptr<char[]> get_iso15118_root_bundle(RootGroup group);
 
     bool is_iso15118_store_live();
+    bool is_iso20_suite_enabled(OcppCurve21 curve) const;
+    bool is_iso20_ocsp_required() const;
     bool is_iso20_tls_ready(uint32_t chain_id);
     bool is_iso20_tls_ready();
     bool get_iso15118_ocsp_staple(uint32_t chain_id, uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out);
