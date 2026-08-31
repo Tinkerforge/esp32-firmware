@@ -477,8 +477,11 @@ update_dev_certs_cpp() {
 // Certificate chain: SECC Leaf -> CPO Sub-CA2 -> CPO Sub-CA1
 
 #include "dev_certs.h"
+#include "options.h"
 
 #include "gcc_warnings.h"
+
+#if OPTIONS_ISO15118_DEV_CERTS_ENABLED()
 
 // =============================================================================
 // ISO 15118-2 Certificates (secp256r1/prime256v1, TLS 1.2)
@@ -525,6 +528,8 @@ ${ISO20_OEM_ROOT_C};
 // V2G Root CA certificate (secp521r1): Trusts SECC and contract certificates
 const char dev_v2g_root_ca_pem_iso20[] =
 ${ISO20_V2G_ROOT_C};
+
+#endif
 CPPEOF
 
     echo "  Updated: $DEV_CERTS_CPP"

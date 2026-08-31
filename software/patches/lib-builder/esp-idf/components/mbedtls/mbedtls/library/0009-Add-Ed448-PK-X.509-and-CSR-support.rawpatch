@@ -1,0 +1,841 @@
+diff --git library/CMakeLists.txt library/CMakeLists.txt
+index 193593f753..fb55b94ffe 100644
+--- library/CMakeLists.txt
++++ library/CMakeLists.txt
+@@ -56,6 +56,7 @@ set(src_crypto
+     padlock.c
+     pem.c
+     pk.c
++    pk_ed448.c
+     pk_ecc.c
+     pk_wrap.c
+     pkcs12.c
+diff --git library/Makefile library/Makefile
+index c85135b747..b14dc2c0c1 100644
+--- library/Makefile
++++ library/Makefile
+@@ -148,6 +148,7 @@ OBJS_CRYPTO= \
+ 	     padlock.o \
+ 	     pem.o \
+ 	     pk.o \
++	     pk_ed448.o \
+ 	     pk_ecc.o \
+ 	     pk_wrap.o \
+ 	     pkcs12.o \
+diff --git library/oid.c library/oid.c
+index 1d6b1eb866..5ef206ce83 100644
+--- library/oid.c
++++ library/oid.c
+@@ -458,6 +458,12 @@ static const oid_sig_alg_t oid_sig_alg[] =
+     },
+ #endif /* MBEDTLS_MD_CAN_SHA512 */
+ #endif /* MBEDTLS_PK_CAN_ECDSA_SOME */
++#if defined(MBEDTLS_ED448_C)
++    {
++        OID_DESCRIPTOR(MBEDTLS_OID_ED448, "Ed448", "Ed448"),
++        MBEDTLS_MD_NONE, MBEDTLS_PK_ED448,
++    },
++#endif
+ #if defined(MBEDTLS_RSA_C)
+     {
+         OID_DESCRIPTOR(MBEDTLS_OID_RSASSA_PSS,        "RSASSA-PSS",           "RSASSA-PSS"),
+@@ -517,6 +523,12 @@ static const oid_pk_alg_t oid_pk_alg[] =
+         OID_DESCRIPTOR(MBEDTLS_OID_EC_ALG_ECDH,         "id-ecDH",          "EC key for ECDH"),
+         MBEDTLS_PK_ECKEY_DH,
+     },
++#if defined(MBEDTLS_ED448_C)
++    {
++        OID_DESCRIPTOR(MBEDTLS_OID_ED448,                "Ed448",            "Ed448"),
++        MBEDTLS_PK_ED448,
++    },
++#endif
+     {
+         NULL_OID_DESCRIPTOR,
+         MBEDTLS_PK_NONE,
+diff --git library/pk.c library/pk.c
+index b5d76dbd91..2c698581b9 100644
+--- library/pk.c
++++ library/pk.c
+@@ -26,6 +26,9 @@
+ #if defined(MBEDTLS_ECDSA_C)
+ #include "mbedtls/ecdsa.h"
+ #endif
++#if defined(MBEDTLS_ED448_C)
++#include "mbedtls/ed448.h"
++#endif
+ 
+ #if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+ #include "psa_util_internal.h"
+@@ -149,6 +152,10 @@ const mbedtls_pk_info_t *mbedtls_pk_info_from_type(mbedtls_pk_type_t pk_type)
+         case MBEDTLS_PK_ECDSA:
+             return &mbedtls_ecdsa_info;
+ #endif /* MBEDTLS_PK_CAN_ECDSA_SOME */
++#if defined(MBEDTLS_ED448_C)
++        case MBEDTLS_PK_ED448:
++            return &mbedtls_ed448_info;
++#endif
+         /* MBEDTLS_PK_RSA_ALT omitted on purpose */
+         default:
+             return NULL;
+@@ -1145,7 +1152,8 @@ int mbedtls_pk_verify_restartable(mbedtls_pk_context *ctx,
+     }
+ 
+     if (ctx->pk_info == NULL ||
+-        pk_hashlen_helper(md_alg, &hash_len) != 0) {
++        (mbedtls_pk_get_type(ctx) != MBEDTLS_PK_ED448 &&
++         pk_hashlen_helper(md_alg, &hash_len) != 0)) {
+         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+     }
+ 
+@@ -1336,7 +1344,9 @@ int mbedtls_pk_sign_restartable(mbedtls_pk_context *ctx,
+         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+     }
+ 
+-    if (ctx->pk_info == NULL || pk_hashlen_helper(md_alg, &hash_len) != 0) {
++    if (ctx->pk_info == NULL ||
++        (mbedtls_pk_get_type(ctx) != MBEDTLS_PK_ED448 &&
++         pk_hashlen_helper(md_alg, &hash_len) != 0)) {
+         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+     }
+ 
+diff --git library/pk_wrap.h library/pk_wrap.h
+index be096da53a..d722558cea 100644
+--- library/pk_wrap.h
++++ library/pk_wrap.h
+@@ -117,6 +117,10 @@ extern const mbedtls_pk_info_t mbedtls_eckeydh_info;
+ extern const mbedtls_pk_info_t mbedtls_ecdsa_info;
+ #endif
+ 
++#if defined(MBEDTLS_ED448_C)
++extern const mbedtls_pk_info_t mbedtls_ed448_info;
++#endif
++
+ #if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
+ extern const mbedtls_pk_info_t mbedtls_rsa_alt_info;
+ #endif
+diff --git library/pkparse.c library/pkparse.c
+index 4f6ee13986..9588a5d12b 100644
+--- library/pkparse.c
++++ library/pkparse.c
+@@ -506,6 +506,13 @@ static int pk_get_pk_alg(unsigned char **p,
+         return MBEDTLS_ERR_PK_INVALID_ALG;
+     }
+ 
++#if defined(MBEDTLS_ED448_C)
++    if (*pk_alg == MBEDTLS_PK_ED448 &&
++        (params->tag != 0 || params->len != 0)) {
++        return MBEDTLS_ERR_PK_INVALID_ALG;
++    }
++#endif
++
+     return 0;
+ }
+ 
+@@ -567,6 +574,15 @@ int mbedtls_pk_parse_subpubkey(unsigned char **p, const unsigned char *end,
+         }
+     } else
+ #endif /* MBEDTLS_RSA_C */
++#if defined(MBEDTLS_ED448_C)
++    if (pk_alg == MBEDTLS_PK_ED448) {
++        ret = mbedtls_ed448_import_public(mbedtls_pk_ed448(*pk), *p,
++                                          (size_t) (end - *p));
++        if (ret == 0) {
++            *p = (unsigned char *) end;
++        }
++    } else
++#endif
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (pk_alg == MBEDTLS_PK_ECKEY_DH || pk_alg == MBEDTLS_PK_ECKEY) {
+ #if defined(MBEDTLS_PK_HAVE_RFC8410_CURVES)
+@@ -597,6 +613,21 @@ int mbedtls_pk_parse_subpubkey(unsigned char **p, const unsigned char *end,
+     return ret;
+ }
+ 
++#if defined(MBEDTLS_ED448_C)
++static int pk_parse_key_ed448_der(mbedtls_pk_context *pk,
++                                  unsigned char *key, size_t keylen)
++{
++    unsigned char *p = key;
++    const unsigned char *end = key + keylen;
++    size_t len;
++    int ret = mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OCTET_STRING);
++    if (ret != 0 || len != MBEDTLS_ED448_PRIVATE_KEY_SIZE || p + len != end) {
++        return MBEDTLS_ERR_PK_KEY_INVALID_FORMAT;
++    }
++    return mbedtls_ed448_import_private(mbedtls_pk_ed448(*pk), p, len);
++}
++#endif
++
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+ /*
+  * Parse a SEC1 encoded private EC key
+@@ -818,6 +849,14 @@ static int pk_parse_key_pkcs8_unencrypted_der(
+         }
+     } else
+ #endif /* MBEDTLS_RSA_C */
++#if defined(MBEDTLS_ED448_C)
++    if (pk_alg == MBEDTLS_PK_ED448) {
++        if ((ret = pk_parse_key_ed448_der(pk, p, len)) != 0) {
++            mbedtls_pk_free(pk);
++            return ret;
++        }
++    } else
++#endif
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (pk_alg == MBEDTLS_PK_ECKEY || pk_alg == MBEDTLS_PK_ECKEY_DH) {
+ #if defined(MBEDTLS_PK_HAVE_RFC8410_CURVES)
+diff --git library/pkwrite.c library/pkwrite.c
+index d264abfbd9..f3147db512 100644
+--- library/pkwrite.c
++++ library/pkwrite.c
+@@ -26,7 +26,7 @@
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+ #include "pk_internal.h"
+ #endif
+-#if defined(MBEDTLS_RSA_C) || defined(MBEDTLS_PK_HAVE_ECC_KEYS)
++#if defined(MBEDTLS_RSA_C) || defined(MBEDTLS_PK_HAVE_ECC_KEYS) || defined(MBEDTLS_ED448_C)
+ #include "pkwrite.h"
+ #endif
+ #if defined(MBEDTLS_PEM_WRITE_C)
+@@ -42,6 +42,42 @@
+ #endif
+ #include "mbedtls/platform.h"
+ 
++#if defined(MBEDTLS_ED448_C)
++static int pk_write_ed448_pubkey(unsigned char **p, unsigned char *start,
++                                 const mbedtls_pk_context *pk)
++{
++    const mbedtls_ed448_context *ctx = mbedtls_pk_ed448(*pk);
++    if (ctx == NULL || ctx->MBEDTLS_PRIVATE(has_public) == 0) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    return mbedtls_asn1_write_raw_buffer(
++        p, start, ctx->MBEDTLS_PRIVATE(public_key), MBEDTLS_ED448_PUBLIC_KEY_SIZE);
++}
++
++static int pk_write_ed448_der(unsigned char **p, unsigned char *start,
++                              const mbedtls_pk_context *pk)
++{
++    int ret;
++    size_t inner_len = 0, len = 0;
++    const mbedtls_ed448_context *ctx = mbedtls_pk_ed448(*pk);
++    if (ctx == NULL || ctx->MBEDTLS_PRIVATE(has_private) == 0) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    MBEDTLS_ASN1_CHK_ADD(inner_len, mbedtls_asn1_write_octet_string(
++        p, start, ctx->MBEDTLS_PRIVATE(private_seed), MBEDTLS_ED448_PRIVATE_KEY_SIZE));
++    len = inner_len;
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_len(p, start, inner_len));
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_tag(p, start, MBEDTLS_ASN1_OCTET_STRING));
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_algorithm_identifier_ext(
++        p, start, MBEDTLS_OID_ED448, MBEDTLS_OID_SIZE(MBEDTLS_OID_ED448), 0, 0));
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_int(p, start, 0));
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_len(p, start, len));
++    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_tag(
++        p, start, MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE));
++    return (int) len;
++}
++#endif
++
+ /* Helpers for properly sizing buffers aimed at holding public keys or
+  * key-pairs based on build symbols. */
+ #if defined(MBEDTLS_PK_USE_PSA_EC_DATA)
+@@ -429,6 +465,11 @@ int mbedtls_pk_write_pubkey(unsigned char **p, unsigned char *start,
+         MBEDTLS_ASN1_CHK_ADD(len, mbedtls_rsa_write_pubkey(mbedtls_pk_rsa(*key), start, p));
+     } else
+ #endif
++#if defined(MBEDTLS_ED448_C)
++    if (mbedtls_pk_get_type(key) == MBEDTLS_PK_ED448) {
++        MBEDTLS_ASN1_CHK_ADD(len, pk_write_ed448_pubkey(p, start, key));
++    } else
++#endif
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (mbedtls_pk_get_type(key) == MBEDTLS_PK_ECKEY) {
+         MBEDTLS_ASN1_CHK_ADD(len, pk_write_ec_pubkey(p, start, key));
+@@ -478,6 +519,12 @@ int mbedtls_pk_write_pubkey_der(const mbedtls_pk_context *key, unsigned char *bu
+ 
+     pk_type = pk_get_type_ext(key);
+ 
++#if defined(MBEDTLS_ED448_C)
++    if (pk_type == MBEDTLS_PK_ED448) {
++        has_par = 0;
++    }
++#endif
++
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (pk_get_type_ext(key) == MBEDTLS_PK_ECKEY) {
+         mbedtls_ecp_group_id ec_grp_id = mbedtls_pk_get_ec_group_id(key);
+@@ -526,6 +573,11 @@ int mbedtls_pk_write_key_der(const mbedtls_pk_context *key, unsigned char *buf,
+         return pk_write_rsa_der(&c, buf, key);
+     } else
+ #endif /* MBEDTLS_RSA_C */
++#if defined(MBEDTLS_ED448_C)
++    if (pk_get_type_ext(key) == MBEDTLS_PK_ED448) {
++        return pk_write_ed448_der(&c, buf, key);
++    } else
++#endif
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (pk_get_type_ext(key) == MBEDTLS_PK_ECKEY) {
+ #if defined(MBEDTLS_PK_HAVE_RFC8410_CURVES)
+@@ -544,12 +596,13 @@ int mbedtls_pk_write_key_der(const mbedtls_pk_context *key, unsigned char *buf,
+  ******************************************************************************/
+ #if defined(MBEDTLS_PEM_WRITE_C)
+ 
+-#define PUB_DER_MAX_BYTES                                                   \
+-    (MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES > MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES ? \
+-     MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES : MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES)
++#define PUB_DER_MAX_BYTES MBEDTLS_PK_WRITE_PUBKEY_MAX_SIZE
+ #define PRV_DER_MAX_BYTES                                                   \
+-    (MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES > MBEDTLS_PK_ECP_PRV_DER_MAX_BYTES ? \
+-     MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES : MBEDTLS_PK_ECP_PRV_DER_MAX_BYTES)
++    (MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES > MBEDTLS_PK_ECP_PRV_DER_MAX_BYTES   \
++         ? (MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES > MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES \
++                ? MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES : MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES) \
++         : (MBEDTLS_PK_ECP_PRV_DER_MAX_BYTES > MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES \
++                ? MBEDTLS_PK_ECP_PRV_DER_MAX_BYTES : MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES))
+ 
+ int mbedtls_pk_write_pubkey_pem(const mbedtls_pk_context *key, unsigned char *buf, size_t size)
+ {
+@@ -599,6 +652,12 @@ int mbedtls_pk_write_key_pem(const mbedtls_pk_context *key, unsigned char *buf,
+         end = PEM_END_PRIVATE_KEY_RSA "\n";
+     } else
+ #endif
++#if defined(MBEDTLS_ED448_C)
++    if (pk_get_type_ext(key) == MBEDTLS_PK_ED448) {
++        begin = PEM_BEGIN_PRIVATE_KEY_PKCS8 "\n";
++        end = PEM_END_PRIVATE_KEY_PKCS8 "\n";
++    } else
++#endif
+ #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+     if (pk_get_type_ext(key) == MBEDTLS_PK_ECKEY) {
+         if (mbedtls_pk_is_rfc8410(key)) {
+diff --git library/pkwrite.h library/pkwrite.h
+index 01dc3d2f0f..ca4d2920b5 100644
+--- library/pkwrite.h
++++ library/pkwrite.h
+@@ -110,12 +110,21 @@
+ 
+ #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+ 
+-/* Define the maximum available public key DER length based on the supported
+- * key types (EC and/or RSA). */
+-#if (MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES > MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES)
+-#define MBEDTLS_PK_WRITE_PUBKEY_MAX_SIZE    MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES
++#if defined(MBEDTLS_ED448_C)
++#define MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES 80
++#define MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES 80
+ #else
+-#define MBEDTLS_PK_WRITE_PUBKEY_MAX_SIZE    MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES
++#define MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES 0
++#define MBEDTLS_PK_ED448_PRV_DER_MAX_BYTES 0
+ #endif
+ 
++/* Define the maximum available public key DER length based on the supported
++ * key types (EC and/or RSA). */
++#define MBEDTLS_PK_WRITE_PUBKEY_MAX_SIZE                                  \
++    (MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES > MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES  \
++         ? (MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES > MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES \
++                ? MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES : MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES) \
++         : (MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES > MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES \
++                ? MBEDTLS_PK_ECP_PUB_DER_MAX_BYTES : MBEDTLS_PK_ED448_PUB_DER_MAX_BYTES))
++
+ #endif /* MBEDTLS_PK_WRITE_H */
+diff --git library/version_features.c library/version_features.c
+index 4fd1029916..aa32105d7d 100644
+--- library/version_features.c
++++ library/version_features.c
+@@ -690,6 +690,9 @@ static const char * const features[] = {
+ #if defined(MBEDTLS_PEM_WRITE_C)
+     "PEM_WRITE_C", //no-check-names
+ #endif /* MBEDTLS_PEM_WRITE_C */
++#if defined(MBEDTLS_ED448_C)
++    "ED448_C", //no-check-names
++#endif /* MBEDTLS_ED448_C */
+ #if defined(MBEDTLS_PK_C)
+     "PK_C", //no-check-names
+ #endif /* MBEDTLS_PK_C */
+diff --git library/x509.c library/x509.c
+index f97fb44589..6896d73062 100644
+--- library/x509.c
++++ library/x509.c
+@@ -751,9 +751,12 @@ int mbedtls_x509_get_sig_alg(const mbedtls_x509_buf *sig_oid, const mbedtls_x509
+     } else
+ #endif /* MBEDTLS_X509_RSASSA_PSS_SUPPORT */
+     {
+-        /* Make sure parameters are absent or NULL */
+-        if ((sig_params->tag != MBEDTLS_ASN1_NULL && sig_params->tag != 0) ||
+-            sig_params->len != 0) {
++        /* RFC 8410 requires Ed448 parameters to be absent. */
++        if ((*pk_alg == MBEDTLS_PK_ED448 &&
++             (sig_params->tag != 0 || sig_params->len != 0)) ||
++            (*pk_alg != MBEDTLS_PK_ED448 &&
++             ((sig_params->tag != MBEDTLS_ASN1_NULL && sig_params->tag != 0) ||
++              sig_params->len != 0))) {
+             return MBEDTLS_ERR_X509_INVALID_ALG;
+         }
+     }
+diff --git library/x509_create.c library/x509_create.c
+index fc23fb865f..fa75628b7b 100644
+--- library/x509_create.c
++++ library/x509_create.c
+@@ -498,7 +498,7 @@ int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
+ 
+     // Write OID
+     //
+-    if (pk_alg == MBEDTLS_PK_ECDSA) {
++    if (pk_alg == MBEDTLS_PK_ECDSA || pk_alg == MBEDTLS_PK_ED448) {
+         /*
+          * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+          * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+diff --git library/x509_crl.c library/x509_crl.c
+index 7901992e20..db778ba17a 100644
+--- library/x509_crl.c
++++ library/x509_crl.c
+@@ -478,6 +478,7 @@ int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
+ 
+     if (crl->sig_oid.len != sig_oid2.len ||
+         memcmp(crl->sig_oid.p, sig_oid2.p, crl->sig_oid.len) != 0 ||
++        sig_params1.tag != sig_params2.tag ||
+         sig_params1.len != sig_params2.len ||
+         (sig_params1.len != 0 &&
+          memcmp(sig_params1.p, sig_params2.p, sig_params1.len) != 0)) {
+diff --git library/x509_crt.c library/x509_crt.c
+index f15aa99d5d..c7c9b57ac4 100644
+--- library/x509_crt.c
++++ library/x509_crt.c
+@@ -171,8 +171,12 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none =
+  * Return 0 if md_alg is acceptable for this profile, -1 otherwise
+  */
+ static int x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
++                                     mbedtls_pk_type_t pk_alg,
+                                      mbedtls_md_type_t md_alg)
+ {
++    if (pk_alg == MBEDTLS_PK_ED448) {
++        return md_alg == MBEDTLS_MD_NONE ? 0 : -1;
++    }
+     if (md_alg == MBEDTLS_MD_NONE) {
+         return -1;
+     }
+@@ -239,6 +243,10 @@ static int x509_profile_check_key(const mbedtls_x509_crt_profile *profile,
+     }
+ #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+ 
++    if (pk_alg == MBEDTLS_PK_ED448 && mbedtls_pk_get_bitlen(pk) == 448) {
++        return 0;
++    }
++
+     return -1;
+ }
+ 
+@@ -2044,7 +2052,7 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+         /*
+          * Check if CRL is correctly signed by the trusted CA
+          */
+-        if (x509_profile_check_md_alg(profile, crl_list->sig_md) != 0) {
++        if (x509_profile_check_md_alg(profile, crl_list->sig_pk, crl_list->sig_md) != 0) {
+             flags |= MBEDTLS_X509_BADCRL_BAD_MD;
+         }
+ 
+@@ -2053,6 +2061,9 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+         }
+ 
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
++        if (crl_list->sig_pk == MBEDTLS_PK_ED448) {
++            hash_length = crl_list->tbs.len;
++        } else {
+         psa_algorithm = mbedtls_md_psa_alg_from_type(crl_list->sig_md);
+         if (psa_hash_compute(psa_algorithm,
+                              crl_list->tbs.p,
+@@ -2064,7 +2075,11 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+             flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
+             break;
+         }
++        }
+ #else
++        if (crl_list->sig_pk == MBEDTLS_PK_ED448) {
++            hash_length = crl_list->tbs.len;
++        } else {
+         md_info = mbedtls_md_info_from_type(crl_list->sig_md);
+         hash_length = mbedtls_md_get_size(md_info);
+         if (mbedtls_md(md_info,
+@@ -2075,6 +2090,7 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+             flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
+             break;
+         }
++        }
+ #endif /* MBEDTLS_USE_PSA_CRYPTO */
+ 
+         if (x509_profile_check_key(profile, &ca->pk) != 0) {
+@@ -2082,7 +2098,9 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+         }
+ 
+         if (mbedtls_pk_verify_ext(crl_list->sig_pk, crl_list->sig_opts, &ca->pk,
+-                                  crl_list->sig_md, hash, hash_length,
++                                  crl_list->sig_pk == MBEDTLS_PK_ED448 ? MBEDTLS_MD_NONE : crl_list->sig_md,
++                                  crl_list->sig_pk == MBEDTLS_PK_ED448 ? crl_list->tbs.p : hash,
++                                  hash_length,
+                                   crl_list->sig.p, crl_list->sig.len) != 0) {
+             flags |= MBEDTLS_X509_BADCRL_NOT_TRUSTED;
+             break;
+@@ -2127,6 +2145,19 @@ static int x509_crt_check_signature(const mbedtls_x509_crt *child,
+ {
+     size_t hash_len;
+     unsigned char hash[MBEDTLS_MD_MAX_SIZE];
++
++    /* Skip expensive computation on obvious mismatch. */
++    if (!mbedtls_pk_can_do(&parent->pk, child->sig_pk)) {
++        return -1;
++    }
++
++    if (child->sig_pk == MBEDTLS_PK_ED448) {
++        (void) rs_ctx;
++        return mbedtls_pk_verify_ext(MBEDTLS_PK_ED448, child->sig_opts,
++                                     &parent->pk, MBEDTLS_MD_NONE,
++                                     child->tbs.p, child->tbs.len,
++                                     child->sig.p, child->sig.len);
++    }
+ #if !defined(MBEDTLS_USE_PSA_CRYPTO)
+     const mbedtls_md_info_t *md_info;
+     md_info = mbedtls_md_info_from_type(child->sig_md);
+@@ -2151,11 +2182,6 @@ static int x509_crt_check_signature(const mbedtls_x509_crt *child,
+     }
+ 
+ #endif /* MBEDTLS_USE_PSA_CRYPTO */
+-    /* Skip expensive computation on obvious mismatch */
+-    if (!mbedtls_pk_can_do(&parent->pk, child->sig_pk)) {
+-        return -1;
+-    }
+-
+ #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+     if (rs_ctx != NULL && child->sig_pk == MBEDTLS_PK_ECDSA) {
+         return mbedtls_pk_verify_restartable(&parent->pk,
+@@ -2579,7 +2605,7 @@ static int x509_crt_verify_chain(
+         }
+ 
+         /* Check signature algorithm: MD & PK algs */
+-        if (x509_profile_check_md_alg(profile, child->sig_md) != 0) {
++        if (x509_profile_check_md_alg(profile, child->sig_pk, child->sig_md) != 0) {
+             *flags |= MBEDTLS_X509_BADCERT_BAD_MD;
+         }
+ 
+diff --git library/x509write_crt.c library/x509write_crt.c
+index d829ffe602..38f59d0da6 100644
+--- library/x509write_crt.c
++++ library/x509write_crt.c
+@@ -453,6 +453,8 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
+         pk_alg = MBEDTLS_PK_RSA;
+     } else if (mbedtls_pk_can_do(ctx->issuer_key, MBEDTLS_PK_ECDSA)) {
+         pk_alg = MBEDTLS_PK_ECDSA;
++    } else if (mbedtls_pk_can_do(ctx->issuer_key, MBEDTLS_PK_ED448)) {
++        pk_alg = MBEDTLS_PK_ED448;
+     } else {
+         return MBEDTLS_ERR_X509_INVALID_ALG;
+     }
+@@ -530,7 +532,7 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
+     /*
+      *  Signature   ::=  AlgorithmIdentifier
+      */
+-    if (pk_alg == MBEDTLS_PK_ECDSA) {
++    if (pk_alg == MBEDTLS_PK_ECDSA || pk_alg == MBEDTLS_PK_ED448) {
+         /*
+          * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+          * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+@@ -598,6 +600,14 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
+      * Make signature
+      */
+ 
++    if (pk_alg == MBEDTLS_PK_ED448) {
++        ret = mbedtls_pk_sign(ctx->issuer_key, MBEDTLS_MD_NONE,
++                              c, len, sig, sizeof(sig), &sig_len,
++                              f_rng, p_rng);
++        if (ret != 0) {
++            return ret;
++        }
++    } else {
+     /* Compute hash of CRT. */
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
+     psa_algorithm = mbedtls_md_psa_alg_from_type(ctx->md_alg);
+@@ -624,6 +634,7 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx,
+                                f_rng, p_rng)) != 0) {
+         return ret;
+     }
++    }
+ 
+     /* Move CRT to the front of the buffer to have space
+      * for the signature. */
+diff --git library/x509write_csr.c library/x509write_csr.c
+index 75bd8f044e..4a4a87df03 100644
+--- library/x509write_csr.c
++++ library/x509write_csr.c
+@@ -211,6 +211,24 @@ static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
+                              &c, buf,
+                              MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE));
+ 
++    if (mbedtls_pk_can_do(ctx->key, MBEDTLS_PK_RSA)) {
++        pk_alg = MBEDTLS_PK_RSA;
++    } else if (mbedtls_pk_can_do(ctx->key, MBEDTLS_PK_ECDSA)) {
++        pk_alg = MBEDTLS_PK_ECDSA;
++    } else if (mbedtls_pk_can_do(ctx->key, MBEDTLS_PK_ED448)) {
++        pk_alg = MBEDTLS_PK_ED448;
++    } else {
++        return MBEDTLS_ERR_X509_INVALID_ALG;
++    }
++
++    /* Sign Ed448 directly over CertificationRequestInfo. */
++    if (pk_alg == MBEDTLS_PK_ED448) {
++        ret = mbedtls_pk_sign(ctx->key, MBEDTLS_MD_NONE, c, len,
++                              sig, sig_size, &sig_len, f_rng, p_rng);
++        if (ret != 0) {
++            return ret;
++        }
++    } else {
+     /*
+      * Sign the written CSR data into the sig buffer
+      * Note: hash errors can happen only after an internal error
+@@ -235,13 +253,6 @@ static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
+                                f_rng, p_rng)) != 0) {
+         return ret;
+     }
+-
+-    if (mbedtls_pk_can_do(ctx->key, MBEDTLS_PK_RSA)) {
+-        pk_alg = MBEDTLS_PK_RSA;
+-    } else if (mbedtls_pk_can_do(ctx->key, MBEDTLS_PK_ECDSA)) {
+-        pk_alg = MBEDTLS_PK_ECDSA;
+-    } else {
+-        return MBEDTLS_ERR_X509_INVALID_ALG;
+     }
+ 
+     if ((ret = mbedtls_oid_get_oid_by_sig_alg(pk_alg, ctx->md_alg,
+--- /dev/null
++++ library/pk_ed448.c
+@@ -0,0 +1,230 @@
++/*
++ * Ed448 PK wrapper backed by tf_ed448.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
++ */
++#include "common.h"
++
++#if defined(MBEDTLS_PK_C) && defined(MBEDTLS_ED448_C)
++
++#include "mbedtls/ed448.h"
++#include "mbedtls/pk.h"
++#include "mbedtls/platform.h"
++#include "mbedtls/platform_util.h"
++#include "pk_wrap.h"
++
++#include <string.h>
++
++/* Narrow provider ABI. The final application overrides these weak defaults. */
++#define TF_ED448_SUCCESS 0
++#define TF_ED448_OUT_OF_MEMORY -5
++int tf_ed448_derive_public(const unsigned char *a, size_t b,
++                           unsigned char *c, size_t d);
++int tf_ed448_validate_public(const unsigned char *a, size_t b);
++int tf_ed448_sign(const unsigned char *a, size_t b,
++                  const unsigned char *c, size_t d,
++                  const unsigned char *e, size_t f,
++                  unsigned char *g, size_t h);
++int tf_ed448_verify(const unsigned char *a, size_t b,
++                    const unsigned char *c, size_t d,
++                    const unsigned char *e, size_t f);
++
++__attribute__((weak)) int tf_ed448_derive_public(const unsigned char *a, size_t b,
++                                                 unsigned char *c, size_t d)
++{ (void) a; (void) b; (void) c; (void) d; return -1; }
++__attribute__((weak)) int tf_ed448_validate_public(const unsigned char *a, size_t b)
++{ (void) a; (void) b; return -1; }
++__attribute__((weak)) int tf_ed448_sign(const unsigned char *a, size_t b,
++                                        const unsigned char *c, size_t d,
++                                        const unsigned char *e, size_t f,
++                                        unsigned char *g, size_t h)
++{ (void) a; (void) b; (void) c; (void) d; (void) e; (void) f; (void) g; (void) h; return -1; }
++__attribute__((weak)) int tf_ed448_verify(const unsigned char *a, size_t b,
++                                          const unsigned char *c, size_t d,
++                                          const unsigned char *e, size_t f)
++{ (void) a; (void) b; (void) c; (void) d; (void) e; (void) f; return -1; }
++
++void mbedtls_ed448_init(mbedtls_ed448_context *ctx)
++{
++    memset(ctx, 0, sizeof(*ctx));
++}
++
++void mbedtls_ed448_free(mbedtls_ed448_context *ctx)
++{
++    if (ctx != NULL) {
++        mbedtls_platform_zeroize(ctx, sizeof(*ctx));
++    }
++}
++
++int mbedtls_ed448_import_public(mbedtls_ed448_context *ctx,
++                                const unsigned char *public_key,
++                                size_t public_key_len)
++{
++    if (ctx == NULL || tf_ed448_validate_public(public_key, public_key_len) !=
++                           TF_ED448_SUCCESS) {
++        return MBEDTLS_ERR_PK_INVALID_PUBKEY;
++    }
++    memcpy(ctx->MBEDTLS_PRIVATE(public_key), public_key, public_key_len);
++    ctx->MBEDTLS_PRIVATE(has_public) = 1;
++    return 0;
++}
++
++int mbedtls_ed448_import_private(mbedtls_ed448_context *ctx,
++                                 const unsigned char *private_seed,
++                                 size_t private_seed_len)
++{
++    if (ctx == NULL || private_seed == NULL ||
++        private_seed_len != MBEDTLS_ED448_PRIVATE_KEY_SIZE) {
++        return MBEDTLS_ERR_PK_INVALID_PUBKEY;
++    }
++    if (private_seed != ctx->MBEDTLS_PRIVATE(private_seed)) {
++        memcpy(ctx->MBEDTLS_PRIVATE(private_seed), private_seed, private_seed_len);
++    }
++    if (tf_ed448_derive_public(ctx->MBEDTLS_PRIVATE(private_seed), private_seed_len,
++                              ctx->MBEDTLS_PRIVATE(public_key),
++                              MBEDTLS_ED448_PUBLIC_KEY_SIZE) != TF_ED448_SUCCESS) {
++        mbedtls_ed448_free(ctx);
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    ctx->MBEDTLS_PRIVATE(has_private) = 1;
++    ctx->MBEDTLS_PRIVATE(has_public) = 1;
++    return 0;
++}
++
++int mbedtls_ed448_gen_key(mbedtls_ed448_context *ctx,
++                          int (*f_rng)(void *, unsigned char *, size_t),
++                          void *p_rng)
++{
++    if (ctx == NULL || f_rng == NULL ||
++        f_rng(p_rng, ctx->MBEDTLS_PRIVATE(private_seed),
++              MBEDTLS_ED448_PRIVATE_KEY_SIZE) != 0) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    return mbedtls_ed448_import_private(ctx, ctx->MBEDTLS_PRIVATE(private_seed),
++                                        MBEDTLS_ED448_PRIVATE_KEY_SIZE);
++}
++
++static size_t ed448_get_bitlen(mbedtls_pk_context *pk)
++{
++    (void) pk;
++    return 448;
++}
++
++static int ed448_can_do(mbedtls_pk_type_t type)
++{
++    return type == MBEDTLS_PK_ED448;
++}
++
++static int ed448_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
++                             const unsigned char *message, size_t message_len,
++                             const unsigned char *sig, size_t sig_len)
++{
++    mbedtls_ed448_context *ctx = mbedtls_pk_ed448(*pk);
++    if (ctx == NULL || md_alg != MBEDTLS_MD_NONE ||
++        ctx->MBEDTLS_PRIVATE(has_public) == 0 || sig == NULL ||
++        sig_len < MBEDTLS_ED448_SIGNATURE_SIZE) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    int ret = tf_ed448_verify(ctx->MBEDTLS_PRIVATE(public_key),
++                              MBEDTLS_ED448_PUBLIC_KEY_SIZE, message, message_len,
++                              sig, MBEDTLS_ED448_SIGNATURE_SIZE);
++    if (ret == TF_ED448_OUT_OF_MEMORY) {
++        return MBEDTLS_ERR_PK_ALLOC_FAILED;
++    }
++    if (ret != TF_ED448_SUCCESS) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    return sig_len == MBEDTLS_ED448_SIGNATURE_SIZE
++               ? 0
++               : MBEDTLS_ERR_PK_SIG_LEN_MISMATCH;
++}
++
++static int ed448_sign_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
++                           const unsigned char *message, size_t message_len,
++                           unsigned char *sig, size_t sig_size, size_t *sig_len,
++                           int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
++{
++    mbedtls_ed448_context *ctx = mbedtls_pk_ed448(*pk);
++    (void) f_rng;
++    (void) p_rng;
++    if (ctx == NULL || md_alg != MBEDTLS_MD_NONE || sig == NULL || sig_len == NULL ||
++        sig_size < MBEDTLS_ED448_SIGNATURE_SIZE ||
++        ctx->MBEDTLS_PRIVATE(has_private) == 0 ||
++        ctx->MBEDTLS_PRIVATE(has_public) == 0) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    if (tf_ed448_sign(ctx->MBEDTLS_PRIVATE(private_seed),
++                      MBEDTLS_ED448_PRIVATE_KEY_SIZE,
++                      ctx->MBEDTLS_PRIVATE(public_key),
++                      MBEDTLS_ED448_PUBLIC_KEY_SIZE,
++                      message, message_len, sig, MBEDTLS_ED448_SIGNATURE_SIZE) !=
++        TF_ED448_SUCCESS) {
++        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    }
++    *sig_len = MBEDTLS_ED448_SIGNATURE_SIZE;
++    return 0;
++}
++
++static int ed448_check_pair_wrap(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
++                                 int (*f_rng)(void *, unsigned char *, size_t),
++                                 void *p_rng)
++{
++    mbedtls_ed448_context *pub_ctx = mbedtls_pk_ed448(*pub);
++    mbedtls_ed448_context *prv_ctx = mbedtls_pk_ed448(*prv);
++    unsigned char derived[MBEDTLS_ED448_PUBLIC_KEY_SIZE];
++    int ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA;
++    (void) f_rng;
++    (void) p_rng;
++    if (pub_ctx != NULL && prv_ctx != NULL &&
++        pub_ctx->MBEDTLS_PRIVATE(has_public) != 0 &&
++        prv_ctx->MBEDTLS_PRIVATE(has_private) != 0 &&
++        tf_ed448_derive_public(prv_ctx->MBEDTLS_PRIVATE(private_seed),
++                              MBEDTLS_ED448_PRIVATE_KEY_SIZE,
++                              derived, sizeof(derived)) == TF_ED448_SUCCESS &&
++        memcmp(derived, pub_ctx->MBEDTLS_PRIVATE(public_key), sizeof(derived)) == 0) {
++        ret = 0;
++    }
++    mbedtls_platform_zeroize(derived, sizeof(derived));
++    return ret;
++}
++
++static void *ed448_alloc_wrap(void)
++{
++    mbedtls_ed448_context *ctx = mbedtls_calloc(1, sizeof(*ctx));
++    if (ctx != NULL) {
++        mbedtls_ed448_init(ctx);
++    }
++    return ctx;
++}
++
++static void ed448_free_wrap(void *opaque)
++{
++    mbedtls_ed448_context *ctx = opaque;
++    mbedtls_ed448_free(ctx);
++    mbedtls_free(ctx);
++}
++
++const mbedtls_pk_info_t mbedtls_ed448_info = {
++    .type = MBEDTLS_PK_ED448,
++    .name = "Ed448",
++    .get_bitlen = ed448_get_bitlen,
++    .can_do = ed448_can_do,
++    .verify_func = ed448_verify_wrap,
++    .sign_func = ed448_sign_wrap,
++#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
++    .verify_rs_func = NULL,
++    .sign_rs_func = NULL,
++#endif
++    .decrypt_func = NULL,
++    .encrypt_func = NULL,
++    .check_pair_func = ed448_check_pair_wrap,
++    .ctx_alloc_func = ed448_alloc_wrap,
++    .ctx_free_func = ed448_free_wrap,
++#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
++    .rs_alloc_func = NULL,
++    .rs_free_func = NULL,
++#endif
++    .debug_func = NULL,
++};
++
++#endif

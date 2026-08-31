@@ -1,0 +1,14 @@
+diff --git mbedtls/ssl.h mbedtls/ssl.h
+--- mbedtls/ssl.h
++++ mbedtls/ssl.h
+@@ -78,6 +78,10 @@
+ #define MBEDTLS_ERR_SSL_UNRECOGNIZED_NAME                 -0x7800
+ /** The peer notified us that the connection is going to be closed. */
+ #define MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY                 -0x7880
++/** A protocol_version fatal alert was received from our peer. */
++#define MBEDTLS_ERR_SSL_ALERT_PROTOCOL_VERSION            -0x7900
++/** A handshake_failure or insufficient_security fatal alert was received from our peer. */
++#define MBEDTLS_ERR_SSL_ALERT_CIPHER_SUITE                -0x7980
+ /* Error space gap */
+ /* Error space gap */
+ /** Processing of the Certificate handshake message failed. */

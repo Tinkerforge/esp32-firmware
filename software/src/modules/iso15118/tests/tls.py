@@ -82,7 +82,8 @@ def probe(tc: TestContext, expect_success: bool, arguments):
     if "-tls1_3" in arguments:
         command += [
             "-CAfile", str(CERTS_DIR / "iso20/certs/v2gRootCACert.pem"),
-            "-cert", str(CERTS_DIR / "iso20/certs/oemCertChain.pem"),
+            "-cert", str(CERTS_DIR / "iso20/certs/oemLeafCert.pem"),
+            "-cert_chain", str(CERTS_DIR / "iso20/certs/oemCertChain.pem"),
             "-key", str(CERTS_DIR / "iso20/private_keys/oemLeaf.key"),
             "-pass", "pass:12345",
         ]

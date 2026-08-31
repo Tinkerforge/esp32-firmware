@@ -96,8 +96,8 @@ public:
     ISOTLS() {}
 
     // Setup and teardown
-    // Loads both ISO 15118-2 (secp256r1) and ISO 15118-20 (secp521r1) certificate
-    // sets and configures TLS 1.2/1.3 negotiation with version-based cert selection.
+    // Loads ISO 15118-2 (secp256r1) and enabled ISO 15118-20
+    // (secp521r1/Ed448) certificate sets and configures TLS negotiation.
     bool setup();
     void cleanup();
 
@@ -151,7 +151,7 @@ public:
     int iso2_status_request_v2_available(mbedtls_ssl_context *ssl) const;
     int get_iso2_status_response_v2(mbedtls_ssl_context *ssl, const unsigned char **response_list, size_t *response_list_len);
 
-    bool get_ocsp_staple(size_t index, const unsigned char **der, size_t *der_len) const;
+    bool get_ocsp_staple(const mbedtls_ssl_context *ssl_ctx, size_t index, const unsigned char **der, size_t *der_len) const;
 
 private:
     static constexpr size_t CERTS_MAX_VERIFY = 8;
@@ -177,6 +177,8 @@ private:
     bool load_certificates();
     bool parse_iso2_candidates();
     void free_iso2_candidate(size_t index);
+    bool parse_iso20_candidates();
+    void free_iso20_candidate(size_t index);
     bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
@@ -247,13 +249,22 @@ private:
     bool iso2_store_live = false;
     bool iso2_status_v2_requested = false;
 
-    // ISO 15118-20 certificates (secp521r1)
-    mbedtls_x509_crt *cert_chain_iso20 = nullptr;
-    mbedtls_pk_context *private_key_iso20 = nullptr;
-    uint8_t *cert_chain_pem_iso20 = nullptr;
-    size_t cert_chain_pem_len_iso20 = 0;
-    uint8_t *private_key_pem_iso20 = nullptr;
-    size_t private_key_pem_len_iso20 = 0;
+    // ISO 15118-20 certificates, one candidate per installed signature suite.
+    static constexpr size_t ISO20_CANDIDATE_MAX = 4;
+    static constexpr size_t OCSP_STAPLE_MAX = 4;
+    struct iso20_candidate_t {
+        uint32_t chain_id = 0;
+        mbedtls_x509_crt *cert_chain = nullptr;
+        mbedtls_pk_context *private_key = nullptr;
+        uint8_t *cert_chain_pem = nullptr;
+        size_t cert_chain_pem_len = 0;
+        uint8_t *private_key_pem = nullptr;
+        size_t private_key_pem_len = 0;
+        uint8_t *staple_der[OCSP_STAPLE_MAX] = {};
+        size_t staple_der_len[OCSP_STAPLE_MAX] = {};
+    };
+    iso20_candidate_t iso20_candidates[ISO20_CANDIDATE_MAX];
+    size_t iso20_candidate_count = 0;
 
     // Trusted root CA certificates for mutual TLS authentication (ISO 15118-20)
     // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
@@ -267,8 +278,4 @@ private:
     uint8_t *v2g_root_ca_pem_iso20 = nullptr;
     size_t v2g_root_ca_pem_len_iso20 = 0;
 
-    // Raw OCSP responses for the -20 SECC chain (leaf first), stapled into the TLS 1.3 Certificate message [V2G20-2388]
-    static constexpr size_t OCSP_STAPLE_MAX = 4;
-    uint8_t *staple_der[OCSP_STAPLE_MAX] = {};
-    size_t staple_der_len[OCSP_STAPLE_MAX] = {};
 };
