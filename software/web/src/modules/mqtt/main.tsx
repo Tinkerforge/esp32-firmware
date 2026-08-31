@@ -274,7 +274,6 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                         <InputSelect
                             items={[
                                 [MqttAutoDiscoveryMode.Disabled.toString(), __("mqtt.content.auto_discovery_mode_disabled")],
-                                [MqttAutoDiscoveryMode.Generic.toString(), __("mqtt.content.auto_discovery_mode_generic")],
                                 [MqttAutoDiscoveryMode.HomeAssistant.toString(), __("mqtt.content.auto_discovery_mode_homeassistant")],
                             ]}
                             value={state.auto_discovery_config.auto_discovery_mode}

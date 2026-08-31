@@ -55,8 +55,7 @@ let x = {
             "auto_discovery_mode": "Discovery-Modus",
             "auto_discovery_mode_muted": "Unterstützt automatische Erkennung durch eine Hausautomatisierung.",
             "auto_discovery_mode_disabled": "Deaktiviert",
-            "auto_discovery_mode_generic": "Generisch",
-            "auto_discovery_mode_homeassistant": "Home Assistant",
+            "auto_discovery_mode_homeassistant": "Home Assistant/openHAB/Domoticz/FHEM",
             "auto_discovery_prefix": "Discovery-Topic-Präfix",
             "auto_discovery_prefix_invalid": "Der Topic-Präfix darf nicht mit $ beginnen, ein # oder + enthalten oder leer sein."
         },

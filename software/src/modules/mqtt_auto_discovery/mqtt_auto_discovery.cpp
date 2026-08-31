@@ -65,6 +65,12 @@ void MqttAutoDiscovery::pre_setup()
         if (global_topic_prefix == auto_discovery_prefix)
             return "Auto discovery topic prefix cannot be the same as the MQTT API topic prefix.";
 
+        // Generic mode was removed, but is documented API.
+        // -> We can't remove it with a config migration.
+        // Patch Generic to HomeAssistant instead.
+        if (cfg.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::Generic)
+            cfg.get("auto_discovery_mode")->updateEnum(MqttAutoDiscoveryMode::HomeAssistant);
+
         if (source == ConfigSource::File)
             return "";
 

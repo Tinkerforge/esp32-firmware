@@ -303,14 +303,12 @@ MQTT_NOT_READ_ONLY = AvailabilityEntry(
 
 @dataclass
 class Entity:
-    include_generic: bool
     component: Component
     object_id: str
     path: str
     name_de: str
     name_en: str
     availability: list  # list of AvailabilityEntry
-    static_info_generic: dict
     static_info_homeassistant: dict
     feature: Feature = Feature.NULL
     json_attributes_topic: str = ""
@@ -320,7 +318,6 @@ class Entity:
     # When set, the C++ code picks between the default (German) and English
     # variants at runtime based on the configured language.
     # When left empty, the default static_info is used regardless of language.
-    static_info_generic_en: dict = None
     static_info_homeassistant_en: dict = None
     # Check type: how to determine if this entity should be announced.
     check_type: CheckType = CheckType.FEATURE
@@ -332,8 +329,6 @@ class Entity:
     def __post_init__(self):
         if self.json_attributes_info is None:
             self.json_attributes_info = {}
-        if self.static_info_generic_en is None:
-            self.static_info_generic_en = {}
         if self.static_info_homeassistant_en is None:
             self.static_info_homeassistant_en = {}
 
@@ -349,9 +344,7 @@ class Entity:
                 + len(self.object_id)
                 + len(self.path)
                 + max(
-            len(self.get_static_info_generic_str()),
             len(self.get_static_info_homeassistant_str()),
-            len(self.get_static_info_generic_en_str()),
             len(self.get_static_info_homeassistant_en_str()),
         )
                 + avail_len
@@ -369,40 +362,10 @@ class Entity:
                 + '"'
         )
 
-    def get_static_info_generic_str(self):
-        if not self.include_generic:
-            return "NULL"
-        # static info is not a json object, but only more key value pairs, so remove the {}.
-        # also this is a string literal, so escape inner ".
-        return (
-                '"'
-                + json.dumps(self.static_info_generic)
-                .strip()
-                .lstrip("{")
-                .rstrip("}")
-                .replace('"', '\\"')
-                + '"'
-        )
-
     def get_static_info_homeassistant_str(self):
         return (
                 '"'
-                + json.dumps({**self.static_info_generic, **self.static_info_homeassistant})
-                .strip()
-                .lstrip("{")
-                .rstrip("}")
-                .replace('"', '\\"')
-                + '"'
-        )
-
-    def get_static_info_generic_en_str(self):
-        if not self.static_info_generic_en:
-            return "NULL"
-        if not self.include_generic:
-            return "NULL"
-        return (
-                '"'
-                + json.dumps({**self.static_info_generic, **self.static_info_generic_en})
+                + json.dumps(self.static_info_homeassistant)
                 .strip()
                 .lstrip("{")
                 .rstrip("}")
@@ -413,10 +376,8 @@ class Entity:
     def get_static_info_homeassistant_en_str(self):
         if not self.static_info_homeassistant_en:
             return "NULL"
-        # Merge: generic base + generic_en overrides + homeassistant base + homeassistant_en overrides
+        # Merge: homeassistant base + homeassistant_en overrides
         merged = {
-            **self.static_info_generic,
-            **self.static_info_generic_en,
             **self.static_info_homeassistant,
             **self.static_info_homeassistant_en,
         }
@@ -453,11 +414,11 @@ topic_template = """    {{
         .json_attributes_topic = "{json_attributes_topic}",
         .json_attributes_info = {json_attributes_info},
         .static_infos = {{
-            {static_info_generic},
+            "generic_mode_removed",
             {static_info_homeassistant}
         }},
         .static_infos_en = {{
-            {static_info_generic_en},
+            "generic_mode_removed",
             {static_info_homeassistant_en}
         }},
         .type = MqttDiscoveryType::{discovery_type},
@@ -470,7 +431,6 @@ topic_template = """    {{
 
 entities = [
     Entity(
-        include_generic=True,
         component=Component.SENSOR,
         feature=Feature.EVSE,
         object_id="chargerstate",
@@ -478,11 +438,9 @@ entities = [
         name_de="Ladestatus",
         name_en="Charge state",
         availability=[],
-        static_info_generic={
+        static_info_homeassistant={
             "icon": "mdi:ev-plug-type2",
             "device_class": "enum",
-        },
-        static_info_homeassistant={
             "value_template": enum_value_template("charger_state", charger_state_names_de),
             "options": charger_state_names_de,
         },
@@ -492,7 +450,6 @@ entities = [
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         feature=Feature.EVSE,
         object_id="current_charge_mode_evse",
@@ -500,11 +457,9 @@ entities = [
         name_de="Aktueller Lademodus EVSE",
         name_en="Current charge mode EVSE",
         availability=[],
-        static_info_generic={
+        static_info_homeassistant={
             "icon": "mdi:ev-station",
             "device_class": "enum",
-        },
-        static_info_homeassistant={
             "value_template": enum_value_template("mode", charge_mode_names_de),
             "options": charge_mode_names_de,
         },
@@ -515,7 +470,6 @@ entities = [
         check_type=CheckType.FEATURE,
     ),
     Entity(
-        include_generic=True,
         component=Component.NUMBER,
         feature=Feature.EVSE,
         object_id="globalcurrent",
@@ -523,7 +477,7 @@ entities = [
         name_de="Ladestromlimit",
         name_en="charging current limit",
         availability=[MQTT_NOT_READ_ONLY],
-        static_info_generic={
+        static_info_homeassistant={
             "value_template": "{{(value_json.current | float / 1000) | round(3)}}",
             "command_template": "{{ (value * 1000) | int }}",
             "unit_of_measurement": "A",
@@ -532,10 +486,8 @@ entities = [
             "mode": "auto",
             "icon": "mdi:gauge",
         },
-        static_info_homeassistant={},
     ),
     Entity(
-        include_generic=True,
         component=Component.SENSOR,
         feature=Feature.EVSE,
         object_id="allowedcurrent",
@@ -543,7 +495,7 @@ entities = [
         name_de="Erlaubter Ladestrom",
         name_en="Allowed charging current",
         availability=[],
-        static_info_generic={
+        static_info_homeassistant={
             "value_template": "{{(value_json.allowed_charging_current | float / 1000) | round(3)}}",
             "unit_of_measurement": "A",
             "device_class": "current",
@@ -551,10 +503,8 @@ entities = [
             "min": 0,
             "max": 32,
         },
-        static_info_homeassistant={},
     ),
     Entity(
-        include_generic=True,
         component=Component.BUTTON,
         feature=Feature.EVSE,
         object_id="startcharge",
@@ -562,14 +512,12 @@ entities = [
         name_de="Ladevorgang starten",
         name_en="Start charging",
         availability=[MQTT_NOT_READ_ONLY],
-        static_info_generic={
+        static_info_homeassistant={
             "payload_press": "null",
             "icon": "mdi:flash",
         },
-        static_info_homeassistant={},
     ),
     Entity(
-        include_generic=True,
         component=Component.BUTTON,
         feature=Feature.EVSE,
         object_id="stopcharge",
@@ -577,14 +525,12 @@ entities = [
         name_de="Ladevorgang beenden",
         name_en="Stop charging",
         availability=[MQTT_NOT_READ_ONLY],
-        static_info_generic={
+        static_info_homeassistant={
             "payload_press": "null",
             "icon": "mdi:flash-off",
         },
-        static_info_homeassistant={},
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="cable",
@@ -592,17 +538,14 @@ entities = [
         name_de="Wallbox-Ladekabel verbunden",
         name_en="Charger cable connected",
         availability=[],
-        static_info_generic={
-            "device_class": "plug",
-        },
         static_info_homeassistant={
+            "device_class": "plug",
             "value_template": "{{value_json.charger_state in [1, 2, 3]}}",
             "payload_on": "True",
             "payload_off": "False",
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="ready",
@@ -610,17 +553,14 @@ entities = [
         name_de="Wallbox ladebereit",
         name_en="Charger ready to charge",
         availability=[],
-        static_info_generic={
-            "device_class": "power",
-        },
         static_info_homeassistant={
+            "device_class": "power",
             "value_template": "{{value_json.charger_state in [2, 3]}}",
             "payload_on": "True",
             "payload_off": "False",
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="charging",
@@ -628,17 +568,14 @@ entities = [
         name_de="Wallbox lädt",
         name_en="Charger charging",
         availability=[],
-        static_info_generic={
-            "device_class": "battery_charging",
-        },
         static_info_homeassistant={
+            "device_class": "battery_charging",
             "value_template": "{{value_json.charger_state in [3]}}",
             "payload_on": "True",
             "payload_off": "False",
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="error",
@@ -646,17 +583,14 @@ entities = [
         name_de="Wallbox-Fehler",
         name_en="Charger error",
         availability=[],
-        static_info_generic={
-            "device_class": "problem",
-        },
         static_info_homeassistant={
+            "device_class": "problem",
             "value_template": "{{value_json.charger_state in [4]}}",
             "payload_on": "True",
             "payload_off": "False",
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="online",
@@ -664,28 +598,23 @@ entities = [
         name_de="Wallbox verfügbar",
         name_en="Charger online",
         availability=[],
-        static_info_generic={
+        static_info_homeassistant={
             "device_class": "connectivity",
             "expire_after": "30",
-        },
-        static_info_homeassistant={
             "value_template": "{{value_json.uptime>0}}",
             "payload_on": "True",
             "payload_off": "False",
         },
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         object_id="limited",
         path="p14a_enwg/state",
         name_de="Limitiert nach §14a ENWG",
         name_en="Limited according to §14a EnWG",
         availability=[],
-        static_info_generic={
-            "device_class": "enum",
-        },
         static_info_homeassistant={
+            "device_class": "enum",
             "value_template": "{{ 'Limitiert' if value_json.active else 'Kein Limit' }}",
             "options": ["Limitiert", "Kein Limit"],
             "icon": "mdi:transmission-tower-export",
@@ -699,7 +628,6 @@ entities = [
         api_check_key="enable",
     ),
     Entity(
-        include_generic=False,
         component=Component.SELECT,
         object_id="active_charge_mode",
         path="power_manager/charge_mode",
@@ -709,10 +637,8 @@ entities = [
             MQTT_NOT_READ_ONLY,
             AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
         ],
-        static_info_generic={
-            "icon": "mdi:ev-station",
-        },
         static_info_homeassistant={
+            "icon": "mdi:ev-station",
             "value_template": enum_value_template("mode", charge_mode_names_de),
             "command_template": command_template_for_select(charge_mode_names_de),
             "options": charge_mode_names_de,
@@ -727,7 +653,6 @@ entities = [
         api_check_key="enabled",
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         object_id="current_charge_mode",
         path="power_manager/charge_mode",
@@ -736,11 +661,9 @@ entities = [
         availability=[
             AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
         ],
-        static_info_generic={
+        static_info_homeassistant={
             "icon": "mdi:ev-station",
             "device_class": "enum",
-        },
-        static_info_homeassistant={
             "value_template": enum_value_template("mode", charge_mode_names_de),
             "options": charge_mode_names_de,
         },
@@ -753,17 +676,14 @@ entities = [
         api_check_key="enabled",
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         object_id="solar_forecast_tomorrow",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose morgen",
         name_en="Solar Forecast tomorrow",
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
-        static_info_generic={
-            "device_class": "energy",
-        },
         static_info_homeassistant={
+            "device_class": "energy",
             "value_template": "{{(value_json.wh_tomorrow | float / 1000) | round(2)}}",
             "icon": "mdi:solar-power-variant-outline",
             "unit_of_measurement": "kWh",
@@ -773,17 +693,14 @@ entities = [
         api_check_key="enable",
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         object_id="solar_forecast_today",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose heute",
         name_en="Solar Forecast today",
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
-        static_info_generic={
-            "device_class": "energy",
-        },
         static_info_homeassistant={
+            "device_class": "energy",
             "value_template": "{{(value_json.wh_today | float / 1000) | round(2)}}",
             "icon": "mdi:solar-power-variant",
             "unit_of_measurement": "kWh",
@@ -793,17 +710,14 @@ entities = [
         api_check_key="enable",
     ),
     Entity(
-        include_generic=False,
         component=Component.SENSOR,
         object_id="solar_forecast_outstanding",
         path="solar_forecast/state",
         name_de="PV Ertragsprognose ab jetzt",
         name_en="Solar Forecast from now",
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
-        static_info_generic={
-            "device_class": "energy",
-        },
         static_info_homeassistant={
+            "device_class": "energy",
             "value_template": "{{(value_json.wh_today_remaining | float / 1000) | round(2)}}",
             "icon": "mdi:solar-power",
             "unit_of_measurement": "kWh",
@@ -813,17 +727,15 @@ entities = [
         api_check_key="enable",
     ),
     Entity(
-        include_generic=False,
+
         component=Component.SENSOR,
         object_id="current_electricity_price",
         path="day_ahead_prices/state",
         name_de="Börsenstrompreis",
         name_en="Electricity market price",
         availability=[AvailabilityEntry("day_ahead_prices/config", "{{ 'online' if value_json.enable else 'offline' }}")],
-        static_info_generic={
-            "device_class": "monetary",
-        },
         static_info_homeassistant={
+            "device_class": "monetary",
             "value_template": "{{(value_json.current_price | float / 1000) | round(2)}}",
             "icon": "mdi:solar-power",
             "unit_of_measurement": "ct/kWh",
@@ -833,7 +745,6 @@ entities = [
         api_check_key="enable",
     ),
     Entity(
-        include_generic=False,
         component=Component.BINARY_SENSOR,
         feature=Feature.EVSE,
         object_id="evse_button_pressed",
@@ -841,7 +752,6 @@ entities = [
         name_de="Fronttaster gedrückt",
         name_en="Front button pressed",
         availability=[],
-        static_info_generic={},
         static_info_homeassistant={
             "value_template": "{{value_json.button_pressed}}",
             "payload_on": "True",
@@ -853,14 +763,12 @@ entities = [
 if warp_edition == "warp4":
     entities.extend([
         Entity(
-            include_generic=False,
             component=Component.TEXT,
             object_id="ev_name",
             path="ev/state",
             name_de="Fahrzeugname",
             name_en="Vehicle name",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
-            static_info_generic={},
             static_info_homeassistant={
                 "value_template": "{{value_json.name}}"
             },
@@ -868,14 +776,12 @@ if warp_edition == "warp4":
             api_check_path="ev/state",
         ),
         Entity(
-            include_generic=False,
             component=Component.TEXT,
             object_id="ev_mac",
             path="ev/state",
             name_de="Fahrzeug MAC Adresse",
             name_en="Vehicle MAC Address",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
-            static_info_generic={},
             static_info_homeassistant={
                 "value_template": "{{value_json.mac}}"
             },
@@ -883,14 +789,12 @@ if warp_edition == "warp4":
             api_check_path="ev/state",
         ),
         Entity(
-            include_generic=False,
             component=Component.SENSOR,
             object_id="ev_soc",
             path="ev/state",
             name_de="Fahrzeug Ladestand",
             name_en="Vehicle State of Charge",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
-            static_info_generic={},
             static_info_homeassistant={
                 "value_template": "{{value_json.soc | float}}"
             },
@@ -898,14 +802,12 @@ if warp_edition == "warp4":
             api_check_path="ev/state",
         ),
         Entity(
-            include_generic=False,
             component=Component.SENSOR,
             object_id="ev_capacity",
             path="ev/state",
             name_de="Fahrzeug Akkukapazität",
             name_en="Vehicle Battery Capacity",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
-            static_info_generic={},
             static_info_homeassistant={
                 "value_template": "{{value_json.capacity | float}}"
             },
@@ -929,7 +831,6 @@ for meter_id in range(0, meters_max_slots):
             static_info["device_class"] = dev_class
         entities.append(
             Entity(
-                include_generic=True,
                 component=Component.SENSOR,
                 feature=Feature.METERS,
                 object_id=f"meter_{meter_id}_{suffix}",
@@ -938,8 +839,7 @@ for meter_id in range(0, meters_max_slots):
                 name_en=f"{name_en}",
                 availability=[
                     AvailabilityEntry(f"meters/{meter_id}/config", "{{ 'offline' if value_json[0] == 0 else 'online' }}")],
-                static_info_generic=static_info,
-                static_info_homeassistant={},
+                static_info_homeassistant=static_info,
                 check_type=CheckType.METER_VALUE,
                 api_check_path=f"meters/{meter_id}/config",
                 meter_value_id=value_id,
@@ -959,9 +859,7 @@ topics = [
         availability_count=len(x.availability),
         json_attributes_topic=x.json_attributes_topic,
         json_attributes_info=x.get_json_attributes_info_str(),
-        static_info_generic=x.get_static_info_generic_str(),
         static_info_homeassistant=x.get_static_info_homeassistant_str(),
-        static_info_generic_en=x.get_static_info_generic_en_str(),
         static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
         discovery_type=x.component.get_discovery_type().value,
         check_type=x.check_type.value,
