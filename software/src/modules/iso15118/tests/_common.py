@@ -321,6 +321,7 @@ class CSMSSim:
         *,
         certfile: str | None = None,
         keyfile: str | None = None,
+        ssl_context: ssl.SSLContext | None = None,
         expected_basic_auth: tuple[str, str] | None = None,
     ):
         from websockets.sync.server import serve
@@ -335,7 +336,10 @@ class CSMSSim:
         self.authorization = None
         self.current_time_offset_s = 0
         self.ws = None
-        ssl_context = None
+        self.tls_connections = []
+        self._connections_condition = threading.Condition()
+        if ssl_context is not None and certfile is not None:
+            raise ValueError("pass either ssl_context or certfile/keyfile, not both")
         if certfile is not None:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ssl_context.load_cert_chain(certfile, keyfile)
@@ -344,6 +348,7 @@ class CSMSSim:
             "0.0.0.0",
             port,
             ssl=ssl_context,
+            compression=None,
             process_request=self._process_request if expected_basic_auth is not None else None,
             select_subprotocol=lambda connection, protocols: "ocpp2.1",
         )
@@ -362,7 +367,20 @@ class CSMSSim:
         return Response(401, "Unauthorized", request.headers, b"")
 
     def _handler(self, ws):
+        from websockets.exceptions import ConnectionClosed
+
         self.ws = ws
+        if isinstance(ws.socket, ssl.SSLSocket):
+            observation = {
+                "version": ws.socket.version(),
+                "cipher": ws.socket.cipher(),
+                "compression": ws.socket.compression(),
+                "peer_certificate_der": ws.socket.getpeercert(binary_form=True),
+                "subprotocol": ws.subprotocol,
+            }
+            with self._connections_condition:
+                self.tls_connections.append(observation)
+                self._connections_condition.notify_all()
         self.connected.set()
         try:
             for raw in ws:
@@ -388,6 +406,8 @@ class CSMSSim:
                         self.respond(message_id, {})
                 elif message[0] == 3:
                     self.responses.put((message[1], message[2]))
+        except ConnectionClosed:
+            pass
         finally:
             self.connected.clear()
 
@@ -413,6 +433,16 @@ class CSMSSim:
 
     def expect(self, action, timeout: float = 60):
         return self.expect_any({action}, timeout)[1:]
+
+    def wait_for_tls_connection(self, after: int = 0, timeout: float = 60):
+        deadline = time.monotonic() + timeout
+        with self._connections_condition:
+            while len(self.tls_connections) <= after:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("No new TLS connection")
+                self._connections_condition.wait(remaining)
+            return self.tls_connections[after]
 
     def expect_any(self, actions, timeout: float = 60):
         deadline = time.monotonic() + timeout

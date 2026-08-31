@@ -9,10 +9,12 @@ tfutil.create_parent_module(__file__, "software")
 
 from _common import CERTS_DIR, IsoTestEnvironment, sdp_request
 from _ocsp_gating import (
+    TLS_EARLY_DATA,
     TLS_STATUS_REQUEST_V2,
     capture_tls13_server_flight,
     parse_extension_vector,
 )
+from _iso2_chain_selection import probe as probe_tls12_flight
 from software.test_runner.test_context import TestContext, run_testsuite
 
 environment = None
@@ -236,6 +238,57 @@ def test_tls13_certificate_request_omits_forbidden_extensions(tc: TestContext):
         tc.assert_(TLS_CERTIFICATE_AUTHORITIES in request_extensions)
         tc.assert_false(TLS_STATUS_REQUEST in request_extensions)
         tc.assert_false(TLS_OID_FILTERS in request_extensions)
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
+
+
+def test_tls12_selects_null_compression(tc: TestContext):
+    assert environment is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        flight = probe_tls12_flight(
+            environment.host,
+            environment.iface,
+            compression_methods=b"\x01\x00",  # DEFLATE followed by null.
+        )
+        tc.assert_(len(flight.certificates) > 0)
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
+
+
+def test_tls13_rejects_early_data(tc: TestContext):
+    assert environment is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        flight = capture_tls13_server_flight(
+            environment.host,
+            environment.iface,
+            request_status=False,
+            request_early_data=True,
+        )
+
+        # No pre_shared_key in ServerHello means the unsolicited extension
+        # did not turn the fresh connection into a PSK handshake.
+        tc.assert_false(41 in flight.server_hello_extensions)
+        message_types = [message_type for message_type, _ in flight.handshake_messages]
+        tc.assert_(8 in message_types)
+        tc.assert_(13 in message_types)
+        tc.assert_(11 in message_types)
+        encrypted_extensions = next(
+            message for message_type, message in flight.handshake_messages
+            if message_type == 8
+        )
+        tc.assert_false(TLS_EARLY_DATA in parse_extension_vector(encrypted_extensions[4:], 0))
     finally:
         tc.api("ocpp/config_update", saved_ocpp, timeout=15)
 
