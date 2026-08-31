@@ -48,6 +48,10 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 CERTS = SCRIPT_DIR / ".." / "tools" / "certs" / "output"
 OCSP_URL = "http://ocsp.test.example/"
 TLS_STATUS_REQUEST = 5
+NEXT_UPDATE_OFFSET_S = 120
+SEVEN_DAYS_S = 7 * 24 * 60 * 60
+PRE_CAP_OFFSET_S = NEXT_UPDATE_OFFSET_S + SEVEN_DAYS_S - 120
+POST_CAP_OFFSET_S = NEXT_UPDATE_OFFSET_S + SEVEN_DAYS_S + 300
 
 
 @dataclass
@@ -650,8 +654,7 @@ def main():
                   and int(request_data["serialNumber"], 16)
                   == chain20.certificates[index].serial_number,
                   request_data)
-            lifetime = timedelta(minutes=1) if index == 0 else timedelta(days=7)
-            response = chain20.response(index, lifetime=lifetime)
+            response = chain20.response(index, lifetime=timedelta(minutes=1))
             ocsp_responses.append(response)
             csms.respond(msg_id, {
                 "status": "Accepted",
@@ -666,7 +669,7 @@ def main():
               final_request_data)
         check("missing intermediate OCSP keeps TLS 1.3 unavailable [V2G20-2388]",
               try_tls(args.charger, iface, tls13=True, mutual=True) is None)
-        final_response = chain20.response(2)
+        final_response = chain20.response(2, lifetime=timedelta(minutes=1))
         ocsp_responses.append(final_response)
         csms.respond(final_message_id, {
             "status": "Accepted",
@@ -696,29 +699,97 @@ def main():
         check("every public TLS 1.3 CertificateEntry carries its exact OCSP response [V2G20-2388]",
               actual_responses == ocsp_responses)
 
-        # Advance the station clock through nextUpdate. The stale Good
-        # result and staple must be dropped while replacement is pending.
-        csms.current_time_offset_s = 120
+        # Advance the station clock through nextUpdate. The stale Good results
+        # and staples must be dropped while replacements are pending.
+        csms.current_time_offset_s = NEXT_UPDATE_OFFSET_S
         assert csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})["status"] == "Accepted"
         time.sleep(5)
         expired_log = trace_log(args.charger)
         check("SECC OCSP cache expires at nextUpdate [HUB20-431-001/V2G20-1021]",
-              "OCSP cache expired for chain certificate" in expired_log)
+              expired_log.count("OCSP cache expired for chain certificate") >= 3)
         check("expired SECC OCSP forces TLS 1.3 fallback while refresh is pending [HUB20-532-002]",
               try_tls(args.charger, iface, tls13=True, mutual=True) is None)
         check("TLS 1.2 remains available after SECC OCSP expiry",
               try_tls(args.charger, iface, tls13=False) == "TLSv1.2")
 
-        refresh_req, refresh_msg = csms.expect("GetCertificateStatus", timeout=30)
-        check("SECC OCSP expiry triggers an immediate refresh",
-              refresh_req["ocspRequestData"]["responderURL"] == chain20.urls[0])
-        fresh_response = chain20.response(0)
-        csms.respond(refresh_msg, {
-            "status": "Accepted",
-            "ocspResult": base64.b64encode(fresh_response).decode("ascii"),
-        })
+        fresh_responses = [None] * len(chain20.certificates)
+        refreshed = set()
+        for _ in chain20.certificates:
+            refresh_req, refresh_msg = csms.expect("GetCertificateStatus", timeout=30)
+            request_data = refresh_req["ocspRequestData"]
+            index = next(
+                index for index, certificate in enumerate(chain20.certificates)
+                if certificate.serial_number == int(request_data["serialNumber"], 16)
+            )
+            check(f"nextUpdate expiry immediately refreshes chain certificate {index}",
+                  index not in refreshed and request_data["responderURL"] == chain20.urls[index],
+                  request_data)
+            refreshed.add(index)
+            fresh_response = chain20.response(index, lifetime=timedelta(days=30))
+            fresh_responses[index] = fresh_response
+            csms.respond(refresh_msg, {
+                "status": "Accepted",
+                "ocspResult": base64.b64encode(fresh_response).decode("ascii"),
+            })
+        check("nextUpdate expiry refreshes the complete SECC chain",
+              refreshed == set(range(len(chain20.certificates))))
         time.sleep(5)
         check("fresh SECC OCSP restores TLS 1.3 without reboot",
+              try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
+
+        # The refreshed responses have nextUpdate 30 days away. They must
+        # remain usable immediately before the independent seven-day cap.
+        csms.current_time_offset_s = PRE_CAP_OFFSET_S
+        assert csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})["status"] == "Accepted"
+        time.sleep(5)
+        check("30-day OCSP responses remain valid before the seven-day cap [V2G20-1021]",
+              try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
+        entries = capture_certificate_entries(args.charger, iface)
+        pre_cap_responses = [
+            parse_status_request(extensions[TLS_STATUS_REQUEST])
+            if TLS_STATUS_REQUEST in extensions else None
+            for _, extensions in entries
+        ]
+        check("exact refreshed staples remain on the wire before the seven-day cap",
+              pre_cap_responses == fresh_responses)
+
+        # Cross the cap while nextUpdate is still more than three weeks away.
+        # All cached statuses and DER responses must expire and refresh now.
+        expiry_count_before_cap = trace_log(args.charger).count(
+            "OCSP cache expired for chain certificate")
+        csms.current_time_offset_s = POST_CAP_OFFSET_S
+        assert csms.call("TriggerMessage", {"requestedMessage": "Heartbeat"})["status"] == "Accepted"
+        time.sleep(5)
+        cap_log = trace_log(args.charger)
+        check("all SECC OCSP entries expire at the seven-day cap [M06.FR.10/HUB20-431-001/V2G20-1021]",
+              cap_log.count("OCSP cache expired for chain certificate")
+              >= expiry_count_before_cap + len(chain20.certificates))
+        check("seven-day cap removes TLS 1.3 staples while refresh is pending [V2G20-1021]",
+              try_tls(args.charger, iface, tls13=True, mutual=True) is None)
+        check("TLS 1.2 remains available after the seven-day OCSP cap",
+              try_tls(args.charger, iface, tls13=False) == "TLSv1.2")
+
+        cap_refreshed = set()
+        for _ in chain20.certificates:
+            refresh_req, refresh_msg = csms.expect("GetCertificateStatus", timeout=30)
+            request_data = refresh_req["ocspRequestData"]
+            index = next(
+                index for index, certificate in enumerate(chain20.certificates)
+                if certificate.serial_number == int(request_data["serialNumber"], 16)
+            )
+            check(f"seven-day cap immediately refreshes chain certificate {index}",
+                  index not in cap_refreshed and request_data["responderURL"] == chain20.urls[index],
+                  request_data)
+            cap_refreshed.add(index)
+            response = chain20.response(index, lifetime=timedelta(days=30))
+            csms.respond(refresh_msg, {
+                "status": "Accepted",
+                "ocspResult": base64.b64encode(response).decode("ascii"),
+            })
+        check("seven-day cap refreshes the complete SECC chain",
+              cap_refreshed == set(range(len(chain20.certificates))))
+        time.sleep(5)
+        check("fresh status after the seven-day cap restores TLS 1.3",
               try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
 
         csms.current_time_offset_s = 0
