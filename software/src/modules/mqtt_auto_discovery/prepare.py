@@ -10,37 +10,37 @@ tfutil.create_parent_module(__file__, "software")
 
 from software import util
 
-from software.src.modules.meters.generated.meter_value_id import MVID
-
 
 # Meter value IDs to expose via MQTT auto-discovery (per meter slot).
 # Add IDs from meters/meter_value_id.csv here to make them discoverable.
+# Can't import from software.src.modules.meters.generated.meter_value_id import MVID here,
+# this generator runs before the meters module one
 METER_VALUE_IDS = [
-    MVID.VoltageL1N,
-    MVID.VoltageL2N,
-    MVID.VoltageL3N,
-    MVID.CurrentL1ImExDiff,
-    MVID.CurrentL2ImExDiff,
-    MVID.CurrentL3ImExDiff,
-    MVID.PowerActiveLSumImExDiff,
-    MVID.EnergyActiveLSumImport,
-    MVID.EnergyActiveLSumExport,
+    1,   # MVID.VoltageL1N,
+    2,   # MVID.VoltageL2N,
+    3,   # MVID.VoltageL3N,
+    14,  # MVID.CurrentL1ImExDiff,
+    18,  # MVID.CurrentL2ImExDiff,
+    22,  # MVID.CurrentL3ImExDiff,
+    74,  # MVID.PowerActiveLSumImExDiff,
+    209, # MVID.EnergyActiveLSumImport,
+    211, # MVID.EnergyActiveLSumExport,
 
-    MVID.VoltageDC,
-    MVID.CurrentDC,
-    MVID.PowerDC,
-    MVID.EnergyDCImport,
-    MVID.EnergyDCExport,
+    10,  # MVID.VoltageDC,
+    35,  # MVID.CurrentDC,
+    160, # MVID.PowerDC,
+    405, # MVID.EnergyDCImport,
+    407, # MVID.EnergyDCExport,
 
-    MVID.VoltagePVAvg,
-    MVID.CurrentPVSumExport,
-    MVID.PowerPVSumImExDiff,
-    MVID.EnergyPVSumExport,
+    430, # MVID.VoltagePVAvg,
+    441, # MVID.CurrentPVSumExport,
+    453, # MVID.PowerPVSumImExDiff,
+    472, # MVID.EnergyPVSumExport,
 
-    MVID.StateOfCharge,
-    MVID.Capacity,
+    387, # MVID.StateOfCharge,
+    475, # MVID.Capacity,
 
-    MVID.FrequencyLAvg
+    364, # MVID.FrequencyLAvg
 ]
 
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
