@@ -49,8 +49,8 @@
 // TLS 1.2: [V2G2-602] Table 7
 static const int iso15118_ciphersuites[] = {
     // TLS 1.3 cipher suites (preferred)
-    MBEDTLS_TLS1_3_CHACHA20_POLY1305_SHA256,          // [V2G20-2458]
     MBEDTLS_TLS1_3_AES_256_GCM_SHA384,                // [V2G20-2458]
+    MBEDTLS_TLS1_3_CHACHA20_POLY1305_SHA256,          // [V2G20-2458]
     // TLS 1.2 cipher suites (fallback)
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,  // [V2G2-602] IETF RFC 5289
     MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,   // [V2G2-602] IETF RFC 5289
