@@ -91,6 +91,7 @@ class Iso20Chain:
 
 @dataclass
 class Tls13ServerFlight:
+    server_random: bytes
     server_hello_extensions: dict[int, bytes]
     handshake_messages: list[tuple[int, bytes]]
     certificate_entries: list[tuple[bytes, dict[int, bytes]]]
@@ -537,19 +538,26 @@ def parse_server_hello(server_hello):
     if server_hello[0] != 2 or read_u24(server_hello, 1) != len(server_hello) - 4:
         raise ValueError("invalid ServerHello")
     body = server_hello[4:]
+    if body[:2] != b"\x03\x03":
+        raise ValueError("invalid ServerHello legacy_version")
+    server_random = body[2:34]
+    if len(server_random) != 32:
+        raise ValueError("invalid ServerHello random")
     offset = 34
     offset += 1 + body[offset]
     if body[offset:offset + 2] != b"\x13\x02" or body[offset + 2] != 0:
         raise ValueError("server did not select TLS_AES_256_GCM_SHA384")
     offset += 3
     extensions = parse_extension_vector(body, offset)
+    if extensions.get(43) != b"\x03\x04":
+        raise ValueError("server did not select TLS 1.3")
     key_share = extensions.get(51)
     if key_share is None or len(key_share) < 4 or key_share[:2] != b"\x00\x19":
         raise ValueError("server did not select secp521r1")
     key_length = int.from_bytes(key_share[2:4], "big")
     if key_length != len(key_share) - 4:
         raise ValueError("invalid ServerHello key_share")
-    return extensions, key_share[4:]
+    return server_random, extensions, key_share[4:]
 
 
 def status_request_v2():
@@ -596,7 +604,7 @@ def capture_tls13_server_flight(charger, iface, request_status=True,
         header, server_hello = receive_record(sock)
         if header[0] != 22 or server_hello[0] != 2:
             raise ValueError("first server record is not ServerHello")
-        server_hello_extensions, server_key_share = parse_server_hello(server_hello)
+        server_random, server_hello_extensions, server_key_share = parse_server_hello(server_hello)
         server_public = ec.EllipticCurvePublicKey.from_encoded_point(
             ec.SECP521R1(), server_key_share)
         shared_secret = private_key.exchange(ec.ECDH(), server_public)
@@ -643,6 +651,7 @@ def capture_tls13_server_flight(charger, iface, request_status=True,
                 handshake_messages.append((message_type, message))
                 if message_type == 11:
                     return Tls13ServerFlight(
+                        server_random,
                         server_hello_extensions,
                         handshake_messages,
                         parse_certificate_message(message),
@@ -657,6 +666,23 @@ def capture_tls13_server_flight(charger, iface, request_status=True,
 
 def capture_certificate_entries(charger, iface):
     return capture_tls13_server_flight(charger, iface).certificate_entries
+
+
+def capture_tls13_server_random(charger, iface):
+    private_key = ec.generate_private_key(ec.SECP521R1())
+    client_hello = raw_tls13_client_hello(private_key, request_status=False)
+    sock = common.connect_secc(charger, iface)
+    try:
+        sock.settimeout(30)
+        sock.sendall(b"\x16\x03\x01" + struct.pack("!H", len(client_hello)) + client_hello)
+        header, server_hello = receive_record(sock)
+        if header[0] != 22 or server_hello[0] != 2:
+            raise ValueError("first server record is not ServerHello")
+        server_random, _, _ = parse_server_hello(server_hello)
+        return server_random
+    finally:
+        sock.close()
+        time.sleep(0.2)
 
 
 def main():
