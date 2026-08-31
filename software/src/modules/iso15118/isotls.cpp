@@ -86,7 +86,6 @@ static const uint16_t iso15118_groups_tls12[] = {
 // ISO 15118 signature algorithms (HUB20-533-001/002):
 // ISO 15118-20 Table 8: ecdsa_secp521r1_sha512, ed448.
 // ISO 15118-2 [V2G2-006]: ECDSA with SHA256 (secp256r1 leaf), TLS 1.2 only.
-// Ed448 is currently not supported by mbedTLS and filtered out at runtime.
 // NOTE: The explicit list is required because a our mbedTLS patch that
 // widens the default TLS 1.2 list with the TLS 1.3 algorithms.
 static const uint16_t iso15118_sig_algs[] = {
@@ -148,7 +147,7 @@ extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size
 extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size_t index, const unsigned char **der, size_t *der_len)
 {
     (void)ssl;
-    if (s_isotls_instance == nullptr || !s_isotls_instance->get_ocsp_staple(index, der, der_len)) {
+    if (s_isotls_instance == nullptr || !s_isotls_instance->get_ocsp_staple(ssl, index, der, der_len)) {
         return -1;
     }
     return 0;
@@ -405,17 +404,62 @@ bool ISOTLS::load_certificates()
     // TLS 1.3 with the -20 chain is only served when the chain is time valid and its OCSP status is good.
     // Private mode may waive OCSP only when PnC is not compiled in [HUB20-532-002].
     // The embedded dev certificates only serve on bench and development setups.
-    std::unique_ptr<char[]> live_chain_iso20, live_key_iso20;
     std::unique_ptr<char[]> live_v2g_roots,   live_oem_roots;
     bool store_live = false;
-    iso20_allowed = true;
+    iso20_allowed = false;
 #if MODULE_OCPP_AVAILABLE()
     store_live = ocpp.is_iso15118_store_live();
-    ocpp.get_iso15118_secc_chain(true,  &live_chain_iso20, &live_key_iso20);
     live_v2g_roots = ocpp.get_iso15118_root_bundle(Ocpp::RootGroup::V2G);
     live_oem_roots = ocpp.get_iso15118_root_bundle(Ocpp::RootGroup::OEM);
     if (store_live) {
-        iso20_allowed = ocpp.is_iso20_tls_ready() && live_chain_iso20 && live_key_iso20;
+        Ocpp::Iso15118SeccChain chains[ISO20_CANDIDATE_MAX];
+        const size_t chain_count = ocpp.get_iso15118_secc_chains(true, chains, ISO20_CANDIDATE_MAX);
+        for (size_t i = 0; i < chain_count; ++i) {
+            if (!ocpp.is_iso20_tls_ready(chains[i].chain_id) ||
+                chains[i].chain_pem == nullptr || chains[i].key_pem == nullptr) {
+                continue;
+            }
+
+            iso20_candidate_t &candidate = iso20_candidates[iso20_candidate_count];
+            candidate.chain_id = chains[i].chain_id;
+            candidate.cert_chain_pem = copy_pem(chains[i].chain_pem.get(), &candidate.cert_chain_pem_len);
+            candidate.private_key_pem = copy_pem(chains[i].key_pem.get(), &candidate.private_key_pem_len);
+            if (candidate.cert_chain_pem == nullptr || candidate.private_key_pem == nullptr) {
+                free_iso20_candidate(iso20_candidate_count);
+                continue;
+            }
+
+            const size_t cert_count = platform_cert_count21(chains[i].chain_pem.get());
+            const bool ocsp_required = ocpp.is_iso20_ocsp_required();
+            bool staples_complete = !ocsp_required || (cert_count > 0 && cert_count <= OCSP_STAPLE_MAX);
+            for (size_t cert_idx = 0; cert_idx < cert_count && cert_idx < OCSP_STAPLE_MAX; ++cert_idx) {
+                std::unique_ptr<uint8_t[]> der;
+                size_t der_len = 0;
+                if (!ocpp.get_iso15118_ocsp_staple(candidate.chain_id, static_cast<uint8_t>(cert_idx), &der, &der_len) || der_len == 0) {
+                    if (ocsp_required) {
+                        staples_complete = false;
+                        break;
+                    }
+                    continue;
+                }
+                candidate.staple_der[cert_idx] = static_cast<uint8_t *>(calloc_psram_or_dram(der_len, 1));
+                if (candidate.staple_der[cert_idx] == nullptr) {
+                    if (ocsp_required) {
+                        staples_complete = false;
+                        break;
+                    }
+                    continue;
+                }
+                memcpy(candidate.staple_der[cert_idx], der.get(), der_len);
+                candidate.staple_der_len[cert_idx] = der_len;
+            }
+            if (!staples_complete) {
+                free_iso20_candidate(iso20_candidate_count);
+                continue;
+            }
+            ++iso20_candidate_count;
+        }
+        iso20_allowed = iso20_candidate_count > 0;
     }
 #endif
 
@@ -434,6 +478,18 @@ bool ISOTLS::load_certificates()
         return false;
     }
 #endif
+
+    if (!store_live && fallback_chain_iso20 != nullptr && fallback_key_iso20 != nullptr) {
+        iso20_candidate_t &candidate = iso20_candidates[0];
+        candidate.cert_chain_pem = copy_pem(fallback_chain_iso20, &candidate.cert_chain_pem_len);
+        candidate.private_key_pem = copy_pem(fallback_key_iso20, &candidate.private_key_pem_len);
+        if (candidate.cert_chain_pem != nullptr && candidate.private_key_pem != nullptr) {
+            iso20_candidate_count = 1;
+            iso20_allowed = true;
+        } else {
+            free_iso20_candidate(0);
+        }
+    }
 
     // ISO 15118-2 chain selection depends on the EVCC's ClientHello, so a
     // single preselected chain is insufficient. The EVCC indicates its V2G
@@ -505,10 +561,6 @@ bool ISOTLS::load_certificates()
         return false;
     }
 
-    if (iso20_allowed) {
-        cert_chain_pem_iso20  = copy_pem(live_chain_iso20 ? live_chain_iso20.get() : fallback_chain_iso20, &cert_chain_pem_len_iso20);
-        private_key_pem_iso20 = copy_pem(live_key_iso20   ? live_key_iso20.get()   : fallback_key_iso20,   &private_key_pem_len_iso20);
-    }
     if (live_oem_roots || !store_live) {
         oem_root_ca_pem_iso20 = copy_pem(live_oem_roots ? live_oem_roots.get() : fallback_oem_roots, &oem_root_ca_pem_len_iso20);
     }
@@ -516,37 +568,11 @@ bool ISOTLS::load_certificates()
         v2g_root_ca_pem_iso20 = copy_pem(live_v2g_roots ? live_v2g_roots.get() : fallback_v2g_roots, &v2g_root_ca_pem_len_iso20);
     }
 
-    if (iso20_allowed && ((cert_chain_pem_iso20 == nullptr) || (private_key_pem_iso20 == nullptr))) {
-        iso15118.trace("ISOTLS: Failed to allocate memory for certificates");
-        return false;
-    }
-
-#if MODULE_OCPP_AVAILABLE()
-    // Retained OCSP responses of the served -20 chain, leaf first, for stapling into the TLS 1.3 Certificate message [V2G20-2388]
-    if (iso20_allowed && store_live) {
-        for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
-            std::unique_ptr<uint8_t[]> der;
-            size_t der_len = 0;
-            if (!ocpp.get_iso15118_ocsp_staple(static_cast<uint8_t>(i), &der, &der_len)) {
-                continue;
-            }
-            staple_der[i] = static_cast<uint8_t*>(calloc_psram_or_dram(der_len, 1));
-            if (staple_der[i] == nullptr) {
-                continue;
-            }
-            memcpy(staple_der[i], der.get(), der_len);
-            staple_der_len[i] = der_len;
-            iso15118.trace("ISOTLS: OCSP staple for -20 chain certificate %zu: %zu bytes", i, der_len);
-        }
-    }
-#endif
-
     iso15118.trace("ISOTLS: Loaded %zu ISO 15118-2 SECC candidate(s) from %s",
                     iso2_candidate_count, store_live ? "OCPP store" : "dev certs");
     if (iso20_allowed) {
-        iso15118.trace("ISOTLS: ISO 15118-20 SECC chain (secp521r1) from %s: chain=%zu bytes, key=%zu bytes",
-                        live_chain_iso20 ? "OCPP store" : "dev certs",
-                        cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
+        iso15118.trace("ISOTLS: Loaded %zu ISO 15118-20 SECC candidate(s) from %s",
+                        iso20_candidate_count, store_live ? "OCPP store" : "dev certs");
     } else {
         iso15118.trace("ISOTLS: -20 SECC chain missing, expired or without good OCSP status, offering TLS 1.2 only [HUB20-532-002]");
     }
@@ -574,6 +600,9 @@ void ISOTLS::free_iso2_candidate(size_t index)
         free_any(candidate.root);
     }
     free_any(candidate.cert_chain_pem);
+    if (candidate.private_key_pem != nullptr) {
+        mbedtls_platform_zeroize(candidate.private_key_pem, candidate.private_key_pem_len);
+    }
     free_any(candidate.private_key_pem);
     free_any(candidate.root_pem);
     for (size_t i = 0; i < ISO2_OCSP_MAX; ++i) {
@@ -581,6 +610,85 @@ void ISOTLS::free_iso2_candidate(size_t index)
     }
     free_any(candidate.ocsp_response_list);
     candidate = {};
+}
+
+void ISOTLS::free_iso20_candidate(size_t index)
+{
+    iso20_candidate_t &candidate = iso20_candidates[index];
+    if (candidate.cert_chain != nullptr) {
+        mbedtls_x509_crt_free(candidate.cert_chain);
+        free_any(candidate.cert_chain);
+    }
+    if (candidate.private_key != nullptr) {
+        mbedtls_pk_free(candidate.private_key);
+        free_any(candidate.private_key);
+    }
+    free_any(candidate.cert_chain_pem);
+    if (candidate.private_key_pem != nullptr) {
+        mbedtls_platform_zeroize(candidate.private_key_pem, candidate.private_key_pem_len);
+    }
+    free_any(candidate.private_key_pem);
+    for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
+        free_any(candidate.staple_der[i]);
+    }
+    candidate = {};
+}
+
+bool ISOTLS::parse_iso20_candidates()
+{
+    size_t valid_count = 0;
+    const size_t loaded_count = iso20_candidate_count;
+    for (size_t i = 0; i < loaded_count; ++i) {
+        iso20_candidate_t &candidate = iso20_candidates[i];
+        candidate.cert_chain = static_cast<mbedtls_x509_crt *>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
+        candidate.private_key = static_cast<mbedtls_pk_context *>(calloc_psram_or_dram(1, sizeof(mbedtls_pk_context)));
+        if (candidate.cert_chain != nullptr) {
+            mbedtls_x509_crt_init(candidate.cert_chain);
+        }
+        if (candidate.private_key != nullptr) {
+            mbedtls_pk_init(candidate.private_key);
+        }
+        if (candidate.cert_chain == nullptr || candidate.private_key == nullptr) {
+            free_iso20_candidate(i);
+            continue;
+        }
+
+        int ret = mbedtls_x509_crt_parse(candidate.cert_chain, candidate.cert_chain_pem, candidate.cert_chain_pem_len);
+        if (ret == 0) {
+            ret = mbedtls_pk_parse_key(candidate.private_key, candidate.private_key_pem, candidate.private_key_pem_len,
+                                       nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
+        }
+        if (ret == 0) {
+            ret = mbedtls_pk_check_pair(&candidate.cert_chain->pk, candidate.private_key,
+                                        mbedtls_ctr_drbg_random, ctr_drbg);
+        }
+#if MODULE_OCPP_AVAILABLE()
+        if (ret == 0 && iso2_store_live) {
+            const OcppCurve21 curve = (mbedtls_pk_get_type(&candidate.cert_chain->pk) == MBEDTLS_PK_ED448) ? OcppCurve21::Ed448 : OcppCurve21::Secp521r1;
+            if (!ocpp.is_iso20_suite_enabled(curve)) {
+                iso15118.trace("ISOTLS: Ignoring disabled ISO20 %s candidate %zu", curve == OcppCurve21::Ed448 ? "ed448" : "ecdsa", i);
+                free_iso20_candidate(i);
+                continue;
+            }
+        }
+#endif
+        if (ret != 0) {
+            iso15118.trace("ISOTLS: Ignoring invalid ISO20 candidate %zu: -0x%04x", i, static_cast<unsigned>(-ret));
+            free_iso20_candidate(i);
+            continue;
+        }
+
+        iso15118.trace("ISOTLS: ISO20 candidate %zu (chain ID %u): %s",
+                        valid_count, static_cast<unsigned>(candidate.chain_id),
+                        mbedtls_pk_get_type(&candidate.cert_chain->pk) == MBEDTLS_PK_ED448 ? "ed448" : "ecdsa");
+        if (valid_count != i) {
+            iso20_candidates[valid_count] = candidate;
+            candidate = {};
+        }
+        ++valid_count;
+    }
+    iso20_candidate_count = valid_count;
+    return valid_count > 0;
 }
 
 bool ISOTLS::parse_iso2_candidates()
@@ -706,11 +814,7 @@ bool ISOTLS::setup()
     ssl_conf = static_cast<mbedtls_ssl_config*>(calloc_psram_or_dram(1, sizeof(mbedtls_ssl_config)));
     entropy = static_cast<mbedtls_entropy_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_entropy_context)));
     ctr_drbg = static_cast<mbedtls_ctr_drbg_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_ctr_drbg_context)));
-    cert_chain_iso20 = static_cast<mbedtls_x509_crt*>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
-    private_key_iso20 = static_cast<mbedtls_pk_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_pk_context)));
-
-    if (ssl == nullptr || ssl_conf == nullptr || entropy == nullptr || ctr_drbg == nullptr ||
-        cert_chain_iso20 == nullptr || private_key_iso20 == nullptr) {
+    if (ssl == nullptr || ssl_conf == nullptr || entropy == nullptr || ctr_drbg == nullptr) {
         iso15118.trace("ISOTLS: Failed to allocate mbedTLS contexts");
         cleanup();
         return false;
@@ -721,8 +825,6 @@ bool ISOTLS::setup()
     mbedtls_ssl_config_init(ssl_conf);
     mbedtls_entropy_init(entropy);
     mbedtls_ctr_drbg_init(ctr_drbg);
-    mbedtls_x509_crt_init(cert_chain_iso20);
-    mbedtls_pk_init(private_key_iso20);
 
     int ret;
 
@@ -742,23 +844,9 @@ bool ISOTLS::setup()
         return false;
     }
 
-    // Parse ISO 15118-20 certificates (secp521r1) only when the -20 chain may be served [HUB20-532-002]
-    if (iso20_allowed) {
-        ret = mbedtls_x509_crt_parse(cert_chain_iso20, cert_chain_pem_iso20, cert_chain_pem_len_iso20);
-        if (ret != 0) {
-            iso15118.trace("ISOTLS: ISO20 mbedtls_x509_crt_parse failed: -0x%04x", static_cast<unsigned>(-ret));
-            cleanup();
-            return false;
-        }
-
-        ret = mbedtls_pk_parse_key(private_key_iso20, private_key_pem_iso20, private_key_pem_len_iso20,
-                                   nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
-        if (ret != 0) {
-            iso15118.trace("ISOTLS: ISO20 mbedtls_pk_parse_key failed: -0x%04x", static_cast<unsigned>(-ret));
-            cleanup();
-            return false;
-        }
-        iso15118.trace("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
+    if (iso20_allowed && !parse_iso20_candidates()) {
+        iso15118.trace("ISOTLS: No parseable ISO 15118-20 certificate candidates");
+        iso20_allowed = false;
     }
 
     // Parse trusted root CA certificates for mutual TLS (ISO 15118-20)
@@ -899,17 +987,10 @@ void ISOTLS::cleanup()
     iso2_store_live = false;
     iso2_status_v2_requested = false;
 
-    if (cert_chain_iso20 != nullptr) {
-        mbedtls_x509_crt_free(cert_chain_iso20);
-        free_any(cert_chain_iso20);
-        cert_chain_iso20 = nullptr;
+    for (size_t i = 0; i < ISO20_CANDIDATE_MAX; ++i) {
+        free_iso20_candidate(i);
     }
-
-    if (private_key_iso20 != nullptr) {
-        mbedtls_pk_free(private_key_iso20);
-        free_any(private_key_iso20);
-        private_key_iso20 = nullptr;
-    }
+    iso20_candidate_count = 0;
 
     if (trusted_ca_iso20 != nullptr) {
         mbedtls_x509_crt_free(trusted_ca_iso20);
@@ -929,18 +1010,6 @@ void ISOTLS::cleanup()
         ctr_drbg = nullptr;
     }
 
-    if (cert_chain_pem_iso20 != nullptr) {
-        free_any(cert_chain_pem_iso20);
-        cert_chain_pem_iso20 = nullptr;
-        cert_chain_pem_len_iso20 = 0;
-    }
-
-    if (private_key_pem_iso20 != nullptr) {
-        free_any(private_key_pem_iso20);
-        private_key_pem_iso20 = nullptr;
-        private_key_pem_len_iso20 = 0;
-    }
-
     if (oem_root_ca_pem_iso20 != nullptr) {
         free_any(oem_root_ca_pem_iso20);
         oem_root_ca_pem_iso20 = nullptr;
@@ -951,14 +1020,6 @@ void ISOTLS::cleanup()
         free_any(v2g_root_ca_pem_iso20);
         v2g_root_ca_pem_iso20 = nullptr;
         v2g_root_ca_pem_len_iso20 = 0;
-    }
-
-    for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
-        if (staple_der[i] != nullptr) {
-            free_any(staple_der[i]);
-            staple_der[i] = nullptr;
-        }
-        staple_der_len[i] = 0;
     }
 
     initialized = false;
@@ -1530,7 +1591,7 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
 
     // The verify task checks the intermediate signatures and the trust
     // store anchoring of the topmost certificate, so it runs even when the chain has no intermediates.
-    const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 3072, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
+    const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 12288, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
 
     if (ret == pdPASS_nowarn) {
         verify_ctx->async_started = true;
@@ -1563,13 +1624,17 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
 
-    if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && iso20_allowed && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
-        iso15118.trace("ISOTLS: cert_cb: TLS 1.3 negotiated, selecting ISO 15118-20 cert (secp521r1)");
-        int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso20, private_key_iso20);
-        if (ret != 0) {
-            iso15118.trace("ISOTLS: cert_cb: Failed to set own cert: -0x%04x", static_cast<unsigned>(-ret));
-            return ret;
+    if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && iso20_allowed && iso20_candidate_count > 0) {
+        mbedtls_ssl_set_hs_own_cert(ssl_ctx, nullptr, nullptr);
+        for (size_t i = 0; i < iso20_candidate_count; ++i) {
+            iso20_candidate_t &candidate = iso20_candidates[i];
+            int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, candidate.cert_chain, candidate.private_key);
+            if (ret != 0) {
+                iso15118.trace("ISOTLS: cert_cb: Failed to add ISO20 candidate %zu: -0x%04x", i, static_cast<unsigned>(-ret));
+                return ret;
+            }
         }
+        iso15118.trace("ISOTLS: cert_cb: TLS 1.3 negotiated, offering %zu ISO 15118-20 certificate candidate(s)", iso20_candidate_count);
 
         // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
         // Enable mutual authentication for TLS 1.3 (ISO 15118-20) if enabled
@@ -1623,6 +1688,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
                         selected_iso2_candidate, static_cast<unsigned>(candidate.chain_id));
         // ISO 15118-2: Unilateral authentication only (no client cert)
         mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
+        mbedtls_ssl_set_hs_own_cert(ssl_ctx, nullptr, nullptr);
         return mbedtls_ssl_set_hs_own_cert(ssl_ctx, candidate.cert_chain, candidate.private_key);
     }
 
@@ -1813,13 +1879,25 @@ void ISOTLS::set_mutual_auth_enabled(bool enabled)
     iso15118.trace("ISOTLS: Mutual TLS authentication %s", enabled ? "enabled" : "disabled");
 }
 
-bool ISOTLS::get_ocsp_staple(size_t index, const unsigned char **der, size_t *der_len) const
+bool ISOTLS::get_ocsp_staple(const mbedtls_ssl_context *ssl_ctx, size_t index,
+                             const unsigned char **der, size_t *der_len) const
 {
-    if (index >= OCSP_STAPLE_MAX || staple_der[index] == nullptr || staple_der_len[index] == 0) {
+    if (ssl_ctx != ssl) {
         return false;
     }
-    *der = staple_der[index];
-    *der_len = staple_der_len[index];
+    const mbedtls_x509_crt *selected = mbedtls_ssl_get_hs_own_cert(ssl_ctx);
+    const iso20_candidate_t *candidate = nullptr;
+    for (size_t i = 0; i < iso20_candidate_count; ++i) {
+        if (iso20_candidates[i].cert_chain == selected) {
+            candidate = &iso20_candidates[i];
+            break;
+        }
+    }
+    if ((candidate == nullptr) || (index >= OCSP_STAPLE_MAX) || (candidate->staple_der[index] == nullptr) || (candidate->staple_der_len[index] == 0)) {
+        return false;
+    }
+    *der = candidate->staple_der[index];
+    *der_len = candidate->staple_der_len[index];
     return true;
 }
 

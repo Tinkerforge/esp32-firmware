@@ -1,0 +1,23 @@
+diff --git mbedtls/ssl.h mbedtls/ssl.h
+index 43d8175988..879a202c97 100644
+--- mbedtls/ssl.h
++++ mbedtls/ssl.h
+@@ -4181,6 +4181,18 @@ int mbedtls_ssl_set_hs_own_cert(mbedtls_ssl_context *ssl,
+                                 mbedtls_x509_crt *own_cert,
+                                 mbedtls_pk_context *pk_key);
+ 
++/**
++ * \brief          Return the certificate selected for the current handshake.
++ *
++ * \param ssl      The SSL context to inspect.
++ *
++ * \return         A borrowed pointer to the server certificate selected for
++ *                 the current handshake, or NULL before selection. The pointer
++ *                 remains valid only while the SSL context and certificate do.
++ */
++const mbedtls_x509_crt *mbedtls_ssl_get_hs_own_cert(
++    const mbedtls_ssl_context *ssl);
++
+ /**
+  * \brief          Set the data required to verify peer certificate for the
+  *                 current handshake

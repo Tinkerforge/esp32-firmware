@@ -1,0 +1,229 @@
+diff --git library/ssl_misc.h library/ssl_misc.h
+index 218a30d408..554b68cd67 100644
+--- library/ssl_misc.h
++++ library/ssl_misc.h
+@@ -2425,7 +2425,7 @@ static inline int mbedtls_ssl_named_group_is_supported(uint16_t named_group)
+  * been more recently invoked.
+  *
+  */
+-static inline const void *mbedtls_ssl_get_sig_algs(
++static inline const uint16_t *mbedtls_ssl_get_sig_algs(
+     const mbedtls_ssl_context *ssl)
+ {
+ #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED)
+@@ -2467,6 +2467,10 @@ static inline int mbedtls_ssl_tls13_sig_alg_for_cert_verify_is_supported(
+     const uint16_t sig_alg)
+ {
+     switch (sig_alg) {
++#if defined(MBEDTLS_ED448_C)
++        case MBEDTLS_TLS1_3_SIG_ED448:
++            break;
++#endif /* MBEDTLS_ED448_C */
+ #if defined(MBEDTLS_PK_CAN_ECDSA_SOME)
+ #if defined(PSA_WANT_ALG_SHA_256) && defined(PSA_WANT_ECC_SECP_R1_256)
+         case MBEDTLS_TLS1_3_SIG_ECDSA_SECP256R1_SHA256:
+@@ -2561,6 +2565,12 @@ static inline int mbedtls_ssl_get_pk_type_and_md_alg_from_sig_alg(
+     }
+ 
+     switch (sig_alg) {
++#if defined(MBEDTLS_ED448_C)
++        case MBEDTLS_TLS1_3_SIG_ED448:
++            *md_alg = MBEDTLS_MD_NONE;
++            *pk_type = MBEDTLS_PK_ED448;
++            break;
++#endif /* MBEDTLS_ED448_C */
+ #if defined(MBEDTLS_PKCS1_V21)
+ #if defined(MBEDTLS_MD_CAN_SHA256)
+         case MBEDTLS_TLS1_3_SIG_RSA_PSS_RSAE_SHA256:
+diff --git library/ssl_tls.c library/ssl_tls.c
+index 1185b0b283..400bb67e47 100644
+--- library/ssl_tls.c
++++ library/ssl_tls.c
+@@ -1934,6 +1934,16 @@ int mbedtls_ssl_set_hs_own_cert(mbedtls_ssl_context *ssl,
+                                own_cert, pk_key);
+ }
+ 
++const mbedtls_x509_crt *mbedtls_ssl_get_hs_own_cert(
++    const mbedtls_ssl_context *ssl)
++{
++    if (ssl == NULL || ssl->handshake == NULL ||
++        ssl->handshake->key_cert == NULL) {
++        return NULL;
++    }
++    return ssl->handshake->key_cert->cert;
++}
++
+ void mbedtls_ssl_set_hs_ca_chain(mbedtls_ssl_context *ssl,
+                                  mbedtls_x509_crt *ca_chain,
+                                  mbedtls_x509_crl *ca_crl)
+@@ -5718,6 +5728,10 @@ static const int ssl_preset_suiteb_ciphersuites[] = {
+  */
+ static const uint16_t ssl_preset_default_sig_algs[] = {
+ 
++#if defined(MBEDTLS_ED448_C)
++    MBEDTLS_TLS1_3_SIG_ED448,
++#endif
++
+ #if defined(MBEDTLS_KEY_EXCHANGE_ECDSA_CERT_REQ_ANY_ALLOWED_ENABLED) && \
+     defined(MBEDTLS_MD_CAN_SHA256) && \
+     defined(PSA_WANT_ECC_SECP_R1_256)
+diff --git library/ssl_tls13_generic.c library/ssl_tls13_generic.c
+index b6d09788ba..aea550e9fc 100644
+--- library/ssl_tls13_generic.c
++++ library/ssl_tls13_generic.c
+@@ -280,11 +280,6 @@ static int ssl_tls13_parse_certificate_verify(mbedtls_ssl_context *ssl,
+         goto error;
+     }
+ 
+-    hash_alg = mbedtls_md_psa_alg_from_type(md_alg);
+-    if (hash_alg == 0) {
+-        goto error;
+-    }
+-
+     MBEDTLS_SSL_DEBUG_MSG(3, ("Certificate Verify: Signature algorithm ( %04x )",
+                               (unsigned int) algorithm));
+ 
+@@ -301,18 +296,30 @@ static int ssl_tls13_parse_certificate_verify(mbedtls_ssl_context *ssl,
+     p += 2;
+     MBEDTLS_SSL_CHK_BUF_READ_PTR(p, end, signature_len);
+ 
+-    status = psa_hash_compute(hash_alg,
+-                              verify_buffer,
+-                              verify_buffer_len,
+-                              verify_hash,
+-                              sizeof(verify_hash),
+-                              &verify_hash_len);
+-    if (status != PSA_SUCCESS) {
+-        MBEDTLS_SSL_DEBUG_RET(1, "hash computation PSA error", status);
+-        goto error;
++    if (sig_alg == MBEDTLS_PK_ED448) {
++        verify_hash_len = verify_buffer_len;
++    } else {
++        hash_alg = mbedtls_md_psa_alg_from_type(md_alg);
++        if (hash_alg == 0) {
++            goto error;
++        }
++        status = psa_hash_compute(hash_alg,
++                                  verify_buffer,
++                                  verify_buffer_len,
++                                  verify_hash,
++                                  sizeof(verify_hash),
++                                  &verify_hash_len);
++        if (status != PSA_SUCCESS) {
++            MBEDTLS_SSL_DEBUG_RET(1, "hash computation PSA error", status);
++            goto error;
++        }
+     }
+ 
+-    MBEDTLS_SSL_DEBUG_BUF(3, "verify hash", verify_hash, verify_hash_len);
++    if (sig_alg == MBEDTLS_PK_ED448) {
++        MBEDTLS_SSL_DEBUG_BUF(3, "verify message", verify_buffer, verify_hash_len);
++    } else {
++        MBEDTLS_SSL_DEBUG_BUF(3, "verify hash", verify_hash, verify_hash_len);
++    }
+ #if defined(MBEDTLS_X509_RSASSA_PSS_SUPPORT)
+     if (sig_alg == MBEDTLS_PK_RSASSA_PSS) {
+         rsassa_pss_options.mgf1_hash_id = md_alg;
+@@ -324,7 +331,9 @@ static int ssl_tls13_parse_certificate_verify(mbedtls_ssl_context *ssl,
+ 
+     if ((ret = mbedtls_pk_verify_ext(sig_alg, options,
+                                      &ssl->session_negotiate->peer_cert->pk,
+-                                     md_alg, verify_hash, verify_hash_len,
++                                     md_alg,
++                                     sig_alg == MBEDTLS_PK_ED448 ? verify_buffer : verify_hash,
++                                     verify_hash_len,
+                                      p, signature_len)) == 0) {
+         return 0;
+     }
+@@ -854,6 +863,12 @@ cleanup:
+ int mbedtls_ssl_tls13_check_sig_alg_cert_key_match(uint16_t sig_alg,
+                                                    mbedtls_pk_context *key)
+ {
++#if defined(MBEDTLS_ED448_C)
++    if (sig_alg == MBEDTLS_TLS1_3_SIG_ED448) {
++        return mbedtls_pk_can_do(key, MBEDTLS_PK_ED448);
++    }
++#endif /* MBEDTLS_ED448_C */
++
+     mbedtls_pk_type_t pk_type = (mbedtls_pk_type_t) mbedtls_ssl_sig_from_pk(key);
+     size_t key_size = mbedtls_pk_get_bitlen(key);
+ 
+@@ -972,21 +987,31 @@ static int ssl_tls13_write_certificate_verify_body(mbedtls_ssl_context *ssl,
+             return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+         }
+ 
+-        /* Hash verify buffer with indicated hash function */
+-        psa_algorithm = mbedtls_md_psa_alg_from_type(md_alg);
+-        status = psa_hash_compute(psa_algorithm,
+-                                  verify_buffer,
+-                                  verify_buffer_len,
+-                                  verify_hash, sizeof(verify_hash),
+-                                  &verify_hash_len);
+-        if (status != PSA_SUCCESS) {
+-            return PSA_TO_MBEDTLS_ERR(status);
++        if (pk_type == MBEDTLS_PK_ED448) {
++            verify_hash_len = verify_buffer_len;
++        } else {
++            /* Hash verify buffer with indicated hash function. */
++            psa_algorithm = mbedtls_md_psa_alg_from_type(md_alg);
++            status = psa_hash_compute(psa_algorithm,
++                                      verify_buffer,
++                                      verify_buffer_len,
++                                      verify_hash, sizeof(verify_hash),
++                                      &verify_hash_len);
++            if (status != PSA_SUCCESS) {
++                return PSA_TO_MBEDTLS_ERR(status);
++            }
+         }
+ 
+-        MBEDTLS_SSL_DEBUG_BUF(3, "verify hash", verify_hash, verify_hash_len);
++        if (pk_type == MBEDTLS_PK_ED448) {
++            MBEDTLS_SSL_DEBUG_BUF(3, "verify message", verify_buffer, verify_hash_len);
++        } else {
++            MBEDTLS_SSL_DEBUG_BUF(3, "verify hash", verify_hash, verify_hash_len);
++        }
+ 
+         if ((ret = mbedtls_pk_sign_ext(pk_type, own_key,
+-                                       md_alg, verify_hash, verify_hash_len,
++                                       md_alg,
++                                       pk_type == MBEDTLS_PK_ED448 ? verify_buffer : verify_hash,
++                                       verify_hash_len,
+                                        p + 4, (size_t) (end - (p + 4)), &signature_len,
+                                        ssl->conf->f_rng, ssl->conf->p_rng)) != 0) {
+             MBEDTLS_SSL_DEBUG_MSG(2, ("CertificateVerify signature failed with %s",
+diff --git library/ssl_tls13_server.c library/ssl_tls13_server.c
+index a72ed25cfa..939379c8aa 100644
+--- library/ssl_tls13_server.c
++++ library/ssl_tls13_server.c
+@@ -1115,7 +1115,7 @@ MBEDTLS_CHECK_RETURN_CRITICAL
+ static int ssl_tls13_pick_key_cert(mbedtls_ssl_context *ssl)
+ {
+     mbedtls_ssl_key_cert *key_cert, *key_cert_list;
+-    const uint16_t *sig_alg = ssl->handshake->received_sig_algs;
++    const uint16_t *sig_alg = mbedtls_ssl_get_sig_algs(ssl);
+ 
+ #if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+     if (ssl->handshake->sni_key_cert != NULL) {
+@@ -1130,7 +1130,7 @@ static int ssl_tls13_pick_key_cert(mbedtls_ssl_context *ssl)
+     }
+ 
+     for (; *sig_alg != MBEDTLS_TLS1_3_SIG_NONE; sig_alg++) {
+-        if (!mbedtls_ssl_sig_alg_is_offered(ssl, *sig_alg)) {
++        if (!mbedtls_ssl_sig_alg_is_received(ssl, *sig_alg)) {
+             continue;
+         }
+ 
+@@ -1173,9 +1173,10 @@ static int ssl_tls13_pick_key_cert(mbedtls_ssl_context *ssl)
+             if (mbedtls_ssl_tls13_check_sig_alg_cert_key_match(
+                     *sig_alg, &key_cert->cert->pk)
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
+-                && psa_alg != PSA_ALG_NONE &&
+-                mbedtls_pk_can_do_ext(&key_cert->cert->pk, psa_alg,
+-                                      PSA_KEY_USAGE_SIGN_HASH) == 1
++                && (*sig_alg == MBEDTLS_TLS1_3_SIG_ED448 ||
++                    (psa_alg != PSA_ALG_NONE &&
++                     mbedtls_pk_can_do_ext(&key_cert->cert->pk, psa_alg,
++                                           PSA_KEY_USAGE_SIGN_HASH) == 1))
+ #endif /* MBEDTLS_USE_PSA_CRYPTO */
+                 ) {
+                 ssl->handshake->key_cert = key_cert;

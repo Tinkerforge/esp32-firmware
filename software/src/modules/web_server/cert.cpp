@@ -269,6 +269,12 @@ static int parse_key(std::unique_ptr<uint8_t[]> *uniq_key_buf, size_t *key_lengt
             break;
         }
 
+#ifdef MBEDTLS_ED448_C
+        case MBEDTLS_PK_ED448:
+            logger.printfln("Loaded Ed448 private key (%zu bit)", mbedtls_pk_get_bitlen(pk));
+            break;
+#endif
+
         case MBEDTLS_PK_NONE:
         case MBEDTLS_PK_OPAQUE:
         default:
