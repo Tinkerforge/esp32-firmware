@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Provision P-521 and Ed448 SECC chains and verify TLS 1.3 selection."""
+"""Verify V2G20-2379/3376 root selection, V2G20-2399 fallback and TLS suites."""
 
 import argparse
 import base64
@@ -13,7 +13,6 @@ from pathlib import Path
 
 import _common as common
 from _common import CSMSSim as Csms
-
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 CERTS = SCRIPT_DIR / ".." / "tools" / "certs" / "output"
@@ -45,6 +44,8 @@ def make_ed448_pki(workdir):
     client_csr = workdir / "client.csr"
     client_cert = workdir / "client.pem"
     client_ext = workdir / "client-ext.cnf"
+    equivalent_authority_key = workdir / "equivalent-authority.key"
+    equivalent_authority = workdir / "equivalent-authority.pem"
 
     for key, cert, subject in (
         (v2g_key, v2g_root, "/C=DE/O=Ed448 Test/CN=Ed448 V2G Root"),
@@ -76,7 +77,16 @@ def make_ed448_pki(workdir):
         "-out", str(client_cert), "-days", "30",
         "-extfile", str(client_ext), "-extensions", "ext",
     ])
-    return v2g_key, v2g_root, oem_root, client_key, client_cert
+    run(["openssl", "genpkey", "-algorithm", "ED448", "-out", str(equivalent_authority_key)])
+    run([
+        "openssl", "req", "-new", "-x509", "-key", str(equivalent_authority_key),
+        "-out", str(equivalent_authority), "-days", "30",
+        "-subj", "/C=DE/O=ed448 test/CN=ed448 v2g root",
+        "-addext", "basicConstraints=critical,CA:TRUE",
+        "-addext", "keyUsage=critical,keyCertSign,cRLSign",
+    ])
+    return (v2g_key, v2g_root, oem_root, client_key, client_cert,
+            equivalent_authority)
 
 
 def sign_csr(workdir, csr_pem, root_key, root_cert, ocsp_url, tag,
@@ -210,9 +220,9 @@ def provision_iso20_chain(csms, workdir, suite, root_key, root_cert,
 
 
 def tls_probe(charger, iface, sigalgs, v2g_root, client_cert, client_key,
-              expected_signature=None, expected_ocsp=None,
-              unexpected_ocsp=None, client_chain=None, key_password=None,
-              expect_success=True):
+               expected_signature=None, expected_ocsp=None,
+               unexpected_ocsp=None, client_chain=None, key_password=None,
+               expect_success=True, request_ca=None):
     restart_debug(charger)
     response = common.sdp_request(iface)
     if response is None:
@@ -223,14 +233,17 @@ def tls_probe(charger, iface, sigalgs, v2g_root, client_cert, client_key,
         "-groups", "X448", "-sigalgs", sigalgs,
         "-client_sigalgs", sigalgs,
         "-CAfile", str(v2g_root), "-cert", str(client_cert),
-        "-key", str(client_key), "-status", "-verify_return_error",
+        "-key", str(client_key), "-status", "-showcerts", "-verify_return_error",
     ]
     if client_chain is not None:
         command += ["-cert_chain", str(client_chain)]
     if key_password is not None:
         command += ["-pass", f"pass:{key_password}"]
+    if request_ca is not None:
+        command += ["-requestCAfile", str(request_ca)]
     result = subprocess.run(
-        command, input="Q\n", capture_output=True, text=True, timeout=90)
+        command, input="Q\n", capture_output=True, text=True, timeout=90,
+        check=False)
     output = result.stdout + result.stderr
     print(output)
     succeeded = result.returncode == 0 and "TLSv1.3" in output
@@ -242,6 +255,10 @@ def tls_probe(charger, iface, sigalgs, v2g_root, client_cert, client_key,
     assert "Verify return code: 0 (ok)" in output, output
     assert "OCSP Response Status: successful" in output, output
     assert "Cert Status: good" in output, output
+    # V2G20-2379/2399: the selected chain must exclude its anchoring root.
+    transmitted_chain = output.split("---\nCertificate chain", 1)[1].split(
+        "---\nServer certificate", 1)[0]
+    assert transmitted_chain.count("-----BEGIN CERTIFICATE-----") == 1, output
     if expected_ocsp is not None:
         assert ocsp_serial(expected_ocsp).lower() in output.lower(), output
     if unexpected_ocsp is not None:
@@ -290,7 +307,8 @@ def main():
             raise RuntimeError("charger did not connect to the local CSMS")
         time.sleep(2)
 
-        v2g_key, v2g_root, oem_root, client_key, client_cert = make_ed448_pki(workdir)
+        (v2g_key, v2g_root, oem_root, client_key, client_cert,
+         equivalent_authority) = make_ed448_pki(workdir)
         for kind, cert in (
             ("V2GRootCertificate", CERTS / "iso2" / "certs" / "v2gRootCACert.pem"),
             ("V2GRootCertificate", CERTS / "iso20" / "certs" / "v2gRootCACert.pem"),
@@ -329,7 +347,28 @@ def main():
                   "ECDSA", p521_ocsp, ed448_ocsp,
                   p521 / "certs" / "oemCertChain.pem", "12345")
         tls_probe(args.charger, iface, "ed448", v2g_root, client_cert,
-                  client_key, "Ed448", ed448_ocsp, p521_ocsp)
+                  client_key, "Ed448", ed448_ocsp, p521_ocsp,
+                  request_ca=v2g_root)
+        # V2G20-2379/3376: the indicated Ed448 root overrides the normal
+        # P-521 signature preference and retains its V2G20-2388 OCSP staple.
+        tls_probe(args.charger, iface,
+                  "ecdsa_secp521r1_sha512:ed448", v2g_root, client_cert,
+                  client_key, "Ed448", ed448_ocsp, p521_ocsp,
+                  request_ca=v2g_root)
+        # RFC 5280 7.1 matching includes case and space normalization.
+        tls_probe(args.charger, iface,
+                  "ecdsa_secp521r1_sha512:ed448", v2g_root, client_cert,
+                  client_key, "Ed448", ed448_ocsp, p521_ocsp,
+                  request_ca=equivalent_authority)
+        # V2G20-2399: an unmatched indication uses another valid chain.
+        tls_probe(args.charger, iface,
+                  "ecdsa_secp521r1_sha512:ed448",
+                  p521 / "certs" / "v2gRootCACert.pem",
+                  p521 / "certs" / "oemLeafCert.pem",
+                  p521 / "private_keys" / "oemLeaf.key",
+                  "ECDSA", p521_ocsp, ed448_ocsp,
+                  p521 / "certs" / "oemCertChain.pem", "12345",
+                  request_ca=oem_root)
         tls_probe(args.charger, iface,
                   "ecdsa_secp521r1_sha512:ed448",
                   p521 / "certs" / "v2gRootCACert.pem",
