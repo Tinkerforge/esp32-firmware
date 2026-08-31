@@ -17,6 +17,11 @@ from software.test_runner.test_context import TestContext, run_testsuite
 
 environment = None
 
+TLS_STATUS_REQUEST = 5
+TLS_SIGNATURE_ALGORITHMS = 13
+TLS_CERTIFICATE_AUTHORITIES = 47
+TLS_OID_FILTERS = 48
+
 
 CASES = {
     "tls13_default_groups": (True, ["-tls1_3"]),
@@ -165,6 +170,15 @@ def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None
     time.sleep(0.2)
 
 
+def certificate_request_extensions(flight):
+    certificate_request = next(
+        message for message_type, message in flight.handshake_messages
+        if message_type == 13
+    )
+    context_length = certificate_request[4]
+    return parse_extension_vector(certificate_request[4:], 1 + context_length)
+
+
 def test_tls13_ignores_status_request_v2(tc: TestContext):
     assert environment is not None
     saved_ocpp = tc.api("ocpp/config")
@@ -193,17 +207,35 @@ def test_tls13_ignores_status_request_v2(tc: TestContext):
         )
         tc.assert_false(TLS_STATUS_REQUEST_V2 in parse_extension_vector(encrypted_extensions[4:], 0))
 
-        certificate_request = next(
-            message for message_type, message in flight.handshake_messages
-            if message_type == 13
-        )
-        context_length = certificate_request[4]
-        request_extensions = parse_extension_vector(
-            certificate_request[4:], 1 + context_length)
+        request_extensions = certificate_request_extensions(flight)
         tc.assert_false(TLS_STATUS_REQUEST_V2 in request_extensions)
         tc.assert_(len(flight.certificate_entries) > 0)
         for _, extensions in flight.certificate_entries:
             tc.assert_false(TLS_STATUS_REQUEST_V2 in extensions)
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
+
+
+def test_tls13_certificate_request_omits_forbidden_extensions(tc: TestContext):
+    assert environment is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        flight = capture_tls13_server_flight(
+            environment.host,
+            environment.iface,
+            request_status=True,
+        )
+
+        request_extensions = certificate_request_extensions(flight)
+        tc.assert_(TLS_SIGNATURE_ALGORITHMS in request_extensions)
+        tc.assert_(TLS_CERTIFICATE_AUTHORITIES in request_extensions)
+        tc.assert_false(TLS_STATUS_REQUEST in request_extensions)
+        tc.assert_false(TLS_OID_FILTERS in request_extensions)
     finally:
         tc.api("ocpp/config_update", saved_ocpp, timeout=15)
 
