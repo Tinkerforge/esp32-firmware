@@ -1,0 +1,50 @@
+--- library/ssl_tls13_server.c
++++ library/ssl_tls13_server.c
+@@ -58,6 +58,47 @@ static void ssl_tls13_select_ciphersuite(
+         return;
+     }
+ 
++    if (ssl->conf->respect_cli_pref == MBEDTLS_SSL_SRV_CIPHERSUITE_ORDER_SERVER) {
++        const int *server_ciphersuites = ssl->conf->ciphersuite_list;
++
++        for (; *server_ciphersuites != 0; server_ciphersuites++) {
++            const int id = *server_ciphersuites;
++            int offered = 0;
++            for (const unsigned char *p = cipher_suites;
++                 p < cipher_suites_end; p += 2) {
++                if (MBEDTLS_GET_UINT16_BE(p, 0) == (unsigned int) id) {
++                    offered = 1;
++                    break;
++                }
++            }
++            if (!offered) {
++                continue;
++            }
++
++            const mbedtls_ssl_ciphersuite_t *info =
++                ssl_tls13_validate_peer_ciphersuite(ssl, id);
++            if (info == NULL) {
++                continue;
++            }
++
++            if (psk_ciphersuite_id != 0) {
++                if (id != psk_ciphersuite_id) {
++                    continue;
++                }
++            } else if (psk_hash_alg != PSA_ALG_NONE) {
++                if (mbedtls_md_psa_alg_from_type((mbedtls_md_type_t) info->mac) !=
++                    psk_hash_alg) {
++                    continue;
++                }
++            }
++
++            *selected_ciphersuite_info = info;
++            return;
++        }
++
++        return;
++    }
++
+     for (const unsigned char *p = cipher_suites;
+          p < cipher_suites_end; p += 2) {
+         /*
