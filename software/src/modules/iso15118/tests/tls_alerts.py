@@ -5,11 +5,10 @@ import subprocess
 import time
 
 import tinkerforge_util as tfutil
+
 tfutil.create_parent_module(__file__, "software")
-from software.test_runner.test_context import run_testsuite, TestContext
-
-from _common import EVTestClient, IsoTestEnvironment, managed_socket
-
+from _common import CERTS_DIR, EVTestClient, IsoTestEnvironment, managed_socket
+from software.test_runner.test_context import TestContext, run_testsuite
 
 environment = None
 client = None
@@ -86,6 +85,48 @@ def check_alert(tc: TestContext, arguments):
     tc.assert_eq(0x15, response[0])
     tc.assert_eq(2, response[5])
     tc.assert_eq(40, response[6])
+
+
+def corrupt_certificate_authorities_length(hello):
+    data = bytearray(hello)
+    body = 9
+    body += 2 + 32
+    body += 1 + data[body]
+    cipher_len = int.from_bytes(data[body:body + 2], "big")
+    body += 2 + cipher_len
+    body += 1 + data[body]
+    extensions_len = int.from_bytes(data[body:body + 2], "big")
+    body += 2
+    extensions_end = body + extensions_len
+    while body < extensions_end:
+        extension_type = int.from_bytes(data[body:body + 2], "big")
+        extension_len = int.from_bytes(data[body + 2:body + 4], "big")
+        extension_data = body + 4
+        if extension_type == 47:
+            authorities_len = int.from_bytes(
+                data[extension_data:extension_data + 2], "big")
+            data[extension_data:extension_data + 2] = (
+                authorities_len - 1).to_bytes(2, "big")
+            return bytes(data)
+        body = extension_data + extension_len
+    raise AssertionError("OpenSSL did not send certificate_authorities")
+
+
+def test_tls13_malformed_certificate_authorities(tc: TestContext):
+    # RFC 8446 framing for the V2G20-2379/3376 chain-selection input.
+    assert client is not None
+    hello = capture_client_hello([
+        "-tls1_3",
+        "-requestCAfile", str(CERTS_DIR / "iso20/certs/v2gRootCACert.pem"),
+    ])
+    hello = corrupt_certificate_authorities_length(hello)
+    with managed_socket(client.connect_raw()) as sock:
+        sock.sendall(hello)
+        response = sock.recv(4096)
+    tc.assert_ge(7, len(response))
+    tc.assert_eq(0x15, response[0])
+    tc.assert_eq(2, response[5])
+    tc.assert_eq(50, response[6])
 
 
 def generate_tests():
