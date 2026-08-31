@@ -137,6 +137,16 @@ def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None
         tc.assert_(succeeded)
         if expected_cipher is not None:
             tc.assert_search(rf"Cipher is {expected_cipher}\b", output)
+        if "-tls1_3" in arguments:
+            # V2G20-2401/2403: all V2G/OEM roots, with C/O/OU/CN/serial
+            # in that exact order. The dev roots also prove empty OU handling.
+            ca_names = output.split(
+                "Acceptable client certificate CA names\n", 1)[1].split(
+                "Requested Signature Algorithms:", 1)[0].strip().splitlines()
+            tc.assert_eq([
+                "C = DE, O = WARP, OU = , CN = OEMRootCA, serialNumber = A569",
+                "C = DE, O = WARP, OU = , CN = V2GRootCA, serialNumber = 5749",
+            ], ca_names)
     else:
         tc.assert_false(handshake_completed and result.returncode == 0)
     time.sleep(0.2)

@@ -222,7 +222,7 @@ def provision_iso20_chain(csms, workdir, suite, root_key, root_cert,
 def tls_probe(charger, iface, sigalgs, v2g_root, client_cert, client_key,
                expected_signature=None, expected_ocsp=None,
                unexpected_ocsp=None, client_chain=None, key_password=None,
-               expect_success=True, request_ca=None):
+               expect_success=True, request_ca=None, expected_ca_count=None):
     restart_debug(charger)
     response = common.sdp_request(iface)
     if response is None:
@@ -255,6 +255,11 @@ def tls_probe(charger, iface, sigalgs, v2g_root, client_cert, client_key,
     assert "Verify return code: 0 (ok)" in output, output
     assert "OCSP Response Status: successful" in output, output
     assert "Cert Status: good" in output, output
+    if expected_ca_count is not None:
+        ca_names = output.split(
+            "Acceptable client certificate CA names\n", 1)[1].split(
+            "Requested Signature Algorithms:", 1)[0].strip().splitlines()
+        assert len(ca_names) == expected_ca_count, ca_names
     # V2G20-2379/2399: the selected chain must exclude its anchoring root.
     transmitted_chain = output.split("---\nCertificate chain", 1)[1].split(
         "---\nServer certificate", 1)[0]
@@ -345,7 +350,8 @@ def main():
                   p521 / "certs" / "oemLeafCert.pem",
                   p521 / "private_keys" / "oemLeaf.key",
                   "ECDSA", p521_ocsp, ed448_ocsp,
-                  p521 / "certs" / "oemCertChain.pem", "12345")
+                  p521 / "certs" / "oemCertChain.pem", "12345",
+                  expected_ca_count=5)
         tls_probe(args.charger, iface, "ed448", v2g_root, client_cert,
                   client_key, "Ed448", ed448_ocsp, p521_ocsp,
                   request_ca=v2g_root)
