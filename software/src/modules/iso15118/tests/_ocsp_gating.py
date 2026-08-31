@@ -48,6 +48,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 CERTS = SCRIPT_DIR / ".." / "tools" / "certs" / "output"
 OCSP_URL = "http://ocsp.test.example/"
 TLS_STATUS_REQUEST = 5
+TLS_STATUS_REQUEST_V2 = 17
 NEXT_UPDATE_OFFSET_S = 120
 SEVEN_DAYS_S = 7 * 24 * 60 * 60
 PRE_CAP_OFFSET_S = NEXT_UPDATE_OFFSET_S + SEVEN_DAYS_S - 120
@@ -85,6 +86,13 @@ class Iso20Chain:
             .sign(self.issuer_keys[index], hashes.SHA512())
         )
         return response.public_bytes(serialization.Encoding.DER)
+
+
+@dataclass
+class Tls13ServerFlight:
+    server_hello_extensions: dict[int, bytes]
+    handshake_messages: list[tuple[int, bytes]]
+    certificate_entries: list[tuple[bytes, dict[int, bytes]]]
 
 
 def run(cmd, **kwargs):
@@ -427,7 +435,28 @@ def receive_record(sock):
     return bytes(header), bytes(payload)
 
 
-def parse_server_key_share(server_hello):
+def parse_extension_vector(data, offset):
+    if offset + 2 > len(data):
+        raise ValueError("truncated TLS extension vector")
+    extensions_length = int.from_bytes(data[offset:offset + 2], "big")
+    offset += 2
+    end = offset + extensions_length
+    if end != len(data):
+        raise ValueError("invalid TLS extension vector length")
+    extensions = {}
+    while offset < end:
+        if offset + 4 > end:
+            raise ValueError("truncated TLS extension")
+        extension_type, extension_length = struct.unpack("!HH", data[offset:offset + 4])
+        offset += 4
+        if extension_type in extensions or offset + extension_length > end:
+            raise ValueError("invalid TLS extension")
+        extensions[extension_type] = data[offset:offset + extension_length]
+        offset += extension_length
+    return extensions
+
+
+def parse_server_hello(server_hello):
     if server_hello[0] != 2 or read_u24(server_hello, 1) != len(server_hello) - 4:
         raise ValueError("invalid ServerHello")
     body = server_hello[4:]
@@ -436,48 +465,48 @@ def parse_server_key_share(server_hello):
     if body[offset:offset + 2] != b"\x13\x02" or body[offset + 2] != 0:
         raise ValueError("server did not select TLS_AES_256_GCM_SHA384")
     offset += 3
-    extensions_length = int.from_bytes(body[offset:offset + 2], "big")
-    offset += 2
-    end = offset + extensions_length
-    if end != len(body):
-        raise ValueError("invalid ServerHello extensions length")
-    while offset < end:
-        extension_type, extension_length = struct.unpack("!HH", body[offset:offset + 4])
-        offset += 4
-        extension_data = body[offset:offset + extension_length]
-        offset += extension_length
-        if extension_type == 51:
-            if len(extension_data) < 4 or extension_data[:2] != b"\x00\x19":
-                raise ValueError("server did not select secp521r1")
-            key_length = int.from_bytes(extension_data[2:4], "big")
-            if key_length != len(extension_data) - 4:
-                raise ValueError("invalid ServerHello key_share")
-            return extension_data[4:]
-    raise ValueError("ServerHello has no key_share")
+    extensions = parse_extension_vector(body, offset)
+    key_share = extensions.get(51)
+    if key_share is None or len(key_share) < 4 or key_share[:2] != b"\x00\x19":
+        raise ValueError("server did not select secp521r1")
+    key_length = int.from_bytes(key_share[2:4], "big")
+    if key_length != len(key_share) - 4:
+        raise ValueError("invalid ServerHello key_share")
+    return extensions, key_share[4:]
 
 
-def raw_tls13_client_hello(private_key):
+def status_request_v2():
+    ocsp_multi_request = b"\x00\x00\x00\x00"
+    item = b"\x02" + struct.pack("!H", len(ocsp_multi_request)) + ocsp_multi_request
+    return struct.pack("!H", len(item)) + item
+
+
+def raw_tls13_client_hello(private_key, request_status=True, request_status_v2=False):
     public_key = private_key.public_key().public_bytes(
         serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
     key_share = b"\x00\x19" + struct.pack("!H", len(public_key)) + public_key
-    extensions = b"".join([
+    extensions = [
         tls_extension(43, b"\x02\x03\x04"),
         tls_extension(10, b"\x00\x02\x00\x19"),
         tls_extension(51, struct.pack("!H", len(key_share)) + key_share),
         tls_extension(13, b"\x00\x02\x06\x03"),
-        tls_extension(TLS_STATUS_REQUEST, b"\x01\x00\x00\x00\x00"),
-    ])
+    ]
+    if request_status:
+        extensions.append(tls_extension(TLS_STATUS_REQUEST, b"\x01\x00\x00\x00\x00"))
+    if request_status_v2:
+        extensions.append(tls_extension(TLS_STATUS_REQUEST_V2, status_request_v2()))
+    extension_block = b"".join(extensions)
     session_id = os.urandom(32)
     body = (b"\x03\x03" + os.urandom(32)
             + bytes([len(session_id)]) + session_id
             + b"\x00\x02\x13\x02\x01\x00"
-            + struct.pack("!H", len(extensions)) + extensions)
+            + struct.pack("!H", len(extension_block)) + extension_block)
     return b"\x01" + len(body).to_bytes(3, "big") + body
 
 
-def capture_certificate_entries(charger, iface):
+def capture_tls13_server_flight(charger, iface, request_status=True, request_status_v2=False):
     private_key = ec.generate_private_key(ec.SECP521R1())
-    client_hello = raw_tls13_client_hello(private_key)
+    client_hello = raw_tls13_client_hello(private_key, request_status, request_status_v2)
     sock = common.connect_secc(charger, iface)
     try:
         sock.settimeout(30)
@@ -485,8 +514,9 @@ def capture_certificate_entries(charger, iface):
         header, server_hello = receive_record(sock)
         if header[0] != 22 or server_hello[0] != 2:
             raise ValueError("first server record is not ServerHello")
+        server_hello_extensions, server_key_share = parse_server_hello(server_hello)
         server_public = ec.EllipticCurvePublicKey.from_encoded_point(
-            ec.SECP521R1(), parse_server_key_share(server_hello))
+            ec.SECP521R1(), server_key_share)
         shared_secret = private_key.exchange(ec.ECDH(), server_public)
 
         zero = bytes(48)
@@ -501,6 +531,7 @@ def capture_certificate_entries(charger, iface):
         iv = hkdf_expand_label(traffic_secret, b"iv", b"", 12)
 
         handshake_data = bytearray()
+        handshake_messages = []
         sequence = 0
         while True:
             header, ciphertext = receive_record(sock)
@@ -525,14 +556,25 @@ def capture_certificate_entries(charger, iface):
                 end = offset + 4 + message_length
                 if end > len(handshake_data):
                     break
-                if handshake_data[offset] == 11:
-                    return parse_certificate_message(bytes(handshake_data[offset:end]))
+                message = bytes(handshake_data[offset:end])
+                message_type = message[0]
+                handshake_messages.append((message_type, message))
+                if message_type == 11:
+                    return Tls13ServerFlight(
+                        server_hello_extensions,
+                        handshake_messages,
+                        parse_certificate_message(message),
+                    )
                 offset = end
             if offset:
                 del handshake_data[:offset]
     finally:
         sock.close()
         time.sleep(1)
+
+
+def capture_certificate_entries(charger, iface):
+    return capture_tls13_server_flight(charger, iface).certificate_entries
 
 
 def main():
