@@ -43,5 +43,11 @@ def test_tls12_v2g_extensions_patch(tc: TestContext):
     run(tc, "_tls12_v2g_extensions_patch.sh", 600, os.environ.copy())
 
 
+def test_maximum_fragment_length_patch(tc: TestContext):
+    env = os.environ.copy()
+    env["PORT"] = str(tc.find_free_port(19443))
+    run(tc, "_maximum_fragment_length_patch.sh", 600, env)
+
+
 if __name__ == "__main__":
     run_testsuite(locals())
