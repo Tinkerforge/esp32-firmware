@@ -1,0 +1,13 @@
+--- include/mbedtls/ssl.h
++++ include/mbedtls/ssl.h
+@@ -917,6 +917,10 @@ typedef struct mbedtls_ssl_session mbedtls_ssl_session;
+ typedef struct mbedtls_ssl_context mbedtls_ssl_context;
+ typedef struct mbedtls_ssl_config  mbedtls_ssl_config;
+ 
++/** ClientHello certificate_authorities hook for V2G20-2379/3376. */
++int mbedtls_ssl_tls13_certificate_authorities_cb(
++    mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
++
+ /**
+  * \brief          Weak TLS 1.2 server hook for trusted_ca_keys (RFC 6066).
+  *

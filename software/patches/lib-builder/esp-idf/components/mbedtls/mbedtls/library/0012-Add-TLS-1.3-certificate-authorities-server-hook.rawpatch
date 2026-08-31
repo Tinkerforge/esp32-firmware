@@ -1,0 +1,63 @@
+--- library/ssl_tls13_server.c
++++ library/ssl_tls13_server.c
+@@ -20,6 +20,16 @@
+ #include "ssl_tls13_keys.h"
+ #include "ssl_debug_helpers.h"
+ 
++/* Exposes the V2G20-2379/3376 chain-selection input before cert_cb. */
++__attribute__((weak)) int mbedtls_ssl_tls13_certificate_authorities_cb(
++    mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
++{
++    (void) ssl;
++    (void) data;
++    (void) data_len;
++    return -1;
++}
++
+ 
+ static const mbedtls_ssl_ciphersuite_t *ssl_tls13_validate_peer_ciphersuite(
+     mbedtls_ssl_context *ssl,
+@@ -1530,5 +1539,6 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
+     MBEDTLS_SSL_DEBUG_BUF(3, "client hello extensions", p, extensions_len);
+     handshake->received_extensions = MBEDTLS_SSL_EXT_MASK_NONE;
++    (void) mbedtls_ssl_tls13_certificate_authorities_cb(ssl, NULL, 0);
+ 
+     while (p < extensions_end) {
+         unsigned int extension_type;
+@@ -1637,6 +1647,36 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
+                 /* Already parsed */
+                 break;
+ 
++            case MBEDTLS_TLS_EXT_CERT_AUTH:
++            {
++                const unsigned char *q = p;
++                if (extension_data_len < 5 ||
++                    MBEDTLS_GET_UINT16_BE(q, 0) != extension_data_len - 2) {
++                    MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR,
++                                                 MBEDTLS_ERR_SSL_DECODE_ERROR);
++                    return MBEDTLS_ERR_SSL_DECODE_ERROR;
++                }
++                q += 2;
++                while (q < extension_data_end) {
++                    if ((size_t) (extension_data_end - q) < 2) {
++                        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR,
++                                                     MBEDTLS_ERR_SSL_DECODE_ERROR);
++                        return MBEDTLS_ERR_SSL_DECODE_ERROR;
++                    }
++                    const size_t dn_len = MBEDTLS_GET_UINT16_BE(q, 0);
++                    q += 2;
++                    if (dn_len == 0 || (size_t) (extension_data_end - q) < dn_len) {
++                        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR,
++                                                     MBEDTLS_ERR_SSL_DECODE_ERROR);
++                        return MBEDTLS_ERR_SSL_DECODE_ERROR;
++                    }
++                    q += dn_len;
++                }
++                (void) mbedtls_ssl_tls13_certificate_authorities_cb(
++                    ssl, p, extension_data_len);
++                break;
++            }
++
+ #if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED)
+             case MBEDTLS_TLS_EXT_PSK_KEY_EXCHANGE_MODES:
+                 MBEDTLS_SSL_DEBUG_MSG(
