@@ -4,11 +4,11 @@ import subprocess
 import time
 
 import tinkerforge_util as tfutil
+
 tfutil.create_parent_module(__file__, "software")
-from software.test_runner.test_context import run_testsuite, TestContext
 
 from _common import CERTS_DIR, IsoTestEnvironment, sdp_request
-
+from software.test_runner.test_context import TestContext, run_testsuite
 
 environment = None
 
@@ -28,6 +28,36 @@ CASES = {
     ),
     "tls13_rsa_pss_refused": (
         False, ["-tls1_3", "-sigalgs", "rsa_pss_rsae_sha256"]
+    ),
+    "tls13_aes256_gcm": (
+        True,
+        ["-tls1_3", "-ciphersuites", "TLS_AES_256_GCM_SHA384"],
+        "TLS_AES_256_GCM_SHA384",
+    ),
+    "tls13_chacha20": (
+        True,
+        ["-tls1_3", "-ciphersuites", "TLS_CHACHA20_POLY1305_SHA256"],
+        "TLS_CHACHA20_POLY1305_SHA256",
+    ),
+    "tls13_server_pref_client_aes_first": (
+        True,
+        [
+            "-tls1_3", "-ciphersuites",
+            "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256",
+        ],
+        "TLS_AES_256_GCM_SHA384",
+    ),
+    "tls13_server_pref_client_chacha_first": (
+        True,
+        [
+            "-tls1_3", "-ciphersuites",
+            "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
+        ],
+        "TLS_AES_256_GCM_SHA384",
+    ),
+    "tls13_disjoint_cipher_refused": (
+        False,
+        ["-tls1_3", "-ciphersuites", "TLS_AES_128_GCM_SHA256"],
     ),
     "tls12_p256_ecdhe_ecdsa": (
         True,
@@ -72,7 +102,7 @@ def suite_teardown(tc: TestContext):
         environment.stop()
 
 
-def probe(tc: TestContext, expect_success: bool, arguments):
+def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None):
     assert environment is not None
     response = sdp_request(environment.iface, expected_from=environment.secc_ll)
     tc.assert_(response is not None)
@@ -96,6 +126,7 @@ def probe(tc: TestContext, expect_success: bool, arguments):
         capture_output=True,
         text=True,
         timeout=60,
+        check=False,
     )
     output = result.stdout + result.stderr
     tc.dbg(output)
@@ -104,6 +135,8 @@ def probe(tc: TestContext, expect_success: bool, arguments):
     succeeded = result.returncode == 0 and "Verify return code: 0 (ok)" in output
     if expect_success:
         tc.assert_(succeeded)
+        if expected_cipher is not None:
+            tc.assert_search(rf"Cipher is {expected_cipher}\b", output)
     else:
         tc.assert_false(handshake_completed and result.returncode == 0)
     time.sleep(0.2)
