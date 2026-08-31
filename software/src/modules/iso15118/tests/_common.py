@@ -207,7 +207,7 @@ class IsoTestEnvironment:
             raise errors[0]
 
     def reset_session(self):
-        current = self.tc.api("iso15118/debug")
+        current = self.tc.api("iso15118/debug", timeout=5)
         self.tc.api("iso15118/debug_update", {
             "enable": False,
             "current": current["current"],

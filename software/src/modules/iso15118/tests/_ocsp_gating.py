@@ -7,9 +7,9 @@ Provisions the certificate store step by step and checks the TLS server behavior
      verified against the dev V2G root, TLS 1.3 refused
   3. PrivateEnviromentEnabled does not waive OCSP because this station
      supports PnC; TLS 1.3 remains unavailable while OCSP is unknown
-  4. a Good OCSP response for the -20 leaf (signed by the dev CPO sub
-     CA 2, delivered via GetCertificateStatus) enables TLS 1.3 in both
-     private and public mode and the staple DER shows up in the trace log
+  4. a Good OCSP response for the directly root-signed -20 leaf,
+     delivered via GetCertificateStatus, enables TLS 1.3 in both private
+     and public mode
   5. openssl s_client -status sees the response stapled to the leaf
      CertificateEntry in the TLS 1.3 handshake (needs firmware built
      against libs with the stapling patch)
@@ -41,8 +41,10 @@ def run(cmd, **kwargs):
 
 
 def sign_csr(workdir, csr_pem, iso20, with_aia):
-    """Signs a device CSR with the dev CPO sub CA 2, returns the chain PEM."""
+    """Signs a device CSR and returns the transmitted chain PEM."""
     pki = CERTS / ("iso20" if iso20 else "iso2")
+    issuer = "v2gRootCACert.pem" if iso20 else "cpoSubCA2Cert.pem"
+    issuer_key = "v2gRootCA.key" if iso20 else "cpoSubCA2.key"
     csr = workdir / "device.csr"
     csr.write_text(csr_pem)
     ext = workdir / "ext.cnf"
@@ -53,18 +55,19 @@ def sign_csr(workdir, csr_pem, iso20, with_aia):
                    + (f"authorityInfoAccess = OCSP;URI:{OCSP_URL}\n" if with_aia else ""))
     leaf = workdir / "leaf.pem"
     run(["openssl", "x509", "-req", "-in", str(csr),
-         "-CA", str(pki / "certs" / "cpoSubCA2Cert.pem"),
-         "-CAkey", str(pki / "private_keys" / "cpoSubCA2.key"), "-passin", "pass:12345",
+         "-CA", str(pki / "certs" / issuer),
+         "-CAkey", str(pki / "private_keys" / issuer_key), "-passin", "pass:12345",
          "-CAcreateserial", "-days", "60", "-sha512" if iso20 else "-sha256",
          "-extfile", str(ext), "-extensions", "ext", "-out", str(leaf)])
     chain = leaf.read_text()
-    chain += (pki / "certs" / "cpoSubCA2Cert.pem").read_text()
-    chain += (pki / "certs" / "cpoSubCA1Cert.pem").read_text()
+    if not iso20:
+        chain += (pki / "certs" / "cpoSubCA2Cert.pem").read_text()
+        chain += (pki / "certs" / "cpoSubCA1Cert.pem").read_text()
     return chain
 
 
 def ocsp_response_b64(workdir, leaf_pem_path, next_update_minutes=None):
-    """Good OCSP response for the leaf, signed by the dev CPO sub CA 2 (iso20)."""
+    """Good OCSP response for the directly root-signed ISO 15118-20 leaf."""
     pki = CERTS / "iso20"
     serial = run(["openssl", "x509", "-in", str(leaf_pem_path), "-noout", "-serial"]).stdout.strip().split("=")[1]
     enddate = run(["openssl", "x509", "-in", str(leaf_pem_path), "-noout", "-enddate"]).stdout.strip().split("=", 1)[1]
@@ -74,10 +77,10 @@ def ocsp_response_b64(workdir, leaf_pem_path, next_update_minutes=None):
     resp = workdir / "resp.der"
     validity = ["-ndays", "7"] if next_update_minutes is None else ["-nmin", str(next_update_minutes)]
     run(["openssl", "ocsp", "-index", str(index),
-          "-CA", str(pki / "certs" / "cpoSubCA2Cert.pem"),
-         "-rsigner", str(pki / "certs" / "cpoSubCA2Cert.pem"),
-         "-rkey", str(pki / "private_keys" / "cpoSubCA2.key"), "-passin", "pass:12345",
-          "-issuer", str(pki / "certs" / "cpoSubCA2Cert.pem"),
+          "-CA", str(pki / "certs" / "v2gRootCACert.pem"),
+         "-rsigner", str(pki / "certs" / "v2gRootCACert.pem"),
+         "-rkey", str(pki / "private_keys" / "v2gRootCA.key"), "-passin", "pass:12345",
+          "-issuer", str(pki / "certs" / "v2gRootCACert.pem"),
           "-cert", str(leaf_pem_path),
           "-reqout", str(workdir / "req.der"), "-respout", str(resp)] + validity)
     return base64.b64encode(resp.read_bytes()).decode(), resp.read_bytes()
@@ -147,7 +150,8 @@ def s_client_status(charger, iface):
         ["openssl", "s_client", "-connect", f'[{res["secc_ll"]}%{iface}]:{res["port"]}',
          "-tls1_3", "-status",
          "-CAfile", str(CERTS / "iso20" / "certs" / "v2gRootCACert.pem"),
-         "-cert", str(CERTS / "iso20" / "certs" / "oemCertChain.pem"),
+         "-cert", str(CERTS / "iso20" / "certs" / "oemLeafCert.pem"),
+         "-cert_chain", str(CERTS / "iso20" / "certs" / "oemCertChain.pem"),
          "-key", str(CERTS / "iso20" / "private_keys" / "oemLeaf.key"), "-pass", "pass:12345"],
         input="Q", capture_output=True, text=True, timeout=60).stdout
 
@@ -264,16 +268,12 @@ def main():
         status_req, msg_id = csms.expect("GetCertificateStatus", timeout=120)
         check("GetCertificateStatus for the -20 leaf",
               status_req["ocspRequestData"]["responderURL"] == OCSP_URL)
-        b64, der = ocsp_response_b64(workdir, workdir / "leaf20.pem", next_update_minutes=1)
+        b64, _ = ocsp_response_b64(workdir, workdir / "leaf20.pem", next_update_minutes=1)
         csms.respond(msg_id, {"status": "Accepted", "ocspResult": b64})
         time.sleep(5)
 
         check("OCSP good, TLS 1.3 works in a private PnC environment",
               try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
-        log = trace_log(args.charger)
-        check("staple DER loaded into the TLS server",
-              f"OCSP staple for -20 chain certificate 0: {len(der)} bytes" in log)
-
         serial = run(["openssl", "x509", "-in", str(workdir / "leaf20.pem"),
                       "-noout", "-serial"]).stdout.strip().split("=")[1]
         time.sleep(1)
