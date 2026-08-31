@@ -153,6 +153,11 @@ extern "C" int mbedtls_ssl_tls13_ocsp_response_cb(mbedtls_ssl_context *ssl, size
     return 0;
 }
 
+extern "C" int mbedtls_ssl_tls13_certificate_authorities_cb(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
+{
+    return s_isotls_instance == nullptr ? -1 : s_isotls_instance->select_iso20_certificate_authority(ssl, data, data_len);
+}
+
 extern "C" int mbedtls_ssl_tls12_trusted_ca_keys_cb(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len)
 {
     return s_isotls_instance == nullptr ? -1 : s_isotls_instance->select_iso2_trusted_ca(ssl, data, data_len);
@@ -228,6 +233,154 @@ static uint8_t *copy_pem(const char *pem, size_t *len_out)
         *len_out = len;
     }
     return buf;
+}
+
+static constexpr size_t X509_NAME_ATTRIBUTE_MAX = 16;
+
+struct x509_name_attribute_t {
+    mbedtls_asn1_buf oid = {};
+    mbedtls_asn1_buf value = {};
+    bool continues_rdn = false;
+};
+
+static bool parse_x509_name(const unsigned char *der, size_t der_len, x509_name_attribute_t *attributes, size_t *attribute_count)
+{
+    if (der == nullptr) {
+        return false;
+    }
+    unsigned char *p = const_cast<unsigned char *>(der);
+    const unsigned char *end = der + der_len;
+    size_t sequence_len = 0;
+    size_t count = 0;
+
+    if ((mbedtls_asn1_get_tag(&p, end, &sequence_len, MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE) != 0) || (sequence_len != static_cast<size_t>(end - p))) {
+        return false;
+    }
+
+    while (p < end) {
+        size_t set_len = 0;
+        if ((mbedtls_asn1_get_tag(&p, end, &set_len, MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SET) != 0) || (set_len == 0) || (set_len > static_cast<size_t>(end - p))) {
+            return false;
+        }
+        const unsigned char *set_end = p + set_len;
+
+        while (p < set_end) {
+            if (count >= X509_NAME_ATTRIBUTE_MAX) {
+                return false;
+            }
+            size_t attribute_len = 0;
+            if ((mbedtls_asn1_get_tag(&p, set_end, &attribute_len, MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE) != 0) ||
+                (attribute_len == 0) || (attribute_len > static_cast<size_t>(set_end - p))) {
+                return false;
+            }
+            const unsigned char *attribute_end = p + attribute_len;
+            x509_name_attribute_t &attribute = attributes[count];
+            if (mbedtls_asn1_get_tag(&p, attribute_end, &attribute.oid.len, MBEDTLS_ASN1_OID) != 0) {
+                return false;
+            }
+            attribute.oid.tag = MBEDTLS_ASN1_OID;
+            attribute.oid.p = p;
+            p += attribute.oid.len;
+            if (p >= attribute_end) {
+                return false;
+            }
+            attribute.value.tag = *p++;
+            if ((mbedtls_asn1_get_len(&p, attribute_end, &attribute.value.len) != 0) || (attribute.value.len > static_cast<size_t>(attribute_end - p))) {
+                return false;
+            }
+            attribute.value.p = p;
+            p += attribute.value.len;
+            if (p != attribute_end) {
+                return false;
+            }
+            attribute.continues_rdn = p < set_end;
+            ++count;
+        }
+    }
+
+    *attribute_count = count;
+    return count > 0;
+}
+
+static unsigned char ascii_lower(unsigned char value)
+{
+    return value >= 'A' && value <= 'Z' ? value + ('a' - 'A') : value;
+}
+
+static bool normalized_directory_string_byte(const mbedtls_asn1_buf &value, size_t *offset, unsigned char *result)
+{
+    size_t end = value.len;
+    while (end > 0 && value.p[end - 1] == ' ') {
+        --end;
+    }
+    while (*offset < end && value.p[*offset] == ' ') {
+        ++*offset;
+    }
+    if (*offset >= end) {
+        return false;
+    }
+
+    *result = ascii_lower(value.p[(*offset)++]);
+    if (*result == ' ') {
+        while (*offset < end && value.p[*offset] == ' ') {
+            ++*offset;
+        }
+    }
+    return true;
+}
+
+static bool x509_name_value_equal(const mbedtls_asn1_buf &a, const mbedtls_asn1_buf &b)
+{
+    if (a.tag == b.tag && a.len == b.len && memcmp(a.p, b.p, a.len) == 0) {
+        return true;
+    }
+    const bool a_directory_string = (a.tag == MBEDTLS_ASN1_UTF8_STRING) || (a.tag == MBEDTLS_ASN1_PRINTABLE_STRING);
+    const bool b_directory_string = (b.tag == MBEDTLS_ASN1_UTF8_STRING) || (b.tag == MBEDTLS_ASN1_PRINTABLE_STRING);
+    if (!a_directory_string || !b_directory_string) {
+        return false;
+    }
+
+    size_t a_offset = 0;
+    size_t b_offset = 0;
+    unsigned char a_byte = 0;
+    unsigned char b_byte = 0;
+    while (true) {
+        const bool a_available = normalized_directory_string_byte(a, &a_offset, &a_byte);
+        const bool b_available = normalized_directory_string_byte(b, &b_offset, &b_byte);
+        if (a_available != b_available) {
+            return false;
+        }
+        if (!a_available) {
+            return true;
+        }
+        if (a_byte != b_byte) {
+            return false;
+        }
+    }
+}
+
+// RFC 5280 7.1 name comparison for [V2G20-2379] / AMD1 [V2G20-3376].
+// Unsupported string equivalences are rejected conservatively.
+static bool x509_name_equal(const unsigned char *a_der, size_t a_len, const unsigned char *b_der, size_t b_len)
+{
+    x509_name_attribute_t a[X509_NAME_ATTRIBUTE_MAX];
+    x509_name_attribute_t b[X509_NAME_ATTRIBUTE_MAX];
+    size_t a_count = 0;
+    size_t b_count = 0;
+    if (!parse_x509_name(a_der, a_len, a, &a_count) ||
+        !parse_x509_name(b_der, b_len, b, &b_count) || (a_count != b_count)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < a_count; ++i) {
+        if (a[i].oid.len != b[i].oid.len ||
+            memcmp(a[i].oid.p, b[i].oid.p, a[i].oid.len) != 0 ||
+            a[i].continues_rdn != b[i].continues_rdn ||
+            !x509_name_value_equal(a[i].value, b[i].value)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // Extracts the RFC 6066 subjectPublicKey value from a complete SubjectPublicKeyInfo.
@@ -422,9 +575,13 @@ bool ISOTLS::load_certificates()
 
             iso20_candidate_t &candidate = iso20_candidates[iso20_candidate_count];
             candidate.chain_id = chains[i].chain_id;
+            if (chains[i].root_pem == nullptr) {
+                continue;
+            }
             candidate.cert_chain_pem = copy_pem(chains[i].chain_pem.get(), &candidate.cert_chain_pem_len);
             candidate.private_key_pem = copy_pem(chains[i].key_pem.get(), &candidate.private_key_pem_len);
-            if (candidate.cert_chain_pem == nullptr || candidate.private_key_pem == nullptr) {
+            candidate.root_pem = copy_pem(chains[i].root_pem.get(), &candidate.root_pem_len);
+            if ((candidate.cert_chain_pem == nullptr) || (candidate.private_key_pem == nullptr) || (candidate.root_pem == nullptr)) {
                 free_iso20_candidate(iso20_candidate_count);
                 continue;
             }
@@ -483,7 +640,8 @@ bool ISOTLS::load_certificates()
         iso20_candidate_t &candidate = iso20_candidates[0];
         candidate.cert_chain_pem = copy_pem(fallback_chain_iso20, &candidate.cert_chain_pem_len);
         candidate.private_key_pem = copy_pem(fallback_key_iso20, &candidate.private_key_pem_len);
-        if (candidate.cert_chain_pem != nullptr && candidate.private_key_pem != nullptr) {
+        candidate.root_pem = copy_pem(fallback_v2g_roots, &candidate.root_pem_len);
+        if ((candidate.cert_chain_pem != nullptr) && (candidate.private_key_pem != nullptr) && (candidate.root_pem != nullptr)) {
             iso20_candidate_count = 1;
             iso20_allowed = true;
         } else {
@@ -623,11 +781,16 @@ void ISOTLS::free_iso20_candidate(size_t index)
         mbedtls_pk_free(candidate.private_key);
         free_any(candidate.private_key);
     }
+    if (candidate.root != nullptr) {
+        mbedtls_x509_crt_free(candidate.root);
+        free_any(candidate.root);
+    }
     free_any(candidate.cert_chain_pem);
     if (candidate.private_key_pem != nullptr) {
         mbedtls_platform_zeroize(candidate.private_key_pem, candidate.private_key_pem_len);
     }
     free_any(candidate.private_key_pem);
+    free_any(candidate.root_pem);
     for (size_t i = 0; i < OCSP_STAPLE_MAX; ++i) {
         free_any(candidate.staple_der[i]);
     }
@@ -642,18 +805,25 @@ bool ISOTLS::parse_iso20_candidates()
         iso20_candidate_t &candidate = iso20_candidates[i];
         candidate.cert_chain = static_cast<mbedtls_x509_crt *>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
         candidate.private_key = static_cast<mbedtls_pk_context *>(calloc_psram_or_dram(1, sizeof(mbedtls_pk_context)));
+        candidate.root = static_cast<mbedtls_x509_crt *>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
         if (candidate.cert_chain != nullptr) {
             mbedtls_x509_crt_init(candidate.cert_chain);
         }
         if (candidate.private_key != nullptr) {
             mbedtls_pk_init(candidate.private_key);
         }
-        if (candidate.cert_chain == nullptr || candidate.private_key == nullptr) {
+        if (candidate.root != nullptr) {
+            mbedtls_x509_crt_init(candidate.root);
+        }
+        if (candidate.cert_chain == nullptr || candidate.private_key == nullptr || candidate.root == nullptr) {
             free_iso20_candidate(i);
             continue;
         }
 
         int ret = mbedtls_x509_crt_parse(candidate.cert_chain, candidate.cert_chain_pem, candidate.cert_chain_pem_len);
+        if (ret == 0) {
+            ret = mbedtls_x509_crt_parse(candidate.root, candidate.root_pem, candidate.root_pem_len);
+        }
         if (ret == 0) {
             ret = mbedtls_pk_parse_key(candidate.private_key, candidate.private_key_pem, candidate.private_key_pem_len,
                                        nullptr, 0, mbedtls_ctr_drbg_random, ctr_drbg);
@@ -984,6 +1154,9 @@ void ISOTLS::cleanup()
     }
     iso2_candidate_count = 0;
     selected_iso2_candidate = 0;
+    selected_iso20_candidate = 0;
+    iso20_certificate_authorities_seen = false;
+    iso20_certificate_authority_matched = false;
     iso2_store_live = false;
     iso2_status_v2_requested = false;
 
@@ -1116,6 +1289,9 @@ bool ISOTLS::start_session(int fd)
     ticket_psk_accepted = false;
     resumed_session = false;
     selected_iso2_candidate = 0;
+    selected_iso20_candidate = 0;
+    iso20_certificate_authorities_seen = false;
+    iso20_certificate_authority_matched = false;
     iso2_status_v2_requested = false;
 
     iso15118.trace("ISOTLS: Starting TLS session on socket %d", fd);
@@ -1625,8 +1801,13 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
 
     if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && iso20_allowed && iso20_candidate_count > 0) {
+        if (selected_iso20_candidate >= iso20_candidate_count) {
+            selected_iso20_candidate = 0;
+        }
         mbedtls_ssl_set_hs_own_cert(ssl_ctx, nullptr, nullptr);
-        for (size_t i = 0; i < iso20_candidate_count; ++i) {
+        const size_t first = iso20_certificate_authority_matched ? selected_iso20_candidate : 0;
+        const size_t end = iso20_certificate_authority_matched ? selected_iso20_candidate + 1 : iso20_candidate_count;
+        for (size_t i = first; i < end; ++i) {
             iso20_candidate_t &candidate = iso20_candidates[i];
             int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, candidate.cert_chain, candidate.private_key);
             if (ret != 0) {
@@ -1634,7 +1815,9 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
                 return ret;
             }
         }
-        iso15118.trace("ISOTLS: cert_cb: TLS 1.3 negotiated, offering %zu ISO 15118-20 certificate candidate(s)", iso20_candidate_count);
+        iso15118.trace("ISOTLS: cert_cb: TLS 1.3 offering ISO20 candidate range [%zu, %zu), certificate_authorities %s",
+                       first, end, !iso20_certificate_authorities_seen ? "absent" :
+                       (iso20_certificate_authority_matched ? "matched" : "unmatched fallback"));
 
         // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
         // Enable mutual authentication for TLS 1.3 (ISO 15118-20) if enabled
@@ -1695,6 +1878,54 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
     iso15118.trace("ISOTLS: cert_cb: No matching certificate available for TLS version 0x%04x",
                     static_cast<unsigned>(ver));
     return -1;
+}
+
+int ISOTLS::select_iso20_certificate_authority(mbedtls_ssl_context *ssl_ctx, const unsigned char *data, size_t data_len)
+{
+    selected_iso20_candidate = 0;
+    iso20_certificate_authorities_seen = data != nullptr;
+    iso20_certificate_authority_matched = false;
+    if (ssl_ctx != ssl || iso20_candidate_count == 0) {
+        return -1;
+    }
+    if (data == nullptr) {
+        return 0;
+    }
+    if (data_len < 5) {
+        return -1;
+    }
+
+    const size_t list_len = (static_cast<size_t>(data[0]) << 8) | data[1];
+    if (list_len != data_len - 2) {
+        return -1;
+    }
+
+    // Candidates are already ordered freshest first. Select the freshest
+    // candidate whose anchoring root DN occurs anywhere in the EVCC list.
+    for (size_t candidate_idx = 0; candidate_idx < iso20_candidate_count; ++candidate_idx) {
+        const iso20_candidate_t &candidate = iso20_candidates[candidate_idx];
+        if (candidate.root == nullptr) {
+            continue;
+        }
+
+        const unsigned char *p = data + 2;
+        const unsigned char *end = data + data_len;
+        while (p < end) {
+            const size_t dn_len = (static_cast<size_t>(p[0]) << 8) | p[1];
+            p += 2;
+            if (x509_name_equal(candidate.root->subject_raw.p, candidate.root->subject_raw.len, p, dn_len)) {
+                selected_iso20_candidate = candidate_idx;
+                iso20_certificate_authority_matched = true;
+                iso15118.trace("ISOTLS: ClientHello certificate_authorities selected ISO20 candidate %zu (chain ID %u)",
+                               candidate_idx, static_cast<unsigned>(candidate.chain_id));
+                return 0;
+            }
+            p += dn_len;
+        }
+    }
+
+    iso15118.trace("ISOTLS: No ClientHello certificate_authorities match, retaining ISO20 fallback candidate 0 [V2G20-2399]");
+    return 0;
 }
 
 int ISOTLS::select_iso2_trusted_ca(mbedtls_ssl_context *ssl_ctx, const unsigned char *data, size_t data_len)

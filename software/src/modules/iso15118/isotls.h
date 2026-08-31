@@ -146,6 +146,7 @@ public:
     // Returns 0 on success, non-zero on failure.
     int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
 
+    int select_iso20_certificate_authority(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
     int select_iso2_trusted_ca(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
     int accept_iso2_status_request_v2(mbedtls_ssl_context *ssl, const unsigned char *data, size_t data_len);
     int iso2_status_request_v2_available(mbedtls_ssl_context *ssl) const;
@@ -249,22 +250,30 @@ private:
     bool iso2_store_live = false;
     bool iso2_status_v2_requested = false;
 
-    // ISO 15118-20 certificates, one candidate per installed signature suite.
+    // ISO 15118-20 certificates and their anchoring roots. The roots are used
+    // only for ClientHello certificate_authorities selection [V2G20-2379/3376]
+    // and are never included in the transmitted chain [V2G20-2399].
     static constexpr size_t ISO20_CANDIDATE_MAX = 4;
     static constexpr size_t OCSP_STAPLE_MAX = 4;
     struct iso20_candidate_t {
         uint32_t chain_id = 0;
         mbedtls_x509_crt *cert_chain = nullptr;
         mbedtls_pk_context *private_key = nullptr;
+        mbedtls_x509_crt *root = nullptr;
         uint8_t *cert_chain_pem = nullptr;
         size_t cert_chain_pem_len = 0;
         uint8_t *private_key_pem = nullptr;
         size_t private_key_pem_len = 0;
+        uint8_t *root_pem = nullptr;
+        size_t root_pem_len = 0;
         uint8_t *staple_der[OCSP_STAPLE_MAX] = {};
         size_t staple_der_len[OCSP_STAPLE_MAX] = {};
     };
     iso20_candidate_t iso20_candidates[ISO20_CANDIDATE_MAX];
     size_t iso20_candidate_count = 0;
+    size_t selected_iso20_candidate = 0;
+    bool iso20_certificate_authorities_seen = false;
+    bool iso20_certificate_authority_matched = false;
 
     // Trusted root CA certificates for mutual TLS authentication (ISO 15118-20)
     // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
