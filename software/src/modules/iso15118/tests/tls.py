@@ -59,6 +59,12 @@ CASES = {
         False,
         ["-tls1_3", "-ciphersuites", "TLS_AES_128_GCM_SHA256"],
     ),
+    "tls13_max_fragment_length_512": (
+        True,
+        ["-tls1_3", "-maxfraglen", "512", "-tlsextdebug"],
+        None,
+        "TLS server extension \"max fragment length\" (id=1), len=1",
+    ),
     "tls12_p256_ecdhe_ecdsa": (
         True,
         [
@@ -102,7 +108,7 @@ def suite_teardown(tc: TestContext):
         environment.stop()
 
 
-def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None):
+def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None, expected_output=None):
     assert environment is not None
     response = sdp_request(environment.iface, expected_from=environment.secc_ll)
     tc.assert_(response is not None)
@@ -137,6 +143,8 @@ def probe(tc: TestContext, expect_success: bool, arguments, expected_cipher=None
         tc.assert_(succeeded)
         if expected_cipher is not None:
             tc.assert_search(rf"Cipher is {expected_cipher}\b", output)
+        if expected_output is not None:
+            tc.assert_(expected_output in output)
         if "-tls1_3" in arguments:
             # V2G20-2401/2403: all V2G/OEM roots, with C/O/OU/CN/serial
             # in that exact order. The dev roots also prove empty OU handling.
