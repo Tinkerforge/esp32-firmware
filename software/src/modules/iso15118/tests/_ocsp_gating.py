@@ -49,6 +49,7 @@ CERTS = SCRIPT_DIR / ".." / "tools" / "certs" / "output"
 OCSP_URL = "http://ocsp.test.example/"
 TLS_STATUS_REQUEST = 5
 TLS_STATUS_REQUEST_V2 = 17
+TLS_EARLY_DATA = 42
 NEXT_UPDATE_OFFSET_S = 120
 SEVEN_DAYS_S = 7 * 24 * 60 * 60
 PRE_CAP_OFFSET_S = NEXT_UPDATE_OFFSET_S + SEVEN_DAYS_S - 120
@@ -481,7 +482,8 @@ def status_request_v2():
     return struct.pack("!H", len(item)) + item
 
 
-def raw_tls13_client_hello(private_key, request_status=True, request_status_v2=False):
+def raw_tls13_client_hello(private_key, request_status=True,
+                           request_status_v2=False, request_early_data=False):
     public_key = private_key.public_key().public_bytes(
         serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
     key_share = b"\x00\x19" + struct.pack("!H", len(public_key)) + public_key
@@ -495,6 +497,8 @@ def raw_tls13_client_hello(private_key, request_status=True, request_status_v2=F
         extensions.append(tls_extension(TLS_STATUS_REQUEST, b"\x01\x00\x00\x00\x00"))
     if request_status_v2:
         extensions.append(tls_extension(TLS_STATUS_REQUEST_V2, status_request_v2()))
+    if request_early_data:
+        extensions.append(tls_extension(TLS_EARLY_DATA, b""))
     extension_block = b"".join(extensions)
     session_id = os.urandom(32)
     body = (b"\x03\x03" + os.urandom(32)
@@ -504,9 +508,11 @@ def raw_tls13_client_hello(private_key, request_status=True, request_status_v2=F
     return b"\x01" + len(body).to_bytes(3, "big") + body
 
 
-def capture_tls13_server_flight(charger, iface, request_status=True, request_status_v2=False):
+def capture_tls13_server_flight(charger, iface, request_status=True,
+                                request_status_v2=False, request_early_data=False):
     private_key = ec.generate_private_key(ec.SECP521R1())
-    client_hello = raw_tls13_client_hello(private_key, request_status, request_status_v2)
+    client_hello = raw_tls13_client_hello(
+        private_key, request_status, request_status_v2, request_early_data)
     sock = common.connect_secc(charger, iface)
     try:
         sock.settimeout(30)

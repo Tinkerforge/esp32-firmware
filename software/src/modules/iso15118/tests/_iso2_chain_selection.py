@@ -311,7 +311,8 @@ def status_request_v2() -> bytes:
     return struct.pack("!H", len(item)) + item
 
 
-def client_hello(trusted: bytes | None, request_status_v2: bool) -> bytes:
+def client_hello(trusted: bytes | None, request_status_v2: bool,
+                 compression_methods: bytes = b"\x00") -> bytes:
     extensions = [
         extension(10, b"\x00\x02\x00\x17"),  # supported_groups: secp256r1
         extension(11, b"\x01\x00"),          # ec_point_formats: uncompressed
@@ -327,7 +328,7 @@ def client_hello(trusted: bytes | None, request_status_v2: bool) -> bytes:
     body = (
         b"\x03\x03" + os.urandom(32) + b"\x00"
         + b"\x00\x02" + struct.pack("!H", TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)
-        + b"\x01\x00"
+        + bytes([len(compression_methods)]) + compression_methods
         + struct.pack("!H", len(extension_block)) + extension_block
     )
     handshake = b"\x01" + u24(len(body)) + body
@@ -433,11 +434,12 @@ def receive_server_flight(sock) -> ServerFlight:
 
 
 def probe(charger: str, iface: str, trusted: bytes | None = None,
-          request_status_v2: bool = False) -> ServerFlight:
+          request_status_v2: bool = False,
+          compression_methods: bytes = b"\x00") -> ServerFlight:
     sock = common.connect_secc(charger, iface)
     try:
         sock.settimeout(30)
-        sock.sendall(client_hello(trusted, request_status_v2))
+        sock.sendall(client_hello(trusted, request_status_v2, compression_methods))
         return receive_server_flight(sock)
     finally:
         sock.close()

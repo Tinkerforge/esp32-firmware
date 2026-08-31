@@ -49,6 +49,25 @@ def test_iso2_selected_after_tls12(tc: TestContext):
     tc.assert_eq(1, result["SchemaID"])
 
 
+def test_iso2_selected_after_tls13(tc: TestContext):
+    assert environment is not None
+    assert client is not None
+    saved_ocpp = tc.api("ocpp/config")
+    disabled = dict(saved_ocpp)
+    disabled["enable"] = False
+    try:
+        tc.api("ocpp/config_update", disabled, timeout=5)
+        time.sleep(1)
+        environment.reset_session()
+        with managed_socket(client.connect_tls(client.tls13_context())) as tls:
+            tc.assert_eq("TLSv1.3", tls.version())
+            result = client.sap(tls, [ISO2])
+        tc.assert_eq("OK_SuccessfulNegotiation", result["ResponseCode"])
+        tc.assert_eq(1, result["SchemaID"])
+    finally:
+        tc.api("ocpp/config_update", saved_ocpp, timeout=15)
+
+
 def test_unknown_iso20_major_ignored(tc: TestContext):
     iso20_major2 = dict(ISO20_AC, VersionNumberMajor=2, SchemaID=3)
     result = sap([iso20_major2, ISO2])
