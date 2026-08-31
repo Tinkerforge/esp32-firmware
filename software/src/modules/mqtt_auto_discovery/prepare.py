@@ -563,8 +563,7 @@ entities = [
         name_en="Start charging",
         availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
-            "payload_press": "null",  # for Home Assistant
-            "payload_on": "null",  # for Domoticz
+            "payload_press": "null",
             "icon": "mdi:flash",
         },
         static_info_homeassistant={},
@@ -579,8 +578,7 @@ entities = [
         name_en="Stop charging",
         availability=[MQTT_NOT_READ_ONLY],
         static_info_generic={
-            "payload_press": "null",  # for Home Assistant
-            "payload_on": "null",  # for Domoticz
+            "payload_press": "null",
             "icon": "mdi:flash-off",
         },
         static_info_homeassistant={},
