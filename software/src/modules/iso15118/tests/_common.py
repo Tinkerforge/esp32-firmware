@@ -336,6 +336,7 @@ class CSMSSim:
         self.authorization = None
         self.current_time_offset_s = 0
         self.ws = None
+        self.connection_count = 0
         self.tls_connections = []
         self._connections_condition = threading.Condition()
         if ssl_context is not None and certfile is not None:
@@ -370,6 +371,9 @@ class CSMSSim:
         from websockets.exceptions import ConnectionClosed
 
         self.ws = ws
+        with self._connections_condition:
+            self.connection_count += 1
+            self._connections_condition.notify_all()
         if isinstance(ws.socket, ssl.SSLSocket):
             observation = {
                 "version": ws.socket.version(),
@@ -443,6 +447,15 @@ class CSMSSim:
                     raise TimeoutError("No new TLS connection")
                 self._connections_condition.wait(remaining)
             return self.tls_connections[after]
+
+    def wait_for_connection(self, after: int = 0, timeout: float = 60):
+        deadline = time.monotonic() + timeout
+        with self._connections_condition:
+            while self.connection_count <= after:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("No new connection")
+                self._connections_condition.wait(remaining)
 
     def expect_any(self, actions, timeout: float = 60):
         deadline = time.monotonic() + timeout
