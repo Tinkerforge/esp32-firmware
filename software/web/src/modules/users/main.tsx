@@ -1023,7 +1023,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                             //#endif
                                             //#if MODULE_EV_AVAILABLE
                                             evConfig={state.editUserEvs}
-                                            onEvConfig={(cfg) => {console.log(cfg); this.setState({editUserEvs: cfg});}}
+                                            onEvConfig={(cfg) => this.setState({editUserEvs: cfg})}
                                             //#endif
                                             onUserChange={(changes) =>
                                                 this.setState({
@@ -1143,7 +1143,7 @@ export class Users extends ConfigComponent<"users/config", {}, UsersState> {
                                     //#endif
                                     //#if MODULE_EV_AVAILABLE
                                     evConfig={state.editUserEvs}
-                                    onEvConfig={(cfg) => {console.log(cfg); this.setState({editUserEvs: cfg});}}
+                                    onEvConfig={(cfg) => this.setState({editUserEvs: cfg})}
                                     //#endif
                                     onUserChange={(changes) =>
                                         this.setState({
