@@ -182,6 +182,7 @@ private:
     bool parse_iso20_candidates();
     void free_iso20_candidate(size_t index);
     bool build_iso20_certificate_authorities();
+    bool configure_ssl_policy();
     bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();
@@ -249,7 +250,7 @@ private:
     iso2_candidate_t iso2_candidates[ISO2_CANDIDATE_MAX];
     size_t iso2_candidate_count = 0;
     size_t selected_iso2_candidate = 0;
-    bool iso2_store_live = false;
+    bool certificate_store_live = false;
     bool iso2_status_v2_requested = false;
 
     // ISO 15118-20 certificates and their anchoring roots. The roots are used
