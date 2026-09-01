@@ -401,7 +401,7 @@ function NfcTagsSection({
                                                 error={error}
                                                 onClick={() => setEditTag({...editTag, tag_id: t.tag_id, tag_type: t.tag_type})}
                                             >
-                                                <div class="pr-2 mb-2">
+                                                <div class="pr-2">
                                                     <div>
                                                         {t.is_this_device ?
                                                             __("users.content.nfc_smartphone_this_device") :
