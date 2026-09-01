@@ -374,7 +374,7 @@ function NfcTagsSection({
                     __("users.content.nfc_tag_type"),
                     __("users.content.nfc_last_seen"),
                 ]}
-                nestingDepth={2}
+                nestingDepth={1}
                 rows={getRows()}
                 tableTill="md"
                 addEnabled={nfcConfig.length < MAX_TAGS}
@@ -524,7 +524,7 @@ function EvsSection({
                     __("users.content.ev_name"),
                     __("users.content.ev_mac"),
                 ]}
-                nestingDepth={2}
+                nestingDepth={1}
                 rows={getRows()}
                 tableTill="md"
                 addEnabled={true}
