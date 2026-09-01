@@ -913,19 +913,21 @@ class Stage3:
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
 
-    def test_zline_zloop_and_uc(self, phase, report):
+    def test_zline(self, phase, report):
         key = f'zline_{phase}'
         report[key] = blackbox.bb_measure_zline()._asdict()
 
         if not report[key]['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
 
+    def test_zloop(self, phase, report):
         key = f'zloop_{phase}'
         report[key] = blackbox.bb_measure_zloop()._asdict()
 
         if not report[key]['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
 
+    def test_uc(self, phase, report):
         key = f'uc_{phase}'
         report[key] = blackbox.bb_measure_uc()._asdict()
 
@@ -1151,10 +1153,24 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 03: test Z line, Z loop and Uc L1
-        print('Electrical test Z line, Z loop and Uc L1')
+        # step 03a: test Z line L1
+        print('Electrical test Z line L1')
 
-        self.test_zline_zloop_and_uc('L1', report)
+        self.test_zline('L1', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 03b: test Z loop L1
+        print('Electrical test Z loop L1')
+
+        self.test_zloop('L1', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 03c: test Uc L1
+        print('Electrical test Uc L1')
+
+        self.test_uc('L1', report)
 
         self.verify_evse_not_crashed()
 
@@ -1171,10 +1187,24 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 05: test Z line, Z loop and Uc L2
-        print('Electrical test Z line, Z loop and Uc L2')
+        # step 05a: test Z line L2
+        print('Electrical test Z line L2')
 
-        self.test_zline_zloop_and_uc('L2', report)
+        self.test_zline('L2', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 05b: test Z loop L2
+        print('Electrical test Z loop L2')
+
+        self.test_zloop('L2', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 05c: test Uc L2
+        print('Electrical test Uc L2')
+
+        self.test_uc('L2', report)
 
         self.verify_evse_not_crashed()
 
@@ -1191,10 +1221,24 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 07: test Z line, Z loop and Uc L3
-        print('Electrical test Z line, Z loop and Uc L3')
+        # step 07a: test Z line L3
+        print('Electrical test Z line L3')
 
-        self.test_zline_zloop_and_uc('L3', report)
+        self.test_zline('L3', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 07b: test Z loop L3
+        print('Electrical test Z loop L3')
+
+        self.test_zloop('L3', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 07c: test Uc L3
+        print('Electrical test Uc L3')
+
+        self.test_uc('L3', report)
 
         self.verify_evse_not_crashed()
 
