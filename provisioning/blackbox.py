@@ -254,8 +254,21 @@ def bb_measure_voltage():
     return bb_start_test('2; P230 = 1-phase; P434 = -; P231 = %; P232 = 230 V; P435 = -; P242 = TN/TT; P436 = 3 s')
 
 
+# the Z auto test is used with low test current to not trip the DC protect module, but this makes the test very sensitiy to noise
 def bb_measure_zauto():
     return bb_start_test('183; P15 = 30 mA; P17 = G; P20 = A; P28 = 6 A; P29 = 0.035 s; P31 = 1; P108 = C; P236 = Low; P257 = -')
+
+
+def bb_measure_zline():
+    return bb_start_test('17; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
+
+
+def bb_measure_zloop():
+    return bb_start_test('15; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
+
+
+def bb_measure_uc():
+    return bb_start_test('11; P131 = other; P238 = MI RCD; P239 = 30 mA / 6 mA d.c.; P242 = TN/TT; P14 = EN 61008 / EN 61009')
 
 
 def bb_measure_rcdi(polarity):

@@ -913,6 +913,25 @@ class Stage3:
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
 
+    def test_zline_zloop_and_uc(self, phase, report):
+        key = f'zline_{phase}'
+        report[key] = blackbox.bb_measure_zline()._asdict()
+
+        if not report[key]['passed']:
+            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+
+        key = f'zloop_{phase}'
+        report[key] = blackbox.bb_measure_zloop()._asdict()
+
+        if not report[key]['passed']:
+            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+
+        key = f'uc_{phase}'
+        report[key] = blackbox.bb_measure_uc()._asdict()
+
+        if not report[key]['passed']:
+            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
@@ -1132,10 +1151,10 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 03: test Z auto L1
-        print('Electrical test Z auto L1')
+        # step 03: test Z line, Z loop and Uc L1
+        print('Electrical test Z line, Z loop and Uc L1')
 
-        self.test_zauto('L1', report)
+        self.test_zline_zloop_and_uc('L1', report)
 
         self.verify_evse_not_crashed()
 
@@ -1152,10 +1171,10 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 05: test Z auto L2
-        print('Electrical test Z auto L2')
+        # step 05: test Z line, Z loop and Uc L2
+        print('Electrical test Z line, Z loop and Uc L2')
 
-        self.test_zauto('L2', report)
+        self.test_zline_zloop_and_uc('L2', report)
 
         self.verify_evse_not_crashed()
 
@@ -1172,10 +1191,10 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 07: test Z auto L3
-        print('Electrical test Z auto L3')
+        # step 07: test Z line, Z loop and Uc L3
+        print('Electrical test Z line, Z loop and Uc L3')
 
-        self.test_zauto('L3', report)
+        self.test_zline_zloop_and_uc('L3', report)
 
         self.verify_evse_not_crashed()
 

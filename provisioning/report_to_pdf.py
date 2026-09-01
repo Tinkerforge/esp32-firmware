@@ -125,8 +125,10 @@ Dauer                & {tests["voltage_L1"]["parameters"]["Test_time_Voltage_INS
 \end{{tabularx}}
 
 \end{{multicols}}
+'''
 
-\vspace{{2mm}}
+    if 'zauto_L1' in tests:
+        latex += rf'''\vspace{{2mm}}
 \section*{{Messergebnis: Z auto}}
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
@@ -179,7 +181,62 @@ Abschaltzeit t   & {tests["zauto_L1"]["parameters"]["Fuse_t"].replace(".", ",")}
 \end{{tabularx}}
 
 \end{{multicols}}
+'''
+    else:
+        latex += rf'''\vspace{{2mm}}
+\section*{{Messergebnis: Z line und Z loop}}
 
+\begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
+\toprule
+                         & L1                                                                                & L2                                                                                & L3                                                                                & \\
+\midrule
+U\textsubscript{{L-N}}   & {tests["zline_L1"]["results"]["Uln_"]}                                            & {tests["zline_L2"]["results"]["Uln_"]}                                            & {tests["zline_L3"]["results"]["Uln_"]}                                            & \\
+Z\textsubscript{{L-N}}   & {tests["zline_L1"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["zline_L2"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["zline_L3"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & \\
+Z\textsubscript{{L-PE}}  & {tests["zloop_L1"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["zloop_L2"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["zloop_L3"]["results"]["Z"].replace(".", ",").replace("Ohm", r"$\Omega$")} & \\
+\midrule
+Ik\textsubscript{{L-N}}  & {tests["zline_L1"]["results"]["Isc_PSC"]}                                         & {tests["zline_L2"]["results"]["Isc_PSC"]}                                         & {tests["zline_L3"]["results"]["Isc_PSC"]}                                         & bestanden \\
+Ik\textsubscript{{L-PE}} & {tests["zloop_L1"]["results"]["Isc_PSC"]}                                         & {tests["zloop_L2"]["results"]["Isc_PSC"]}                                         & {tests["zloop_L3"]["results"]["Isc_PSC"]}                                         & bestanden \\
+Uc                       & {tests["uc_L1"]["results"]["Uc"].replace(".", ",")}                               & {tests["uc_L2"]["results"]["Uc"].replace(".", ",")}                               & {tests["uc_L3"]["results"]["Uc"].replace(".", ",")}                               & bestanden \\
+\bottomrule
+\end{{tabularx}}
+
+\vspace{{4mm}}
+\begin{{multicols}}{{2}}
+
+\subsection*{{Grenzwerte}}
+
+\begin{{tabularx}}{{0.475\textwidth}}{{l >{{\raggedleft\arraybackslash}}X}}
+\toprule
+Ia (Ik\textsubscript{{L-N}}, Ik\textsubscript{{L-PE}}) & {tests["zline_L1"]["limits"]["Fuse_Ia"]} \\
+Limit (Uc)                                             & {tests["uc_L1"]["limits"]["UC_lim"]} \\
+                                                       & \\
+                                                       & \\
+                                                       & \\
+                                                       & \\
+                                                       & \\
+                                                       & \\
+\bottomrule
+\end{{tabularx}}
+
+\subsection*{{Parameter}}
+
+\begin{{tabularx}}{{0.49\textwidth}}{{l >{{\raggedleft\arraybackslash}}X}}
+\toprule
+Sicherungstyp                & {tests["zline_L1"]["parameters"]["FuseType"]} \\
+Sicherung In                 & {tests["zline_L1"]["parameters"]["Fuse_Ir"]} \\
+Abschaltzeit t               & {tests["zline_L1"]["parameters"]["Fuse_t"].replace(".", ",")} \\
+Ik-Faktor                    & {tests["zline_L1"]["parameters"]["Isc_factor"]} \\
+RCD Bauart                   & {tests["uc_L1"]["parameters"]["RCD_use"].replace("other", "EVSE / MI")} \\
+Typ                          & {tests["uc_L1"]["parameters"]["Other_RCD_Type"]} \\
+I $\Delta$N / I $\Delta$N DC & {tests["uc_L1"]["parameters"]["IdN_IdnDC"].replace("d.c.", "DC")} \\
+RCD Prüfnorm                 & {tests["uc_L1"]["parameters"]["RCD_Standard"]} \\
+\bottomrule
+\end{{tabularx}}
+
+\end{{multicols}}
+'''
+
+    latex += rf'''
 \vspace{{{"1" if "iso15118_attenuation_profile" in report else "2"}mm}}
 \section*{{Messergebnis: RCD I}}
 
