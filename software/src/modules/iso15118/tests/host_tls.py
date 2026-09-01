@@ -1,7 +1,8 @@
 #!/usr/bin/env -S uv run --locked --group iso15118-tests --script
 
-import subprocess
 import os
+import subprocess
+import sys
 
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
@@ -25,8 +26,26 @@ def run(tc: TestContext, script: str, timeout: float, env=None):
     tc.assert_eq(0, result.returncode)
 
 
+def run_python(tc: TestContext, script: str, timeout: float):
+    tc.set_test_timeout(timeout)
+    result = subprocess.run(
+        [sys.executable, str(TEST_DIR / script)],
+        cwd=TEST_DIR,
+        capture_output=True,
+        text=True,
+        timeout=timeout - 5,
+    )
+    tc.dbg(result.stdout)
+    tc.dbg(result.stderr)
+    tc.assert_eq(0, result.returncode)
+
+
 def test_client_hello_parser(tc: TestContext):
     run(tc, "_client_hello_parser.sh", 60)
+
+
+def test_certificate_profiles(tc: TestContext):
+    run_python(tc, "_certificate_profiles.py", 60)
 
 
 def test_ocsp_stapling_patch(tc: TestContext):
