@@ -743,7 +743,49 @@ def main():
                 "certificate": (CERTS / pem / "certs" / name).read_text()})
             assert res["status"] == "Accepted", (kind, pem, res)
 
-        provision_chain(csms, workdir, iso20=False, with_aia=False)
+        request = start_v2g_certificate_csr(csms)
+        baseline = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) - timedelta(days=2))
+        baseline_result = csms.call("CertificateSigned", {
+            "certificateChain": baseline[4],
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("old same-root SECC baseline is accepted",
+              baseline_result["status"] == "Accepted", baseline_result)
+
+        # HUB20-42-002/A02.FR.15: delivery order must not replace a newer
+        # same-root SECC chain with an older one.
+        request = start_v2g_certificate_csr(csms)
+        newer = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) - timedelta(minutes=5))
+        result = csms.call("CertificateSigned", {
+            "certificateChain": newer[4],
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("newer same-root SECC chain is accepted", result["status"] == "Accepted", result)
+        newer_hash = certificate_hash_data(newer[0], newer[1])
+        _, newer_matches = installed_chain_for_leaf(csms, newer_hash)
+        check("newer same-root SECC chain is selected [A02.FR.15]", len(newer_matches) == 1)
+
+        request = start_v2g_certificate_csr(csms)
+        older = sign_iso2_csr_at(
+            request["csr"], datetime.now(timezone.utc) - timedelta(days=1))
+        result = csms.call("CertificateSigned", {
+            "certificateChain": older[4],
+            "certificateType": "V2GCertificate",
+            "requestId": request["requestId"],
+        }, timeout=90)
+        check("older same-root SECC chain is valid but accepted as redundant",
+              result["status"] == "Accepted", result)
+        older_hash = certificate_hash_data(older[0], older[1])
+        response, older_matches = installed_chain_for_leaf(csms, older_hash)
+        entries = response.get("certificateHashDataChain", [])
+        check("older redundant chain is discarded [HUB20-42-002]",
+              len(older_matches) == 0 and len(entries) == 1
+              and entries[0]["certificateHashData"] == newer_hash,
+              entries)
 
         # Exact +300/+301 boundaries run deterministically on both host crypto
         # backends. Target margins prove the same acceptance/rejection paths
