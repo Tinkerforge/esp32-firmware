@@ -24,7 +24,6 @@
 #pragma clang diagnostic ignored "-Wnoexcept-type"
 #pragma clang diagnostic ignored "-Waggregate-return"
 #pragma clang diagnostic ignored "-Wlong-long"
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
 #ifndef __cplusplus
 #pragma clang diagnostic ignored "-Woverlength-strings"
 #pragma clang diagnostic ignored "-Wsynth"
@@ -315,6 +314,8 @@ static_assert(__cplusplus == 202002L);
 #pragma GCC diagnostic error "-Wmissing-noreturn"
 #pragma GCC diagnostic error "-Wnamespaces"
 #pragma GCC diagnostic error "-Wnoexcept"
+// GCC docs say to prefer -Wdelete-non-virtual-dtor, but this is stricter and adding a virtual destructor does not hurt.
+#pragma GCC diagnostic error "-Wnon-virtual-dtor"
 #pragma GCC diagnostic error "-Wnull-dereference"
 #pragma GCC diagnostic error "-Woverloaded-virtual"
 #pragma GCC diagnostic error "-Wpacked"
@@ -450,9 +451,6 @@ static_assert(__cplusplus == 202002L);
 
 // We don't care about old GCC versions
 #pragma GCC diagnostic ignored "-Wnon-template-friend"
-
-// The -Wdelete-non-virtual-dtor option (enabled by -Wall) should be preferred because it warns about the unsafe cases without false positives.
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 
 #ifndef __cplusplus
 // We don't care about old compilers

@@ -92,6 +92,8 @@ struct ResponseRegistration {
 class IAPIBackend
 {
 public:
+    virtual ~IAPIBackend() = default;
+
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) {};
     virtual void addState(size_t stateIdx, const StateRegistration &reg) {};
     virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) {};

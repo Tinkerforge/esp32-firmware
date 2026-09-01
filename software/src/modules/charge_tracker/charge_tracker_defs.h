@@ -137,7 +137,7 @@ struct GenerationParams {
 
     size_t get_charger_display_name(uint32_t uid, char *buf) const;
 
-    ~GenerationParams() {
+    virtual ~GenerationParams() {
         free_any(display_name_cache);
         free_any(charger_display_name_cache);
     }

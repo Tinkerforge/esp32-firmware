@@ -50,6 +50,8 @@ struct ChunkedResponseResult {
 class IBaseChunkedResponse
 {
 public:
+    virtual ~IBaseChunkedResponse() = default;
+
     virtual void begin(bool success) = 0;
     virtual void end(ChunkedResponseResult error = {}) = 0;
     virtual void alive() = 0;
