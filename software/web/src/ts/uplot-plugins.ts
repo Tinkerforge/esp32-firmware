@@ -169,7 +169,11 @@ export function uPlotTimelinePlugin(options: any) {
                         return didx;
                     },
                     points: {
-                        show: false,
+                        // FIXME: don't hide the cursor points because it triggers a bug in uPlot >= 1.6.31
+                        //        while deleting a series: https://github.com/leeoniya/uPlot/issues/1004
+                        //        also it's not really necessary to hide the cursor points because a custom
+                        //        drawPaths function is used that doesn't even look at this option
+                        //show: false,
                     },
                 },
                 scales: {
