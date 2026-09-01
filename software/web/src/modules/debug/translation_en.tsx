@@ -51,11 +51,12 @@ let x = {
             "slots_last_used": "Last used",
             "slots_holes": "Holes",
 
-            "stack_hwm_header": "Stack high water marks",
+            "rtos_task_header": "RTOS task information",
             "free_stack": "Free stack",
             "used_stack": "Used stack",
             "stack_size": "Stack size",
             "priority": "Priority",
+            "core": "Core",
 
             "heap_integrity_header": "Heap integrity",
             "heap_integrity_result": "Check result",

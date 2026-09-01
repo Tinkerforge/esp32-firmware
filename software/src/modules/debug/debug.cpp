@@ -337,6 +337,7 @@ void Debug::pre_setup()
         {"hwm",        Config::Uint16(0)},
         {"stack_size", Config::Uint16(0)},
         {"prio",       Config::Uint8(0)},
+        {"core",       Config::Int8(0)},
     });
 
     state_hwm = Config::Array({},
@@ -1303,8 +1304,6 @@ void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
         return;
     }
 
-    const UBaseType_t prio = uxTaskPriorityGet(handle);
-
     const char *task_name = pcTaskGetName(handle);
     if (!task_name) {
         logger.printfln("register_task couldn't find task.");
@@ -1321,11 +1320,15 @@ void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
 
     task_handles.push_back(handle);
 
+    TaskStatus_t task_status;
+    vTaskGetInfo(handle, &task_status, 0, eReady);
+
     Config *conf = static_cast<Config *>(state_hwm.add());
     conf->get("task_name")->updateString(task_name);
     conf->get("hwm")->updateUint(uxTaskGetStackHighWaterMark(handle));
     conf->get("stack_size")->updateUint(stack_size);
-    conf->get("prio")->updateUint(static_cast<uint32_t>(prio));
+    conf->get("prio")->updateUint(static_cast<uint32_t>(task_status.uxBasePriority));
+    conf->get("core")->updateInt(task_status.xCoreID);
 }
 
 void Debug::deregister_task(const char *task_name)

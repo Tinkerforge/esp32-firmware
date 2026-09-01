@@ -29,11 +29,12 @@ let x = {
             "psram": "PSRAM",
             "himem": "HIMEM",
 
-            "stack_hwm_header": "Stack-Hochwassermarken",
+            "rtos_task_header": "RTOS-Taskinformationen",
             "free_stack": "Freier Stack",
             "used_stack": "Genutzter Stack",
             "stack_size": "Stackgröße",
             "priority": "Priorität",
+            "core": "Core",
 
             "config_buffers": "Config-Buffer",
             "conf_uint_buf": "ConfUint",
