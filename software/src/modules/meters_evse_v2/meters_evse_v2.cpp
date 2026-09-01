@@ -84,7 +84,7 @@ const Config *MetersEVSEV2::get_errors_prototype()
     return &errors_prototype;
 }
 
-void MetersEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
+void MetersEVSEV2::update_from_evse_v2_all_data(const EVSEV2MeterData *meter_data)
 {
     if (!meter_instance)
         return;

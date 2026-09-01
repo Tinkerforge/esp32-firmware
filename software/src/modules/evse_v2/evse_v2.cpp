@@ -1059,7 +1059,7 @@ void EVSEV2::publish_all_data()
     const uint8_t jumper_configuration = d.jumper_configuration;
     const bool has_lock_switch = d.has_lock_switch;
     const uint8_t evse_version = d.evse_version;
-    EVSEV2MeterData &meter_data = all_data.meter_data;
+    const EVSEV2MeterData &meter_data = d.meter_data;
 
     const uint8_t shutdown_input_configuration = d.shutdown_input_configuration;
     const uint8_t input_configuration = d.input_configuration;

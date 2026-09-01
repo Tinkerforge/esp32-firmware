@@ -41,7 +41,7 @@ void MeterEVSEV2::setup(Config *ephemeral_config)
     evse_v2.update_all_data();
 }
 
-void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
+void MeterEVSEV2::update_from_evse_v2_all_data(const EVSEV2MeterData *meter_data)
 {
     // Always update error counters, even if no meter could be detected.
     errors->get("local_timeout"       )->updateUint(meter_data->error_count[0]);
