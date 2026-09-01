@@ -313,7 +313,6 @@ public:
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
 
     uint64_t hello_wait_for_ready_timer = 0;
-    uint64_t hello_wait_for_ready_timestamp = 0; // To calculate the waiting part in messages
     uint64_t hello_send_prolongation_request_timer = 0;
     uint64_t hello_send_prolongation_reply_timer = 0;
     uint64_t hello_trust_check_timer = 0; // Timer to periodically re-check trust status while in pending state

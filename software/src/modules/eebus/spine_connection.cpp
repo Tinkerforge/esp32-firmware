@@ -76,8 +76,6 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     eebus.trace_fmtln("SPINE: Processing datagram:");
     eebus.trace_jsonln(datagram);
 #endif
-    last_received_time = millis();
-
     received_header = datagram["datagram"]["header"];
     received_payload = datagram["datagram"]["payload"]["cmd"][0];
 
@@ -122,9 +120,6 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
 #endif
 
     int msg_id = msg_counter++;
-    if (require_ack) {
-        ack_waiting[msg_id] = millis();
-    }
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
     HeaderType header{};
     header.ackRequest = require_ack;
@@ -145,6 +140,9 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
         eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");
         msg_counter--;
         return -1;
+    }
+    if (require_ack) {
+        ack_waiting[msg_id] = now_us() + 60_s;
     }
     ship_connection->send_data_message(response_doc.as<JsonVariant>());
     return msg_id;
@@ -309,12 +307,12 @@ bool SpineConnection::validate_header(HeaderType &header)
 }
 void SpineConnection::check_ack_expired()
 {
-    if (ack_waiting.empty())
-        return;
-    for (const auto &[key, value] : ack_waiting) {
-        if (millis() - value > 60000) { //30 seconds timeout
-            eebus.trace_fmtln("SPINE: WARNING: Acknowledgement for message counter %d not received within 30 seconds", key);
-            ack_waiting.erase(key);
+    for (auto it = ack_waiting.begin(); it != ack_waiting.end();) {
+        if (deadline_elapsed(it->second)) {
+            eebus.trace_fmtln("SPINE: WARNING: Acknowledgement for message counter %d not received within 60 seconds", it->first);
+            it = ack_waiting.erase(it);
+        } else {
+            ++it;
         }
     }
 }

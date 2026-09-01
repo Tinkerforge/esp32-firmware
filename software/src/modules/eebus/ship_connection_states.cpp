@@ -357,7 +357,6 @@ void ShipConnection::hello_set_wait_for_ready_timer(ShipConnectionState target)
             set_and_schedule_state(target);
         },
         SHIP_CONNECTION_SME_INIT_TIMEOUT);
-    hello_wait_for_ready_timestamp = millis();
 }
 
 void ShipConnection::hello_decide_prolongation()

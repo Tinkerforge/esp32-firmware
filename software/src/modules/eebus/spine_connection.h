@@ -26,6 +26,7 @@
 #include "ship_connection.h"
 #include "spine_types.h"
 #include <TFJson.h>
+#include <TFTools/Micros.h>
 #include <map>
 
 #define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // 8192 should be enough for a start
@@ -96,9 +97,6 @@ public:
     */
     JsonVariant response_datagram;
 
-    time_t last_received_time = 0;
-    // The last time a message was received from the peer. This is used to detect if the peer is still alive.
-
     void update_detailed_discovery_data(const NodeManagementDetailedDiscoveryDataType &data)
     {
         detailed_discovery_data_received = true;
@@ -166,8 +164,8 @@ private:
     uint16_t msg_counter_error_count = 0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
     static bool validate_header(HeaderType &header);
 
-    // <message_counter, timestamp_minutees>
-    std::map<int, unsigned long> ack_waiting{};
+    // Message counter to acknowledgement deadline.
+    std::map<int, micros_t> ack_waiting{};
     void check_ack_expired();
     uint64_t ack_check_timer = 0;
 
