@@ -30,7 +30,7 @@
 
 #include "header_logger.h"
 
-size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
+size_t strn_backtrace(char *strn, size_t remaining, unsigned skip_frames)
 {
     size_t total_written = 0;
 
@@ -94,16 +94,16 @@ size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
     return total_written;
 }
 
-void console_backtrace()
+void console_backtrace(unsigned skip_frames)
 {
     char backtrace_buf[384];
-    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
+    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), skip_frames + 1);
     puts(backtrace_buf);
 }
 
-void event_log_backtrace()
+void event_log_backtrace(unsigned skip_frames)
 {
     char backtrace_buf[224];
-    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
+    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), skip_frames + 1);
     header_printfln("[backtrace]", backtrace_buf);
 }

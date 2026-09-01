@@ -25,10 +25,10 @@ extern "C" {
 
 #include "esp_err.h"
 
-extern size_t strn_backtrace(char *strn, size_t len, size_t skip_frames);
+extern size_t strn_backtrace(char *strn, size_t len, unsigned skip_frames);
 
-extern void console_backtrace();
-extern void event_log_backtrace();
+extern void console_backtrace(unsigned skip_frames);
+extern void event_log_backtrace(unsigned skip_frames);
 
 #ifdef __cplusplus
 }
