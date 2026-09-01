@@ -30,6 +30,7 @@ METREL_PARAMETERS = {
     '231': 'Voltage_limit_type',
     '232': 'Nominal_voltage',
     '233': 'ZLoop_Test',
+    '235': 'Zline_test',
     '236': 'I_test',
     '237': 'Protection_fuse_rcd',
     '238': 'Other_RCD_Type',
@@ -40,6 +41,7 @@ METREL_PARAMETERS = {
     '250': 'Comment_2',
     '257': 'Phase_Z_Auto',
     '338': 'RLow_Current_type',
+    '372': 'EV_RCD_RCM_Standard',
     '434': 'Voltage_Test',
     '436': 'Test_time_Voltage_INST',
 }
@@ -73,11 +75,18 @@ METREL_RESULTS = {
     '29': 't_Id',
     '31': 'Id',
     '32': 'Uc_Id',
+    '34': 'Isc_PSC',
+    '37': 'XL',
+    '38': 'R_part',
+    '39': 'Uln_',
     '114': 'Uc',
     '261': 'ZLPE_Auto',
+    '115': 'Rl',
+    '205': 'Z',
     '269': 'ZLN_Auto',
     '270': 'IPSC_LN_Auto',
     '271': 'IPSC_LPE_Auto',
+    '371': 'Uc_P',
 }
 
 CallResult = namedtuple('CallResult', 'success response')
