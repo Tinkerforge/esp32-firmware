@@ -3,6 +3,9 @@
 import time
 import socket
 
+from cryptography import x509
+from cryptography.hazmat.primitives.asymmetric import ec, ed448
+
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
@@ -31,6 +34,7 @@ pnc_supported = False
 VARIABLES = [
     ("Enabled", None),
     ("V2GCertificateInstallationEnabled", None),
+    ("V2G20SECCLeafCryptoSuite", None),
     ("ISO15118EvseId", None),
     ("EnforceTlsEnabled", None),
     ("PrivateEnviromentEnabled", None),
@@ -127,7 +131,7 @@ def suite_setup(tc: TestContext):
     client = EVTestClient(environment.host, environment.iface, environment.secc_ll)
     pnc_supported = "iso15118_pnc" in tc.api("info/features")
     saved_ocpp = tc.api("ocpp/config")
-    csms = CSMSSim()
+    csms = CSMSSim(interactive=("SignCertificate",))
     test_ocpp = dict(saved_ocpp)
     test_ocpp.update({
         "enable": True,
@@ -254,6 +258,35 @@ def test_variable_validation_and_persistence(tc: TestContext):
     results = get_variables([(name, None) for name in expected])
     tc.assert_(all(result["attributeStatus"] == "Accepted" for result in results))
     tc.assert_eq(list(expected.values()), [result["attributeValue"] for result in results])
+
+
+def test_v2g20_crypto_suite_persists_across_reboot(tc: TestContext):
+    assert csms is not None
+
+    cases = (
+        ("ecdsa_secp521r1_sha512,ed448", ec.EllipticCurvePublicKey),
+        ("ed448", ed448.Ed448PublicKey),
+    )
+    for expected, key_type in cases:
+        tc.assert_eq("Accepted", set_variable("V2G20SECCLeafCryptoSuite", expected))
+        connection_count = csms.connection_count
+        tc.reboot()
+        csms.wait_for_connection(after=connection_count, timeout=60)
+
+        result = get_variables([("V2G20SECCLeafCryptoSuite", None)])[0]
+        tc.assert_eq("Accepted", result["attributeStatus"])
+        tc.assert_eq(expected, result["attributeValue"])
+
+        trigger = csms.call("TriggerMessage", {
+            "requestedMessage": "SignV2G20Certificate",
+        })
+        tc.assert_eq("Accepted", trigger["status"])
+        request, message_id = csms.expect("SignCertificate", timeout=60)
+        tc.assert_eq("V2G20Certificate", request["certificateType"])
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        tc.assert_(isinstance(csr.public_key(), key_type))
+        csms.respond(message_id, {"status": "Rejected"})
 
 
 def test_enforce_tls_controls_sdp(tc: TestContext):
