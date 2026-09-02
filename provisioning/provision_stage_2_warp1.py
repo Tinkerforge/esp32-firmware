@@ -55,11 +55,8 @@ def espefuse(args):
 class FatalError(BaseException):
     pass
 
-def fatal_error(*args):
-    for line in args:
-        print(red(str(line)))
-
-    raise FatalError
+def fatal_error(*message):
+    raise FatalError(' '.join([str(part) for part in message]))
 
 @contextmanager
 def wifi(ssid, passphrase):
@@ -681,10 +678,11 @@ if __name__ == "__main__":
     try:
         main()
         input('Press return to exit ')
-    except FatalError:
+    except FatalError as e:
+        print(red(str(e)))
         input('Press return to exit ')
         sys.exit(1)
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         input('Press return to exit ')
         sys.exit(1)

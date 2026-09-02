@@ -212,7 +212,8 @@ def outer_main():
 
     try:
         test_report_pull()
-    except FatalError:
+    except FatalError as e:
+        print(red(str(e)))
         exit_code = 1
     except Exception:
         traceback.print_exc()
@@ -221,7 +222,8 @@ def outer_main():
     if exit_code == 0:
         try:
             main()
-        except FatalError:
+        except FatalError as e:
+            print(red(str(e)))
             exit_code = 1
         except Exception:
             traceback.print_exc()

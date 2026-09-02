@@ -182,7 +182,7 @@ class Stage3:
                 elif tries > 1:
                     print('WARNING: Could not complete action for device at position {0}, {1} tries left: {2}'.format(position, tries, e))
                 else:
-                    fatal_error('Could not complete action for device at position {0}: {1}'.format(position, e), force_os_exit=1)
+                    fatal_error('Could not complete action for device at position {0}: {1}'.format(position, e))
 
     # internal
     def action_loop(self, stop_queue, enabled_ref):
@@ -222,7 +222,7 @@ class Stage3:
                     elif tries[position] > 1:
                         print('WARNING: Could not complete action {0} for device at position {1}, {2} tries left: {3}'.format(position[1], position[0], tries[position], e))
                     else:
-                        fatal_error('Could not complete action {0} for device at position {1}: {2}'.format(position[1], position[0], e), force_os_exit=1)
+                        fatal_error('Could not complete action {0} for device at position {1}: {2}'.format(position[1], position[0], e))
                 else:
                     event = events.pop(position, None)
 
@@ -1406,10 +1406,11 @@ if __name__ == '__main__':
     try:
         main()
         input('Press return to exit ')
-    except FatalError:
+    except FatalError as e:
+        print(red(str(e)))
         input('Press return to exit ')
         sys.exit(1)
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         input('Press return to exit ')
         sys.exit(1)

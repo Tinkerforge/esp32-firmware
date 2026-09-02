@@ -696,7 +696,7 @@ def led_wrap():
 
         print(green('WARP Charger test successful. Aftermath pending...'))
     except BaseException as e:
-        print(red('WARP Charger test failed!'))
+        print(red(f'WARP Charger test failed: {e}'))
 
         result['failure_exception'] = str(e)
         result['failure_traceback'] = traceback.format_exc()
@@ -1378,7 +1378,8 @@ def outer_main():
 
     try:
         test_report_pull()
-    except FatalError:
+    except FatalError as e:
+        print(red(str(e))):
         exit_code = 1
     except Exception:
         traceback.print_exc()
@@ -1390,7 +1391,8 @@ def outer_main():
 
         try:
             led_wrap()
-        except FatalError:
+        except FatalError as e:
+            print(red(str(e))):
             exit_code = 1
         except Exception:
             traceback.print_exc()
@@ -1401,7 +1403,8 @@ def outer_main():
 
         try:
             test_report_commit_and_push(commit_message, files_to_commit)
-        except FatalError:
+        except FatalError as e:
+            print(red(str(e))):
             exit_code = 1
         except Exception:
             traceback.print_exc()

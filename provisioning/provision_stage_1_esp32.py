@@ -119,10 +119,11 @@ if __name__ == "__main__":
     try:
         main()
         input("Press return to exit. ")
-    except FatalError:
+    except FatalError as e:
+        print(red(str(e)))
         input("Press return to exit. ")
         sys.exit(1)
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         input("Press return to exit. ")
         sys.exit(1)
