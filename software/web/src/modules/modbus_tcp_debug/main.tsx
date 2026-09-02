@@ -84,10 +84,10 @@ function printable_ascii(x: number) {
     return '.';
 }
 
-function to_value_hex(value: number) {
+function to_value_hex(value: number, nibble_count: number) {
     let value_hex = value.toString(16);
 
-    while (value_hex.length < 4) {
+    while (value_hex.length < nibble_count) {
         value_hex = "0" + value_hex;
     }
 
@@ -110,7 +110,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             custom_host: "",
             custom_port: 502,
             custom_device_address: 1,
-            function_code: 3,
+            function_code: ModbusFunctionCode.ReadHoldingRegisters,
             register_address_mode: ModbusRegisterAddressMode.Address,
             start_address: 0,
             data_count: 1,
@@ -431,7 +431,6 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                                 let value = parseInt(value_dec, 10);
 
-
                                 if (isNaN(value)) {
                                     this.setState({waiting: false, cookie: null, result: "Error: Value is invalid"});
                                     return;
@@ -447,10 +446,72 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                     return;
                                 }
 
-                                values_hex.push(to_value_hex(value));
+                                values_hex.push(to_value_hex(value, 4));
                             }
 
                             data_count = values_hex.length;
+                        }
+                        else if (this.state.function_code == ModbusFunctionCode.WriteSingleCoil
+                              || this.state.function_code == ModbusFunctionCode.WriteMultipleCoils) {
+                            let max_values = 0;
+
+                            if (this.state.function_code == ModbusFunctionCode.WriteSingleCoil) {
+                                max_values = 1;
+                            }
+                            else if (this.state.function_code == ModbusFunctionCode.WriteMultipleCoils) {
+                                max_values = 1968;
+                            }
+
+                            let values_dec = this.state.write_data.split(",");
+
+                            if (values_dec.length > max_values) {
+                                this.setState({waiting: false, cookie: null, result: "Error: Too many values"});
+                                return;
+                            }
+
+                            data_count = 0;
+
+                            let coils = 0;
+                            let k = 0;
+
+                            for (let value_dec of values_dec) {
+                                value_dec = value_dec.trim();
+
+                                let value = parseInt(value_dec, 10);
+
+                                if (isNaN(value)) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is invalid"});
+                                    return;
+                                }
+
+                                if (value > 1) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is too big"});
+                                    return;
+                                }
+
+                                if ("" + value !== value_dec) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is malformed"});
+                                    return;
+                                }
+
+                                if (value != 0) {
+                                    coils |= 1 << k;
+                                }
+
+                                ++data_count;
+                                ++k;
+
+                                if (k >= 8) {
+                                    values_hex.push(to_value_hex(coils, 2));
+
+                                    coils = 0;
+                                    k = 0;
+                                }
+                            }
+
+                            if (k > 0) {
+                                values_hex.push(to_value_hex(coils, 2));
+                            }
                         }
                         else if (this.state.function_code == ModbusFunctionCode.MaskWriteRegister
                               || this.state.function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
@@ -505,8 +566,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                     }
                                 }
 
-                                values_hex.push(to_value_hex(and_mask));
-                                values_hex.push(to_value_hex(or_mask));
+                                values_hex.push(to_value_hex(and_mask, 4));
+                                values_hex.push(to_value_hex(or_mask, 4));
                             }
 
                             data_count = values_hex.length;
@@ -632,7 +693,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         [ModbusFunctionCode.ReadDiscreteInputs.toString(), __("modbus_tcp_debug.content.function_code_read_discrete_inputs")],
                         [ModbusFunctionCode.ReadHoldingRegisters.toString(), __("modbus_tcp_debug.content.function_code_read_holding_registers")],
                         [ModbusFunctionCode.ReadInputRegisters.toString(), __("modbus_tcp_debug.content.function_code_read_input_registers")],
+                        [ModbusFunctionCode.WriteSingleCoil.toString(), __("modbus_tcp_debug.content.function_code_write_single_coil")],
                         [ModbusFunctionCode.WriteSingleRegister.toString(), __("modbus_tcp_debug.content.function_code_write_single_register")],
+                        [ModbusFunctionCode.WriteMultipleCoils.toString(), __("modbus_tcp_debug.content.function_code_write_multiple_coils")],
                         [ModbusFunctionCode.WriteMultipleRegisters.toString(), __("modbus_tcp_debug.content.function_code_write_multiple_registers")],
                         [ModbusFunctionCode.MaskWriteRegister.toString(), __("modbus_tcp_debug.content.function_code_mask_write_register")],
                         [ModbusFunctionCode.ReadMaskWriteSingleRegister.toString(), __("modbus_tcp_debug.content.function_code_read_mask_write_single_register")],
@@ -720,6 +783,19 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 </FormRow>
                 : undefined}
 
+            {this.state.function_code == ModbusFunctionCode.WriteSingleCoil ?
+                <FormRow label={__("modbus_tcp_debug.content.write_data_single_value")}>
+                    <InputTextPatterned
+                        required
+                        disabled={this.state.waiting}
+                        pattern="^ *[01] *$"
+                        value={this.state.write_data}
+                        onValue={(v) => this.setState({write_data: v})}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_single_value_invalid")}
+                        />
+                </FormRow>
+                : undefined}
+
             {this.state.function_code == ModbusFunctionCode.WriteSingleRegister ?
                 <FormRow label={__("modbus_tcp_debug.content.write_data_single_value")}>
                     <InputTextPatterned
@@ -729,6 +805,19 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_single_value_invalid")}
+                        />
+                </FormRow>
+                : undefined}
+
+            {this.state.function_code == ModbusFunctionCode.WriteMultipleCoils ?
+                <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_values")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_values_muted")}>
+                    <InputTextPatterned
+                        required
+                        disabled={this.state.waiting}
+                        pattern={`^ *[01] *(, *[01] *){0,1967}$`}
+                        value={this.state.write_data}
+                        onValue={(v) => this.setState({write_data: v})}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_values_invalid")}
                         />
                 </FormRow>
                 : undefined}
