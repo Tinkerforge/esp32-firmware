@@ -912,7 +912,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
 def pull_github(name):
     try:
         with open(os.path.join(f'github-pulled.{name}'), 'r') as f:
-            last_date = f.read()
+            last_date = f.read().strip()
     except FileNotFoundError:
         last_date = None
 
