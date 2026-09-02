@@ -136,7 +136,7 @@ export class IP6Configuration extends Component<IP6ConfigurationProps, IP6Editor
 
     render(props: IP6ConfigurationProps, state: IP6Config & IP6EditorState) {
         return <>
-            <FormRow label={__("wifi.content.ipv6_switch")}>
+            <FormRow label={__("component.ip6_configuration.enable_ipv6")}>
                 <Switch
                     checked={props.value.enable_ipv6}
                     onClick={() => this.onUpdate("enable_ipv6", !props.value.enable_ipv6)}

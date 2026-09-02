@@ -34,12 +34,7 @@ let x = {
             "reboot_body": "Die LAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "reboot_with_lan_disabled": "Neustart mit deaktiviertem LAN",
             "cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung oder den WLAN-Access-Point.",
-            "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist.",
-            "ipv6_switch": "IPv6 aktivieren",
-            "ipv6_help":<>
-                <p>Es wird nur die "Stateless Address Configuration" unterstützt.</p>
-                <p>Der IPv6 DNS Server hat eine niedrigere Priorität als die IPv4 DNS Server.</p>
-            </>
+            "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist."
         },
         "script": {
             "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen."

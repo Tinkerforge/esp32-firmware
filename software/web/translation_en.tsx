@@ -62,6 +62,7 @@ let x = {
             "remote_access": "the remote access"
         },
         "ip6_configuration": {
+            "enable_ipv6": "Enable IPv6",
             "ip_configuration_help": "At the moment, SLAAC is always active. Additional static addresses can be configured.",
             "static_ip6": "Static addresses",
             "static_ip6_add_title": "Add IPv6 address",
