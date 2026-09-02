@@ -16,6 +16,7 @@ BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
 def main():
     while True:
+        tfutil.drop_stdin_buffer()
         qr_code = getpass.getpass(green('Scan ESP32 label: ')).strip()
 
         if len(qr_code) == 0:

@@ -398,6 +398,7 @@ class Scanner:
         pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
         pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
 
+        tfutil.drop_stdin_buffer()
         self.qr_charger_code = my_input("Scan the charger QR code:")
         log_writer.write_log(self.qr_charger_code + '\n')
         m_4 = re.match(pattern_4, self.qr_charger_code)
@@ -405,6 +406,7 @@ class Scanner:
             m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
 
         while not m_4 and not m_3_2:
+            tfutil.drop_stdin_buffer()
             self.qr_charger_code = my_input("Scan the charger QR code:", red)
             log_writer.write_log(self.qr_charger_code + '\n')
             m_4 = re.match(pattern_4, self.qr_charger_code)
@@ -488,11 +490,13 @@ class Scanner:
         else:
             # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
             pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
+            tfutil.drop_stdin_buffer()
             self.qr_extras_code = my_input("Scan the extras QR code:")
             log_writer.write_log(self.qr_extras_code + '\n')
             m = re.match(pattern, self.qr_extras_code)
 
             while not m:
+                tfutil.drop_stdin_buffer()
                 self.qr_extras_code = my_input("Scan the extras QR code:", red)
                 log_writer.write_log(self.qr_extras_code + '\n')
                 m = re.match(pattern, self.qr_extras_code)
@@ -536,12 +540,14 @@ class Scanner:
 
         if self.qr_variant != "B":
             pattern = rf"^WIFI:S:(warp{self.qr_gen})-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
+            tfutil.drop_stdin_buffer()
             orig_print(green("Scan the ESP Brick QR code: "), end="")
             self.qr_esp_code = getpass.getpass('')
             log_writer.write_log('\n')
             m = re.match(pattern, self.qr_esp_code)
 
             while not m:
+                tfutil.drop_stdin_buffer()
                 orig_print(red("Scan the ESP Brick QR code: "), end="")
                 self.qr_esp_code = getpass.getpass('')
                 log_writer.write_log('\n')

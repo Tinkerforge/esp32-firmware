@@ -480,9 +480,11 @@ def main():
 
     #T:WARP-CS-11KW-50-CEE;V:2.17;S:5000000001;B:2021-01;O:SO/B2020123;I:1/1;;
     pattern = r'^T:WARP-C(B|S|P)-(11|22)KW-(50|75)(|-CEE);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});O:(SO/B?[0-9]+);I:(\d+/\d+)(?:;E:(\d+))?;;;*$'
+    tfutil.drop_stdin_buffer()
     qr_code = my_input("Scan the docket QR code")
     match = re.match(pattern, qr_code)
     while not match:
+        tfutil.drop_stdin_buffer()
         qr_code = my_input("Scan the docket QR code", red)
         match = re.match(pattern, qr_code)
 
@@ -521,9 +523,11 @@ def main():
 
     #T:WARP-CS-11KW-50-CEE;V:2.17;S:5000000001;B:2021-01;;
     pattern = r'^T:WARP-C(B|S|P)-(11|22)KW-(50|75)(|-CEE);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2});;;*$'
+    tfutil.drop_stdin_buffer()
     qr_code = my_input("Scan the wallbox QR code")
     match = re.match(pattern, qr_code)
     while not match:
+        tfutil.drop_stdin_buffer()
         qr_code = my_input("Scan the wallbox QR code", red)
         match = re.match(pattern, qr_code)
 
@@ -558,9 +562,11 @@ def main():
 
     if qr_variant != "B":
         pattern = r"^WIFI:S:(esp32|warp)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        tfutil.drop_stdin_buffer()
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
         while not match:
+            tfutil.drop_stdin_buffer()
             qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
             match = re.match(pattern, qr_code)
 

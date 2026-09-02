@@ -94,10 +94,12 @@ class EnergyManagerTester:
 
 
         pattern = r"^WIFI:S:(esp32|warp|warp2|wem)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        tfutil.drop_stdin_buffer()
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 
         while not match:
+            tfutil.drop_stdin_buffer()
             qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
             match = re.match(pattern, qr_code)
 
