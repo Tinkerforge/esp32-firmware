@@ -202,7 +202,7 @@ def bb_get_device_info():
     return DeviceInfo(product_name, model_name, firmware_version, serial_number, calibration_date)
 
 
-def bb_start_test(suffix, retry_on_empty=True):
+def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
     result = bb_call('BB; START_SINGLETEST ' + suffix)
 
     if not result.success:
@@ -211,6 +211,7 @@ def bb_start_test(suffix, retry_on_empty=True):
     while True:
         passed = None
         empty = False
+        cancel = False
         parameters = {}
         limits = {}
         results = {}
@@ -227,6 +228,8 @@ def bb_start_test(suffix, retry_on_empty=True):
                     passed = False
                 elif suffix == '= empty':
                     empty = True
+                elif suffix == '= cancel':
+                    cancel = True
                 else:
                     raise BlackboxException(f'ST response malformed: {result.response}')
             else:
@@ -246,15 +249,24 @@ def bb_start_test(suffix, retry_on_empty=True):
                 else:
                     raise BlackboxException(f'ST response malformed: {result.response}')
 
-        if not empty:
+        if passed != None:
             break
 
-        if retry_on_empty:
-            retry_on_empty = False
-            debug(f'ST response with empty status, retrying: {result.response}')
-            continue
+        if empty:
+            if retry_on_empty:
+                retry_on_empty = False
+                debug(f'ST response with empty status, retrying: {result.response}')
+                continue
 
-        raise BlackboxException(f'ST response with empty status: {result.response}')
+            raise BlackboxException(f'ST response with empty status: {result.response}')
+
+        if cancel:
+            if retry_on_cancel:
+                retry_on_cancel = False
+                debug(f'ST response with cancel status, retrying: {result.response}')
+                continue
+
+            raise BlackboxException(f'ST response with empty status: {result.response}')
 
     return TestResult(passed, parameters, limits, results)
 
