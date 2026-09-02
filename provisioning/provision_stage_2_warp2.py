@@ -1394,7 +1394,7 @@ def outer_main():
     try:
         test_report_pull()
     except FatalError as e:
-        print(red(str(e))):
+        print(red(str(e)))
         exit_code = 1
     except Exception:
         traceback.print_exc()
@@ -1407,7 +1407,7 @@ def outer_main():
         try:
             led_wrap()
         except FatalError as e:
-            print(red(str(e))):
+            print(red(str(e)))
             exit_code = 1
         except Exception:
             traceback.print_exc()
@@ -1419,7 +1419,7 @@ def outer_main():
         try:
             test_report_commit_and_push(commit_message, files_to_commit)
         except FatalError as e:
-            print(red(str(e))):
+            print(red(str(e)))
             exit_code = 1
         except Exception:
             traceback.print_exc()
