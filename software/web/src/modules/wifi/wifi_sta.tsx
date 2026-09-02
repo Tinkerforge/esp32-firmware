@@ -25,13 +25,15 @@ import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator   } from "../../ts/components/form_separator";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
+import { IP6Configuration } from "../../ts/components/ip6_configuration";
 import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { OutputTextarea  } from "../../ts/components/output_textarea";
-import { Lock, ArrowRight, Unlock } from "react-feather";
+import { ArrowRight } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { WifiState } from "./generated/wifi_state.enum";
 import { WifiDisconnectReason } from "./generated/wifi_disconnect_reason.enum";
@@ -127,8 +129,8 @@ export function wifi_symbol(rssi: number, size: number = 24, lock_title?: string
 
 export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState> {
     ipconfig_valid: boolean = true;
-    last_interface: boolean = false;
     ip6config_valid: boolean = true;
+    last_interface: boolean = false;
     scan_timeout: number = null;
 
     constructor() {
@@ -168,7 +170,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     override async transformSave(cfg: STAConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
-        cfg.ipv6.dns = cfg.ipv6.dns == "" ? "::" : cfg.ipv6.dns;
+        //cfg.dns6 = cfg.dns6 == "" ? "::" : cfg.dns6;
         return cfg;
     }
 
@@ -478,35 +480,38 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
                     </FormRow>
 
-                    {wifi_state.connection_state != WifiState.NotConfigured && state.enable_ipv6 &&
-                        <FormRow label={__("wifi.content.status_sta_ipv6")}>
-                            <OutputTextarea
-                                rows={(() => {
-                                    let count = 0;
-                                    if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::") count++;
-                                    if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::") count++;
-                                    if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::") count++;
-                                    if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::") count++;
-                                    if (wifi_state?.sta_ip6_configured && wifi_state.sta_ip6_configured !== "::") count++;
-                                    return count > 0 ? count : 1;
-                                })()}
-                                resize="none"
-                                value={(() => {
-                                    const addrs: string[] = [];
-                                    if (wifi_state?.sta_ip6_global && wifi_state.sta_ip6_global !== "::")
-                                        addrs.push(`${wifi_state.sta_ip6_global.toUpperCase()} (global)`);
-                                    if (wifi_state?.sta_ip6_unique_local && wifi_state.sta_ip6_unique_local !== "::")
-                                        addrs.push(`${wifi_state.sta_ip6_unique_local.toUpperCase()} (unique-local)`);
-                                    if (wifi_state?.sta_ip6_site_local && wifi_state.sta_ip6_site_local !== "::")
-                                        addrs.push(`${wifi_state.sta_ip6_site_local.toUpperCase()} (site-local)`);
-                                    if (wifi_state?.sta_ip6_link_local && wifi_state.sta_ip6_link_local !== "::")
-                                        addrs.push(`${wifi_state.sta_ip6_link_local.toUpperCase()} (link-local)`);
-                                    if (wifi_state?.sta_ip6_configured && wifi_state.sta_ip6_configured !== "::")
-                                        addrs.push(`${wifi_state.sta_ip6_configured.toUpperCase()} (configured)`);
-                                    return addrs.length > 0 ? addrs.join('\n') : __("wifi.content.status_sta_ip_none");
-                                })()}
-                            />
-                        </FormRow>}
+                    <Collapse in={state.enable_ipv6}>
+                        <div>
+                            <FormRow label={__("wifi.content.status_sta_ipv6")}>
+                                <OutputTextarea
+                                    rows={Math.max(wifi_state.sta_ip6.length, 1)}
+                                    resize="none"
+                                    value={(() => {
+                                        if (wifi_state.sta_ip6.length <= 0) {
+                                            return __("wifi.content.status_sta_ip_none");
+                                        }
+
+                                        const addrs: string[] = wifi_state.sta_ip6.map((addr) => {
+                                            const flags = addr.flags;
+                                            let line = addr.addr;
+
+                                            if (flags & 0x0001) line += " global";
+                                            if (flags & 0x0002) line += " link-local";
+                                            if (flags & 0x0004) line += " site-local";
+                                            if (flags & 0x0008) line += " unique-local";
+                                            if (flags & 0x0010) line += " IPv4-mapped";
+                                            if (flags & 0x2000) line += " static";
+                                            if (flags & 0x8000) line += " preferred";
+
+                                            return line;
+                                        });
+
+                                        return addrs.sort().join('\n');
+                                    })()}
+                                />
+                            </FormRow>
+                        </div>
+                    </Collapse>
 
                     {wifi_state.connection_state == WifiState.Connected &&
                         <FormRow label={<>{__("wifi.content.status_sta_rssi")}<span class="ms-2">{wifi_symbol(wifi_state.sta_rssi)}</span></>}>
@@ -669,56 +674,47 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label={"IPv4"}>
-                        <IPConfiguration
-                            showAnyAddress
-                            showDhcp
-                            showDns
-                            onValue={(v) => this.setState(v)}
-                            value={state}
-                            setValid={(v) => this.ipconfig_valid = v}
-                            forbidNetwork={[
-                                    {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
-                                ].concat(
-                                    [{ip: util.parseIP(API.get("wifi/ap_config").ip),
-                                    subnet: util.parseIP(API.get("wifi/ap_config").subnet),
-                                    name: __("component.ip_configuration.wifi_ap")}]
-                                ).concat(
-                                    !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
-                                    [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
-                                    subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
-                                    name: __("component.ip_configuration.wireguard")}]
-                                )
-                            }
-                            />
-                    </FormRow>
-                    <FormRow label={"IPv6"} help={__("wifi.content.ipv6_help")}>
-                        <Switch desc={__("wifi.content.ipv6_switch")}
-                                checked={state.enable_ipv6}
-                                onClick={this.toggle('enable_ipv6')}/>
-                        {state.enable_ipv6 &&
-                            <IPConfiguration
-                                showAnyAddress
-                                showDhcp
-                                showDns
-                                hideSubnet
-                                hideGateway
-                                hideDns2
-                                ipv6
-                                onValue={(v) => this.setState({ipv6: {
-                                        ip: v.ip,
-                                        dns: v.dns || "::",
-                                    }})}
-                                value={state.ipv6}
-                                setValid={(v) => this.ip6config_valid = v}
-                            />}
-                    </FormRow>
+
                     <FormRow label={__("wifi.content.sta_enable_11b")}>
                         <Switch desc={__("wifi.content.sta_enable_11b_desc")}
                                 checked={state.enable_11b}
                                 onClick={this.toggle("enable_11b")}
                         />
                     </FormRow>
+
+                    <FormSeparator heading={"IPv4"} />
+
+                    <IPConfiguration
+                        showAnyAddress
+                        showDhcp
+                        showDns
+                        onValue={(v) => this.setState(v)}
+                        value={state}
+                        setValid={(v) => this.ipconfig_valid = v}
+                        forbidNetwork={[
+                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                            ].concat(
+                                [{ip: util.parseIP(API.get("wifi/ap_config").ip),
+                                subnet: util.parseIP(API.get("wifi/ap_config").subnet),
+                                name: __("component.ip_configuration.wifi_ap")}]
+                            ).concat(
+                                !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
+                                subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
+                                name: __("component.ip_configuration.wireguard")}]
+                            )
+                        }
+                    />
+
+                    <FormSeparator heading={"IPv6"} />
+
+                    <IP6Configuration
+                        onValue={(v) => this.setState(v)}
+                        value={state}
+                        setDirty={this.setDirty}
+                        setValid={(v) => this.ip6config_valid = v}
+                        maxAddresses={4}
+                    />
 
                 </SubPage.Config>
 

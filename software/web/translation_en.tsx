@@ -46,8 +46,7 @@ let x = {
             "dns": "DNS server",
             "dns2": "Alternative DNS server",
             "dns2_muted": "optional",
-            "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2. CIDR notation (e.g. /24) is allowed for subnet masks.",
-            "static_ipv6_invalid": "The IP address must be a valid IPv6 address. CIDR notation (e.g. /64) is allowed for subnet masks.",
+            "static_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2.",
             "gateway_invalid": "The gateway IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1",
             "dns_invalid": "The DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
             "dns2_invalid": "The alternative DNS server IP must have four groups between 0 and 255 separated with a dot. For example 10.0.0.1, or be empty.",
@@ -61,6 +60,19 @@ let x = {
             "ethernet": "the Ethernet connection",
             "wireguard": "the WireGuard connection",
             "remote_access": "the remote access"
+        },
+        "ip6_configuration": {
+            "ip_configuration_help": "At the moment, SLAAC is always active. Additional static addresses can be configured.",
+            "static_ip6": "Static addresses",
+            "static_ip6_add_title": "Add IPv6 address",
+            "static_ip6_edit_title": "Edit IPv6 address",
+            "static_ip6_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} addresses configured`/*NF*/,
+            "static_ip6_duplicates": "List contains duplicate addresses",
+            "ip6_address": "IPv6 address",
+            "ip6_address_invalid": "The IP address must be a valid IPv6 address. For example 2001:db8:85a3:8d3::370:7344.",
+            "ip6_address_is_multicast": "Multicast address not allowed.",
+            "preferred": "Preferred",
+            "preferred_desc": "Prefer this address for outgoing connections."
         },
         "collapsed_section": {
             "heading": "Details",

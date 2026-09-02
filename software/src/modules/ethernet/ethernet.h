@@ -43,8 +43,17 @@ public:
 
 private:
     void apply_config();
-    void apply_ip_to_interface();
     void apply_ipv6_config();
+    void apply_ip_to_interface();
+    void apply_ipv6_to_interface();
+
+    static constexpr size_t MAX_STATIC_IPV6_ADDRESSES = 4;
+    static_assert(MAX_STATIC_IPV6_ADDRESSES < CONFIG_LWIP_IPV6_NUM_ADDRESSES); // must leave room for link-local address
+
+    struct ip6_addr_with_flags {
+        esp_ip6_addr_t addr;
+        uint16_t flags;
+    };
 
     struct eth_runtime {
         micros_t last_connected;
@@ -56,16 +65,17 @@ private:
         ip4_addr_t dns24;
         uint8_t subnet4_cidr;
 
-        // IPv6 config (from ipv6 sub-object). ip6 == :: means SLAAC/auto.
-        ip6_addr_t ip6;
-        ip6_addr_t dns6;
-        ip6_addr_t dns26;
+        // IPv6 config (from ipv6 sub-object)
+        ip6_addr_with_flags ip6[MAX_STATIC_IPV6_ADDRESSES];
+        uint8_t ip6_address_count;
+        bool want_ipv6;
+        bool ipv6_enabled;
 
         EthernetState connection_state;
         bool was_connected;
-        bool ipv6_enabled;
     };
 
+    Config ip6_prototype;
     ConfigRoot config;
     ConfigRoot state;
 

@@ -21,12 +21,14 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component, RefObject } from "preact";
-import { Alert } from "react-bootstrap";
+import { Alert, Collapse } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow         } from "../../ts/components/form_row";
+import { FormSeparator   } from "../../ts/components/form_separator";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText       } from "../../ts/components/input_text";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
+import { IP6Configuration } from "../../ts/components/ip6_configuration";
 import { OutputTextarea  } from "../../ts/components/output_textarea";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage } from "../../ts/components/sub_page";
@@ -36,11 +38,7 @@ import { register_status_provider, ModuleStatus } from "../../ts/status_registry
 import { EthernetState } from "./generated/ethernet_state.enum";
 
 function has_any_ipv6(state: API.getType["ethernet/state"]): boolean {
-    return (state.ip6_global && state.ip6_global !== "::")
-        || (state.ip6_unique_local && state.ip6_unique_local !== "::")
-        || (state.ip6_configured && state.ip6_configured !== "::")
-        || (state.ip6_site_local && state.ip6_site_local !== "::")
-        || (state.ip6_link_local && state.ip6_link_local !== "::");
+    return state.ip6.length > 0;
 }
 
 export function EthernetNavbar() {
@@ -54,8 +52,8 @@ type EthernetConfig = API.getType['ethernet/config'];
 
 export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: RefObject<EthernetStatus>}> {
     ipconfig_valid: boolean = true;
-    last_interface: boolean = false;
     ip6config_valid: boolean = true;
+    last_interface: boolean = false;
 
     constructor() {
         super('ethernet/config',
@@ -67,7 +65,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
     override async transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
         cfg.dns2 = cfg.dns2 == "" ? "0.0.0.0" : cfg.dns2;
-        cfg.ipv6.dns = cfg.ipv6.dns == "" ? "::" : cfg.ipv6.dns;
+        //cfg.dns6 = cfg.dns6 == "" ? "::" : cfg.dns6;
         return cfg;
     }
 
@@ -113,36 +111,39 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                     : __("ethernet.content.status_ip_none")}
                             />
                         </FormRow>
-                        {state.enable_ipv6 &&
-                            <FormRow label={__("ethernet.content.status_ipv6")}>
-                                <OutputTextarea
-                                    rows={(() => {
-                                        let count = 0;
-                                        if (eth_state?.ip6_global && eth_state.ip6_global !== "::") count++;
-                                        if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::") count++;
-                                        if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::") count++;
-                                        if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::") count++;
-                                        if (eth_state?.ip6_configured && eth_state.ip6_configured !== "::") count++;
-                                        return count > 0 ? count : 1;
-                                    })()}
-                                    resize="none"
-                                    value={(() => {
-                                        const addrs: string[] = [];
-                                        if (eth_state?.ip6_global && eth_state.ip6_global !== "::")
-                                            addrs.push(`${eth_state.ip6_global.toUpperCase()} (global)`);
-                                        if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::")
-                                            addrs.push(`${eth_state.ip6_unique_local.toUpperCase()} (unique-local)`);
-                                        if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::")
-                                            addrs.push(`${eth_state.ip6_site_local.toUpperCase()} (site-local)`);
-                                        if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::")
-                                            addrs.push(`${eth_state.ip6_link_local.toUpperCase()} (link-local)`);
-                                        if (eth_state?.ip6_configured && eth_state.ip6_configured !== "::")
-                                            addrs.push(`${eth_state.ip6_configured.toUpperCase()} (configured)`);
-                                        return addrs.length > 0 ? addrs.join('\n') : __("ethernet.content.status_ip_none");
-                                    })()}
-                                />
-                            </FormRow>
-                        }
+
+                        <Collapse in={state.enable_ipv6}>
+                            <div>
+                                <FormRow label={__("ethernet.content.status_ipv6")}>
+                                    <OutputTextarea
+                                        rows={Math.max(eth_state.ip6.length, 1)}
+                                        resize="none"
+                                        value={(() => {
+                                            if (eth_state.ip6.length <= 0) {
+                                                return __("ethernet.content.status_ip_none");
+                                            }
+
+                                            const addrs: string[] = eth_state.ip6.map((addr) => {
+                                                const flags = addr.flags;
+                                                let line = addr.addr;
+
+                                                if (flags & 0x0001) line += " global";
+                                                if (flags & 0x0002) line += " link-local";
+                                                if (flags & 0x0004) line += " site-local";
+                                                if (flags & 0x0008) line += " unique-local";
+                                                if (flags & 0x0010) line += " IPv4-mapped";
+                                                if (flags & 0x2000) line += " static";
+                                                if (flags & 0x8000) line += " preferred";
+
+                                                return line;
+                                            });
+
+                                            return addrs.sort().join('\n');
+                                        })()}
+                                    />
+                                </FormRow>
+                            </div>
+                        </Collapse>
                     </>}
 
                     <FormRow label={__("ethernet.content.status_link")}>
@@ -202,51 +203,42 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                     : undefined}
                         />
                     </FormRow>
-                    <FormRow label={"IPv4"}>
-                        <IPConfiguration
-                            showAnyAddress
-                            showDhcp
-                            showDns
-                            onValue={(v) => this.setState(v)}
-                            value={state}
-                            setValid={(v) => this.ipconfig_valid = v}
-                            forbidNetwork={[
-                                    {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
-                                ].concat(
-                                    !API.hasModule("wifi") ? [] :
-                                    [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
-                                    subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
-                                    name: __("component.ip_configuration.wifi_ap")}]
-                                ).concat(
-                                    !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
-                                    [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
-                                    subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
-                                    name: __("component.ip_configuration.wireguard")}]
-                                )
-                            }
-                            />
-                    </FormRow>
-                    <FormRow label={"IPv6"} help={__("ethernet.content.ipv6_help")}>
-                        <Switch desc={__("ethernet.content.ipv6_switch")}
-                                checked={state.enable_ipv6}
-                                onClick={this.toggle('enable_ipv6')}/>
-                        {state.enable_ipv6 &&
-                        <IPConfiguration
-                            showAnyAddress
-                            showDhcp
-                            showDns
-                            hideDns2
-                            hideGateway
-                            hideSubnet
-                            ipv6
-                            onValue={(v) => this.setState({ipv6: {
-                                ip: v.ip,
-                                dns: v.dns || "::",
-                            }})}
-                            value={state.ipv6}
-                            setValid={(v) => this.ip6config_valid = v}
-                        />}
-                    </FormRow>
+
+                    <FormSeparator heading={"IPv4"} />
+
+                    <IPConfiguration
+                        showAnyAddress
+                        showDhcp
+                        showDns
+                        onValue={(v) => this.setState(v)}
+                        value={state}
+                        setValid={(v) => this.ipconfig_valid = v}
+                        forbidNetwork={[
+                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                            ].concat(
+                                !API.hasModule("wifi") ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
+                                subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
+                                name: __("component.ip_configuration.wifi_ap")}]
+                            ).concat(
+                                !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
+                                subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
+                                name: __("component.ip_configuration.wireguard")}]
+                            )
+                        }
+                    />
+
+                    <FormSeparator heading={"IPv6"} />
+
+                    <IP6Configuration
+                        onValue={(v) => this.setState(v)}
+                        value={state}
+                        setDirty={this.setDirty}
+                        setValid={(v) => this.ip6config_valid = v}
+                        maxAddresses={4}
+                    />
+
                 </SubPage.Config>
             </SubPage>
         );

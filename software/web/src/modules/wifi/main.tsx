@@ -33,11 +33,7 @@ import { register_status_provider, ModuleStatus } from "../../ts/status_registry
 import { WifiState } from "./generated/wifi_state.enum";
 
 function has_any_ipv6(state: API.getType["wifi/state"]): boolean {
-    return (state.sta_ip6_global && state.sta_ip6_global !== "::")
-        || (state.sta_ip6_unique_local && state.sta_ip6_unique_local !== "::")
-        || (state.sta_ip6_configured && state.sta_ip6_configured !== "::")
-        || (state.sta_ip6_site_local && state.sta_ip6_site_local !== "::")
-        || (state.sta_ip6_link_local && state.sta_ip6_link_local !== "::");
+    return state.sta_ip6.length > 0;
 }
 
 export function WifiSTANavbar() {

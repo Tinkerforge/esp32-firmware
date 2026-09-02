@@ -1,3 +1,8 @@
+export interface ipv6_address {
+    addr: string;
+    flags: number;
+}
+
 export interface config {
     enable_ethernet: boolean;
     ip: string;
@@ -5,11 +10,8 @@ export interface config {
     subnet: string;
     dns: string;
     dns2: string;
-    ipv6: {
-        ip: string;
-        dns: string;
-    }
     enable_ipv6: boolean;
+    ip6: ipv6_address[];
 }
 
 export interface state {
@@ -19,12 +21,8 @@ export interface state {
     mac: string;
     ip: string;
     subnet: string;
+    ip6: ipv6_address[];
     full_duplex: boolean;
     link_speed: number;
     disable_countdown: number;
-    ip6_link_local: string;
-    ip6_global: string;
-    ip6_unique_local: string;
-    ip6_site_local: string;
-    ip6_configured: string;
 }

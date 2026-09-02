@@ -23,27 +23,27 @@ import { useId, useContext } from "preact/hooks";
 import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
-interface InputIPProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
+interface InputIP6Props extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
     idContext?: Context<string>
     onValue: (value: string) => void
     invalidFeedback: ComponentChildren
     moreClasses?: string[]
 }
 
-export function InputIP(props: InputIPProps) {
+export function InputIP6(props: InputIP6Props) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
     return (<>
         <input class={"form-control" + (props.moreClasses? " " + props.moreClasses.join(" ") : "")}
                id={id}
                type="text"
-               minLength={7}
-               maxLength={15}
-               size={15}
-               pattern={`^${util.IPV4_ADDRESS_PATTERN}$`}
-               onInput={(e) => props.onValue((e.target as HTMLInputElement).value)}
+               minLength={3}
+               maxLength={45}
+               size={45}
+               pattern={`^${util.IPV6_ADDRESS_PATTERN}$`}
+               onInput={(e) => props.onValue((e.target as HTMLInputElement).value.toLocaleLowerCase())}
                {...props}/>
         <div class="invalid-feedback">{props.invalidFeedback}</div>
     </>);
 }
 
-register_id_context_component_type(InputIP);
+register_id_context_component_type(InputIP6);

@@ -46,8 +46,7 @@ let x = {
             "dns": "DNS-Server",
             "dns2": "Alternativer DNS-Server",
             "dns2_muted": "optional",
-            "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2. CIDR Notation (z.B. /24) ist möglich um die Subnetzmaske anzugeben.",
-            "static_ipv6_invalid": "Die IP-Adresse muss eine IPv6 adresse sein. CIDR Notation (z.B. /64) ist möglich um die Netzmaske anzugeben.",
+            "static_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2.",
             "gateway_invalid": "Die IP des Gateways muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1",
             "dns_invalid": "Die IP des DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
             "dns2_invalid": "Die IP des alternativen DNS-Servers muss entweder leer bleiben, oder aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.1.",
@@ -61,6 +60,19 @@ let x = {
             "ethernet": "die LAN-Verbindung",
             "wireguard": "die WireGuard-Verbindung",
             "remote_access": "den Fernzugriff"
+        },
+        "ip6_configuration": {
+            "ip_configuration_help": "Aktuell ist SLAAC immer aktiv. Es können zusätzlich statische Adressen genutzt werden.",
+            "static_ip6": "Statische Adressen",
+            "static_ip6_add_title": "IPv6-Adresse hinzufügen",
+            "static_ip6_edit_title": "IPv6-Adresse bearbeiten",
+            "static_ip6_add_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Adressen konfiguriert`/*NF*/,
+            "static_ip6_duplicates": "Liste enthält Adressduplikate",
+            "ip6_address": "IPv6-Adresse",
+            "ip6_address_invalid": "Die IP-Adresse muss eine IPv6 adresse sein. Zum Beispiel 2001:db8:85a3:8d3::370:7344.",
+            "ip6_address_is_multicast": "Multicast-Adresse ist nicht erlaubt.",
+            "preferred": "Bevorzugen",
+            "preferred_desc": "Bevorzuge diese Adresse für ausgehende Verbindungen."
         },
         "collapsed_section": {
             "heading": "Details",

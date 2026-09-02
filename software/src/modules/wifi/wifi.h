@@ -51,10 +51,13 @@ public:
     const char* get_ap_passphrase() const;
 
 private:
+    struct sta_runtime;
+
     void apply_soft_ap_config_and_start();
     void apply_ap_config(bool defer_start = false);
     void apply_sta_config(bool defer_start = false);
-    void apply_ipv6_sta_config();
+    void apply_ipv6_sta_config(sta_runtime *new_runtime);
+    void apply_ipv6_to_interface();
     void register_ap_event_handlers();
     void register_sta_event_handlers();
     bool apply_sta_config_and_connect();
@@ -64,6 +67,14 @@ private:
 
     void start_scan();
     void get_scan_results(StringBuilder *sb, size_t network_count);
+
+    static constexpr size_t MAX_STATIC_IPV6_ADDRESSES = 4;
+    static_assert(MAX_STATIC_IPV6_ADDRESSES < CONFIG_LWIP_IPV6_NUM_ADDRESSES); // must leave room for link-local address
+
+    struct ip6_addr_with_flags {
+        esp_ip6_addr_t addr;
+        uint16_t flags;
+    };
 
     struct ap_runtime {
         uint32_t scan_start_time_s; // This overflows after an uptime of 68 years, which seems unlikely enough.
@@ -105,6 +116,12 @@ private:
         ip4_addr_t dns;
         ip4_addr_t dns2;
 
+        ip6_addr_with_flags ip6[MAX_STATIC_IPV6_ADDRESSES];
+        uint8_t ip6_address_count : 3;
+        bool want_ipv6 : 1;
+
+        static_assert(MAX_STATIC_IPV6_ADDRESSES < 8); // 2^3 from ip6_address_count
+
         uint8_t bssid[6];
 
         uint8_t passphrase_offset;
@@ -113,13 +130,13 @@ private:
         bool bssid_lock     : 1;
         bool enable_11b     : 1;
         bool was_connected  : 1;
-        bool ipv6_enabled   : 1;
 
         uint8_t connect_tries;
 
         char ssid_passphrase[];
     };
 
+    Config ip6_prototype;
     ConfigRoot ap_config;
     ConfigRoot sta_config;
     ConfigRoot state;

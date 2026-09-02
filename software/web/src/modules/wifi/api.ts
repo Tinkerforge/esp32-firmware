@@ -41,6 +41,11 @@ export type EapConfigPEAPTTLS = [
 
 export type scan_results = WifiInfo[] | string;
 
+export interface ipv6_address {
+    addr: string;
+    flags: number;
+}
+
 export interface sta_config {
     enable_sta: boolean;
     ssid: string;
@@ -53,12 +58,9 @@ export interface sta_config {
     subnet: string;
     dns: string;
     dns2: string;
-    wpa_eap_config: EapConfigNone | EapConfigTLS | EapConfigPEAPTTLS;
     enable_ipv6: boolean;
-    ipv6: {
-        ip: string;
-        dns: string;
-    }
+    ip6: ipv6_address[];
+    wpa_eap_config: EapConfigNone | EapConfigTLS | EapConfigPEAPTTLS;
 }
 
 export interface ap_config {
@@ -82,14 +84,10 @@ export interface state {
     sta_mac: string;
     sta_ip: string;
     sta_subnet: string;
+    sta_ip6: ipv6_address[];
     sta_rssi: number;
     sta_bssid: string;
     sta_disconnect_reason: number;
-    sta_ip6_link_local: string;
-    sta_ip6_global: string;
-    sta_ip6_unique_local: string;
-    sta_ip6_site_local: string;
-    sta_ip6_configured: string;
     ap_disable_countdown: number;
     sta_disable_countdown: number;
 }
