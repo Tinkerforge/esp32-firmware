@@ -22,16 +22,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-#endif
+#include "generated/modbus_function_code.enum.h"
+
+enum class ModbusDataType
+{
+    Coil,
+    Register
+};
 
 void modbus_bswap_registers(uint16_t *register_start, size_t register_count);
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+ModbusDataType modbus_get_data_type(ModbusFunctionCode function_code);
+
+size_t modbus_get_buffer_length(ModbusFunctionCode function_code, size_t data_count);
 
 struct ModbusDeserializer
 {

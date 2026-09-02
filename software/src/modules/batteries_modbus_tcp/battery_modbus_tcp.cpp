@@ -27,7 +27,9 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "generated/battery_modbus_tcp_specs.h"
+#include "tools.h"
 #include "tools/memory.h"
+#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 
 #include "gcc_warnings.h"
 
@@ -95,15 +97,7 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
         ModbusFunctionCode function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
         uint16_t values_count = static_cast<uint16_t>(register_block_config->get("vals")->count());
 
-        if (function_code == ModbusFunctionCode::ReadCoils
-         || function_code == ModbusFunctionCode::ReadDiscreteInputs
-         || function_code == ModbusFunctionCode::WriteSingleCoil
-         || function_code == ModbusFunctionCode::WriteMultipleCoils) {
-            total_buffer_length += (values_count + 7u) / 8u;
-        }
-        else {
-            total_buffer_length += values_count * 2u;
-        }
+        total_buffer_length += modbus_get_buffer_length(function_code, values_count);
     }
 
     uint8_t *total_buffer = nullptr;
@@ -127,20 +121,9 @@ void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr
         register_block->buffer       = total_buffer + total_buffer_offset;
         register_block->values_count = values_count;
 
-        if (register_block->function_code == ModbusFunctionCode::ReadCoils
-         || register_block->function_code == ModbusFunctionCode::ReadDiscreteInputs
-         || register_block->function_code == ModbusFunctionCode::WriteSingleCoil
-         || register_block->function_code == ModbusFunctionCode::WriteMultipleCoils) {
-            buffer_length = (values_count + 7u) / 8u;
-        }
-        else {
-            buffer_length = values_count * 2u;
-        }
+        buffer_length = modbus_get_buffer_length(register_block->function_code, values_count);
 
-        if (register_block->function_code == ModbusFunctionCode::ReadCoils
-         || register_block->function_code == ModbusFunctionCode::ReadDiscreteInputs
-         || register_block->function_code == ModbusFunctionCode::WriteSingleCoil
-         || register_block->function_code == ModbusFunctionCode::WriteMultipleCoils) {
+        if (modbus_get_data_type(register_block->function_code) == ModbusDataType::Coil) {
             uint8_t *coils_buffer = const_cast<uint8_t *>(static_cast<const uint8_t *>(register_block->buffer));
 
             coils_buffer[buffer_length - 1] = 0;
@@ -271,17 +254,21 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
     TFModbusTCPFunctionCode function_code;
     uint16_t data_count;
     const void *buffer;
+    void *buffer_to_check = nullptr;
+    size_t buffer_to_check_len = 0;
     void *buffer_to_compare = nullptr;
     size_t buffer_to_compare_len = 0;
     void *buffer_to_free = nullptr;
+    bool has_step2 = false;
+    TFModbusTCPFunctionCode step2_function_code = TFModbusTCPFunctionCode::WriteSingleCoil; // initialize to silence the compiler about capturing an uninitialized value. will only be used if has_step2 is true
 
     switch (register_block->function_code) {
     case ModbusFunctionCode::ReadCoils:
         function_code = TFModbusTCPFunctionCode::ReadCoils;
         data_count = register_block->values_count;
-        buffer_to_compare = register_block->buffer;
-        buffer_to_compare_len = (data_count + 7u) / 8u;
-        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer_to_check = register_block->buffer;
+        buffer_to_check_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_check_len);
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
@@ -298,9 +285,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
     case ModbusFunctionCode::ReadDiscreteInputs:
         function_code = TFModbusTCPFunctionCode::ReadDiscreteInputs;
         data_count = register_block->values_count;
-        buffer_to_compare = register_block->buffer;
-        buffer_to_compare_len = (data_count + 7u) / 8u;
-        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer_to_check = register_block->buffer;
+        buffer_to_check_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_check_len);
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
@@ -317,9 +304,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
     case ModbusFunctionCode::ReadHoldingRegisters:
         function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
         data_count = register_block->values_count;
-        buffer_to_compare = register_block->buffer;
-        buffer_to_compare_len = sizeof(uint16_t) * data_count;
-        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer_to_check = register_block->buffer;
+        buffer_to_check_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_check_len);
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
@@ -336,9 +323,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
     case ModbusFunctionCode::ReadInputRegisters:
         function_code = TFModbusTCPFunctionCode::ReadInputRegisters;
         data_count = register_block->values_count;
-        buffer_to_compare = register_block->buffer;
-        buffer_to_compare_len = sizeof(uint16_t) * data_count;
-        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer_to_check = register_block->buffer;
+        buffer_to_check_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_check_len);
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
@@ -398,6 +385,145 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
             return;
         }
 
+        has_step2 = true;
+
+        if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister) {
+            step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        }
+        else {
+            step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        }
+
+        break;
+
+    case ModbusFunctionCode::IfDifferentWriteSingleCoil:
+        function_code = TFModbusTCPFunctionCode::ReadCoils;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+        step2_function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+        break;
+
+    case ModbusFunctionCode::IfDifferentWriteSingleRegister:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+        step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        break;
+
+    case ModbusFunctionCode::IfDifferentWriteMultipleCoils:
+        function_code = TFModbusTCPFunctionCode::ReadCoils;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = (data_count + 7u) / 8u;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+        step2_function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
+        break;
+
+    case ModbusFunctionCode::IfDifferentWriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count;
+        buffer_to_compare = register_block->buffer;
+        buffer_to_compare_len = sizeof(uint16_t) * data_count;
+        buffer_to_free = malloc(buffer_to_compare_len);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+        step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        break;
+
+    case ModbusFunctionCode::IfDifferentMaskWriteRegister:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count / 2;
+        buffer_to_free = malloc(sizeof(uint16_t) * data_count);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+        step2_function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+        break;
+
+    case ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister:
+    case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count / 2;
+        buffer_to_free = malloc(sizeof(uint16_t) * data_count);
+        buffer = buffer_to_free;
+
+        if (buffer == nullptr) {
+            writer_logfln(ctx, true,
+                          ctx->language == Language::English
+                          ? "Could not allocate read buffer"
+                          : "Konnte Lesepuffer nicht allokieren");
+            last_writer_step(ctx, false);
+            return;
+        }
+
+        has_step2 = true;
+
+        if (register_block->function_code == ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister) {
+            step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        }
+        else {
+            step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        }
+
         break;
 
     default:
@@ -418,7 +544,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                                                                   data_count,
                                                                   const_cast<void *>(buffer),
                                                                   2_s,
-    [ctx, register_block, data_count, buffer, buffer_to_compare, buffer_to_compare_len, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
+    [ctx, register_block, data_count, buffer, buffer_to_check, buffer_to_check_len,
+     has_step2, step2_function_code, buffer_to_compare, buffer_to_compare_len, buffer_to_free]
+    (TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (ctx->destroy_requested) {
             ctx->transact_pending = false;
 
@@ -428,8 +556,6 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         }
 
         char description[128];
-        bool has_step2 = register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
-                      || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
             trace("b%lu t%d ww m%c em%c i%zu/%zu%s e%d%s%s",
@@ -446,8 +572,8 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 
             writer_logfln(ctx, true,
                           ctx->language == Language::English
-                          ? (buffer_to_compare != nullptr ? "Check of precondition for mode %s failed at register block %zu of %zu: %s (%d)%s%s" : "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s")
-                          : (buffer_to_compare != nullptr ? "Prüfen der Vorbedingung des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s" : "Setzen des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s"),
+                          ? (buffer_to_check != nullptr ? "Check of precondition for mode %s failed at register block %zu of %zu: %s (%d)%s%s" : "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s")
+                          : (buffer_to_check != nullptr ? "Prüfen der Vorbedingung des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s" : "Setzen des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s"),
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                           ctx->index + 1, ctx->table->register_blocks_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
@@ -462,8 +588,8 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
             return;
         }
 
-        if (buffer_to_compare != nullptr) {
-            ctx->precondition_met = memcmp(buffer, buffer_to_compare, buffer_to_compare_len) == 0;
+        if (buffer_to_check != nullptr) {
+            ctx->precondition_met = memcmp(buffer, buffer_to_check, buffer_to_check_len) == 0;
 
             if (ctx->precondition_met) {
                 ctx->last_precondition_not_met_index_plus_one = 0;
@@ -528,84 +654,124 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         }
 
         if (has_step2) {
-            const uint16_t *masks = static_cast<const uint16_t *>(register_block->buffer);
-            uint16_t *values = static_cast<uint16_t *>(buffer_to_free);
+            bool skip_step2;
+            uint16_t step2_data_count;
+            void *step2_buffer;
 
-            for (uint16_t i = 0; i < data_count; ++i) {
-                values[i] = (values[i] & masks[i * 2]) | (masks[i * 2 + 1] & ~masks[i * 2]);
+            if (buffer_to_compare != nullptr) {
+                skip_step2 = memcmp(buffer, buffer_to_compare, buffer_to_compare_len) == 0;
+                step2_data_count = register_block->values_count;
+                step2_buffer = register_block->buffer;
             }
+            else if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
+                  || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters) {
+                const uint16_t *masks = static_cast<const uint16_t *>(register_block->buffer);
+                uint16_t *values = static_cast<uint16_t *>(buffer_to_free);
 
-            TFModbusTCPFunctionCode step2_function_code;
+                for (uint16_t i = 0; i < data_count; ++i) {
+                    values[i] = (values[i] & masks[i * 2]) | (masks[i * 2 + 1] & ~masks[i * 2]);
+                }
 
-            if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister) {
-                step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+                skip_step2 = false;
+                step2_data_count = data_count;
+                step2_buffer = buffer_to_free;
+            }
+            else if (register_block->function_code == ModbusFunctionCode::IfDifferentMaskWriteRegister
+                  || register_block->function_code == ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister
+                  || register_block->function_code == ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters) {
+                const uint16_t *masks = static_cast<const uint16_t *>(register_block->buffer);
+                uint16_t *values = static_cast<uint16_t *>(buffer_to_free);
+
+                skip_step2 = true;
+
+                for (uint16_t i = 0; i < data_count; ++i) {
+                    uint16_t previous_value = values[i];
+
+                    values[i] = (values[i] & masks[i * 2]) | (masks[i * 2 + 1] & ~masks[i * 2]);
+
+                    if (values[i] != previous_value) {
+                        skip_step2 = false;
+                    }
+                }
+
+                if (register_block->function_code == ModbusFunctionCode::IfDifferentMaskWriteRegister) {
+                    step2_data_count = register_block->values_count;
+                    step2_buffer = register_block->buffer;
+                }
+                else {
+                    step2_data_count = data_count;
+                    step2_buffer = buffer_to_free;
+                }
             }
             else {
-                step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+                esp_system_abortf<64>("Step 2 handling missing for Modbus function code %d", static_cast<int>(register_block->function_code));
             }
 
-            static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
-                                                                          step2_function_code,
-                                                                          register_block->start_address,
-                                                                          data_count,
-                                                                          const_cast<void *>(buffer),
-                                                                          2_s,
-            [ctx, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
-                if (ctx->destroy_requested) {
+            if (!skip_step2) {
+                static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
+                                                                              step2_function_code,
+                                                                              register_block->start_address,
+                                                                              step2_data_count,
+                                                                              step2_buffer,
+                                                                              2_s,
+                [ctx, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+                    if (ctx->destroy_requested) {
+                        ctx->transact_pending = false;
+
+                        free(buffer_to_free);
+                        delete ctx;
+                        return;
+                    }
+
+                    if (step2_result != TFModbusTCPClientTransactionResult::Success) {
+                        trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 e%d%s%s",
+                              ctx->slot,
+                              ctx->test ? 1 : 0,
+                              get_battery_mode_as_char(ctx->mode),
+                              get_battery_mode_as_char(ctx->table->effective_mode),
+                              ctx->index + 1,
+                              ctx->table->register_blocks_count,
+                              static_cast<int>(step2_result),
+                              step2_error_message != nullptr ? " / " : "",
+                              step2_error_message != nullptr ? step2_error_message : "");
+
+                        char description_[128];
+
+                        writer_logfln(ctx, true,
+                                      ctx->language == Language::English
+                                      ? "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s"
+                                      : "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
+                                      get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description_, std::size(description_)),
+                                      ctx->index + 1, ctx->table->register_blocks_count,
+                                      get_tf_modbus_tcp_client_transaction_result_name(step2_result),
+                                      static_cast<int>(step2_result),
+                                      step2_error_message != nullptr ? " / " : "",
+                                      step2_error_message != nullptr ? step2_error_message : "");
+
+                        ctx->transact_pending = false;
+
+                        free(buffer_to_free);
+                        last_writer_step(ctx, false);
+                        return;
+                    }
+
+                    ++ctx->index;
                     ctx->transact_pending = false;
 
                     free(buffer_to_free);
-                    delete ctx;
-                    return;
-                }
+                    next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
+                },
+                ctx->transaction_id_mask);
 
-                if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 e%d%s%s",
-                          ctx->slot,
-                          ctx->test ? 1 : 0,
-                          get_battery_mode_as_char(ctx->mode),
-                          get_battery_mode_as_char(ctx->table->effective_mode),
-                          ctx->index + 1,
-                          ctx->table->register_blocks_count,
-                          static_cast<int>(step2_result),
-                          step2_error_message != nullptr ? " / " : "",
-                          step2_error_message != nullptr ? step2_error_message : "");
-
-                    char description_[128];
-
-                    writer_logfln(ctx, true,
-                                  ctx->language == Language::English
-                                  ? "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s"
-                                  : "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
-                                  get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description_, std::size(description_)),
-                                  ctx->index + 1, ctx->table->register_blocks_count,
-                                  get_tf_modbus_tcp_client_transaction_result_name(step2_result),
-                                  static_cast<int>(step2_result),
-                                  step2_error_message != nullptr ? " / " : "",
-                                  step2_error_message != nullptr ? step2_error_message : "");
-
-                    ctx->transact_pending = false;
-
-                    free(buffer_to_free);
-                    last_writer_step(ctx, false);
-                    return;
-                }
-
-                ++ctx->index;
-                ctx->transact_pending = false;
-
-                free(buffer_to_free);
-                next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
-            },
-            ctx->transaction_id_mask);
+                return;
+            }
         }
-        else {
-            ++ctx->index;
-            ctx->transact_pending = false;
 
-            free(buffer_to_free);
-            next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
-        }
+        ++ctx->index;
+        ctx->transact_pending = false;
+
+        free(buffer_to_free);
+        next_writer_step(ctx); // FIXME: maybe add a little delay between writes to avoid bursts?
     },
     ctx->transaction_id_mask);
 }
@@ -676,6 +842,13 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
             case ModbusFunctionCode::MaskWriteRegister:
             case ModbusFunctionCode::ReadMaskWriteSingleRegister:
             case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+            case ModbusFunctionCode::IfDifferentWriteSingleCoil:
+            case ModbusFunctionCode::IfDifferentWriteSingleRegister:
+            case ModbusFunctionCode::IfDifferentWriteMultipleCoils:
+            case ModbusFunctionCode::IfDifferentWriteMultipleRegisters:
+            case ModbusFunctionCode::IfDifferentMaskWriteRegister:
+            case ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister:
+            case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
                 break;
 
             default:

@@ -78,6 +78,13 @@ let x = {
             "register_blocks_function_code_mask_write_register": "22 – Register maskiert schreiben",
             "register_blocks_function_code_read_mask_write_single_register": "3 + 6 – Einzelnes Register lesen und maskiert schreiben",
             "register_blocks_function_code_read_mask_write_multiple_registers": "3 + 16 – Mehrere Register lesen und maskiert schreiben",
+            "register_blocks_function_code_if_different_write_single_coil": "100 + 5 – Falls abweichend, einzelne Coil schreiben",
+            "register_blocks_function_code_if_different_write_single_register": "100 + 6 – Falls abweichend, einzelnes Register schreiben",
+            "register_blocks_function_code_if_different_write_multiple_coils": "100 + 15 – Falls abweichend, mehrere Coils schreiben",
+            "register_blocks_function_code_if_different_write_multiple_registers": "100 + 16 – Falls abweichend, mehrere Register schreiben",
+            "register_blocks_function_code_if_different_mask_write_register": "100 + 22 – Falls abweichend, Register maskiert schreiben",
+            "register_blocks_function_code_if_different_read_mask_write_single_register": "100 + 3 + 6 – Falls abweichend, einzelnes Register lesen und maskiert schreiben",
+            "register_blocks_function_code_if_different_read_mask_write_multiple_registers": "100 + 3 + 16 – Falls abweichend, mehrere Register lesen und maskiert schreiben",
             "register_blocks_start_address": "Startadresse",
             "register_blocks_start_address_muted": "beginnt bei 0",
             "register_blocks_start_number": "Startnummer",
@@ -121,6 +128,8 @@ let x = {
 
                 case 5:
                 case 15:
+                case 105:
+                case 115:
                     action = "Setze";
                     rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
                     break;
@@ -130,6 +139,11 @@ let x = {
                 case 22:
                 case 9:
                 case 19:
+                case 106:
+                case 116:
+                case 122:
+                case 109:
+                case 119:
                     action = "Setze";
                     rtyp = "Register";
                     break;

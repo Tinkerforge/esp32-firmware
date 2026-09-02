@@ -17,9 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "modbus_tcp_tools.h"
+
 #include <Arduino.h>
 
-#include "modbus_tcp_tools.h"
+#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -29,6 +31,61 @@ void modbus_bswap_registers(uint16_t *register_start, size_t register_count)
         *register_start = __bswap16(*register_start);
         register_start++;
     }
+}
+
+ModbusDataType modbus_get_data_type(ModbusFunctionCode function_code)
+{
+    switch (function_code) {
+    case ModbusFunctionCode::ReadCoils:
+    case ModbusFunctionCode::ReadDiscreteInputs:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::ReadHoldingRegisters:
+    case ModbusFunctionCode::ReadInputRegisters:
+        return ModbusDataType::Register;
+
+    case ModbusFunctionCode::WriteSingleCoil:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::WriteSingleRegister:
+        return ModbusDataType::Register;
+
+    case ModbusFunctionCode::WriteMultipleCoils:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::WriteMultipleRegisters:
+    case ModbusFunctionCode::MaskWriteRegister:
+    case ModbusFunctionCode::ReadMaskWriteSingleRegister:
+    case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+        return ModbusDataType::Register;
+
+    case ModbusFunctionCode::IfDifferentWriteSingleCoil:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::IfDifferentWriteSingleRegister:
+        return ModbusDataType::Register;
+
+    case ModbusFunctionCode::IfDifferentWriteMultipleCoils:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::IfDifferentWriteMultipleRegisters:
+    case ModbusFunctionCode::IfDifferentMaskWriteRegister:
+    case ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister:
+    case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
+        return ModbusDataType::Register;
+
+    default:
+        esp_system_abortf<64>("Unknown Modbus function code: %d", static_cast<int>(function_code));
+    }
+}
+
+size_t modbus_get_buffer_length(ModbusFunctionCode function_code, size_t data_count)
+{
+    if (modbus_get_data_type(function_code) == ModbusDataType::Coil) {
+        return (data_count + 7u) / 8u;
+    }
+
+    return data_count * 2u;
 }
 
 uint16_t ModbusDeserializer::read_uint16()

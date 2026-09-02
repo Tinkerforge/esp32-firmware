@@ -114,6 +114,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.WriteSingleCoil:
+        case ModbusFunctionCode.IfDifferentWriteSingleCoil:
             values_pattern = "^ *[01] *$";
             values_label = __("batteries_modbus_tcp.content.register_blocks_value");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_value_muted");
@@ -121,6 +122,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.WriteSingleRegister:
+        case ModbusFunctionCode.IfDifferentWriteSingleRegister:
             values_pattern = `^ *${util.UINT16_PATTERN} *$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_value");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_value_muted");
@@ -128,6 +130,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.WriteMultipleCoils:
+        case ModbusFunctionCode.IfDifferentWriteMultipleCoils:
             values_pattern = `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_values");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
@@ -135,6 +138,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.WriteMultipleRegisters:
+        case ModbusFunctionCode.IfDifferentWriteMultipleRegisters:
             values_pattern = `^ *${util.UINT16_PATTERN} *(?:, *${util.UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_values");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
@@ -143,6 +147,8 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
 
         case ModbusFunctionCode.MaskWriteRegister:
         case ModbusFunctionCode.ReadMaskWriteSingleRegister:
+        case ModbusFunctionCode.IfDifferentMaskWriteRegister:
+        case ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister:
             values_pattern = "^ *[01x]{1,16} *$";
             values_label = __("batteries_modbus_tcp.content.register_blocks_mask");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_mask_muted");
@@ -151,6 +157,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.ReadMaskWriteMultipleRegisters:
+        case ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters:
             values_pattern = `^ *[01x]{1,16} *(?:, *[01x]{1,16} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK / 2 - 1}}$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_masks");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_masks_muted");
@@ -183,6 +190,13 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         [ModbusFunctionCode.MaskWriteRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_mask_write_register")],
                         [ModbusFunctionCode.ReadMaskWriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_mask_write_single_register")],
                         [ModbusFunctionCode.ReadMaskWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_mask_write_multiple_registers")],
+                        [ModbusFunctionCode.IfDifferentWriteSingleCoil.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_write_single_coil")],
+                        [ModbusFunctionCode.IfDifferentWriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_write_single_register")],
+                        [ModbusFunctionCode.IfDifferentWriteMultipleCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_write_multiple_coils")],
+                        [ModbusFunctionCode.IfDifferentWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_write_multiple_registers")],
+                        [ModbusFunctionCode.IfDifferentMaskWriteRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_mask_write_register")],
+                        [ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_read_mask_write_single_register")],
+                        [ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_read_mask_write_multiple_registers")],
                     ]}
                     placeholder={__("select")}
                     value={util.hasValue(this.state.register_block.func) ? this.state.register_block.func.toString() : undefined}
@@ -239,12 +253,19 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
          || function_code == ModbusFunctionCode.WriteSingleCoil
          || function_code == ModbusFunctionCode.WriteSingleRegister
          || function_code == ModbusFunctionCode.WriteMultipleCoils
-         || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+         || function_code == ModbusFunctionCode.WriteMultipleRegisters
+         || function_code == ModbusFunctionCode.IfDifferentWriteSingleCoil
+         || function_code == ModbusFunctionCode.IfDifferentWriteSingleRegister
+         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleCoils
+         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleRegisters) {
             values = vals.join(", ");
         }
         else if (function_code == ModbusFunctionCode.MaskWriteRegister
               || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
-              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
+              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters
+              || function_code == ModbusFunctionCode.IfDifferentMaskWriteRegister
+              || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister
+              || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters) {
             let and_mask = vals[0];
             let or_mask = vals[1];
 
@@ -264,6 +285,9 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 values = values.substring(1);
             }
         }
+        else {
+            console.log('Unhandled Modbus function code', function_code);
+        }
 
         return values;
     }
@@ -278,7 +302,11 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
          || function_code == ModbusFunctionCode.WriteSingleCoil
          || function_code == ModbusFunctionCode.WriteSingleRegister
          || function_code == ModbusFunctionCode.WriteMultipleCoils
-         || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+         || function_code == ModbusFunctionCode.WriteMultipleRegisters
+         || function_code == ModbusFunctionCode.IfDifferentWriteSingleCoil
+         || function_code == ModbusFunctionCode.IfDifferentWriteSingleRegister
+         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleCoils
+         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleRegisters) {
             let max_values = 0;
             let max_value = 0;
 
@@ -298,19 +326,23 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 max_values = 125;
                 max_value = 65535;
             }
-            else if (function_code == ModbusFunctionCode.WriteSingleCoil) {
+            else if (function_code == ModbusFunctionCode.WriteSingleCoil
+                  || function_code == ModbusFunctionCode.IfDifferentWriteSingleCoil) {
                 max_values = 1;
                 max_value = 1;
             }
-            else if (function_code == ModbusFunctionCode.WriteSingleRegister) {
+            else if (function_code == ModbusFunctionCode.WriteSingleRegister
+                  || function_code == ModbusFunctionCode.IfDifferentWriteSingleRegister) {
                 max_values = 1;
                 max_value = 65535;
             }
-            else if (function_code == ModbusFunctionCode.WriteMultipleCoils) {
+            else if (function_code == ModbusFunctionCode.WriteMultipleCoils
+                  || function_code == ModbusFunctionCode.IfDifferentWriteMultipleCoils) {
                 max_values = 1968;
                 max_value = 1;
             }
-            else if (function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+            else if (function_code == ModbusFunctionCode.WriteMultipleRegisters
+                  || function_code == ModbusFunctionCode.IfDifferentWriteMultipleRegisters) {
                 max_values = 123;
                 max_value = 65535;
             }
@@ -343,14 +375,20 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         }
         else if (function_code == ModbusFunctionCode.MaskWriteRegister
               || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
-              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
+              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters
+              || function_code == ModbusFunctionCode.IfDifferentMaskWriteRegister
+              || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister
+              || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters) {
             let max_masks = 0;
 
             if (function_code == ModbusFunctionCode.MaskWriteRegister
-             || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister) {
+             || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
+             || function_code == ModbusFunctionCode.IfDifferentMaskWriteRegister
+             || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister) {
                 max_masks = 1;
             }
-            else if (function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
+            else if (function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters
+                  || function_code == ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters) {
                 max_masks = 123;
             }
 
@@ -393,6 +431,9 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 vals.push(and_mask);
                 vals.push(or_mask);
             }
+        }
+        else {
+            console.log('Unhandled Modbus function code', function_code);
         }
 
         return vals;

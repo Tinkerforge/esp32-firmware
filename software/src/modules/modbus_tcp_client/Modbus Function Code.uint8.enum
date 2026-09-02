@@ -13,3 +13,24 @@ Read Mask Write Single Register = 9
 
 # 3 + 16 = 19
 Read Mask Write Multiple Registers = 19
+
+# 100 + 5 = 105
+If Different Write Single Coil = 105
+
+# 100 + 6 = 106
+If Different Write Single Register = 106
+
+# 100 + 15 = 115
+If Different Write Multiple Coils = 115
+
+# 100 + 16 = 116
+If Different Write Multiple Registers = 116
+
+# 100 + 22 = 122
+If Different Mask Write Register = 122
+
+# 100 + 3 + 6 = 109
+If Different Read Mask Write Single Register = 109
+
+# 100 + 3 + 16 = 119
+If Different Read Mask Write Multiple Registers = 119

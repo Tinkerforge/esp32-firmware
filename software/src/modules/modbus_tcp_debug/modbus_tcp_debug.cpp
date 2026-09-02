@@ -226,6 +226,13 @@ void ModbusTCPDebug::register_urls()
 
             break;
 
+        case ModbusFunctionCode::IfDifferentWriteSingleCoil:
+        case ModbusFunctionCode::IfDifferentWriteSingleRegister:
+        case ModbusFunctionCode::IfDifferentWriteMultipleCoils:
+        case ModbusFunctionCode::IfDifferentWriteMultipleRegisters:
+        case ModbusFunctionCode::IfDifferentMaskWriteRegister:
+        case ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister:
+        case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
         default:
             report_errorf(cookie, "Unsupported function code: %u", static_cast<uint8_t>(config_function_code));
             return;
