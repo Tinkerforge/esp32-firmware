@@ -258,7 +258,7 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
                 debug(f'ST response with empty status, retrying: {result.response}')
                 continue
 
-            raise BlackboxException(f'ST response with empty status: {result.response}')
+            raise BlackboxException(f'ST response with empty status{" after retry" if retry_on_empty else ""}: {result.response}')
 
         if cancel:
             if retry_on_cancel:
@@ -266,7 +266,7 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
                 debug(f'ST response with cancel status, retrying: {result.response}')
                 continue
 
-            raise BlackboxException(f'ST response with empty status: {result.response}')
+            raise BlackboxException(f'ST response with cancel status{" after retry" if retry_on_cancel else ""}: {result.response}')
 
     return TestResult(passed, parameters, limits, results)
 
