@@ -33,6 +33,16 @@
     #pragma GCC diagnostic ignored "-Wcast-align"
 #endif
 
+#define IPV6_ADDR_FLAG_UNKNOWN          (0x0000)
+#define IPV6_ADDR_FLAG_GLOBAL           (0x0001)
+#define IPV6_ADDR_FLAG_LINK_LOCAL       (0x0002)
+#define IPV6_ADDR_FLAG_SITE_LOCAL       (0x0004)
+#define IPV6_ADDR_FLAG_UNIQUE_LOCAL     (0x0008)
+#define IPV6_ADDR_FLAG_IPV4_MAPPED_IPV6 (0x0010)
+#define IPV6_ADDR_FLAG_STATIC           (0x2000)
+#define IPV6_ADDR_FLAG_NEW              (0x4000)
+#define IPV6_ADDR_FLAG_PREFERRED        (0x8000)
+
 // IPv4
 
 // lwIP ipaddr
@@ -86,9 +96,7 @@ extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char buf[INET_ADDRSTRLE
 
 // lwIP ipaddr
 
-extern inline void tf_ip6addr_ntoa(const ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
-    ip6addr_ntoa_r(addr, buf, buflen);
-}
+void tf_ip6addr_ntoa(const ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen);
 
 extern inline void tf_ip6addr_ntoa(const ip_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
     tf_ip6addr_ntoa(&addr->u_addr.ip6, buf, buflen);

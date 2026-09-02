@@ -27,6 +27,21 @@
 
 #include "gcc_warnings.h"
 
+void tf_ip6addr_ntoa(const ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    ip6addr_ntoa_r(addr, buf, buflen);
+
+    // Convert to lowercase, as required by RFC.
+    for (int i = 0; i < buflen; i++) {
+        const char c = buf[i];
+
+        if (c == '\0') {
+            break;
+        }
+
+        buf[i] = c | 0x20;
+    }
+}
+
 static constexpr uint8_t ipv4_mapped_prefix[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff}; // 0:0:0:0:0:ffff::/96
 
 IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t addr_len)
