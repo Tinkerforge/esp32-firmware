@@ -183,6 +183,9 @@ void EVSEV2::post_setup()
     if (!device_found)
         return;
 
+    // We use '!' for empty character
+    is_in_bootloader(io_scheduler.hal_call([this]() { return tf_evse_v2_set_energy_meter_display_text(&device, "!!!!!!!!", "!!!!"); }));
+
     task_scheduler.scheduleOnce([this](){
         uint32_t press_time = 0;
         io_scheduler.hal_call([this, &press_time]() { return tf_evse_v2_get_button_press_boot_time(&device, true, &press_time); });
