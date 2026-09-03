@@ -189,6 +189,7 @@ private:
     uint64_t management_task_id = 0;
     uint64_t timeout_task_id = 0;
     uint64_t service_token_removal_task_id = 0;
+    uint8_t service_token_removal_attempts = 0;
 
     esp_ping_handle_t ping = nullptr;
     micros_t ping_start = 0_us;
