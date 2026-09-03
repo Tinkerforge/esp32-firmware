@@ -41,6 +41,9 @@ sys_stdout = sys.stdout
 sys_stderr = sys.stderr
 sys_print = print
 
+class TestAborted(Exception):
+    pass
+
 class LogWriter:
     def __init__(self):
         self.fp = None
@@ -808,7 +811,7 @@ def led_wrap():
         commit_message += ' (test failure)'
         files_to_commit.append(report_path_json)
 
-        raise
+        raise TestAborted() from e
 
     try:
         report_path_pdf = report_path_prefix + ".pdf"
@@ -878,15 +881,15 @@ def led_wrap():
                     fatal_error("Could not print shipping label")
 
         print(green('Done!'))
-    except BaseException:
-        print(red('Aftermath failed!'))
+    except BaseException as e:
+        print(red('Aftermath failed: {e}'))
 
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
 
         commit_message += ' (aftermath failure)'
 
-        raise
+        raise TestAborted() from e
 
     stage3.power_off()
     stage3.set_led_strip_color((0, 255, 0))
@@ -1484,6 +1487,8 @@ def outer_main():
         except FatalError as e:
             print(red(str(e)))
             exit_code = 1
+        except TestAborted:
+            pass # exception already handled in led_wrap()
         except Exception:
             traceback.print_exc()
             exit_code = 1
