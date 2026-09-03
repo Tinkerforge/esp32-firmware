@@ -40,13 +40,10 @@
 
 #include "build.h"
 #include "options.h"
-#include "esp_tls.h"
-#include "esp_tls_errors.h"
 #include "event_log_prefix.h"
 #include "language.h"
 #include "tools.h"
 #include "tools/dns.h"
-#include "tools/net.h"
 #include "modules/firmware_update/generated/signature_verify.h"
 
 #include "gcc_warnings.h"
