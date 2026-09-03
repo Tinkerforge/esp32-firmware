@@ -803,8 +803,11 @@ void API::register_urls()
             TFJsonSerializer json{buf.get(), BUF_SIZE};
             json.addObject();
             json.addMemberNumber("uptime", now_us().to<millis_t>().as<int64_t>());
+            json._addRaw("\n ", 2);
             json.addMemberString("firmware", build_filename_str());
+            json._addRaw("\n ", 2);
             json.addMemberString("build_info", build_info_str());
+            json._addRaw("\n ", 2);
 
             constexpr struct {
                 const char *name;
@@ -824,6 +827,7 @@ void API::register_urls()
                 json.addMemberNumber("largest_free_block", static_cast<uint32_t>(info.largest_free_block));
                 json.addMemberNumber("min_free", static_cast<uint32_t>(info.minimum_free_bytes));
                 json.endObject();
+                json._addRaw("\n ", 2);
             }
 
             json.addMemberObject("himem");
@@ -836,6 +840,7 @@ void API::register_urls()
                 )
             );
             json.endObject();
+            json._addRaw("\n ", 2);
 
             // Ignore await results here:
             // Half a debug report is better than nothing.
@@ -853,6 +858,7 @@ void API::register_urls()
                 json.addMemberArray("devices");
 
                 while (tf_hal_get_device_info(&hal, i, uid_str, port_name, &device_id) == TF_E_OK) {
+                    json._addRaw("\n   ", 4);
                     json.addObject();
                     json.addMemberString("UID", uid_str);
                     json.addMemberNumber("DID", device_id);
@@ -863,6 +869,7 @@ void API::register_urls()
                 }
 
                 json.endArray();
+                json._addRaw("\n ", 2);
             });
 
 #if MODULE_IO_SCHEDULER_AVAILABLE()
@@ -879,6 +886,7 @@ void API::register_urls()
                     // We need a string below.
                     char port_string[2] = {c, 0};
 
+                    json._addRaw("\n   ", 4);
                     json.addObject();
                     json.addMemberString("port", port_string);
                     json.addMemberNumber("SpiTfpChecksum", spitfp_checksum);
@@ -889,6 +897,7 @@ void API::register_urls()
                 }
 
                 json.endArray();
+                json._addRaw("\n ", 2);
             });
 
             (void)task_scheduler.await([&json](){
@@ -899,8 +908,10 @@ void API::register_urls()
 
                 for_filename_in("/config",
                     [&json](const char *filename, size_t len, bool is_dir) {
-                        if (!is_dir)
+                        if (!is_dir) {
+                            json._addRaw("\n   ", 4);
                             json.addString(filename, len);
+                        }
                         return true;
                     }
                 );
