@@ -283,30 +283,38 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest &req, const
             if (error != nullptr)
                 return req.send_plain(404, error);
 
-            String response;
-            uint16_t status_code = 200;
-            auto result = task_scheduler.await([&response, &status_code, i=match_data.idx, &suffix_path]() {
-                Config *cfg = api.states[i].config;
-                cfg = cfg->walk(suffix_path.path.data(), suffix_path.path.size());
+            struct {
+                String response;
+                uint16_t status_code;
+                size_t i;
+                API::SuffixPath &suffix_path;
+            } closure {
+                String(), 200, match_data.idx, suffix_path
+            };
+
+            auto result = task_scheduler.await([&closure]() {
+                const auto &reg = api.states[closure.i];
+                Config *cfg = reg.config;
+                cfg = cfg->walk(closure.suffix_path.path.data(), closure.suffix_path.path.size());
                 if (cfg == nullptr) {
-                    status_code = 404;
-                    response = "Path not found";
+                    closure.status_code = 404;
+                    closure.response = "Path not found";
                     return;
                 }
 
-                response = cfg->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
+                closure.response = cfg->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
             });
 
             if (!result) {
-                status_code = 500;
-                response = "Failed to get config. Await failed.";
+                closure.status_code = 500;
+                closure.response = "Failed to get config. Await failed.";
             }
 
-            if (status_code == 200) {
-                return req.send_json(status_code, response);
+            if (closure.status_code == 200) {
+                return req.send_json(closure.status_code, closure.response);
             }
 
-            return req.send_plain(status_code, response);
+            return req.send_plain(closure.status_code, closure.response);
         }
         case APIType::COMMAND: {
             API::SuffixPath suffix_path;
