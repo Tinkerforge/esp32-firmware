@@ -397,24 +397,159 @@ class Scanner:
             except:
                 fatal_error('Could not turn numlock on. Is numlockx installed?')
 
-        # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
+        self.qr_charger_code = None
+        self.qr_gen = None
+        self.qr_variant = None
+        self.qr_power = None
+        self.qr_extras = None
+
+        self.qr_extras_code = None
+        self.qr_stand = '0'
+        self.qr_stand_wiring = '0'
+        self.qr_stand_lock = False
+        self.qr_supply_cable = 0.0
+        self.qr_cee = False
+        self.qr_custom_engraving = False
+        self.qr_custom_type2_cable = False
+        self.qr_custom_type2_power = None
+
+        self.qr_esp_code = None
+        self.qr_hardware_type = None
+
+        while self.qr_charger_code == None or self.qr_extras_code == None or self.qr_esp_code == None:
+            missing_codes = []
+
+            if self.qr_charger_code == None:
+                missing_codes.append('charger')
+
+            if self.qr_extras_code == None:
+                missing_codes.append('extras')
+
+            if self.qr_esp_code == None:
+                missing_codes.append('ESP Brick')
+
+            if len(missing_codes) == 3:
+                missing_codes_str = f'{missing_codes[0]}, {missing_codes[1]} or {missing_codes[2]}'
+            elif len(missing_codes) == 2:
+                missing_codes_str = f'{missing_codes[0]} or {missing_codes[1]}'
+            else:
+                missing_codes_str = missing_codes[0]
+
+            tfutil.drop_stdin_buffer()
+            orig_print(green(f"Scan the {missing_codes_str} QR code: "), end="")
+            code = getpass.getpass('')
+
+            log_writer.write_log('\n')
+
+            if code.startswith('T:'):
+                if not self.read_charger_code(code):
+                    print(yellow('Malformed charger QR code, try again'))
+                else:
+                    if self.qr_charger_code != None:
+                        if self.qr_charger_code == code:
+                            print(yellow('The same charger QR code was already scanned'))
+                        else:
+                            fatal_error('Another charger QR code was scanned before')
+                    else:
+                        if self.qr_hardware_type != None and f'warp{self.qr_gen}' != self.qr_hardware_type:
+                            fatal_error('Generation mismatch with ESP Brick QR code')
+
+                        self.qr_charger_code = code
+
+                        print("Charger QR code scanned:")
+                        print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
+
+                        if self.qr_power == 'CC' and self.qr_cable_len == 'CC':
+                            print("    Type-2 Cable: Custom")
+                        else:
+                            print("    Type-2 Power: {} kW".format(self.qr_power))
+
+                            if self.qr_cable_len == 'CC':
+                                print("    Type-2 Length: Custom")
+                            else:
+                                print("    Type-2 Length: {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+
+                        print("    Material: {}".format(self.qr_material))
+                        print("    Custom Engraving: {}".format(self.qr_custom_engraving))
+                        print("    HW Version: {}".format(self.qr_hw_version))
+                        print("    Serial: {}".format(self.qr_serial))
+                        print("    Build Month: {}".format(self.qr_built))
+                        print("    Extras: {}".format(self.qr_extras))
+                        print("    Shipping: {}".format(self.qr_shipping))
+                        print("    Order ID: {}".format(self.qr_order_id))
+
+                        if not self.qr_extras:
+                            if self.qr_extras_code != None:
+                                fatal_error('An extras QR code was scanned while the charger QR code does not indicate one')
+
+                            self.qr_extras_code = ''
+
+                        if self.qr_variant == 'B':
+                            if self.qr_esp_code != None:
+                                fatal_error('An ESP Brick QR code was scanned while the charger QR code does not indicate one')
+
+                            self.qr_esp_code = ''
+            elif code.startswith('S:'):
+                success, error_message = self.read_extras_code(code)
+
+                if not success:
+                    print(yellow(error_message))
+                else:
+                    if self.qr_extras == False:
+                        fatal_error('An extras QR code was scanned while the charger QR code does not indicate one')
+
+                    if self.qr_extras_code != None:
+                        if self.qr_extras_code == code:
+                            print(yellow('The same extras QR code was already scanned'))
+                        else:
+                            fatal_error('Another extras QR code was scanned before')
+                    else:
+                        self.qr_extras_code = code
+
+                        print("Extras QR code scanned:")
+                        print("    Stand: {}".format(self.qr_stand))
+                        print("    Stand Wiring: {}".format(self.qr_stand_wiring))
+                        print("    Stand Lock: {}".format(self.qr_stand_lock))
+                        print("    Supply Cable: {} m".format(self.qr_supply_cable))
+                        print("    CEE: {}".format(self.qr_cee))
+                        print("    Custom Engraving: {}".format(self.qr_custom_engraving))
+                        print("    Custom Type-2 Cable: {}".format(self.custom_type2_cable))
+            elif code.startswith('WIFI:'):
+                if not self.read_esp_code(code):
+                    print(yellow('Malformed ESP Brick QR code, try again'))
+                else:
+                    if self.qr_variant == 'B':
+                        fatal_error('An ESP Brick QR code was scanned while the charger QR code does not indicate one')
+
+                    if self.qr_esp_code != None:
+                        if self.qr_esp_code == code:
+                            print(yellow('The same ESP Brick QR code was already scanned'))
+                        else:
+                            fatal_error('Another ESP Brick QR code was scanned before')
+                    else:
+                        if self.qr_gen != None and self.qr_hardware_type != f'warp{self.qr_gen}':
+                            fatal_error('Generation mismatch between charger QR code and ESP Brick QR code')
+
+                        self.qr_esp_code = code
+
+                        print("ESP Brick QR code scanned:")
+                        print("    Hardware type: {}".format(self.qr_hardware_type))
+                        print("    UID: {}".format(self.qr_esp_uid))
+            else:
+                print(yellow('Malformed QR code, try again'))
+
+    def read_charger_code(self, code):
+        # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:1;;;
         pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
         pattern_3_2 = r'^T:(WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-(PC))?);V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
 
-        tfutil.drop_stdin_buffer()
-        self.qr_charger_code = my_input("Scan the charger QR code:")
-        log_writer.write_log(self.qr_charger_code + '\n')
-        m_4 = re.match(pattern_4, self.qr_charger_code)
-        if m_4 == None:
-            m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
+        m_4 = re.match(pattern_4, code)
 
-        while not m_4 and not m_3_2:
-            tfutil.drop_stdin_buffer()
-            self.qr_charger_code = my_input("Scan the charger QR code:", red)
-            log_writer.write_log(self.qr_charger_code + '\n')
-            m_4 = re.match(pattern_4, self.qr_charger_code)
-            if m_4 == None:
-                m_3_2 = re.match(pattern_3_2, self.qr_charger_code)
+        if m_4 == None:
+            m_3_2 = re.match(pattern_3_2, code)
+
+            if m_3_2 == None:
+                return False
 
         if m_4 != None:
             self.qr_sku = m_4.group(1)
@@ -458,112 +593,64 @@ class Scanner:
             self.qr_shipping = bool(int(m_3_2.group(11) if m_3_2.group(11) != None else '0'))
             self.qr_order_id = m_3_2.group(12)
 
-        print("Charger QR code data:")
-        print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
+        return True
 
-        if self.qr_power == 'CC' and self.qr_cable_len == 'CC':
-            print("    Type-2 Cable: Custom")
+    def read_extras_code(self, code):
+        # S:1;W:1;E:2.5;C:1;CFP:1;CT2:MH100;;;
+        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
+
+        m = re.match(pattern, code)
+
+        if m == None:
+            return False, 'Malformed extras QR code, try again'
+
+        self.qr_stand = m.group(1) if m.group(1) != None else '0'
+        self.qr_stand_wiring = m.group(2) if m.group(2) != None else '0'
+        self.qr_stand_lock = bool(int(m.group(3) if m.group(3) != None else '0'))
+        self.qr_supply_cable = float(m.group(4))
+        self.qr_cee = bool(int(m.group(5)))
+        self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
+
+        if m.group(7) == None or m.group(7) == '0':
+            self.custom_type2_cable = 'no'
+        elif m.group(7) == '1':
+            if self.qr_power == None:
+                return False, 'Scan charger QR code before the extras QR code'
+
+            if self.qr_power == 'CC':
+                fatal_error('Custom Type-2 power unknown')
+
+            self.qr_custom_type2_power = self.qr_power
+
+            self.custom_type2_cable = 'yes'
         else:
-            print("    Type-2 Power: {} kW".format(self.qr_power))
+            parts = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ').replace('C', 'Custom ').replace('H', '11kW ').replace('F', '22kW ').split(' ')
+            parts[-1] = str(round(int(parts[-1]) / 10, 1))
+            self.custom_type2_cable = ' '.join(parts) + ' m'
 
-            if self.qr_cable_len == 'CC':
-                print("    Type-2 Length: Custom")
+            if 'H' in m.group(7):
+                self.qr_custom_type2_power = '11'
+            elif 'F' in m.group(7):
+                self.qr_custom_type2_power = '22'
             else:
-                print("    Type-2 Length: {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+                fatal_error('Custom Type-2 power unknown')
 
-        print("    Material: {}".format(self.qr_material))
-        print("    Custom Engraving: {}".format(self.qr_custom_engraving))
-        print("    HW Version: {}".format(self.qr_hw_version))
-        print("    Serial: {}".format(self.qr_serial))
-        print("    Build Month: {}".format(self.qr_built))
-        print("    Extras: {}".format(self.qr_extras))
-        print("    Shipping: {}".format(self.qr_shipping))
-        print("    Order ID: {}".format(self.qr_order_id))
+        return True, None
 
-        if not self.qr_extras:
-            self.qr_extras_code = None
-            self.qr_stand = '0'
-            self.qr_stand_wiring = '0'
-            self.qr_stand_lock = False
-            self.qr_supply_cable = 0.0
-            self.qr_cee = False
-            self.qr_custom_engraving = False
-            self.qr_custom_type2_cable = False
-            self.qr_custom_type2_power = None
-        else:
-            # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
-            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
-            tfutil.drop_stdin_buffer()
-            self.qr_extras_code = my_input("Scan the extras QR code:")
-            log_writer.write_log(self.qr_extras_code + '\n')
-            m = re.match(pattern, self.qr_extras_code)
+    def read_esp_code(self, code):
+        # WIFI:S:warp2-abcd;T:WPA;P:aaaa-6666-aaaa-6666;;
+        pattern = rf"^WIFI:S:(warp\d)-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
 
-            while not m:
-                tfutil.drop_stdin_buffer()
-                self.qr_extras_code = my_input("Scan the extras QR code:", red)
-                log_writer.write_log(self.qr_extras_code + '\n')
-                m = re.match(pattern, self.qr_extras_code)
+        m = re.match(pattern, code)
 
-            self.qr_stand = m.group(1) if m.group(1) != None else '0'
-            self.qr_stand_wiring = m.group(2) if m.group(2) != None else '0'
-            self.qr_stand_lock = bool(int(m.group(3) if m.group(3) != None else '0'))
-            self.qr_supply_cable = float(m.group(4))
-            self.qr_cee = bool(int(m.group(5)))
-            self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
+        if m == None:
+            return False
 
-            if m.group(7) == None or m.group(7) == '0':
-                custom_type2_cable = 'no'
-            elif m.group(7) == '1':
-                if self.qr_power == 'CC':
-                    fatal_error('Custom Type-2 power unknown')
+        self.qr_hardware_type = m.group(1)
+        self.qr_esp_uid = m.group(2)
+        self.qr_passphrase = m.group(3)
 
-                self.qr_custom_type2_power = self.qr_power
-
-                custom_type2_cable = 'yes'
-            else:
-                parts = m.group(7).replace('M', 'Metron ').replace('T', 'Tesla ').replace('C', 'Custom ').replace('H', '11kW ').replace('F', '22kW ').split(' ')
-                parts[-1] = str(round(int(parts[-1]) / 10, 1))
-                custom_type2_cable = ' '.join(parts) + ' m'
-
-                if 'H' in m.group(7):
-                    self.qr_custom_type2_power = '11'
-                elif 'F' in m.group(7):
-                    self.qr_custom_type2_power = '22'
-                else:
-                    fatal_error('Custom Type-2 power unknown')
-
-            print("Extras QR code data:")
-            print("    Stand: {}".format(self.qr_stand))
-            print("    Stand Wiring: {}".format(self.qr_stand_wiring))
-            print("    Stand Lock: {}".format(self.qr_stand_lock))
-            print("    Supply Cable: {} m".format(self.qr_supply_cable))
-            print("    CEE: {}".format(self.qr_cee))
-            print("    Custom Engraving: {}".format(self.qr_custom_engraving))
-            print("    Custom Type-2 Cable: {}".format(custom_type2_cable))
-
-        if self.qr_variant != "B":
-            pattern = rf"^WIFI:S:(warp{self.qr_gen})-([{BASE58}]{{3,6}}|[{ZBASE32}{{3,7}}]);T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$"
-            tfutil.drop_stdin_buffer()
-            orig_print(green("Scan the ESP Brick QR code: "), end="")
-            self.qr_esp_code = getpass.getpass('')
-            log_writer.write_log('\n')
-            m = re.match(pattern, self.qr_esp_code)
-
-            while not m:
-                tfutil.drop_stdin_buffer()
-                orig_print(red("Scan the ESP Brick QR code: "), end="")
-                self.qr_esp_code = getpass.getpass('')
-                log_writer.write_log('\n')
-                m = re.match(pattern, self.qr_esp_code)
-
-            self.qr_hardware_type = m.group(1)
-            self.qr_esp_uid = m.group(2)
-            self.qr_passphrase = m.group(3)
-
-            print("ESP Brick QR code data:")
-            print("    Hardware type: {}".format(self.qr_hardware_type))
-            print("    UID: {}".format(self.qr_esp_uid))
-
+        return True
 
 def set_iso15118_enabled(enable: bool):
     req = urllib.request.Request("http://{}/iso15118/config".format(host), data=json.dumps({
