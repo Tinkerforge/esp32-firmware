@@ -473,7 +473,8 @@ def now():
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
 
 def my_input(s, color_fn=green):
-    return input(color_fn(s) + " ")
+    print(color_fn(s) + " ", end="")
+    return input("")
 
 Enum = namedtuple('Enum', 'uid hardware_version firmware_version device_identifier position')
 
