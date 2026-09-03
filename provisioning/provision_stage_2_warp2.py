@@ -426,7 +426,10 @@ class Scanner:
                 missing_codes.append('charger')
 
             if self.qr_extras_code == None:
-                missing_codes.append('extras')
+                if self.qr_extras == True:
+                    missing_codes.append('extras')
+                else:
+                    missing_codes.append('extras (if available)')
 
             if self.qr_esp_code == None:
                 missing_codes.append('ESP Brick')
@@ -459,7 +462,7 @@ class Scanner:
 
                         self.qr_charger_code = code
 
-                        print("Charger QR code scanned:")
+                        print(f"Charger QR code scanned: {self.qr_charger_code}")
                         print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro", "E": "Eichrecht"}[self.qr_variant]))
 
                         if self.qr_power == 'CC' and self.qr_cable_len == 'CC':
@@ -509,7 +512,7 @@ class Scanner:
                     else:
                         self.qr_extras_code = code
 
-                        print("Extras QR code scanned:")
+                        print(f"Extras QR code scanned: {self.qr_extras_code}")
                         print("    Stand: {}".format(self.qr_stand))
                         print("    Stand Wiring: {}".format(self.qr_stand_wiring))
                         print("    Stand Lock: {}".format(self.qr_stand_lock))
@@ -535,9 +538,11 @@ class Scanner:
 
                         self.qr_esp_code = code
 
-                        print("ESP Brick QR code scanned:")
+                        print("ESP Brick QR code scanned: [hidden]")
                         print("    Hardware type: {}".format(self.qr_hardware_type))
                         print("    UID: {}".format(self.qr_esp_uid))
+            elif len(code) == 0:
+                print(yellow('Empty QR code, try again'))
             else:
                 print(yellow('Malformed QR code, try again'))
 
