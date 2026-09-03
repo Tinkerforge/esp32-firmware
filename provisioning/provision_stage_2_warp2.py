@@ -618,7 +618,7 @@ class Scanner:
             self.custom_type2_cable = 'no'
         elif m.group(7) == '1':
             if self.qr_power == None:
-                return False, 'Scan charger QR code before the extras QR code'
+                return False, 'Scan the charger QR code before the extras QR code'
 
             if self.qr_power == 'CC':
                 fatal_error('Custom Type-2 power unknown')
