@@ -46,7 +46,11 @@ struct Task {
     // Task is currently running while another thread (or fn itself) called rescheduleNow with this task's ID.
     // Will be executed as next task again.
     bool immediate_reschedule;
-    // Task was allocated by the task scheduler.
+    // If true, this task was allocated by the task scheduler with new.
+    //   -> The task must be deleted.
+    //
+    // If false, this task was constructed via placement-new into a buffer that was passed to the task scheduler.
+    //   -> The task must not be deleted, but the destructor must be called.
     bool owned = true;
 
     Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once);
@@ -59,7 +63,13 @@ struct std::default_delete<Task> {
     default_delete() = default;
     template <class U>
     constexpr default_delete(default_delete<U>) noexcept {}
-    void operator()(Task* p) const noexcept { if (p->owned) delete p; }
+    void operator()(Task* p) const noexcept
+    {
+        if (p->owned)
+            delete p;
+        else
+            p->~Task();
+    }
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
