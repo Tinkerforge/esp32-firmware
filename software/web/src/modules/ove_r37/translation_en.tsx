@@ -6,7 +6,7 @@ let x = {
             "ove_r37": "OVE R 37"
         },
         "content": {
-            "ove_r37": "OVE-Richtlinie R 37",
+            "ove_r37": "OVE Directive R 37",
             "enabled": "OVE R 37 enabled",
             "enabled_muted": "Grid support per OVE R 37 (Austria)",
             "enabled_desc": "Enable the OVE R 37 grid support functions (undervoltage trip, reconnect conditions, phase symmetry).",
