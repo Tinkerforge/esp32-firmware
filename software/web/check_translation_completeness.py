@@ -176,9 +176,9 @@ def main():
             else:
                 unused_filtered.append(x)
 
-        print("Unused placeholders:")
-        for x in sorted(unused_filtered):
-            print("  " + x)
+        #print("Unused placeholders:")
+        #for x in sorted(unused_filtered):
+        #    print("  " + x)
 
 if __name__ == "__main__":
     main()
