@@ -926,7 +926,7 @@ void EvseCommon::register_urls()
             backend->get_charging_slot(CHARGING_SLOT_AUTOMATION, nullptr, &slot_enabled, nullptr);
             if (slot_enabled) {
                 logger.printfln("Clearing leftover limit from automation slot");
-                backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, true);
+                backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, false);
             }
         }
     });
@@ -962,7 +962,7 @@ void EvseCommon::register_events()
 
         if (slot_enabled) {
             logger.printfln("Clearing leftover limit from automation slot");
-            backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, true);
+            backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, false);
         }
     }
 #endif
