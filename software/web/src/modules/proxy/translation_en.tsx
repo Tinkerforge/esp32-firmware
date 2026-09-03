@@ -28,8 +28,7 @@ let x = {
             "listen_port": "Listen port",
             "listen_port_muted": "",
             "listen_address_v6": "IPv6 listen address",
-            "listen_address_v6_muted": "",
-            "listen_address_v6_invalid": "Invalid IPv6 address"
+            "listen_address_v6_muted": ""
         },
         "script": {
             "no_bricklets": "No Bricklets connected.",

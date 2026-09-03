@@ -27,6 +27,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputIP } from "../../ts/components/input_ip";
+import { InputIP6 } from "../../ts/components/input_ip6";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Cpu, Slash } from "react-feather";
@@ -132,11 +133,10 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                     </FormRow>
 
                     <FormRow label={__("proxy.content.listen_address_v6")} label_muted={__("proxy.content.listen_address_v6_muted")}>
-                        <InputIP invalidFeedback={__("proxy.content.listen_address_v6_invalid")}
-                                 ipVersion="v6"
-                                 required
-                                 value={state.listen_address_v6}
-                                 onValue={this.set("listen_address_v6")}/>
+                        <InputIP6 invalidFeedback={__("component.ip6_configuration.ip6_address_invalid")}
+                                  required
+                                  value={state.listen_address_v6}
+                                  onValue={this.set("listen_address_v6")}/>
                     </FormRow>
                 </SubPage.Config>
             </SubPage>

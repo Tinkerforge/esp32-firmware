@@ -28,8 +28,7 @@ let x = {
             "listen_port": "Server-Port",
             "listen_port_muted": "",
             "listen_address_v6": "IPv6-Bind-Adresse",
-            "listen_address_v6_muted": "",
-            "listen_address_v6_invalid": "Ungültige IPv6-Adresse"
+            "listen_address_v6_muted": ""
         },
         "script": {
             "no_bricklets": "Keine Bricklets angeschlossen.",
