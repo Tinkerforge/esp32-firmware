@@ -96,18 +96,18 @@ protected:
     virtual void factory_reset() = 0;
     virtual void reset() = 0;
 
-    virtual void set_data_storage(uint8_t, const uint8_t *) = 0;
-    virtual void get_data_storage(uint8_t, uint8_t *) = 0;
+    virtual void set_data_storage(uint8_t page, const uint8_t *data) = 0;
+    virtual void get_data_storage(uint8_t page, uint8_t *data) = 0;
 
-    virtual void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *) = 0;
+    virtual void set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v, uint8_t *ret_status) = 0;
 
-    virtual void set_control_pilot_disconnect(bool, bool *) = 0;
+    virtual void set_control_pilot_disconnect(bool cp_disconnect, bool *cp_disconnected) = 0;
     virtual bool get_control_pilot_disconnect() = 0;
 
     virtual void set_boost_mode(bool enabled) = 0;
 
-    virtual int get_charging_slot(uint8_t, uint16_t *, bool *, bool *) = 0;
-    virtual int set_charging_slot(uint8_t, uint16_t, bool, bool) = 0;
+    virtual int get_charging_slot(uint8_t slot, uint16_t *ret_current, bool *ret_enabled, bool *ret_reset_on_dc) = 0;
+    virtual int set_charging_slot(uint8_t slot, uint16_t current, bool enabled, bool reset_on_dc) = 0;
     virtual void set_charging_slot_max_current(uint8_t slot, uint16_t current) = 0;
     virtual void set_charging_slot_clear_on_disconnect(uint8_t slot, bool clear_on_disconnect) = 0;
     virtual void set_charging_slot_active(uint8_t slot, bool enabled) = 0;
