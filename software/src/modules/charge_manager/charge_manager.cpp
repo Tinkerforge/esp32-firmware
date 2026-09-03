@@ -496,7 +496,6 @@ static bool update_authentication(
         // The newest auth info is at index 0. So it is enough to compare the first entry to see if anything changed.
         auth_info_changed = target.auth_info[0] != v5->auth_info[0];
         if (auth_info_changed) {
-            logger.printfln("auth info changed");
 
 #if MODULE_NFC_AVAILABLE() && MODULE_AUTOMATION_AVAILABLE()
             // Fire the NFC automation trigger for tags that were just seen by a
