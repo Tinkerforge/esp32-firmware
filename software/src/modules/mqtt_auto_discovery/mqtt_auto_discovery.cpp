@@ -33,26 +33,6 @@
 #include "options.h"
 #include "tools/string_builder.h"
 
-// Inject RAW, preformatted Json into the serializer. Must be valid JSON otherwise things might break
-static void json_write_raw(TFJsonSerializer &json, const char *raw, size_t len)
-{
-    // Write comma separator if not the first element in the container
-    if (!json.in_empty_container) {
-        ++json.buf_required;
-        if (json.buf_size > 0 && (size_t)(json.head - json.buf) <= (json.buf_size - 1)) {
-            *json.head = ',';
-            ++json.head;
-        }
-    }
-    json.in_empty_container = false;
-
-    json.buf_required += len;
-    if (json.buf_size >= len && (size_t)(json.head - json.buf) <= (json.buf_size - len)) {
-        memcpy(json.head, raw, len);
-        json.head += len;
-    }
-}
-
 void MqttAutoDiscovery::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -395,11 +375,11 @@ void MqttAutoDiscovery::announce_next_topic()
 
     if (strlen(info.json_attributes_topic) > 0) {
         json.addMemberStringF("json_attributes_topic", "%s/%s", topic_prefix.c_str(), info.json_attributes_topic);
-        json_write_raw(json, info.json_attributes_info, strlen(info.json_attributes_info));
+        json._addJson(info.json_attributes_info, strlen(info.json_attributes_info));
     }
 
     // Inject pre-formatted static_info as raw JSON object members
-    json_write_raw(json, static_info, strlen(static_info));
+    json._addJson(static_info, strlen(static_info));
 
     // For MeterValue entities, inject dynamically-resolved value_template
     if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {
