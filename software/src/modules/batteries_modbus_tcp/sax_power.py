@@ -67,7 +67,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     0,
@@ -75,7 +75,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     0,
@@ -89,7 +89,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     'max_normal_charge_power',
@@ -97,7 +97,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     'max_normal_discharge_power',
@@ -111,7 +111,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     'max_normal_charge_power',
@@ -119,7 +119,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     0,
@@ -134,7 +134,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     'max_normal_charge_power',
@@ -142,7 +142,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     0,
@@ -156,7 +156,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     0,
@@ -164,7 +164,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     'max_normal_discharge_power',
@@ -179,7 +179,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Leistungsgrenzwert für Ladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
                     0,
@@ -187,7 +187,7 @@ specs = [
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
                     'max_normal_discharge_power',

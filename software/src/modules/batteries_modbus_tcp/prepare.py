@@ -213,7 +213,7 @@ for spec in specs:
 
         function_code = register_block['function_code']
 
-        if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils']:
+        if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils', 'IfDifferentWriteSingleCoil', 'IfDifferentWriteMultipleCoils']:
             total_buffer_length += (values_count + 7) // 8
         else:
             total_buffer_length += values_count * 2
@@ -264,12 +264,12 @@ for spec in specs:
                         specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1].replace('32', '')}();\r')
                         break
 
-            if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils']:
+            if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils', 'IfDifferentWriteSingleCoil', 'IfDifferentWriteMultipleCoils']:
                 buffer_length = (values_count + 7) // 8
             else:
                 buffer_length = values_count * 2
 
-            if function_code == 'WriteSingleCoil':
+            if function_code in ['WriteSingleCoil', 'IfDifferentWriteSingleCoil']:
                 specs_cpp.append('        uint8_t values[1];')
 
                 if values_count != 1:
@@ -290,7 +290,7 @@ for spec in specs:
                         sys.exit(1)
 
                     specs_cpp.append(f'        values[{k}] = {value};\r')
-            elif function_code == 'WriteSingleRegister':
+            elif function_code in ['WriteSingleRegister', 'IfDifferentWriteSingleRegister']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
                 if values_count != 1:
@@ -302,7 +302,7 @@ for spec in specs:
                     sys.exit(1)
 
                 specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
-            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteMultipleRegisters']:
+            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteMultipleRegisters', 'IfDifferentWriteMultipleRegisters']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
                 for k, value in enumerate(register_block['values']):
@@ -311,7 +311,7 @@ for spec in specs:
                         sys.exit(1)
 
                     specs_cpp.append(f'        values[{k}] = {value};\r')
-            elif function_code in ['MaskWriteRegister', 'ReadMaskWriteSingleRegister']:
+            elif function_code in ['MaskWriteRegister', 'ReadMaskWriteSingleRegister', 'IfDifferentMaskWriteRegister', 'IfDifferentReadMaskWriteSingleRegister']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
                 if values_count != 2:
@@ -324,16 +324,16 @@ for spec in specs:
                         sys.exit(1)
 
                     specs_cpp.append(f'        values[{k}] = {value};\r')
-            elif function_code == 'ReadMaskWriteMultipleRegisters':
+            elif function_code in ['ReadMaskWriteMultipleRegisters', 'IfDifferentReadMaskWriteMultipleRegisters']:
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
 
-            if function_code == 'WriteSingleCoil':
+            if function_code in ['WriteSingleCoil', 'IfDifferentWriteSingleCoil']:
                 specs_cpp.append(f'        uint8_t *coils_buffer = static_cast<uint8_t *>(register_blocks[{i}].buffer);\n\n'
                                   '        coils_buffer[0] = values[0] ? 1 : 0;')
-            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils']:
+            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils', 'IfDifferentWriteMultipleCoils']:
                 specs_cpp.append(f'        uint8_t *coils_buffer = static_cast<uint8_t *>(register_blocks[{i}].buffer);\n\n'
                                  f'        coils_buffer[{buffer_length - 1}] = 0;\n\n'
                                  f'        for (uint16_t k = 0; k < {values_count}; ++k) {{\n'
@@ -379,7 +379,7 @@ for spec in specs:
             function_code = register_block['function_code']
             values_count_scale = 1
 
-            if function_code == 'WriteSingleCoil':
+            if function_code in ['WriteSingleCoil', 'IfDifferentWriteSingleCoil']:
                 if len(register_block['values']) != 1:
                     print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
@@ -389,7 +389,7 @@ for spec in specs:
                     sys.exit(1)
 
                 specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {register_block['values'][0]} }};')
-            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils']:
+            elif function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteMultipleCoils', 'IfDifferentWriteMultipleCoils']:
                 values = [0] * ((len(register_block['values']) + 7) // 8)
 
                 for k, bit in enumerate(register_block['values']):
@@ -400,15 +400,15 @@ for spec in specs:
                     values[k // 8] |= bit << (k % 8)
 
                 specs_cpp.append(f'static const uint8_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in values])}\n}};')
-            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteSingleRegister', 'WriteMultipleRegisters']:
+            elif function_code in ['ReadHoldingRegisters', 'ReadInputRegisters', 'WriteSingleRegister', 'WriteMultipleRegisters', 'IfDifferentWriteSingleRegister', 'IfDifferentWriteMultipleRegisters']:
                 specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
-            elif function_code == 'MaskWriteRegister':
+            elif function_code in ['MaskWriteRegister', 'IfDifferentMaskWriteRegister']:
                 if len(register_block['values']) != 2:
                     print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
                 specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
-            elif function_code == 'ReadMaskWriteSingleRegister':
+            elif function_code in ['ReadMaskWriteSingleRegister', 'IfDifferentReadMaskWriteSingleRegister']:
                 if len(register_block['values']) != 2:
                     print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
@@ -416,7 +416,7 @@ for spec in specs:
                 specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
 
                 values_count_scale = 2
-            elif function_code == 'ReadMaskWriteMultipleRegisters':
+            elif function_code in ['ReadMaskWriteMultipleRegisters', 'IfDifferentReadMaskWriteMultipleRegisters']:
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')

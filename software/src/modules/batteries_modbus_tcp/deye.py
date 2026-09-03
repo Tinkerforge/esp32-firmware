@@ -48,7 +48,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     0,
@@ -56,7 +56,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     0,
@@ -64,7 +64,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     10,
@@ -77,7 +77,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -90,7 +90,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     0,  # disable time points
@@ -109,7 +109,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     'max_normal_charge_current',
@@ -117,7 +117,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     'max_normal_discharge_current',
@@ -125,7 +125,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     10,
@@ -138,7 +138,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -151,7 +151,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     0,  # disable time points
@@ -170,7 +170,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     'max_normal_charge_current',
@@ -178,7 +178,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     0,
@@ -186,7 +186,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     10,
@@ -199,7 +199,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -212,7 +212,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     0,  # disable time points
@@ -231,7 +231,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     'force_charge_current',
@@ -239,7 +239,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     0,
@@ -247,7 +247,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     100,
@@ -260,7 +260,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -273,7 +273,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     1,  # enable time points, grid buy
@@ -292,7 +292,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     0,
@@ -300,7 +300,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     'max_normal_discharge_current',
@@ -308,7 +308,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     10,
@@ -321,7 +321,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -334,7 +334,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     0,  # disable time points
@@ -353,7 +353,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
                     0,
@@ -361,7 +361,7 @@ specs = [
             },
             {
                 'description': 'Max discharge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
                     'force_discharge_current',
@@ -369,7 +369,7 @@ specs = [
             },
             {
                 'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
                     10,
@@ -382,7 +382,7 @@ specs = [
             },
             {
                 'description': 'Time points',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 148,  # U16
                 'values': [
                     0,
@@ -395,7 +395,7 @@ specs = [
             },
             {
                 'description': 'Time points charge enable',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 172,  # U16
                 'values': [
                     32,  # enable time points, grid sell

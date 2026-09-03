@@ -48,7 +48,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     2,  # forced
@@ -56,7 +56,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xCC,  # stop
@@ -64,7 +64,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     0,
@@ -72,7 +72,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -80,7 +80,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -94,7 +94,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     0,  # self
@@ -102,7 +102,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xCC,  # stop
@@ -110,7 +110,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     0,
@@ -118,7 +118,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     'max_normal_charge_power',
@@ -126,7 +126,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     'max_normal_discharge_power',
@@ -148,7 +148,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xCC,  # stop
@@ -156,7 +156,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     0,
@@ -164,7 +164,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     'max_normal_charge_power',
@@ -172,7 +172,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -186,7 +186,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     2,  # forced
@@ -194,7 +194,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xAA,  # charge
@@ -202,7 +202,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     'force_charge_power',
@@ -210,7 +210,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     'std::max(max_normal_charge_power, static_cast<uint16_t>(force_charge_power / 10))',
@@ -218,7 +218,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -232,7 +232,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     0,  # self
@@ -240,7 +240,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xCC,  # stop
@@ -248,7 +248,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     0,
@@ -256,7 +256,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -264,7 +264,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     'max_normal_discharge_power',
@@ -278,7 +278,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     2,  # forced
@@ -286,7 +286,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge command',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13051,  # U16
                 'values': [
                     0xBB,  # discharge
@@ -294,7 +294,7 @@ specs = [
             },
             {
                 'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
                     'force_discharge_power',
@@ -302,7 +302,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -310,7 +310,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
                     'std::max(max_normal_discharge_power, static_cast<uint16_t>(force_discharge_power / 10))',

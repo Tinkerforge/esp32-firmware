@@ -38,7 +38,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     1,  # minimum
@@ -46,7 +46,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     32768, 5947,  # load first
@@ -54,7 +54,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     1,  # minimum
@@ -62,7 +62,7 @@ specs = [
             },
             {
                 'description': 'AC charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     0,  # disable
@@ -76,7 +76,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     100,  # maximum
@@ -84,7 +84,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     32768, 5947,  # load first
@@ -92,7 +92,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     100,  # maximum
@@ -100,7 +100,7 @@ specs = [
             },
             {
                 'description': 'AC Charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     0,  # disable
@@ -114,7 +114,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     1,  # minimum
@@ -122,7 +122,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     32768, 5947,  # load first
@@ -130,7 +130,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     100,  # maximum
@@ -138,7 +138,7 @@ specs = [
             },
             {
                 'description': 'AC Charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     0,  # disable
@@ -152,7 +152,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     1,  # minimum
@@ -160,7 +160,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     40960, 5947,  # battery first
@@ -168,7 +168,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     'force_charge_rate',
@@ -176,7 +176,7 @@ specs = [
             },
             {
                 'description': 'AC Charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     1,  # enable
@@ -190,7 +190,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     100,  # maximum
@@ -198,7 +198,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     32768, 5947,  # load first
@@ -206,7 +206,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     1,  # minimum
@@ -214,7 +214,7 @@ specs = [
             },
             {
                 'description': 'AC Charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     0,  # disable
@@ -228,7 +228,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Discharge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3036,
                 'values': [
                     'force_discharge_rate',
@@ -236,7 +236,7 @@ specs = [
             },
             {
                 'description': 'Charge/Discharge Mode, Start/End Time',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3038,
                 'values': [
                     49152, 5947,  # grid first
@@ -244,7 +244,7 @@ specs = [
             },
             {
                 'description': 'Charge Power Rate [%]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3047,
                 'values': [
                     1,  # minimum
@@ -252,7 +252,7 @@ specs = [
             },
             {
                 'description': 'AC Charge',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 3049,
                 'values': [
                     0,  # disable

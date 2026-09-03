@@ -49,7 +49,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     0, 0,
@@ -57,7 +57,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     0,
@@ -65,7 +65,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     0,
@@ -79,7 +79,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     *s32be('grid_draw_setpoint_normal'),
@@ -87,7 +87,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     65535,  # -1 = no limit
@@ -95,7 +95,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     32767,  # maximum = no limit
@@ -109,7 +109,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     *s32be('grid_draw_setpoint_normal'),
@@ -117,7 +117,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     65535,  # -1 = no limit
@@ -125,7 +125,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     0,
@@ -139,7 +139,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     *s32be('grid_draw_setpoint_force_charge'),
@@ -147,7 +147,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     65535,  # -1 = no limit
@@ -155,7 +155,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     0,
@@ -169,7 +169,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     *s32be('grid_draw_setpoint_normal'),
@@ -177,7 +177,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     0,
@@ -185,7 +185,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     32767,  # maximum = no limit
@@ -199,7 +199,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
                     *s32be('grid_draw_setpoint_force_discharge'),
@@ -207,7 +207,7 @@ specs = [
             },
             {
                 'description': 'DVCC system max charge current [A]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2705,  # S16
                 'values': [
                     0,
@@ -215,7 +215,7 @@ specs = [
             },
             {
                 'description': 'ESS max discharge power [10 W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
                     32767,  # maximum = no limit
