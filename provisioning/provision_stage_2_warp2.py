@@ -758,24 +758,32 @@ def led_wrap():
 
     files_to_commit.append(report_path_log)
 
-    stage3 = Stage3(int(scanner.qr_gen),
-                    is_front_panel_button_pressed_function=is_front_panel_button_pressed,
-                    has_evse_error_function=has_evse_error,
-                    get_iec_state_function=get_iec_state,
-                    reset_dc_fault_function=reset_dc_fault,
-                    switch_phases_function=switch_phases,
-                    get_contactor_state_function=get_contactor_state,
-                    get_evse_uptime_function=get_evse_uptime,
-                    reset_evse_function=reset_evse,
-                    get_cp_pwm_function=get_cp_pwm,
-                    get_meter_voltages_function=get_meter_voltages,
-                    set_iso15118_enabled_function=set_iso15118_enabled,
-                    get_iso15118_ev_mac_function=get_iso15118_ev_mac,
-                    get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile,
-                    set_evse_no_pwm_test_mode_function=set_evse_no_pwm_test_mode)
+    try:
+        stage3 = Stage3(int(scanner.qr_gen),
+                        is_front_panel_button_pressed_function=is_front_panel_button_pressed,
+                        has_evse_error_function=has_evse_error,
+                        get_iec_state_function=get_iec_state,
+                        reset_dc_fault_function=reset_dc_fault,
+                        switch_phases_function=switch_phases,
+                        get_contactor_state_function=get_contactor_state,
+                        get_evse_uptime_function=get_evse_uptime,
+                        reset_evse_function=reset_evse,
+                        get_cp_pwm_function=get_cp_pwm,
+                        get_meter_voltages_function=get_meter_voltages,
+                        set_iso15118_enabled_function=set_iso15118_enabled,
+                        get_iso15118_ev_mac_function=get_iso15118_ev_mac,
+                        get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile,
+                        set_evse_no_pwm_test_mode_function=set_evse_no_pwm_test_mode)
 
-    stage3.setup()
-    stage3.set_led_strip_color((0, 0, 255))
+        stage3.setup()
+        stage3.set_led_strip_color((0, 0, 255))
+    except BaseException as e:
+        print(red('Setup failed:'))
+        orig_print(red(traceback.format_exc().rstrip()))
+
+        commit_message += ' (setup failure)'
+
+        raise TestAborted() from e
 
     try:
         main(stage3, scanner, result)
@@ -787,9 +795,9 @@ def led_wrap():
 
         files_to_commit.append(report_path_json)
 
-        print(green('WARP Charger test successful. Aftermath pending...'))
+        print(green('Test successful. Aftermath pending...'))
     except BaseException as e:
-        print(red(f'WARP Charger test failed: {e}'))
+        print(red(f'Test failed: {e}'))
 
         result['failure_exception'] = str(e)
         result['failure_traceback'] = traceback.format_exc()
@@ -882,7 +890,8 @@ def led_wrap():
 
         print(green('Done!'))
     except BaseException as e:
-        print(red('Aftermath failed: {e}'))
+        print(red('Aftermath failed:'))
+        orig_print(red(traceback.format_exc().rstrip()))
 
         stage3.set_led_strip_color((255, 0, 0))
         stage3.beep_failure()
