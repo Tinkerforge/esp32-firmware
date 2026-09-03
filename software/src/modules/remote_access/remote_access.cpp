@@ -35,6 +35,7 @@
 #include <mbedtls/base64.h>
 #include <sodium.h>
 #include <ctype.h>
+#include <algorithm>
 #include <vector>
 
 #include "build.h"
@@ -59,6 +60,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define KEY_DIRECTORY "/remote-access-keys"
 // Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
 #define MAX_HTTP_BODY_BYTES 5120
+#define MAX_SERVICE_TOKEN_REMOVAL_ATTEMPTS 10
 
 // Authorization token layout as defined by
 // https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
@@ -1048,6 +1050,7 @@ void RemoteAccess::remove_service_token_user()
 
     const String service_uuid = config.get("service_token_user_uuid")->asString();
     if (service_uuid.isEmpty()) {
+        this->service_token_removal_attempts = 0;
         return;
     }
 
@@ -1065,8 +1068,20 @@ void RemoteAccess::remove_service_token_user()
         this->remove_user(user_id);
     }
 
-    config.get("service_token_user_uuid")->updateString("");
-    config.get("service_token_timestamp_minutes")->updateUint(0);
+    this->service_token_removal_attempts++;
+    if (this->service_token_removal_attempts >= MAX_SERVICE_TOKEN_REMOVAL_ATTEMPTS) {
+        logger.printfln("Giving up removing service token user after %u attempts", this->service_token_removal_attempts);
+        config.get("service_token_user_uuid")->updateString("");
+        config.get("service_token_timestamp_minutes")->updateUint(0);
+        this->service_token_removal_attempts = 0;
+        return;
+    }
+
+    const millis_t backoff = millis_t{std::min<uint32_t>(60u * 1000u * (1u << (this->service_token_removal_attempts - 1u)),
+                                                          60u * 60u * 1000u)};
+    this->service_token_removal_task_id = task_scheduler.scheduleOnce([this]() {
+        this->remove_service_token_user();
+    }, backoff);
 }
 
 void RemoteAccess::remove_user(uint8_t id)
@@ -2400,6 +2415,21 @@ void RemoteAccess::resolve_management()
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
             api.writeConfig("charge_tracker/config", &charge_tracker.config);
 #endif
+        }
+
+        if (!config.get("service_token_user_uuid")->asString().isEmpty()) {
+            bool service_user_still_local = false;
+            for (const auto &user : config.get("users")) {
+                if (user.get("uuid")->asString() == config.get("service_token_user_uuid")->asString()) {
+                    service_user_still_local = true;
+                    break;
+                }
+            }
+            if (!service_user_still_local) {
+                config.get("service_token_user_uuid")->updateString("");
+                config.get("service_token_timestamp_minutes")->updateUint(0);
+                cancel_service_token_removal();
+            }
         }
 
         this->management_request_done = true;
