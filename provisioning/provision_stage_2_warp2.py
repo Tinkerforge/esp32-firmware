@@ -912,19 +912,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify, expected_count=3):
     print(f"\r{expected_count} NFC tag{'s' if expected_count != 1 else ''} seen." + " " * 20)
     return [TagInfo(x.tag_type, ":".join("{:02X}".format(i) for i in x.tag_id)) for x in seen_tags.values()]
 
-def pull_github(name):
-    try:
-        with open(os.path.join(f'github-pulled.{name}'), 'r') as f:
-            last_date = f.read()
-    except FileNotFoundError:
-        last_date = None
-
-    now_date = str(datetime.datetime.now().date())
-
-    if last_date == now_date:
-        print(f"github {name} already pulled today")
-        return
-
+def pull_git(name):
     github_reachable = True
     try:
         with urllib.request.urlopen(f'https://github.com/Tinkerforge/{name}', timeout=5.0) as req:
@@ -939,10 +927,7 @@ def pull_github(name):
         with tfutil.ChangedDirectory(os.path.join("..", "..", name)):
             run(["git", "pull"])
 
-        with open(os.path.join(f'github-pulled.{name}'), 'w') as f:
-            f.write(now_date)
-
-    dprint("post github pull")
+    dprint("post git pull")
 
 def flash_firmware(firmware_path, ssid, do_factory_reset=True):
     host = ssid + '.local'
@@ -1124,7 +1109,7 @@ def main(stage3, scanner, result):
         if not provisioning_firmware_flashed and '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
         else:
-            pull_github('warp-charger')
+            pull_git('warp-charger')
 
             firmware_path = None
 
@@ -1302,7 +1287,7 @@ def main(stage3, scanner, result):
         if evse_enum is None:
             fatal_error("No EVSE Bricklet found!")
 
-        pull_github('firmwares')
+        pull_git('firmwares')
 
         evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
         evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
