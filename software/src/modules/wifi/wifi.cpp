@@ -846,8 +846,15 @@ void Wifi::register_sta_event_handlers()
             if (!this->runtime_sta->was_connected) {
                 logger.printfln("Failed to connect to WiFi: %s (%u)", reason, reason_code);
             } else {
-                const micros_t now = now_us();
-                const uint32_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
+                struct closure_t {
+                    aligned_storage<Task> task_buf;
+                    micros_t now;
+                };
+
+                closure_t *closure = new closure_t;
+
+                closure->now = now_us();
+                const uint32_t connected_for_s = (closure->now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
 
                 if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
                     String last_ip{};
@@ -864,8 +871,9 @@ void Wifi::register_sta_event_handlers()
 
                 logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %lu seconds.", reason, reason_code, connected_for_s);
 
-                task_scheduler.scheduleOnce([this, now](){
-                    state.get("connection_end")->updateUptime(now);
+                // Transfer ownership, will free the whole closure.
+                task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
+                    state.get("connection_end")->updateUptime(closure->now);
                 });
             }
 
@@ -889,12 +897,19 @@ void Wifi::register_sta_event_handlers()
     WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             apply_ipv6_to_interface();
 
+            struct closure_t {
+                aligned_storage<Task> task_buf;
+                micros_t now;
+                char bssid_str[18];
+            };
+
+            closure_t *closure = new closure_t;
+
             wifi_ap_record_t wifi_info;
-            char bssid_str[18];
 
             if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
                 logger.printfln("Connected to WiFi");
-                bssid_str[0] = 0;
+                closure->bssid_str[0] = 0;
             } else {
                 char buf[128];
                 StringWriter sw(buf, ARRAY_SIZE(buf));
@@ -938,24 +953,22 @@ void Wifi::register_sta_event_handlers()
                         sw.printf("%u", oix);
                 }
 
-                sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:XX:XX:XX",
-                        wifi_info.rssi,
-                        wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
+                snprintf(closure->bssid_str, std::size(closure->bssid_str), "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX", wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
 
-                // TODO move into callback
-                snprintf(bssid_str, std::size(bssid_str), "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX", wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+                sw.printf("] %hhidBm, BSSID %.8s:XX:XX:XX", wifi_info.rssi, closure->bssid_str);
 
                 logger.printfln("Connected to WiFi: %s", buf);
             }
 
             this->runtime_sta->was_connected = true;
 
-            const micros_t now = now_us();
-            this->runtime_sta->last_connected = now;
+            closure->now = now_us();
+            this->runtime_sta->last_connected = closure->now;
 
-            task_scheduler.scheduleOnce([this, bssid_str, now]() {
-                state.get("sta_bssid")->updateString(bssid_str);
-                state.get("connection_start")->updateUptime(now);
+            // Transfer ownership, will free the whole closure.
+            task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
+                state.get("sta_bssid")->updateString(closure->bssid_str);
+                state.get("connection_start")->updateUptime(closure->now);
                 state.get("sta_disconnect_reason")->updateEnum(WifiDisconnectReason::None);
             });
         },
@@ -968,14 +981,21 @@ void Wifi::register_sta_event_handlers()
             // or else MQTT will never attempt to connect.
             this->runtime_sta->was_connected = true;
 
+            struct closure_t {
+                aligned_storage<Task> task_buf;
+                uint32_t subnet;
+                char ip_str[INET_ADDRSTRLEN];
+            };
+
+            closure_t *closure = new closure_t;
+
             const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
-            char ip_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
+            tf_ip4addr_ntoa(&ip_info.ip, closure->ip_str, ARRAY_SIZE(closure->ip_str));
             char gw_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
-            const uint32_t subnet = ip_info.netmask.addr;
+            closure->subnet = ip_info.netmask.addr;
 
-            logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
+            logger.printfln("Got IP address: %s/%hhu, GW %s", closure->ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{closure->subnet}), gw_str);
 
             const auto gateway = ip_info.gw.addr;
 
@@ -984,19 +1004,30 @@ void Wifi::register_sta_event_handlers()
                 esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
             }, reinterpret_cast<void *>(gateway == 0 ? 40 : 100));
 
-            task_scheduler.scheduleOnce([this, ip_str, subnet](){
+            // Transfer ownership, will free the whole closure.
+            task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
                 char subnet_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
+                tf_ip4addr_ntoa(&closure->subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
-                state.get("sta_ip")->updateString(ip_str);
+                state.get("sta_ip")->updateString(closure->ip_str);
                 state.get("sta_subnet")->updateString(subnet_str);
             });
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
-            task_scheduler.scheduleOnce([this, got_ip6 = info.got_ip6]() {
-                const esp_ip6_addr_t *ip6 = &got_ip6.ip6_info.ip;
+            struct closure_t {
+                aligned_storage<Task> task_buf;
+                esp_ip6_addr_t ip6;
+            };
+
+            closure_t *closure = new closure_t;
+
+            memcpy(&closure->ip6, &info.got_ip6.ip6_info.ip, sizeof(closure->ip6));
+
+            // Transfer ownership, will free the whole closure.
+            task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
+                const esp_ip6_addr_t *ip6 = &closure->ip6;
 
                 char ip6_str[INET6_ADDRSTRLEN];
                 tf_ip6addr_ntoa(ip6, ip6_str, std::size(ip6_str));

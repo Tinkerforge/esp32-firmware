@@ -259,12 +259,12 @@ void Ethernet::setup()
 
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
-            uint8_t mac[6];
-            if (ETH.macAddress(mac) == nullptr) {
-                memset(mac, 0, std::size(mac));
-            }
+            task_scheduler.scheduleOnce([this]() {
+                uint8_t mac[NETIF_MAX_HWADDR_LEN];
+                if (ETH.macAddress(mac) == nullptr) {
+                    memset(mac, 0, std::size(mac));
+                }
 
-            task_scheduler.scheduleOnce([this, mac]() {
                 char mac_str[18];
                 const size_t len = snprintf_u(mac_str, std::size(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
@@ -311,39 +311,49 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_CONNECTED);
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
+            struct closure_t {
+                aligned_storage<Task> task_buf;
+                micros_t now;
+                uint32_t gateway;
+                uint32_t subnet;
+                char ip_str[INET_ADDRSTRLEN];
+                bool ip_changed;
+                bool was_already_connected;
+            };
+
+            closure_t *closure = new closure_t;
+
             const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
-            char ip_str[INET_ADDRSTRLEN];
-            tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
+            tf_ip4addr_ntoa(&ip_info.ip, closure->ip_str, ARRAY_SIZE(closure->ip_str));
             char gw_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
-            const uint32_t subnet = ip_info.netmask.addr;
-            const bool was_already_connected = this->runtime_data->connection_state == EthernetState::Connected;
-            const bool ip_changed = info.got_ip.ip_changed;
+            closure->gateway = ip_info.gw.addr;
+            closure->subnet = ip_info.netmask.addr;
 
-            logger.printfln("Got IP address: %s/%i, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
+            logger.printfln("Got IP address: %s/%i, GW %s", closure->ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{closure->subnet}), gw_str);
 
-            const micros_t now = now_us();
-            this->runtime_data->was_connected = true;
-            this->runtime_data->last_connected = now;
+            closure->ip_changed = info.got_ip.ip_changed;
+            closure->was_already_connected = this->runtime_data->connection_state == EthernetState::Connected;
 
+            closure->now = now_us();
+            this->runtime_data->last_connected = closure->now;
             this->runtime_data->connection_state = EthernetState::Connected;
-
-            const String ip_string{ip_str};
-            const auto gateway = ip_info.gw.addr;
+            this->runtime_data->was_connected = true;
 
             tcpip_callback([](void *param) {
                 ETH.setRoutePrio(reinterpret_cast<int>(param)); // Prefer Ethernet over WiFi, which has priority 100, if a gateway is configured.
                 esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
-            }, reinterpret_cast<void *>(gateway == 0 ? 50 : 110));
+            }, reinterpret_cast<void *>(closure->gateway == 0 ? 50 : 110));
 
-            task_scheduler.scheduleOnce([this, now, ip_string, subnet, was_already_connected, ip_changed, gateway]() {
+            // Transfer ownership, will free the whole closure.
+            task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
                 char subnet_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
+                tf_ip4addr_ntoa(&closure->subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
-                state.get("ip")->updateString(ip_string);
+                state.get("ip")->updateString(closure->ip_str);
                 state.get("subnet")->updateString(subnet_str);
 
-                if (was_already_connected && ip_changed) {
+                if (closure->was_already_connected && closure->ip_changed) {
                     // When the IP changes while already connected (e.g. static IP reconfigured
                     // at runtime), ESP-IDF only fires GOT_IP with ip_changed=true but no LOST_IP.
                     // Set Connecting now so the event system's next polling cycle propagates it to
@@ -352,22 +362,32 @@ void Ethernet::setup()
                     state.get("connection_state")->updateEnum(EthernetState::Connecting);
                     task_scheduler.cancel(this->reconnect_task_id);
                     this->reconnect_task_id = task_scheduler.scheduleOnce(
-                        [this, now]() {
+                        [this, now = closure->now]() {
                             state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                             state.get("connection_start")->updateUptime(now);
                         },
                         1_s);
                 } else {
                     state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                    state.get("connection_start")->updateUptime(now);
+                    state.get("connection_start")->updateUptime(closure->now);
                 }
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
-            task_scheduler.scheduleOnce([this, got_ip6 = info.got_ip6]() {
-                const esp_ip6_addr_t *ip6 = &got_ip6.ip6_info.ip;
+            struct closure_t {
+                aligned_storage<Task> task_buf;
+                esp_ip6_addr_t ip6;
+            };
+
+            closure_t *closure = new closure_t;
+
+            memcpy(&closure->ip6, &info.got_ip6.ip6_info.ip, sizeof(closure->ip6));
+
+            // Transfer ownership, will free the whole closure.
+            task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [this, closure]() {
+                const esp_ip6_addr_t *ip6 = &closure->ip6;
 
                 char ip6_str[INET6_ADDRSTRLEN];
                 tf_ip6addr_ntoa(ip6, ip6_str, std::size(ip6_str));
@@ -460,9 +480,7 @@ void Ethernet::setup()
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
-            auto now = now_us();
-
-        // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
+            // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -481,13 +499,13 @@ void Ethernet::setup()
                 esp_netif_set_default_netif(NULL); // trigger immediate re-selection of default interface
             }, nullptr);
 
-            task_scheduler.scheduleOnce([this, now]() {
+            task_scheduler.scheduleOnce([this]() {
                 task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("ip6")->removeAll();
-                state.get("connection_end")->updateUptime(now);
+                state.get("connection_end")->updateUptime(now_us());
             });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -496,19 +514,17 @@ void Ethernet::setup()
             logger.printfln("Disconnected");
             this->print_con_duration();
 
-            auto now = now_us();
-
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
             // TODO Check and remove everything from esp_netif_get_all_ip6()
 
-            task_scheduler.scheduleOnce([this, now]() {
+            task_scheduler.scheduleOnce([this]() {
                 task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("ip6")->removeAll();
-                state.get("connection_end")->updateUptime(now);
+                state.get("connection_end")->updateUptime(now_us());
             });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
@@ -517,15 +533,13 @@ void Ethernet::setup()
             logger.printfln("Stopped");
             this->print_con_duration();
 
-            auto now = now_us();
-
             // If eth_started is false, we're being shut down by apply_config() for a disable.
             this->runtime_data->connection_state = this->eth_started ? EthernetState::NotConnected : EthernetState::NotConfigured;
 
-            task_scheduler.scheduleOnce([this, now]() {
+            task_scheduler.scheduleOnce([this]() {
                 task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("connection_end")->updateUptime(now);
+                state.get("connection_end")->updateUptime(now_us());
             });
         },
         ARDUINO_EVENT_ETH_STOP);

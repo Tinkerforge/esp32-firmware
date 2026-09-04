@@ -1428,25 +1428,24 @@ static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float p
 #if MODULE_METERS_EVSE_V2_AVAILABLE()
     // Dispatched from tf_hal_tick on the io task to the main task.
 
-    struct values_closure {
+    struct closure_t {
+        aligned_storage<Task> task_buf;
         float current[3];
-        float power;
     };
 
-    values_closure *values = static_cast<values_closure *>(malloc(sizeof(values_closure)));
+    closure_t *closure = new closure_t;
 
-    if (values == nullptr) {
+    if (closure == nullptr) {
         return;
     }
 
-    values->current[0] = current[0];
-    values->current[1] = current[1];
-    values->current[2] = current[2];
-    values->power = power;
+    closure->current[0] = current[0];
+    closure->current[1] = current[1];
+    closure->current[2] = current[2];
 
-    task_scheduler.scheduleOnce([values]() {
-        meters_evse_v2.energy_meter_values_callback(values->power, values->current);
-        free(values);
+    // Transfer ownership, will free the whole closure.
+    task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [power, closure]() {
+        meters_evse_v2.energy_meter_values_callback(power, closure->current);
     });
 #endif
 }
