@@ -2228,7 +2228,7 @@ def main():
 
                     check_call(['uv', 'run', 'nodeenv', '-p', '-n', requires_node, '--with-npm', '--npm', requires_npm])
 
-                check_call(['uv', 'run', 'npm', 'ci'], shell=sys.platform == 'win32')
+                check_call(['uv', 'run', 'npm', 'ci', '--audit=false', '--fund=false'], shell=sys.platform == 'win32')
             else:
                 npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
 
@@ -2242,7 +2242,7 @@ def main():
                     print('Error: npm >= 9 required, found npm {0}'.format(npm_version))
                     sys.exit(1)
 
-                check_call(['npm', 'ci'], shell=sys.platform == 'win32')
+                check_call(['npm', 'ci', '--audit=false', '--fund=false'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
