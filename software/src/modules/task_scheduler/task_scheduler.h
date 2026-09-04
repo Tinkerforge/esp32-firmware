@@ -145,7 +145,7 @@ public:
     bool nextTaskReady();
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
-    uint64_t scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current(), bool transfer_task_ownership = false);
+    uint64_t scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, bool transfer_task_ownership, std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
     [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later. Cast to void if you intend to write a self-canceling task that will use task_scheduler.currentTaskId()")]]
     inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), 0_ms, delay_ms, src_location);}

@@ -99,7 +99,7 @@ void IoScheduler::drive(RoundStateBase *state)
     this->scheduleOnceNoAlloc(&state->during_io_task_buf, [state]() {
         state->run_during_io();
 
-        task_scheduler.scheduleOnceNoAlloc(&state->after_io_task_buf, [state]() {
+        task_scheduler.scheduleOnceNoAlloc(&state->after_io_task_buf, false, [state]() {
             state->run_after_io();
             state->in_flight = false;
         }, 0_ms, state->src_location);

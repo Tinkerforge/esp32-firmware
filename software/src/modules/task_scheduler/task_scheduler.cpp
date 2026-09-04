@@ -255,7 +255,7 @@ bool TaskScheduler::nextTaskReady()
     return next_deadline <= now;
 }
 
-uint64_t TaskScheduler::scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location, bool transfer_task_ownership)
+uint64_t TaskScheduler::scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, bool transfer_task_ownership, std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
@@ -270,7 +270,7 @@ uint64_t TaskScheduler::scheduleOnceNoAlloc(aligned_storage<Task> *task_buffer, 
 uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
 {
     //printf("alloc %s:%lu %s\n", src_location.file_name(), src_location.line(), src_location.function_name());
-    return this->scheduleOnceNoAlloc(new aligned_storage<Task>, std::move(fn), delay_ms, src_location, true);
+    return this->scheduleOnceNoAlloc(new aligned_storage<Task>, true, std::move(fn), delay_ms, src_location);
 }
 
 uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
@@ -469,7 +469,7 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
     aligned_storage<Task> task_buf;
-    return await(scheduleOnceNoAlloc(&task_buf, std::move(fn), 0_ms, src_location), millis_to_wait);
+    return await(scheduleOnceNoAlloc(&task_buf, false, std::move(fn), 0_ms, src_location), millis_to_wait);
 }
 
 void TaskScheduler::await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)

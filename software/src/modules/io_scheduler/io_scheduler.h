@@ -54,7 +54,7 @@ public:
 
     uint64_t scheduleOnceNoAlloc(aligned_storage<Task> *task_buf, std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current())
     {
-        return scheduler.scheduleOnceNoAlloc(task_buf, std::move(fn), delay_ms, src_location);
+        return scheduler.scheduleOnceNoAlloc(task_buf, false, std::move(fn), delay_ms, src_location);
     }
 
     // Registers an uncancelable driven round.
