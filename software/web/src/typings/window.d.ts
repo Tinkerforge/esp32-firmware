@@ -40,6 +40,12 @@ declare global {
         tinkerforge_devices?: {
             resetToDevices(): void;
         };
+        tinkerforge_credentials?: {
+            requestLogin(): void;
+            saveLogin(username: string, password: string): void;
+        };
+        onWarpLoginCredential?: (username: string, password: string) => void;
+        onWarpLoginCredentialSaveFinished?: () => void;
         onWarpChargersChanged?: (chargers: DiscoveredCharger[]) => void;
         onWarpDiscoveryStopped?: () => void;
         onWarpProvisioningFailed?: (reason: string) => void;
