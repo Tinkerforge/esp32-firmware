@@ -88,7 +88,6 @@ function login(username: string, password: string): Promise<boolean> {
                 let status = xhr.status;
 
                 if (status == 200) {
-                    window.location.reload();
                     resolve(true);
                     return;
                 }
@@ -172,13 +171,40 @@ export class App extends Component<AppProps, AppState> {
         this.setState({visible: true, mode: "login", sub_page: "login"});
 
         let form = document.getElementById('main_login_form') as HTMLFormElement;
+        let finish_login = () => {
+            if (!util.remoteAccessMode) {
+                history.replaceState({}, "", "#status");
+            }
+            form.remove();
+            window.requestAnimationFrame(() => window.location.reload());
+        };
+        window.onWarpLoginCredentialSaveFinished = finish_login;
+        window.onWarpLoginCredential = async (username, password) => {
+            this.setState({username, password});
+
+            if (await login(username, password)) {
+                finish_login();
+            }
+            else {
+                (this.password_ref.current as InputPassword).shake();
+            }
+        };
+        window.tinkerforge_credentials?.requestLogin();
 
         form.addEventListener("submit", async (event: Event) => {
             event.preventDefault();
             event.stopPropagation();
 
             let success = await login(this.state.username, this.state.password);
-            if (!success) {
+            if (success) {
+                if (window.tinkerforge_credentials) {
+                    window.tinkerforge_credentials.saveLogin(this.state.username, this.state.password);
+                }
+                else {
+                    finish_login();
+                }
+            }
+            else {
                 (this.password_ref.current as InputPassword).shake();
             }
         }, false);
@@ -252,6 +278,9 @@ export class App extends Component<AppProps, AppState> {
                                 <form id="main_login_form">
                                     <FormRow label={__("main.login_username")}>
                                         <InputText
+                                            name="username"
+                                            autocomplete="username"
+                                            required
                                             value={this.state.username}
                                             onValue={(value) => this.setState({username: value})}
                                         />
@@ -259,6 +288,9 @@ export class App extends Component<AppProps, AppState> {
                                     <FormRow label={__("main.login_password")}>
                                         <InputPassword
                                             ref={this.password_ref}
+                                            name="password"
+                                            autocomplete="current-password"
+                                            required
                                             value={this.state.password}
                                             onValue={(value) => this.setState({password: value})}
                                             placeholder=""
