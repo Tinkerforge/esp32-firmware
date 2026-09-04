@@ -480,7 +480,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
                     </FormRow>
 
-                    <Collapse in={state.enable_ipv6}>
+                    <Collapse in={saved_config.enable_ipv6}>
                         <div>
                             <FormRow label={__("wifi.content.status_sta_ipv6")}>
                                 <OutputTextarea

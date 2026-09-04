@@ -572,63 +572,59 @@ bool Ethernet::is_enabled_in_config() const
 // Called from Arduino event task
 void Ethernet::apply_ipv6_to_interface()
 {
-    if (runtime_data->want_ipv6) {
-        if (!runtime_data->ipv6_enabled) {
-            runtime_data->ipv6_enabled = true;
-            ETH.enableIPv6(true);
-        }
-
-        esp_netif_t *eth_netif = ETH.netif();
-
-        for (size_t i = 0; i < runtime_data->ip6_address_count; i++) {
-            ip6_addr_with_flags *ip6_with_flags = runtime_data->ip6 + i;
-
-            char ip6_str[INET6_ADDRSTRLEN];
-            tf_ip6addr_ntoa(&ip6_with_flags->addr, ip6_str, std::size(ip6_str));
-
-            if ((ip6_with_flags->flags & IPV6_ADDR_FLAG_NEW) == 0) {
-                logger.printfln("Skipping already set address %s", ip6_str);
-                continue;
-            }
-
-            ip6_with_flags->flags &= static_cast<uint16_t>(~IPV6_ADDR_FLAG_NEW);
-
-            const bool preferred = (ip6_with_flags->flags & IPV6_ADDR_FLAG_PREFERRED) != 0;
-
-            const esp_err_t err = esp_netif_add_ip6_address(eth_netif, ip6_with_flags->addr, preferred);
-
-            if (err != ESP_OK) {
-                logger.printfln("Failed to set static IPv6 address %s: %s (0x%04X)", ip6_str, esp_err_to_name(err), static_cast<unsigned>(err));
-            }
-        }
-
-        // TODO DNS
-        // String dns_str = config.get("dns6")->asString();
-        // if (dns_str != "::") {
-        //     // IPv6 DNS ist set as backup so its the lowest priority. Fallback is not enabled.
-        //     esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_BACKUP;
-
-        //     // Check configured DNS
-        //     esp_netif_dns_info_t get_dns_info;
-        //     esp_netif_get_dns_info(eth_netif, dns_type, &get_dns_info);
-
-        //     esp_ip6_addr_t dns_addr;
-        //     esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
-        //     esp_netif_dns_info_t dns_info;
-        //     dns_info.ip.type = ESP_IPADDR_TYPE_V6;
-        //     dns_info.ip.u_addr.ip6 = dns_addr;
-
-        //     if ((get_dns_info.ip.type != ESP_IPADDR_TYPE_V6 || memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0)) {
-        //         esp_netif_set_dns_info(eth_netif, dns_type, &dns_info);
-        //     }
-        // }
-    } else {
-        if (runtime_data->ipv6_enabled) {
-            runtime_data->ipv6_enabled = false;
-            ETH.enableIPv6(false);
-        }
-        // TODO: Cannot unset DNS6, so we just leave it in this case
+    if (!runtime_data->want_ipv6) {
+        return;
     }
+
+    if (!runtime_data->ipv6_enabled) {
+        runtime_data->ipv6_enabled = true;
+        ETH.enableIPv6(true);
+    }
+
+    esp_netif_t *eth_netif = ETH.netif();
+
+    for (size_t i = 0; i < runtime_data->ip6_address_count; i++) {
+        ip6_addr_with_flags *ip6_with_flags = runtime_data->ip6 + i;
+
+        char ip6_str[INET6_ADDRSTRLEN];
+        tf_ip6addr_ntoa(&ip6_with_flags->addr, ip6_str, std::size(ip6_str));
+
+        if ((ip6_with_flags->flags & IPV6_ADDR_FLAG_NEW) == 0) {
+            logger.printfln("Skipping already set address %s", ip6_str);
+            continue;
+        }
+
+        ip6_with_flags->flags &= static_cast<uint16_t>(~IPV6_ADDR_FLAG_NEW);
+
+        const bool preferred = (ip6_with_flags->flags & IPV6_ADDR_FLAG_PREFERRED) != 0;
+
+        const esp_err_t err = esp_netif_add_ip6_address(eth_netif, ip6_with_flags->addr, preferred);
+
+        if (err != ESP_OK) {
+            logger.printfln("Failed to set static IPv6 address %s: %s (0x%04X)", ip6_str, esp_err_to_name(err), static_cast<unsigned>(err));
+        }
+    }
+
+    // TODO DNS
+    // String dns_str = config.get("dns6")->asString();
+    // if (dns_str != "::") {
+    //     // IPv6 DNS ist set as backup so its the lowest priority. Fallback is not enabled.
+    //     esp_netif_dns_type_t dns_type = ESP_NETIF_DNS_BACKUP;
+
+    //     // Check configured DNS
+    //     esp_netif_dns_info_t get_dns_info;
+    //     esp_netif_get_dns_info(eth_netif, dns_type, &get_dns_info);
+
+    //     esp_ip6_addr_t dns_addr;
+    //     esp_netif_str_to_ip6(dns_str.c_str(), &dns_addr);
+    //     esp_netif_dns_info_t dns_info;
+    //     dns_info.ip.type = ESP_IPADDR_TYPE_V6;
+    //     dns_info.ip.u_addr.ip6 = dns_addr;
+
+    //     if ((get_dns_info.ip.type != ESP_IPADDR_TYPE_V6 || memcmp(&get_dns_info.ip.u_addr.ip6, &dns_info.ip.u_addr.ip6, sizeof(esp_ip6_addr_t)) != 0)) {
+    //         esp_netif_set_dns_info(eth_netif, dns_type, &dns_info);
+    //     }
+    // }
 }
 
 void Ethernet::apply_ip_to_interface()
@@ -662,6 +658,26 @@ void Ethernet::apply_ipv6_config()
         runtime_data->ip6_address_count = 0;
         // Let apply_ipv6_to_interface remove all addresses
         state.get("ip6")->removeAll();
+
+        if (runtime_data->ipv6_enabled) {
+            runtime_data->ipv6_enabled = false;
+            ETH.enableIPv6(false);
+
+            // Remove addresses twice, to avoid a race condition if an RA is received before removing the link-local address.
+            for (size_t tries = 0; tries < 2; tries++) {
+                esp_ip6_addr_t ip6_addrs[CONFIG_LWIP_IPV6_NUM_ADDRESSES];
+                const int addr_count = esp_netif_get_all_ip6(ETH.netif(), ip6_addrs);
+
+                for (int i = 0; i < addr_count; i++) {
+                    const esp_err_t err = esp_netif_remove_ip6_address(ETH.netif(), ip6_addrs + i);
+                    if (err != ESP_OK) {
+                        logger.printfln("Failed to remove IPv6 address: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+                    }
+                }
+            }
+        }
+        // TODO: Cannot unset DNS6, so we just leave it in this case
+
         return;
     }
 

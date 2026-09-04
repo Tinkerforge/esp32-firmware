@@ -87,6 +87,39 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                 || (!API.get_unchecked("wifi/sta_config").enable_sta
                     && !API.get_unchecked("wifi/ap_config").enable_ap));
 
+        const uptime_ms = API.get('info/keep_alive').uptime;
+        const time_since_start_ms = uptime_ms - eth_state.connection_start;
+
+        let ip6_warning;
+
+        if (saved_config.enable_ipv6 && time_since_start_ms > 5000) {
+            let have_slaac_address = false;
+
+            for (const ip6_addr of eth_state.ip6) {
+                if ((ip6_addr.flags & 0x2000) != 0) {
+                    continue; // Ignore static addresses
+                }
+
+                if (ip6_addr.addr.substring(0, 2) == "fe") {
+                    continue; // Ignore link-local addresses
+                }
+
+                have_slaac_address = true;
+                break;
+            }
+
+            if (have_slaac_address) {
+                ip6_warning = undefined;
+            } else {
+                const slaac_timeout_ms = 10*60*1000;
+                if (time_since_start_ms < slaac_timeout_ms) {
+                    ip6_warning = __("ethernet.content.status_ipv6_slaac_slow")(util.format_timespan_ms(slaac_timeout_ms - time_since_start_ms));
+                } else {
+                    ip6_warning = __("ethernet.content.status_ipv6_slaac_unavailable");
+                }
+            }
+        }
+
         return (
             <SubPage name="ethernet" title={__("ethernet.content.ethernet")}>
                 <SubPage.Status collapsed={eth_state.connection_state == EthernetState.NotConfigured}>
@@ -112,9 +145,9 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                             />
                         </FormRow>
 
-                        <Collapse in={state.enable_ipv6}>
+                        <Collapse in={saved_config.enable_ipv6}>
                             <div>
-                                <FormRow label={__("ethernet.content.status_ipv6")}>
+                                <FormRow label={__("ethernet.content.status_ipv6")} show_error={ip6_warning !== undefined} error={ip6_warning}>
                                     <OutputTextarea
                                         rows={Math.max(eth_state.ip6.length, 1)}
                                         resize="none"
