@@ -216,7 +216,7 @@ private:
     struct listen_port_handlers_t {
         uint16_t port;
         uint8_t supports_user_authentication : 1;
-        uint8_t listen_index_0_ra_only : 1;
+        uint8_t redirect_http_to_https : 1;
         uint8_t request_client_cert : 1; // Request client certificate during TLS handshake (mTLS)
         bool supports_http_api;
         WebServerHandler *handlers;

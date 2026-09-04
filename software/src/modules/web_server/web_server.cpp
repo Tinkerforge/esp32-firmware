@@ -174,7 +174,7 @@ void WebServer::post_setup()
 
     // HTTPS only
     if (transport_mode == TransportMode::Secure && !http_fallback_needed) {
-        default_handlers->listen_index_0_ra_only = true;
+        default_handlers->redirect_http_to_https = true;
     }
 
     while (extra_ports != nullptr) {
@@ -453,6 +453,98 @@ static TristateBool check_remote_access_connection(WebServerRequest &request)
 }
 #endif
 
+#if HTTPS_AVAILABLE()
+// Called by HTTP thread.
+static WebServerRequestReturnProtect redirect_to_https(WebServerRequest &request, uint16_t port)
+{
+    String host = request.header("Host");
+
+    if (host.isEmpty()) {
+        return request.send_plain(400, "Missing Host header");
+    }
+
+    // Reject control characters and URI authority delimiters that could alter the redirect target.
+    for (size_t i = 0; i < host.length(); ++i) {
+        const char c = host[static_cast<unsigned int>(i)];
+
+        if ((c <= ' ') || (c == 0x7F) || (strchr("/?#@\\", c) != nullptr)) {
+            return request.send_plain(400, "Invalid Host header");
+        }
+    }
+
+    if (host[0] == '[') {
+        // An IPv6 literal must be enclosed in non-empty brackets: [address].
+        const int closing_bracket = host.indexOf(']');
+
+        if (closing_bracket <= 1) {
+            return request.send_plain(400, "Invalid Host header");
+        }
+
+        if (static_cast<size_t>(closing_bracket + 1) < host.length()) {
+            // Anything following the IPv6 literal must be a non-empty numeric HTTP port.
+            if ((host[static_cast<unsigned int>(closing_bracket + 1)] != ':') || (static_cast<size_t>(closing_bracket + 2) == host.length())) {
+                return request.send_plain(400, "Invalid Host header");
+            }
+
+            for (size_t i = static_cast<size_t>(closing_bracket + 2); i < host.length(); ++i) {
+                if ((host[static_cast<unsigned int>(i)] < '0') || (host[static_cast<unsigned int>(i)] > '9')) {
+                    return request.send_plain(400, "Invalid Host header");
+                }
+            }
+
+            // Drop the incoming HTTP port. The configured HTTPS port is appended below.
+            host.remove(static_cast<unsigned int>(closing_bracket + 1));
+        }
+    } else {
+        const int colon = host.lastIndexOf(':');
+
+        if (colon >= 0) {
+            // A non-IPv6 authority may contain at most one colon, followed by a numeric port.
+            if ((host.indexOf(':') != colon) || (static_cast<size_t>(colon + 1) == host.length())) {
+                return request.send_plain(400, "Invalid Host header");
+            }
+
+            for (size_t i = static_cast<size_t>(colon + 1); i < host.length(); ++i) {
+                if ((host[static_cast<unsigned int>(i)] < '0') || (host[static_cast<unsigned int>(i)] > '9')) {
+                    return request.send_plain(400, "Invalid Host header");
+                }
+            }
+
+            // Drop the incoming HTTP port. The configured HTTPS port is appended below.
+            host.remove(static_cast<unsigned int>(colon));
+        }
+
+        if (host.isEmpty()) {
+            return request.send_plain(400, "Invalid Host header");
+        }
+    }
+
+    const char *uri = request.uriCStr();
+    // Only accept an origin-form request target so an absolute URI cannot replace the authority.
+    if (uri[0] != '/') {
+        return request.send_plain(400, "Invalid request URI");
+    }
+
+    String location;
+    if (!location.reserve(host.length() + strlen(uri) + 16)) {
+        return WebServerRequestReturnProtect{.error = ESP_ERR_NO_MEM};
+    }
+
+    location.concat("https://");
+    location.concat(host);
+
+    // The default HTTPS port is implicit. Preserve configured non-default ports explicitly.
+    if (port != 443) {
+        location.concat(':');
+        location.concat(static_cast<unsigned int>(port));
+    }
+
+    location.concat(uri);
+    request.addResponseHeader("Location", location.c_str());
+    return request.send_plain(307);
+}
+#endif
+
 // Called by HTTP thread.
 esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 {
@@ -478,13 +570,20 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
     TristateBool cached_is_remote_access_connection = TristateBool::Undefined;
 #endif
 
-    if (listen_port_index == 0 && port_handlers->listen_index_0_ra_only) {
+#if HTTPS_AVAILABLE()
+    if (listen_port_index == 0 && port_handlers->redirect_http_to_https) {
+#if MODULE_NETWORK_AVAILABLE()
+        const uint16_t https_port = network.get_web_server_port_secure();
+#else
+        const uint16_t https_port = 443;
+#endif
+
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
         const TristateBool is_ra = check_remote_access_connection(request);
 
         switch (is_ra) {
             case TristateBool::False:
-                return request.send_plain(403, "HTTP disabled; use HTTPS instead").error;
+                return redirect_to_https(request, https_port).error;
             case TristateBool::True:
                 cached_is_remote_access_connection = is_ra;
                 break;
@@ -494,8 +593,11 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
                 return ESP_FAIL;
 
         }
+#else
+        return redirect_to_https(request, https_port).error;
 #endif
     }
+#endif
 
     if (port_handlers->supports_user_authentication && server->auth_fn && !server->auth_fn(request)) {
         bool auth_by_remote_access = false;
@@ -1182,7 +1284,7 @@ String WebServerRequest::header(const char *header_name)
     if (httpd_req_get_hdr_value_str(req, header_name, buf, buf_len) != ESP_OK) {
         return {};
     }
-    result.setLength(static_cast<int>(buf_len));
+    result.setLength(static_cast<int>(buf_len - 1));
     return result;
 }
 
