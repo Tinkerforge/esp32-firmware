@@ -42,8 +42,6 @@
 
 #define MQTT_RECV_BUFFER_SIZE OPTIONS_API_JSON_MAX_LENGTH()
 
-#define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 6)
-
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 #if !MODULE_CERTS_AVAILABLE()
@@ -241,10 +239,6 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 
         return;
     }
-#if MODULE_DEBUG_AVAILABLE()
-    if (req_size > (MQTT_RECV_BUFFER_SIZE - MQTT_RECV_BUFFER_HEADROOM))
-        logger.printfln("Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
-#endif
 }
 
 bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
