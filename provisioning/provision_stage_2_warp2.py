@@ -214,11 +214,12 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
                 nfc_str = f.read()
 
             nfc_data = json.loads(nfc_str)
+            ref_tag_id = "04:BA:38:42:EF:6C:80"
 
             if nfc_data[0]['tag_type'] != 2 or \
-               nfc_data[0]['tag_id'] != "04:BA:38:42:EF:6C:80" or \
+               nfc_data[0]['tag_id'] != ref_tag_id or \
                nfc_data[0]['last_seen'] > 100:
-                fatal_error("Did not find NFC tag: {}".format(nfc_str))
+                fatal_error(f"Did not find reference NFC tag {ref_tag_id}: {json.dumps(nfc_data, indent=4)}")
 
     d = {"E": "Eichrecht", "P": "Pro", "S": "Smart", "B": "Basic"}
 
