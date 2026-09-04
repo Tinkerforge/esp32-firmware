@@ -1084,6 +1084,10 @@ def main(stage3, scanner, result):
 
     result["electrical_tests"] = {}
 
+    if generation >= 4: # no WARP4 is tested on the stand anymore, but always in the tester, so we can assume a front panel in the tester
+        if not stage3.is_color_bricklet_crashed():
+            fatal_error('Color Bricklet crashed, reconnect the USB cable of the upper tester box')
+
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
