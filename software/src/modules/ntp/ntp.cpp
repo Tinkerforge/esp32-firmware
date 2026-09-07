@@ -30,12 +30,7 @@
 
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
-#if MODULE_RTC_AVAILABLE()
     rtc.push_system_time(*tv, Rtc::Quality::High);
-#elif
-    settimeofday(&time, NULL);
-#endif
-
     ntp.time_synced_NTPThread();
 }
 
