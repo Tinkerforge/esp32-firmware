@@ -513,7 +513,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             // and keep polling for ~90 seconds. After 10 retries (~1-2s), escalate to
             // FAILED + Finished to force the EV to terminate the session immediately.
             // NOTE: DIN escalates with OK + Finished instead; see din70121.cpp for rationale.
-            const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.opt_nonegotiation_after_soc;
+            const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.use_nonegotiation_after_soc();
 
             if (soc_shutdown_retries > 10 && !end_at_cpd) {
                 iso15118.trace("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);

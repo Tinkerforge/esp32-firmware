@@ -302,6 +302,31 @@ void ISO15118::pre_setup()
     this->trace_buffer_index    = logger.alloc_trace_buffer("iso15118", 256 * 1024);
     this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 256 * 1024);
 
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+    config_experimental = ConfigRoot{Config::Object({
+        {"ef_teardown", Config::Bool(false)},
+        {"nonegotiation_autocharge", Config::Bool(false)},
+        {"nonegotiation_after_soc", Config::Bool(false)},
+        {"ignore_soc_compatibility", Config::Bool(false)},
+    }), [this](Config &update, ConfigSource source) -> String {
+        // Restoring settings at boot must also work with a vehicle connected.
+        if (source == ConfigSource::File) {
+            return "";
+        }
+
+        for (const char *key : {"ef_teardown", "nonegotiation_autocharge", "nonegotiation_after_soc", "ignore_soc_compatibility"}) {
+            if (update.get(key)->asBool() != config_experimental.get(key)->asBool()) {
+                const auto *evse_state = api.getState("evse/state", false);
+                if (evse_state == nullptr || evse_state->get("charger_state")->asUint() != 0) {
+                    return "Unplug the vehicle before changing experimental ISO 15118 settings.";
+                }
+                break;
+            }
+        }
+        return "";
+    }};
+#endif
+
     config = ConfigRoot{Config::Object({
         {"autocharge", Config::Bool(false)},
         {"read_soc", Config::Bool(false)},
@@ -377,6 +402,9 @@ void ISO15118::setup()
         fds[i].revents = 0;
     }
 
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+    api.restorePersistentConfig("iso15118/config_experimental", &config_experimental);
+#endif
     api.restorePersistentConfig("iso15118/config", &config);
 
     // Generate EVSEID for ISO 15118-2 / ISO 15118-20
@@ -419,6 +447,9 @@ void ISO15118::setup()
 void ISO15118::register_urls()
 {
     api.addPersistentConfig("iso15118/config", &config);
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+    api.addPersistentConfig("iso15118/config_experimental", &config_experimental);
+#endif
     api.addState("iso15118/state_slac",     &slac.api_state);
     api.addState("iso15118/state_sdp",      &sdp.api_state);
     api.addState("iso15118/state_common",   &common.api_state);
@@ -621,7 +652,7 @@ void ISO15118::state_machines_loop()
             iso15118.trace("ISO15118: EV did not renegotiate in time, beginning IEC transition");
             begin_iec_transition(ModemOff::Immediate);
         } else {
-            iso15118.trace("ISO15118: NoNegotiation guard expired but no round pending");
+            iso15118.trace("ISO15118: Reconnect guard expired but no round pending");
         }
     }
 
@@ -711,7 +742,7 @@ void ISO15118::state_machines_loop()
             // The EV ended the session unilaterally by closing TCP (FIN or RST)
             // after the SoC was read, without ever sending SessionStopReq
             if (!iec_temporary_active && is_read_soc_only() && !nonegotiation_pending &&
-                opt_nonegotiation_after_soc &&
+                use_nonegotiation_after_soc() &&
                 (iso2.soc_was_read() || din70121.soc_was_read())) {
                 if (plc_modem_off_task != 0) {
                     task_scheduler.cancel(plc_modem_off_task);
@@ -914,7 +945,7 @@ void ISO15118::begin_iec_transition(ModemOff modem_off)
         iec_switch_task = 0;
     }
 
-    if (opt_ef_teardown) {
+    if (use_ef_teardown()) {
         // ISO 15118-3 error teardown [V2G3-M07-05..09]:
         // X1 (>=3s) -> leave logical network -> state E/F (>= T_step_EF) -> nominal PWM
         iso15118.trace("ISO15118: E/F teardown: X1 (100%% duty) for 3s");
@@ -969,7 +1000,7 @@ void ISO15118::begin_iec_transition(ModemOff modem_off)
 
 void ISO15118::begin_reslac_for_nonegotiation()
 {
-    iso15118.trace("ISO15118: Session ended, starting wake-up toggle for NoNegotiation round");
+    iso15118.trace("ISO15118: Session ended, starting wake-up toggle for post-SoC round (%s)", use_nonegotiation_autocharge() ? "Failed_NoNegotiation" : "stop at SLAC matching");
     nonegotiation_pending = true;
 
     cancel_sequence_timeout(iso2.next_timeout);
@@ -1028,7 +1059,7 @@ void ISO15118::begin_reslac_for_nonegotiation()
     }, 500_ms);
 
     reslac_guard_deadline = now_us() + 60_s;
-    iso15118.trace("ISO15118: NoNegotiation guard armed (60s until IEC fallback)");
+    iso15118.trace("ISO15118: Reconnect guard armed (60s until IEC fallback)");
 }
 
 // Ends high-level communication after a SessionStopRes was sent
@@ -1036,7 +1067,12 @@ bool ISO15118::end_hlc_after_session_stop(uint64_t &next_timeout)
 {
     cancel_sequence_timeout(next_timeout);
 
-    if (opt_nonegotiation_after_soc && !nonegotiation_pending) {
+    // CPD retry handling may already have scheduled the second communication round.
+    if (nonegotiation_pending) {
+        return true;
+    }
+
+    if (is_read_soc_only() && use_nonegotiation_after_soc() && (iso2.soc_was_read() || din70121.soc_was_read())) {
         begin_reslac_for_nonegotiation();
         return true;
     }

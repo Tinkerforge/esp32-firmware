@@ -1,3 +1,5 @@
+//#include "../../options.inc"
+
 export interface config {
     autocharge: boolean;
     read_soc: boolean;
@@ -5,6 +7,15 @@ export interface config {
     min_charge_current: number;
     fast_timeout: boolean;
 }
+
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+export interface config_experimental {
+    ef_teardown: boolean;
+    nonegotiation_autocharge: boolean;
+    nonegotiation_after_soc: boolean;
+    ignore_soc_compatibility: boolean;
+}
+//#endif
 
 export interface state_slac {
     state: number;

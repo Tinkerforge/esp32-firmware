@@ -500,7 +500,7 @@ void Common::handle_supported_app_protocol_req()
 
     const bool no_protocol_match = (din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX);
     const bool force_nonegotiation = iso15118.nonegotiation_pending ||
-                                     (iso15118.is_autocharge_only() && iso15118.opt_nonegotiation_autocharge);
+                                     (iso15118.is_autocharge_only() && iso15118.use_nonegotiation_autocharge());
 
     if (no_protocol_match || force_nonegotiation) {
         if (no_protocol_match) {

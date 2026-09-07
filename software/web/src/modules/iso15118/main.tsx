@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "../../options.inc"
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
@@ -42,22 +43,88 @@ export function ISO15118Navbar() {
 }
 
 type ISO15118Config = API.getType["iso15118/config"];
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+type ISO15118ExperimentalConfig = API.getType["iso15118/config_experimental"];
+type ISO15118State = ISO15118ExperimentalConfig & {pib_downloading: boolean; saving: boolean};
+//#else
+type ISO15118State = {pib_downloading: boolean};
+//#endif
 
-export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downloading: boolean}> {
+export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118State> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+    experimental_saved: ISO15118ExperimentalConfig = null;
+//#endif
 
     constructor() {
         super('iso15118/config',
               () => __("iso15118.script.save_failed"),
               undefined,
-              {pib_downloading: false} as any);
+              {
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+                  ef_teardown: false,
+                  nonegotiation_autocharge: false,
+                  nonegotiation_after_soc: false,
+                  ignore_soc_compatibility: false,
+                  saving: false,
+//#endif
+                  pib_downloading: false
+              });
+
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+        util.addApiEventListener("iso15118/config_experimental", () => {
+            const config = {...API.get("iso15118/config_experimental")};
+            const previous = this.experimental_saved;
+            // Refresh untouched experiments even if normal settings have unsaved changes.
+            this.setState(state => {
+                const update: Partial<ISO15118ExperimentalConfig> = {};
+                for (const key of Object.keys(config) as (keyof ISO15118ExperimentalConfig)[]) {
+                    if (previous === null || state[key] === previous[key]) {
+                        update[key] = config[key];
+                    }
+                }
+                return update;
+            });
+            this.experimental_saved = config;
+        });
+//#endif
 
         util.addApiEventListener("iso15118/state_slac", () => {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
     }
+
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+    override async sendSave(topic: 'iso15118/config', config: ISO15118Config) {
+        this.setState({saving: true});
+        try {
+            if (this.experimental_saved !== null) {
+                const experimental = API.extract("iso15118/config_experimental", this.state);
+                const changed = (Object.keys(experimental) as (keyof ISO15118ExperimentalConfig)[])
+                    .some(key => experimental[key] !== this.experimental_saved[key]);
+
+                if (changed) {
+                    if (API.get("evse/state")?.charger_state !== 0) {
+                        util.add_alert("iso15118_experimental_connected",
+                                       "warning",
+                                       () => __("iso15118.script.experimental_save_failed"),
+                                       () => __("iso15118.content.experimental_unplug")
+                        );
+                        throw new Error("Vehicle must be unplugged");
+                    }
+
+                    await API.save("iso15118/config_experimental", experimental, () => __("iso15118.script.experimental_save_failed"));
+                    this.experimental_saved = experimental;
+                }
+            }
+            await super.sendSave(topic, config);
+        } finally {
+            this.setState({saving: false});
+        }
+    }
+//#endif
 
     async pib_download() {
         this.setState({pib_downloading: true});
@@ -141,7 +208,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
         this.uplot_wrapper_ref.current.set_data(data);
     }
 
-    render(props: {}, state: Readonly<ISO15118Config>) {
+    render(props: {}, state: Readonly<ISO15118Config & ISO15118State>) {
         if (!util.render_allowed())
             return <SubPage name="iso15118" />;
 
@@ -152,6 +219,10 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
         const state_iso2     = API.get('iso15118/state_iso2');
         const state_iso20    = API.get('iso15118/state_iso20');
         const seen_macs      = API.get('ev/seen_macs');
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+        const unplugged = API.get("evse/state")?.charger_state === 0;
+        const experimental_disabled = state.saving || !unplugged || !API.get("iso15118/config_experimental");
+//#endif
 
         const sdp_state_names: {[key: number]: string} = {
             0: __("iso15118.content.sdp_state_idle"),
@@ -495,6 +566,9 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     <FormRow label={__("iso15118.content.autocharge")} help={__("iso15118.content.autocharge_help")}>
                         <Switch desc={__("iso15118.content.autocharge_desc")}
                                 checked={state.autocharge}
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+                                disabled={state.saving}
+//#endif
                                 onClick={this.toggle('autocharge')}
                         />
                     </FormRow>
@@ -502,7 +576,11 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                         <Switch desc={__("iso15118.content.read_soc_desc")}
                                 checked={API.hasFeature("meter") && state.read_soc}
                                 onClick={this.toggle('read_soc')}
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+                                disabled={state.saving || !API.hasFeature("meter")}
+//#else
                                 disabled={!API.hasFeature("meter")}
+//#endif
                         />
                     </FormRow>
                     <FormRow label={__("iso15118.content.charge_via_iso15118")} help={__("iso15118.content.charge_via_iso15118_help")}>
@@ -525,6 +603,9 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                     <FormRow label={__("iso15118.content.fast_timeout")} help={__("iso15118.content.fast_timeout_help")}>
                         <Switch desc={__("iso15118.content.fast_timeout_desc")}
                                 checked={state.fast_timeout}
+//#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS
+                                disabled={state.saving}
+//#endif
                                 onClick={this.toggle('fast_timeout')}
                         />
                     </FormRow>
@@ -552,6 +633,38 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downlo
                             />
                         </FormRow>
                     </CollapsedSection>
+{/*#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS*/}
+                    <CollapsedSection heading={__("iso15118.content.experimental_settings")}>
+                        <div class="alert alert-warning" role="alert">
+                            {__("iso15118.content.experimental_warning")}
+                        </div>
+                        {!unplugged && <p class="text-warning">{__("iso15118.content.experimental_unplug")}</p>}
+                        <FormRow label={__("iso15118.content.ef_teardown")} help={__("iso15118.content.ef_teardown_help")}>
+                            <Switch desc={__("iso15118.content.ef_teardown_desc")}
+                                    checked={state.ef_teardown}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('ef_teardown')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.nonegotiation_autocharge")} help={__("iso15118.content.nonegotiation_autocharge_help")}>
+                            <Switch desc={__("iso15118.content.nonegotiation_autocharge_desc")}
+                                    checked={state.nonegotiation_autocharge}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('nonegotiation_autocharge')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.nonegotiation_after_soc")} help={__("iso15118.content.nonegotiation_after_soc_help")}>
+                            <Switch desc={__("iso15118.content.nonegotiation_after_soc_desc")}
+                                    checked={state.nonegotiation_after_soc}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('nonegotiation_after_soc')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.ignore_soc_compatibility")} help={__("iso15118.content.ignore_soc_compatibility_help")}>
+                            <Switch desc={__("iso15118.content.ignore_soc_compatibility_desc")}
+                                    checked={state.ignore_soc_compatibility}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('ignore_soc_compatibility')}/>
+                        </FormRow>
+                    </CollapsedSection>
+{/*#endif*/}
                 </SubPage.Config>
             </SubPage>
         );

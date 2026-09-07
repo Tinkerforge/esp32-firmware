@@ -409,7 +409,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
         // NOTE: We use OK here, while after 10 retries and FAILED in iso2. This is on purpose.
         //       The meaning is slightly different between the two. With iso2 a new charge can
         //       explicitely be started after FAILED, which is not true with din.
-        const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.opt_nonegotiation_after_soc;
+        const bool end_at_cpd = iso15118.is_read_soc_only() && iso15118.use_nonegotiation_after_soc();
 
         res->ResponseCode = din_responseCodeType_OK;
         if (soc_shutdown_retries > 10 && !end_at_cpd) {

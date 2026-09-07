@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "options.h"
 #include "lwip/sockets.h"  // For struct pollfd
 #include "qca700x.h"
 #include "slac.h"
@@ -74,6 +75,9 @@ private:
 
 public:
     ConfigRoot config;
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+    ConfigRoot config_experimental;
+#endif
 
     // Poll file descriptors for central I/O polling
     struct pollfd fds[FDS_COUNT];
@@ -95,12 +99,22 @@ public:
                config.get("charge_via_iso15118")->asBool();
     }
 
-    // Returns true if only autocharge is enabled, or if a Tesla is connected with
-    // autocharge enabled. Teslas cannot start AC charging after the SoC was read.
+    // Keep vehicle exclusions here so the experimental override bypasses all of them.
+    bool is_soc_compatible() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        if (config_experimental.get("ignore_soc_compatibility")->asBool()) {
+            return true;
+        }
+#endif
+        return common.get_evcc_vendor() != EVCCVendor::Tesla;
+    }
+
+    // Returns true if only autocharge is enabled, or if the connected EV cannot
+    // start AC charging after reading SoC and autocharge is enabled.
     // In this mode, we switch to IEC 61851 temporary mode after SLAC completes.
     bool is_autocharge_only() const {
         return config.get("autocharge")->asBool() &&
-               (!config.get("read_soc")->asBool() || (common.get_evcc_vendor() == EVCCVendor::Tesla)) &&
+               (!config.get("read_soc")->asBool() || !is_soc_compatible()) &&
                !config.get("charge_via_iso15118")->asBool();
     }
 
@@ -121,17 +135,37 @@ public:
     // start basic AC charging after a graceful ISO 15118 session stop.
     // When true, begin_iec_transition() uses the ISO 15118-3 error teardown
     // [V2G3-M07-05..09]: X1 -> leave logical network -> E/F >= T_step_EF -> nominal PWM.
-    bool opt_ef_teardown = false;
-    // When true and in autocharge-only mode, complete SLAC/SDP/TCP and answer
+    bool use_ef_teardown() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        return config_experimental.get("ef_teardown")->asBool();
+#else
+        return false;
+#endif
+    }
+    // When true, in autocharge-only mode or the second round after reading SoC,
+    // complete SLAC/SDP/TCP and answer
     // supportedAppProtocolReq with Failed_NoNegotiation instead of skipping SDP/V2G.
-    bool opt_nonegotiation_autocharge = false;
+    bool use_nonegotiation_autocharge() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        return config_experimental.get("nonegotiation_autocharge")->asBool();
+#else
+        return false;
+#endif
+    }
     // When true and in read_soc-only mode, keep the PLC modem enabled after the
-    // DC SoC session, force a second SLAC round and answer the second
-    // supportedAppProtocolReq with Failed_NoNegotiation.
-    bool opt_nonegotiation_after_soc = false;
+    // DC SoC session and force a second SLAC round. Stop at SLAC matching unless
+    // use_nonegotiation_autocharge() selects Failed_NoNegotiation instead.
+    bool use_nonegotiation_after_soc() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        return config_experimental.get("nonegotiation_after_soc")->asBool();
+#else
+        return false;
+#endif
+    }
 
+    // Post-SoC round pending, ending at SLAC matching or with Failed_NoNegotiation.
     bool nonegotiation_pending = false;
-    // Deadline for the NoNegotiation wait, polled in state_machines_loop().
+    // Deadline for the reconnect wait, polled in state_machines_loop().
     micros_t reslac_guard_deadline = 0_us;
     // V2G_SECC_CommunicationSetup_Timer [V2G2-716]
     // Armed when CM_SLAC_MATCH.CNF is sent, cleared when supportedAppProtocolReq arrives.

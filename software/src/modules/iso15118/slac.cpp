@@ -335,6 +335,14 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
 
     iso15118.common.detect_evcc_vendor_from_mac(pev_mac);
 
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+    iso15118.trace("ISO15118: SLAC attempt: autocharge=%d read_soc=%d charge_via_iso15118=%d; experimental: ef_teardown=%d nonegotiation_autocharge=%d nonegotiation_after_soc=%d ignore_soc_compatibility=%d",
+                   iso15118.is_autocharge(), iso15118.config.get("read_soc")->asBool(),
+                   iso15118.config.get("charge_via_iso15118")->asBool(),
+                   iso15118.use_ef_teardown(), iso15118.use_nonegotiation_autocharge(),
+                   iso15118.use_nonegotiation_after_soc(), iso15118.config_experimental.get("ignore_soc_compatibility")->asBool());
+#endif
+
     memcpy(pev_run_id, cm_slac_parm_request.run_id, SLAC_RUN_ID_LENGTH);
     for (size_t i = 0; i < SLAC_RUN_ID_LENGTH; i++) {
         api_state.get("pev_run_id")->get(i)->updateUint(pev_run_id[i]);
@@ -602,14 +610,17 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     }
 #endif
 
-    // In autocharge-only mode, we have all the data we need (PEV MAC) from SLAC.
+    // In autocharge-only mode, or the second round after reading SoC, we already
+    // have all the data we need once SLAC reaches matching.
     // Do NOT send CM_SLAC_MATCH.CNF: if we confirm the match, the EV joins the PLC
     // network and tries SDP/V2G, which times out after ~90-100s before falling back to IEC.
     // By not confirming, the EV's TT_MATCH_RESPONSE expires immediately after 200ms.
-    // With opt_nonegotiation_autocharge the match is confirmed instead and the EV is
+    // With nonegotiation_autocharge the match is confirmed instead and the EV is
     // answered with Failed_NoNegotiation at the supportedAppProtocol stage.
-    if (iso15118.is_autocharge_only() && !iso15118.opt_nonegotiation_autocharge) {
-        iso15118.trace("Autocharge-only mode: SLAC complete, NOT sending CM_SLAC_MATCH.CNF");
+    if ((iso15118.is_autocharge_only() || iso15118.nonegotiation_pending) && !iso15118.use_nonegotiation_autocharge()) {
+        iso15118.trace("%s: SLAC complete, NOT sending CM_SLAC_MATCH.CNF", iso15118.nonegotiation_pending ? "After SoC" : "Autocharge-only mode");
+        iso15118.nonegotiation_pending = false;
+        iso15118.reslac_guard_deadline = 0_us;
         next_timeout = {};
         state = SLACState::LinkDetected;  // Mark SLAC as done
 
