@@ -93,18 +93,18 @@ export class Debug extends Component {
         let state_hwm    = API.get('debug/state_hwm');
 
         const config_type_names = [
-            __("debug.content.conf_uint_buf"),
-            __("debug.content.conf_int_buf"),
-            __("debug.content.conf_uint32_buf"),
-            __("debug.content.conf_int32_buf"),
-            __("debug.content.conf_uint53_buf"),
-            __("debug.content.conf_int52_buf"),
-            __("debug.content.conf_float_buf"),
-            __("debug.content.conf_string_buf"),
-            __("debug.content.conf_array_buf"),
-            __("debug.content.conf_tuple_buf"),
-            __("debug.content.conf_object_buf"),
-            __("debug.content.conf_union_buf"),
+            "ConfUint",
+            "ConfInt",
+            "ConfUint32",
+            "ConfInt32",
+            "ConfUint53",
+            "ConfInt52",
+            "ConfFloat",
+            "ConfString",
+            "ConfArray",
+            "ConfTuple",
+            "ConfObject",
+            "ConfUnion",
         ];
 
         const flash_id_device = state_static.flash_id & 0xFFFF;
@@ -175,10 +175,10 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.memory_header")} />
 
                 <Row4 className="d-none d-sm-flex">
-                     <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
-                     <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
-                     <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
-                     <p class="mb-0 form-label text-center">{__("debug.content.himem")}</p>
+                     <p class="mb-0 form-label text-center">DRAM</p>
+                     <p class="mb-0 form-label text-center">IRAM</p>
+                     <p class="mb-0 form-label text-center">PSRAM</p>
+                     <p class="mb-0 form-label text-center">HIMEM</p>
                 </Row4>
 
                 <Row4 label={__("debug.content.heap_used")}>
@@ -233,44 +233,44 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.config_buffers")} />
 
                 <Row className="d-none d-sm-flex"
-                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
-                     c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
-                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
+                     l={<p class="mb-0 form-label text-center">DRAM</p>}
+                     c={<p class="mb-0 form-label text-center">IRAM</p>}
+                     r={<p class="mb-0 form-label text-center">PSRAM</p>}/>
 
-                <Row label={__("debug.content.conf_uint_buf")}
+                <Row label="ConfUint"
                      c={<OutputBytes value={state_slow.conf_uint_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_int_buf")}
+                <Row label="ConfInt"
                      c={<OutputBytes value={state_slow.conf_int_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_uint32_buf")}
+                <Row label="ConfUint32"
                      c={<OutputBytes value={state_slow.conf_uint32_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_int32_buf")}
+                <Row label="ConfInt32"
                      c={<OutputBytes value={state_slow.conf_int32_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_uint53_buf")}
+                <Row label="ConfUint53"
                      c={<OutputBytes value={state_slow.conf_uint53_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_int52_buf")}
+                <Row label="ConfInt52"
                      c={<OutputBytes value={state_slow.conf_int52_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_float_buf")}
+                <Row label="ConfFloat"
                      c={<OutputBytes value={state_slow.conf_float_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_string_buf")}
+                <Row label="ConfString"
                      l={<OutputBytes value={state_slow.conf_string_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_array_buf")}
+                <Row label="ConfArray"
                      l={<OutputBytes value={state_slow.conf_array_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_tuple_buf")}
+                <Row label="ConfTuple"
                      l={<OutputBytes value={state_slow.conf_tuple_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_object_buf")}
+                <Row label="ConfObject"
                      c={<OutputBytes value={state_slow.conf_object_buf_size} />}/>
 
-                <Row label={__("debug.content.conf_union_buf")}
+                <Row label="ConfUnion"
                      l={<OutputBytes value={state_slow.conf_union_buf_size} />}/>
 
                 <FormSeparator heading={__("debug.content.config_slots")} />
@@ -399,9 +399,9 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.memory_speed_header")} />
 
                 <Row className="d-none d-sm-flex"
-                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
-                     c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
-                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")} / {__("debug.content.himem")}</p>}/>
+                     l={<p class="mb-0 form-label text-center">DRAM</p>}
+                     c={<p class="mb-0 form-label text-center">IRAM</p>}
+                     r={<p class="mb-0 form-label text-center">PSRAM / HIMEM</p>}/>
 
                 <Row label={__("debug.content.ram_benchmark")}
                      l={<OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
@@ -431,7 +431,7 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.websocket_header")} />
+                <FormSeparator heading="WebSockets" />
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
                     <div class="row g-2">

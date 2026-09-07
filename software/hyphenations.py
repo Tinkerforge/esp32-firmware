@@ -1623,6 +1623,7 @@ de_hyph = [
     "aus-zu-lö-sen",
     "län-der-spe-zi-fi-sche",
     "Vor-schrif-ten",
+    "Task-in-for-ma-tio-nen",
 ]
 
 en_hyph = [
