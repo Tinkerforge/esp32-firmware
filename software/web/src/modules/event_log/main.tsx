@@ -26,7 +26,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Download, FileText } from "react-feather";
-import { blobToBase64 } from "../../ts/util";
+import { fetch_debug_report } from "../../ts/components/debug_logger";
 
 export function EventLogNavbar() {
     return <NavbarItem name="event_log" module="event_log" title={__("event_log.navbar.event_log")} symbol={<FileText />} />;
@@ -170,38 +170,10 @@ export class EventLog extends Component<{}, EventLogState> {
 
         try {
             let timestamp = new Date();
-            let debug_log = util.iso8601ButLocal(timestamp) + "\nScroll down for event log!\n\n";
 
-            debug_log += await util.download("/debug_report", true).then(blob => blob.text());
-            debug_log += "\n\n";
-            debug_log += this.state.log;
-
-            //const trace_log_uri = "/trace_log" + (util.remoteAccessMode ? "/10020" : ""); // Use greedy level 20 compression to download the trace log when in remote access mode.
-            const trace_log_uri = "/trace_log";
-            const trace_log = (await util.download(trace_log_uri, true, 40000).then(blob => blob.text())).replace(/\s+$/, "");
-
-            if (trace_log.length > 0) {
-                debug_log += "\n\n___TRACE_LOG_START___\n\n";
-                debug_log += trace_log + "\n";
-            }
-
-            try {
-                let blob = await util.download("/coredump/coredump.elf", true);
-                let base64 = await blobToBase64(blob);
-                base64 = base64.replace(/(.{80})/g, "$1\n");
-                debug_log += "\n\n___CORE_DUMP_START___\n\n";
-                debug_log += base64;
-            }
-            catch (e) {
-                const msg = typeof(e) == "string" ? e : e?.message;
-                if (!msg) {
-                    debug_log += "\n\nAn unknown error occurred while trying to download the core dump.";
-                } else if (msg.startsWith("404")) {
-                    debug_log += "\n\nNo core dump stored";
-                } else {
-                    debug_log += "\n\nFailed to download core dump: '" + msg + "'";
-                }
-            }
+            const debug_log = await fetch_debug_report({
+                override_fetch_event_log: async () => this.state.log
+            })
 
             util.downloadToTimestampedFile(debug_log, __("event_log.content.debug_report_file"), "txt", "text/plain", timestamp);
         } catch (e) {

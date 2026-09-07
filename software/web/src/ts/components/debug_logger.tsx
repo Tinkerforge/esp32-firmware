@@ -36,6 +36,91 @@ interface DebugLoggerProps {
     filename: string
 }
 
+interface FetchDebugReportParams {
+        prefix?: string,
+        progress?: (status: 'running' | 'done' | 'error', msg: string) => Promise<void>,
+        content?: ('debug_report' | 'event_log' | 'trace_log' | 'coredump')[]
+        override_fetch_event_log?: () => Promise<string>
+}
+
+export async function fetch_debug_report(p: Partial<FetchDebugReportParams>) {
+    let text = "";
+
+    const {
+        prefix = "",
+        progress = ((status, msg) => {}),
+        content = ['debug_report', 'event_log', 'trace_log', 'coredump'],
+        override_fetch_event_log = () => util.download("/event_log", true).then(blob => blob.text())
+    } = p;
+
+    if (content.indexOf('debug_report') >= 0) {
+        await progress('running', __("component.debug_logger.loading_debug_report"));
+        text += `___${prefix}DEBUG_REPORT_START___\n\n`;
+
+        try {
+            text += await util.download("/debug_report", true).then(blob => blob.text()) + "\n\n";
+        } catch (e) {
+            await progress('error', __("component.debug_logger.loading_debug_report_failed"));
+            throw __("component.debug_logger.loading_debug_report_failed") + ": " + e;
+        }
+
+        text += `___${prefix}DEBUG_REPORT_END___\n\n`;
+    }
+
+    if (content.indexOf('event_log') >= 0) {
+        await progress('running', __("component.debug_logger.loading_event_log"));
+        text += `___${prefix}EVENT_LOG_START___\n\n`;
+
+        try {
+            text += await override_fetch_event_log() + "\n\n";
+        } catch (e) {
+            await progress('error', __("component.debug_logger.loading_event_log_failed"));
+            throw __("component.debug_logger.loading_event_log_failed") + ": " + e;
+        }
+
+        text += `___${prefix}EVENT_LOG_END___\n\n`;
+    }
+
+    if (content.indexOf('trace_log') >= 0) {
+        await progress('running', __("component.debug_logger.loading_trace_log"));
+        text += `___${prefix}TRACE_LOG_START___\n\n`;
+
+        try {
+            text += (await util.download("/trace_log", true, 40000).then(blob => blob.text())).replace(/\s+$/, "") + "\n\n";
+        }
+        catch (e) {
+            await progress('error', __("component.debug_logger.loading_trace_log_failed"));
+            throw __("component.debug_logger.loading_trace_log_failed") + ": " + e;
+        }
+
+        text += `___${prefix}TRACE_LOG_END___\n\n`;
+    }
+
+    if (content.indexOf('coredump') >= 0) {
+        await progress('running', __("component.debug_logger.loading_coredump"));
+        text += `___${prefix}COREDUMP_START___\n\n`;
+
+        try {
+            text += (await util.download("/coredump/coredump.elf", true).then(util.blobToBase64)).replace(/(.{80})/g, "$1\n").trim() + "\n\n";
+        }
+        catch (e) {
+            const msg = typeof(e) == "string" ? e : e?.message;
+            if (!msg || !msg.startsWith("404")) {
+                await progress('error', __("component.debug_logger.loading_coredump_failed"));
+                throw __("component.debug_logger.loading_coredump_failed") + ": " + e;
+
+            }
+            text += "No core dump stored\n\n";
+        }
+
+        text += `___${prefix}COREDUMP_END___\n\n`;
+    }
+
+    await progress('done', "");
+
+    return text;
+}
+
 export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 {
     debug_prefix: string = '';
@@ -66,43 +151,6 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }, false);
     }
 
-    async get_debug_report_and_event_log() {
-        let text = '';
-
-        try {
-            this.setState({debug_status: __("component.debug_logger.loading_debug_report")});
-            text += await util.download("/debug_report", true).then(blob => blob.text()) + "\n\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_debug_report_failed")});
-            throw __("component.debug_logger.loading_debug_report_failed") + ": " + error;
-        }
-
-        try {
-            this.setState({debug_status: __("component.debug_logger.loading_event_log")});
-            text += await util.download("/event_log", true).then(blob => blob.text()) + "\n";
-        } catch (error) {
-            this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_event_log_failed")});
-            throw __("component.debug_logger.loading_event_log_failed") + ": " + error;
-        }
-
-        try {
-            this.setState({debug_status: __("component.debug_logger.loading_trace_log")});
-            const trace_log_uri = "/trace_log";
-            const trace_log = (await util.download(trace_log_uri, true, 40000).then(blob => blob.text())).replace(/\s+$/, "");
-
-            if (trace_log.length > 0) {
-                text += "\n\n___TRACE_LOG_START___\n\n";
-                text += trace_log + "\n";
-            }
-        }
-        catch (error) {
-            this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_trace_log_failed")});
-            throw __("component.debug_logger.loading_trace_log_failed") + ": " + error;
-        }
-
-        return text;
-    }
-
     debugTimeout: number;
 
     async resetDebugWd() {
@@ -123,7 +171,11 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         this.setState({debug_running: true});
 
         try {
-            this.debug_prefix = await this.get_debug_report_and_event_log();
+            this.debug_prefix = await fetch_debug_report({
+                prefix: "PRE_",
+                progress: async (status, msg) => this.setState({debug_status: msg}),
+                content: ['debug_report', 'event_log', 'trace_log']
+            });
 
             this.setState({debug_status: __("component.debug_logger.starting_debug")(this.props.name)});
         } catch(error) {
@@ -155,7 +207,10 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         try {
             this.setState({debug_status: __("component.debug_logger.debug_stopped")(this.props.name)});
-            this.debug_suffix = "\n" + await this.get_debug_report_and_event_log();
+            this.debug_suffix = "\n" + await fetch_debug_report({
+                prefix: "POST_",
+                progress: async (status, msg) => this.setState({debug_status: msg})
+            });
             this.setState({debug_status: __("component.debug_logger.debug_done")});
         } catch (error) {
             this.debug_suffix = "\nError while stopping charge protocol: " + error;
@@ -164,13 +219,18 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         let full_log = [this.debug_prefix];
 
+        full_log.push("___DEBUG_PROTOCOL_START___\n\n");
+
         if (this.debug_protocol_lines_dropped > 0) {
             full_log.push('' + this.debug_protocol_lines_dropped + ' lines have been dropped from the following table.\n\n');
         }
-
         full_log.push(this.debug_protocol_header);
         full_log = full_log.concat(this.debug_protocol_lines);
+
+        full_log.push("___DEBUG_PROTOCOL_END___\n\n");
+
         full_log.push(this.debug_suffix);
+
 
         // Download log in any case: Even an incomplete log can be useful for debugging.
         util.downloadToTimestampedFile(full_log.join(''), this.props.filename, "txt", "text/plain");
