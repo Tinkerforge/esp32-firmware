@@ -85,6 +85,21 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             throw __("component.debug_logger.loading_event_log_failed") + ": " + error;
         }
 
+        try {
+            this.setState({debug_status: __("component.debug_logger.loading_trace_log")});
+            const trace_log_uri = "/trace_log";
+            const trace_log = (await util.download(trace_log_uri, true, 40000).then(blob => blob.text())).replace(/\s+$/, "");
+
+            if (trace_log.length > 0) {
+                text += "\n\n___TRACE_LOG_START___\n\n";
+                text += trace_log + "\n";
+            }
+        }
+        catch (error) {
+            this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_trace_log_failed")});
+            throw __("component.debug_logger.loading_trace_log_failed") + ": " + error;
+        }
+
         return text;
     }
 
