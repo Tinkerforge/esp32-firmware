@@ -13,8 +13,8 @@
     },
     {
         "base": "esp32-arduino-libs",
-        "branch": "tf-esp-secure-20260903",
-        "commit": "3d6afcdaa164764ad5527859fbaceb27e234dc40",
+        "branch": "tf-esp-secure-20260907",
+        "commit": "c095e02e1d882f8b4aa43017fb6d4db55aa2c447",
         "url": "https://github.com/Tinkerforge/esp32-arduino-libs"
     }
 ]
