@@ -12,6 +12,7 @@ import csv
 import traceback
 import glob
 import subprocess
+import atexit
 from pathlib import Path
 from collections import namedtuple
 from selenium import webdriver
@@ -1485,8 +1486,13 @@ def main(stage3, scanner, result):
 
     result["end"] = now()
 
+def print_aborted():
+    orig_print(red('\n[ABORTED]'))
+
 def outer_main():
     exit_code = 0
+
+    atexit.register(print_aborted)
 
     try:
         test_report_pull()
@@ -1511,6 +1517,8 @@ def outer_main():
         except Exception:
             traceback.print_exc()
             exit_code = 1
+
+        atexit.unregister(print_aborted)
 
         sys.stdout = sys_stdout
         sys.stderr = sys_stderr
