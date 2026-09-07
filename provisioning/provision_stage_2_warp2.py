@@ -1499,6 +1499,8 @@ def outer_main():
     except FatalError as e:
         print(red(str(e)))
         exit_code = 1
+    except KeyboardInterrupt:
+        sys.exit(1)
     except Exception:
         traceback.print_exc()
         exit_code = 1
@@ -1514,6 +1516,8 @@ def outer_main():
             exit_code = 1
         except TestAborted:
             pass # exception already handled in led_wrap()
+        except KeyboardInterrupt:
+            sys.exit(1)
         except Exception:
             traceback.print_exc()
             exit_code = 1
@@ -1528,6 +1532,8 @@ def outer_main():
         except FatalError as e:
             print(red(str(e)))
             exit_code = 1
+        except KeyboardInterrupt:
+            sys.exit(1)
         except Exception:
             traceback.print_exc()
             exit_code = 1
