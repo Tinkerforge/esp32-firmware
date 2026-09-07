@@ -34,15 +34,8 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
-import { Progress } from "../../ts/components/progress";
-import { OutputTextarea } from "../../ts/components/output_textarea";
-import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
-import { Download, Plus } from 'react-feather';
-import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_FIXED_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./generated/sun_spec_model_specs";
-import { DiscoveryResultGroup, DiscoveryResultItem, DiscoveryResultItemProps } from "ts/components/discovery_result";
-
-const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
-const SCAN_LOG_INTERVAL = 250; // milliseconds
+import { Button } from "react-bootstrap";
+import { SunSpecDeviceScanner, SunSpecDeviceScannerResult } from "../sun_spec/device_scanner";
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -62,352 +55,28 @@ export type SunSpecMetersConfig = [
     },
 ];
 
-interface DeviceScannerResult {
-    unique_id: string;
-    manufacturer_name: string;
-    model_name: string;
-    display_name: string;
-    serial_number: string;
-    device_address: number;
-    model_id: number;
-    model_instance: number;
-}
-
-interface DeviceScannerProps {
-    host: string;
-    port: number;
-    onResultSelected: (result: DeviceScannerResult) => void;
-}
-
-interface DeviceScannerState {
-    device_address_first: number;
-    device_address_last: number;
-    running: boolean;
-    cookie: number;
-    aborted: boolean;
-    error: boolean;
-    progress: number;
-    log: string;
-    show_log: boolean;
-    results: DeviceScannerResult[];
-}
-
-class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
-    continue_timer: number = undefined;
-    log_timer: number = undefined;
-    pending_log: string = '';
-
-    constructor() {
-        super();
-
-        this.state = {
-            device_address_first: 1,
-            device_address_last: 247,
-            running: false,
-            cookie: null,
-            aborted: false,
-            error: false,
-            progress: 0,
-            log: '',
-            show_log: false,
-            results: [],
-        } as any;
-
-        util.addApiEventListener('meters_sun_spec/scan_log', () => {
-            let scan_log = API.get('meters_sun_spec/scan_log');
-
-            if (!this.state.running || scan_log.cookie !== this.state.cookie) {
-                return;
-            }
-
-            this.pending_log += scan_log.message;
-
-            if (this.state.log.length == 0) {
-                this.update_log();
-            }
-        });
-
-        util.addApiEventListener('meters_sun_spec/scan_error', () => {
-            let scan_error = API.get('meters_sun_spec/scan_error');
-
-            if (!this.state.running || scan_error.cookie !== this.state.cookie) {
-                return;
-            }
-
-            this.setState({error: true});
-        });
-
-        util.addApiEventListener('meters_sun_spec/scan_progress', () => {
-            let scan_progress = API.get('meters_sun_spec/scan_progress');
-
-            if (!this.state.running || scan_progress.cookie !== this.state.cookie) {
-                return;
-            }
-
-            this.setState({progress: scan_progress.progress});
-        });
-
-        util.addApiEventListener('meters_sun_spec/scan_result', () => {
-            let scan_result = API.get('meters_sun_spec/scan_result');
-
-            if (!this.state.running || scan_result.cookie !== this.state.cookie) {
-                return;
-            }
-
-            if (!SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id]) {
-                return;
-            }
-
-            // this combination must be unique according to sunspec specification
-            let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
-
-            if (this.state.results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id && other.model_instance == scan_result.model_instance).length == 0) {
-                let manufacturer_name = scan_result.manufacturer_name.trim();
-
-                if (manufacturer_name == 'KOSTAL Solar Electric GmbH') {
-                    manufacturer_name = 'KOSTAL';
-                }
-
-                this.setState({results: this.state.results.concat({
-                    unique_id: unique_id,
-                    manufacturer_name: scan_result.manufacturer_name,
-                    model_name: scan_result.model_name,
-                    display_name: removeUnicodeHacks((scan_result.model_name.startsWith(manufacturer_name) ? scan_result.model_name.trim() : manufacturer_name + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
-                    serial_number: scan_result.serial_number,
-                    device_address: scan_result.device_address,
-                    model_id: scan_result.model_id,
-                    model_instance: scan_result.model_instance,
-                })});
-            }
-        });
-
-        util.addApiEventListener('meters_sun_spec/scan_done', () => {
-            let scan_done = API.get('meters_sun_spec/scan_done');
-
-            if (!this.state.running || scan_done.cookie !== this.state.cookie) {
-                return;
-            }
-
-            if (this.continue_timer !== undefined) {
-                clearInterval(this.continue_timer);
-                this.continue_timer = undefined;
-            }
-
-            if (this.log_timer !== undefined) {
-                clearInterval(this.log_timer);
-                this.log_timer = undefined;
-            }
-
-            this.update_log();
-
-            let progress = this.state.progress;
-
-            if (!this.state.aborted) {
-                progress = 100;
-            }
-
-            this.setState({running: false, cookie: null, progress: progress});
-        });
-    }
-
-    update_log(message?: string) {
-        let log = this.state.log + this.pending_log;
-
-        this.pending_log = '';
-
-        if (message) {
-            log += message;
-        }
-
-        this.setState({log: log});
-    }
-
-    async abort_scan() {
-        if (!this.state.running || this.state.aborted) {
-            return;
-        }
-
-        let result;
-
-        try {
-            result = await (await util.put('/meters_sun_spec/scan_abort', {cookie: this.state.cookie}, true)).text();
-        }
-        catch (e) {
-            result = e.message.replace('400(Bad Request) ', '');
-        }
-
-        if (result.length > 0) {
-            this.update_log("Error while aborting scan: " + result + "\n");
-        }
-        else {
-            this.setState({aborted: true});
-        }
-    }
-
-    override async componentWillUnmount() {
-        await this.abort_scan();
-    }
-
-    get_scan_result_item(result: DeviceScannerResult): VNode<DiscoveryResultItemProps> {
-        let preferred_model_id: number = null;
-
-        if ([101, 102, 103, 201, 202, 203, 204].indexOf(result.model_id) >= 0 &&
-            this.state.results.findIndex((other) => other.model_id == result.model_id + 10) >= 0) {
-            preferred_model_id = result.model_id + 10;
-        }
-
-        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
-
-        return <DiscoveryResultItem
-                key={result.model_id}
-                title={<h5>{result.display_name}</h5>}
-                labelAdd={<Plus />}
-                error={selectable ? undefined : <span class="text-danger">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>}
-                onClick={() => this.props.onResultSelected(result)}>
-                <div>{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</div>
-                <div>{__("meters_sun_spec.content.config_serial_number")}: {result.serial_number}</div>
-                <div>{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</div>
-        </DiscoveryResultItem>;
-    }
-
-    async scan_continue() {
-        if (!this.state.running) {
-            return;
-        }
-
-        let result;
-
-        try {
-            result = await (await util.put('/meters_sun_spec/scan_continue', {cookie: this.state.cookie}, true)).text();
-        }
-        catch (e) {
-            result = e.message.replace('400(Bad Request) ', '');
-        }
-
-        if (result.length > 0) {
-            this.update_log("Error while keeping scan running: " + result + "\n");
-        }
-    }
-
-    render() {
-        return <>
-            <FormRow label={__("meters_sun_spec.content.scan_title")} label_muted={__("meters_sun_spec.content.scan_title_muted")}>
-                <div class="row mb-3">
-                    <div class="col-sm-6">
-                        <InputNumber
-                            required
-                            min={0}
-                            max={255}
-                            value={this.state.device_address_first}
-                            onValue={(v) => {
-                                this.setState({device_address_first: v});
-                            }} />
-                    </div>
-                    <div class="col-sm-6">
-                        <InputNumber
-                            required
-                            min={0}
-                            max={255}
-                            value={this.state.device_address_last}
-                            onValue={(v) => {
-                                this.setState({device_address_last: v});
-                            }} />
-                    </div>
-                </div>
-            {!this.state.running ?
-                <Button key="scan"
-                        variant="primary"
-                        className="form-control"
-                        onClick={async () => {
-                            let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
-
-                            this.pending_log = '';
-
-                            this.setState({
-                                running: true,
-                                cookie: cookie,
-                                error: false,
-                                aborted: false,
-                                show_log: true,
-                                progress: 0,
-                                log: '',
-                                results: [],
-                            }, async () => {
-                                let result;
-
-                                try {
-                                    result = await (await util.put('/meters_sun_spec/scan', {
-                                        host: this.props.host,
-                                        port: this.props.port,
-                                        device_address_first: this.state.device_address_first,
-                                        device_address_last: this.state.device_address_last,
-                                        cookie: cookie,
-                                    }, true)).text();
-                                }
-                                catch (e) {
-                                    result = e.message.replace('400(Bad Request) ', '');
-                                }
-
-                                if (result.length > 0) {
-                                    this.update_log("Error while starting scan: " + result + "\n");
-                                    this.setState({running: false, cookie: null});
-
-                                    return;
-                                }
-
-                                this.continue_timer = window.setInterval(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
-                                this.log_timer = window.setInterval(() => this.update_log(), SCAN_LOG_INTERVAL);
-                            });
-                        }}
-                        disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port)}>
-                    {__("meters_sun_spec.content.scan")}
-                </Button> :
-                <Button key="scan_abort"
-                        variant="primary"
-                        className="form-control"
-                        onClick={async () => await this.abort_scan()}
-                        disabled={this.state.aborted}>
-                    {__("meters_sun_spec.content.scan_abort")}
-                </Button>}
-            </FormRow>
-
-            {this.state.running ?
-                <FormRow>
-                    <Progress progress={this.state.progress / 100} />
-                </FormRow>
-                : undefined}
-
-            {this.state.show_log ?
-                <><FormRow>
-                    <OutputTextarea rows={10} resize='vertical' value={this.state.log} />
-                </FormRow>
-
-                {this.state.error ?
-                    <FormRow>
-                        <Alert variant="warning" className="mb-0">{__("meters_sun_spec.content.scan_error")()}</Alert>
-                    </FormRow>
-                    : undefined}
-
-                <FormRow>
-                    <Button variant="primary"
-                            disabled={this.state.running || this.state.log.length == 0}
-                            className="form-control"
-                            onClick={() => util.downloadToTimestampedFile(this.state.log, __("meters_sun_spec.content.scan_log_file"), "txt", "text/plain")}>
-                        <span class="me-2">{__("meters_sun_spec.content.scan_log")}</span>
-                        <Download/>
-                    </Button>
-                </FormRow></>
-                : undefined}
-
-            {this.state.results.length > 0 ?
-                <FormRow label={__("meters_sun_spec.content.scan_results")}>
-                    <DiscoveryResultGroup>
-                        {this.state.results.map((result) => this.get_scan_result_item(result))}
-                    </DiscoveryResultGroup>
-                </FormRow>
-                : undefined}
-        </>;
-    }
+const MODEL_SPECS: {[model_id: string]: {fixed_location: number, is_supported: boolean}} = {
+    '101': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '102': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '103': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '111': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '112': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '113': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '122': {fixed_location: MeterLocation.Inverter, is_supported: false},
+    '160': {fixed_location: MeterLocation.PV,       is_supported: true},
+    '201': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '202': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '203': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '204': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '211': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '212': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '213': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '214': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '220': {fixed_location: MeterLocation.Unknown,  is_supported: false},
+    '701': {fixed_location: MeterLocation.Inverter, is_supported: true},
+    '713': {fixed_location: MeterLocation.Battery,  is_supported: true},
+    '714': {fixed_location: MeterLocation.Unknown,  is_supported: true},
+    '802': {fixed_location: MeterLocation.Battery,  is_supported: true},
 }
 
 function get_fixed_location(model_id: number, dc_port_type: number) {
@@ -439,15 +108,14 @@ function get_fixed_location(model_id: number, dc_port_type: number) {
         return MeterLocation.Unknown;
     }
 
-    let fixed_location = SUN_SPEC_MODEL_FIXED_LOCATION[model_id];
+    let model_spec = MODEL_SPECS[model_id];
 
-    if (fixed_location === undefined) {
-        fixed_location = MeterLocation.Unknown;
+    if (model_spec === undefined) {
+        return MeterLocation.Unknown;
     }
 
-    return fixed_location;
+    return model_spec.fixed_location;
 }
-
 
 interface EditChildrenProps {
     config: SunSpecMetersConfig;
@@ -468,11 +136,11 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
     }
 
     render() {
-        let model_ids: [string, string][] = [];
+        let model_id_items: [string, string][] = [];
 
-        for (let model_info of SUN_SPEC_MODEL_INFOS) {
-            if (model_info.is_supported) {
-                model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`) + ` [${model_info.model_id}]`]);
+        for (let model_id of Object.keys(MODEL_SPECS)) {
+            if (MODEL_SPECS[model_id].is_supported) {
+                model_id_items.push([model_id, translate_unchecked(`sun_spec.content.model_${model_id}`) + ` [${model_id}]`]);
             }
         }
 
@@ -495,21 +163,24 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                     }} />
             </FormRow>,
             <hr/>,
-            <DeviceScanner host={this.props.config[1].host} port={this.props.config[1].port} onResultSelected={(result: DeviceScannerResult) => {
-                this.setState({manual_override: false});
+            <SunSpecDeviceScanner host={this.props.config[1].host} port={this.props.config[1].port}
+                on_is_model_visible={(model_id: number) => MODEL_SPECS[model_id] !== undefined}
+                on_is_model_supported={(model_id: number) => MODEL_SPECS[model_id].is_supported}
+                on_result_selected={(result: SunSpecDeviceScannerResult) => {
+                    this.setState({manual_override: false});
 
-                this.props.on_config(util.get_updated_union(this.props.config, {
-                    display_name: result.display_name,
-                    location: get_fixed_location(result.model_id, DCPortType.NotImplemented),
-                    device_address: result.device_address,
-                    manufacturer_name: result.manufacturer_name,
-                    model_name: result.model_name,
-                    serial_number: result.serial_number,
-                    model_id: result.model_id,
-                    model_instance: result.model_instance,
-                    dc_port_type: DCPortType.NotImplemented,
-                }));
-            }} />,
+                    this.props.on_config(util.get_updated_union(this.props.config, {
+                        display_name: result.display_name,
+                        location: get_fixed_location(result.model_id, DCPortType.NotImplemented),
+                        device_address: result.device_address,
+                        manufacturer_name: result.manufacturer_name,
+                        model_name: result.model_name,
+                        serial_number: result.serial_number,
+                        model_id: result.model_id,
+                        model_instance: result.model_instance,
+                        dc_port_type: DCPortType.NotImplemented,
+                    }));
+                }} />,
             <hr/>,
             <FormRow label={__("meters_sun_spec.content.config_display_name")}>
                 <InputText
@@ -575,7 +246,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                 <InputSelect
                     required
                     disabled={!this.state.manual_override}
-                    items={model_ids}
+                    items={model_id_items}
                     placeholder={__("select")}
                     value={util.hasValue(this.props.config[1].model_id) ? this.props.config[1].model_id.toString() : this.props.config[1].model_id}
                     onValue={(v) => {

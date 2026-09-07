@@ -26,34 +26,13 @@ let x = {
             "config_location_depends_dc_port_type": "Depends on DC port type...",
             "config_manual_override": "Manually configure device",
 
-            "scan_title": "Device search",
-            "scan_title_muted": "first device address, last device address",
-            "scan": "Start search",
-            "scan_abort": "Abort search",
-            "scan_error": /*FFN*/() => {
-                let result = [<>An error occurred during the device search.</>];
-
-                if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Please download the log and send it to <a href={`mailto:${options.SUPPORT_EMAIL}?subject=Error during SunSpec device search`}>{options.SUPPORT_EMAIL}</a>.</>);
-                }
-
-                return <>{result}</>;
-            }/*NF*/,
-            "scan_results": "Discovered devices",
-            "scan_log": "Log",
-            "scan_log_file": "SunSpec-scan-log",
-
             "dc_port_type_photovoltaic": "PV",
             "dc_port_type_energy_storage_system": "Battery",
             "dc_port_type_electric_vehicle": "Vehicle",
             "dc_port_type_generic_injecting": "Generic (injecting)",
             "dc_port_type_generic_absorbing": "Generic (absorbing)",
             "dc_port_type_generic_bidirectional": "Generic (bidirectional)",
-            "dc_port_type_dc_dc": "DC/DC",
-
-            "model_no_supported": "Not supported",
-            "model_other_preferred": /*SFN*/(slot: number|"?") => "Model " + slot + " preferred"/*NF*/,
-            {{{models}}}
+            "dc_port_type_dc_dc": "DC/DC"
         },
         "script": {
         }

@@ -1,0 +1,918 @@
+/* esp32-firmware
+ * Copyright (C) 2023 Matthias Bolte <matthias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include "sun_spec.h"
+
+#include <esp_random.h>
+#include <TFJson.h>
+
+#include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
+#include "build.h"
+#include "options.h"
+#include "tools/printf.h"
+#include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
+
+#include "gcc_warnings.h"
+
+#define MAX_READ_CHUNK_SIZE 125U
+#define MAX_SCAN_READ_RETRIES 5
+#define MAX_SCAN_READ_TIMEOUT_BURST 10
+
+#define SUN_SPEC_ID 0x53756E53
+
+#define COMMON_MODEL_ID 1
+
+#define NON_IMPLEMENTED_UINT16 0xFFFF
+#define NON_IMPLEMENTED_UINT32 0xFFFFFFFF
+
+static const uint16_t base_addresses[] {
+    40000,
+    50000,
+    0
+};
+
+static const char *get_model_name(uint16_t model_id)
+{
+    switch (model_id) {
+    case 2:     return "Basic Aggregator";
+    case 3:     return "Secure Dataset Read Request";
+    case 4:     return "Secure Dataset Read Response";
+    case 5:     return "Secure Write Request";
+    case 6:     return "Secure Write Sequential Request";
+    case 7:     return "Secure Write Response Model";
+    case 8:     return "Get Device Security Certificate";
+    case 9:     return "Set Operator Security Certificate";
+    case 10:    return "Communication Interface Header";
+    case 11:    return "Ethernet Link Layer";
+    case 12:    return "IPv4";
+    case 13:    return "IPv6";
+    case 14:    return "Proxy Server";
+    case 15:    return "Interface Counters";
+    case 16:    return "Simple IP Network";
+    case 17:    return "Serial Interface";
+    case 18:    return "Cellular Link";
+    case 19:    return "PPP Link";
+    case 101:   return "Inverter Single Phase Integer";
+    case 102:   return "Inverter Split Phase Integer";
+    case 103:   return "Inverter Three Phase Integer";
+    case 111:   return "Inverter Single Phase Float";
+    case 112:   return "Inverter Split Phase Float";
+    case 113:   return "Inverter Three Phase Float";
+    case 120:   return "Inverter Nameplate";
+    case 121:   return "Inverter Basic Settings";
+    case 122:   return "Inverter Measurements And Status";
+    case 123:   return "Inverter Immediate Controls";
+    case 124:   return "Inverter Basic Storage Controls";
+    case 125:   return "Inverter Pricing";
+    case 126:   return "Inverter Static Volt-VAR Arrays";
+    case 127:   return "Inverter Parameterized Frequency-Watt";
+    case 128:   return "Inverter Dynamic Reactive Current";
+    case 129:   return "Inverter LVRT Must Disconnect";
+    case 130:   return "Inverter HVRT Must Disconnect";
+    case 131:   return "Inverter Watt-Power Factor";
+    case 132:   return "Inverter Volt-Watt";
+    case 133:   return "Inverter Basic Scheduling";
+    case 134:   return "Inverter Curve-Based Frequency-Watt";
+    case 135:   return "Inverter Low Frequency Ride-through";
+    case 136:   return "Inverter High Frequency Ride-through";
+    case 137:   return "Inverter LVRT Must Remain Connected";
+    case 138:   return "Inverter HVRT Must Remain Connected";
+    case 139:   return "Inverter LVRT Extended Curve";
+    case 140:   return "Inverter HVRT Extended Curve";
+    case 141:   return "Inverter LFRT Must Remain Connected";
+    case 142:   return "Inverter HFRT Must Remain Connected";
+    case 143:   return "Inverter LFRT Extended Curve";
+    case 144:   return "Inverter HFRT Extended Curve";
+    case 145:   return "Inverter Extended Settings";
+    case 160:   return "Inverter Multiple MPPT Extension";
+    case 201:   return "Meter Single Phase Integer";
+    case 202:   return "Meter Split Phase Integer";
+    case 203:   return "Meter Wye Three Phase Integer";
+    case 204:   return "Meter Delta Three Phase Integer";
+    case 211:   return "Meter Single Phase Float";
+    case 212:   return "Meter Split Phase Float";
+    case 213:   return "Meter Wye Three Phase Float";
+    case 214:   return "Meter Delta Three Phase Float";
+    case 220:   return "Meter Secure";
+    case 302:   return "Irradiance";
+    case 303:   return "Back of Module Temperature";
+    case 304:   return "Inclinometer";
+    case 305:   return "GPS";
+    case 306:   return "Reference Point";
+    case 307:   return "Meteorological Base";
+    case 308:   return "Meteorological Minimal";
+    case 401:   return "String Combiner Basic";
+    case 402:   return "String Combiner Advanced";
+    case 403:   return "String Combiner Current";
+    case 404:   return "String Combiner Advanced Voltage Energy";
+    case 501:   return "Solar Module A";
+    case 502:   return "Solar Module B";
+    case 601:   return "Tracker Controller";
+    case 701:   return "DER AC Measurements";
+    case 702:   return "DER Capacity";
+    case 703:   return "DER Enter Service";
+    case 704:   return "DER AC Controls";
+    case 705:   return "DER Volt-VAR";
+    case 706:   return "DER Volt-Watt";
+    case 707:   return "DER Low Voltage Trip";
+    case 708:   return "DER High Voltage Trip";
+    case 709:   return "DER Low Frequency Trip";
+    case 710:   return "DER High Frequency Trip";
+    case 711:   return "DER Frequency Droop";
+    case 712:   return "DER Watt-VAR";
+    case 713:   return "DER Storage Capacity";
+    case 714:   return "DER DC Measurements";
+    case 715:   return "DER Control";
+    case 801:   return "Battery Base Deprecated";
+    case 802:   return "Battery Base";
+    case 803:   return "Battery Lithium-Ion";
+    case 804:   return "Battery Lithium-Ion String";
+    case 805:   return "Battery Lithium-Ion Module";
+    case 806:   return "Battery Flow";
+    case 807:   return "Battery Flow String";
+    case 808:   return "Battery Flow Module";
+    case 809:   return "Battery Flow Stack";
+    case 63001: return "Test 1";
+    case 63002: return "Test 2";
+    case 64001: return "Veris Status and Configuration";
+    case 64020: return "Mersen Green String";
+    case 64101: return "Eltek Inverter";
+    case 64110: return "OutBack AXS Device";
+    case 64111: return "Basic Charge Controller";
+    case 64112: return "OutBack FM Charge Controller";
+    default:    return model_id >= 64000 ? "Vendor Specific" : "Unknown";
+    }
+}
+
+void SunSpec::pre_setup()
+{
+    scan_config = ConfigRoot{Config::Object({
+        {"host", Config::Str("", 0, 64)},
+        {"port", Config::Uint16(502)},
+        {"device_address_first", Config::Uint8(1)},
+        {"device_address_last", Config::Uint8(247)},
+        {"cookie", Config::Uint32(0)},
+    })};
+
+    scan_continue_config = ConfigRoot{Config::Object({
+        {"cookie", Config::Uint32(0)},
+    })};
+
+    scan_abort_config = scan_continue_config;
+}
+
+void SunSpec::register_urls()
+{
+    api.addCommand("sun_spec/scan", &scan_config, {}, [this](Language language, String &errmsg) {
+        if (scan != nullptr) {
+            errmsg = language == Language::English
+                     ? "Another scan is already in progress, please try again later!"
+                     : "Eine andere Suche läuft bereits, bitte später noch einmal versuchen!";
+            return;
+        }
+
+        scan = new_psram_or_dram<Scan>();
+
+        scan->language             = language;
+        scan->host                 = scan_config.get("host")->asString();
+        scan->port                 = scan_config.get("port")->asUint16();
+        scan->device_address_first = scan_config.get("device_address_first")->asUint8();
+        scan->device_address_last  = scan_config.get("device_address_last")->asUint8();
+        scan->cookie               = scan_config.get("cookie")->asUint();
+
+        if (scan->device_address_last < scan->device_address_first) {
+            scan->device_address_last = scan->device_address_first;
+        }
+
+        scan->device_address = scan->device_address_first;
+        scan->last_keep_alive = now_us();
+
+        scan_printfln(scan->language == Language::English
+                      ? "Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]"
+                      : "Beginne Suche [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
+    }, true);
+
+    api.addCommand("sun_spec/scan_continue", &scan_continue_config, {}, [this](Language language, String &errmsg) {
+        if (scan == nullptr) {
+            return;
+        }
+
+        uint32_t cookie = scan_continue_config.get("cookie")->asUint();
+
+        if (cookie != scan->cookie) {
+            errmsg = language == Language::English ? "Cannot continue another scan" : "Kann keine andere Suche fortsetzen";
+            return;
+        }
+
+        scan->language        = language;
+        scan->last_keep_alive = now_us();
+    }, true);
+
+    api.addCommand("sun_spec/scan_abort", &scan_abort_config, {}, [this](Language language, String &errmsg) {
+        if (scan == nullptr) {
+            return;
+        }
+
+        uint32_t cookie = scan_abort_config.get("cookie")->asUint();
+
+        if (cookie != scan->cookie) {
+            errmsg = language == Language::English ? "Cannot abort another scan" : "Kann keine andere Suche abbrechen";
+            return;
+        }
+
+        scan->language = language;
+        scan->abort    = true;
+    }, true);
+}
+
+void SunSpec::loop()
+{
+    if (scan == nullptr) {
+        return;
+    }
+
+    if (scan->printfln_buffer_used > 0 && deadline_elapsed(scan->printfln_last_flush + 500_ms)) {
+        scan_flush_log();
+    }
+
+    if (!scan->abort && deadline_elapsed(scan->last_keep_alive + 10_s)) {
+        const char *message = scan->language == Language::English
+                              ? "Aborting scan because no continue call was received for more than 10 seconds"
+                              : "Breche Suche ab, da für mehr als 10 Sekunden kein Fortsetzen-Aufruf empfangen wurde";
+
+        logger.printfln("%s", message);
+        scan_printfln("%s", message);
+
+        scan->abort = true;
+    }
+
+    switch (scan->state) {
+    case ScanState::Connect:
+        if (scan->abort) {
+            scan->state = ScanState::Done;
+            break;
+        }
+
+        scan_printfln(scan->language == Language::English ? "Connecting to %s:%u" : "Verbinde zu %s:%u", scan->host.c_str(), scan->port);
+        scan->state = ScanState::Connecting;
+
+        modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port, &scan->shared_client,
+        [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            scan->shared_client = shared_client;
+
+            if (result != TFGenericTCPClientConnectResult::Connected) {
+                char buf[256] = "";
+
+                GenericTCPClientPoolConnector::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
+                scan_printfln("%s", buf);
+
+                scan->state = ScanState::Done;
+                return;
+            }
+
+            scan->state = ScanState::ReadSunSpecID;
+        },
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            char buf[256] = "";
+
+            GenericTCPClientPoolConnector::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
+            scan_printfln("%s", buf);
+
+            scan->shared_client = nullptr;
+            scan->state = ScanState::Done;
+        });
+
+        break;
+
+    case ScanState::Connecting:
+        break;
+
+    case ScanState::Disconnect:
+        if (scan->shared_client != nullptr) {
+            modbus_tcp_client.get_pool()->release(scan->shared_client);
+        }
+
+        break;
+
+    case ScanState::Done: {
+            scan_printfln(scan->language == Language::English
+                          ? (scan->abort ? "Scan aborted" : "Scan finished")
+                          : (scan->abort ? "Suche abgebrochen" : "Suche abgeschlossen"));
+            scan_flush_log();
+
+#if MODULE_WS_AVAILABLE()
+            char buf[128];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", scan->cookie);
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "sun_spec/scan_done")) {
+                break; // need to report the scan as done before doing something else
+            }
+#endif
+
+            free(scan->read_error_message);
+            delete_psram_or_dram(scan);
+            scan = nullptr;
+        }
+
+        break;
+
+    case ScanState::NextDeviceAddress:
+        if (scan->abort || scan->device_address >= scan->device_address_last) {
+            scan->state = ScanState::Disconnect;
+        }
+        else {
+#if MODULE_WS_AVAILABLE()
+            char buf[128];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", scan->cookie);
+            json.addMemberNumber("progress", static_cast<float>(scan->device_address + 1u - scan->device_address_first) * 100.0f / static_cast<float>(scan->device_address_last - scan->device_address_first));
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "sun_spec/scan_progress")) {
+                break; // need to report scan progress before doing something else
+            }
+#endif
+
+            ++scan->device_address;
+            scan->base_address_index = 0;
+            scan->state = ScanState::ReadSunSpecID;
+        }
+
+        break;
+
+    case ScanState::NextBaseAddress:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        ++scan->base_address_index;
+
+        if (scan->base_address_index >= ARRAY_SIZE(base_addresses)) {
+            scan->state = ScanState::NextDeviceAddress;
+        }
+        else {
+            scan->state = ScanState::ReadSunSpecID;
+        }
+
+        break;
+
+    case ScanState::Read:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan->read_index = 0;
+
+        if (scan->read_timeout_burst < MAX_SCAN_READ_TIMEOUT_BURST) {
+            scan->read_retries = MAX_SCAN_READ_RETRIES;
+        }
+        else {
+            scan->read_retries = 0;
+        }
+
+        scan->state = ScanState::ReadNext;
+
+        break;
+
+    case ScanState::ReadDelay:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (deadline_elapsed(scan->read_delay_deadline)) {
+            scan->state = ScanState::ReadNext;
+        }
+
+        break;
+
+    case ScanState::ReadNext: {
+            if (scan->abort) {
+                scan->state = ScanState::Disconnect;
+                break;
+            }
+
+            size_t read_chunk_size = std::min(scan->read_size - scan->read_index, MAX_READ_CHUNK_SIZE);
+
+            scan->state = ScanState::Reading;
+
+            static_cast<TFModbusTCPSharedClient *>(scan->shared_client)->transact(scan->device_address,
+                                                                                  TFModbusTCPFunctionCode::ReadHoldingRegisters,
+                                                                                  static_cast<uint16_t>(scan->read_address),
+                                                                                  static_cast<uint16_t>(read_chunk_size),
+                                                                                  &scan->read_buffer[scan->read_index],
+                                                                                  scan->read_timeout,
+            [this, read_chunk_size](TFModbusTCPClientTransactionResult result, const char *error_message) {
+                if (scan->state != ScanState::Reading) {
+                    return;
+                }
+
+                if (result != TFModbusTCPClientTransactionResult::Timeout) {
+                    scan->read_timeout = 1_s;
+                    scan->read_timeout_burst = 0;
+                    scan->read_retries = MAX_SCAN_READ_RETRIES;
+                }
+                else {
+                    if (scan->read_timeout_burst < MAX_SCAN_READ_TIMEOUT_BURST) {
+                        ++scan->read_timeout_burst;
+                    }
+                    else {
+                        scan->read_timeout = 200_ms;
+                        scan->read_retries = 0;
+                    }
+                }
+
+                if (result == TFModbusTCPClientTransactionResult::Timeout && scan->read_retries > 0) {
+                    scan_printfln(scan->language == Language::English ? "Reading timed out, retrying" : "Lesen dauert zu lange, versuche es erneut");
+
+                    --scan->read_retries;
+                    scan->read_delay_deadline = now_us() + 100_ms + static_cast<micros_t>(esp_random() % 2400000);
+                    scan->state = ScanState::ReadDelay;
+                    return;
+                }
+
+                scan->read_address += read_chunk_size;
+                scan->read_index += read_chunk_size;
+                scan->read_result = result;
+
+                free(scan->read_error_message);
+                scan->read_error_message = error_message != nullptr ? strdup(error_message) : nullptr;
+
+                if (result != TFModbusTCPClientTransactionResult::Success || scan->read_index >= scan->read_size) {
+                    scan->read_index = 0;
+                    scan->state = scan->read_state;
+
+                    scan->deserializer.buf = scan->read_buffer;
+                    scan->deserializer.idx = 0;
+                }
+                else {
+                    scan->state = ScanState::ReadNext;
+                }
+            });
+        }
+
+        break;
+
+    case ScanState::Reading:
+        break;
+
+    case ScanState::ReadSunSpecID:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan_printfln(scan->language == Language::English
+                      ? "Using device address %u\n"
+                        "Using base address %u\n"
+                        "Reading SunSpec ID"
+                      : "Verwende Geräteadresse %u\n"
+                        "Verwende Basisadresse %u\n"
+                        "Lese SunSpec ID",
+                      scan->device_address,
+                      base_addresses[scan->base_address_index]);
+
+        scan->read_address = base_addresses[scan->base_address_index];
+        scan->read_size = 2;
+        scan->read_state = ScanState::ReadSunSpecIDDone;
+        scan->state = ScanState::Read;
+
+        break;
+
+    case ScanState::ReadSunSpecIDDone:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
+            uint32_t sun_spec_id = scan->deserializer.read_uint32();
+
+            if (sun_spec_id == SUN_SPEC_ID) {
+                scan_printfln(scan->language == Language::English ? "SunSpec ID found" : "SunSpec ID gefunden");
+
+                scan->state = ScanState::ReadModelID;
+            }
+            else {
+                // this is not an error, this might just be no SunSpec device
+                scan_printfln(scan->language == Language::English
+                              ? "No SunSpec ID found [sun-spec-id: 0x%08lx]"
+                              : "Keine SunSpec ID gefunden [sun-spec-id: 0x%08lx]",
+                              sun_spec_id);
+
+                scan->state = ScanState::NextBaseAddress;
+            }
+        }
+        else {
+            // this is not an error, this might just be no SunSpec device
+            scan_printfln(scan->language == Language::English
+                          ? "Could not read SunSpec ID [error: %s (%d)%s%s]"
+                          : "Konnte SunSpec ID nicht lesen [error: %s (%d)%s%s]",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
+
+            scan->state = scan_get_next_state_after_read_error();
+        }
+
+        break;
+
+    case ScanState::ReadCommonModelBlock:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan_printfln(scan->language == Language::English ? "Reading Common Model block" : "Lese Common Model Block");
+
+        scan->read_size = 65; // don't read optional padding, skip it later
+        scan->read_state = ScanState::ReadCommonModelBlockDone;
+        scan->state = ScanState::Read;
+
+        break;
+
+    case ScanState::ReadCommonModelBlockDone:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
+            char options[16 + 1];
+            char version[16 + 1];
+
+            scan->deserializer.read_string(scan->common_manufacturer_name, sizeof(scan->common_manufacturer_name));
+            scan->deserializer.read_string(scan->common_model_name, sizeof(scan->common_model_name));
+            scan->deserializer.read_string(options, sizeof(options));
+            scan->deserializer.read_string(version, sizeof(version));
+            scan->deserializer.read_string(scan->common_serial_number, sizeof(scan->common_serial_number));
+
+            uint16_t device_address = scan->deserializer.read_uint16();
+
+            scan_printfln(scan->language == Language::English
+                          ? "  Manufacturer Name: %s\n"
+                            "  Model Name: %s\n"
+                            "  Options: %s\n"
+                            "  Version: %s\n"
+                            "  Serial Number: %s\n"
+                            "  Device Address: %u"
+                          : "  Herstellername: %s\n"
+                            "  Modellname: %s\n"
+                            "  Optionen: %s\n"
+                            "  Version: %s\n"
+                            "  Seriennummer: %s\n"
+                            "  Geräteadresse: %u",
+                          scan->common_manufacturer_name,
+                          scan->common_model_name,
+                          options,
+                          version,
+                          scan->common_serial_number,
+                          device_address);
+
+            if (scan->block_length == 66) {
+                scan_printfln(scan->language == Language::English ? "Skipping Common Model padding" : "Überspringe Common Model Padding");
+
+                ++scan->read_address; // skip padding
+            }
+
+            scan->state = ScanState::ReadModelID;
+        }
+        else {
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Common Model block [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Common Model Block nicht lesen [error: %s (%d)%s%s]",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
+
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
+        }
+
+        break;
+
+    case ScanState::ReadModelID:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan_printfln(scan->language == Language::English
+                      ? "Reading Model ID [address: %zu]"
+                      : "Lese Model ID [address: %zu]",
+                      scan->read_address);
+
+        scan->read_size = 1;
+        scan->read_state = ScanState::ReadModelIDDone;
+        scan->state = ScanState::Read;
+
+        break;
+
+    case ScanState::ReadModelIDDone:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
+            scan->model_id = scan->deserializer.read_uint16();
+
+            scan_printfln(scan->language == Language::English
+                          ? "Found Model %u"
+                          : "Model %u gefunden",
+                          scan->model_id);
+
+            if (scan->model_id == 3) {
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 58 registers" : "Nehme Blocklänge von 58 Registern an");
+                scan->read_address += 1 + 58; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 4) {
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 60 registers" : "Nehme Blocklänge von 60 Registern an");
+                scan->read_address += 1 + 60; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 5) {
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 88 registers" : "Nehme Blocklänge von 88 Registern an");
+                scan->read_address += 1 + 88; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 6) {
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 90 registers" : "Nehme Blocklänge von 90 Registern an");
+                scan->read_address += 1 + 90; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else {
+                scan->state = ScanState::ReadModelBlockLength;
+            }
+        }
+        else {
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Model ID [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Model ID nicht lesen [error: %s (%d)%s%s]",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
+
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
+        }
+
+        break;
+
+    case ScanState::ReadModelBlockLength:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan_printfln(scan->language == Language::English
+                      ? "Reading Model %u block length [address: %zu]"
+                      : "Lese Model %u Blocklänge [address: %zu]",
+                      scan->model_id, scan->read_address);
+
+        scan->read_size = 1;
+        scan->read_state = ScanState::ReadModelBlockLengthDone;
+        scan->state = ScanState::Read;
+
+        break;
+
+    case ScanState::ReadModelBlockLengthDone:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
+            size_t block_length = scan->deserializer.read_uint16();
+
+            if (scan->model_id == NON_IMPLEMENTED_UINT16) {
+                scan_printfln(scan->language == Language::English
+                              ? "End Model found [model-id: %u, block-length: %zu]"
+                              : "End Model gefunden [model-id: %u, block-length: %zu]",
+                              scan->model_id, block_length);
+
+                if (block_length != 0 && block_length != NON_IMPLEMENTED_UINT16) { // accept non-implemented block length as Sungrow quirk
+                    scan_printfln(scan->language == Language::English
+                                  ? "Error: End Model has unexpected block length"
+                                  : "Fehler: End Model hat unerwartetet Blocklänge");
+
+                    scan->error_state = ScanState::NextDeviceAddress;
+                    scan->state = ScanState::ReportError;
+                }
+                else {
+                    scan->state = ScanState::NextDeviceAddress;
+                }
+            }
+            else if (scan->model_id == COMMON_MODEL_ID) {
+                scan_printfln(scan->language == Language::English
+                              ? "Common Model found [model-id: %u, block-length: %zu]"
+                              : "Common Model gefunden [model-id: %u, block-length: %zu]",
+                              scan->model_id, block_length);
+
+                if (block_length != 65 && block_length != 66) {
+                    scan_printfln(scan->language == Language::English
+                                  ? "Error: Common Model has unexpected block length"
+                                  : "Fehler: Common Model hat unerwartetet Blocklänge");
+
+                    scan->error_state = scan_get_next_state_after_read_error();
+                    scan->state = ScanState::ReportError;
+                }
+                else {
+                    scan->model_instances.clear();
+
+                    scan->block_length = block_length;
+                    scan->state = ScanState::ReadCommonModelBlock;
+                }
+            }
+            else {
+                if (scan->model_instances.find(scan->model_id) == scan->model_instances.end()) {
+                    scan->model_instances.insert({scan->model_id, 0});
+                }
+                else {
+                    ++scan->model_instances[scan->model_id];
+                }
+
+                scan_printfln(scan->language == Language::English
+                              ? "%s Model found [model-id/instance: %u/%u, block-length: %zu]"
+                              : "%s Model gefunden [model-id/instance: %u/%u, block-length: %zu]",
+                              get_model_name(scan->model_id), scan->model_id, scan->model_instances.at(scan->model_id), block_length);
+
+                // FIXME: validate block length
+
+                scan->block_length = block_length;
+                scan->state = ScanState::ReportModelResult;
+            }
+        }
+        else {
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Model %u block length [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Model %u Blocklänge nicht lesen [error: %s (%d)%s%s]",
+                          scan->model_id,
+                          get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
+
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
+        }
+
+        break;
+
+    case ScanState::ReportModelResult: {
+            if (scan->abort) {
+                scan->state = ScanState::Disconnect;
+                break;
+            }
+
+#if MODULE_WS_AVAILABLE()
+            char buf[512];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", scan->cookie);
+            json.addMemberString("manufacturer_name", scan->common_manufacturer_name);
+            json.addMemberString("model_name", scan->common_model_name);
+            json.addMemberString("serial_number", scan->common_serial_number);
+            json.addMemberNumber("device_address", scan->device_address);
+            json.addMemberNumber("model_id", scan->model_id);
+            json.addMemberNumber("model_instance", scan->model_instances.at(scan->model_id));
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "sun_spec/scan_result")) {
+                break; // need to report the scan result before doing something else
+            }
+#endif
+
+            scan->read_address += scan->block_length; // skip block
+            scan->state = ScanState::ReadModelID;
+        }
+
+        break;
+
+    case ScanState::ReportError: {
+            if (scan->abort) {
+                scan->state = ScanState::Disconnect;
+                break;
+            }
+
+#if MODULE_WS_AVAILABLE()
+            char buf[64];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", scan->cookie);
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "sun_spec/scan_error")) {
+                break; // need to report the scan error before doing something else
+            }
+#endif
+
+            scan->state = scan->error_state;
+        }
+
+        break;
+
+    default:
+        esp_system_abortf<48>("Invalid state during scan: %d", static_cast<int>(scan->state));
+    }
+}
+
+SunSpec::ScanState SunSpec::scan_get_next_state_after_read_error()
+{
+    if (scan == nullptr) {
+        return ScanState::Done;
+    }
+
+    if (scan->read_result == TFModbusTCPClientTransactionResult::ModbusGatewayPathUnvailable
+     || scan->read_result == TFModbusTCPClientTransactionResult::ModbusGatewayTargetDeviceFailedToRespond
+     || (scan->read_result == TFModbusTCPClientTransactionResult::Timeout && scan->read_retries <= 0)) {
+        return ScanState::NextDeviceAddress;
+    }
+
+    return ScanState::NextBaseAddress;
+}
+
+void SunSpec::scan_flush_log()
+{
+    if (scan == nullptr) {
+        return;
+    }
+
+#if MODULE_WS_AVAILABLE()
+    char buf[1024];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", scan->cookie);
+    json.addMemberString("message", scan->printfln_buffer);
+    json.endObject();
+    json.end();
+#endif
+
+    scan->printfln_buffer_used = 0;
+    scan->printfln_last_flush = now_us();
+
+#if MODULE_WS_AVAILABLE()
+    ws.pushRawStateUpdate(buf, "sun_spec/scan_log"); // FIXME: error handling
+#endif
+}
+
+void SunSpec::scan_printfln(const char *fmt, ...)
+{
+    if (scan == nullptr) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, fmt);
+
+    va_list args_copy;
+    va_copy(args_copy, args);
+    size_t used = vsnprintf_u(nullptr, 0, fmt, args_copy);
+    va_end(args_copy);
+
+    if (scan->printfln_buffer_used + used + 1 /* for \n */ >= sizeof(scan->printfln_buffer)) {
+        scan_flush_log();
+    }
+
+    scan->printfln_buffer_used += vsnprintf_u(scan->printfln_buffer + scan->printfln_buffer_used, sizeof(scan->printfln_buffer) - scan->printfln_buffer_used, fmt, args);
+    va_end(args);
+
+    scan->printfln_buffer[scan->printfln_buffer_used++] = '\n';
+    scan->printfln_buffer[scan->printfln_buffer_used] = '\0';
+}

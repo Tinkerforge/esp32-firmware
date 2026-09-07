@@ -21,7 +21,6 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "generated/sun_spec_model_specs.h"
 #include "models/model_001.h"
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"
@@ -67,6 +66,57 @@ static const uint16_t scan_base_addresses[] {
     0
 };
 
+static MeterLocation get_model_fixed_location(uint16_t model_id)
+{
+    switch (model_id) {
+    case 101: return MeterLocation::Inverter;
+    case 102: return MeterLocation::Inverter;
+    case 103: return MeterLocation::Inverter;
+    case 111: return MeterLocation::Inverter;
+    case 112: return MeterLocation::Inverter;
+    case 113: return MeterLocation::Inverter;
+    case 120: return MeterLocation::Inverter;
+    case 121: return MeterLocation::Inverter;
+    case 122: return MeterLocation::Inverter;
+    case 123: return MeterLocation::Inverter;
+    case 124: return MeterLocation::Inverter;
+    case 125: return MeterLocation::Inverter;
+    case 126: return MeterLocation::Inverter;
+    case 127: return MeterLocation::Inverter;
+    case 128: return MeterLocation::Inverter;
+    case 129: return MeterLocation::Inverter;
+    case 130: return MeterLocation::Inverter;
+    case 131: return MeterLocation::Inverter;
+    case 132: return MeterLocation::Inverter;
+    case 133: return MeterLocation::Inverter;
+    case 134: return MeterLocation::Inverter;
+    case 135: return MeterLocation::Inverter;
+    case 136: return MeterLocation::Inverter;
+    case 137: return MeterLocation::Inverter;
+    case 138: return MeterLocation::Inverter;
+    case 139: return MeterLocation::Inverter;
+    case 140: return MeterLocation::Inverter;
+    case 141: return MeterLocation::Inverter;
+    case 142: return MeterLocation::Inverter;
+    case 143: return MeterLocation::Inverter;
+    case 144: return MeterLocation::Inverter;
+    case 145: return MeterLocation::Inverter;
+    case 160: return MeterLocation::PV;
+    case 701: return MeterLocation::Inverter;
+    case 713: return MeterLocation::Battery;
+    case 801: return MeterLocation::Battery;
+    case 802: return MeterLocation::Battery;
+    case 803: return MeterLocation::Battery;
+    case 804: return MeterLocation::Battery;
+    case 805: return MeterLocation::Battery;
+    case 806: return MeterLocation::Battery;
+    case 807: return MeterLocation::Battery;
+    case 808: return MeterLocation::Battery;
+    case 809: return MeterLocation::Battery;
+    default:  return MeterLocation::Unknown;
+    }
+}
+
 MeterClassID MeterSunSpec::get_class() const
 {
     return MeterClassID::SunSpec;
@@ -85,14 +135,7 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     dc_port_type      = ephemeral_config->get("dc_port_type")->asEnum<DCPortType>();
     model_parser      = MetersSunSpecParser::new_parser(slot, manufacturer_name.c_str(), model_name.c_str(), model_id, dc_port_type);
 
-    MeterLocation fixed_location = MeterLocation::Unknown;
-
-    for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
-        if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
-            fixed_location = sun_spec_model_specs[i].fixed_location;
-            break;
-        }
-    }
+    MeterLocation fixed_location = get_model_fixed_location(model_id);
 
     if (fixed_location != MeterLocation::Unknown) {
         ephemeral_config->get("location")->updateEnum(fixed_location);
