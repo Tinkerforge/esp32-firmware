@@ -787,7 +787,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
             ai.auth_method = auth_method;
             // EV entries can be older than an hour (see above), so clamp instead
             // of truncating to avoid wrapping into "just seen" values.
-            ai.last_seen_s = last_seen >= seconds_t{65535} ? 65535 : last_seen.to<seconds_t>().as<uint16_t>();
+            ai.last_seen_s = last_seen >= 65535_s ? 65535 : last_seen.to<seconds_t>().as<uint16_t>();
             if (ai.last_seen_s == 0) {
                 ai.last_seen_s = 1;
             }
