@@ -164,13 +164,13 @@ bool WS::pushRawStateUpdate(const String &payload, const String &path)
 }
 
 // returns true if it is okay to call pushStateUpdateEnd
-bool WS::pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path, size_t path_len)
+bool WS::pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_max_len, const char *path, size_t path_len)
 {
     if (!web_sockets.haveActiveClient()) {
         return false;
     }
 
-    if (!sb->setCapacity(prefix_len + path_len + infix_len + payload_len + suffix_len)) {
+    if (!sb->setCapacity(prefix_len + path_len + infix_len + payload_max_len + suffix_len)) {
         return false;
     }
 
@@ -193,9 +193,9 @@ bool WS::pushStateUpdateEnd(StringBuilder *sb)
 }
 
 // returns true if it is okay to call pushRawStateUpdateEnd
-bool WS::pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, size_t path_len)
+bool WS::pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_max_len, const char *path, size_t path_len)
 {
-    return pushStateUpdateBegin(sb, 0, payload_len, path, path_len);
+    return pushStateUpdateBegin(sb, 0, payload_max_len, path, path_len);
 }
 
 // returns true on success
