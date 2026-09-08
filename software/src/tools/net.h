@@ -144,14 +144,7 @@ extern inline void tf_ipaddr_ntoa(const ip_addr_t *addr, char buf[INET6_ADDRSTRL
 
 // lwIP sockaddr
 
-extern inline void tf_ipaddr_ntoa(const struct sockaddr_storage *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
-    if (addr->ss_family == AF_INET)
-        tf_ip4addr_ntoa(reinterpret_cast<const struct sockaddr_in *>(addr), buf, buflen);
-    else if (addr->ss_family == AF_INET6)
-        tf_ip6addr_ntoa(reinterpret_cast<const struct sockaddr_in6 *>(addr), buf, buflen);
-    else if (buflen > 0)
-        buf[0] = '\0';
-}
+void tf_ipaddr_ntoa(const struct sockaddr_storage *addr, char buf[INET6_ADDRSTRLEN], int buflen);
 
 // ESP netif IP adresses
 

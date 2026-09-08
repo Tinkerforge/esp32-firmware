@@ -44,6 +44,24 @@ void tf_ip6addr_ntoa(const ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buf
 
 static constexpr uint8_t ipv4_mapped_prefix[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff}; // 0:0:0:0:0:ffff::/96
 
+void tf_ipaddr_ntoa(const struct sockaddr_storage *addr, char buf[INET6_ADDRSTRLEN], int buflen)
+{
+    if (addr->ss_family == AF_INET) {
+        tf_ip4addr_ntoa(reinterpret_cast<const struct sockaddr_in *>(addr), buf, buflen);
+    } else if (addr->ss_family == AF_INET6) {
+        const struct sockaddr_in6 *addr6 = reinterpret_cast<const struct sockaddr_in6 *>(addr);
+        const uint8_t *addr6_bytes = addr6->sin6_addr.s6_addr;
+        // Handle IPv4-mapped IPv6 addresses
+        if (memcmp(addr6_bytes, ipv4_mapped_prefix, sizeof(ipv4_mapped_prefix)) == 0) {
+            tf_ip4addr_ntoa(static_cast<const ip4_addr_t *>(static_cast<const void *>(addr6_bytes + sizeof(ipv4_mapped_prefix))), buf, buflen);
+            return;
+        }
+        tf_ip6addr_ntoa(reinterpret_cast<const struct sockaddr_in6 *>(addr), buf, buflen);
+    } else if (buflen > 0) {
+        buf[0] = '\0';
+    }
+}
+
 IPAddress tf_sockaddr_storage2IPAddress(const struct sockaddr_storage *addr, socklen_t addr_len)
 {
 #if CONFIG_LWIP_IPV6
