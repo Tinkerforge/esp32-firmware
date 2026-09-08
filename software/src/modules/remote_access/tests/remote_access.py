@@ -540,14 +540,10 @@ def _do_full_registration(tc: TestContext) -> WireGuardTestPeer:
 
 def _wait_for_management_connected(tc: TestContext, *, timeout: float = 60.0) -> None:
     """Wait until the management connection slot (index 0) reports STATE_CONNECTED."""
-    def _check():
-        state = _get_connection_state(tc)
-        if state[0]["state"] != STATE_CONNECTED:
-            raise AssertionError(
-                f"Management slot state={state[0]['state']}, expected {STATE_CONNECTED} (connected)"
-            )
-
-    tc.wait_for(_check, timeout=timeout)
+    tc.wait_for(
+        lambda: tc.assert_eq(STATE_CONNECTED, _get_connection_state(tc)[0]["state"]),
+        timeout=timeout,
+    )
 
 
 def _make_management_response_ok() -> str:
@@ -611,13 +607,10 @@ def _assert_all_disconnected(tc: TestContext) -> None:
 
 def _wait_for_management_request(tc: TestContext, *, timeout: float = 45.0) -> None:
     """Wait until the device sends at least one request to our mock relay server."""
-    def _check():
-        log = _get_request_log()
-        management_reqs = [r for r in log if "/api/management" in r["path"]]
-        if not management_reqs:
-            raise AssertionError("No management request received yet")
-
-    tc.wait_for(_check, timeout=timeout)
+    tc.wait_for(
+        lambda: tc.assert_true(any("/api/management" in r["path"] for r in _get_request_log())),
+        timeout=timeout,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -715,14 +708,10 @@ def _register_service_token(tc: TestContext, *, timeout: float = 30.0) -> None:
     """Trigger /remote_access/service_token_register and wait for success."""
     tc.http_request("PUT", "/remote_access/service_token_register", timeout=timeout)
 
-    def _check_success():
-        state = _get_registration_state(tc)
-        if state["state"] != REG_STATE_SUCCESS:
-            raise AssertionError(
-                f"Expected registration state=Success, got state={state['state']} message={state.get('message', '')!r}"
-            )
-
-    tc.wait_for(_check_success, timeout=timeout)
+    tc.wait_for(
+        lambda: tc.assert_eq(REG_STATE_SUCCESS, _get_registration_state(tc)["state"]),
+        timeout=timeout,
+    )
 
 
 def _wait_for_remote_access_idle(tc: TestContext, *, timeout: float = 15.0) -> None:
@@ -738,14 +727,10 @@ def _wait_for_remote_access_idle(tc: TestContext, *, timeout: float = 15.0) -> N
     updated when the next-stage callback runs, so a non-InProgress value is a
     reliable signal that the shared client is idle.
     """
-    def _check():
-        state = _get_registration_state(tc)
-        if state.get("state") == REG_STATE_IN_PROGRESS:
-            raise AssertionError(
-                f"remote_access still busy: registration_state={state!r}"
-            )
-
-    tc.wait_for(_check, timeout=timeout)
+    tc.wait_for(
+        lambda: tc.assert_ne(REG_STATE_IN_PROGRESS, _get_registration_state(tc).get("state")),
+        timeout=timeout,
+    )
 
 
 def _reset_registration_state(tc: TestContext, *, timeout: float = 5.0) -> None:
@@ -810,7 +795,7 @@ def _clear_service_token_registration(tc: TestContext) -> None:
         # the last one). The default response handler logs every request.
         try:
             tc.wait_for(
-                lambda: bool(_get_request_log()),
+                lambda: tc.assert_true(bool(_get_request_log())),
                 timeout=10,
             )
         except Exception:
@@ -961,12 +946,10 @@ def test_auth_failure_disables_module(tc: TestContext) -> None:
     _wait_for_management_request(tc, timeout=45)
 
     # After auth failure, the module should disable itself
-    def _check_disabled():
-        cfg = tc.api("remote_access/config")
-        if cfg["enable"] is True:
-            raise AssertionError(f"Expected enable=False after 401, got enable={cfg['enable']}")
-
-    tc.wait_for(_check_disabled, timeout=10)
+    tc.wait_for(
+        lambda: tc.assert_false(tc.api("remote_access/config")["enable"]),
+        timeout=10,
+    )
 
     # All connections should remain disconnected
     _assert_all_disconnected(tc)
@@ -998,16 +981,12 @@ def test_server_error_retries(tc: TestContext) -> None:
     tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
 
     # Wait for at least 2 management requests (first fails, second succeeds on retry)
-    def _check_retried():
-        log = _get_request_log()
-        management_reqs = [r for r in log if "/api/management" in r["path"]]
-        if len(management_reqs) < 2:
-            raise AssertionError(
-                f"Expected at least 2 management requests (retry), got {len(management_reqs)}"
-            )
-
     # The retry happens after ~30s, so total wait needs to be >60s
-    tc.wait_for(_check_retried, timeout=90, poll_delay=2.0)
+    tc.wait_for(
+        lambda: tc.assert_ge(2, sum(1 for r in _get_request_log() if "/api/management" in r["path"])),
+        timeout=90,
+        poll_delay=2.0,
+    )
 
     # Verify the module is still enabled (did not give up)
     cfg = tc.api("remote_access/config")
@@ -1031,10 +1010,7 @@ def test_disable_resets_state(tc: TestContext) -> None:
     tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
 
     # All slots should be disconnected
-    def _check_all_disconnected():
-        _assert_all_disconnected(tc)
-
-    tc.wait_for(_check_all_disconnected, timeout=5)
+    tc.wait_for(lambda: _assert_all_disconnected(tc), timeout=5)
 
 
 def test_enable_disable_enable_cycle(tc: TestContext) -> None:
@@ -1121,13 +1097,11 @@ def test_reconnection(tc: TestContext) -> None:
     _clear_request_log()
 
     # The device should detect the timeout (after ~60s) and attempt to re-resolve
-    def _check_reconnect_attempt():
-        log = _get_request_log()
-        management_reqs = [r for r in log if "/api/management" in r["path"]]
-        if not management_reqs:
-            raise AssertionError("No management re-resolve request after timeout")
-
-    tc.wait_for(_check_reconnect_attempt, timeout=300, poll_delay=5.0)
+    tc.wait_for(
+        lambda: tc.assert_true(any("/api/management" in r["path"] for r in _get_request_log())),
+        timeout=300,
+        poll_delay=5.0,
+    )
 
     # Verify the module is still enabled (it should keep retrying)
     cfg = tc.api("remote_access/config")
@@ -1159,19 +1133,21 @@ def test_fallback_reconnection(tc: TestContext) -> None:
     # Round 1: device should detect the tunnel loss and attempt to re-resolve.
     # Use a generous timeout (>60 s timeout + jitter) so the assertion actually
     # observes the device's behaviour rather than timing out prematurely.
-    def _check_reconnect_attempt():
-        log = _get_request_log()
-        management_reqs = [r for r in log if "/api/management" in r["path"]]
-        if not management_reqs:
-            raise AssertionError("No management re-resolve request after tunnel loss")
-
-    tc.wait_for(_check_reconnect_attempt, timeout=200, poll_delay=5.0)
+    tc.wait_for(
+        lambda: tc.assert_true(any("/api/management" in r["path"] for r in _get_request_log())),
+        timeout=200,
+        poll_delay=5.0,
+    )
 
     # Round 2: after the next cycle the device should keep retrying even when
     # the previous HTTP request succeeded but the WireGuard tunnel could not
     # be rebuilt (the local mock relay is still up; only the WG interface is gone).
     _clear_request_log()
-    tc.wait_for(_check_reconnect_attempt, timeout=200, poll_delay=5.0)
+    tc.wait_for(
+        lambda: tc.assert_true(any("/api/management" in r["path"] for r in _get_request_log())),
+        timeout=200,
+        poll_delay=5.0,
+    )
 
     # Verify the module is still enabled (it should keep retrying)
     cfg = tc.api("remote_access/config")
@@ -1211,11 +1187,7 @@ def test_full_registration_wg_handshake(tc: TestContext) -> None:
         return
 
     # Wait for the WireGuard handshake to complete on our side
-    def _check_handshake():
-        if not wg.is_peer_connected():
-            raise AssertionError("WireGuard handshake not completed on relay side")
-
-    tc.wait_for(_check_handshake, timeout=60, poll_delay=2.0)
+    tc.wait_for(lambda: tc.assert_true(wg.is_peer_connected()), timeout=60, poll_delay=2.0)
 
     # Also verify via the device API
     _wait_for_management_connected(tc, timeout=10)
@@ -1301,7 +1273,6 @@ def test_service_token_register_enables_remote_access(tc: TestContext) -> None:
     _clear_service_token_registration(tc)
     _point_at_production_relay(tc, enable=False)
 
-
     _register_service_token(tc, timeout=30)
     # The registration handler updates enable=true in-memory and parse_registration()
     # persists it via API::writeConfig() before it sets registration_state=Success.
@@ -1351,26 +1322,18 @@ def test_service_token_register_idempotent(tc: TestContext) -> None:
     # refreshes the timestamp and re-schedules the removal.
     tc.api("remote_access/service_token_register", {}, timeout=10)
 
-    def _check_uuid_unchanged():
-        uuid = _get_service_token_user_uuid(tc)
-        if uuid != first_uuid:
-            raise AssertionError(
-                f"Expected service_token_user_uuid={first_uuid!r}, got {uuid!r}"
-            )
-
-    tc.wait_for(_check_uuid_unchanged, timeout=10)
+    tc.wait_for(
+        lambda: tc.assert_eq(first_uuid, _get_service_token_user_uuid(tc)),
+        timeout=10,
+    )
 
     # The removal deadline must have been pushed forward: the timestamp
     # that drives setup()'s 24 h removal scheduler should now be later than
     # the one we observed after the initial registration.
-    def _check_deadline_moved():
-        now_ts = _get_service_token_timestamp_minutes(tc)
-        if now_ts <= initial_ts:
-            raise AssertionError(
-                f"service_token_timestamp_minutes did not advance: initial={initial_ts}, now={now_ts}"
-            )
-
-    tc.wait_for(_check_deadline_moved, timeout=10)
+    tc.wait_for(
+        lambda: tc.assert_gt(initial_ts, _get_service_token_timestamp_minutes(tc)),
+        timeout=10,
+    )
 
 
 def test_service_token_removal_clears_tracking(tc: TestContext) -> None:
@@ -1406,11 +1369,10 @@ def test_service_token_removal_clears_tracking(tc: TestContext) -> None:
 
     # The tracking UUID must be cleared promptly. The retry loop in
     # remove_service_token_user() must terminate on a manual removal.
-    def _check_cleared():
-        if _get_service_token_user_uuid(tc) != "":
-            raise AssertionError("service_token_user_uuid not cleared after manual removal")
-
-    tc.wait_for(_check_cleared, timeout=20)
+    tc.wait_for(
+        lambda: tc.assert_eq("", _get_service_token_user_uuid(tc)),
+        timeout=20,
+    )
 
     # Give the retry loop time to misbehave (it must not re-populate the
     # field). The first backoff is 1 minute; 5 s is well below it.
