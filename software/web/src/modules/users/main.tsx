@@ -102,12 +102,22 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 
 // Get NFC tags from managed chargers, merged with local seen tags.
 // Returns all seen tags (local + remote), deduplicated.
-export type NFCSeenTag = API.getType['nfc/seen_tags'][0] & { charger_name?: string | null, is_this_device?: boolean };
+export type NFCSeenTag = util.NoExtraProperties<
+    Omit<API.getType['nfc/seen_tags'][0], 'last_seen'>
+    & { seen_at: number, charger_name?: string | null, is_this_device?: boolean }
+>;
+
+interface TinkerforgeNFC {
+    getDeviceId: () => string | null;
+    isSupported?: () => boolean;
+    isEnabled: () => boolean;
+}
 
 // Read the NFC tag ID of the smartphone this web interface is running on.
 function get_phone_nfc_id(): string | null {
-    const nfc = (window as any).tinkerforge_nfc;
-    if (nfc?.isSupported?.() && typeof nfc.getDeviceId === 'function') {
+    const nfc: TinkerforgeNFC | undefined = (window as any).tinkerforge_nfc;
+
+    if (nfc?.isSupported?.()) {
         return nfc.getDeviceId();
     }
     return null;
