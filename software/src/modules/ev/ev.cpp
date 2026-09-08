@@ -330,19 +330,17 @@ void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH], bool injected
     state.get("capacity")->updateFloat(session.capacity);
     state.get("charging_efficiency")->updateFloat(session.charging_efficiency);
 
-    // If autocharge is enabled, an EV that identified itself via SLAC (or was
+    // An EV that identified itself via SLAC (or was
     // injected) acts as an authentication source.
-#if MODULE_ISO15118_AVAILABLE() && MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
-    if (iso15118.is_autocharge()) {
-        auth_info.get("mac")->updateString(mac_fmt);
+#if MODULE_CHARGE_AUTHORIZATION_AVAILABLE()
+    auth_info.get("mac")->updateString(mac_fmt);
 
-        charge_authorization.notify_auth(
-            get_user_id(mac), // matched profile's user, 0 (anonymous) if unassigned, or -1 if not a configured EV
-            0_ms, // just connected
-            injected ? CMAuthType::InjectedEV : CMAuthType::EV,
-            1, // TRIGGER_CHARGE_START
-            auth_info.value);
-    }
+    charge_authorization.notify_auth(
+        get_user_id(mac), // matched profile's user, 0 (anonymous) if unassigned, or -1 if not a configured EV
+        0_ms, // just connected
+        injected ? CMAuthType::InjectedEV : CMAuthType::EV,
+        1, // TRIGGER_CHARGE_START
+        auth_info.value);
 #else
     (void)injected;
 #endif
