@@ -165,7 +165,7 @@ extern inline void tf_ipaddr_ntoa(const esp_ip_addr_t *addr, char buf[INET6_ADDR
     #pragma GCC diagnostic pop
 #endif
 
-IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t addr_len);
+IPAddress tf_sockaddr_storage2IPAddress(const struct sockaddr_storage *addr, socklen_t addr_len);
 IPAddress tf_local_address_of_sockfd(int sockfd);
 IPAddress tf_peer_address_of_sockfd(int sockfd);
 
