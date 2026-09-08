@@ -607,17 +607,19 @@ class Scanner:
 
     def read_extras_code(self, code):
         # S:1;W:1;E:2.5;C:1;CFP:1;CT2:MH100;;;
-        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
+        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+(?:_[64])?);C:(0|1);(?:(?:CFP|CE):(0|1);)?(?:CT2:(0|1|M(?:H|F)?(?:9|10|11|12|13|14|15)0|T(?:H|F)?(?:3|4|5|6|7|8|9|10|11|12|13|14|15)0|C(?:H|F)?\d+);)?;;*$'
 
         m = re.match(pattern, code)
 
         if m == None:
             return False, 'Malformed extras QR code, try again'
 
+        supply_cable_parts = m.group(4).split('_')
+
         self.qr_stand = m.group(1) if m.group(1) != None else '0'
         self.qr_stand_wiring = m.group(2) if m.group(2) != None else '0'
         self.qr_stand_lock = bool(int(m.group(3) if m.group(3) != None else '0'))
-        self.qr_supply_cable = float(m.group(4))
+        self.qr_supply_cable = float(supply_cable_parts[0])
         self.qr_cee = bool(int(m.group(5)))
         self.qr_custom_engraving = bool(int(m.group(6) if m.group(6) != None else '0'))
 
