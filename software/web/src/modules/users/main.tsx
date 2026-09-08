@@ -54,11 +54,13 @@ import { CMAuthType } from "../cm_networking/generated/cm_auth_type.enum";
 import { ChargeAuth } from "../charge_authorization/api";
 import * as options from "../../options";
 
+type AuthInfo = ChargeAuth & {charger_name: string}
+
 //#if MODULE_CHARGE_MANAGER_AVAILABLE
-export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType[]): Promise<(ChargeAuth & {charger_name: string})[]> {
+export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType[]): Promise<AuthInfo[]> {
     let cm_state = API.get("charge_manager/state");
     let now = API.get("info/keep_alive").uptime;
-    let auths:(ChargeAuth & {charger_name?: string})[][] = [];
+    let auths: AuthInfo[][] = [];
     try {
         auths = JSON.parse(await util.download("/charge_manager/auth_info", false).then(x => x.text()));
     } catch (e) {
@@ -68,7 +70,7 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 
     let chargers = Math.min(auths.length, cm_state.chargers.length);
 
-    let result = [] as (ChargeAuth & {charger_name: string})[];
+    let result = [] as AuthInfo[];
     let result_json_cache: string[] = [];
 
     for (let charger_idx = 0; charger_idx < chargers; charger_idx++) {
@@ -88,10 +90,10 @@ export async function get_charge_manager_auth_info(auth_type_filter?: CMAuthType
 
             let idx = result_json_cache.indexOf(info_json);
             if (idx == -1) {
-                result.push(auth as (ChargeAuth & {charger_name: string}));
+                result.push(auth as AuthInfo);
                 result_json_cache.push(info_json);
             } else if (auth.seen_at < result[idx].seen_at) {
-                result[idx] = auth as (ChargeAuth & {charger_name: string});
+                result[idx] = auth as AuthInfo;
             }
         }
     }
