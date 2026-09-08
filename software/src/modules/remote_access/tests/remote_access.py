@@ -9,12 +9,18 @@
 # - State reset when disabling the module
 # - Timeout-based reconnection
 # - Full registration with a functioning management connection
+# - Service-token (support account) registration and removal
 #
-# A local HTTPS server is started to simulate the relay server.
-# For full registration tests, a WireGuard peer runs inside a Docker
+# A local HTTPS server is started to simulate the relay server for most
+# tests. For full registration tests, a WireGuard peer runs inside a Docker
 # container to simulate the relay's WireGuard endpoint. This requires
 # Docker to be installed and the host kernel to support WireGuard
 # (Linux 5.6+ or wireguard-dkms).
+#
+# Service-token tests point the device at the production relay
+# (my.warp-charger.com) instead of the local mock server. They require
+# signed firmware (signature_sodium_public_key_length != 0) and a relay
+# that is willing to issue service tokens for the test device.
 
 import base64
 import json
@@ -28,6 +34,7 @@ import threading
 import uuid as uuid_mod
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from urllib.error import HTTPError
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
@@ -306,6 +313,51 @@ class WireGuardTestPeer:
             check=True, capture_output=True, text=True,
         )
 
+    def set_management_peer(self, charger_public: str, psk: str) -> None:
+        """Replace the container's management-tunnel peer with the real device keys.
+
+        ``WireGuardTestPeer.generate_keys`` allocates a placeholder charger keypair
+        that the container is initially configured with. The device, however,
+        generates its own WireGuard keys on-board during /remote_access/register
+        (see ``generate_wg_key`` in remote_access.cpp) and uses those for the
+        actual handshake. This method swaps the placeholder peer out for one
+        configured with the device-generated public key and PSK so the
+        handshake can succeed.
+
+        ``wg(8)`` requires the preshared key to be passed as a file path
+        (the ``preshared-key`` flag), not as an inline argument, so we write
+        the PSK to a temp file inside the container and reference it.
+        """
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME,
+             "sh", "-c", f"printf '%s' '{psk}' > /tmp/wg_mgmt_psk"],
+            check=True, capture_output=True, text=True,
+        )
+        # Remove the placeholder peer that was added during start().
+        # Capture the placeholder public key first; self.device_public is
+        # overwritten with the real device key below.
+        placeholder_peer = self.device_public
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME,
+             "wg", "set", "wg0", "peer", placeholder_peer, "remove"],
+            check=True, capture_output=True, text=True,
+        )
+        # Add the real device peer with its on-board generated public key + PSK.
+        subprocess.run(
+            [
+                "docker", "exec", WG_CONTAINER_NAME,
+                "wg", "set", "wg0",
+                "peer", charger_public,
+                "preshared-key", "/tmp/wg_mgmt_psk",
+                "allowed-ips", f"{WG_DEVICE_IP}/32",
+            ],
+            check=True, capture_output=True, text=True,
+        )
+        # Keep self.device_public in sync with what the container is now
+        # actually configured for so is_peer_connected() (and any future
+        # caller that asks "who is the active peer?") sees the real key.
+        self.device_public = charger_public
+
     def add_user_peer(self, charger_public: str, psk: str, conn_no: int) -> None:
         """Add a user-tunnel WireGuard peer to the container's wg0 interface.
 
@@ -454,6 +506,28 @@ def _do_full_registration(tc: TestContext) -> WireGuardTestPeer:
     if not registration_received.wait(timeout=15):
         raise AssertionError("Device did not send registration request to mock relay")
 
+    # 6. Swap the container's management peer for the device-generated keys.
+    # The device generates its own WireGuard keypair on-board during
+    # /remote_access/register (see generate_wg_key in remote_access.cpp) and
+    # sends charger.charger_pub + charger.psk in plain text inside the
+    # /api/charger/add body. Without this step the container is still
+    # configured with the test's placeholder keys and the WireGuard handshake
+    # never completes.
+    for entry in _get_request_log():
+        if "/api/charger/add" in entry["path"] or "/api/add_with_token" in entry["path"]:
+            try:
+                body = json.loads(entry["body"])
+                charger_pub = body["charger"]["charger_pub"]
+                psk = body["charger"]["psk"]
+            except (json.JSONDecodeError, KeyError, TypeError) as exc:
+                raise AssertionError(
+                    f"Could not extract management tunnel keys from registration body: {exc}"
+                ) from exc
+            wg.set_management_peer(charger_pub, psk)
+            break
+    else:
+        raise AssertionError("No /api/charger/add request found in request log")
+
     return wg
 
 
@@ -589,7 +663,7 @@ def _make_response_fn(status: int = 200, body: str | None = None):
 
 
 def _make_config_update(tc: TestContext, enable: bool = True, **overrides) -> dict:
-    """Build a registration config update payload."""
+    """Build a config update payload for the local mock relay."""
     cfg = {
         "enable": enable,
         "relay_host": tc.get_local_ip(),
@@ -600,6 +674,15 @@ def _make_config_update(tc: TestContext, enable: bool = True, **overrides) -> di
     }
     cfg.update(overrides)
     return cfg
+
+
+def _point_at_local_relay(tc: TestContext, *, enable: bool = False) -> None:
+    """Configure the device to use the local HTTPS mock relay."""
+    tc.api(
+        "remote_access/config_update",
+        _make_config_update(tc, enable=enable),
+        timeout=3,
+    )
 
 
 def _get_connection_state(tc: TestContext) -> list[dict]:
@@ -628,6 +711,215 @@ def _wait_for_management_request(tc: TestContext, *, timeout: float = 45.0) -> N
     tc.wait_for(_check, timeout=timeout)
 
 
+# ---------------------------------------------------------------------------
+# Service-token helpers
+# ---------------------------------------------------------------------------
+
+# Production relay used for service-token tests. The device must be configured
+# to point at this host before running the tests, otherwise the device cannot
+# fetch /api/auth/service_token and registration will fail.
+PRODUCTION_RELAY_HOST = "my.warp-charger.com"
+PRODUCTION_RELAY_PORT = 443
+
+# cert_id = -1 selects the system default CA bundle, which trusts the public CA
+# that signs my.warp-charger.com's certificate.
+PRODUCTION_CERT_ID = -1
+
+# Registration state values (from Registration State.uint8.enum, 0-indexed)
+REG_STATE_NONE = 0
+REG_STATE_IN_PROGRESS = 1
+REG_STATE_SUCCESS = 2
+REG_STATE_ERROR = 3
+
+
+def _point_at_production_relay(tc: TestContext, *, enable: bool = False) -> None:
+    """Reconfigure the device so it talks to the production relay (my.warp-charger.com).
+
+    The device keeps whatever charger UUID/password/MTU it already had. The
+    relay_host/relay_port/cert_id are overwritten so any subsequent relay
+    traffic goes to the production relay over the system-trusted CA bundle.
+
+    enable is False by default: most service-token tests trigger
+    service_token_register themselves, which flips enable=true via the
+    parse_service_token() path; starting enabled here would otherwise kick
+    off the periodic management polling against the production relay.
+    """
+    tc.api(
+        "remote_access/config_update",
+        {
+            "enable": enable,
+            "relay_host": PRODUCTION_RELAY_HOST,
+            "relay_port": PRODUCTION_RELAY_PORT,
+            "cert_id": PRODUCTION_CERT_ID,
+            "email": "test@example.com",
+            "mtu": 1240,
+        },
+        timeout=3,
+    )
+
+
+def _get_registration_state(tc: TestContext) -> dict:
+    """Fetch the remote_access/registration_state."""
+    return tc.api("remote_access/registration_state")
+
+
+def _get_service_token_user_uuid(tc: TestContext) -> str:
+    """Return the current service_token_user_uuid from the device config."""
+    return tc.api("remote_access/config").get("service_token_user_uuid", "") or ""
+
+
+def _get_service_token_timestamp_minutes(tc: TestContext) -> int:
+    """Return the current service_token_timestamp_minutes from the device config.
+
+    This is the wall-clock minute (epoch / 60) when the service-token
+    registration was last refreshed. The device uses it together with the
+    24 h deadline in setup() to schedule the automatic removal task on the
+    next boot.
+    """
+    return tc.api("remote_access/config").get("service_token_timestamp_minutes", 0) or 0
+
+
+def _service_token_feature_available(tc: TestContext) -> bool:
+    """Return True if the /remote_access/service_token_register endpoint is registered.
+
+    The endpoint is only compiled in when the firmware has a sodium public key
+    embedded (signature_sodium_public_key_length != 0). On signed firmware that
+    sodium key is also baked into firmware_update/state.publisher (via
+    signature_publisher); on unsigned firmware the field is the empty string.
+
+    We probe via firmware_update/state instead of calling
+    /remote_access/service_token_register directly: that endpoint kicks off an
+    HTTPS GET to my.warp-charger.com in fetch_service_token() and the device
+    has only one AsyncHTTPSClient, so probing and then actually registering
+    races and the second call hits "AsyncHTTPSClient busy".
+    """
+    try:
+        state = tc.api("firmware_update/state")
+    except Exception:
+        # If we cannot reach firmware_update/state at all the device is in
+        # such a bad state that no remote-access test could pass; skip.
+        return False
+    return bool(state.get("publisher"))
+
+
+def _register_service_token(tc: TestContext, *, timeout: float = 30.0) -> None:
+    """Trigger /remote_access/service_token_register and wait for success."""
+    tc.http_request("PUT", "/remote_access/service_token_register", timeout=timeout)
+
+    def _check_success():
+        state = _get_registration_state(tc)
+        if state["state"] != REG_STATE_SUCCESS:
+            raise AssertionError(
+                f"Expected registration state=Success, got state={state['state']} message={state.get('message', '')!r}"
+            )
+
+    tc.wait_for(_check_success, timeout=timeout)
+
+
+def _wait_for_remote_access_idle(tc: TestContext, *, timeout: float = 15.0) -> None:
+    """Wait until the firmware is ready to accept another remote_access HTTPS request.
+
+    The module shares a single AsyncHTTPSClient between all requests
+    (self-destruct, /api/auth/service_token, register, add_user, etc.). Tests
+    that issue requests back-to-back have to make sure the previous request
+    has fully released the client, otherwise the new request fails with
+    ESP_ERR_NOT_SUPPORTED / "AsyncHTTPSClient busy".
+
+    The registration state is set to InProgress at request start and only
+    updated when the next-stage callback runs, so a non-InProgress value is a
+    reliable signal that the shared client is idle.
+    """
+    def _check():
+        state = _get_registration_state(tc)
+        if state.get("state") == REG_STATE_IN_PROGRESS:
+            raise AssertionError(
+                f"remote_access still busy: registration_state={state!r}"
+            )
+
+    tc.wait_for(_check, timeout=timeout)
+
+
+def _reset_registration_state(tc: TestContext, *, timeout: float = 5.0) -> None:
+    """Clear the registration_state enum back to None."""
+    try:
+        tc.api("remote_access/reset_registration_state", timeout=timeout)
+    except (TimeoutError, OSError):
+        pass
+
+
+def _clear_service_token_registration(tc: TestContext) -> None:
+    """Reset the device's remote_access state so a fresh service-token
+    registration can run.
+
+    The service-token flow in firmware (parse_service_token) takes a
+    different relay path depending on whether users[] is empty:
+
+    * empty users[]   -> register_with_relay() POSTs /api/add_with_token
+                         using the auth_token from the signed service_token
+                         (the device's own credentials are not used).
+    * non-empty users -> allow_user_at_relay() PUTs /api/allow_user with
+                         the device's uuid+password. The production relay
+                         only accepts this when the device is registered with
+                         it; if the device was previously registered against
+                         the local mock relay (as happens when service-token
+                         tests run after a full_registration test in the same
+                         suite) the production relay returns 401, which the
+                         firmware surfaces as "ESP_ERR_NOT_SUPPORTED
+                         (error code 10)".
+
+    To get the device into the empty-users[] state, remove every user. The
+    last removal fires /api/selfdestruct. Point the device at the local mock
+    relay first so the self-destruct is observable via the test server's
+    request log, and wait for the request to be received before continuing.
+    """
+    # Point the device at the local mock relay so the eventual
+    # /api/selfdestruct is observable (and so any retry cannot reach the
+    # production relay).
+    _point_at_local_relay(tc, enable=False)
+    # Give the firmware time to apply the new config and stop talking to the
+    # previous relay.
+    time.sleep(1)
+    _wait_for_remote_access_idle(tc, timeout=20)
+
+    config = tc.api("remote_access/config")
+    users = list(config.get("users", []))
+    if not users:
+        _reset_registration_state(tc)
+        return
+
+    for user in users:
+        user_id = user.get("id")
+        if user_id is None or user_id == 255:
+            continue
+        _clear_request_log()
+        try:
+            tc.api("remote_access/remove_user", {"id": user_id}, timeout=10)
+        except (TimeoutError, OSError):
+            pass
+        # Wait for the local mock to receive the relay-side request
+        # (resolve_management for non-last removals, /api/selfdestruct for
+        # the last one). The default response handler logs every request.
+        try:
+            tc.wait_for(
+                lambda: bool(_get_request_log()),
+                timeout=10,
+            )
+        except Exception:
+            pass
+        # Give the firmware time to receive and process the response, and
+        # for the shared AsyncHTTPSClient to be released. The
+        # /api/management and /api/selfdestruct requests do not transition
+        # registration_state, so we cannot rely on the idle probe here.
+        time.sleep(2)
+        _wait_for_remote_access_idle(tc, timeout=20)
+
+    # After the self-destruct, the firmware's apply_config() runs and may
+    # reschedule the management loop. Give it time to settle.
+    time.sleep(1)
+    _wait_for_remote_access_idle(tc, timeout=20)
+    _reset_registration_state(tc)
+
+
 def suite_setup(tc: TestContext) -> None:
     global _original_config, _server
 
@@ -644,16 +936,19 @@ def suite_setup(tc: TestContext) -> None:
 def suite_teardown(tc: TestContext) -> None:
     global _server, _wg_peer
 
-    # Disable remote access to stop any ongoing connection attempts
     try:
-        tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+        _point_at_local_relay(tc, enable=False)
     except (TimeoutError, OSError):
         pass
 
-    # Give the device time to process the disable
-    time.sleep(2)
+    # Restore the complete original config, including any persisted
+    # service-token tracking fields and users.
+    if _original_config is not None:
+        try:
+            tc.api("remote_access/config_update", _original_config, timeout=3)
+        except (TimeoutError, OSError):
+            pass
 
-    # Clean up the WireGuard interface
     if _wg_peer:
         _wg_peer.stop()
         _wg_peer = None
@@ -674,7 +969,7 @@ def setup(tc: TestContext) -> None:
     _clear_request_log()
 
     # Ensure remote access is disabled before each test
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    _point_at_local_relay(tc, enable=False)
     time.sleep(1)
 
 
@@ -683,7 +978,7 @@ def teardown(tc: TestContext) -> None:
     global _wg_peer
 
     try:
-        tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+        _point_at_local_relay(tc, enable=False)
     except (TimeoutError, OSError):
         pass
     time.sleep(1)
@@ -1285,6 +1580,172 @@ def test_disable_closes_user_connections(tc: TestContext) -> None:
         _assert_all_disconnected(tc)
 
     tc.wait_for(_check_all_disconnected, timeout=10)
+
+
+# ---------------------------------------------------------------------------
+# Service-token tests
+# ---------------------------------------------------------------------------
+#
+# These tests exercise the support-account registration/removal flow against a
+# real relay (typically my.warp-charger.com). They require:
+#
+#   1. Signed firmware (signature_sodium_public_key_length != 0) so the
+#      /remote_access/service_token_register endpoint is compiled in.
+#   2. The relay currently configured on the device must be reachable and
+#      willing to issue a service token for it.
+#
+# All tests skip if the endpoint is not registered (e.g. on unsigned firmware).
+
+def test_service_token_register_sets_tracking(tc: TestContext) -> None:
+    """After successful service-token registration the device must populate
+    service_token_user_uuid so the user can be removed automatically later."""
+    if not _service_token_feature_available(tc):
+        tc.skip("Service-token endpoint not compiled in (firmware is likely unsigned)")
+        return
+
+    tc.set_test_timeout(60)
+
+    # Point the device at the production relay before exercising the flow.
+    _clear_service_token_registration(tc)
+    _point_at_production_relay(tc, enable=False)
+
+    # This issues a GET /api/auth/service_token
+    # against my.warp-charger.com and then adds the user through
+    # /api/add_with_token.
+    _register_service_token(tc, timeout=30)
+
+    # service_token_user_uuid must now be non-empty.
+    uuid = _get_service_token_user_uuid(tc)
+    tc.assert_ne("", uuid)
+
+
+def test_service_token_register_enables_remote_access(tc: TestContext) -> None:
+    """A successful service-token registration must flip enable=true (it replaces
+    the manual config_update step)."""
+    if not _service_token_feature_available(tc):
+        tc.skip("Service-token endpoint not compiled in (firmware is likely unsigned)")
+        return
+
+    tc.set_test_timeout(60)
+
+    _clear_service_token_registration(tc)
+    _point_at_production_relay(tc, enable=False)
+
+
+    _register_service_token(tc, timeout=30)
+    # The registration handler updates enable=true in-memory and parse_registration()
+    # persists it via API::writeConfig() before it sets registration_state=Success.
+    # _register_service_token() only waits for the latter, so there is a small
+    # window where state is Success but the writeConfig has not been picked up by
+    # the state reader yet (or the WebServer handler is running on a different
+    # task that hasn't released the lock). Poll until enable is actually True.
+
+    tc.wait_for(lambda: tc.assert_true(tc.api("remote_access/config").get("enable")), timeout=10)
+
+
+def test_service_token_register_idempotent(tc: TestContext) -> None:
+    """Calling /remote_access/service_token_register again while a service user is
+    already registered must be a no-op: it must not re-issue a token and must
+    keep the existing tracking UUID intact. It must, however, refresh the
+    deadline so the automatic removal is rescheduled 24 h into the future."""
+    if not _service_token_feature_available(tc):
+        tc.skip("Service-token endpoint not compiled in (firmware is likely unsigned)")
+        return
+
+    tc.set_test_timeout(120)
+
+    _clear_service_token_registration(tc)
+    _point_at_production_relay(tc, enable=False)
+
+    # Register the service user the first time so we can exercise the
+    # "already registered" branch on the second call.
+    _register_service_token(tc, timeout=30)
+
+    # The second call should not change the tracked UUID: the existing-user
+    # branch in handle_service_token_register() returns early and only
+    # refreshes the timestamp and re-schedules the removal.
+    first_uuid = _get_service_token_user_uuid(tc)
+    tc.assert_ne("", first_uuid)
+
+    # Capture the deadline timestamp before the second call so we can verify
+    # that the second call moves it forward. The field is stored as epoch
+    # minutes (epoch / 60), so two calls within the same minute would be
+    # indistinguishable.
+    initial_ts = _get_service_token_timestamp_minutes(tc)
+    tc.assert_gt(0, initial_ts)  # Must be set after the first registration.
+
+    time.sleep(61)  # Wait for a minute to ensure the timestamp can advance.
+
+    # The second call should not change the tracked UUID: the existing-user
+    # branch in handle_service_token_register() returns early and only
+    # refreshes the timestamp and re-schedules the removal.
+    tc.api("remote_access/service_token_register", {}, timeout=10)
+
+    def _check_uuid_unchanged():
+        uuid = _get_service_token_user_uuid(tc)
+        if uuid != first_uuid:
+            raise AssertionError(
+                f"Expected service_token_user_uuid={first_uuid!r}, got {uuid!r}"
+            )
+
+    tc.wait_for(_check_uuid_unchanged, timeout=10)
+
+    # The removal deadline must have been pushed forward: the timestamp
+    # that drives setup()'s 24 h removal scheduler should now be later than
+    # the one we observed after the initial registration.
+    def _check_deadline_moved():
+        now_ts = _get_service_token_timestamp_minutes(tc)
+        if now_ts <= initial_ts:
+            raise AssertionError(
+                f"service_token_timestamp_minutes did not advance: initial={initial_ts}, now={now_ts}"
+            )
+
+    tc.wait_for(_check_deadline_moved, timeout=10)
+
+
+def test_service_token_removal_clears_tracking(tc: TestContext) -> None:
+    """Manually removing the service-token user via /remote_access/remove_user
+    must cancel the pending automatic removal (via cancel_service_token_removal())
+    and clear the tracking UUID. The retry loop in remove_service_token_user()
+    must not re-populate the tracking field after this.
+    """
+    if not _service_token_feature_available(tc):
+        tc.skip("Service-token endpoint not compiled in (firmware is likely unsigned)")
+        return
+
+    tc.set_test_timeout(120)
+
+    _clear_service_token_registration(tc)
+    _point_at_production_relay(tc, enable=False)
+
+    # Register first so we have a service-token user to remove.
+    _register_service_token(tc, timeout=30)
+    uuid = _get_service_token_user_uuid(tc)
+    tc.assert_ne("", uuid)
+
+    # Look up the user id by uuid and remove it via the regular endpoint.
+    cfg = tc.api("remote_access/config")
+    user_id = None
+    for u in cfg["users"]:
+        if u["uuid"] == uuid:
+            user_id = u["id"]
+            break
+    tc.assert_ne(None, user_id)
+
+    tc.api("remote_access/remove_user", {"id": user_id}, timeout=10)
+
+    # The tracking UUID must be cleared promptly. The retry loop in
+    # remove_service_token_user() must terminate on a manual removal.
+    def _check_cleared():
+        if _get_service_token_user_uuid(tc) != "":
+            raise AssertionError("service_token_user_uuid not cleared after manual removal")
+
+    tc.wait_for(_check_cleared, timeout=20)
+
+    # Give the retry loop time to misbehave (it must not re-populate the
+    # field). The first backoff is 1 minute; 5 s is well below it.
+    time.sleep(5)
+    tc.assert_eq("", _get_service_token_user_uuid(tc))
 
 
 if __name__ == "__main__":
