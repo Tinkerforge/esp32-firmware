@@ -19,7 +19,7 @@
 
 import { ComponentChildren, createRef, RefObject } from "preact";
 import * as API from "./api";
-import { __, get_active_language, removeUnicodeHacks } from "./translation";
+import { __, get_active_language, removeUnicodeHacks, translate_raw } from "./translation";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
@@ -858,7 +858,8 @@ export function download(url: string, urgent: boolean, timeout_ms: number = 10*1
                 }
 
                 if (!response.ok) {
-                    throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+                    const raw_text = await response.text();
+                    throw new Error(`${response.status}(${response.statusText}) ${translate_backend_error(raw_text)}`)
                 }
 
                 let result = await response.blob();
@@ -909,7 +910,8 @@ export function put(url: string, payload: any, urgent: boolean, timeout_ms: numb
                 }
 
                 if (!response.ok) {
-                    throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+                    const raw_text = await response.text();
+                    throw new Error(`${response.status}(${response.statusText}) ${translate_backend_error(raw_text)}`)
                 }
 
                 let result = await response.blob();
@@ -928,6 +930,51 @@ export function put(url: string, payload: any, urgent: boolean, timeout_ms: numb
 }
 
 export const async_modal_ref: RefObject<AsyncModal> = createRef();
+
+// Translate a backend error response into a localized string.
+//
+// The backend may either return a raw error message or a translation key under
+// the "remote_access.script.error." (or any other well-known) namespace. When
+// a key is recognized the frontend substitutes it via the translation system.
+// Some keys include additional context (e.g. a deserializer error message)
+// after a newline separator; that detail is preserved so the user can see it.
+export function translate_backend_error(text: string): string {
+    if (!text) {
+        return text;
+    }
+
+    // Look for a translation key prefix that the backend uses to send
+    // localized error keys back to the frontend.
+    const newline_idx = text.indexOf("\n");
+    const key = newline_idx === -1 ? text : text.substring(0, newline_idx);
+    const detail = newline_idx === -1 ? "" : text.substring(newline_idx + 1);
+
+    // Only attempt translation for keys that look like dotted translation
+    // keys (at least two segments). This avoids trying to translate plain
+    // text that happens to contain a dot.
+    if (!/^[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)+$/.test(key)) {
+        return text;
+    }
+
+    const raw = translate_raw(key);
+
+    if (raw === undefined) {
+        return text;
+    }
+
+    let message: string;
+    if (typeof raw === 'function') {
+        message = String(raw(detail));
+    } else {
+        message = String(raw);
+    }
+
+    if (detail && !message.includes(detail)) {
+        return `${message} (${detail})`;
+    }
+
+    return message;
+}
 
 export function isInteger(x: number) {
     return !isNaN(x) && (x === (x | 0));

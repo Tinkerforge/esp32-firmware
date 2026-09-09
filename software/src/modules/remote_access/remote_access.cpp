@@ -81,6 +81,69 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 static const char FLICKR_BASE58_ALPHABET[] = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 #endif
 
+// HTTP error messages are sent to the frontend as translation keys under the
+// "remote_access.script.error." namespace. The frontend substitutes them using
+// its translation mechanism so the same code path produces a localized error.
+#define ERR_KEY(name) "remote_access.script.error." name
+
+static constexpr const char *ERR_EMPTY_BODY                = ERR_KEY("empty_body");
+static constexpr const char *ERR_BODY_TOO_LARGE            = ERR_KEY("body_too_large");
+static constexpr const char *ERR_LOW_MEMORY                = ERR_KEY("low_memory");
+static constexpr const char *ERR_READ_REQUEST_BODY         = ERR_KEY("read_request_body");
+static constexpr const char *ERR_DESERIALIZE_REQUEST_BODY  = ERR_KEY("deserialize_request_body");
+#if signature_sodium_public_key_length != 0
+static constexpr const char *ERR_FAILED_TO_DECODE_BASE64   = ERR_KEY("decode_base64");
+static constexpr const char *ERR_SIGNED_STRING_TOO_SHORT   = ERR_KEY("signed_string_too_short");
+#endif
+static constexpr const char *ERR_FAILED_TO_INIT_CRYPTO     = ERR_KEY("init_crypto");
+#if signature_sodium_public_key_length != 0
+static constexpr const char *ERR_SIGNATURE_VERIFY_FAILED   = ERR_KEY("signature_verify_failed");
+static constexpr const char *ERR_DECODE_TOKEN_BASE58       = ERR_KEY("decode_token_base58");
+static constexpr const char *ERR_AUTH_TOKEN_TOO_SHORT      = ERR_KEY("auth_token_too_short");
+static constexpr const char *ERR_BASE64_ENCODE_TOKEN       = ERR_KEY("base64_encode_token");
+#endif
+static constexpr const char *ERR_REGISTER_NOT_ENABLED      = ERR_KEY("register_not_enabled");
+static constexpr const char *ERR_DECRYPT_SECRET            = ERR_KEY("decrypt_secret");
+static constexpr const char *ERR_DERIVE_PUBLIC_KEY         = ERR_KEY("derive_public_key");
+static constexpr const char *ERR_NO_KEY_PROVIDED           = ERR_KEY("no_key_provided");
+static constexpr const char *ERR_NO_PUBLIC_KEY_PROVIDED    = ERR_KEY("no_public_key_provided");
+static constexpr const char *ERR_USER_EXISTS_OR_EMPTY      = ERR_KEY("user_exists_or_empty");
+static constexpr const char *ERR_NO_LOGIN_KEY_OR_TOKEN     = ERR_KEY("no_login_key_or_token");
+static constexpr const char *ERR_USER_DOES_NOT_EXIST       = ERR_KEY("user_does_not_exist");
+static constexpr const char *ERR_FAILED_TO_START_PING      = ERR_KEY("failed_to_start_ping");
+static constexpr const char *ERR_GENERATE_WG_KEY           = ERR_KEY("generate_wg_key");
+static constexpr const char *ERR_ENCRYPT_WG_KEYS           = ERR_KEY("encrypt_wg_keys");
+static constexpr const char *ERR_ENCRYPT_PSK               = ERR_KEY("encrypt_psk");
+#if signature_sodium_public_key_length != 0
+static constexpr const char *ERR_EMPTY_SERVICE_TOKEN       = ERR_KEY("empty_service_token");
+static constexpr const char *ERR_DECODE_SERVICE_TOKEN_B64  = ERR_KEY("decode_service_token_b64");
+static constexpr const char *ERR_SIGNED_SERVICE_TOKEN_SHORT = ERR_KEY("signed_service_token_short");
+static constexpr const char *ERR_SERVICE_TOKEN_SIG_FAIL    = ERR_KEY("service_token_signature_failed");
+static constexpr const char *ERR_DECODE_SERVICE_TOKEN_B58  = ERR_KEY("decode_service_token_b58");
+#endif
+static constexpr const char *ERR_INVALID_LOGIN_SALT_ARRAY  = ERR_KEY("invalid_login_salt_array");
+static constexpr const char *ERR_ENCODE_LOGIN_SALT         = ERR_KEY("encode_login_salt");
+static constexpr const char *ERR_DECODE_LOGIN_SALT         = ERR_KEY("decode_login_salt");
+static constexpr const char *ERR_DESERIALIZE_LOGIN_SALT    = ERR_KEY("deserialize_login_salt");
+static constexpr const char *ERR_DESERIALIZE_SECRET        = ERR_KEY("deserialize_secret");
+static constexpr const char *ERR_RECEIVED_STATUS_CODE      = ERR_KEY("received_status_code");
+static constexpr const char *ERR_HTTP_CLIENT_ERROR         = ERR_KEY("http_client_error");
+static constexpr const char *ERR_REQUEST_ABORTED           = ERR_KEY("request_aborted");
+static constexpr const char *ERR_INVALID_SECRET_ARRAY      = ERR_KEY("invalid_secret_array");
+static constexpr const char *ERR_INVALID_SECRET_NONCE_ARRAY = ERR_KEY("invalid_secret_nonce_array");
+static constexpr const char *ERR_INVALID_SECRET_SALT_ARRAY = ERR_KEY("invalid_secret_salt_array");
+static constexpr const char *ERR_ENCODE_SECRET_SALT        = ERR_KEY("encode_secret_salt");
+static constexpr const char *ERR_DESERIALIZE_REGISTRATION  = ERR_KEY("deserialize_registration");
+static constexpr const char *ERR_MISSING_REGISTRATION_FIELDS = ERR_KEY("missing_registration_fields");
+static constexpr const char *ERR_DESERIALIZE_ADD_USER      = ERR_KEY("deserialize_add_user");
+static constexpr const char *ERR_USER_ID_MISSING           = ERR_KEY("user_id_missing");
+static constexpr const char *ERR_ENCRYPT_NOTE              = ERR_KEY("encrypt_note");
+static constexpr const char *ERR_ENCRYPT_CHARGER_NAME      = ERR_KEY("encrypt_charger_name");
+static constexpr const char *ERR_ENCRYPT_WEB_PRIVATE       = ERR_KEY("encrypt_web_private");
+static constexpr const char *ERR_PING_ALREADY_STARTED      = "remote_access.script.ping_already_started";
+
+#undef ERR_KEY
+
 // Validate HTTP request body length and provide the length to callers.
 // Returns 0 on success, or an HTTP status code (400 for empty, 413 for too large).
 static inline uint16_t validate_http_body(WebServerRequest &request, size_t &out_len) {
@@ -477,21 +540,21 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
 
     size_t content_len = 0;
     if (uint16_t s = validate_http_body(request, content_len)) {
-        return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
     }
 
     std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
     if (req_body == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return request.send_plain(500, ERR_LOW_MEMORY);
     }
     if (request.receive(req_body.get(), content_len) <= 0) {
-        return request.send_plain(500, "Failed to read request body");
+        return request.send_plain(500, ERR_READ_REQUEST_BODY);
     }
 
     size_t decoded_max = (content_len / 4) * 3 + 4;
     std::unique_ptr<uint8_t[]> signed_data = heap_alloc_array<uint8_t>(decoded_max);
     if (signed_data == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return request.send_plain(500, ERR_LOW_MEMORY);
     }
 
     size_t decoded_size = 0;
@@ -501,21 +564,21 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
                                         reinterpret_cast<const unsigned char *>(req_body.get()),
                                         content_len);
     if (b64_ret != 0) {
-        return request.send_plain(400, "Failed to decode base64");
+        return request.send_plain(400, ERR_FAILED_TO_DECODE_BASE64);
     }
 
     if (decoded_size <= crypto_sign_BYTES) {
-        return request.send_plain(400, "Signed string too short");
+        return request.send_plain(400, ERR_SIGNED_STRING_TOO_SHORT);
     }
 
     if (sodium_init() < 0) {
-        return request.send_plain(500, "Failed to initialize crypto");
+        return request.send_plain(500, ERR_FAILED_TO_INIT_CRYPTO);
     }
 
     // libsodium combined signed-string format: signature (crypto_sign_BYTES) || message.
     std::unique_ptr<unsigned char[]> message = heap_alloc_array<unsigned char>(decoded_size - crypto_sign_BYTES);
     if (message == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return request.send_plain(500, ERR_LOW_MEMORY);
     }
 
     unsigned long long extracted_len = 0;
@@ -525,7 +588,7 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
                                       static_cast<unsigned long long>(decoded_size),
                                       signature_sodium_public_key_data);
     if (verify_ret != 0) {
-        return request.send_plain(400, "Signature verification failed");
+        return request.send_plain(400, ERR_SIGNATURE_VERIFY_FAILED);
     }
 
     const char *token = reinterpret_cast<const char *>(message.get());
@@ -534,11 +597,11 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
     size_t decoded_token_len = 0;
     std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(token, token_str_len, token_str_len, &decoded_token_len);
     if (token_bytes == nullptr) {
-        return request.send_plain(400, "Failed to decode token base58");
+        return request.send_plain(400, ERR_DECODE_TOKEN_BASE58);
     }
 
     if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
-        return request.send_plain(400, "Authorization token too short");
+        return request.send_plain(400, ERR_AUTH_TOKEN_TOO_SHORT);
     }
 
     authorization_token.valid = true;
@@ -550,7 +613,7 @@ WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServer
     uint8_t token_b64[50];
     size_t olen;
     if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
-        return request.send_plain(500, "Failed to base64-encode authorization token");
+        return request.send_plain(500, ERR_BASE64_ENCODE_TOKEN);
     }
     const String token_str(reinterpret_cast<const char *>(token_b64), olen);
     const String user_id_str(authorization_token.user_uuid);
@@ -575,24 +638,24 @@ WebServerRequestReturnProtect RemoteAccess::handle_decode_auth_token(WebServerRe
 
     size_t content_len = 0;
     if (uint16_t s = validate_http_body(request, content_len)) {
-        return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
     }
     std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
     if (req_body == nullptr) {
-        return request.send_plain(500, "Low memory");
+        return request.send_plain(500, ERR_LOW_MEMORY);
     }
     if (request.receive(req_body.get(), content_len) <= 0) {
-        return request.send_plain(500, "Failed to read request body");
+        return request.send_plain(500, ERR_READ_REQUEST_BODY);
     }
 
     size_t decoded_token_len = 0;
     std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(req_body.get(), content_len, content_len, &decoded_token_len);
     if (token_bytes == nullptr) {
-        return request.send_plain(400, "Failed to decode token base58");
+        return request.send_plain(400, ERR_DECODE_TOKEN_BASE58);
     }
 
     if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
-        return request.send_plain(400, "Authorization token too short");
+        return request.send_plain(400, ERR_AUTH_TOKEN_TOO_SHORT);
     }
 
     authorization_token.valid = true;
@@ -679,18 +742,18 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
     auto ptr = heap_alloc_array<char>(json_size);
 
     if (ptr == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
 
     if (sodium_init() < 0) {
         logger.printfln("Failed to initialize libsodium");
-        return String("Failed to initialize crypto");
+        return String(ERR_FAILED_TO_INIT_CRYPTO);
     }
 
     // Generate the management tunnel key pair and PSK on-device.
     WgKey mgmt_charger;
     if (!generate_wg_key(mgmt_charger)) {
-        return String("Failed to generate WireGuard key");
+        return String(ERR_GENERATE_WG_KEY);
     }
 
     // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
@@ -703,7 +766,7 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
         WgKey charger;
         WgKey relay;
         if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
-            return String("Failed to generate WireGuard key");
+            return String(ERR_GENERATE_WG_KEY);
         }
         // A single PSK is shared by both endpoints of one tunnel.
         relay.psk = charger.psk;
@@ -728,7 +791,7 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
             int ret = crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), relay.priv.length(), pk);
             if (ret < 0) {
                 logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
-                return String("Failed to encrypt WireGuard keys.");
+                return String(ERR_ENCRYPT_WG_KEYS);
             }
 
             // TODO: maybe base64 encode?
@@ -742,7 +805,7 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
             ret = crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), charger.psk.length(), pk);
             if (ret < 0) {
                 logger.printfln("Failed to encrypt psk: %i", ret);
-                return String("Failed to encrypt psk");
+                return String(ERR_ENCRYPT_PSK);
             }
 
             // TODO: maybe base64 encode?
@@ -769,12 +832,12 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
 
     std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
     if (encrypted_name == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
     crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk);
     auto bs64_name = heap_alloc_array<char>(bs64_name_size);
     if (bs64_name == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
     size_t olen;
     mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_name.get()), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
@@ -783,12 +846,12 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
 
     std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
     if (encrypted_note == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
     crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk);
     auto bs64_note = heap_alloc_array<char>(bs64_note_size);
     if (bs64_note == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
     mbedtls_base64_encode(reinterpret_cast<uint8_t *>(bs64_note.get()), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
 
@@ -877,7 +940,7 @@ void RemoteAccess::parse_service_token()
 {
     response_body.trim();
     if (response_body.length() == 0) {
-        update_registration_state(RegistrationState::Error, String("Empty service_token response"));
+        update_registration_state(RegistrationState::Error, String(ERR_EMPTY_SERVICE_TOKEN));
         this->request_cleanup();
         return;
     }
@@ -886,7 +949,7 @@ void RemoteAccess::parse_service_token()
     size_t decoded_max = (signed_str_len / 4) * 3 + 4;
     std::unique_ptr<uint8_t[]> signed_data = heap_alloc_array<uint8_t>(decoded_max);
     if (signed_data == nullptr) {
-        update_registration_state(RegistrationState::Error, String("Low memory"));
+        update_registration_state(RegistrationState::Error, String(ERR_LOW_MEMORY));
         this->request_cleanup();
         return;
     }
@@ -899,7 +962,7 @@ void RemoteAccess::parse_service_token()
                                         signed_str_len);
     if (b64_ret != 0) {
         log_mbedtls_error(b64_ret, "Failed to decode service_token base64");
-        update_registration_state(RegistrationState::Error, String("Failed to decode service_token base64"));
+        update_registration_state(RegistrationState::Error, String(ERR_DECODE_SERVICE_TOKEN_B64));
         this->request_cleanup();
         return;
     }
@@ -907,13 +970,13 @@ void RemoteAccess::parse_service_token()
     response_body.clear();
 
     if (decoded_size <= crypto_sign_BYTES) {
-        update_registration_state(RegistrationState::Error, String("Signed service_token too short"));
+        update_registration_state(RegistrationState::Error, String(ERR_SIGNED_SERVICE_TOKEN_SHORT));
         this->request_cleanup();
         return;
     }
 
     if (sodium_init() < 0) {
-        update_registration_state(RegistrationState::Error, String("Failed to initialize crypto"));
+        update_registration_state(RegistrationState::Error, String(ERR_FAILED_TO_INIT_CRYPTO));
         this->request_cleanup();
         return;
     }
@@ -921,7 +984,7 @@ void RemoteAccess::parse_service_token()
     // libsodium combined signed-string format: signature (crypto_sign_BYTES) || message.
     std::unique_ptr<unsigned char[]> message = heap_alloc_array<unsigned char>(decoded_size - crypto_sign_BYTES);
     if (message == nullptr) {
-        update_registration_state(RegistrationState::Error, String("Low memory"));
+        update_registration_state(RegistrationState::Error, String(ERR_LOW_MEMORY));
         this->request_cleanup();
         return;
     }
@@ -933,7 +996,7 @@ void RemoteAccess::parse_service_token()
                                       static_cast<unsigned long long>(decoded_size),
                                       signature_sodium_public_key_data);
     if (verify_ret != 0) {
-        update_registration_state(RegistrationState::Error, String("Service token signature verification failed"));
+        update_registration_state(RegistrationState::Error, String(ERR_SERVICE_TOKEN_SIG_FAIL));
         this->request_cleanup();
         return;
     }
@@ -944,13 +1007,13 @@ void RemoteAccess::parse_service_token()
     size_t decoded_token_len = 0;
     std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(token, token_str_len, token_str_len, &decoded_token_len);
     if (token_bytes == nullptr) {
-        update_registration_state(RegistrationState::Error, String("Failed to decode service token base58"));
+        update_registration_state(RegistrationState::Error, String(ERR_DECODE_SERVICE_TOKEN_B58));
         this->request_cleanup();
         return;
     }
 
     if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
-        update_registration_state(RegistrationState::Error, String("Authorization token too short"));
+        update_registration_state(RegistrationState::Error, String(ERR_AUTH_TOKEN_TOO_SHORT));
         this->request_cleanup();
         return;
     }
@@ -970,7 +1033,7 @@ void RemoteAccess::parse_service_token()
     uint8_t token_b64[50];
     size_t olen;
     if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
-        update_registration_state(RegistrationState::Error, String("Failed to base64-encode authorization token"));
+        update_registration_state(RegistrationState::Error, String(ERR_BASE64_ENCODE_TOKEN));
         this->request_cleanup();
         return;
     }
@@ -1167,12 +1230,12 @@ void RemoteAccess::register_urls()
         {},
         [this](Language /*language*/, String &errmsg) {
             if (ping != nullptr) {
-                errmsg = "Ping already started";
+                errmsg = ERR_PING_ALREADY_STARTED;
                 return;
             }
             int start_err = start_ping();
             if (start_err != 0) {
-                errmsg = "Failed to start ping: " + String(start_err);
+                errmsg = String(ERR_FAILED_TO_START_PING) + "\n" + String(start_err);
             }
         },
         true);
@@ -1206,16 +1269,16 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             this->request_cleanup();
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         {
@@ -1234,16 +1297,16 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             this->request_cleanup();
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         {
@@ -1263,16 +1326,16 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             this->request_cleanup();
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         // TODO: use TFJsonDeserializer?
@@ -1283,7 +1346,7 @@ void RemoteAccess::register_urls()
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, sizeof(err_str), "Failed to deserialize request body: %s", error.c_str());
+                snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_REQUEST_BODY, error.c_str());
                 this->request_cleanup();
                 return request.send_plain(400, err_str);
             }
@@ -1312,18 +1375,18 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             this->request_cleanup();
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
 
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
 
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         // TODO: use TFJsonDeserializer?
@@ -1334,7 +1397,7 @@ void RemoteAccess::register_urls()
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, sizeof(err_str), "Failed to deserialize request body: %s", error.c_str());
+                snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_REQUEST_BODY, error.c_str());
                 this->request_cleanup();
                 return request.send_plain(400, err_str);
             }
@@ -1350,7 +1413,7 @@ void RemoteAccess::register_urls()
 
         if (!registration_config.get("enable")->asBool()) {
             this->request_cleanup();
-            return request.send_plain(400, "Calling register without enable beeing true is not supported anymore");
+            return request.send_plain(400, ERR_REGISTER_NOT_ENABLED);
         }
 
         // The token-flow path takes the public key from the verified
@@ -1363,7 +1426,7 @@ void RemoteAccess::register_urls()
 
             if (secret_key == nullptr) {
                 this->request_cleanup();
-                return request.send_plain(500, "Low memory");
+                return request.send_plain(500, ERR_LOW_MEMORY);
             }
 
             unsigned char secret[crypto_box_SECRETKEYBYTES];
@@ -1375,25 +1438,25 @@ void RemoteAccess::register_urls()
             if (ret != 0) {
                 this->request_cleanup();
                 logger.printfln("Failed to decrypt secret");
-                return request.send_plain(500, "Failed to decrypt secret");
+                return request.send_plain(500, ERR_DECRYPT_SECRET);
             }
 
             ret = crypto_scalarmult_base(pk, secret);
             if (ret < 0) {
                 this->request_cleanup();
                 logger.printfln("Failed to derive public-key");
-                return request.send_plain(500, "Failed to derive public-key");
+                return request.send_plain(500, ERR_DERIVE_PUBLIC_KEY);
             }
         } else if (!doc["public_key"].isNull()) {
             std::unique_ptr<uint8_t[]> public_key = decode_base64(doc["public_key"], crypto_box_PUBLICKEYBYTES);
             if (public_key == nullptr) {
                 this->request_cleanup();
-                return request.send_plain(500, "Low memory");
+                return request.send_plain(500, ERR_LOW_MEMORY);
             }
             memcpy(pk, public_key.get(), crypto_box_PUBLICKEYBYTES);
         } else {
             this->request_cleanup();
-            return request.send_plain(400, "No key provided");
+            return request.send_plain(400, ERR_NO_KEY_PROVIDED);
         }
 
         const String &note = doc["note"];
@@ -1426,18 +1489,18 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             this->request_cleanup();
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
 
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
 
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         // TODO: use TFJsonDeserializer?
@@ -1447,7 +1510,7 @@ void RemoteAccess::register_urls()
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, sizeof(err_str), "Failed to deserialize request body: %s", error.c_str());
+                snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_REQUEST_BODY, error.c_str());
                 this->request_cleanup();
                 return request.send_plain(400, err_str);
             }
@@ -1457,7 +1520,7 @@ void RemoteAccess::register_urls()
         const String &uuid = doc["user_uuid"];
         if ((email == "null" && uuid == "null") || this->user_already_registered(email)) {
             this->request_cleanup();
-            return request.send_plain(400, "User already exists or is empty");
+            return request.send_plain(400, ERR_USER_EXISTS_OR_EMPTY);
         }
 
         std::unique_ptr<unsigned char[]> pk = nullptr;
@@ -1468,13 +1531,13 @@ void RemoteAccess::register_urls()
             std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
             if (secret_key == nullptr) {
                 this->request_cleanup();
-                return request.send_plain(500, "Low memory");
+                return request.send_plain(500, ERR_LOW_MEMORY);
             }
 
             if (sodium_init() < 0) {
                 this->request_cleanup();
                 logger.printfln("Failed to initialize libsodium");
-                return request.send_plain(500, "Failed to initialize crypto");
+                return request.send_plain(500, ERR_FAILED_TO_INIT_CRYPTO);
             }
 
             unsigned char secret[crypto_box_SECRETKEYBYTES];
@@ -1486,24 +1549,24 @@ void RemoteAccess::register_urls()
             if (ret != 0) {
                 this->request_cleanup();
                 logger.printfln("Failed to decrypt secret");
-                return request.send_plain(500, "Failed to decrypt secret");
+                return request.send_plain(500, ERR_DECRYPT_SECRET);
             }
             pk = heap_alloc_array<unsigned char>(crypto_box_PUBLICKEYBYTES);
             ret = crypto_scalarmult_base(pk.get(), secret);
             if (ret < 0) {
                 this->request_cleanup();
                 logger.printfln("Failed to derive public-key");
-                return request.send_plain(500, "Failed to derive public-key");
+                return request.send_plain(500, ERR_DERIVE_PUBLIC_KEY);
             }
         } else if (!doc["public_key"].isNull()) {
             pk = decode_base64(doc["public_key"], crypto_box_PUBLICKEYBYTES);
             if (pk == nullptr) {
                 this->request_cleanup();
-                return request.send_plain(500, "Low memory");
+                return request.send_plain(500, ERR_LOW_MEMORY);
             }
         } else {
             this->request_cleanup();
-            return request.send_plain(400, "No public key provided");
+            return request.send_plain(400, ERR_NO_PUBLIC_KEY_PROVIDED);
         }
 
         // Pull the auth credentials out of the request body so the shared
@@ -1516,7 +1579,7 @@ void RemoteAccess::register_urls()
 
         if (login_key.isEmpty() && auth_token.isEmpty()) {
             this->request_cleanup();
-            return request.send_plain(400, "No login key or auth token provided");
+            return request.send_plain(400, ERR_NO_LOGIN_KEY_OR_TOKEN);
         }
 
         uint8_t next_user_id;
@@ -1553,14 +1616,14 @@ void RemoteAccess::register_urls()
         size_t content_len = 0;
         if (uint16_t s = validate_http_body(request, content_len)) {
             // Intentionally no request_cleanup() here, preserving previous behavior
-            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+            return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
         }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
-            return request.send_plain(500, "Low memory");
+            return request.send_plain(500, ERR_LOW_MEMORY);
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
-            return request.send_plain(500, "Failed to read request body");
+            return request.send_plain(500, ERR_READ_REQUEST_BODY);
         }
 
         // TODO: use TFJsonDeserializer?
@@ -1571,7 +1634,7 @@ void RemoteAccess::register_urls()
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, sizeof(err_str), "Failed to deserialize request body: %s", error.c_str());
+                snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_REQUEST_BODY, error.c_str());
                 return request.send_plain(400, err_str);
             }
         }
@@ -1585,7 +1648,7 @@ void RemoteAccess::register_urls()
             idx++;
         }
         if (idx >= config.get("users")->count()) {
-            return request.send_plain(400, "User does not exist");
+            return request.send_plain(400, ERR_USER_DOES_NOT_EXIST);
         }
 
         this->remove_user(req_id);
@@ -1742,8 +1805,12 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                                 }
                             }
                         } else {
+                            // Translate the upstream HTTP status code into a translation
+                            // key so the frontend can render a localized message. The raw
+                            // status code is appended after a newline so it can still be
+                            // surfaced (e.g. for logging) if no translation is available.
                             char err_buf[64];
-                            snprintf(err_buf, sizeof(err_buf), "Received status-code %i", event->error_http_status);
+                            snprintf(err_buf, sizeof(err_buf), "%s\n%i", ERR_RECEIVED_STATUS_CODE, event->error_http_status);
                             update_registration_state(RegistrationState::Error, String(err_buf));
                         }
                         this->cleanup_after();
@@ -1777,8 +1844,11 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                                 }
                             }
                         } else {
+                            // Send the translation key with the translated error string and
+                            // numeric error code appended after a newline. The frontend
+                            // translates the key and uses the appended detail as fallback.
                             char err_buf[128];
-                            snprintf(err_buf, sizeof(err_buf), "%s (error code %u)", translate_error(event), static_cast<uint8_t>(event->error));
+                            snprintf(err_buf, sizeof(err_buf), "%s\n%s (%u)", ERR_HTTP_CLIENT_ERROR, translate_error(event), static_cast<uint8_t>(event->error));
                             update_registration_state(RegistrationState::Error, String(err_buf));
                         }
                         this->cleanup_after();
@@ -1788,7 +1858,7 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                 break;
 
             case AsyncHTTPSClientEventType::Aborted:
-                update_registration_state(RegistrationState::Error, String("Request was aborted"));
+                update_registration_state(RegistrationState::Error, String(ERR_REQUEST_ABORTED));
                 this->cleanup_after();
                 break;
 
@@ -1845,12 +1915,12 @@ void RemoteAccess::parse_login_salt()
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, response_body.c_str(), response_body.length());
         if (error) {
-            update_registration_state(RegistrationState::Error, String("Error while deserializing login-salt"));
+            update_registration_state(RegistrationState::Error, String(ERR_DESERIALIZE_LOGIN_SALT));
             this->request_cleanup();
             return;
         }
     if (!parse_array_from_json(doc.as<JsonArrayConst>(), login_salt, ARRAY_SIZE(login_salt))) {
-            update_registration_state(RegistrationState::Error, String("Invalid login-salt array"));
+            update_registration_state(RegistrationState::Error, String(ERR_INVALID_LOGIN_SALT_ARRAY));
             this->request_cleanup();
             return;
         }
@@ -1860,7 +1930,7 @@ void RemoteAccess::parse_login_salt()
     char base64[65] = {};
     size_t bytes_written;
     if (mbedtls_base64_encode(reinterpret_cast<uint8_t *>(base64), sizeof(base64), &bytes_written, login_salt, ARRAY_SIZE(login_salt)) != 0) {
-        update_registration_state(RegistrationState::Error, String("Error while encoding login-salt"));
+        update_registration_state(RegistrationState::Error, String(ERR_ENCODE_LOGIN_SALT));
         this->request_cleanup();
         return;
     }
@@ -1879,7 +1949,7 @@ void RemoteAccess::login(const Config &user_config, const String &login_key)
     uint8_t key[24] = {};
     size_t written;
     if (mbedtls_base64_decode(key, 24, &written, reinterpret_cast<const uint8_t *>(login_key.c_str()), login_key.length()) != 0) {
-        update_registration_state(RegistrationState::Error, String("Error while decoding login-salt"));
+        update_registration_state(RegistrationState::Error, String(ERR_DECODE_LOGIN_SALT));
         this->request_cleanup();
         return;
     }
@@ -1913,7 +1983,7 @@ void RemoteAccess::parse_secret()
         DeserializationError error = deserializeJson(doc, response_body.c_str());
         if (error) {
             char err_str[64];
-            snprintf(err_str, sizeof(err_str), "Error while deserializing Secret: %s", error.c_str());
+            snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_SECRET, error.c_str());
             update_registration_state(RegistrationState::Error, String(err_str));
             this->request_cleanup();
             return;
@@ -1923,14 +1993,14 @@ void RemoteAccess::parse_secret()
 
     encrypted_secret = heap_alloc_array<uint8_t>(crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES);
     if (encrypted_secret == nullptr) {
-        update_registration_state(RegistrationState::Error, String("Low memory"));
+        update_registration_state(RegistrationState::Error, String(ERR_LOW_MEMORY));
         this->request_cleanup();
         return;
     }
     {
         uint8_t secret_buf[crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES];
     if (!parse_array_from_json(doc["secret"].as<JsonArrayConst>(), secret_buf, crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES)) {
-            update_registration_state(RegistrationState::Error, String("Invalid secret array"));
+            update_registration_state(RegistrationState::Error, String(ERR_INVALID_SECRET_ARRAY));
             this->request_cleanup();
             return;
         }
@@ -1939,14 +2009,14 @@ void RemoteAccess::parse_secret()
 
     secret_nonce = heap_alloc_array<uint8_t>(crypto_secretbox_NONCEBYTES);
     if (secret_nonce == nullptr) {
-        update_registration_state(RegistrationState::Error, String("Low memory"));
+        update_registration_state(RegistrationState::Error, String(ERR_LOW_MEMORY));
         this->request_cleanup();
         return;
     }
     {
         uint8_t nonce_buf[crypto_secretbox_NONCEBYTES];
     if (!parse_array_from_json(doc["secret_nonce"].as<JsonArrayConst>(), nonce_buf, crypto_secretbox_NONCEBYTES)) {
-            update_registration_state(RegistrationState::Error, String("Invalid secret_nonce array"));
+            update_registration_state(RegistrationState::Error, String(ERR_INVALID_SECRET_NONCE_ARRAY));
             this->request_cleanup();
             return;
         }
@@ -1955,14 +2025,14 @@ void RemoteAccess::parse_secret()
 
     uint8_t secret_salt[48];
     if (!parse_array_from_json(doc["secret_salt"].as<JsonArrayConst>(), secret_salt, 48)) {
-        update_registration_state(RegistrationState::Error, String("Invalid secret_salt array"));
+        update_registration_state(RegistrationState::Error, String(ERR_INVALID_SECRET_SALT_ARRAY));
         this->request_cleanup();
         return;
     }
     uint8_t encoded_secret_salt[65] = {};
     size_t olen = 0;
     if (mbedtls_base64_encode(encoded_secret_salt, ARRAY_SIZE(encoded_secret_salt), &olen, secret_salt, ARRAY_SIZE(secret_salt)) != 0) {
-        update_registration_state(RegistrationState::Error, String("Error while encoding secret-salt"));
+        update_registration_state(RegistrationState::Error, String(ERR_ENCODE_SECRET_SALT));
         this->request_cleanup();
         return;
     }
@@ -1977,14 +2047,14 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
 
     if (error) {
         char err_str[64];
-        snprintf(err_str, sizeof(err_str), "Error while deserializing registration response: %s", error.c_str());
+        snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_REGISTRATION, error.c_str());
         update_registration_state(RegistrationState::Error, String(err_str));
         this->request_cleanup();
         return;
     }
 
     if (resp_doc["charger_uuid"] == "null" || resp_doc["charger_password"] == "null" || resp_doc["management_pub"] == "null") {
-        update_registration_state(RegistrationState::Error, String("Missing fields in registration response"));
+        update_registration_state(RegistrationState::Error, String(ERR_MISSING_REGISTRATION_FIELDS));
         this->request_cleanup();
         return;
     }
@@ -2041,14 +2111,14 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
 
     if (error) {
         char err_str[64];
-        snprintf(err_str, sizeof(err_str), "Error while deserializing add user response: %s", error.c_str());
+        snprintf(err_str, sizeof(err_str), "%s\n%s", ERR_DESERIALIZE_ADD_USER, error.c_str());
         update_registration_state(RegistrationState::Error, String(err_str));
         this->request_cleanup();
         return;
     }
 
     if (resp_doc["user_id"] == "null") {
-        update_registration_state(RegistrationState::Error, String("User ID missing in response"));
+        update_registration_state(RegistrationState::Error, String(ERR_USER_ID_MISSING));
         this->request_cleanup();
         return;
     }
@@ -2082,7 +2152,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
 {
     if (sodium_init() < 0) {
         logger.printfln("Failed to initialize libsodium");
-        return String("Failed to initialize crypto");
+        return String(ERR_FAILED_TO_INIT_CRYPTO);
     }
 
     // Generate one keypair set per user-tunnel slot on-device. The
@@ -2098,7 +2168,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
         WgKey charger;
         WgKey relay;
         if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
-            return String("Failed to generate WireGuard key");
+            return String(ERR_GENERATE_WG_KEY);
         }
         // A single PSK is shared by both endpoints of one tunnel.
         relay.psk = charger.psk;
@@ -2114,7 +2184,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
     size_t json_size = 4500 + bs64_note_size + bs64_name_size;
     auto json = heap_alloc_array<char>(json_size);
     if (json == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
 
     TFJsonSerializer serializer{json.get(), json_size};
@@ -2122,11 +2192,11 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
 
     std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
     if (encrypted_note == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
 
     if (crypto_box_seal(encrypted_note.get(), reinterpret_cast<const unsigned char *>(note.c_str()), note.length(), pk)) {
-        return String("Failed to encrypt note");
+        return String(ERR_ENCRYPT_NOTE);
     }
 
     auto bs64_note = heap_alloc_array<char>(bs64_note_size);
@@ -2141,11 +2211,11 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
 
     std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
     if (encrypted_name == nullptr) {
-        return String("Low memory");
+        return String(ERR_LOW_MEMORY);
     }
 
     if (crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), pk)) {
-        return String("Failed to encrypt charger name");
+        return String(ERR_ENCRYPT_CHARGER_NAME);
     }
 
     auto bs64_name = heap_alloc_array<char>(bs64_name_size);
@@ -2170,7 +2240,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
     } else {
         // Neither credential was supplied; refuse to send a request without
         // any user_auth credentials.
-        return String("Missing login_key or auth_token for allow_user request");
+        return String(ERR_NO_LOGIN_KEY_OR_TOKEN);
     }
     serializer.endObject();
 
@@ -2186,7 +2256,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
 
         uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
         if (crypto_box_seal(encrypted_psk, reinterpret_cast<const unsigned char *>(charger.psk.c_str()), 44, pk)) {
-            return String("Failed to encrypt psk");
+            return String(ERR_ENCRYPT_PSK);
         }
         serializer.addMemberArray("psk");
         for (size_t a = 0; a < ARRAY_SIZE(encrypted_psk); a++) {
@@ -2196,7 +2266,7 @@ String RemoteAccess::allow_user_at_relay(const unsigned char *pk,
 
         uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
         if (crypto_box_seal(encrypted_web_private, reinterpret_cast<const unsigned char *>(relay.priv.c_str()), 44, pk)) {
-            return String("Failed to encrypt web_private");
+            return String(ERR_ENCRYPT_WEB_PRIVATE);
         }
         serializer.addMemberArray("web_private");
         for (size_t a = 0; a < ARRAY_SIZE(encrypted_web_private); a++) {
