@@ -9,6 +9,9 @@
 # - State reset when disabling the module
 # - Timeout-based reconnection
 # - Full registration with a functioning management connection
+# - User-level WireGuard tunnels driven by Connect/Disconnect management
+#   commands (state updates, full handshake, disconnect cleanup, command
+#   sequence-number handling, and disable-while-open)
 # - Service-token (support account) registration and removal
 #
 # A local HTTPS server is started to simulate the relay server for most
@@ -23,6 +26,7 @@
 # that is willing to issue service tokens for the test device.
 
 import base64
+import ctypes
 import json
 import os
 import shutil
@@ -62,6 +66,13 @@ _server = None
 _wg_peer: "WireGuardTestPeer | None" = None
 _request_log: list[dict] = []
 _request_log_lock = threading.Lock()
+
+# NaCl X25519 keypair used as the seal-receiver for the last
+# _do_full_registration() call. We hold on to the private key so the
+# user-tunnel helper can unseal the per-user WireGuard private keys and PSKs
+# that the device ships (sealed) in the registration request body.
+_last_registration_nacl_priv: X25519PrivateKey | None = None
+_last_registration_nacl_pub_b64: str | None = None
 
 
 def _log_request(method: str, path: str, body: bytes) -> None:
@@ -128,6 +139,65 @@ def _docker_available() -> bool:
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False
+
+
+# ---------------------------------------------------------------------------
+# libsodium bindings (ctypes) for unsealing the user-tunnel WireGuard keys
+# ---------------------------------------------------------------------------
+#
+# The device seals the relay-side WireGuard private key and shared PSK with
+# the public key the test sends in the registration body (see
+# crypto_box_seal in remote_access.cpp). We unseal them here so the test
+# WireGuard container can act as the peer. crypto_box_seal_open is not
+# exposed by the Python `cryptography` package, so we load the system
+# libsodium via ctypes.
+
+_sodium_lib: ctypes.CDLL | None = None
+
+
+def _load_sodium() -> ctypes.CDLL:
+    """Load system libsodium via ctypes (cached)."""
+    global _sodium_lib
+    if _sodium_lib is None:
+        lib = ctypes.CDLL("libsodium.so.23")
+        lib.sodium_init.restype = ctypes.c_int
+        lib.sodium_init()
+
+        lib.crypto_box_seal_open.restype = ctypes.c_int
+        lib.crypto_box_seal_open.argtypes = [
+            ctypes.c_char_p,  # m (output, plaintext)
+            ctypes.c_char_p,  # c (input, ciphertext)
+            ctypes.c_ulonglong,  # clen
+            ctypes.c_char_p,  # pk (32 bytes)
+            ctypes.c_char_p,  # sk (32 bytes)
+        ]
+
+        _sodium_lib = lib
+    return _sodium_lib
+
+
+def _sealed_box_open(ciphertext: bytes, pk: bytes, sk: bytes) -> bytes:
+    """Open a crypto_box_seal ciphertext.
+
+    Args:
+        ciphertext: Sealed box (ephemeral pubkey || XSalsa20-Poly1305 ciphertext).
+        pk: Receiver's X25519 public key (32 bytes).
+        sk: Receiver's X25519 private key (32 bytes).
+
+    Returns:
+        Plaintext bytes.
+
+    Raises:
+        RuntimeError: If the box fails to open (e.g. wrong key or truncated input).
+    """
+    sodium = _load_sodium()
+    out = ctypes.create_string_buffer(len(ciphertext))
+    ret = sodium.crypto_box_seal_open(out, ciphertext, len(ciphertext), pk, sk)
+    if ret != 0:
+        raise RuntimeError(
+            "crypto_box_seal_open failed (wrong key or malformed ciphertext)"
+        )
+    return out.raw[: len(ciphertext) - 48]
 
 
 class WireGuardTestPeer:
@@ -388,6 +458,29 @@ class WireGuardTestPeer:
             check=True, capture_output=True, text=True,
         )
 
+    def swap_wg0_private_key(self, relay_private: str) -> None:
+        """Replace wg0's static private key at runtime via `wg set`.
+
+        The container is initially brought up with the management tunnel's
+        relay-side private key (``relay_private = wg.relay_private``).  Each
+        user tunnel has its own device-generated relay-side key pair, so to
+        complete a user-tunnel handshake the container must use that
+        user-specific private key instead.  Calling this method invalidates
+        any existing management-tunnel session (the device sees a peer
+        handshake response with a different static public key) and is
+        intended to be used right before driving a user-tunnel Connect.
+        """
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME,
+             "sh", "-c", f"printf '%s' '{relay_private}' > /tmp/wg0_priv"],
+            check=True, capture_output=True, text=True,
+        )
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME,
+             "wg", "set", "wg0", "private-key", "/tmp/wg0_priv"],
+            check=True, capture_output=True, text=True,
+        )
+
     def is_user_peer_connected(self, charger_public: str) -> bool:
         """Return True if the given user peer has completed a WireGuard handshake."""
         if not self._container_running:
@@ -426,23 +519,31 @@ def _do_full_registration(tc: TestContext) -> WireGuardTestPeer:
     4. Call the device's /remote_access/register endpoint
     5. Wait for the management connection to become STATE_CONNECTED
 
+    The NaCl X25519 keypair used to seal charger name/note (and the relay-side
+    WireGuard private key + PSK for every user-tunnel slot) is also persisted
+    in a module-level variable so _do_full_registration_with_user_tunnel can
+    unseal the user-tunnel keys afterwards.
+
     Returns the WireGuardTestPeer instance (caller must call .stop() to clean up).
 
     Raises:
         RuntimeError: If WireGuard setup fails.
         AssertionError: If registration or connection fails within timeout.
     """
-    global _wg_peer
+    global _wg_peer, _last_registration_nacl_priv, _last_registration_nacl_pub_b64
 
     # 1. Generate WireGuard keys (relay side only; the device generates its own
     #    private/public/PSK on-board during the /remote_access/register call).
     wg = WireGuardTestPeer()
     wg.generate_keys()
 
-    # Generate a NaCl X25519 key pair for encrypting charger name/note
-    # (the device encrypts data with this; we don't need to decrypt it in the test)
+    # Generate a NaCl X25519 key pair for encrypting charger name/note and for
+    # sealing the per-user-tunnel WireGuard private keys + PSKs. We keep it
+    # around so _extract_user_tunnel_keys can unseal them.
     nacl_priv = X25519PrivateKey.generate()
     nacl_pub_b64 = base64.b64encode(nacl_priv.public_key().public_bytes_raw()).decode()
+    _last_registration_nacl_priv = nacl_priv
+    _last_registration_nacl_pub_b64 = nacl_pub_b64
 
     # 2. Set up the WireGuard interface
     wg.start()
@@ -531,11 +632,109 @@ def _do_full_registration(tc: TestContext) -> WireGuardTestPeer:
     return wg
 
 
-# NOTE: User-level WireGuard tunnel tests were removed. After WireGuard key
-# generation moved to the device, the test helper can no longer recover the
-# user-tunnel PSK (it is sealed with the relay's NaCl seal key in transit).
-# To re-add user-tunnel tests, read the keys from the device's persisted state
-# via /remote_access/state instead of from the registration request body.
+# ---------------------------------------------------------------------------
+# User-tunnel registration helper
+# ---------------------------------------------------------------------------
+
+
+def _extract_user_tunnel_keys(
+        tc: TestContext, *, conn_no: int) -> tuple[str, str, str]:
+    """Recover the WireGuard keys needed to act as the relay for one user tunnel.
+
+    The device generates one user-tunnel key set per ``connection_no`` slot
+    during /remote_access/register, seals the relay-side WireGuard private
+    key and the shared PSK with the registration ``public_key`` (X25519), and
+    ships the sealed blobs as arrays of bytes inside the registration body.
+    We unseal them here using libsodium's ``crypto_box_seal_open`` and the
+    X25519 keypair that was last passed to ``/remote_access/register`` via
+    ``_do_full_registration``.
+
+    The device stores every WireGuard key as a 44-char base64 string (see
+    ``generate_wg_key`` in remote_access.cpp) and seals the wire-format
+    strings directly, so the unsealed relay-side WireGuard private key and
+    PSK are already in wire format and can be passed to ``wg set`` as-is.
+
+    Returns:
+        (charger_public_b64, relay_private_b64, psk_b64) for the requested
+        ``connection_no``. ``relay_private_b64`` is the relay-side WireGuard
+        private key for this tunnel; the device expects the matching public
+        key (``relay_keys[i].pub``) on every handshake response it gets back,
+        so the test container must use this key as its ``wg0`` private key
+        (replacing the management-tunnel one) before driving the user tunnel.
+
+    Raises:
+        AssertionError: If the expected user-tunnel entry is missing from the
+            registration body.
+        RuntimeError: If the sealed box cannot be opened.
+    """
+    if _last_registration_nacl_priv is None:
+        raise AssertionError(
+            "No registration has been performed yet; call "
+            "_do_full_registration first"
+        )
+
+    pk_bytes = _last_registration_nacl_priv.public_key().public_bytes_raw()
+    sk_bytes = _last_registration_nacl_priv.private_bytes_raw()
+
+    for entry in _get_request_log():
+        path = entry["path"]
+        if "/api/charger/add" not in path and "/api/add_with_token" not in path:
+            continue
+        try:
+            body = json.loads(entry["body"])
+        except json.JSONDecodeError:
+            continue
+
+        for key in body.get("keys", []):
+            if int(key.get("connection_no", -1)) != conn_no:
+                continue
+
+            sealed_web_private = bytes(int(b) for b in key["web_private"])
+            sealed_psk = bytes(int(b) for b in key["psk"])
+
+            web_private = _sealed_box_open(sealed_web_private, pk_bytes, sk_bytes)
+            psk_bytes = _sealed_box_open(sealed_psk, pk_bytes, sk_bytes)
+
+            return (
+                key["charger_public"],
+                web_private.decode("ascii"),
+                psk_bytes.decode("ascii"),
+            )
+
+        raise AssertionError(
+            f"No entry for connection_no={conn_no} in registration keys"
+        )
+
+    raise AssertionError(
+        "No /api/charger/add or /api/add_with_token request found in request log"
+    )
+
+
+def _do_full_registration_with_user_tunnel(
+        tc: TestContext) -> tuple["WireGuardTestPeer", str, str, str]:
+    """Like _do_full_registration but also recovers the user-tunnel-0 keys.
+
+    Runs the full registration flow (including the management-tunnel
+    handshake) and then unseals the first user tunnel (``connection_no=0``)
+    using the NaCl X25519 keypair the device sealed against.  Tests can then
+    drive Connect/Disconnect management commands and observe the WireGuard
+    handshake via the test peer.
+
+    Returns:
+        (wg, charger_public, relay_private, psk) for the user tunnel at
+        ``connection_no=0``. ``relay_private`` is the (unsealed) relay-side
+        WireGuard private key for this tunnel; ``test_user_full_wg_handshake``
+        swaps it onto the container's wg0 so the user-tunnel handshake can
+        complete.
+
+    Raises:
+        RuntimeError: WireGuard setup fails.
+        AssertionError: Registration does not complete within timeout, or the
+            expected user-tunnel-0 entry is missing.
+    """
+    wg = _do_full_registration(tc)
+    charger_public, relay_private, psk = _extract_user_tunnel_keys(tc, conn_no=0)
+    return wg, charger_public, relay_private, psk
 
 
 def _wait_for_management_connected(tc: TestContext, *, timeout: float = 60.0) -> None:
@@ -1222,6 +1421,259 @@ def test_full_registration_reconnect_after_disable_enable(tc: TestContext) -> No
 
     state = _get_connection_state(tc)
     tc.assert_eq(STATE_CONNECTED, state[0]["state"])
+
+
+# ---------------------------------------------------------------------------
+# User-level WireGuard tunnel tests
+# ---------------------------------------------------------------------------
+#
+# These tests verify that the Connect/Disconnect management commands drive
+# the user tunnels correctly. The management connection is established by
+# _do_full_registration_with_user_tunnel (full registration flow including
+# the WireGuard management handshake), then we unseal the user-tunnel keys
+# that the device shipped (sealed) in the registration body.
+
+_CONN_COMMAND_CONNECT = 0
+_CONN_COMMAND_DISCONNECT = 1
+
+
+def _wait_for_any_user_slot_active(tc: TestContext, *, timeout: float = 15.0) -> None:
+    """Wait until at least one user slot (index 1-5) has user != 255."""
+    tc.wait_for(
+        lambda: tc.assert_true(any(
+            s["user"] != 255 for s in _get_connection_state(tc)[1:]
+        )),
+        timeout=timeout,
+    )
+
+
+def _assert_all_user_slots_cleared(tc: TestContext) -> None:
+    """Assert every user slot (index 1-5) is reset to user=255, connection=255,
+    and state=Disconnected."""
+    for i, slot in enumerate(_get_connection_state(tc)[1:], start=1):
+        if slot["user"] != 255 or slot["connection"] != 255:
+            raise AssertionError(f"Slot {i} not cleared after Disconnect: {slot}")
+        if slot["state"] != STATE_DISCONNECTED:
+            raise AssertionError(
+                f"Slot {i} not in Disconnected state after Disconnect: {slot}"
+            )
+
+
+def test_user_connect_command_updates_state(tc: TestContext) -> None:
+    """A Connect management command should populate a user slot with the right IDs."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = uuid_mod.uuid4()
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid.bytes,
+    )
+
+    # connect_remote_access() calls update_connection_state(conn_idx, user_id=0,
+    # conn_id=0, Disconnected) after loading the key.  Wait for that.
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
+    tc.assert_eq(1, len(active))
+    tc.assert_eq(0, active[0]["user"])
+    tc.assert_eq(0, active[0]["connection"])
+
+
+def test_user_full_wg_handshake(tc: TestContext) -> None:
+    """After a Connect command the user WireGuard handshake should complete and
+    the slot should transition to STATE_CONNECTED."""
+    tc.set_test_timeout(120)
+
+    try:
+        wg, user_charger_public, user_relay_priv, user_psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    # The device generates its own relay-side key per user tunnel at
+    # registration time. To complete the user-tunnel handshake, the
+    # container's wg0 must use the user tunnel's relay-side private key
+    # (not the management tunnel's). Sending the Connect command must
+    # happen while the management tunnel is still up (we use it to
+    # deliver the command) -- immediately afterwards we re-key wg0 and
+    # the user tunnel handshake can then complete.  The management tunnel
+    # is intentionally invalidated by the re-key; this test only cares
+    # about the user tunnel.
+    conn_uuid = os.urandom(16)
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+
+    # Give the device a moment to start its user-tunnel WG interface
+    # (DNS resolve + connect_remote_access); handshakes typically start
+    # immediately afterwards.
+    time.sleep(1)
+
+    wg.swap_wg0_private_key(user_relay_priv)
+    wg.add_user_peer(user_charger_public, user_psk, conn_no=0)
+
+    # Wait for the WireGuard handshake from the relay side.
+    tc.wait_for(
+        lambda: tc.assert_true(wg.is_user_peer_connected(user_charger_public)),
+        timeout=30, poll_delay=1.0,
+    )
+
+    # Wait for the device API to reflect STATE_CONNECTED.
+    tc.wait_for(
+        lambda: tc.assert_true(any(
+            s["state"] == STATE_CONNECTED for s in _get_connection_state(tc)[1:]
+        )),
+        timeout=15,
+    )
+
+    connected = [s for s in _get_connection_state(tc)[1:] if s["state"] == STATE_CONNECTED]
+    tc.assert_eq(1, len(connected))
+    tc.assert_eq(0, connected[0]["user"])
+    tc.assert_eq(0, connected[0]["connection"])
+
+
+def test_user_disconnect_command_clears_state(tc: TestContext) -> None:
+    """A Disconnect management command should tear down the tunnel and reset the slot."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = os.urandom(16)
+
+    # Connect first.
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Now disconnect.
+    wg.send_management_command(
+        seq_num=2, command_id=_CONN_COMMAND_DISCONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+
+    # All user slots should return to Disconnected with user=255 and connection=255.
+    tc.wait_for(lambda: _assert_all_user_slots_cleared(tc), timeout=10)
+
+
+def test_duplicate_seq_num_ignored(tc: TestContext) -> None:
+    """A command with the same sequence number as the last processed command
+    should be silently dropped."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _, _, _ = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = os.urandom(16)
+
+    # First Connect for connection_no=0 (seq=1).
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Second command with the SAME seq=1 but for connection_no=1 – must be ignored.
+    conn_uuid_2 = os.urandom(16)
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=1, connection_uuid=conn_uuid_2,
+    )
+
+    # Give the device time to process (or ignore) the duplicate.
+    time.sleep(2)
+
+    # Only connection_no=0 should be active; connection_no=1 must not have opened.
+    active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
+    tc.assert_eq(1, len(active))
+    tc.assert_eq(0, active[0]["connection"])
+
+
+def test_out_of_order_command_ignored(tc: TestContext) -> None:
+    """A command whose sequence number is not greater than the last seen value
+    should be ignored, leaving the existing connection intact."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _, _, _ = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = os.urandom(16)
+
+    # Connect with seq=2; this sets in_seq_number=2 on the device.
+    wg.send_management_command(
+        seq_num=2, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Send Disconnect with seq=1 (lower than in_seq_number=2) – must be ignored.
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_DISCONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+
+    # Give the device time to process (or ignore) the out-of-order packet.
+    time.sleep(2)
+
+    # The connection for connection_no=0 should still be active (the
+    # out-of-order Disconnect with seq=1 must be ignored because in_seq_number
+    # is now 2).
+    active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
+    tc.assert_ge(1, len(active))
+    tc.assert_eq(0, active[0]["connection"])
+
+
+def test_disable_closes_user_connections(tc: TestContext) -> None:
+    """Disabling remote access while a user tunnel is open should tear it down
+    and reset all user slots to Disconnected."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = os.urandom(16)
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Disable remote access.  apply_config() calls close_all_remote_connections().
+    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    tc.wait_for(lambda: _assert_all_disconnected(tc), timeout=10)
 
 
 # ---------------------------------------------------------------------------
