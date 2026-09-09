@@ -1205,38 +1205,40 @@ export class RemoteAccess extends ConfigComponent<
                             />
                         </FormRow>
                         <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
-                            <FormRow
-                                label={__("remote_access.content.service_token_register")}
-                                label_muted={
-                                    this.state.service_token_remaining_minutes !== null
-                                        ? __("remote_access.content.service_token_register_active_desc")(
-                                              this.state.relay_host,
-                                              this.state.service_token_remaining_minutes,
-                                          )
-                                        : undefined
-                                }
-                                help={
-                                    this.state.service_token_remaining_minutes === null
-                                        ? __("remote_access.content.service_token_register_desc")(this.state.relay_host)
-                                        : undefined
-                                }
-                            >
-                                <Button
-                                    className="w-100"
-                                    disabled={this.state.relay_host === ""}
-                                    onClick={async () => {
-                                        try {
-                                            await this.runServiceTokenRegister();
-                                        } catch {
-                                            // The alert is already shown by runServiceTokenRegister.
-                                        }
-                                    }}
+                            {!!options.IS_SIGNED && (
+                                <FormRow
+                                    label={__("remote_access.content.service_token_register")}
+                                    label_muted={
+                                        this.state.service_token_remaining_minutes !== null
+                                            ? __("remote_access.content.service_token_register_active_desc")(
+                                                  this.state.relay_host,
+                                                  this.state.service_token_remaining_minutes,
+                                              )
+                                            : undefined
+                                    }
+                                    help={
+                                        this.state.service_token_remaining_minutes === null
+                                            ? __("remote_access.content.service_token_register_desc")(this.state.relay_host)
+                                            : undefined
+                                    }
                                 >
-                                    {this.state.service_token_remaining_minutes === null
-                                        ? __("remote_access.content.service_token_register")
-                                        : __("remote_access.content.service_token_extend")}
-                                </Button>
-                            </FormRow>
+                                    <Button
+                                        className="w-100"
+                                        disabled={this.state.relay_host === ""}
+                                        onClick={async () => {
+                                            try {
+                                                await this.runServiceTokenRegister();
+                                            } catch {
+                                                // The alert is already shown by runServiceTokenRegister.
+                                            }
+                                        }}
+                                    >
+                                        {this.state.service_token_remaining_minutes === null
+                                            ? __("remote_access.content.service_token_register")
+                                            : __("remote_access.content.service_token_extend")}
+                                    </Button>
+                                </FormRow>
+                            )}
                             <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
                                 <InputHost
                                     required
