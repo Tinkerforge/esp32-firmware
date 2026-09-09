@@ -42,10 +42,15 @@ public:
     bool pushRawStateUpdate(const String &payload, const String &path) override;
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
+    [[nodiscard("Returns false when failed to allocate sb's buffer to payload_max_len")]]
     bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_max_len, const char *path, size_t path_len);
+    [[nodiscard("Returns false when failed to allocate sb's buffer to payload_max_len")]]
     inline bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_max_len, const char *path) { return pushStateUpdateBegin(sb, stateIdx, payload_max_len, path, strlen(path)); }
     bool pushStateUpdateEnd(StringBuilder *sb);
+
+    [[nodiscard("Returns false when failed to allocate sb's buffer to payload_max_len")]]
     bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_max_len, const char *path, size_t path_len);
+    [[nodiscard("Returns false when failed to allocate sb's buffer to payload_max_len")]]
     inline bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_max_len, const char *path) { return pushRawStateUpdateBegin(sb, payload_max_len, path, strlen(path)); }
     bool pushRawStateUpdateEnd(StringBuilder *sb);
 

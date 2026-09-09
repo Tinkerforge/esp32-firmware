@@ -192,7 +192,6 @@ bool WS::pushStateUpdateEnd(StringBuilder *sb)
     return web_sockets.sendToAllOwned(buf, len);
 }
 
-// returns true if it is okay to call pushRawStateUpdateEnd
 bool WS::pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_max_len, const char *path, size_t path_len)
 {
     return pushStateUpdateBegin(sb, 0, payload_max_len, path, path_len);
