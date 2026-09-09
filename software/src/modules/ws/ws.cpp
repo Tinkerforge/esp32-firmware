@@ -28,12 +28,12 @@
 #include "options.h"
 #include "gcc_warnings.h"
 
-static const char *prefix = "{\"topic\":\"";
-static const char *infix = "\",\"payload\":";
-static const char *suffix = "}\n";
-static size_t prefix_len = strlen(prefix);
-static size_t infix_len = strlen(infix);
-static size_t suffix_len = strlen(suffix);
+static constexpr const char * const prefix = "{\"topic\":\"";
+static constexpr const char * const infix  = "\",\"payload\":";
+static constexpr const char * const suffix = "}\n";
+static constexpr const size_t prefix_len   = constexpr_strlen(prefix);
+static constexpr const size_t infix_len    = constexpr_strlen(infix);
+static constexpr const size_t suffix_len   = constexpr_strlen(suffix);
 
 void WS::pre_setup()
 {
