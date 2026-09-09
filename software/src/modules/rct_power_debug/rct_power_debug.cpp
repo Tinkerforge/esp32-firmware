@@ -78,7 +78,7 @@ void RCTPowerDebug::register_urls()
     api.addCommand("rct_power_debug/read", &read_config, {}, [this](Language /*language*/, String &errmsg) {
         uint32_t cookie = read_config.get("cookie")->asUint();
 
-        if (client != nullptr) {
+        if (shared_client != nullptr) {
             report_errorf(cookie, "Another read is already in progress");
             return;
         }
@@ -95,8 +95,10 @@ void RCTPowerDebug::register_urls()
             read_config.get("host")->clearString();
         };
 
-        rct_power_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port, id, timeout](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        rct_power_client.get_pool()->acquire(host.c_str(), port, &shared_client,
+        [this, cookie, host, port, id, timeout](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
+            shared_client = shared_client_;
+
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -105,9 +107,7 @@ void RCTPowerDebug::register_urls()
                 return;
             }
 
-            client = shared_client;
-
-            static_cast<TFRCTPowerSharedClient *>(client)->read(id, timeout,
+            static_cast<TFRCTPowerSharedClient *>(shared_client)->read(id, timeout,
             [this, cookie](TFRCTPowerClientTransactionResult result, float value) {
                 if (result != TFRCTPowerClientTransactionResult::Success) {
                     report_errorf(cookie, "Read failed: %s (%d)",
@@ -122,8 +122,8 @@ void RCTPowerDebug::register_urls()
                 release_client();
             });
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            client = nullptr;
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
+            shared_client = nullptr;
         });
     }, true);
 }
@@ -131,8 +131,8 @@ void RCTPowerDebug::register_urls()
 void RCTPowerDebug::release_client()
 {
     task_scheduler.scheduleOnce([this]() {
-        if (client != nullptr) {
-            rct_power_client.get_pool()->release(client);
+        if (shared_client != nullptr) {
+            rct_power_client.get_pool()->release(shared_client);
         }
     });
 }

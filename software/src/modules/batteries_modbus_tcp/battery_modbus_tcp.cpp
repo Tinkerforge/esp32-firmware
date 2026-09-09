@@ -538,12 +538,12 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 
     ctx->transact_pending = true;
 
-    static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
-                                                                  function_code,
-                                                                  register_block->start_address,
-                                                                  data_count,
-                                                                  const_cast<void *>(buffer),
-                                                                  2_s,
+    ctx->shared_client->transact(ctx->device_address,
+                                 function_code,
+                                 register_block->start_address,
+                                 data_count,
+                                 const_cast<void *>(buffer),
+                                 2_s,
     [ctx, register_block, data_count, buffer, buffer_to_check, buffer_to_check_len,
      has_step2, step2_function_code, buffer_to_compare, buffer_to_compare_len, buffer_to_free]
     (TFModbusTCPClientTransactionResult result, const char *error_message) {
@@ -708,12 +708,12 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
             }
 
             if (!skip_step2) {
-                static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
-                                                                              step2_function_code,
-                                                                              register_block->start_address,
-                                                                              step2_data_count,
-                                                                              step2_buffer,
-                                                                              2_s,
+                ctx->shared_client->transact(ctx->device_address,
+                                             step2_function_code,
+                                             register_block->start_address,
+                                             step2_data_count,
+                                             step2_buffer,
+                                             2_s,
                 [ctx, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                     if (ctx->destroy_requested) {
                         ctx->transact_pending = false;
@@ -779,7 +779,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTCP *battery,
                                                                  uint32_t slot,
                                                                  bool test,
-                                                                 TFModbusTCPSharedClient *client,
+                                                                 TFModbusTCPSharedClient *shared_client,
                                                                  uint8_t device_address,
                                                                  uint16_t transaction_id_mask,
                                                                  uint16_t repeat_interval, // seconds
@@ -800,7 +800,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
     ctx->language = language;
     ctx->battery = battery;
     ctx->slot = slot;
-    ctx->client = client;
+    ctx->shared_client = shared_client;
     ctx->device_address = device_address;
     ctx->transaction_id_mask = transaction_id_mask;
     ctx->repeat_interval = repeat_interval;
@@ -953,12 +953,7 @@ static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext 
 
     ctx->transact_pending = true;
 
-    static_cast<TFModbusTCPSharedClient *>(ctx->client)->transact(ctx->device_address,
-                                                                  TFModbusTCPFunctionCode::ReadHoldingRegisters,
-                                                                  5,
-                                                                  1,
-                                                                  ctx->buffer,
-                                                                  2_s,
+    ctx->shared_client->transact(ctx->device_address, TFModbusTCPFunctionCode::ReadHoldingRegisters, 5, 1, ctx->buffer, 2_s,
     [ctx](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (ctx->destroy_requested) {
             free_discover(ctx);
@@ -1004,7 +999,7 @@ static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext 
 BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(BatteryModbusTCP *battery,
                                                                      uint32_t slot,
                                                                      bool test,
-                                                                     TFModbusTCPSharedClient *client,
+                                                                     TFModbusTCPSharedClient *shared_client,
                                                                      uint8_t device_address,
                                                                      uint16_t transaction_id_mask,
                                                                      VLogFLnFunction &&vlogfln,
@@ -1017,7 +1012,7 @@ BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(BatteryModb
     discover->language = language;
     discover->battery = battery;
     discover->slot = slot;
-    discover->client = client;
+    discover->shared_client = shared_client;
     discover->device_address = device_address;
     discover->transaction_id_mask = transaction_id_mask;
     discover->vlogfln = std::move(vlogfln);
@@ -1312,7 +1307,7 @@ void BatteryModbusTCP::update_pending_mode()
     bool start_discover;
     BatteryMode next_mode;
 
-    if (requested_mode == BatteryMode::None || connected_client == nullptr || testing) {
+    if (requested_mode == BatteryMode::None || shared_client == nullptr || shared_client->get_connection_status() != TFGenericTCPClientConnectionStatus::Connected || testing) {
         table = nullptr;
         start_discover = false;
         next_mode = BatteryMode::None;
@@ -1340,7 +1335,7 @@ void BatteryModbusTCP::update_pending_mode()
 
     trace("b%lu t0 %s r%c%s m%c->%c%s",
           slot,
-          connected_client != nullptr ? "ce" : "nc",
+          shared_client != nullptr && shared_client->get_connection_status() == TFGenericTCPClientConnectionStatus::Connected ? "ce" : "nc",
           get_battery_mode_as_char(requested_mode),
           testing ? " tg" : "",
           get_battery_mode_as_char(pending_mode),
@@ -1354,7 +1349,8 @@ void BatteryModbusTCP::update_pending_mode()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        discover_ctx = create_discover(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+        discover_ctx = create_discover(this, slot, false,
+                                       static_cast<TFModbusTCPSharedClient *>(shared_client),
                                        device_address, transaction_id_mask,
         [this](bool event_log, const char *fmt, va_list args) {
             if (!event_log) {
@@ -1417,7 +1413,7 @@ void BatteryModbusTCP::update_pending_mode()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+        writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(shared_client),
                                    device_address, transaction_id_mask, repeat_interval, pending_mode, table,
         [this](bool event_log, const char *fmt, va_list args) {
             if (!event_log) {

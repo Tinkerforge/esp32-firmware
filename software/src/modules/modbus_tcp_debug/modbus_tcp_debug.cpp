@@ -116,7 +116,7 @@ void ModbusTCPDebug::register_urls()
     api.addCommand("modbus_tcp_debug/transact", &transact_config, {}, [this](Language /*language*/, String &errmsg) {
         uint32_t cookie = transact_config.get("cookie")->asUint();
 
-        if (client != nullptr) {
+        if (shared_client != nullptr) {
             report_errorf(cookie, "Another transaction is already in progress");
             return;
         }
@@ -238,10 +238,12 @@ void ModbusTCPDebug::register_urls()
             return;
         }
 
-        modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
+        modbus_tcp_client.get_pool()->acquire(host.c_str(), port, &shared_client,
         [this, cookie, host, port, device_address, config_function_code, protocol_function_code,
          start_address, data_count, write_data, timeout, hexload_coils, hexload_registers, hexdump_coils, hexdump_registers]
-        (TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        (TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
+            shared_client = shared_client_;
+
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -250,9 +252,7 @@ void ModbusTCPDebug::register_urls()
                 return;
             }
 
-            client = shared_client;
-
-            transfer_hook = client->add_transfer_hook([cookie](TFGenericTCPClientTransferDirection direction, const uint8_t *buffer_, size_t length) {
+            transfer_hook = shared_client->add_transfer_hook([cookie](TFGenericTCPClientTransferDirection direction, const uint8_t *buffer_, size_t length) {
                 report_transfer(cookie, direction, buffer_, length);
             });
 
@@ -335,7 +335,7 @@ void ModbusTCPDebug::register_urls()
                 }
             }
 
-            static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, protocol_function_code, start_address, data_count, buffer, timeout,
+            static_cast<TFModbusTCPSharedClient *>(shared_client)->transact(device_address, protocol_function_code, start_address, data_count, buffer, timeout,
             [this, cookie, device_address, config_function_code, start_address, data_count, write_data, timeout, hexdump_coils, hexdump_registers]
             (TFModbusTCPClientTransactionResult result, const char *error_message) {
                 if (result != TFModbusTCPClientTransactionResult::Success) {
@@ -381,7 +381,7 @@ void ModbusTCPDebug::register_urls()
                         step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
                     }
 
-                    static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, step2_function_code, start_address, data_count, buffer, timeout,
+                    static_cast<TFModbusTCPSharedClient *>(this->shared_client)->transact(device_address, step2_function_code, start_address, data_count, buffer, timeout,
                     [this, cookie](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                         if (step2_result != TFModbusTCPClientTransactionResult::Success) {
                             report_errorf(cookie, "Transaction (step 2) failed: %s (%d)%s%s",
@@ -404,11 +404,11 @@ void ModbusTCPDebug::register_urls()
                 }
             });
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            client->remove_transfer_hook(transfer_hook);
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
+            shared_client->remove_transfer_hook(transfer_hook);
             transfer_hook = nullptr;
 
-            client = nullptr;
+            shared_client = nullptr;
 
             free(buffer);
             buffer = nullptr;
@@ -419,8 +419,8 @@ void ModbusTCPDebug::register_urls()
 void ModbusTCPDebug::release_client()
 {
     task_scheduler.scheduleOnce([this]() {
-        if (client != nullptr) {
-            modbus_tcp_client.get_pool()->release(client);
+        if (shared_client != nullptr) {
+            modbus_tcp_client.get_pool()->release(shared_client);
         }
     });
 }

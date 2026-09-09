@@ -28,24 +28,22 @@ void GenericTCPClientPoolConnector::force_reconnect()
 
 void GenericTCPClientPoolConnector::connect_internal()
 {
-    if (connected_client != nullptr) {
+    if (shared_client != nullptr) {
         return;
     }
 
-    pool->acquire(host.c_str(), port,
-    [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+    pool->acquire(host.c_str(), port, &shared_client,
+    [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
         if (result == TFGenericTCPClientConnectResult::NonReentrant) {
             esp_system_abort("TFGenericTCPClientPool acquire was called in non-reentrant context");
         }
 
-        if (result == TFGenericTCPClientConnectResult::Connected) {
-            connected_client = shared_client;
-        }
+        shared_client = shared_client_;
 
         connect_callback_common(result, error_number, share_level);
     },
-    [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-        connected_client = nullptr;
+    [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
+        shared_client = nullptr;
 
         disconnect_callback_common(reason, error_number, share_level);
     });
@@ -58,11 +56,11 @@ void GenericTCPClientPoolConnector::disconnect_internal()
 
 void GenericTCPClientPoolConnector::disconnect_internal(bool force_disconnect)
 {
-    if (connected_client == nullptr) {
+    if (shared_client == nullptr) {
         return;
     }
 
-    switch (pool->release(connected_client, force_disconnect)) {
+    switch (pool->release(shared_client, force_disconnect)) {
     case TFGenericTCPClientDisconnectResult::NonReentrant:
         esp_system_abort("TFGenericTCPClientPool release was called in non-reentrant context");
 

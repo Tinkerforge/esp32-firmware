@@ -325,9 +325,11 @@ void BatteriesModbusTCP::loop()
         test->reconnect = false;
         test->state = TestState::Connecting;
 
-        modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port,
+        modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port, &test->shared_client,
         [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             trace("b%lu t1 cc%d sl%d", test->slot, static_cast<int>(result), static_cast<int>(share_level));
+
+            test->shared_client = shared_client;
 
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
@@ -338,8 +340,6 @@ void BatteriesModbusTCP::loop()
                 test->state = TestState::Done;
                 return;
             }
-
-            test->client = shared_client;
 
             if (test->table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
              || test->table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
@@ -357,7 +357,7 @@ void BatteriesModbusTCP::loop()
             GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
             test_printfln("%s", buf);
 
-            test->client = nullptr;
+            test->shared_client = nullptr;
             test->reconnect = reason == TFGenericTCPClientDisconnectReason::Forced;
 
             if (test->state == TestState::Discovering) {
@@ -385,8 +385,8 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::Disconnect:
-        if (test->client != nullptr) {
-            modbus_tcp_client.get_pool()->release(test->client);
+        if (test->shared_client != nullptr) {
+            modbus_tcp_client.get_pool()->release(test->shared_client);
         }
         else {
             test->state = TestState::Done;
@@ -437,7 +437,8 @@ void BatteriesModbusTCP::loop()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->discover_ctx = BatteryModbusTCP::create_discover(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+        test->discover_ctx = BatteryModbusTCP::create_discover(instances[test->slot], test->slot, true,
+                                                               static_cast<TFModbusTCPSharedClient *>(test->shared_client),
                                                                test->device_address, test->transaction_id_mask,
         [this](bool event_log, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
@@ -503,7 +504,8 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+        test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true,
+                                                           static_cast<TFModbusTCPSharedClient *>(test->shared_client),
                                                            test->device_address, test->transaction_id_mask, test->repeat_interval,
                                                            test->mode, test->table,
         [this](bool event_log, const char *fmt, va_list args) {
@@ -528,7 +530,7 @@ void BatteriesModbusTCP::loop()
             test->table = nullptr;
         }
 
-        if (test->client != nullptr) {
+        if (test->shared_client != nullptr) {
             test->state = TestState::Disconnect;
         }
         else if (test->reconnect) {

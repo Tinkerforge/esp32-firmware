@@ -46,7 +46,7 @@ void GenericModbusTCPClient::connect_callback(TFGenericTCPClientConnectResult re
 
 void GenericModbusTCPClient::start_generic_read()
 {
-    if (connected_client == nullptr) {
+    if (shared_client == nullptr || shared_client->get_connection_status() != TFGenericTCPClientConnectionStatus::Connected) {
         generic_read_request.result = TFModbusTCPClientTransactionResult::NotConnected;
         generic_read_request.done_callback();
         return;
@@ -103,7 +103,7 @@ void GenericModbusTCPClient::esp_system_abort_prefixed(const char *message)
 
 void GenericModbusTCPClient::read_next()
 {
-    if (connected_client == nullptr) {
+    if (shared_client == nullptr || shared_client->get_connection_status() != TFGenericTCPClientConnectionStatus::Connected) {
         esp_system_abort_prefixed("Not connected while trying to read");
     }
 
@@ -128,7 +128,7 @@ void GenericModbusTCPClient::read_next()
         esp_system_abort_prefixed("Unsupported register type to read");
     }
 
-    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,
+    static_cast<TFModbusTCPSharedClient *>(shared_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,
     [this, function_code, read_start_address, read_count](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (last_read_result == result) {
             ++last_read_result_burst_length;

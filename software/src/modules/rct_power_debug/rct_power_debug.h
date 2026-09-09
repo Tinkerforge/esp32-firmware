@@ -36,6 +36,6 @@ private:
     void release_client();
 
     ConfigRoot read_config;
-    TFGenericTCPSharedClient *client = nullptr;
+    TFGenericTCPSharedClient *shared_client = nullptr;
     void *buffer = nullptr;
 };

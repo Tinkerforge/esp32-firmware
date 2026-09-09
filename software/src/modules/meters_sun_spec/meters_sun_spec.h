@@ -95,7 +95,7 @@ private:
 
     struct Scan {
         Language language;
-        TFGenericTCPSharedClient *client = nullptr;
+        TFGenericTCPSharedClient *shared_client = nullptr;
         micros_t last_keep_alive = 0_us;
         String host;
         uint16_t port;

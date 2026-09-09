@@ -58,7 +58,7 @@ public:
         uint64_t task_id = 0;
         BatteryModbusTCP *battery;
         uint32_t slot;
-        TFModbusTCPSharedClient *client;
+        TFModbusTCPSharedClient *shared_client;
         uint8_t device_address;
         uint16_t transaction_id_mask;
         uint16_t repeat_interval; // seconds
@@ -80,7 +80,7 @@ public:
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
-    static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+    static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *shared_client, uint8_t device_address,
                                         uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
                                         BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
                                         WriterFailureFunction &&failure, Language language = Language::English);
@@ -91,7 +91,7 @@ public:
         uint64_t task_id = 0;
         BatteryModbusTCP *battery;
         uint32_t slot;
-        TFModbusTCPSharedClient *client;
+        TFModbusTCPSharedClient *shared_client;
         uint8_t device_address;
         uint16_t transaction_id_mask;
         VLogFLnFunction vlogfln;
@@ -102,7 +102,7 @@ public:
         bool test;
     };
 
-    static DiscoverContext *create_discover(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+    static DiscoverContext *create_discover(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *shared_client, uint8_t device_address,
                                             uint16_t transaction_id_mask, VLogFLnFunction &&vlogfln, Language language = Language::English);
     static void destroy_discover(DiscoverContext *ctx);
     static void discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback);

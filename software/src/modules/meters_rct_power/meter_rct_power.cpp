@@ -288,7 +288,7 @@ void MeterRCTPower::disconnect_callback(TFGenericTCPClientDisconnectReason reaso
 
 void MeterRCTPower::read_next()
 {
-    static_cast<TFRCTPowerSharedClient *>(connected_client)->read(value_specs[value_index].id, 2_s,
+    static_cast<TFRCTPowerSharedClient *>(shared_client)->read(value_specs[value_index].id, 2_s,
     [this](TFRCTPowerClientTransactionResult result, float value) {
         read_allowed = true;
 

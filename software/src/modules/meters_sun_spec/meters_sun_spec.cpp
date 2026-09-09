@@ -187,8 +187,10 @@ void MetersSunSpec::loop()
         scan_printfln(scan->language == Language::English ? "Connecting to %s:%u" : "Verbinde zu %s:%u", scan->host.c_str(), scan->port);
         scan->state = ScanState::Connecting;
 
-        modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port,
+        modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port, &scan->shared_client,
         [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            scan->shared_client = shared_client;
+
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
@@ -199,7 +201,6 @@ void MetersSunSpec::loop()
                 return;
             }
 
-            scan->client = shared_client;
             scan->state = ScanState::ReadSunSpecID;
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
@@ -208,7 +209,7 @@ void MetersSunSpec::loop()
             GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
             scan_printfln("%s", buf);
 
-            scan->client = nullptr;
+            scan->shared_client = nullptr;
             scan->state = ScanState::Done;
         });
 
@@ -218,8 +219,8 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Disconnect:
-        if (scan->client != nullptr) {
-            modbus_tcp_client.get_pool()->release(scan->client);
+        if (scan->shared_client != nullptr) {
+            modbus_tcp_client.get_pool()->release(scan->shared_client);
         }
 
         break;
@@ -336,12 +337,12 @@ void MetersSunSpec::loop()
 
             scan->state = ScanState::Reading;
 
-            static_cast<TFModbusTCPSharedClient *>(scan->client)->transact(scan->device_address,
-                                                                           TFModbusTCPFunctionCode::ReadHoldingRegisters,
-                                                                           static_cast<uint16_t>(scan->read_address),
-                                                                           static_cast<uint16_t>(read_chunk_size),
-                                                                           &scan->read_buffer[scan->read_index],
-                                                                           scan->read_timeout,
+            static_cast<TFModbusTCPSharedClient *>(scan->shared_client)->transact(scan->device_address,
+                                                                                  TFModbusTCPFunctionCode::ReadHoldingRegisters,
+                                                                                  static_cast<uint16_t>(scan->read_address),
+                                                                                  static_cast<uint16_t>(read_chunk_size),
+                                                                                  &scan->read_buffer[scan->read_index],
+                                                                                  scan->read_timeout,
             [this, read_chunk_size](TFModbusTCPClientTransactionResult result, const char *error_message) {
                 if (scan->state != ScanState::Reading) {
                     return;

@@ -56,7 +56,7 @@ protected:
     const char *event_log_message_prefix;
     String host;
     uint16_t port = 0;
-    TFGenericTCPSharedClient *connected_client = nullptr;
+    TFGenericTCPSharedClient *shared_client = nullptr;
 
 private:
     virtual void connect_internal() = 0;
