@@ -1624,6 +1624,7 @@ de_hyph = [
     "län-der-spe-zi-fi-sche",
     "Vor-schrif-ten",
     "Task-in-for-ma-tio-nen",
+    "Core-dumps",
 ]
 
 en_hyph = [
