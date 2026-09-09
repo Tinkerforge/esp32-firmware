@@ -61,9 +61,12 @@ protected:
 private:
     virtual void connect_internal() = 0;
     virtual void disconnect_internal() = 0;
+    void connect_internal_delayed(millis_t delay);
+
     bool keep_connected = false;
     millis_t connect_backoff = 1_s;
     TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
     int last_connect_error_number = 0;
     bool resolve_error_printed = false;
+    uint64_t connect_task_id = 0;
 };

@@ -48,6 +48,9 @@ void GenericTCPClientConnectorBase::stop_connection()
 
     keep_connected = false;
 
+    task_scheduler.cancel(connect_task_id);
+    connect_task_id = 0;
+
     disconnect_internal();
 }
 
@@ -95,18 +98,14 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         }
 
         if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
-            task_scheduler.scheduleOnce([this]() {
-                if (keep_connected) {
-                    connect_internal();
-                }
-            }, 10_s);
+            if (keep_connected) {
+                connect_internal_delayed(10_s);
+            }
         }
         else {
-            task_scheduler.scheduleOnce([this]() {
-                if (keep_connected) {
-                    connect_internal();
-                }
-            }, connect_backoff);
+            if (keep_connected) {
+                connect_internal_delayed(connect_backoff);
+            }
 
             connect_backoff += connect_backoff;
 
@@ -134,9 +133,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
     disconnect_callback(reason, share_level);
 
     if (keep_connected) {
-        task_scheduler.scheduleOnce([this]() {
-            connect_internal();
-        }, 5_s);
+        connect_internal_delayed(5_s);
     }
 }
 
@@ -259,4 +256,15 @@ void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientD
                  host, port, shared,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
+}
+
+void GenericTCPClientConnectorBase::connect_internal_delayed(millis_t delay)
+{
+    task_scheduler.cancel(connect_task_id);
+
+    connect_task_id = task_scheduler.scheduleOnce([this]() {
+        connect_task_id = 0;
+
+        connect_internal();
+    }, delay);
 }
