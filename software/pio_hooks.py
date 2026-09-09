@@ -1628,6 +1628,9 @@ def main():
     options_value['product_id_is_warp_any'] = '1' if product_id in ['warp', 'warp2', 'warp3', 'warp4'] else '0'
     options_origin['product_id_is_warp_any'] = 'pio_hooks.py'
 
+    options_value['is_signed'] = '1' if len(signature_preset) > 0 else '0'
+    options_origin['is_signed'] = 'pio_hooks.py'
+
     assert 'manufacturer_upper' not in options_value
 
     options_value['manufacturer_upper'] = options_value['manufacturer'].upper()
