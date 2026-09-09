@@ -52,7 +52,7 @@ bool WebSocketsClient::sendOwned_async(char *payload, size_t payload_len, httpd_
     return ws->sendToClientOwned(payload, payload_len, fd, ws_type);
 }
 
-bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type, Frag frag)
 {
 #ifdef DEBUG_FS_ENABLE
     const char *task_name = pcTaskGetName(nullptr);
@@ -62,10 +62,18 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
     }
 #endif
 
+    /* See https://datatracker.ietf.org/doc/html/rfc6455#section-5.4
+     * T - passed frame type
+     * C - HTTPD_WS_TYPE_CONTINUE
+     * Frag::       No  First   Inter   Last
+     * final        1   0       0       1
+     * fragmented   0   1       1       1
+     * type         T   T       C       C
+     */
     httpd_ws_frame ws_pkt = {
-        .final      = true, // Doesn't matter, frame is not fragmented.
-        .fragmented = false,
-        .type       = ws_type,
+        .final      = frag == Frag::No || frag == Frag::Last,
+        .fragmented = frag != Frag::No,
+        .type       = (frag == Frag::No || frag == Frag::First) ? ws_type : HTTPD_WS_TYPE_CONTINUE,
         .payload    = reinterpret_cast<uint8_t *>(payload),
         .len        = payload_len,
     };
