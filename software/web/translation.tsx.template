@@ -106,6 +106,13 @@ function translate<S extends string>(key: string): GetDictValue<S, Translation> 
     return subtranslation;
 }
 
+// Look up a translation key and return its raw value (which may be a string or
+// a function that needs to be called with arguments). Returns undefined if the
+// key is not present in the active language's translation dictionary.
+export function translate_raw(key: string): any {
+    return translate(key);
+}
+
 export function removeUnicodeHacks(s: string) {
     return s.replace(/\u00AD/g, "") // soft-hyphen
             .replace(/\u202F/g, " ") // narrow no-break space

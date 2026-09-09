@@ -168,7 +168,10 @@ export class RemoteAccess extends ConfigComponent<
                 this.resolve = undefined;
                 this.reject = undefined;
             } else if (state.state === RegistrationState.Error) {
-                this.reject(state.message);
+                // The backend stores the message as a translation key (with an
+                // optional detail after a newline). Translate it so the user
+                // sees a localized error instead of the raw key.
+                this.reject(util.translate_backend_error(state.message));
                 this.resolve = undefined;
                 this.reject = undefined;
             }
