@@ -207,11 +207,11 @@ void BatteriesModbusTCP::register_urls()
 
         test = new Test;
         test->language = language;
+        test->last_keep_alive = now_us();
         test->slot = test_config.get("slot")->asUint();
         test->host = test_config.get("host")->asString();
         test->port = static_cast<uint16_t>(test_config.get("port")->asUint());
         test->cookie = test_config.get("cookie")->asUint();
-        test->last_keep_alive = now_us();
         test->state = TestState::Start;
         test->table_id = table_id;
 
