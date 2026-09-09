@@ -106,7 +106,7 @@ def is_git_repo(path):
 
 
 def working_tree_dirty(path):
-    res = git(["status", "--porcelain"], path)
+    res = git(["status", "--porcelain", "--untracked-files=no"], path)
     return bool(res.stdout.strip())
 
 
