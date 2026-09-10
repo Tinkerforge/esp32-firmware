@@ -7,6 +7,7 @@ import argparse
 import glob
 import sys
 import os
+import re
 import subprocess
 import tempfile
 import shutil
@@ -178,13 +179,13 @@ core_dump_path = os.path.join(tempfile.gettempdir(), "tf_coredump.elf")
 def get_core_dump_from_debug_report(path):
     with open(path, 'r', encoding='utf-8') as file:
         file_str = file.read()
-        core_dump_start = "___CORE_DUMP_START___\n\n"
-        core_dump_start_pos = file_str.rfind(core_dump_start)
-        if core_dump_start_pos < 0:
+
+        match = re.search(r"___(.*)CORE_DUMP_START___\n((?:\n[^_\n]+)+)(\n\n___\1CORE_DUMP_END___)?", file_str, re.MULTILINE)
+        if not match:
             print("Debug log doesn't contain a core dump")
             sys.exit(-1)
+        core_dump_b64 = match.group(2).strip()
 
-        core_dump_b64 = file_str[core_dump_start_pos + len(core_dump_start):].split('base64,')[-1]
         core_dump = base64.b64decode(core_dump_b64)
 
         if not core_dump.startswith(b'\x7fELF'):
