@@ -389,6 +389,10 @@ void MeterRS485Bricklet::tick()
         if (callback_data.expected_request_id == 0) {
             logger.printfln_meter("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
             generator->checkRS485State();
+
+            callback_data.done = UserDataDone::DONE;
+            callback_data.value_to_write = nullptr;
+            callback_data.expected_request_id = 0;
         }
     }
 
