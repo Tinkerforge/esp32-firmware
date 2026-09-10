@@ -131,16 +131,6 @@ private:
                                const String *auth_token,
                                const String &email,
                                bool is_service_token);
-
-    WebServerRequestReturnProtect add_charger_to_relay(WebServerRequest request,
-                                                      const Config &relay_config,
-                                                      const unsigned char *pk,
-                                                      const String &note,
-                                                      const char *endpoint,
-                                                      const String *auth_user_id,
-                                                      const String *auth_token,
-                                                      const String &email,
-                                                      bool is_service_token);
     void run_request_with_next_stage(const String &url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
     void get_login_salt(const Config &user_config);
     void parse_login_salt();

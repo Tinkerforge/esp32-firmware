@@ -702,27 +702,10 @@ static String construct_relay_url(const Config& config, const char* endpoint, co
     return url.toString();
 }
 
-WebServerRequestReturnProtect RemoteAccess::add_charger_to_relay(WebServerRequest request,
-                                                                 const Config &relay_config,
-                                                                 const unsigned char *pk,
-                                                                 const String &note,
-                                                                 const char *endpoint,
-                                                                 const String *auth_user_id,
-                                                                 const String *auth_token,
-                                                                 const String &email,
-                                                                 bool is_service_token)
-{
-    String error = register_with_relay(relay_config, pk, note, endpoint, auth_user_id, auth_token, email, is_service_token);
-    if (!error.isEmpty()) {
-        return request.send_plain(500, error);
-    }
-    return request.send_plain(200);
-}
-
-// Same work as add_charger_to_relay, but with no WebServerRequest. The caller
-// decides how to surface failures: the handler returns send_plain(500, …)
-// while an async caller (parse_service_token) sets the registration state to
-// Error and clears request state. Returns an empty string on success.
+// Registers a charger with the relay server. The caller decides how to surface
+// failures: the HTTP handler returns send_plain(500, …) while an async caller
+// (parse_service_token) sets the registration state to Error and clears request
+// state. Returns an empty string on success.
 String RemoteAccess::register_with_relay(const Config &relay_config,
                                          const unsigned char *pk,
                                          const String &note,
@@ -1468,15 +1451,18 @@ void RemoteAccess::register_urls()
         const String *auth_user_id = use_token_path ? &uuid : nullptr;
         const String *auth_token = use_token_path ? &token : nullptr;
 
-        return this->add_charger_to_relay(request,
-                                          registration_config,
-                                          pk,
-                                          note,
-                                          endpoint,
-                                          auth_user_id,
-                                          auth_token,
-                                          registration_config.get("email")->asString(),
-                                          use_token_path);
+        String error = this->register_with_relay(registration_config,
+                                                  pk,
+                                                  note,
+                                                  endpoint,
+                                                  auth_user_id,
+                                                  auth_token,
+                                                  registration_config.get("email")->asString(),
+                                                  false);
+        if (!error.isEmpty()) {
+            return request.send_plain(500, error);
+        }
+        return request.send_plain(200);
     });
 
 #if signature_sodium_public_key_length != 0
