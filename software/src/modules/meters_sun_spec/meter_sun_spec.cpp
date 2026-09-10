@@ -32,6 +32,7 @@
 #define SUN_SPEC_ID 0x53756E53
 #define COMMON_MODEL_ID 1
 #define NON_IMPLEMENTED_UINT16 0xFFFF
+#define SCAN_TIMEOUT 1_min
 #define SUCCESSFUL_PARSE_TIMEOUT 1_min
 
 #define trace(fmt, ...) \
@@ -152,6 +153,7 @@ void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result, TFGe
         return;
     }
 
+    last_connect = now_us();
     last_successful_parse = now_us();
 
     scan_start();
@@ -354,11 +356,18 @@ void MeterSunSpec::read_done()
 
 void MeterSunSpec::scan_start_delayed()
 {
-    task_scheduler.cancel(this->scan_task_id);
+    task_scheduler.cancel(scan_task_id);
 
-    this->scan_task_id = task_scheduler.scheduleOnce([this](){
-        this->scan_task_id = 0;
-        this->scan_start();
+    scan_task_id = task_scheduler.scheduleOnce([this](){
+        scan_task_id = 0;
+
+        if (deadline_elapsed(last_connect + SCAN_TIMEOUT)) {
+            logger.printfln_meter("Scan for SunSpec device takes too long ago, reconnecting to %s:%u", host.c_str(), port);
+            force_reconnect();
+            return;
+        }
+
+        scan_start();
     }, 10_s);
 }
 
