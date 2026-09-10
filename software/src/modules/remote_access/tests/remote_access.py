@@ -1832,5 +1832,199 @@ def test_service_token_removal_clears_tracking(tc: TestContext) -> None:
     tc.assert_eq("", _get_service_token_user_uuid(tc))
 
 
+# ---------------------------------------------------------------------------
+# Auth-token (non-service-token) registration tests
+# ---------------------------------------------------------------------------
+#
+# These tests verify that enabling remote access via a normal user
+# auth-token -- the path taken when an existing warp-charger.com user adds a
+# new charger to their account -- goes through the same /api/add_with_token
+# endpoint as the service-token flow, but is parameterized with
+# is_service_token=false. The two paths share the relay handshake but the
+# auth-token one must NOT touch the service_token_user_uuid tracking field,
+# because that field is only meaningful for support accounts that have to be
+# removed automatically after 24 h.
+
+
+def _do_auth_token_register(tc: TestContext, *, timeout: float = 15.0) -> str:
+    """Register a new charger via /remote_access/register using an auth-token.
+
+    Points the device at the local mock relay, issues the auth-token register
+    call and waits for registration_state=Success. The mock returns the
+    minimal response shape parse_registration() needs.
+
+    Returns the user_id the relay assigned (taken from the response body), so
+    callers can compare it against service_token_user_uuid.
+    """
+    # Generate a NaCl X25519 key pair that the device will seal the relay-side
+    # WireGuard keys and charger name/note against. We hold on to it so we can
+    # also verify the management-tunnel keys afterwards (mirrors the pattern in
+    # _do_full_registration).
+    global _last_registration_nacl_priv, _last_registration_nacl_pub_b64
+    nacl_priv = X25519PrivateKey.generate()
+    nacl_pub_b64 = base64.b64encode(nacl_priv.public_key().public_bytes_raw()).decode()
+    _last_registration_nacl_priv = nacl_priv
+    _last_registration_nacl_pub_b64 = nacl_pub_b64
+
+    assigned_user_id = str(uuid_mod.uuid4())
+    registration_received = threading.Event()
+
+    def relay_handler(method: str, path: str, body: bytes) -> tuple[int, str]:
+        _log_request(method, path, body)
+        # The auth-token register path goes to /api/add_with_token (when
+        # user_uuid and auth_token are both set in the body). It must NOT use
+        # /api/charger/add -- if we observe /api/charger/add, the firmware
+        # ignored the auth-token fields and the test is meaningless.
+        if "/api/add_with_token" in path or "/api/charger/add" in path:
+            registration_received.set()
+            return (200, json.dumps({
+                "charger_uuid": str(uuid_mod.uuid4()),
+                "charger_password": base64.b64encode(os.urandom(16)).decode(),
+                # management_pub is required by parse_registration() but we
+                # don't drive the WireGuard handshake here; a syntactically
+                # valid base64 32-byte X25519 public key is enough.
+                "management_pub": base64.b64encode(os.urandom(32)).decode(),
+                "user_id": assigned_user_id,
+            }))
+        # Subsequent periodic management polling (the device enables itself
+        # once registration succeeds) must also get a valid response so the
+        # connection state machine does not loop with errors.
+        if "/api/management" in path:
+            return (200, _make_management_response_ok())
+        return (404, '{"error": "not found"}')
+
+    _server.set_response_fn(relay_handler)
+
+    _point_at_local_relay(tc, enable=False)
+    _clear_request_log()
+
+    register_body = {
+        "config": {
+            "enable": True,
+            "relay_host": tc.get_local_ip(),
+            "relay_port": _server.port,
+            "email": "test@example.com",
+            "cert_id": TEST_CERT_ID,
+            "mtu": 1240,
+        },
+        "note": "",
+        "public_key": nacl_pub_b64,
+        # Non-null user_uuid + auth_token selects the /api/add_with_token
+        # (auth-token) path in register_urls(); see use_token_path at
+        # remote_access.cpp:1345.
+        "user_uuid": str(uuid_mod.uuid4()),
+        "auth_token": "test-auth-token-" + os.urandom(8).hex(),
+    }
+
+    tc.api("remote_access/register", register_body, timeout=10)
+
+    if not registration_received.wait(timeout=timeout):
+        raise AssertionError("Device did not send registration request to mock relay")
+
+    tc.wait_for(
+        lambda: tc.assert_eq(REG_STATE_SUCCESS, _get_registration_state(tc)["state"]),
+        timeout=timeout,
+    )
+
+    return assigned_user_id
+
+
+def test_auth_token_register_enables_remote_access(tc: TestContext) -> None:
+    """Enabling remote access via /remote_access/register with a normal
+    auth_token must flip enable=true (the register endpoint applies the
+    submitted config's enable flag via parse_registration()) and must NOT
+    populate service_token_user_uuid.
+
+    The service_token_user_uuid field is only written by the service-token
+    branch of register_with_relay() / allow_user_at_relay() (the is_service_token
+    argument). The auth-token branch is parameterized with is_service_token=false
+    and must leave the tracking field empty, otherwise the 24 h automatic
+    removal task would also remove this user's account.
+
+    The invariant is checked both right after registration and after the
+    device has had time to run at least one periodic management poll, so a
+    bug that lazily populates the field later (for example from the management
+    response) would still be caught.
+    """
+    tc.set_test_timeout(60)
+
+    _clear_service_token_registration(tc)
+
+    assigned_user_id = _do_auth_token_register(tc)
+
+    # The relay's response must have populated a new user in the config.
+    cfg = tc.wait_for(lambda: _get_remote_access_config_with_user(tc, assigned_user_id), timeout=10)
+
+    # remote access must be enabled after a successful registration. The
+    # config_update we sent inside the register body contains enable=true and
+    # parse_registration() writes it back into the live config.
+    tc.assert_true(cfg["enable"])
+
+    # The newly-added user must be present (sanity check that the relay
+    # response was actually applied, not that we just flipped enable locally).
+    tc.assert_eq(1, len(cfg.get("users", [])))
+    tc.assert_eq(assigned_user_id, cfg["users"][0]["uuid"])
+
+    # The auth-token branch must NOT populate the service-token tracking
+    # fields. Both must stay empty/zero: the user_uuid that came back from the
+    # relay belongs to a real user, not to the support account, so it would be
+    # a bug if the firmware treated it as a service-token user.
+    tc.assert_eq("", _get_service_token_user_uuid(tc))
+    tc.assert_eq(0, _get_service_token_timestamp_minutes(tc))
+
+    # The auth-token register path goes straight to /api/add_with_token and
+    # must not hit the production-only /api/auth/service_token endpoint that
+    # service-token registrations use. If we observed such a request, the
+    # firmware took the wrong branch.
+    log = _get_request_log()
+    service_token_requests = [r for r in log if "/api/auth/service_token" in r["path"]]
+    tc.assert_eq(0, len(service_token_requests))
+
+    # The relay must have observed the auth-token registration on the
+    # /api/add_with_token endpoint, not /api/charger/add (which is the path
+    # used when the client did not supply user_uuid + auth_token).
+    add_with_token_requests = [r for r in log if "/api/add_with_token" in r["path"]]
+    tc.assert_ge(1, len(add_with_token_requests))
+
+    # /api/charger/add must NOT have been called: that endpoint is used when
+    # the client supplies only secret_key/public_key without an auth_token,
+    # i.e. a charger-only registration flow that knows nothing about a user
+    # account. Using it here would mean the firmware ignored our
+    # user_uuid + auth_token fields.
+    charger_add_requests = [r for r in log if "/api/charger/add" in r["path"]]
+    tc.assert_eq(0, len(charger_add_requests))
+
+    # The body we received must contain the auth_token we submitted so the
+    # relay can verify it.
+    body = json.loads(add_with_token_requests[0]["body"])
+    tc.assert_("token" in body)
+    tc.assert_("user_id" in body)
+
+    # The service-token tracking field must stay empty even after the device
+    # has had a chance to do some work: wait for at least one periodic
+    # management poll to arrive at the mock relay, then re-check both the
+    # tracking UUID and the timestamp. This catches any race where the field
+    # is populated lazily from a later code path (e.g. a buggy management
+    # response handler that copies user_id into the tracking field).
+    _wait_for_management_request(tc, timeout=30)
+    tc.assert_eq("", _get_service_token_user_uuid(tc))
+    tc.assert_eq(0, _get_service_token_timestamp_minutes(tc))
+
+
+def _get_remote_access_config_with_user(tc: TestContext, user_uuid: str) -> dict:
+    """Fetch remote_access/config and assert that ``user_uuid`` is in users[].
+
+    Returns the full config dict so callers can chain more assertions on it
+    without re-reading the API.
+    """
+    cfg = tc.api("remote_access/config")
+    for user in cfg.get("users", []):
+        if user.get("uuid") == user_uuid:
+            return cfg
+    raise AssertionError(
+        f"User with uuid={user_uuid} not found in remote_access/config users[]"
+    )
+
+
 if __name__ == "__main__":
     run_testsuite(locals())
