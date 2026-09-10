@@ -111,7 +111,6 @@ private:
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
 #if signature_sodium_public_key_length != 0
-    WebServerRequestReturnProtect handle_register_with_token(WebServerRequest request);
     WebServerRequestReturnProtect handle_decode_auth_token(WebServerRequest request);
     WebServerRequestReturnProtect handle_service_token_register(WebServerRequest request);
     void fetch_service_token();

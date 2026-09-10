@@ -91,13 +91,8 @@ static constexpr const char *ERR_BODY_TOO_LARGE            = ERR_KEY("body_too_l
 static constexpr const char *ERR_LOW_MEMORY                = ERR_KEY("low_memory");
 static constexpr const char *ERR_READ_REQUEST_BODY         = ERR_KEY("read_request_body");
 static constexpr const char *ERR_DESERIALIZE_REQUEST_BODY  = ERR_KEY("deserialize_request_body");
-#if signature_sodium_public_key_length != 0
-static constexpr const char *ERR_FAILED_TO_DECODE_BASE64   = ERR_KEY("decode_base64");
-static constexpr const char *ERR_SIGNED_STRING_TOO_SHORT   = ERR_KEY("signed_string_too_short");
-#endif
 static constexpr const char *ERR_FAILED_TO_INIT_CRYPTO     = ERR_KEY("init_crypto");
 #if signature_sodium_public_key_length != 0
-static constexpr const char *ERR_SIGNATURE_VERIFY_FAILED   = ERR_KEY("signature_verify_failed");
 static constexpr const char *ERR_DECODE_TOKEN_BASE58       = ERR_KEY("decode_token_base58");
 static constexpr const char *ERR_AUTH_TOKEN_TOO_SHORT      = ERR_KEY("auth_token_too_short");
 static constexpr const char *ERR_BASE64_ENCODE_TOKEN       = ERR_KEY("base64_encode_token");
@@ -529,104 +524,6 @@ bool RemoteAccess::populate_authorization_token(const uint8_t *token_bytes, size
     memcpy(authorization_token.checksum, checksum, AUTH_TOKEN_CHECKSUM_LEN);
 
     return true;
-}
-
-// Verify the signed auth-token in the request body, decode the base58
-// authorization token, and forward the verified fields to the relay via
-// /api/add_with_token.
-WebServerRequestReturnProtect RemoteAccess::handle_register_with_token(WebServerRequest request)
-{
-    authorization_token = AuthorizationToken{};
-
-    size_t content_len = 0;
-    if (uint16_t s = validate_http_body(request, content_len)) {
-        return request.send_plain(s, s == 400 ? ERR_EMPTY_BODY : ERR_BODY_TOO_LARGE);
-    }
-
-    std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
-    if (req_body == nullptr) {
-        return request.send_plain(500, ERR_LOW_MEMORY);
-    }
-    if (request.receive(req_body.get(), content_len) <= 0) {
-        return request.send_plain(500, ERR_READ_REQUEST_BODY);
-    }
-
-    size_t decoded_max = (content_len / 4) * 3 + 4;
-    std::unique_ptr<uint8_t[]> signed_data = heap_alloc_array<uint8_t>(decoded_max);
-    if (signed_data == nullptr) {
-        return request.send_plain(500, ERR_LOW_MEMORY);
-    }
-
-    size_t decoded_size = 0;
-    int b64_ret = mbedtls_base64_decode(signed_data.get(),
-                                        decoded_max,
-                                        &decoded_size,
-                                        reinterpret_cast<const unsigned char *>(req_body.get()),
-                                        content_len);
-    if (b64_ret != 0) {
-        return request.send_plain(400, ERR_FAILED_TO_DECODE_BASE64);
-    }
-
-    if (decoded_size <= crypto_sign_BYTES) {
-        return request.send_plain(400, ERR_SIGNED_STRING_TOO_SHORT);
-    }
-
-    if (sodium_init() < 0) {
-        return request.send_plain(500, ERR_FAILED_TO_INIT_CRYPTO);
-    }
-
-    // libsodium combined signed-string format: signature (crypto_sign_BYTES) || message.
-    std::unique_ptr<unsigned char[]> message = heap_alloc_array<unsigned char>(decoded_size - crypto_sign_BYTES);
-    if (message == nullptr) {
-        return request.send_plain(500, ERR_LOW_MEMORY);
-    }
-
-    unsigned long long extracted_len = 0;
-    int verify_ret = crypto_sign_open(message.get(),
-                                      &extracted_len,
-                                      signed_data.get(),
-                                      static_cast<unsigned long long>(decoded_size),
-                                      signature_sodium_public_key_data);
-    if (verify_ret != 0) {
-        return request.send_plain(400, ERR_SIGNATURE_VERIFY_FAILED);
-    }
-
-    const char *token = reinterpret_cast<const char *>(message.get());
-    const size_t token_str_len = static_cast<size_t>(extracted_len);
-
-    size_t decoded_token_len = 0;
-    std::unique_ptr<uint8_t[]> token_bytes = decode_flickr_base58(token, token_str_len, token_str_len, &decoded_token_len);
-    if (token_bytes == nullptr) {
-        return request.send_plain(400, ERR_DECODE_TOKEN_BASE58);
-    }
-
-    if (!populate_authorization_token(token_bytes.get(), decoded_token_len)) {
-        return request.send_plain(400, ERR_AUTH_TOKEN_TOO_SHORT);
-    }
-
-    authorization_token.valid = true;
-
-    // The verify_signature endpoint replaces the on-device enable step that
-    // config_update would normally perform.
-    config.get("enable")->updateBool(true);
-
-    uint8_t token_b64[50];
-    size_t olen;
-    if (mbedtls_base64_encode(token_b64, sizeof(token_b64), &olen, authorization_token.authorization, AUTH_TOKEN_AUTHORIZATION_LEN) != 0) {
-        return request.send_plain(500, ERR_BASE64_ENCODE_TOKEN);
-    }
-    const String token_str(reinterpret_cast<const char *>(token_b64), olen);
-    const String user_id_str(authorization_token.user_uuid);
-
-    return this->add_charger_to_relay(request,
-                                      config,
-                                      authorization_token.user_public_key,
-                                      String(),
-                                      "/api/add_with_token",
-                                      &user_id_str,
-                                      &token_str,
-                                      authorization_token.user_email,
-                                      true);
 }
 
 // Decode a base58-encoded authorization token from the request body without
@@ -3458,41 +3355,7 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
     }
 
     uint8_t user_uuid[16];
-
-    if (user_uuid_str.length() != 36) {
-        logger.printfln("Cannot send charge log metadata: invalid user UUID format");
-        return -7;
-    }
-
-    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    // where y is one of 8, 9, a, b (variant bits)
-    auto parse_uuid = [](const String &uuid_str, uint8_t *out) -> bool {
-        if (uuid_str.length() != 36) return false;
-
-        const char *p = uuid_str.c_str();
-
-        if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
-
-        if (p[14] != '4') return false;
-
-        // UUID variant bits: position 19 must be 8, 9, a, b, A, or B.
-        char variant = p[19];
-        if (variant != '8' && variant != '9' &&
-            variant != 'a' && variant != 'b' &&
-            variant != 'A' && variant != 'B') return false;
-
-        size_t out_idx = 0;
-        for (size_t i = 0; i < 35 && out_idx < 16; i++) {
-            if (p[i] == '-') continue;
-            char hex[3] = {p[i], p[i + 1], '\0'};
-            if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
-            out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
-            i++;
-        }
-        return out_idx == 16;
-    };
-
-    if (!parse_uuid(user_uuid_str, user_uuid)) {
+    if (!parse_uuid_string(user_uuid_str.c_str(), user_uuid)) {
         logger.printfln("Cannot send charge log metadata: failed to parse user UUID");
         return -9;
     }
@@ -3576,27 +3439,15 @@ bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip, const IPAddr
     }
 
     const uint8_t conn_id = (ip >> 16) & 0xFF; // Third octet
-    size_t conn_idx;
 
     for (size_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
         if (remote_connections[i].id == conn_id) {
-            conn_idx = i;
-            goto conn_idx_found;
+            return true;
         }
     }
 
     logger.printfln("Local IP query couldn't find connection ID %hhu", conn_id);
     return false;
-
-conn_idx_found:
-    // The connection state is currently updated up to 400ms after the WireGuard tunnel is established,
-    // which is too late for checking the immediately established HTTP connection.
-    // Use only the IP address checks for now.
-    //const ConnectionState conn_state = connection_state.get(conn_idx + 1)->get("state")->asEnum<ConnectionState>();
-    //return conn_state == ConnectionState::Connected;
-    (void)conn_idx;
-
-    return true;
 }
 
 [[gnu::const]]
