@@ -105,12 +105,12 @@ void DeviceModuleBase::update_identity(TF_TFP *tfp)
     TF_Unknown unknown;
 
     int rc = tf_unknown_create(&unknown, tfp);
-    defer {tf_unknown_destroy(&unknown);};
-
     if (rc != TF_E_OK) {
         logger.printfln("Creation of unknown device failed with rc %i", rc);
         return;
     }
+
+    defer {tf_unknown_destroy(&unknown);};
 
     rc = tf_unknown_get_identity(&unknown, data.uid, data.connected_uid, &data.position, data.hw_version, data.fw_version, &data.device_identifier);
     if (rc != TF_E_OK) {
