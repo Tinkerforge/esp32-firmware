@@ -198,3 +198,30 @@
 - Fix renaming unknown user
 - Fix OCPP disconnect sometimes blocking forever
 - Fix "controlled chargers" charge log filter
+
+2026-09-10: 2.13.0 (<unknown>)
+- Add IPv6 support
+- Add country configuration
+- Add more components to MQTT discovery
+- Merge generic and Home Assistant MQTT discovery
+- Add Iskra WM3M4(C) backlight configuration
+- Remove "not set" text on Iskra WM3M4(C) meters
+- Add meter value automation triggers
+- Add reboot automation trigger
+- Add NFC automation trigger for managed chargers
+- Redirect HTTP to HTTPS when in https-only mode
+- Fix PDF charge log title
+- Fix web server returning 404 to all requests for a short time after reboot
+- Fix detection of stale meter values for dynamic load management
+- Don't accept broken modbus devices as working when only a part of the register set could be read
+- Fix charge limits automation trigger and action configuration
+- Fix validation and error display of number inputs and modal windows
+- Fix crash when receiving strange mDNS packets
+- Fix crash when reconnecting to Modbus TCP device
+- Improve JSON (de)serialization robustness
+- Improve Bricklet communication robustness
+- Improve WebSocket robustness
+- Improve password manager support
+- Improve translations
+- Update timezone database
+- Fix unplugging a vehicle sometimes stopping every other managed charger for one allocation interval (through EVSE 2.0 Bricklet firmware 2.2.25)
