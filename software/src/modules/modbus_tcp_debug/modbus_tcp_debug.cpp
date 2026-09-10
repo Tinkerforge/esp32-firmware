@@ -26,7 +26,7 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "tools/hexdump.h"
-#include "modules/network_lib/generic_tcp_client_connector_base.h"
+#include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/modbus_tcp_client/generated/modbus_function_code.enum.h"
 
 #include "gcc_warnings.h"
@@ -247,7 +247,7 @@ void ModbusTCPDebug::register_urls()
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
+                GenericTCPClientPoolConnector::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
                 report_errorf(cookie, "%s", connect_error);
                 return;
             }

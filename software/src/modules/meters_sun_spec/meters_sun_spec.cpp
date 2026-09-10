@@ -194,7 +194,7 @@ void MetersSunSpec::loop()
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
+                GenericTCPClientPoolConnector::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
                 scan_printfln("%s", buf);
 
                 scan->state = ScanState::Done;
@@ -206,7 +206,7 @@ void MetersSunSpec::loop()
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             char buf[256] = "";
 
-            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
+            GenericTCPClientPoolConnector::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
             scan_printfln("%s", buf);
 
             scan->shared_client = nullptr;

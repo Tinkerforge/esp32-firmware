@@ -24,7 +24,7 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "modules/network_lib/generic_tcp_client_connector_base.h"
+#include "modules/network_lib/generic_tcp_client_pool_connector.h"
 
 #include "gcc_warnings.h"
 
@@ -102,7 +102,7 @@ void RCTPowerDebug::register_urls()
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
+                GenericTCPClientPoolConnector::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
                 report_errorf(cookie, "%s", connect_error);
                 return;
             }

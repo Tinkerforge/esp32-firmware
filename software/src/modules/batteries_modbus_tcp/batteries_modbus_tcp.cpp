@@ -334,7 +334,7 @@ void BatteriesModbusTCP::loop()
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
+                GenericTCPClientPoolConnector::format_connect_error(result, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
                 test_printfln("%s", buf);
 
                 test->state = TestState::Done;
@@ -354,7 +354,7 @@ void BatteriesModbusTCP::loop()
 
             char buf[256] = "";
 
-            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
+            GenericTCPClientPoolConnector::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
             test_printfln("%s", buf);
 
             test->shared_client = nullptr;

@@ -19,22 +19,52 @@
 
 #pragma once
 
+#include <WString.h>
+#include <TFGenericTCPClient.h>
 #include <TFGenericTCPClientPool.h>
 
-#include "generic_tcp_client_connector_base.h"
+#include "language.h"
 
-class GenericTCPClientPoolConnector : protected GenericTCPClientConnectorBase
+class GenericTCPClientPoolConnector
 {
-protected:
-    GenericTCPClientPoolConnector(const char *event_log_prefix_override, const char *event_log_message_prefix, TFGenericTCPClientPool *pool_) :
-        GenericTCPClientConnectorBase(event_log_prefix_override, event_log_message_prefix), pool(pool_) {}
+public:
+    static void format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
+                                     const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
+    static void format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level,
+                                         const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
 
-    void force_reconnect() override;
+protected:
+    GenericTCPClientPoolConnector(const char *event_log_prefix_override_, const char *event_log_message_prefix_, TFGenericTCPClientPool *pool_) :
+        event_log_prefix_override(event_log_prefix_override_),
+        event_log_prefix_override_len(strlen(event_log_prefix_override_)),
+        event_log_message_prefix(event_log_message_prefix_),
+        pool(pool_) {}
+    virtual ~GenericTCPClientPoolConnector() {}
+
+    void start_connection();
+    void stop_connection();
+    void force_reconnect();
+
+    virtual void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) = 0;
+    virtual void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) = 0;
+
+    const char *event_log_prefix_override;
+    size_t event_log_prefix_override_len;
+    const char *event_log_message_prefix;
+    String host;
+    uint16_t port = 0;
+    TFGenericTCPSharedClient *shared_client = nullptr;
 
 private:
-    void connect_internal() override;
-    void disconnect_internal() override;
-    void disconnect_internal(bool force_disconnect);
+    void connect_helper();
+    void connect(millis_t delay);
+    void disconnect(bool force);
 
     TFGenericTCPClientPool *pool;
+    bool keep_connected = false;
+    millis_t connect_backoff = 1_s;
+    TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
+    int last_connect_error_number = 0;
+    bool resolve_error_printed = false;
+    uint64_t connect_task_id = 0;
 };
