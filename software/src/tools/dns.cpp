@@ -23,49 +23,23 @@
 #include <lwip/tcpip.h>
 
 #include "dns.h"
+#include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "tools/net.h"
 
 #include "gcc_warnings.h"
 
-struct gethostbyname_parameters {
-    const char *host;
-    ip_addr_t *addr;
-    dns_found_callback found_callback;
-    void *callback_arg;
-    u8_t dns_addrtype;
-};
-
-static esp_err_t gethostbyname_lwip_ctx(void *ctx)
-{
-    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname(parameters->host, parameters->addr, parameters->found_callback, parameters->callback_arg);
-}
-
-err_t dns_gethostbyname_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg)
-{
-    if (ipaddr_aton(host, addr)) {
-        return ERR_OK;
-    }
-
-    gethostbyname_parameters parameters;
-    parameters.host = host;
-    parameters.addr = addr;
-    parameters.found_callback = found_callback;
-    parameters.callback_arg = callback_arg;
-
-    return static_cast<err_t>(esp_netif_tcpip_exec(gethostbyname_lwip_ctx, &parameters));
-}
-
+// Note: LWIP_DNS_ADDRTYPE != IPADDR_TYPE
 static int ipaddr_aton_addrtype(const char *host, ip_addr_t *addr, u8_t dns_addrtype)
 {
-    if (dns_addrtype == IPADDR_TYPE_V4) {
+    if (dns_addrtype == LWIP_DNS_ADDRTYPE_IPV4) {
         const int success = ip4addr_aton(host, &addr->u_addr.ip4);
         if (success) {
             addr->type = IPADDR_TYPE_V4;
         }
         return success;
     }
-    if (dns_addrtype == IPADDR_TYPE_V6) {
+    if (dns_addrtype == LWIP_DNS_ADDRTYPE_IPV6) {
         const int success = ip6addr_aton(host, &addr->u_addr.ip6);
         if (success) {
             addr->type = IPADDR_TYPE_V6;
@@ -77,74 +51,154 @@ static int ipaddr_aton_addrtype(const char *host, ip_addr_t *addr, u8_t dns_addr
     return ipaddr_aton(host, addr);
 }
 
-static esp_err_t gethostbyname_addrtype_lwip_ctx(void *ctx)
+[[gnu::noinline]]
+[[gnu::nonnull]]
+static err_t validate_ip_result(const char *name, const ip_addr *addr)
 {
-    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname_addrtype(parameters->host, parameters->addr, parameters->found_callback, parameters->callback_arg, parameters->dns_addrtype);
-}
+    bool valid = true;
 
-err_t dns_gethostbyname_addrtype_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg, u8_t dns_addrtype)
-{
-    if (ipaddr_aton_addrtype(host, addr, dns_addrtype)) {
-        return ERR_OK;
+    if (addr->type == IPADDR_TYPE_V4) {
+        const char *errmsg = nullptr;
+        const uint32_t ip4_u32h = addr->u_addr.ip4.addr;
+
+        if (ip4_u32h == 0) { // 0.0.0.0
+            errmsg = "blocked by DNS server";
+            valid = false;
+        } else {
+            const uint8_t ip4_first_octet = ip4_u32h & 0xFF;
+
+            if (ip4_first_octet == 0) { // 0.0.0.0/8
+                errmsg = "resolved to invalid local IPv4 address";
+                valid = false;
+            } else if (ip4_first_octet == 127) { // 127.0.0.0/8
+                errmsg = "resolved to IPv4 localhost :-? ";
+                // considered valid
+            } else if ((ip4_first_octet & 0xE0) == 0xE0) { // 224.0.0.0/3
+                errmsg = "resolved to invalid multicast or broadcast IPv4 address";
+                valid = false;
+            }
+        }
+
+        if (errmsg != nullptr) {
+            task_scheduler.scheduleOnce([errmsg, ip4 = addr->u_addr.ip4, failed_name = String{name}]() { // Can't access the logger from lwIP context.
+                char ip4_str[INET_ADDRSTRLEN];
+                tf_ip4addr_ntoa(&ip4, ip4_str, std::size(ip4_str));
+
+                logger.printfln("Host '%s' %s: %s", failed_name.c_str(), errmsg, ip4_str);
+            });
+        }
+    } else if (addr->type == IPADDR_TYPE_V6) {
+        const ip6_addr_t &ip6 = addr->u_addr.ip6;
+
+        if (ip6.addr[0] == 0 && ip6.addr[1] == 0 && ip6.addr[2] == 0 && ip6.addr[3] == 0) {
+            valid = false;
+
+            task_scheduler.scheduleOnce([failed_name = String{name}]() { // Can't access the logger from lwIP context.
+                logger.printfln("Host '%s' resoved to invalid IPv6 address '::'", failed_name.c_str());
+            });
+        }
     }
 
-    gethostbyname_parameters parameters;
-    parameters.host = host;
-    parameters.addr = addr;
-    parameters.found_callback = found_callback;
-    parameters.callback_arg = callback_arg;
-    parameters.dns_addrtype = dns_addrtype;
-
-    return static_cast<err_t>(esp_netif_tcpip_exec(gethostbyname_addrtype_lwip_ctx, &parameters));
+    return valid ? ERR_OK : ERR_RST;
 }
 
-static void gethostbyname_addrtype_lwip_ctx_async(const char */*host*/, const ip_addr_t *addr, void *callback_arg)
-{
-    dns_gethostbyname_addrtype_lwip_ctx_async_data *data = static_cast<dns_gethostbyname_addrtype_lwip_ctx_async_data *>(callback_arg);
+// GethostbynameData is filled on demand.
+#pragma GCC diagnostic ignored "-Weffc++"
 
-    data->err = ERR_OK; // ERR_OK because we got a response. Response might be negative and ipaddr a nullptr, though.
+typedef std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> FoundCallback;
+
+struct GethostbynameData {
+    GethostbynameData(FoundCallback &&callback) : found_callback(std::move(callback)) {}
+
+    aligned_storage<Task> task_buf; // Must be first member variable
+
+    dns_gethostbyname_addrtype_lwip_ctx_async_data output;
+
+    FoundCallback found_callback; // Non-POD, must call destructor.
+    const char *host; // Passing a pointer should be safe. Called API creates a copy if the query can't be resolved from cache.
+    u8_t addrtype;
+};
+
+// Called by lwIP
+static void gethostbyname_cb(const char *host, const ip_addr_t *addr, void *ctx)
+{
+    GethostbynameData *data = static_cast<GethostbynameData *>(ctx);
 
     if (addr != nullptr) {
-        data->addr = *addr;
-        data->addr_ptr = &data->addr;
-    }
-    else {
-        data->addr_ptr = nullptr;
+        data->output.err = validate_ip_result(host, addr);
+        data->output.addr = *addr;
+    } else {
+        data->output.err = ERR_CONN; // Report unresolvable host as error.
+        memset(&data->output.addr, 0, sizeof(data->output.addr));
     }
 
-    task_scheduler.scheduleOnce([data]() {
-        data->found_callback(data);
-        delete data;
+    // Transfer ownership, will free the whole internal data struct.
+    task_scheduler.scheduleOnceNoAlloc(&data->task_buf, true, [data]() {
+        data->found_callback(&data->output);
+        data->found_callback.~FoundCallback(); // Must destroy callback manually.
     });
 }
 
-void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
-                                               std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
-                                               u8_t dns_addrtype)
+// Called by lwIP
+static esp_err_t gethostbyname_wrapper(void *ctx)
 {
-    auto *callback_arg = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
-    callback_arg->found_callback = std::move(found_callback);
+    GethostbynameData *data = static_cast<GethostbynameData *>(ctx);
+    return dns_gethostbyname_addrtype(data->host, &data->output.addr, &gethostbyname_cb, ctx, data->addrtype);
+}
 
-    const int is_ip = ipaddr_aton_addrtype(host, &callback_arg->addr, dns_addrtype);
+bool dns_gethostbyname_addrtype_lwip_ctx_async(const char *host, FoundCallback &&found_callback, u8_t dns_addrtype)
+{
+    dns_gethostbyname_addrtype_lwip_ctx_async_data static_output;
+
+    const int is_ip = ipaddr_aton_addrtype(host, &static_output.addr, dns_addrtype);
 
     if (is_ip) {
-        callback_arg->err = ERR_OK;
-    } else {
-        err_t err = dns_gethostbyname_addrtype_lwip_ctx(host, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
+        static_output.err = ERR_OK;
 
-        // Don't set the callback_arg's err if the result is not available yet.
-        // The callback handler might be executed before dns_gethostbyname_addrtype_lwip_ctx returns.
-        if (err == ERR_INPROGRESS)
-            return;
+        found_callback(&static_output);
 
-        callback_arg->err = err;
+        return true;
     }
 
-    callback_arg->addr_ptr = &callback_arg->addr;
+    GethostbynameData *data = new(std::nothrow) GethostbynameData(std::move(found_callback));
 
-    callback_arg->found_callback(callback_arg); // Can't call local found_callback anymore because it has been std::move'd.
-    delete callback_arg;
+    if (data == nullptr) {
+        static_output.err = ERR_MEM;
+        memset(&static_output.addr, 0, sizeof(static_output.addr));
+
+        found_callback(&static_output);
+
+        return true;
+    }
+
+    data->host = host;
+    data->addrtype = dns_addrtype;
+
+    const esp_err_t esp_err = esp_netif_tcpip_exec(gethostbyname_wrapper, data);
+
+    err_t err;
+    if (esp_err > 0) {
+        logger.printfln("esp_netif_tcpip_exec returned 0x%x", static_cast<unsigned>(esp_err));
+        err = ERR_VAL;
+    } else {
+        err = static_cast<err_t>(esp_err);
+    }
+
+    // Don't set the data's err if the result is not available yet.
+    // The callback handler might be executed before esp_netif_tcpip_exec returns.
+    if (err == ERR_INPROGRESS) {
+        return false;
+    }
+
+    if (err == ERR_OK) {
+        data->output.err = validate_ip_result(host, &data->output.addr);
+    } else {
+        data->output.err = err;
+    }
+
+    data->found_callback(&data->output); // Can't call local found_callback anymore because it has been std::move'd.
+    delete data;
+    return true;
 }
 
 static void dns_removehostbyaddr_safe_cb(void *ctx)
@@ -169,9 +223,4 @@ void dns_removehostbyname_safe(const char *hostname)
 {
     void *cb_ctx = const_cast<void *>(static_cast<const void *>(hostname)); // Casting away the const is safe because it is restored immediately inside the callback.
     tcpip_callback(&dns_removehostbyname_safe_cb, cb_ctx);                  // Doesn't block until completion, returns after posting request.
-}
-
-void dns_gethostbyname_dualstack_lwip_ctx_async(const char *host, std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback)
-{
-    dns_gethostbyname_addrtype_lwip_ctx_async(host, std::move(found_callback), LWIP_DNS_ADDRTYPE_DEFAULT);
 }

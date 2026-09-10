@@ -2159,6 +2159,15 @@ void RemoteAccess::run_management()
             }
 
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no, conn_idx](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+                if (data->err != ERR_OK) {
+                    if (data->err == ERR_CONN) {
+                        logger.printfln("Failed to resolve remote host: no address associated with hostname");
+                    } else {
+                        logger.printfln("Failed to resolve remote host: DNS error %i", data->err);
+                    }
+                    return;
+                }
+
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
                 connect_remote_access(conn_no, local_port);
                 // Clear in_progress flag after connection setup is initiated
@@ -2285,15 +2294,17 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
 int RemoteAccess::start_ping() {
     const char *host = config.get("relay_host")->asEphemeralCStr();
 
-    dns_gethostbyname_addrtype_lwip_ctx_async(
-        host,
-        [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-            if (data->err != ERR_OK || data->addr_ptr == nullptr) {
-                logger.printfln("Failed to resolve '%s' for ping: %s", host, data->addr_ptr == nullptr ? "Unknown host" : "DNS error");
-                return;
+    dns_gethostbyname_addrtype_lwip_ctx_async( host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (data->err != ERR_OK) {
+            if (data->err == ERR_CONN) {
+                logger.printfln("Failed to resolve '%s' for ping: no address associated with hostname", host);
+            } else {
+                logger.printfln("Failed to resolve '%s' for ping: DNS error %i", host, data->err);
             }
+            return;
+        }
 
-            PingArgs *ping_args = new PingArgs();
+        PingArgs *ping_args = new PingArgs();
 
         esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
         ping_config.target_addr = data->addr;

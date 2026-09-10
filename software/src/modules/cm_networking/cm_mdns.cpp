@@ -19,8 +19,8 @@
 
 #include "cm_networking.h"
 
+#include <lwip/dns.h>
 #include <lwip/ip_addr.h>
-#include <lwip/opt.h>
 #include <cstring>
 #include <TFJson.h>
 
@@ -184,7 +184,6 @@ void CMNetworking::register_events() {
 #endif
 }
 
-// Sometimes executed by lwIP
 void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip)
 {
     if (ip->type != IPADDR_TYPE_V4 && ip->type != IPADDR_TYPE_V6) {
@@ -217,11 +216,9 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
         const char *hname = device->hostname;
         ip_addr_t ip_copy = *ip; // Must copy the address because *ip is temporary.
 
-        task_scheduler.scheduleOnce([hname, ip_copy]() { // Can't access the logger from lwIP context.
-            char ip_str[INET6_ADDRSTRLEN];
-            tf_ipaddr_ntoa(&ip_copy, ip_str, sizeof(ip_str));
-            logger.printfln("Resolved %s to %s", hname, ip_str);
-        });
+        char ip_str[INET6_ADDRSTRLEN];
+        tf_ipaddr_ntoa(&ip_copy, ip_str, sizeof(ip_str));
+        logger.printfln("Resolved %s to %s", hname, ip_str);
     }
 
     // Evict the resolved charger from the DNS cache.
@@ -229,33 +226,6 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
     // and this frees up space in the cache for things that perform
     // duplicate lookups in sequence, such as the remote access.
     dns_removehostbyname_safe(device->hostname);
-}
-
-// Executed by lwIP
-static void dns_cb(const char * /*host*/, const ip_addr_t *ip, void *callback_arg)
-{
-    cm_networking.dns_callback(ip, callback_arg);
-}
-
-// Executed by lwIP
-void CMNetworking::dns_callback(const ip_addr_t *ip, void *callback_arg)
-{
-    managed_device_data *device = static_cast<decltype(device)>(callback_arg);
-
-    if (ip) {
-        dns_resolved(device, ip);
-    } else {
-        if (device->resolve_state == ResolveState::Unknown) {
-            device->resolve_state = ResolveState::NotResolved;
-
-            const char *hname = device->hostname;
-            task_scheduler.scheduleOnce([hname]() { // Can't access the logger from lwIP context.
-                logger.printfln("Failed to resolve %s", hname);
-            });
-        }
-    }
-
-    resolve_next_dns(device->device_index);
 }
 
 void CMNetworking::resolve_hostname(uint8_t charger_idx)
@@ -286,7 +256,6 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     resolve_hostname_dns(charger_idx, true);
 }
 
-// Sometimes executed by lwIP
 void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_request) {
     if (manager_data->dns_resolver_active) {
         if (initial_request) {
@@ -298,29 +267,29 @@ void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_reques
 
     managed_device_data *device = manager_data->managed_devices + charger_idx;
 
-    ip_addr_t ip;
-    err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_DEFAULT);
+    dns_gethostbyname_addrtype_lwip_ctx_async(device->hostname, [this, device](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (data->err == ERR_OK) {
+            this->dns_resolved(device, &data->addr);
+        } else {
+            const char *hname = device->hostname;
 
-    if (err == ERR_INPROGRESS) {
-        return;
-    } else if (err == ERR_OK) {
-        dns_resolved(device, &ip);
-    } else {
-        const char *hname = device->hostname;
-        task_scheduler.scheduleOnce([hname, err]() { // Can't access the logger from lwIP context.
-            if (err == ERR_VAL) {
-                logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
+            if (data->err == ERR_CONN) {
+                if (device->resolve_state == ResolveState::Unknown) {
+                    device->resolve_state = ResolveState::NotResolved;
+                    logger.printfln("No address associated with hostname '%s'", hname);
+                }
+            } else if (data->err == ERR_VAL) {
+                logger.printfln("Charger configured with hostname '%s', but no DNS server is configured!", hname);
             } else {
-                const int eno = err_to_errno(err);
-                logger.printfln("Cannot resolve '%s': %s (%i|%hhi)", hname, strerror(eno), eno, err);
+                const int eno = err_to_errno(data->err);
+                logger.printfln("Cannot resolve '%s': %s (%i|%hhi)", hname, strerror(eno), eno, data->err);
             }
-        });
-    }
+        }
 
-    resolve_next_dns(device->device_index);
+        this->resolve_next_dns(device->device_index);
+    }, LWIP_DNS_ADDRTYPE_DEFAULT);
 }
 
-// Sometimes executed by lwIP
 void CMNetworking::resolve_next_dns(uint8_t current_idx) {
     const size_t current_index = current_idx;
     size_t next_index = current_index;

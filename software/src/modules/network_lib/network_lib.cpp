@@ -39,11 +39,11 @@ void TFNetwork::resolve(const char *host, std::function<void(ip_addr_t *address,
         if (data->err != ERR_OK) {
             callback(nullptr, err_to_errno(data->err));
         }
-        else if (data->addr_ptr == nullptr) {
+        else if (data->err == ERR_CONN) {
             callback(nullptr, -1); // no address available for this host
         }
         else {
-            callback(data->addr_ptr, -1);
+            callback(&data->addr, -1);
         }
     }, LWIP_DNS_ADDRTYPE_DEFAULT);
 }

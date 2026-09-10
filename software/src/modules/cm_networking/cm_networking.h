@@ -86,8 +86,6 @@ public:
 
     void notify_charger_unresponsive(uint8_t charger_idx);
 
-    void dns_callback(const ip_addr_t *ip, void *callback_arg);
-
 private:
     enum class HostAddressType : uint8_t {
         IP,
