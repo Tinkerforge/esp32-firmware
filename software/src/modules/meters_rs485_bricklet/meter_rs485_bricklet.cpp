@@ -380,7 +380,12 @@ void MeterRS485Bricklet::tick()
         callback_data.value_to_write = &registers[next_read->start - 1];
         callback_data.done = UserDataDone::NOT_DONE;
         callback_data.expected_request_id = 0;
-        /*TODO is_in_bootloader(*/tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id)/*)*/;
+        int rc = tf_rs485_modbus_master_read_input_registers(rs485, 1, next_read->start, next_read->len, &callback_data.expected_request_id);
+        if (rc != TF_E_OK) {
+            logger.trace_bricklet_error(rc, "Failed to read energy meter registers starting at %u", next_read->start);
+            //TODO: this is protected, so we can't call it currently
+            // generator->is_in_bootloader(rc);
+        }
         if (callback_data.expected_request_id == 0) {
             logger.printfln_meter("Failed to read energy meter registers starting at %u: request_id: %u", next_read->start, callback_data.expected_request_id);
             generator->checkRS485State();

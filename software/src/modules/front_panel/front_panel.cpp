@@ -315,7 +315,7 @@ int FrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
     });
 
     if (result != TF_E_OK) {
-        logger.printfln("Failed to call set_led_state: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call set_led_state");
     }
 
     return result;
@@ -337,7 +337,7 @@ int FrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
         *pattern = static_cast<LEDPattern>(pattern_raw);
         *color   = static_cast<LEDColor>(color_raw);
     } else {
-        logger.printfln("Failed to call set_led_state: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call set_led_state");
     }
 
     return result;
@@ -357,7 +357,7 @@ void FrontPanel::update_wifi()
         );
     });
     if (result != TF_E_OK) {
-        logger.printfln("Failed to call set_display_wifi_setup_1: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call set_display_wifi_setup_1");
         return;
     }
 
@@ -368,7 +368,7 @@ void FrontPanel::update_wifi()
         );
     });
     if (result != TF_E_OK) {
-        logger.printfln("Failed to call set_display_wifi_setup_2: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call set_display_wifi_setup_2");
         return;
     }
 }
@@ -404,7 +404,7 @@ void FrontPanel::update_status_bar()
     });
 
     if (result != TF_E_OK) {
-        logger.printfln("Failed to call set_status_bar: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call set_status_bar");
         return;
     }
 }
@@ -727,7 +727,7 @@ void FrontPanel::update_front_page()
         }
 
         if (result != TF_E_OK) {
-            logger.printfln("Failed to call set_display_front_page_icon: %d", result);
+            logger.trace_bricklet_error(result, "Failed to call set_display_front_page_icon");
         }
     }
 }
@@ -849,7 +849,7 @@ void FrontPanel::check_flash_metadata()
     });
 
     if (result != TF_E_OK) {
-        logger.printfln("Failed to call get_flash_metadata: %d", result);
+        logger.trace_bricklet_error(result, "Failed to call get_flash_metadata");
         return;
     }
 

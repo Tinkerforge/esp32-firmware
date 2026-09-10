@@ -79,7 +79,7 @@ bool NFCBricklet::get_tag_id(uint8_t index, uint8_t *tag_type, uint8_t *tag_id, 
     int result = tf_nfc_simple_get_tag_id(&device, index, tag_type, tag_id, tag_id_length, last_seen);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("Failed to get tag ID %d, rc: %d", index, result);
+            logger.trace_bricklet_error(result, "Failed to get tag ID %d", index);
         }
         return false;
     }
@@ -92,7 +92,7 @@ void NFCBricklet::check_state()
     int result = tf_nfc_get_mode(&device, &mode);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("Failed to get NFC mode, rc: %d", result);
+            logger.trace_bricklet_error(result, "Failed to get NFC mode");
         }
         return;
     }

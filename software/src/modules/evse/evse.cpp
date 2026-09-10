@@ -469,15 +469,15 @@ void EVSE::fetch_all_data()
                                     &d.boost_mode_enabled);
 
     if (rc != TF_E_OK) {
-        logger.printfln("all_data_1 %d", rc);
+        logger.trace_bricklet_error(rc, "all_data_1");
         is_in_bootloader(rc);
         return;
     }
-
+"
     rc = tf_evse_get_all_charging_slots(&device, d.max_current, d.active_and_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
-        logger.printfln("slots %d", rc);
+        logger.trace_bricklet_error(rc, "slots");
         is_in_bootloader(rc);
         return;
     }
@@ -489,7 +489,7 @@ void EVSE::fetch_all_data()
                                            &d.external_default_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
-        logger.printfln("external slot default %d", rc);
+        logger.trace_bricklet_error(rc, "external slot default");
         is_in_bootloader(rc);
         return;
     }
@@ -503,7 +503,7 @@ void EVSE::fetch_all_data()
                                       d.resistance_880);
 
     if (rc != TF_E_OK) {
-        logger.printfln("user calibration %d", rc);
+        logger.trace_bricklet_error(rc, "user calibration");
         is_in_bootloader(rc);
         return;
     }

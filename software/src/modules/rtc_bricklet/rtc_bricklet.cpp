@@ -77,7 +77,7 @@ void RtcBricklet::set_time(const tm &date_time, int32_t microseconds)
 #endif
 
     if (ret)
-        logger.printfln("Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed with code %i", year, mon, day, hour, min, sec, wday, ret);
+        logger.trace_bricklet_error(ret, "Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed", year, mon, day, hour, min, sec, wday);
 }
 
 struct timeval RtcBricklet::get_time()
@@ -101,7 +101,7 @@ struct timeval RtcBricklet::get_time()
 #endif
 
     if (ret) {
-        logger.printfln("Reading RTC failed with code %i", ret);
+        logger.trace_bricklet_error(ret, "Reading RTC failed");
         struct timeval tmp;
         tmp.tv_sec = 0;
         tmp.tv_usec = 0;

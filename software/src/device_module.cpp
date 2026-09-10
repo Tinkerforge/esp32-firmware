@@ -164,6 +164,7 @@ bool DeviceModuleBase::is_in_bootloader(int rc)
 #endif
 
     if (bootloader_rc != TF_E_OK) {
+        logger.trace_bricklet_error(bootloader_rc, "bootloader check failed");
         return false;
     }
 

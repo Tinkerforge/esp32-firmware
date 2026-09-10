@@ -69,7 +69,7 @@ void ESP32EthernetV2CoBricklet::setup()
             temperature_valid = rc == TF_E_OK;
 
             if (rc != TF_E_OK) {
-                logger.printfln("Failed to get temperature: error %i", rc);
+                logger.trace_bricklet_error(rc, "Failed to get temperature");
             }
         },
         [this]() {

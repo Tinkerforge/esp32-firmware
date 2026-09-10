@@ -209,11 +209,8 @@ void EMCommon::check_bricklet_reachable(int rc, const char *context)
             logger.printfln("Bricklet is reachable again.");
         }
     } else {
-        if (rc == TF_E_TIMEOUT) {
-            logger.printfln("%s: Bricklet access timed out.", context);
-        } else {
-            logger.printfln("%s: Bricklet access returned error %d.", context, rc);
-        }
+        logger.trace_bricklet_error(rc, "%s", context);
+
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
             set_error(ERROR_FLAGS_BRICKLET_MASK);
