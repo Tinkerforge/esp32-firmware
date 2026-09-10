@@ -68,6 +68,7 @@ void EventLog::pre_init()
 #else
     HimemMapper::pre_init();
     event_buf.setup(HimemBuffer::MIN_BUFFER_SIZE);
+    this->bricklet_trace_buffer_idx = alloc_trace_buffer("bricklet");
 #endif
 
     uint32_t numeric_reset_reason;
@@ -722,6 +723,46 @@ size_t EventLog::tracefln_prefixed(size_t trace_buf_idx, const char *prefix, siz
 
     va_start(args, fmt);
     written += vtracefln_prefixed(trace_buf_idx, prefix, prefix_len, fmt, args);
+    va_end(args);
+#endif
+
+    return written;
+}
+
+size_t EventLog::vtrace_bricklet_error_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+{
+    size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 256];
+    size_t buf_len = ARRAY_SIZE(buf);
+
+    written += vsnprintf_prefixed(buf, buf_len, prefix, prefix_len, fmt, args);
+
+    if (written >= buf_len) {
+        tracefln_prefixed(this->bricklet_trace_buffer_idx, prefix, prefix_len, "Next log message was truncated. Bump EventLog::vtracefln_prefixed buffer size!");
+        written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
+    }
+
+    // The IDF might log messages ending with "\r\n" via tf_event_log_[v]printfln
+    if (written >= 2 && buf[written - 2] == '\r' && buf[written - 1] == '\n') {
+        written -= 2;
+    }
+
+    buf[written++] = '\n'; // At this point written < buf_len is guaranteed
+    trace_plain(this->bricklet_trace_buffer_idx, buf, written);
+#endif
+
+    return written;
+}
+
+size_t EventLog::trace_bricklet_error_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
+{
+     size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+
+    va_start(args, fmt);
+    written += vtrace_bricklet_error_prefixed(prefix, prefix_len,fmt, args);
     va_end(args);
 #endif
 
