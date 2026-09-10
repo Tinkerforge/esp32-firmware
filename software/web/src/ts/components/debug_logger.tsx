@@ -98,7 +98,7 @@ export async function fetch_debug_report(p: Partial<FetchDebugReportParams>) {
 
     if (content.indexOf('coredump') >= 0) {
         await progress('running', __("component.debug_logger.loading_coredump"));
-        text += `___${prefix}COREDUMP_START___\n\n`;
+        text += `___${prefix}CORE_DUMP_START___\n\n`;
 
         try {
             text += (await util.download("/coredump/coredump.elf", true).then(util.blobToBase64)).replace(/(.{80})/g, "$1\n").trim() + "\n\n";
@@ -113,7 +113,7 @@ export async function fetch_debug_report(p: Partial<FetchDebugReportParams>) {
             text += "No core dump stored\n\n";
         }
 
-        text += `___${prefix}COREDUMP_END___\n\n`;
+        text += `___${prefix}CORE_DUMP_END___\n\n`;
     }
 
     await progress('done', "");
