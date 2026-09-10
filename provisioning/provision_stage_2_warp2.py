@@ -380,12 +380,6 @@ def set_evse_test_mode(password=0xdeadbeef, name=''):
         if retry_wrapper(lambda: evse.get_test_mode(), "read back EVSE test mode"):
             break
 
-def set_evse_no_pwm_test_mode(enable):
-    if enable:
-        set_evse_test_mode(0xbeefdead, 'no-PWM ')
-    else:
-        set_evse_test_mode()
-
 def reset_evse():
     global evse
     retry_wrapper(lambda: evse.reset(), "reset EVSE")
@@ -781,8 +775,7 @@ def led_wrap():
                         get_meter_voltages_function=get_meter_voltages,
                         set_iso15118_enabled_function=set_iso15118_enabled,
                         get_iso15118_ev_mac_function=get_iso15118_ev_mac,
-                        get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile,
-                        set_evse_no_pwm_test_mode_function=set_evse_no_pwm_test_mode)
+                        get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile)
 
         stage3.setup()
         stage3.set_led_strip_color((0, 0, 255))
