@@ -372,7 +372,7 @@
 - Fix renaming unknown user
 - Fix "Close remote access" with soon-to-be-released iOS App 2.0.0
 
-2026-09-10: 1.8.0 (<unknown>)
+2026-09-10: 1.8.0 (6870f31b)
 - Add IPv6 support
 - Add country configuration
 - Day ahead prices: Support Belgium

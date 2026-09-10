@@ -20,7 +20,7 @@
 - Fix "Close remote access" with soon-to-be-released iOS App 2.0.0
 - Fix EV wakeup timing with ISO 15118 (through EVSE 2.0 Bricklet firmware 2.2.24)
 
-2026-09-10: 2.13.0 (<unknown>)
+2026-09-10: 2.13.0 (6870f31b)
 - Add IPv6 support
 - Add country configuration
 - Add OVE R 37 support

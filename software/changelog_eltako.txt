@@ -199,7 +199,7 @@
 - Fix OCPP disconnect sometimes blocking forever
 - Fix "controlled chargers" charge log filter
 
-2026-09-10: 2.13.0 (<unknown>)
+2026-09-10: 2.13.0 (6870f31b)
 - Add IPv6 support
 - Add country configuration
 - Add more components to MQTT discovery
