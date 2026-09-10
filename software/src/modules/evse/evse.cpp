@@ -473,7 +473,7 @@ void EVSE::fetch_all_data()
         is_in_bootloader(rc);
         return;
     }
-"
+
     rc = tf_evse_get_all_charging_slots(&device, d.max_current, d.active_and_clear_on_disconnect);
 
     if (rc != TF_E_OK) {
