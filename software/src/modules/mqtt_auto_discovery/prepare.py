@@ -46,18 +46,33 @@ METER_VALUE_IDS = [
 meters_max_slots = util.get_env_metadata()['options']['meters_max_slots']
 warp_edition = util.get_env_metadata()['options']['hostname_prefix']
 
-charge_mode_names_de = [
-    "Schnell",
-    "Aus",
-    "PV",
-    "Min + PV",
-]
-charge_mode_names_en = [
-    "Fast",
-    "Off",
-    "PV",
-    "Min + PV",
-]
+# ConfigChargeMode IDs; 4 is Default, not a selectable charging mode.
+charge_mode_names_de = {
+    0: "Schnell",
+    1: "Aus",
+    2: "PV",
+    3: "Min + PV",
+    5: "Min",
+    6: "Eco",
+    7: "Eco + PV",
+    8: "Min + Eco",
+    9: "Min + Eco + PV",
+}
+charge_mode_names_en = {
+    0: "Fast",
+    1: "Off",
+    2: "PV",
+    3: "Min + PV",
+    5: "Min",
+    6: "Eco",
+    7: "Eco + PV",
+    8: "Min + Eco",
+    9: "Min + Eco + PV",
+}
+
+# Default is a valid reported state (e.g. an unmanaged EVSE), but not a selector option.
+charge_mode_state_names_de = {**charge_mode_names_de, 4: "Standard"}
+charge_mode_state_names_en = {**charge_mode_names_en, 4: "Default"}
 
 charger_state_names_de = [
     "Nicht verbunden",
@@ -77,17 +92,17 @@ charger_state_names_en = [
 
 def command_template_for_select(names):
     """Generate a Jinja command_template that maps a selected option name back to a JSON mode payload."""
-    mapping = ", ".join(f"'{name}': {i}" for i, name in enumerate(names))
+    mapping = ", ".join(f"'{name}': {i}" for i, name in names.items())
     return "{%% set m = {%s} %%}{{ { 'mode': m.get(value, 0)} | tojson }}" % mapping
 
 
 def enum_value_template(json_field, names):
     """Generate a Jinja value_template that maps an integer enum field to its name.
-    Uses a Jinja `{% set map = {0: 'A', 1: 'B', ...} %}` lookup with a fallback to 'Unknown'."""
-    mapping = ", ".join(f"{i}: '{name}'" for i, name in enumerate(names))
+    Uses a Jinja lookup with 'None' (unknown MQTT sensor state) for unmapped IDs."""
+    mapping = ", ".join(f"{i}: '{name}'" for i, name in names.items())
     return (
         "{{% set m = {{ {mapping} }} %}}"
-        "{{{{ m.get(value_json.{field}, 'Unknown') }}}}"
+        "{{{{ m.get(value_json.{field}, 'None') }}}}"
     ).format(mapping=mapping, field=json_field)
 
 
@@ -454,11 +469,11 @@ entities = [
         static_info_homeassistant={
             "icon": "mdi:ev-plug-type2",
             "device_class": "enum",
-            "value_template": enum_value_template("charger_state", charger_state_names_de),
+            "value_template": enum_value_template("charger_state", dict(enumerate(charger_state_names_de))),
             "options": charger_state_names_de,
         },
         static_info_homeassistant_en={
-            "value_template": enum_value_template("charger_state", charger_state_names_en),
+            "value_template": enum_value_template("charger_state", dict(enumerate(charger_state_names_en))),
             "options": charger_state_names_en,
         },
     ),
@@ -473,12 +488,12 @@ entities = [
         static_info_homeassistant={
             "icon": "mdi:ev-station",
             "device_class": "enum",
-            "value_template": enum_value_template("mode", charge_mode_names_de),
-            "options": charge_mode_names_de,
+            "value_template": enum_value_template("mode", charge_mode_state_names_de),
+            "options": list(charge_mode_state_names_de.values()),
         },
         static_info_homeassistant_en={
-            "value_template": enum_value_template("mode", charge_mode_names_en),
-            "options": charge_mode_names_en,
+            "value_template": enum_value_template("mode", charge_mode_state_names_en),
+            "options": list(charge_mode_state_names_en.values()),
         },
         check_type=CheckType.FEATURE,
     ),
@@ -654,12 +669,12 @@ entities = [
             "icon": "mdi:ev-station",
             "value_template": enum_value_template("mode", charge_mode_names_de),
             "command_template": command_template_for_select(charge_mode_names_de),
-            "options": charge_mode_names_de,
+            "options": list(charge_mode_names_de.values()),
         },
         static_info_homeassistant_en={
             "value_template": enum_value_template("mode", charge_mode_names_en),
             "command_template": command_template_for_select(charge_mode_names_en),
-            "options": charge_mode_names_en,
+            "options": list(charge_mode_names_en.values()),
         },
         check_type=CheckType.API_BOOL,
         api_check_path="power_manager/config",
@@ -677,12 +692,12 @@ entities = [
         static_info_homeassistant={
             "icon": "mdi:ev-station",
             "device_class": "enum",
-            "value_template": enum_value_template("mode", charge_mode_names_de),
-            "options": charge_mode_names_de,
+            "value_template": enum_value_template("mode", charge_mode_state_names_de),
+            "options": list(charge_mode_state_names_de.values()),
         },
         static_info_homeassistant_en={
-            "value_template": enum_value_template("mode", charge_mode_names_en),
-            "options": charge_mode_names_en,
+            "value_template": enum_value_template("mode", charge_mode_state_names_en),
+            "options": list(charge_mode_state_names_en.values()),
         },
         check_type=CheckType.API_BOOL,
         api_check_path="power_manager/config",
