@@ -55,8 +55,8 @@ charge_mode_names_de = {
     5: "Min",
     6: "Eco",
     7: "Eco + PV",
-    8: "Min + Eco",
-    9: "Min + Eco + PV",
+    8: "Eco + Min",
+    9: "Eco + Min + PV",
 }
 charge_mode_names_en = {
     0: "Fast",
@@ -66,13 +66,13 @@ charge_mode_names_en = {
     5: "Min",
     6: "Eco",
     7: "Eco + PV",
-    8: "Min + Eco",
-    9: "Min + Eco + PV",
+    8: "Eco + Min",
+    9: "Eco + Min + PV",
 }
 
 # Default is a valid reported state (e.g. an unmanaged EVSE), but not a selector option.
-charge_mode_state_names_de = {**charge_mode_names_de, 4: "Standard"}
-charge_mode_state_names_en = {**charge_mode_names_en, 4: "Default"}
+charge_mode_state_names_de = {**charge_mode_names_de, 4: "Standardmodus"}
+charge_mode_state_names_en = {**charge_mode_names_en, 4: "Default mode"}
 
 charger_state_names_de = [
     "Nicht verbunden",
