@@ -165,10 +165,6 @@ static void pre_reboot()
     }
 }
 
-#if MODULE_WATCHDOG_AVAILABLE()
-static int watchdog_handle;
-#endif
-
 static void register_default_urls() {
     server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
         return send_index_html(request);
@@ -297,28 +293,29 @@ void setup()
     }
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30_s, 0_ms, true);
+    const int watchdog_handle = watchdog.add("main_loop", "Main thread or task scheduler blocked", 30_s, 0_ms, true);
+
+    task_scheduler.scheduleUncancelable([watchdog_handle]() {
+        watchdog.reset(watchdog_handle);
+    }, 0_ms, 2_s);
+
 #endif
 
     if (esp_register_shutdown_handler(pre_reboot) != ESP_OK) {
         logger.printfln("Failed to register reboot handler");
     }
 
-    logger.printfln("Initialization done");
-
 #if MODULE_IO_SCHEDULER_AVAILABLE()
     // Hand over HAL ownership from the main task to the IO task.
     io_scheduler.start_task();
 #endif
 
+    logger.printfln("Initialization done");
+
     boot_stage = BootStage::LOOP;
 }
 
 void loop() {
-#if MODULE_WATCHDOG_AVAILABLE()
-    watchdog.reset(watchdog_handle);
-#endif
-
 #if !MODULE_IO_SCHEDULER_AVAILABLE()
     tf_hal_tick(&hal, 0);
 #endif
