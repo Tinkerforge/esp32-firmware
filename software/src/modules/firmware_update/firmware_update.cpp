@@ -594,7 +594,12 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         // we will probably overwrite the first 16 bytes soon.
         // This only fixes a confusing event log message, so it's
         // fine to ignore await errors here.
-        (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid("preparing firmware update"); });
+        // URL downloads run in the main task while file uploads run in the HTTP thread.
+        if (running_in_main_task()) {
+            this->change_update_partition_to_invalid("preparing firmware update");
+        } else {
+            (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid("preparing firmware update"); });
+        }
         mark_update_partition_invalid = false;
     }
 
