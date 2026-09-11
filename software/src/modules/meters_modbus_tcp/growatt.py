@@ -1,7 +1,7 @@
 display_names = [
     ('Growatt Hybrid Inverter', {
-        'en': 'Growatt hybrid inverter (TL-X and TL-XH series)',
-        'de': 'Growatt Hybrid-Wechselrichter (TL-X- und TL-XH-Serie)',
+        'en': 'Growatt hybrid inverter',
+        'de': 'Growatt Hybrid-Wechselrichter',
     }),
 ]
 
