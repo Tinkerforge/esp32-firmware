@@ -329,7 +329,8 @@ void MqttAutoDiscovery::announce_next_topic()
     // 7*64: topic_prefix (four times) and client name (thrice)
     // 13: component (max length is "binary_sensor")
     // 250: device_info
-    constexpr size_t json_doc_size = MQTT_DISCOVERY_MAX_JSON_LENGTH + 265 + 7 * 64 + 13 + 250;
+    // 128: dynamically generated meter value_template
+    constexpr size_t json_doc_size = MQTT_DISCOVERY_MAX_JSON_LENGTH + 265 + 7 * 64 + 13 + 250 + 128;
 
     // TODO: can we afford a 2k stack buffer here?
 
@@ -384,7 +385,8 @@ void MqttAutoDiscovery::announce_next_topic()
     // For MeterValue entities, inject dynamically-resolved value_template
     if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {
         assert(info.value_fractional_digits >= 0);
-        json.addMemberStringF("value_template", "{{value_json[%d] | round(%d)}}", resolved_meter_index, info.value_fractional_digits);
+        // MQTT sensors interpret 'None' as unknown, null measurements must not be rounded.
+        json.addMemberStringF("value_template", "{{value_json[%d] | round(%d) if value_json[%d] is not none else 'None'}}", resolved_meter_index, info.value_fractional_digits, resolved_meter_index);
     }
 
     json.addMemberObject("device");

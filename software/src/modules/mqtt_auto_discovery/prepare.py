@@ -809,7 +809,7 @@ if warp_edition == "warp4":
             name_en="Vehicle State of Charge",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.soc | float}}"
+                "value_template": "{{value_json.soc | float if value_json.soc is not none else 'None'}}"
             },
             check_type=CheckType.API_BOOL,
             api_check_path="ev/state",
@@ -822,7 +822,7 @@ if warp_edition == "warp4":
             name_en="Vehicle Battery Capacity",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.capacity | float}}"
+                "value_template": "{{value_json.capacity | float if value_json.capacity is not none else 'None'}}"
             },
             check_type=CheckType.API_BOOL,
             api_check_path="ev/state",
