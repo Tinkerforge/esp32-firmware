@@ -274,7 +274,6 @@ class Component(Enum):
     BUTTON = "button"
     NUMBER = "number"
     SELECT = "select"
-    TEXT = "text"
 
     def get_discovery_type(self) -> DiscoveryType:
         return {
@@ -284,7 +283,6 @@ class Component(Enum):
             Component.NUMBER: DiscoveryType.STATE_AND_UPDATE,
             Component.BUTTON: DiscoveryType.COMMAND_ONLY,
             Component.SELECT: DiscoveryType.STATE_AND_UPDATE,
-            Component.TEXT: DiscoveryType.STATE_ONLY,
         }[self]
 
 
@@ -778,7 +776,7 @@ entities = [
 if warp_edition == "warp4":
     entities.extend([
         Entity(
-            component=Component.TEXT,
+            component=Component.SENSOR,
             object_id="ev_name",
             path="ev/state",
             name_de="Fahrzeugname",
@@ -791,7 +789,7 @@ if warp_edition == "warp4":
             api_check_path="ev/state",
         ),
         Entity(
-            component=Component.TEXT,
+            component=Component.SENSOR,
             object_id="ev_mac",
             path="ev/state",
             name_de="Fahrzeug MAC Adresse",
