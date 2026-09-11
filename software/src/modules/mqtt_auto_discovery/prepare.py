@@ -750,7 +750,8 @@ entities = [
         availability=[AvailabilityEntry("day_ahead_prices/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_homeassistant={
             "device_class": "monetary",
-            "value_template": "{{(value_json.current_price | float / 1000) | round(2)}}",
+            # INT32_MAX denotes an unavailable price; negative prices are valid.
+            "value_template": "{{(value_json.current_price | float / 1000) | round(2) if value_json.current_price != 2147483647 else 'None'}}",
             "icon": "mdi:solar-power",
             "unit_of_measurement": "ct/kWh",
         },
