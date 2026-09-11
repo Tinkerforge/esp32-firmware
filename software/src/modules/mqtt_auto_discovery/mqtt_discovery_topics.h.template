@@ -3,6 +3,8 @@
 #define MQTT_DISCOVERY_TOPIC_COUNT ({{{topic_count}}})
 #define MQTT_DISCOVERY_MAX_JSON_LENGTH ({{{max_json_len}}})
 #define MQTT_DISCOVERY_MAX_AVAILABILITY_COUNT ({{{max_availability_count}}})
+#define MQTT_DISCOVERY_CHARGE_MODE_COUNT ({{{charge_mode_count}}})
+#define MQTT_DISCOVERY_MAX_CHARGE_MODE_JSON_LENGTH ({{{max_charge_mode_json_len}}})
 
 #include "mqtt_discovery_type.enum.h"
 
@@ -11,6 +13,7 @@ enum class MqttDiscoveryCheckType : uint8_t {
     Feature,     // Check api.hasFeature(feature) — hardware capability check
     ApiBool,     // Check if api_check_path exists and api_check_key is true (bool)
     MeterValue,  // Check meter config enabled + value_id present in value_ids; resolves index at runtime
+    ChargeModeSelect, // ApiBool plus options from charge_manager/supported_charge_modes
 };
 
 struct MqttDiscoveryAvailabilityEntry {
@@ -40,3 +43,11 @@ struct MqttDiscoveryTopicInfo {
 };
 
 extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];
+
+struct MqttDiscoveryChargeMode {
+    uint8_t id;
+    const char *name_de;
+    const char *name_en;
+};
+
+extern const MqttDiscoveryChargeMode mqtt_discovery_charge_modes[MQTT_DISCOVERY_CHARGE_MODE_COUNT];

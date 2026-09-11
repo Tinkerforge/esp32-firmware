@@ -142,6 +142,15 @@ void MqttAutoDiscovery::register_events()
         return EventResult::OK;
     });
 #endif
+    if (api.getState("charge_manager/supported_charge_modes", false) != nullptr) {
+        event.registerEvent("charge_manager/supported_charge_modes", {}, [this](const Config *) {
+            if (this->task_id != 0) {
+                this->next_topic = 0;
+                task_scheduler.rescheduleNow(this->task_id);
+            }
+            return EventResult::OK;
+        });
+    }
 }
 
 size_t MqttAutoDiscovery::get_discovery_topic(size_t topic_idx, char *buf, size_t buf_len)
@@ -234,6 +243,7 @@ void MqttAutoDiscovery::announce_next_topic()
             entity_enabled = api.hasFeature(info.feature);
             break;
 
+        case MqttDiscoveryCheckType::ChargeModeSelect:
         case MqttDiscoveryCheckType::ApiBool: {
             const Config *cfg = api.getState(info.api_check_path, false);
             if (cfg == nullptr)
@@ -278,6 +288,24 @@ void MqttAutoDiscovery::announce_next_topic()
         }
         default:
             esp_system_abortf<96>("Unknown MqttDiscoveryCheckType %d", static_cast<int>(info.check_type));
+    }
+
+    const MqttDiscoveryChargeMode *supported_modes[MQTT_DISCOVERY_CHARGE_MODE_COUNT];
+    size_t supported_mode_count = 0;
+    if (entity_enabled && info.check_type == MqttDiscoveryCheckType::ChargeModeSelect) {
+        const Config *modes = api.getState("charge_manager/supported_charge_modes", false);
+        if (modes != nullptr) {
+            for (const auto &mode : mqtt_discovery_charge_modes) {
+                for (size_t i = 0; i < modes->count(); ++i) {
+                    if (modes->get(i)->asUint() == mode.id) {
+                        supported_modes[supported_mode_count++] = &mode;
+                        break;
+                    }
+                }
+            }
+        }
+        // Do not advertise an empty selector or fall back to unsupported modes.
+        entity_enabled = supported_mode_count > 0;
     }
 
     CoolString topic;
@@ -334,9 +362,10 @@ void MqttAutoDiscovery::announce_next_topic()
 
     // TODO: can we afford a 2k stack buffer here?
 
-    char *buf = static_cast<char *>(malloc(json_doc_size));
-    memset(buf, 0, json_doc_size);
-    TFJsonSerializer json(buf, json_doc_size);
+    const size_t buffer_size = json_doc_size + (info.check_type == MqttDiscoveryCheckType::ChargeModeSelect ? MQTT_DISCOVERY_MAX_CHARGE_MODE_JSON_LENGTH : 0);
+    char *buf = static_cast<char *>(malloc(buffer_size));
+    memset(buf, 0, buffer_size);
+    TFJsonSerializer json(buf, buffer_size);
 
     json.addObject();
 
@@ -381,6 +410,23 @@ void MqttAutoDiscovery::announce_next_topic()
 
     // Inject pre-formatted static_info as raw JSON object members
     json._addJson(static_info, strlen(static_info));
+
+    if (info.check_type == MqttDiscoveryCheckType::ChargeModeSelect) {
+        String value_template = "{% set m = {";
+        json.addMemberArray("options");
+        for (size_t i = 0; i < supported_mode_count; ++i) {
+            const auto &mode = *supported_modes[i];
+            const char *mode_name = default_language == Language::English ? mode.name_en : mode.name_de;
+            json.addString(mode_name);
+            if (i != 0)
+                value_template += ", ";
+            value_template += String(mode.id) + ": '" + mode_name + "'";
+        }
+        json.endArray();
+        // The read-only sensors still display modes outside the selectable subset.
+        value_template += "} %}{{ m.get(value_json.mode, 'None') }}";
+        json.addMemberString("value_template", value_template.c_str());
+    }
 
     // For MeterValue entities, inject dynamically-resolved value_template
     if (info.check_type == MqttDiscoveryCheckType::MeterValue && resolved_meter_index >= 0) {

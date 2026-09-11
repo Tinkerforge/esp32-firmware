@@ -313,6 +313,7 @@ class CheckType(Enum):
     FEATURE = "Feature"  # Check api.hasFeature(feature)
     API_BOOL = "ApiBool"  # Check API path exists and bool key is true. bool key is optional. If not present the existence of the path is enough to announce the entity.
     METER_VALUE = "MeterValue"  # Check meter config enabled + value_id present in value_ids
+    CHARGE_MODE_SELECT = "ChargeModeSelect"  # ApiBool plus runtime supported charging mode options
 
 
 @dataclass
@@ -667,16 +668,12 @@ entities = [
         ],
         static_info_homeassistant={
             "icon": "mdi:ev-station",
-            "value_template": enum_value_template("mode", charge_mode_names_de),
             "command_template": command_template_for_select(charge_mode_names_de),
-            "options": list(charge_mode_names_de.values()),
         },
         static_info_homeassistant_en={
-            "value_template": enum_value_template("mode", charge_mode_names_en),
             "command_template": command_template_for_select(charge_mode_names_en),
-            "options": list(charge_mode_names_en.values()),
         },
-        check_type=CheckType.API_BOOL,
+        check_type=CheckType.CHARGE_MODE_SELECT,
         api_check_path="charge_manager/config",
         api_check_key="enable_charge_manager",
     ),
@@ -913,6 +910,10 @@ cpp = tfutil.specialize_template(
     None,
     {
         "{{{topics}}}": ",\n".join(topics),
+        "{{{charge_modes}}}": ",\n".join(
+            f"    {{{mode}, {json.dumps(name)}, {json.dumps(charge_mode_names_en[mode])}}}"
+            for mode, name in charge_mode_names_de.items()
+        ),
     },
 )
 
@@ -925,6 +926,15 @@ h = tfutil.specialize_template(
         "{{{topic_count}}}": str(len(topics)),
         "{{{max_json_len}}}": str(max([x.get_json_len() for x in entities])),
         "{{{max_availability_count}}}": str(max([len(x.availability) for x in entities])),
+        "{{{charge_mode_count}}}": str(len(charge_mode_names_de)),
+        # Upper bound for runtime options and value_template, including JSON escaping.
+        "{{{max_charge_mode_json_len}}}": str(max(
+            len(json.dumps({
+                "options": list(names.values()),
+                "value_template": enum_value_template("mode", names),
+            }))
+            for names in (charge_mode_names_de, charge_mode_names_en)
+        )),
     },
 )
 

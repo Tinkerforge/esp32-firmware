@@ -5,3 +5,7 @@
 const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT] = {
 {{{topics}}}
 };
+
+const MqttDiscoveryChargeMode mqtt_discovery_charge_modes[MQTT_DISCOVERY_CHARGE_MODE_COUNT] = {
+{{{charge_modes}}}
+};
