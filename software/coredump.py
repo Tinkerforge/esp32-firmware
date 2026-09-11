@@ -11,6 +11,7 @@ import re
 import subprocess
 import tempfile
 import shutil
+import shlex
 import tinkerforge_util as tfutil
 import test_runner.parttool as parttool
 
@@ -29,6 +30,55 @@ PREFIX = b"___tf_coredump_info_start___"
 SUFFIX = b"___tf_coredump_info_end___"
 EXTRA_INFO_HEADER = b'\xA5\x02\x00\x00ESP_EXTRA_INFO'
 OFFSET_BEFORE_ELF_HEADER = 24
+
+# Xtensa's windowed ABI stores the call-window size in the upper two bits
+# of return addresses. GDB reconstructs those bits from the current PC.
+# After a jump to a low invalid address, it can therefore unwind the stack
+# but report all callers in the wrong address region. Keep the real crash
+# registers intact and provide symbolized call sites as a fallback.
+GDB_BACKTRACE_FALLBACK = r'''
+import gdb
+
+def tf_backtrace_fallback():
+    frame = gdb.newest_frame()
+    if frame is None or not 0 <= frame.pc() < 0x40000000:
+        return
+
+    recovered = []
+    frame_number = 0
+    while frame is not None:
+        pc = frame.pc()
+        if frame_number > 0 and 3 <= pc < 0x40000000:
+            # CALL instructions are three bytes long. Use the call site,
+            # rather than the return address, for source/inline lookup.
+            call_pc = (pc | 0x40000000) - 3
+            block = gdb.block_for_pc(call_pc)
+            functions = []
+            while block is not None:
+                if block.function is not None:
+                    functions.append(str(block.function))
+                block = block.superblock
+            if functions:
+                recovered.append((frame_number, call_pc, functions, gdb.find_pc_line(call_pc)))
+        try:
+            frame = frame.older()
+        except gdb.error:
+            break
+        frame_number += 1
+
+    if not recovered:
+        return
+
+    gdb.write('\nRecovered Xtensa caller locations (address-region fallback):\n')
+    for number, pc, functions, sal in recovered:
+        gdb.write('#{}  0x{:08x} in {}\n'.format(number, pc, functions[0]))
+        if sal.symtab is not None and sal.line:
+            gdb.write('    at {}:{}\n'.format(sal.symtab.filename, sal.line))
+        for function in functions[1:]:
+            gdb.write('    inlined into {}\n'.format(function))
+
+tf_backtrace_fallback()
+'''
 
 def extra_info_reg_name(reg):
     return {
@@ -328,6 +378,7 @@ if __name__ == '__main__':
                         "-ex 'echo ============================= Backtrace starts here ============================\n' " +
                         "-ex 'echo ================================================================================\n' " +
                         "-ex 'bt full' " +
+                        "-ex " + shlex.quote("python exec(" + repr(GDB_BACKTRACE_FALLBACK) + ")") + " " +
                         f"{firmware_path} {core_dump_path}")
 
         if firmware_path:
