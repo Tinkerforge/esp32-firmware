@@ -77,6 +77,8 @@ void MqttAutoDiscovery::stop()
 
     task_scheduler.cancel(this->task_id);
     this->task_id = 0;
+    task_scheduler.cancel(this->refresh_task_id);
+    this->refresh_task_id = 0;
 
     // <discovery_prefix>/+/<node_id>/+/config
     String discovery_topic;
@@ -229,6 +231,16 @@ void MqttAutoDiscovery::announce_next_topic()
     if (++this->next_topic >= MQTT_DISCOVERY_TOPIC_COUNT) {
         this->next_topic = 0;
         task_scheduler.updateCurrentTaskDelay(15_min);
+        // HA does not re-evaluate old state messages when discovery changes a template.
+        // Allow discovery processing to finish, then resend through the normal API backend.
+        task_scheduler.cancel(this->refresh_task_id);
+        this->refresh_task_id = task_scheduler.scheduleOnce([this]() {
+            this->refresh_task_id = 0;
+            for (const auto &info : mqtt_discovery_topic_infos) {
+                if (info.type != MqttDiscoveryType::CommandOnly)
+                    mqtt.refresh_state(info.path);
+            }
+        }, 1_s);
     } else {
         task_scheduler.updateCurrentTaskDelay(0_us);
     }
