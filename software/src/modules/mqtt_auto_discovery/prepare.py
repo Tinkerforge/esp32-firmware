@@ -697,7 +697,8 @@ entities = [
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_homeassistant={
             "device_class": "energy",
-            "value_template": "{{(value_json.wh_tomorrow | float / 1000) | round(2)}}",
+            # The forecast API uses -1 for missing data; preserve genuine zero forecasts.
+            "value_template": "{{(value_json.wh_tomorrow | float / 1000) | round(2) if value_json.wh_tomorrow >= 0 else 'None'}}",
             "icon": "mdi:solar-power-variant-outline",
             "unit_of_measurement": "kWh",
         },
@@ -714,7 +715,7 @@ entities = [
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_homeassistant={
             "device_class": "energy",
-            "value_template": "{{(value_json.wh_today | float / 1000) | round(2)}}",
+            "value_template": "{{(value_json.wh_today | float / 1000) | round(2) if value_json.wh_today >= 0 else 'None'}}",
             "icon": "mdi:solar-power-variant",
             "unit_of_measurement": "kWh",
         },
@@ -731,7 +732,7 @@ entities = [
         availability=[AvailabilityEntry("solar_forecast/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_homeassistant={
             "device_class": "energy",
-            "value_template": "{{(value_json.wh_today_remaining | float / 1000) | round(2)}}",
+            "value_template": "{{(value_json.wh_today_remaining | float / 1000) | round(2) if value_json.wh_today_remaining >= 0 else 'None'}}",
             "icon": "mdi:solar-power",
             "unit_of_measurement": "kWh",
         },
