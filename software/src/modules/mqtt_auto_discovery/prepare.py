@@ -663,7 +663,7 @@ entities = [
         name_en="Active charge mode",
         availability=[
             MQTT_NOT_READ_ONLY,
-            AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
+            AvailabilityEntry("charge_manager/config", "{{ 'online' if value_json.enable_charge_manager else 'offline' }}"),
         ],
         static_info_homeassistant={
             "icon": "mdi:ev-station",
@@ -677,8 +677,8 @@ entities = [
             "options": list(charge_mode_names_en.values()),
         },
         check_type=CheckType.API_BOOL,
-        api_check_path="power_manager/config",
-        api_check_key="enabled",
+        api_check_path="charge_manager/config",
+        api_check_key="enable_charge_manager",
     ),
     Entity(
         component=Component.SENSOR,
@@ -687,7 +687,7 @@ entities = [
         name_de="Aktueller Lademodus",
         name_en="Current charge mode",
         availability=[
-            AvailabilityEntry("power_manager/config", "{{ 'online' if value_json.enabled else 'offline' }}"),
+            AvailabilityEntry("charge_manager/config", "{{ 'online' if value_json.enable_charge_manager else 'offline' }}"),
         ],
         static_info_homeassistant={
             "icon": "mdi:ev-station",
@@ -700,8 +700,8 @@ entities = [
             "options": list(charge_mode_state_names_en.values()),
         },
         check_type=CheckType.API_BOOL,
-        api_check_path="power_manager/config",
-        api_check_key="enabled",
+        api_check_path="charge_manager/config",
+        api_check_key="enable_charge_manager",
     ),
     Entity(
         component=Component.SENSOR,
