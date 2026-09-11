@@ -836,6 +836,13 @@ if warp_edition == "warp4":
 # Each tuple: (object_id_suffix, name_de, name_en, meter_value_id, rounding, unit, device_class, state_class)
 meter_value_entries = load_meter_value_entries(METER_VALUE_IDS)
 
+# Compatibility entities: preserve the original meter discovery object IDs.
+meter_value_entries.extend([
+    ("powernow",  "Leistungsaufnahme",      "Power draw",               74,  0, "W",   "power",  "measurement"),
+    ("energyabs", "Stromverbrauch absolut", "Energy consumption (abs)", 213, 3, "kWh", "energy", "total"),
+    ("energyrel", "Stromverbrauch relativ", "Energy consumption (rel)", 214, 3, "kWh", "energy", "total"),
+])
+
 for meter_id in range(0, meters_max_slots):
     for suffix, name_de, name_en, value_id, rounding, unit, dev_class, state_class in meter_value_entries:
         static_info = {
