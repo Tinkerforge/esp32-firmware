@@ -1047,3 +1047,9 @@
 - Improve translations
 - Update timezone database
 - Fix unplugging a vehicle sometimes stopping every other managed charger for one allocation interval (through EVSE Bricklet firmware 2.1.15)
+
+2026-09-11: 2.13.1 (<unknown>)
+- Fix crash during firmware update
+- Fix Home Assistant MQTT discovery of vehicle name and MAC address
+- Restore legacy Home Assistant meter entities and numeric charging status
+- Support all available charging modes in Home Assistant
