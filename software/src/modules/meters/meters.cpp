@@ -356,6 +356,7 @@ void Meters::setup()
         int32_t history_samples[OPTIONS_METERS_MAX_SLOTS()];
 #if MODULE_WS_AVAILABLE()
         bool valid_samples[OPTIONS_METERS_MAX_SLOTS()];
+        const bool have_ws_client = ws.haveActiveClient();
 #endif
         StringBuilder sb;
 
@@ -383,7 +384,7 @@ void Meters::setup()
         ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
-        if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
+        if (have_ws_client && sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
             sb.printf("{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
 
             for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
@@ -418,7 +419,7 @@ void Meters::setup()
             end_this_interval = 0_us;
 
 #if MODULE_WS_AVAILABLE()
-            if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
+            if (have_ws_client && sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * HISTORY_CHARS_PER_VALUE + 100)) {
                 sb.puts("{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
 
                 for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
