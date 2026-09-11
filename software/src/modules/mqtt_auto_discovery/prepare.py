@@ -469,6 +469,19 @@ entities = [
         availability=[],
         static_info_homeassistant={
             "icon": "mdi:ev-plug-type2",
+            "value_template": "{{value_json.charger_state}}",
+        },
+    ),
+    Entity(
+        component=Component.SENSOR,
+        feature=Feature.EVSE,
+        object_id="chargerstate_text",
+        path="evse/state",
+        name_de="Ladestatus (Text)",
+        name_en="Charge state (text)",
+        availability=[],
+        static_info_homeassistant={
+            "icon": "mdi:ev-plug-type2",
             "device_class": "enum",
             "value_template": enum_value_template("charger_state", dict(enumerate(charger_state_names_de))),
             "options": charger_state_names_de,
