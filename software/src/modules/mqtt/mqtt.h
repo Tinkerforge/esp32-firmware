@@ -67,6 +67,7 @@ public:
     // Retain messages by default because we only send on change.
     bool publish_with_prefix(const String &path, const String &payload, bool retain = true);
     bool publish(const String &topic, const String &payload, bool retain);
+    void refresh_state(const char *path);
 
     void subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
     bool unsubscribe(const String &path, AddPrefix add_prefix = AddPrefix::No);

@@ -264,6 +264,16 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 //#endif
 }
 
+void Mqtt::refresh_state(const char *path)
+{
+    for (auto &reg : api.states) {
+        if (reg.path == path) {
+            reg.config->set_updated(1 << this->backend_idx);
+            return;
+        }
+    }
+}
+
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     auto &last_send = this->state_last_send[stateIdx];
