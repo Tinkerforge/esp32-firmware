@@ -844,6 +844,50 @@ if warp_edition == "warp4":
     ])
 
 
+# Preserve the original entity IDs and value sources from the legacy meter API.
+for object_id, field, name_de, name_en, rounding, unit, device_class, state_class in [
+    ("powernow", "power", "Leistungsaufnahme", "Power draw", 0, "W", "power", "measurement"),
+    ("energyabs", "energy_abs", "Stromverbrauch absolut", "Energy consumption (absolute)", 3, "kWh", "energy", "total"),
+    ("energyrel", "energy_rel", "Stromverbrauch relativ", "Energy consumption (relative)", 3, "kWh", "energy", "total"),
+]:
+    entities.append(
+        Entity(
+            component=Component.SENSOR,
+            feature=Feature.METER,
+            object_id=object_id,
+            path="meter/values",
+            name_de=name_de,
+            name_en=name_en,
+            availability=[],
+            static_info_homeassistant={
+                "value_template": f"{{{{value_json.{field} | round({rounding}) if value_json.{field} is not none else 'None'}}}}",
+                "unit_of_measurement": unit,
+                "device_class": device_class,
+                "state_class": state_class,
+            },
+        )
+    )
+
+for phase in range(1, 4):
+    index = phase + 2
+    entities.append(
+        Entity(
+            component=Component.SENSOR,
+            feature=Feature.METER_PHASES,
+            object_id=f"current_l{phase}",
+            path="meter/all_values",
+            name_de=f"Strom L{phase}",
+            name_en=f"Current L{phase}",
+            availability=[],
+            static_info_homeassistant={
+                "value_template": f"{{{{value_json[{index}] | round(3) if value_json[{index}] is not none else 'None'}}}}",
+                "unit_of_measurement": "A",
+                "device_class": "current",
+                "state_class": "measurement",
+            },
+        )
+    )
+
 # meter value definitions, derived from meters/meter_value_id.csv.
 # Each tuple: (object_id_suffix, name_de, name_en, meter_value_id, rounding, unit, device_class, state_class)
 meter_value_entries = load_meter_value_entries(METER_VALUE_IDS)
