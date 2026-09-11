@@ -46,9 +46,9 @@ public:
     bool reset()                  override;
 
     void update_from_em_all_data(const EMAllDataCommon &all_data);
-private:
-    void update_all_values(float *values, size_t values_count);
+    void energy_meter_all_values_callback(const float *all_values);
 
+private:
     uint32_t slot;
     Config *state;
     Config *errors;

@@ -188,6 +188,7 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
     uint16_t get_all_energy_meter_values(float *ret_values);
+    void start_polling_all_energy_meter_values(size_t id_count);
     bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
 
@@ -218,6 +219,9 @@ private:
     void get_debug_line_impl(StringBuilder *sb);
 
     EVSEV2AllData all_data;
+
+    float *all_energy_meter_values = nullptr;
+    bool   all_energy_meter_values_valid = false;
 
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;

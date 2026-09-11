@@ -159,6 +159,67 @@ uint16_t EMCommon::get_energy_meter_detailed_values(float *ret_values)
     return rc == TF_E_OK ? len : 0;
 }
 
+void EMCommon::start_polling_all_energy_meter_values(size_t id_count)
+{
+#if MODULE_METERS_EM_AVAILABLE()
+    if (all_energy_meter_values != nullptr) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("start_polling_all_energy_meter_values called twice");
+#else
+        logger.printfln("Bug: start_polling_all_energy_meter_values called twice");
+        return;
+#endif
+    }
+
+    all_energy_meter_values = static_cast<float *>(perm_aligned_alloc(alignof(float), id_count * sizeof(float), RAM::PSRAM));
+
+    if (all_energy_meter_values == nullptr) {
+        logger.printfln("No memory to poll all meter values");
+        return;
+    }
+
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this, id_count]() {
+            uint16_t len = 0;
+
+            const int rc = backend->wem_get_energy_meter_detailed_values(this->all_energy_meter_values, &len);
+            this->all_energy_meter_values_rc = static_cast<int8_t>(rc);
+
+            if (rc != TF_E_OK) {
+                // Log error in after_io callback
+                this->all_energy_meter_values_valid = false;
+                return;
+            }
+
+            if (len == id_count) {
+                this->all_energy_meter_values_valid = true;
+                return;
+            }
+
+            if (len > id_count) {
+#ifdef DEBUG_FS_ENABLE
+                esp_system_abort("Received more energy meter values than expected; buffer overflow on heap");
+#else
+                logger.printfln("Received more energy meter values than expected; buffer overflow on heap");
+#endif
+            } else {
+                logger.printfln("Received less energy values than expected :-?");
+            }
+
+            this->all_energy_meter_values_valid = false;
+        },
+        [this]() {
+            check_bricklet_reachable(this->all_energy_meter_values_rc, "start_polling_all_energy_meter_values");
+
+            if (this->all_energy_meter_values_valid) {
+                meters_em.energy_meter_all_values_callback(this->all_energy_meter_values);
+            }
+        },
+        1_s, 1_s);
+#endif
+}
+
 bool EMCommon::reset_energy_meter_relative_energy()
 {
     int rc = backend->wem_reset_energy_meter_relative_energy();

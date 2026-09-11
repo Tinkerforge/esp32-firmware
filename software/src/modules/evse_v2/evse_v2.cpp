@@ -1402,6 +1402,64 @@ uint16_t EVSEV2::get_all_energy_meter_values(float *ret_values)
     return len;
 }
 
+void EVSEV2::start_polling_all_energy_meter_values(size_t id_count)
+{
+#if MODULE_METERS_EVSE_V2_AVAILABLE()
+    if (all_energy_meter_values != nullptr) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("start_polling_all_energy_meter_values called twice");
+#else
+        logger.printfln("Bug: start_polling_all_energy_meter_values called twice");
+        return;
+#endif
+    }
+
+    all_energy_meter_values = static_cast<float *>(perm_aligned_alloc(alignof(float), id_count * sizeof(float), RAM::PSRAM));
+
+    if (all_energy_meter_values == nullptr) {
+        logger.printfln("No memory to poll all meter values");
+        return;
+    }
+
+    io_scheduler.driveUncancelable(
+        nullptr,
+        [this, id_count]() {
+            uint16_t len = 0;
+
+            const int rc = tf_evse_v2_get_all_energy_meter_values(&device, this->all_energy_meter_values, &len);
+
+            if (rc != TF_E_OK) {
+                logger.printfln("tf_evse_v2_get_all_energy_meter_values failed: %s (%i)", tf_hal_strerror(rc), rc);
+                this->all_energy_meter_values_valid = false;
+                return;
+            }
+
+            if (len == id_count) {
+                this->all_energy_meter_values_valid = true;
+                return;
+            }
+
+            if (len > id_count) {
+#ifdef DEBUG_FS_ENABLE
+                esp_system_abort("Received more energy meter values than expected; buffer overflow on heap");
+#else
+                logger.printfln("Received more energy meter values than expected; buffer overflow on heap");
+#endif
+            } else {
+                logger.printfln("Received less energy values than expected :-?");
+            }
+
+            this->all_energy_meter_values_valid = false;
+        },
+        [this]() {
+            if (this->all_energy_meter_values_valid) {
+                meters_evse_v2.energy_meter_all_values_callback(this->all_energy_meter_values);
+            }
+        },
+        1_s, 1_s);
+#endif
+}
+
 bool EVSEV2::reset_energy_meter_relative_energy()
 {
     io_scheduler.hal_call([this]() { return tf_evse_v2_reset_energy_meter_relative_energy(&device); });

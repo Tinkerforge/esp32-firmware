@@ -45,6 +45,7 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
     void update_from_em_all_data(const EMAllDataCommon &all_data);
+    void energy_meter_all_values_callback(const float *all_values);
 
 private:
     Config config_prototype;

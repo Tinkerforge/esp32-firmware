@@ -84,11 +84,9 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
         value_index_currents[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
         value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
 
-        update_all_values(all_values, id_count);
+        meters.update_all_values(slot, all_values);
 
-        task_scheduler.scheduleUncancelable([this, id_count](){
-            update_all_values(nullptr, id_count);
-        }, 990_ms, 990_ms);
+        em_common.start_polling_all_energy_meter_values(id_count);
 
         return;
     }
@@ -101,20 +99,9 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
     meters.finish_update(slot);
 }
 
-void MeterEM::update_all_values(float *values, size_t values_count)
+void MeterEM::energy_meter_all_values_callback(const float *all_values)
 {
-    // Place max count array on the stack. The stack is large enough so that any unused space at the end doesn't matter.
-    // No need to initialize the array because either all values are written or it is rejected entirely.
-    float local_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
-
-    if (!values) {
-        values = local_values;
-        if (em_common.get_energy_meter_detailed_values(values) != values_count) {
-            return;
-        }
-    }
-
-    meters.update_all_values(slot, values);
+    meters.update_all_values(slot, all_values);
 }
 
 bool MeterEM::reset()

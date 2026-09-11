@@ -47,6 +47,7 @@ public:
 
     void update_from_evse_v2_all_data(const EVSEV2MeterData *meter_data);
     void energy_meter_values_callback(float power, float current[3]);
+    void energy_meter_all_values_callback(const float *all_values);
 
 private:
     Config config_prototype;

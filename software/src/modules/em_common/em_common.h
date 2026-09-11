@@ -122,6 +122,7 @@ public:
     bool format_sdcard();
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
+    void start_polling_all_energy_meter_values(size_t id_count);
     bool reset_energy_meter_relative_energy();
 
     inline void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const
@@ -244,6 +245,10 @@ private:
     uint32_t error_flags = 0;
     uint32_t config_error_flags = 0;
     bool     bricklet_reachable = true;
+
+    int8_t all_energy_meter_values_rc = 0;
+    bool   all_energy_meter_values_valid = false;
+    float *all_energy_meter_values = nullptr;
 };
 
 #include "generated/module_available_end.h"

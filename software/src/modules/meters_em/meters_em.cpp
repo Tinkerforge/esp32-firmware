@@ -90,3 +90,11 @@ void MetersEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 
     meter_instance->update_from_em_all_data(all_data);
 }
+
+void MetersEM::energy_meter_all_values_callback(const float *all_values)
+{
+    if (!meter_instance)
+        return;
+
+    meter_instance->energy_meter_all_values_callback(all_values);
+}

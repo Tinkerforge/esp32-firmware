@@ -99,3 +99,11 @@ void MetersEVSEV2::energy_meter_values_callback(float power, float current[3])
 
     meter_instance->energy_meter_values_callback(power, current);
 }
+
+void MetersEVSEV2::energy_meter_all_values_callback(const float *all_values)
+{
+    if (!meter_instance)
+        return;
+
+    meter_instance->energy_meter_all_values_callback(all_values);
+}
