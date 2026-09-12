@@ -152,6 +152,8 @@ def load_meter_value_entries(wanted_ids: list[int]) -> list:
 
     def get_device_class(unit: str, measurand: str) -> str | None:
         """Return the HA device_class string or None."""
+        if measurand == 'Capacity' and unit == 'kWh':
+            return 'energy_storage'
         if unit == '%':
             if measurand == 'State Of Charge':
                 return 'battery'
@@ -167,6 +169,9 @@ def load_meter_value_entries(wanted_ids: list[int]) -> list:
     # --- state_class mapping ----------------------------------------------
     def get_state_class(measurand: str, kind: str, unit: str) -> str:
         """Return the HA state_class string."""
+        # Battery capacity is a measurement, even when expressed in energy units.
+        if measurand == 'Capacity':
+            return 'measurement'
         # Energy values are totals (monotonically increasing or resettable)
         if measurand == 'Energy' or unit in ('kWh', 'kvarh', 'kVAh'):
             return 'total'
@@ -176,9 +181,6 @@ def load_meter_value_entries(wanted_ids: list[int]) -> list:
         # Run time is a total
         if measurand == 'Run Time':
             return 'total_increasing'
-        # Capacity is a measurement
-        if measurand == 'Capacity':
-            return 'measurement'
         # Everything else (voltage, current, power, frequency, temp, etc.)
         return 'measurement'
 
@@ -774,7 +776,8 @@ entities = [
         name_en="Electricity market price",
         availability=[AvailabilityEntry("day_ahead_prices/config", "{{ 'online' if value_json.enable else 'offline' }}")],
         static_info_homeassistant={
-            "device_class": "monetary",
+            # A price per kWh is not a monetary total with a proper currency unit. Use 'measurement' instead of 'monetary'.
+            "state_class": "measurement",
             # INT32_MAX denotes an unavailable price; negative prices are valid.
             "value_template": "{{(value_json.current_price | float / 1000) | round(2) if value_json.current_price != 2147483647 else 'None'}}",
             "icon": "mdi:solar-power",
@@ -836,7 +839,10 @@ if warp_edition == "warp4":
             name_en="Vehicle State of Charge",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.soc | float if value_json.soc is not none else 'None'}}"
+                "value_template": "{{value_json.soc | float if value_json.soc is not none else 'None'}}",
+                "device_class": "battery",
+                "unit_of_measurement": "%",
+                "state_class": "measurement",
             },
             check_type=CheckType.API_BOOL,
             api_check_path="ev/state",
@@ -849,7 +855,10 @@ if warp_edition == "warp4":
             name_en="Vehicle Battery Capacity",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.capacity | float if value_json.capacity is not none else 'None'}}"
+                "value_template": "{{value_json.capacity | float if value_json.capacity is not none else 'None'}}",
+                "device_class": "energy_storage",
+                "unit_of_measurement": "kWh",
+                "state_class": "measurement",
             },
             check_type=CheckType.API_BOOL,
             api_check_path="ev/state",
