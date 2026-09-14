@@ -1009,9 +1009,6 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
         });
 
     if (!await_result) {
-        const char *task_name = pcTaskGetName(xTaskGetCurrentTaskHandle());
-        logger.printfln("callCommand await failed. This may affect the stack of task '%s'.", task_name);
-
         return "Failed to execute command: Await failed.";
     }
 
