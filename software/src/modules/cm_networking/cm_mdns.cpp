@@ -31,6 +31,13 @@
 #include "tools/net.h"
 #include "cool_string.h"
 
+// Found devices are accumulated in PSRAM, if available. Size unknown.
+// Worst-case JSON size per found device: 178
+#ifdef CONFIG_MDNS_MEMORY_ALLOC_SPIRAM
+const size_t MAX_MDNS_RESULTS = 256;
+#else
+const size_t MAX_MDNS_RESULTS = 64;
+#endif
 
 [[gnu::noinline]] [[gnu::unused]]
 static void add_mdns_service_base()
@@ -387,7 +394,7 @@ void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx)
 }
 
 // Executed by mDNS task
-void CMNetworking::check_mdns_results_cb(mdns_search_once_t *)
+void CMNetworking::check_mdns_results_cb(mdns_search_once_t * /*handle*/)
 {
     task_scheduler.scheduleOnce([]() {
         cm_networking.check_mdns_results();
@@ -396,21 +403,30 @@ void CMNetworking::check_mdns_results_cb(mdns_search_once_t *)
 
 void CMNetworking::check_mdns_results()
 {
-    bool search_finished;
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
-        search_finished = mdns_query_async_get_results(mdns_scan, 0, &scan_results, nullptr);
+        if (scan_results != nullptr) {
+            mdns_query_results_free(scan_results);
+            scan_results = nullptr;
+            logger.printfln("Old scan_results would have leaked"); // TODO Log or abort
+        }
+
+        // The callback is executed before the mDNS task releases the results.
+        // Therefore, the getter can sometimes block for a few milliseconds and might even time out.
+        const bool get_successful = mdns_query_async_get_results(mdns_scan, 64, &scan_results, nullptr);
+
+        if (!get_successful) {
+            // mdns_query_async_get_results timed out. Try again later.
+            task_scheduler.scheduleOnce([this]() {
+                this->check_mdns_results();
+            }, 500_ms);
+            return;
+        }
     }
 
     mdns_query_async_delete(mdns_scan);
     mdns_scan = nullptr;
     mdns_scan_active = false;
-
-    if (!search_finished) {
-        // This should never happen as check_results is only called if we are notified the search has finished.
-        logger.printfln("mDNS query failed");
-        return;
-    }
 
 #if MODULE_WS_AVAILABLE()
     if (ws.haveActiveClient()) {
@@ -442,9 +458,14 @@ void CMNetworking::start_mdns_scan()
         }
     }
 
-    mdns_scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, &check_mdns_results_cb);
+    if (mdns_scan != nullptr) {
+        mdns_query_async_delete(mdns_scan);
+        logger.printfln("Old mdns_scan would have leaked"); // TODO Log or abort
+    }
 
-    if (!mdns_scan) {
+    mdns_scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, MAX_MDNS_RESULTS, &check_mdns_results_cb);
+
+    if (mdns_scan == nullptr) {
         logger.printfln("mDNS scan could not be started");
     }
 }
