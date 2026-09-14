@@ -1091,6 +1091,71 @@ void RemoteAccess::remove_user(uint8_t id)
     }
 }
 
+// Format 16 UUID bytes in canonical (big-endian) byte order as the 8-4-4-4-12
+// hyphenated textual form, matching the layout `parse_uuid_string` accepts.
+// `out` must point to at least 37 bytes (36 chars + NUL).
+static void format_uuid_bytes(const uint8_t bytes[16], char *out)
+{
+    snprintf(out, 37,
+             "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+             bytes[0],  bytes[1],  bytes[2],  bytes[3],
+             bytes[4],  bytes[5],
+             bytes[6],  bytes[7],
+             bytes[8],  bytes[9],
+             bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+}
+
+void RemoteAccess::handle_remove_user_packet(const uint8_t user_uuid_wire[16])
+{
+    // The relay sends the UUID as the native little-endian representation of
+    // its u128, so the bytes that arrive on the wire are the canonical UUID
+    // byte order (as produced by `Uuid::as_bytes()`) with the sequence
+    // reversed. Reverse them back before formatting into the textual form the
+    // firmware stores in its config.
+    uint8_t user_uuid[16];
+    for (size_t i = 0; i < 16; i++) {
+        user_uuid[i] = user_uuid_wire[15 - i];
+    }
+
+    char uuid_str[37];
+    format_uuid_bytes(user_uuid, uuid_str);
+
+    uint8_t found_user_id = 255;
+    for (const auto &user : config.get("users")) {
+        if (user.get("uuid")->asString() == uuid_str) {
+            found_user_id = user.get("id")->asUint8();
+            break;
+        }
+    }
+
+    if (found_user_id == 255) {
+        logger.printfln("RemoveUser prompt for unknown UUID %s, ignoring", uuid_str);
+        return;
+    }
+
+    logger.printfln("RemoveUser prompt for UUID %s, dropping local user %u", uuid_str, found_user_id);
+
+    // Close any active WireGuard tunnels that belong to this user so the peer
+    // doesn't keep an established session after we drop the keys.
+    for (uint8_t conn_id = 0; conn_id < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); conn_id++) {
+        const int32_t conn_no = (static_cast<int32_t>(found_user_id) - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + conn_id;
+        uint8_t conn_idx = get_connection(conn_no);
+        if (conn_idx == 255) {
+            continue;
+        }
+        auto &conn = remote_connections[conn_idx].conn;
+        if (conn != nullptr) {
+            conn->end();
+            conn = nullptr;
+        }
+        remote_connections[conn_idx].id = 255;
+        remote_connections[conn_idx].in_progress = false;
+        update_connection_state(conn_idx, 255, 255, ConnectionState::Disconnected);
+    }
+
+    this->remove_user(found_user_id);
+}
+
 void RemoteAccess::register_urls()
 {
     api.addState("remote_access/config", &config, {"password"}, {"email"});
@@ -2792,6 +2857,20 @@ void RemoteAccess::run_management()
         }
     }
 #endif
+
+    logger.printfln("Received management packet of size %d, sizeof expected packet: %d", ret, static_cast<int>(sizeof(remove_user_command_packet)));
+    // Handle server-prompted user removal. This is dispatched before the
+    // management-command path so the RemoveUser packet doesn't have to share
+    // its on-wire layout (and its always-zero seq_number) with Connect/Disconnect.
+    if (ret >= static_cast<int>(sizeof(management_packet_header))) {
+        const auto *header = reinterpret_cast<const management_packet_header *>(buf);
+        if (header->magic == 0x1234 && header->type == PacketType::RemoveUser
+            && ret >= static_cast<int>(sizeof(remove_user_command_packet))) {
+            const auto *packet = reinterpret_cast<const remove_user_command_packet *>(buf);
+            this->handle_remove_user_packet(packet->command.user_uuid);
+            return;
+        }
+    }
 
     if (ret != sizeof(management_command_packet)) {
         logger.printfln("Didnt receive Management command.");

@@ -122,6 +122,7 @@ private:
     void cancel_service_token_removal();
     void remove_service_token_user();
     void remove_user(uint8_t id);
+    void handle_remove_user_packet(const uint8_t user_uuid_wire[16]);
     String register_with_relay(const Config &relay_config,
                                const unsigned char *pk,
                                const String &note,

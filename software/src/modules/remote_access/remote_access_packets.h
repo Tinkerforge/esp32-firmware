@@ -32,6 +32,7 @@ enum class PacketType : uint8_t {
     Nack = 0x02,
     MetadataForChargeLog = 0x03,
     RequestChargeLogSend = 0x04,
+    RemoveUser = 0x05,
 };
 
 // Management command ID enum from backend/src/udp_server/packet.rs
@@ -93,6 +94,27 @@ struct [[gnu::packed]] ack_packet {
 struct [[gnu::packed]] nack_packet {
     management_packet_header header;
     NackReason reason;
+};
+
+// Payload of a `PacketType::RemoveUser` packet.
+//
+// Sent by the server to tell a connected charger to drop a specific user from
+// its configured users list.
+//
+// The Rust side stores the UUID as a `u128` in a `#[repr(C, packed)]` struct
+// without any explicit endianness conversion, so the bytes that arrive on the
+// wire are the native little-endian representation of `Uuid::as_u128()` --
+// i.e. the canonical UUID byte order (as produced by `Uuid::as_bytes()`) with
+// the byte sequence reversed. Callers must reverse the 16 bytes back into the
+// canonical order before formatting them as the 8-4-4-4-12 textual UUID that
+// the firmware stores in its config.
+struct [[gnu::packed]] remove_user_command {
+    uint8_t user_uuid[16];
+};
+
+struct [[gnu::packed]] remove_user_command_packet {
+    management_packet_header header;
+    remove_user_command command;
 };
 
 // Request to send charge log packet with configuration hash

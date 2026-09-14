@@ -12,6 +12,8 @@
 # - User-level WireGuard tunnels driven by Connect/Disconnect management
 #   commands (state updates, full handshake, disconnect cleanup, command
 #   sequence-number handling, and disable-while-open)
+# - Server-prompted user removal (PacketType::RemoveUser) closes active
+#   tunnels and drops the matching local user
 # - Service-token (support account) registration and removal
 #
 # A local HTTPS server is started to simulate the relay server for most
@@ -370,6 +372,40 @@ class WireGuardTestPeer:
         header = struct.pack('<HHHBB', 0x1234, 24, seq_num, 0, 0)
         command = struct.pack('<ii16s', command_id, connection_no, connection_uuid)
         packet_hex = (header + command).hex()
+
+        script = (
+            "import socket; "
+            "s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); "
+            "s.bind(('10.123.123.1', 0)); "
+            f"s.sendto(bytes.fromhex('{packet_hex}'), ('10.123.123.2', 12345)); "
+            "s.close()"
+        )
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME, "python3", "-c", script],
+            check=True, capture_output=True, text=True,
+        )
+
+    def send_remove_user_prompt(self, user_uuid: uuid_mod.UUID) -> None:
+        """Send a server-prompted user-removal packet to the device.
+
+        The relay-side layout (``backend/src/udp_server/packet.rs``) stores the
+        UUID as a ``u128`` inside a ``#[repr(C, packed)]`` struct without any
+        explicit endianness conversion, so the bytes that end up on the wire are
+        the native little-endian representation of ``Uuid::as_u128()`` -- i.e.
+        the canonical UUID byte order with the sequence reversed. The device
+        reverses them back when matching against its stored UUIDs.
+        """
+        raw_bytes = user_uuid.bytes
+        # u128 is little-endian on the wire (see docstring).
+        wire_uuid = raw_bytes[::-1]
+        # The relay always sends packets padded to the size of the biggest fixed
+        # packet type (32 bytes total) so that any type can be received through
+        # the same-sized socket buffer. The header reports the payload length
+        # (24 here: 16 bytes UUID + 8 bytes trailing padding) and the trailing
+        # padding is ignored by the device, which only reads the UUID.
+        padding = b'\x00' * 8
+        header = struct.pack('<HHHBB', 0x1234, 24, 0, 1, 5)
+        packet_hex = (header + wire_uuid + padding).hex()
 
         script = (
             "import socket; "
@@ -1674,6 +1710,82 @@ def test_disable_closes_user_connections(tc: TestContext) -> None:
     # Disable remote access.  apply_config() calls close_all_remote_connections().
     tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
     tc.wait_for(lambda: _assert_all_disconnected(tc), timeout=10)
+
+
+def test_remove_user_prompt_removes_user(tc: TestContext) -> None:
+    """A `PacketType::RemoveUser` prompt from the relay must drop the matching
+    user from the device's configured-users list (and any of their active
+    WireGuard tunnels)."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    # Find the user that the full registration flow created. The device stores
+    # it with `id=1` because it's the first (and only) user in the array.
+    cfg = tc.api("remote_access/config")
+    tc.assert_eq(1, len(cfg["users"]))
+    user_uuid = uuid_mod.UUID(cfg["users"][0]["uuid"])
+
+    # Open a user tunnel so we can also verify that the prompt tears it down.
+    conn_uuid = os.urandom(16)
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Relay sends the user-removal prompt.
+    wg.send_remove_user_prompt(user_uuid)
+
+    # The user-tunnel slot must reset to Disconnected (the prompt closes any
+    # active tunnels for the removed user before dropping them locally).
+    tc.wait_for(lambda: _assert_all_user_slots_cleared(tc), timeout=10)
+
+    # The user must be gone from the configured-users list.
+    tc.wait_for(
+        lambda: tc.assert_eq(0, len(tc.api("remote_access/config")["users"])),
+        timeout=10,
+    )
+
+
+def test_remove_user_prompt_unknown_uuid_is_ignored(tc: TestContext) -> None:
+    """A `PacketType::RemoveUser` prompt for a UUID the device doesn't know
+    must be silently dropped without affecting existing users or tunnels."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    # Confirm the user we registered with is still there before we send a
+    # prompt for a UUID that doesn't match.
+    cfg = tc.api("remote_access/config")
+    tc.assert_eq(1, len(cfg["users"]))
+    user_count_before = len(cfg["users"])
+
+    # Pick a UUID that doesn't match the registered user.
+    bogus_uuid = uuid_mod.uuid4()
+    while str(bogus_uuid) == cfg["users"][0]["uuid"]:
+        bogus_uuid = uuid_mod.uuid4()
+
+    wg.send_remove_user_prompt(bogus_uuid)
+
+    # Give the device time to process (and ignore) the prompt.
+    time.sleep(2)
+
+    # Existing users must still be there.
+    cfg = tc.api("remote_access/config")
+    tc.assert_eq(user_count_before, len(cfg["users"]))
 
 
 # ---------------------------------------------------------------------------
