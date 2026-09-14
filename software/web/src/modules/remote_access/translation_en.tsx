@@ -48,7 +48,7 @@ let x = {
             "auth_method": "Authorization method",
             "service_token_register": "Register with service token",
             "service_token_register_desc": /*FFN*/(host: string) => <>Allows Tinkerforge support to access this device. Access expires automatically after 24 hours unless it is extended.</> /*NF*/,
-            "service_token_register_active_desc": /*FFN*/(host: string, remaining: number) => <>Your device is currently connected to the service account on <a href={`https://${host}/`}>{host}</a>. The connection will be disconnected automatically in {Math.floor(remaining / 60)} h {remaining % 60} min. You can use the button below to reset the timer to 24 h.</> /*NF*/,
+            "service_token_register_active_desc": /*FFN*/(host: string, remaining: number) => <>Your device is currently connected to the Tinkerforge service account on <a href={`https://${host}/`}>{host}</a>. The connection will be disconnected automatically in {Math.floor(remaining / 60)} h {remaining % 60} min. You can use the button below to reset the timer to 24 h.</> /*NF*/,
             "service_token_extend": "Extend service token by 24 h",
             "service_token_register_failed": "Service token registration failed:",
             "service_token_register_in_progress": "Requesting service token from relay",
