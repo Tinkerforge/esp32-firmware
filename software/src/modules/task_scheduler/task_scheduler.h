@@ -31,6 +31,8 @@
 #include "module.h"
 #include "tools.h"
 
+#include "generated/module_available.h"
+
 struct Task {
     std::function<void(void)> fn;
     uint64_t task_id;
@@ -163,18 +165,14 @@ public:
     // Returns false if not, or when a reboot was requested while awaiting.
     // It is guaranteed that fn will not continue to be executed once await returns.
     // When the timeout is exceeded and fn is still being executed, esp_system_abort is called.
-    [[nodiscard]] bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
-
-    // Same as await, but calls esp_system_abort if await would return false.
-    void await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
+    [[nodiscard("If this returns false, the passed function was potentially not executed!")]]
+    bool await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
 
     bool rescheduleNow(uint64_t task_id);
     bool updateDelay(uint64_t task_id, micros_t new_delay);
     bool updateCurrentTaskDelay(micros_t new_delay);
 
 private:
-    bool await(uint64_t task_id, millis_t millis_to_wait = 10_s);
-
     std::mutex task_mutex;
     TaskQueue tasks;
     std::unique_ptr<Task> currentTask = nullptr;
@@ -189,4 +187,11 @@ private:
 
     void wall_clock_worker();
     void run_wall_clock_task(uint64_t task_id);
+
+    TaskHandle_t tcp_ip_thread = nullptr;
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    TaskHandle_t io_scheduler_thread = nullptr;
+#endif
 };
+
+#include "generated/module_available_end.h"

@@ -362,7 +362,7 @@ Option<time_t> get_localtime_today_midnight_in_utc()
 void ensure_running_in_main_task(std::function<void(void)> &&fn) {
     if (running_in_main_task()) {
         fn();
-    } else {
-        task_scheduler.await_or_die(std::move(fn));
+    } else if (!task_scheduler.await(std::move(fn))) {
+        esp_system_abort("Await failed");
     }
 }

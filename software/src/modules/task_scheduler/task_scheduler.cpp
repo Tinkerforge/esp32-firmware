@@ -387,69 +387,57 @@ uint64_t TaskScheduler::currentTaskId()
     return 0;
 }
 
-bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
+bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
-#ifdef DEBUG_FS_ENABLE
-    if (strcmp(pcTaskGetName(nullptr), TCPIP_THREAD_NAME) == 0) {
-        esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
-    }
-#if MODULE_IO_SCHEDULER_AVAILABLE()
-    // This is dangerous because the main task calls IoScheduler::await frequently.
-    // If the main task waits for the Io Scheduler and the scheduler waits for the main task, we deadlock.
-    io_scheduler.assert_task_inactive("Calling TaskScheduler::await is not allowed in the Io Scheduler thread!");
-#endif
-#endif
-    if (task_id == 0) {
-        logger.printfln("Attempted to await task 0");
-        return false;
-    }
-
     if (this->rebooting) {
         return false;
     }
 
-    if (millis_to_wait == 0_us) {
-        logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0_us is not allowed. This is not scheduleOnce!");
-        return false;
-    }
+    DEBUG_ASSERT_OR_RETURN(
+        millis_to_wait > 0_us,
+        "Calling TaskScheduler::await with millis_to_wait == 0_us is not allowed. This is not scheduleOnce!",
+        false
+    );
 
-    TaskHandle_t thisThread = xTaskGetCurrentTaskHandle();
+    TaskHandle_t this_thread = xTaskGetCurrentTaskHandle();
 
-    if (this->ownerTask() == thisThread) {
-        logger.printfln("Calling TaskScheduler::await is not allowed in the thread owning this scheduler!");
-        return false;
-    }
+    DEBUG_ASSERT_OR_RETURN(
+        this_thread != this->ownerTask(),
+        "Calling TaskScheduler::await is not allowed in the thread owning this scheduler!",
+        false
+    );
+
+    if (tcp_ip_thread == nullptr)
+        tcp_ip_thread = xTaskGetHandle(TCPIP_THREAD_NAME);
+
+    DEBUG_ASSERT_OR_RETURN(
+        this_thread != tcp_ip_thread,
+        "Calling TaskScheduler::await is not allowed in the TCP/IP thread!",
+        false);
+
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+    if (io_scheduler_thread == nullptr)
+        io_scheduler_thread = io_scheduler.get_task_handle();
+
+    DEBUG_ASSERT_OR_RETURN(
+        this_thread != io_scheduler_thread,
+        "Calling TaskScheduler::await is not allowed in the Io Scheduler thread!",
+        false);
+#endif
+
+    uint64_t task_id = 0;
+    aligned_storage<Task> task_buffer;
 
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
-        // The awaited task either
-        // - is in the queue
-        // - is currently running, i.e. not in the queue but in this->currentTask
-        // - or was already executed, canceled or not yet created,
-        //   i.e. not in the queue and not in this->currentTask
-        Task *task = nullptr;
 
-        if (this->currentTask != nullptr && this->currentTask->task_id == task_id)
-            task = this->currentTask.get();
-        else
-            task = tasks.findByTaskID(task_id);
+        task_id = ++last_task_id;
+        Task *ptr = new(&task_buffer) Task(std::move(fn), task_id, 0_us, 0_us, src_location.file_name(), src_location.line(), true);
+        ptr->owned = false;
+        ptr->awaited_by = this_thread;
+        tasks.emplace(ptr);
 
-        if (task == nullptr) {
-            return !this->rebooting;
-        }
-
-        if (!task->once) {
-            logger.printfln("Calling TaskScheduler::await is not allowed for a non-single-shot task");
-            return false;
-        }
-
-        if (task->awaited_by != nullptr) {
-            logger.printfln("Task is already awaited by another thread!");
-            return false;
-        }
-
-        xTaskNotifyStateClear(thisThread);
-        task->awaited_by = thisThread;
+        xTaskNotifyStateClear(this_thread);
     }
 
     if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait.as<uint32_t>())) == 0) {
@@ -464,18 +452,6 @@ bool TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
     }
 
     return !this->rebooting;
-}
-
-bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
-{
-    aligned_storage<Task> task_buf;
-    return await(scheduleOnceNoAlloc(&task_buf, false, std::move(fn), 0_ms, src_location), millis_to_wait);
-}
-
-void TaskScheduler::await_or_die(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
-{
-    if (!await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait))
-        esp_system_abort("await failed");
 }
 
 void TaskScheduler::wall_clock_worker() {

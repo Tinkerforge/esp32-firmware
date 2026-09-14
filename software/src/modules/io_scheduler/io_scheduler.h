@@ -117,11 +117,8 @@ public:
         }
     }
 
-    [[gnu::always_inline]]
-    void assert_task_inactive(const char *error_message) const {
-        if (xTaskGetCurrentTaskHandle() == task_handle) {
-            esp_system_abort(error_message);
-        }
+    TaskHandle_t get_task_handle() {
+        return this->task_handle;
     }
 
 private:
