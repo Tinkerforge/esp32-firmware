@@ -935,7 +935,7 @@ export function pre_init() {
                 return clone;
             },
             get_state_info: (battery_slot: number, config: BatteryConfig, battery_state: BatteryState): {state_name: string, warning: ComponentChild} => {
-                if (!util.hasValue(config[1].table)) {
+                if (!util.hasValue(config[1].table) || !util.hasValue(battery_state)) {
                     return undefined;
                 }
 
