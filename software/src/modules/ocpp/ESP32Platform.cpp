@@ -28,6 +28,7 @@
 #include <lib/url.h>
 #include <esp_crt_bundle.h>
 #include <mbedtls/base64.h>
+#include <mbedtls/error.h>
 #include <mbedtls/ssl.h>
 #include <esp_transport_ws.h>
 #include <LittleFS.h>
@@ -92,6 +93,7 @@ struct PlatformContext {
     std::unique_ptr<unsigned char[]> client_key = nullptr;
     bool use_cert_bundle = false;
     bool recreate_client = false;
+    uint32_t connect_started_ms = 0;
 
     std::unique_ptr<char[]> frag_buf = nullptr;
 };
@@ -151,13 +153,79 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     PlatformContext *p = (PlatformContext *)handler_args;
     tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
+    case WEBSOCKET_EVENT_BEFORE_CONNECT: {
+        const uint32_t started_ms = millis();
+        task_scheduler.scheduleOnce([p, started_ms](){
+            if (!ctx_alive(p)) {
+                return;
+            }
+            p->connect_started_ms = started_ms;
+            // Log only the authority, never URL userinfo, query tokens or headers.
+            auto *url = parse_url(p->url.c_str(), nullptr, 0);
+            if (url != nullptr) {
+                const bool tls = url->scheme != nullptr && strcmp(url->scheme, "wss") == 0;
+                logger.tracefln(ocpp.trace_buf_idx, "OCPP connecting to %s://%s:%u (subprotocol %s, Basic Auth %s, CA %s, client certificate %s)",
+                               url->scheme != nullptr ? url->scheme : "?", url->host,
+                               url->port != 0 ? url->port : (tls ? 443U : 80U), p->subprotocol.c_str(),
+                               p->auth_headers_count > 0 ? "enabled" : "disabled",
+                               !tls ? "n/a" : (p->use_cert_bundle ? "bundled roots" : "configured certificate"),
+                               p->client_cert != nullptr ? "configured" : "none");
+                free(url);
+            }
+        });
+        break;
+    }
+    case WEBSOCKET_EVENT_CONNECTED:
+    case WEBSOCKET_EVENT_DISCONNECTED:
+    case WEBSOCKET_EVENT_CLOSED: {
+        const uint32_t event_ms = millis();
+        task_scheduler.scheduleOnce([p, event_id, event_ms](){
+            if (!ctx_alive(p)) {
+                return;
+            }
+            logger.tracefln(ocpp.trace_buf_idx, "OCPP WebSocket %s (%lu ms since connection attempt)",
+                           event_id == WEBSOCKET_EVENT_CONNECTED ? "connected" :
+                           (event_id == WEBSOCKET_EVENT_CLOSED ? "closed cleanly" : "disconnected"),
+                           static_cast<unsigned long>(event_ms - p->connect_started_ms));
+        });
+        break;
+    }
     case WEBSOCKET_EVENT_ERROR: {
-        PlatformConnectionError error = classify_connection_error(data->error_handle);
-        if (error == PlatformConnectionError::Unknown) {
-            break;
-        }
-        task_scheduler.scheduleOnce([p, error](){
-            if (ctx_alive(p) && p->conn_error_cb != nullptr) {
+        // Event data belongs to the websocket task. Copy it before scheduling.
+        const auto details = data->error_handle;
+        const uint32_t event_ms = millis();
+        task_scheduler.scheduleOnce([p, details, event_ms](){
+            if (!ctx_alive(p)) {
+                return;
+            }
+            const char *type = "unknown";
+            switch (details.error_type) {
+            case WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT: type = "TCP/TLS transport"; break;
+            case WEBSOCKET_ERROR_TYPE_PONG_TIMEOUT: type = "Pong timeout"; break;
+            case WEBSOCKET_ERROR_TYPE_HANDSHAKE: type = "WebSocket handshake"; break;
+            case WEBSOCKET_ERROR_TYPE_SERVER_CLOSE: type = "server close"; break;
+            default: break;
+            }
+            logger.printfln("OCPP WebSocket error: %s, ESP=%s (0x%X), socket=%d (%s), TLS=0x%X, verify=0x%X, HTTP=%d",
+                           type, esp_err_to_name(details.esp_tls_last_esp_err), static_cast<unsigned>(details.esp_tls_last_esp_err),
+                           details.esp_transport_sock_errno,
+                           details.esp_transport_sock_errno != 0 ? strerror(details.esp_transport_sock_errno) : "not reported",
+                           static_cast<unsigned>(details.esp_tls_stack_err), static_cast<unsigned>(details.esp_tls_cert_verify_flags),
+                           details.esp_ws_handshake_status_code);
+            logger.tracefln(ocpp.trace_buf_idx, "OCPP WebSocket error after %lu ms: %s, ESP=%s, socket=%d, TLS=0x%X, verify=0x%X, HTTP=%d",
+                           static_cast<unsigned long>(event_ms - p->connect_started_ms), type,
+                           esp_err_to_name(details.esp_tls_last_esp_err), details.esp_transport_sock_errno,
+                           static_cast<unsigned>(details.esp_tls_stack_err), static_cast<unsigned>(details.esp_tls_cert_verify_flags),
+                           details.esp_ws_handshake_status_code);
+            if (details.esp_tls_stack_err != 0) {
+                char message[192];
+                // ESP-TLS normally stores the positive magnitude of the mbedTLS error.
+                mbedtls_strerror(details.esp_tls_stack_err > 0 ? -details.esp_tls_stack_err : details.esp_tls_stack_err,
+                                 message, sizeof(message));
+                logger.tracefln(ocpp.trace_buf_idx, "OCPP TLS error: %s", message);
+            }
+            PlatformConnectionError error = classify_connection_error(details);
+            if (error != PlatformConnectionError::Unknown && p->conn_error_cb != nullptr) {
                 p->conn_error_cb(error, p->conn_error_cb_userdata);
             }
         });
@@ -361,6 +429,19 @@ static void build_auth_headers(PlatformContext *p, BasicAuthCredentials *credent
     }
 }
 
+static void start_websocket_client(PlatformContext *p)
+{
+    if (!network.is_connected()) {
+        logger.tracefln(ocpp.trace_buf_idx, "OCPP connection deferred: network not connected");
+        return;
+    }
+    esp_err_t result = tf_websocket_client_start(p->client);
+    p->client_running = result == ESP_OK;
+    if (result != ESP_OK) {
+        logger.printfln("OCPP WebSocket task start failed: %s (0x%X)", esp_err_to_name(result), static_cast<unsigned>(result));
+    }
+}
+
 void *platform_init(const char *websocket_url, const char *subprotocol, BasicAuthCredentials *credentials, size_t credentials_length, const PlatformTlsConfig *tls)
 {
     size_t slot = 0;
@@ -401,12 +482,8 @@ void *platform_init(const char *websocket_url, const char *subprotocol, BasicAut
         return nullptr;
     }
 
-    if (network.is_connected()) {
-        tf_websocket_client_start(p->client);
-        p->client_running = true;
-    }
-
     active_ctxs[slot] = p.get();
+    start_websocket_client(p.get());
     return p.release();
 }
 
@@ -478,10 +555,7 @@ void platform_reconnect(void *_ctx)
         p->next_auth_header = (p->next_auth_header + 1) % p->auth_headers_count;
     }
 
-    if (network.is_connected()) {
-        tf_websocket_client_start(p->client);
-        p->client_running = true;
-    }
+    start_websocket_client(p);
 }
 
 void platform_destroy(void *_ctx)
