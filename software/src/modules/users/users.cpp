@@ -131,7 +131,7 @@ static bool check_http_auth(WebServerRequest req) {
         req, parseDigestAuth(auth.c_str())
     };
 
-    // If this times out, result stays false.
+    // Ignore return value, 'closure.result' will still be false if await fails.
     (void)task_scheduler.await([&closure]() {
         for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
             auto user = users.config.get("users")->get(i);

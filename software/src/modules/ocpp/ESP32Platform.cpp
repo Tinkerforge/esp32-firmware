@@ -95,13 +95,16 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         if (data->op_code != WS_TRANSPORT_OPCODES_TEXT)
             return;
 
-        // const cast is safe here:
-        // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
-        // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
-        // - client->rx_buffer is char * (so not const)
+
+        // Discarding the result is fine:
+        // If we are rebooting, we don't need this data.
         (void)task_scheduler.await([data, c=&ctx](){
             if (!*c)
                 return;
+            // const cast is safe here:
+            // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
+            // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
+            // - client->rx_buffer is char * (so not const)
             (*c)->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, (*c)->recv_cb_userdata);
         });
         break;

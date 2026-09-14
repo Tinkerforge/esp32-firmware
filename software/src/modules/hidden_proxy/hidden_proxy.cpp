@@ -80,7 +80,8 @@ void HiddenProxy::start_proxy()
     };
 
 #if MODULE_IO_SCHEDULER_AVAILABLE()
-    (void)io_scheduler.await(std::move(attach_net));
+    if (!io_scheduler.await(std::move(attach_net)))
+        logger.printfln("Failed to attach TF_Net");
 #else
     attach_net();
 #endif

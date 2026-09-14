@@ -590,14 +590,14 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     }
 
     if (mark_update_partition_invalid) {
-        // Even if we don't fail to mark the partition as invalid,
-        // we will probably overwrite the first 16 bytes soon.
-        // This only fixes a confusing event log message, so it's
-        // fine to ignore await errors here.
         // URL downloads run in the main task while file uploads run in the HTTP thread.
         if (running_in_main_task()) {
             this->change_update_partition_to_invalid("preparing firmware update");
         } else {
+            // Even if we don't fail to mark the partition as invalid,
+            // we will probably overwrite the first 16 bytes soon.
+            // This only fixes a confusing event log message, so it's
+            // fine to ignore await errors here.
             (void)task_scheduler.await([this](){ this->change_update_partition_to_invalid("preparing firmware update"); });
         }
         mark_update_partition_invalid = false;
@@ -1161,6 +1161,7 @@ void FirmwareUpdate::register_urls()
             }
 
             flash_firmware_in_progress = false;
+            // Discarding the result is fine: We are sending an error anyway.
             (void)task_scheduler.await([this]() { update_install_state(); });
 
             request.send_json(400, json);
@@ -1181,6 +1182,7 @@ void FirmwareUpdate::register_urls()
         report_flash_firmware_progress_http_thread();
 
         flash_firmware_in_progress = false;
+        // Discarding the result is fine: We are sending an error anyway.
         (void)task_scheduler.await([this]() { update_install_state(); });
 
         return request.send_plain(500, "Failed to receive file");

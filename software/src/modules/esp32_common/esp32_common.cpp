@@ -288,7 +288,7 @@ void ESP32Common::register_urls()
             server.on_HTTPThread("/esp32/encrypt_data", HTTP_GET, [this](WebServerRequest req) {
                 bool success = false;
 
-                // Ignore return value, 'success' will still be false on error.
+                // Ignore return value, 'success' will still be false if await fails.
                 (void)task_scheduler.await([&success]() {
                     success = rewrite_data_partition([]() {
                         return ESP32CommonEncryption::mark_and_erase_data_partition();
