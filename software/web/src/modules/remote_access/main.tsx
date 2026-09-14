@@ -1208,18 +1208,13 @@ export class RemoteAccess extends ConfigComponent<
                             {!!options.IS_SIGNED && (
                                 <FormRow
                                     label={__("remote_access.content.service_token_register")}
-                                    label_muted={
+                                    help={
                                         this.state.service_token_remaining_minutes !== null
                                             ? __("remote_access.content.service_token_register_active_desc")(
                                                   this.state.relay_host,
                                                   this.state.service_token_remaining_minutes,
                                               )
-                                            : undefined
-                                    }
-                                    help={
-                                        this.state.service_token_remaining_minutes === null
-                                            ? __("remote_access.content.service_token_register_desc")(this.state.relay_host)
-                                            : undefined
+                                            : __("remote_access.content.service_token_register_desc")(this.state.relay_host)
                                     }
                                 >
                                     <Button
