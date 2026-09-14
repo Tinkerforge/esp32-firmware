@@ -305,3 +305,25 @@ template <typename T>
 struct aligned_storage {
     alignas(T) std::byte buf[sizeof(T)];
 };
+
+#ifdef DEBUG_FS_ENABLE
+#define DEBUG_ASSERT_OR_RETURN(condition, log_message, non_debug_result) \
+do {                                \
+    (void)(non_debug_result);       \
+    if (condition) {                \
+        break;                      \
+    }                               \
+                                    \
+    esp_system_abort(log_message);  \
+} while (0)
+#else
+#define DEBUG_ASSERT_OR_RETURN(condition, log_message, non_debug_result) \
+do {                                \
+    if (condition) {                \
+        break;                      \
+    }                               \
+                                    \
+    logger.printfln(log_message);   \
+    return (non_debug_result);      \
+} while (0)
+#endif
