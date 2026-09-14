@@ -72,7 +72,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -80,7 +80,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -118,7 +118,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     'max_normal_charge_power',
@@ -126,7 +126,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     'max_normal_discharge_power',
@@ -164,7 +164,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     'max_normal_charge_power',
@@ -172,7 +172,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -210,7 +210,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     'std::max(max_normal_charge_power, static_cast<uint16_t>(force_charge_power / 10))',
@@ -218,7 +218,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     1,  # minimum
@@ -256,7 +256,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -264,7 +264,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     'max_normal_discharge_power',
@@ -302,7 +302,7 @@ specs = [
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33047,  # U16
                 'values': [
                     1,  # minimum
@@ -310,7 +310,7 @@ specs = [
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'IfDifferentWriteMultipleRegisters',
+                'function_code': 'WriteMultipleRegisters',  # the actual limit cannot be read back from this register, it seems to always report the absolute maximum limit
                 'start_number': 33048,
                 'values': [
                     'std::max(max_normal_discharge_power, static_cast<uint16_t>(force_discharge_power / 10))',
