@@ -140,7 +140,7 @@ specs = [
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_number': 13050,  # U16
                 'values': [
                     0,  # self
