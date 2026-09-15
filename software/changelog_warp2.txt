@@ -1152,7 +1152,7 @@
 - Restore legacy Home Assistant meter entities and numeric charging status
 - Support all available charging modes in Home Assistant
 
-2026-09-15: 2.13.2 (<unknown>)
+2026-09-15: 2.13.2 (dd63d453)
 - Battery control: Fix adding battery storage
 - Battery control: Fix undoing Sungrow charge/discharge blocking
 - Fix Home Assistant details for vehicle battery
