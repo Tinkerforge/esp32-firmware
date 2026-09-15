@@ -15,7 +15,7 @@ let x = {
             "source_forecast_service": "Automatisch über Prognosedienst",
             "source_forecast_service_desc": /*FFN*/(api_url: string) => <>Die Prognose wird von <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> abgefragt.</>/*NF*/,
             "source_push": "Push über API",
-            "source_push_desc": <>Im Push-Modus werden Prognosedaten über den API-Endpunkt <a href="https://docs.warp-charger.com/docs/interfaces/mqtt_http/api_reference/solar_forecast" target="_blank">solar_forecast/planes/X/forecast_update</a> bereitgestellt.</>,
+            "source_push_desc": <>Im Push-Modus werden Prognosedaten über den API-Endpunkt {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/solar_forecast`} target="_blank">solar_forecast/planes/X/forecast_update</a> : <span>solar_forecast/planes/X/forecast_update</span> bereitgestellt.</>,
             "planes": "PV-Flächen",
             "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",

@@ -15,7 +15,7 @@ let x = {
             "source_forecast_service": "Automatic via forecast service",
             "source_forecast_service_desc": /*FFN*/(api_url: string) => <>The forecast is queried from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "source_push": "Push via API",
-            "source_push_desc": <>In push mode, forecast data is provided via the API endpoint <a href="https://docs.warp-charger.com/docs/interfaces/mqtt_http/api_reference/solar_forecast" target="_blank">solar_forecast/planes/X/forecast_update</a>.</>,
+            "source_push_desc": <>In push mode, forecast data is provided via the API endpoint {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/solar_forecast`} target="_blank">solar_forecast/planes/X/forecast_update</a> : <span>solar_forecast/planes/X/forecast_update</span>.</>,
             "planes": "PV planes",
             "no_data": "No data available",
             "loading": "Loading data...",
