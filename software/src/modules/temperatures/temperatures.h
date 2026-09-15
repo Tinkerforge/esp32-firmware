@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <ArduinoJson.h>
 
 #include "async_https_client.h"

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
+#include <IPAddress.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
 #include <ArduinoJson.h>
 
