@@ -76,8 +76,13 @@ def espefuse(args, override_port=None):
 class FatalError(BaseException):
     pass
 
-def fatal_error(*message):
-    raise FatalError(' '.join([str(part) for part in message]))
+def fatal_error(*message, *, other_exception=None):
+    exception = FatalError(' '.join([str(part) for part in message]))
+
+    if other_exception != None:
+        raise exception from other_exception
+
+    raise exception
 
 @contextmanager
 def wifi(ssid, passphrase):

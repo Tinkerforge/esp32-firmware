@@ -180,7 +180,7 @@ class Stage3:
                 elif tries > 1:
                     print('WARNING: Could not complete action for device at position {0}, {1} tries left: {2}'.format(position, tries, e))
                 else:
-                    fatal_error('Could not complete action for device at position {0}: {1}'.format(position, e))
+                    fatal_error('Could not complete action for device at position {0}: {1}'.format(position, e), other_exception=e)
 
     # internal
     def action_loop(self, stop_queue, enabled_ref):
@@ -220,7 +220,7 @@ class Stage3:
                     elif tries[position] > 1:
                         print('WARNING: Could not complete action {0} for device at position {1}, {2} tries left: {3}'.format(position[1], position[0], tries[position], e))
                     else:
-                        fatal_error('Could not complete action {0} for device at position {1}: {2}'.format(position[1], position[0], e))
+                        fatal_error('Could not complete action {0} for device at position {1}: {2}'.format(position[1], position[0], e), other_exception=e)
                 else:
                     event = events.pop(position, None)
 
@@ -499,7 +499,7 @@ class Stage3:
         try:
             self.ipcon.connect(IPCON_HOST, 4223)
         except Exception as e:
-            fatal_error('Could not connect to brickd: {0}'.format(e))
+            fatal_error('Could not connect to brickd: {0}'.format(e), other_exception=e)
 
         print('Enumerating Bricklets')
 
@@ -552,18 +552,18 @@ class Stage3:
                         try:
                             device.set_status_led_config(BrickletColorV2.STATUS_LED_CONFIG_OFF)
                         except Exception as e:
-                            fatal_error('Could not disable status LED for Color Bricklet 2.0 at postion {0}: {1}'.format(full_position, e))
+                            fatal_error('Could not disable status LED for Color Bricklet 2.0 at postion {0}: {1}'.format(full_position, e), other_exception=e)
                     elif bricklet_entry.device_identifier == BrickletNFC.DEVICE_IDENTIFIER:
                         try:
                             device.set_mode(BrickletNFC.MODE_SIMPLE)
                         except Exception as e:
-                            fatal_error('Could not set simple mode for NFC Bricklet at postion {0}: {1}'.format(full_position, e))
+                            fatal_error('Could not set simple mode for NFC Bricklet at postion {0}: {1}'.format(full_position, e), other_exception=e)
                     elif bricklet_entry.device_identifier == BrickletLEDStripV2.DEVICE_IDENTIFIER:
                         try:
                             device.set_chip_type(BrickletLEDStripV2.CHIP_TYPE_WS2812)
                             device.set_channel_mapping(BrickletLEDStripV2.CHANNEL_MAPPING_GRB)
                         except Exception as e:
-                            fatal_error('Could not set chip type and channel mapping for LED Strip Bricklet 2.0 at postion {0}: {1}'.format(full_position, e))
+                            fatal_error('Could not set chip type and channel mapping for LED Strip Bricklet 2.0 at postion {0}: {1}'.format(full_position, e), other_exception=e)
 
                     self.devices[full_position] = device
 
