@@ -663,7 +663,8 @@ def set_iso15118_enabled(enable: bool):
         "autocharge": False,
         "read_soc": enable,
         "charge_via_iso15118": False,
-        "min_charge_current": 1000
+        "min_charge_current": None,
+        "fast_timeout": None
         }).encode('utf-8'))
     try:
         with urllib.request.urlopen(req, timeout=6) as f:
