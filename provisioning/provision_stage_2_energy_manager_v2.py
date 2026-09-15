@@ -97,12 +97,12 @@ class EnergyManagerV2Tester:
             fatal_error('Could not turn numlock on. Is numlockx installed?')
 
         tfutil.drop_stdin_buffer()
-        qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
+        qr_code = getpass.getpass(green("Scan the ESP Brick QR code: "))
         match = re.match(pattern, qr_code)
 
         while not match:
             tfutil.drop_stdin_buffer()
-            qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
+            qr_code = getpass.getpass(red("Scan the ESP Brick QR code: "))
             match = re.match(pattern, qr_code)
 
         hardware_type = match.group(1)
