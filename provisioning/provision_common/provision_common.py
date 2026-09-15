@@ -76,7 +76,7 @@ def espefuse(args, override_port=None):
 class FatalError(BaseException):
     pass
 
-def fatal_error(*message, *, other_exception=None):
+def fatal_error(*message, other_exception=None):
     exception = FatalError(' '.join([str(part) for part in message]))
 
     if other_exception != None:
