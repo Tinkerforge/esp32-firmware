@@ -27,7 +27,7 @@ let x = {
             "source_spot_market_desc": /*FFN*/(api_url: string) => <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt und über <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> bezogen.</> /*NF*/,
             "source_spot_market": "Automatisch über Strombörse",
             "source_push": "Push über API",
-            "source_push_desc": <>Im Push-Modus werden Preisdaten über den API-Endpunkt {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/day_ahead_prices`} target="_blank">day_ahead_prices/prices_update</a> : <span>day_ahead_prices/prices_update</span> bereitgestellt.</>,
+            "source_push_desc": <>Im Push-Modus werden Preisdaten über den API-Endpunkt {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/day_ahead_prices`} target="_blank">day_ahead_prices/prices_update</a> : <span>day_ahead_prices/prices_update</span>} bereitgestellt.</>,
             "region": "Region",
             "germany": "Deutschland",
             "austria": "Österreich",
