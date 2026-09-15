@@ -37,6 +37,21 @@ static const char *batteries_path_postfixes[] = {
 
 static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batteries::PathType::_max) + 1, "Path postfix length mismatch");
 
+[[gnu::const]]
+const char *Batteries::get_battery_mode_display_name(BatteryMode mode, Language language)
+{
+    switch (mode) {
+    case BatteryMode::None:           esp_system_abortf<64>("Invalid battery mode for display name lookup: %d", static_cast<int>(mode));
+    case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
+    case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
+    case BatteryMode::BlockDischarge: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
+    case BatteryMode::ForceCharge:    return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
+    case BatteryMode::BlockCharge:    return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
+    case BatteryMode::ForceDischarge: return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
+    default:                          esp_system_abortf<64>("Unknown battery mode for display name lookup: %d", static_cast<int>(mode));
+    }
+}
+
 void Batteries::pre_setup()
 {
     config = Config::Object({

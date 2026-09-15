@@ -76,8 +76,6 @@ public:
         bool test;
     };
 
-    static const char *get_battery_mode_display_name(BatteryMode value, Language language = Language::English);
-
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
     static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *shared_client, uint8_t device_address,

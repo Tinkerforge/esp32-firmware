@@ -52,33 +52,18 @@ static char get_battery_mode_as_char(BatteryMode mode)
 static const char *get_battery_mode_description(BatteryMode mode, BatteryMode effective_mode, Language language, char *buf, size_t buf_len)
 {
     if (mode == effective_mode) {
-        snprintf(buf, buf_len, "\"%s\"", BatteryModbusTCP::get_battery_mode_display_name(mode, language));
+        snprintf(buf, buf_len, "\"%s\"", Batteries::get_battery_mode_display_name(mode, language));
     }
     else {
         snprintf(buf, buf_len,
                  language == Language::English
                  ? "\"%s\", effective \"%s\""
                  : "\"%s\", effektiv \"%s\"",
-                 BatteryModbusTCP::get_battery_mode_display_name(mode, language),
-                 BatteryModbusTCP::get_battery_mode_display_name(effective_mode, language));
+                 Batteries::get_battery_mode_display_name(mode, language),
+                 Batteries::get_battery_mode_display_name(effective_mode, language));
     }
 
     return buf;
-}
-
-[[gnu::const]]
-const char *BatteryModbusTCP::get_battery_mode_display_name(BatteryMode mode, Language language)
-{
-    switch (mode) {
-    case BatteryMode::None:           esp_system_abortf<64>("Invalid battery mode for display name lookup: %d", static_cast<int>(mode));
-    case BatteryMode::Block:          return language == Language::English ? "block charge, block discharge"       : "Laden blockieren, Entladen blockieren";
-    case BatteryMode::Normal:         return language == Language::English ? "charge normally, discharge normally" : "normal Laden, normal Entladen";
-    case BatteryMode::BlockDischarge: return language == Language::English ? "charge normally, block discharge"    : "normal Laden, Entladen blockieren";
-    case BatteryMode::ForceCharge:    return language == Language::English ? "force charge, block discharge"       : "Laden erzwingen, Entladen blockieren";
-    case BatteryMode::BlockCharge:    return language == Language::English ? "block charge, discharge normally"    : "Laden blockieren, normal Entladen";
-    case BatteryMode::ForceDischarge: return language == Language::English ? "block charge, force discharge"       : "Laden blockieren, Entladen erzwingen";
-    default:                          esp_system_abortf<64>("Unknown battery mode for display name lookup: %d", static_cast<int>(mode));
-    }
 }
 
 void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr, const Config *config)
@@ -1283,18 +1268,18 @@ void BatteryModbusTCP::set_testing(bool testing_)
     update_pending_mode();
 }
 
-void  BatteryModbusTCP::set_state_mode(BatteryMode active_mode, BatteryMode effective_mode)
+void BatteryModbusTCP::set_state_mode(BatteryMode active_mode, BatteryMode effective_mode)
 {
     state->get("active_mode")->updateEnum(active_mode);
     state->get("effective_mode")->updateEnum(effective_mode);
 }
 
-void  BatteryModbusTCP::set_state_discovering(bool discovering)
+void BatteryModbusTCP::set_state_discovering(bool discovering)
 {
     state->get("discovering")->updateBool(discovering);
 }
 
-void  BatteryModbusTCP::set_state_checking(bool checking)
+void BatteryModbusTCP::set_state_checking(bool checking)
 {
     state->get("checking")->updateBool(checking);
 }

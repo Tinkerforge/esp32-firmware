@@ -26,6 +26,7 @@
 #include "ibattery.h"
 #include "ibattery_generator.h"
 #include "module.h"
+#include "language.h"
 
 class Batteries final : public IModule
 {
@@ -40,9 +41,7 @@ public:
         _max   = Errors,
     };
 
-    Batteries()
-    {
-    }
+    Batteries() {}
 
     void pre_setup() override;
     void setup() override;
@@ -57,6 +56,8 @@ public:
     bool get_enabled();
 
     String get_path(uint32_t slot, PathType path_type);
+
+    static const char *get_battery_mode_display_name(BatteryMode value, Language language = Language::English);
 
 private:
     class BatterySlot final

@@ -248,7 +248,7 @@ void BatteriesModbusTCP::register_urls()
         test_printfln(language == Language::English
                       ? "Starting test for mode \"%s\""
                       : "Starte Test für Modus \"%s\"",
-                      BatteryModbusTCP::get_battery_mode_display_name(test->mode, language));
+                      Batteries::get_battery_mode_display_name(test->mode, language));
     }, true);
 
     api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language language, String &errmsg) {

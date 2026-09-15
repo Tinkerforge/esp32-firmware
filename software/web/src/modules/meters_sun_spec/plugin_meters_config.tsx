@@ -35,7 +35,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import { Button } from "react-bootstrap";
-import { SunSpecDeviceScanner, SunSpecDeviceScannerResult } from "../sun_spec/device_scanner";
+import { SunSpecScanner, SunSpecScanResult } from "../sun_spec/scanner";
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -163,10 +163,10 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                     }} />
             </FormRow>,
             <hr/>,
-            <SunSpecDeviceScanner host={this.props.config[1].host} port={this.props.config[1].port}
+            <SunSpecScanner host={this.props.config[1].host} port={this.props.config[1].port}
                 on_is_model_visible={(model_id: number) => MODEL_SPECS[model_id] !== undefined}
                 on_is_model_supported={(model_id: number) => MODEL_SPECS[model_id].is_supported}
-                on_result_selected={(result: SunSpecDeviceScannerResult) => {
+                on_result_selected={(result: SunSpecScanResult) => {
                     this.setState({manual_override: false});
 
                     this.props.on_config(util.get_updated_union(this.props.config, {

@@ -52,7 +52,7 @@ public:
     bool supports_currents()      override {return true;}
 
 private:
-    enum class ScanState {
+    enum class ResolveState {
         Idle,
         ReadSunSpecID,
         ReadModelHeader,
@@ -67,11 +67,11 @@ private:
     void read_start(size_t model_regcount);
     void read_done();
 
-    void scan_start_delayed();
-    void scan_start();
-    void scan_read_delayed();
-    void scan_next_base_address();
-    void scan_next();
+    void resolve_start_delayed();
+    void resolve_start();
+    void resolve_read_delayed();
+    void resolve_next_base_address();
+    void resolve_next();
 
     uint32_t slot;
     Config *state;
@@ -86,13 +86,13 @@ private:
     uint16_t model_id;
     uint16_t model_instance;
     DCPortType dc_port_type;
-    size_t scan_base_address_index;
-    ScanState scan_state;
-    ScanState scan_state_next;
-    ModbusDeserializer scan_deserializer;
-    bool scan_device_found;
-    uint16_t scan_model_counter;
-    uint64_t scan_task_id = 0;
+    size_t resolve_base_address_index;
+    ResolveState resolve_state;
+    ResolveState resolve_state_next;
+    ModbusDeserializer resolve_deserializer;
+    bool resolve_device_found;
+    uint16_t resolve_model_counter;
+    uint64_t resolve_task_id = 0;
 
     uint32_t quirks = 0;
     IMetersSunSpecParser *model_parser;

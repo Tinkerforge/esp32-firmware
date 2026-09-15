@@ -36,7 +36,7 @@ import { DiscoveryResultGroup, DiscoveryResultItem, DiscoveryResultItemProps } f
 const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
 const SCAN_LOG_INTERVAL = 250; // milliseconds
 
-export interface SunSpecDeviceScannerResult {
+export interface SunSpecScanResult {
     unique_id: string;
     manufacturer_name: string;
     model_name: string;
@@ -47,15 +47,15 @@ export interface SunSpecDeviceScannerResult {
     model_instance: number;
 }
 
-interface SunSpecDeviceScannerProps {
+interface SunSpecScannerProps {
     host: string;
     port: number;
     on_is_model_visible: (model_id: number) => boolean;
     on_is_model_supported: (model_id: number) => boolean;
-    on_result_selected: (result: SunSpecDeviceScannerResult) => void;
+    on_result_selected: (result: SunSpecScanResult) => void;
 }
 
-interface SunSpecDeviceScannerState {
+interface SunSpecScannerState {
     device_address_first: number;
     device_address_last: number;
     running: boolean;
@@ -65,10 +65,10 @@ interface SunSpecDeviceScannerState {
     progress: number;
     log: string;
     show_log: boolean;
-    results: SunSpecDeviceScannerResult[];
+    results: SunSpecScanResult[];
 }
 
-export class SunSpecDeviceScanner extends Component<SunSpecDeviceScannerProps, SunSpecDeviceScannerState> {
+export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScannerState> {
     continue_timer: number = undefined;
     log_timer: number = undefined;
     pending_log: string = '';
@@ -224,7 +224,7 @@ export class SunSpecDeviceScanner extends Component<SunSpecDeviceScannerProps, S
         await this.abort_scan();
     }
 
-    get_scan_result_item(result: SunSpecDeviceScannerResult): VNode<DiscoveryResultItemProps> {
+    get_scan_result_item(result: SunSpecScanResult): VNode<DiscoveryResultItemProps> {
         let preferred_model_id: number = null;
 
         if ([101, 102, 103, 201, 202, 203, 204].indexOf(result.model_id) >= 0 &&

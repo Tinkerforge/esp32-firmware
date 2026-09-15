@@ -31,7 +31,7 @@
 #define SUN_SPEC_ID 0x53756E53
 #define COMMON_MODEL_ID 1
 #define NON_IMPLEMENTED_UINT16 0xFFFF
-#define SCAN_TIMEOUT 1_min
+#define RESOLVE_TIMEOUT 1_min
 #define SUCCESSFUL_PARSE_TIMEOUT 1_min
 
 #define trace(fmt, ...) \
@@ -60,7 +60,7 @@ static inline bool is_kostal_smart_energy_meter(const char *model)
     return strncmp(model, "KOSTAL Smart Energy Meter", 25) == 0;
 }
 
-static const uint16_t scan_base_addresses[] {
+static const uint16_t base_addresses[] {
     40000,
     50000,
     0
@@ -199,7 +199,7 @@ void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result, TFGe
     last_connect = now_us();
     last_successful_parse = now_us();
 
-    scan_start();
+    resolve_start();
 }
 
 void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
@@ -208,8 +208,8 @@ void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason
 
     read_allowed = false;
 
-    task_scheduler.cancel(this->scan_task_id);
-    this->scan_task_id = 0;
+    task_scheduler.cancel(this->resolve_task_id);
+    this->resolve_task_id = 0;
 
     free(generic_read_request.data[0]);
 
@@ -397,24 +397,24 @@ void MeterSunSpec::read_done()
     }
 }
 
-void MeterSunSpec::scan_start_delayed()
+void MeterSunSpec::resolve_start_delayed()
 {
-    task_scheduler.cancel(scan_task_id);
+    task_scheduler.cancel(resolve_task_id);
 
-    scan_task_id = task_scheduler.scheduleOnce([this](){
-        scan_task_id = 0;
+    resolve_task_id = task_scheduler.scheduleOnce([this](){
+        resolve_task_id = 0;
 
-        if (deadline_elapsed(last_connect + SCAN_TIMEOUT)) {
-            logger.printfln_meter("Scan for SunSpec device takes too long ago, reconnecting to %s:%u", host.c_str(), port);
+        if (deadline_elapsed(last_connect + RESOLVE_TIMEOUT)) {
+            logger.printfln_meter("Resolve of SunSpec model takes too long, reconnecting to %s:%u", host.c_str(), port);
             force_reconnect();
             return;
         }
 
-        scan_start();
+        resolve_start();
     }, 10_s);
 }
 
-void MeterSunSpec::scan_start()
+void MeterSunSpec::resolve_start()
 {
     free(generic_read_request.data[0]);
 
@@ -429,59 +429,59 @@ void MeterSunSpec::scan_start()
     }
 
     log_read_errors = false; // don't log errors while probing for the correct base address
-    scan_base_address_index = 0;
-    scan_state = ScanState::Idle;
-    scan_state_next = ScanState::ReadSunSpecID;
-    scan_deserializer.buf = buffer;
-    scan_device_found = false;
-    scan_model_counter = model_instance;
+    resolve_base_address_index = 0;
+    resolve_state = ResolveState::Idle;
+    resolve_state_next = ResolveState::ReadSunSpecID;
+    resolve_deserializer.buf = buffer;
+    resolve_device_found = false;
+    resolve_model_counter = model_instance;
 
     generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
-    generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
+    generic_read_request.start_address = base_addresses[resolve_base_address_index];
     generic_read_request.register_count = 2;
     generic_read_request.data[0] = buffer;
     generic_read_request.read_twice = false;
-    generic_read_request.done_callback = [this]{ scan_next(); };
+    generic_read_request.done_callback = [this]{ resolve_next(); };
 
     start_generic_read();
 }
 
-void MeterSunSpec::scan_read_delayed()
+void MeterSunSpec::resolve_read_delayed()
 {
     task_scheduler.scheduleOnce([this](){
         this->start_generic_read();
     }, 1_s + (millis_t{esp_random() % 4000}));
 }
 
-void MeterSunSpec::scan_next_base_address()
+void MeterSunSpec::resolve_next_base_address()
 {
-    ++scan_base_address_index;
+    ++resolve_base_address_index;
 
-    if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
+    if (resolve_base_address_index >= ARRAY_SIZE(base_addresses)) {
         logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
-        scan_start_delayed();
+        resolve_start_delayed();
     }
     else {
-        generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
+        generic_read_request.start_address = base_addresses[resolve_base_address_index];
         generic_read_request.register_count = 2;
-        scan_state_next = ScanState::ReadSunSpecID;
+        resolve_state_next = ResolveState::ReadSunSpecID;
 
         start_generic_read();
     }
 }
 
-void MeterSunSpec::scan_next()
+void MeterSunSpec::resolve_next()
 {
     trace_response();
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::NotConnected) {
-            // the scan will be restarted by the automatic reconnect
+            // the resolve will be restarted by the automatic reconnect
             return;
         }
         else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
             // an abort is triggered before a connection close or before a forced
-            // reconnect. in both cases the scan will be restarted by the automatic reconnect
+            // reconnect. in both cases the resolve will be restarted by the automatic reconnect
             return;
         }
         else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
@@ -489,53 +489,53 @@ void MeterSunSpec::scan_next()
             timeout->updateUint(timeout->asUint() + 1);
         }
 
-        if (scan_state_next == ScanState::ReadSunSpecID) {
-            scan_next_base_address();
+        if (resolve_state_next == ResolveState::ReadSunSpecID) {
+            resolve_next_base_address();
         }
         else {
-            scan_read_delayed();
+            resolve_read_delayed();
         }
 
         return;
     }
 
-    scan_deserializer.idx = 0;
-    scan_state = scan_state_next;
+    resolve_deserializer.idx = 0;
+    resolve_state = resolve_state_next;
 
-    switch (scan_state) {
-        case ScanState::Idle:
+    switch (resolve_state) {
+        case ResolveState::Idle:
             break;
 
-        case ScanState::ReadSunSpecID: {
-                uint32_t sun_spec_id = scan_deserializer.read_uint32();
+        case ResolveState::ReadSunSpecID: {
+                uint32_t sun_spec_id = resolve_deserializer.read_uint32();
 
                 if (sun_spec_id == SUN_SPEC_ID) {
                     generic_read_request.start_address += generic_read_request.register_count;
                     generic_read_request.register_count = 2;
                     log_read_errors = true; // log errors again after the correct base address was found
-                    scan_state_next = ScanState::ReadModelHeader;
+                    resolve_state_next = ResolveState::ReadModelHeader;
 
                     start_generic_read();
                 }
                 else {
-                    scan_next_base_address();
+                    resolve_next_base_address();
                 }
             }
 
             break;
 
-        case ScanState::ReadModelHeader: {
-                uint16_t scan_model_id = scan_deserializer.read_uint16();
-                size_t block_length = scan_deserializer.read_uint16();
+        case ResolveState::ReadModelHeader: {
+                uint16_t resolve_model_id = resolve_deserializer.read_uint16();
+                size_t block_length = resolve_deserializer.read_uint16();
 
-                if (scan_model_id == NON_IMPLEMENTED_UINT16) { // End model found
+                if (resolve_model_id == NON_IMPLEMENTED_UINT16) { // End model found
                     logger.printfln_meter("Configured SunSpec model %u/%u not found at %s:%u:%u",
                                           model_id, model_instance, host.c_str(), port, device_address);
-                    scan_start_delayed();
+                    resolve_start_delayed();
                 }
-                else if (scan_device_found && scan_model_id == model_id) {
-                    if (scan_model_counter > 0) {
-                        --scan_model_counter;
+                else if (resolve_device_found && resolve_model_id == model_id) {
+                    if (resolve_model_counter > 0) {
+                        --resolve_model_counter;
 
                         generic_read_request.start_address += generic_read_request.register_count + block_length;
                         generic_read_request.register_count = 2;
@@ -546,10 +546,10 @@ void MeterSunSpec::scan_next()
                         if (!model_parser->is_model_length_supported(block_length)) {
                             logger.printfln_meter("Configured SunSpec model %u/%u found but has unsupported length: %u",
                                                   model_id, model_instance, block_length);
-                            scan_start_delayed();
+                            resolve_start_delayed();
                         }
                         else {
-                            scan_state_next = ScanState::Idle;
+                            resolve_state_next = ResolveState::Idle;
 
                             logger.printfln_meter("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
                                                   model_id, model_instance, host.c_str(), port, device_address, generic_read_request.start_address);
@@ -557,9 +557,9 @@ void MeterSunSpec::scan_next()
                         }
                     }
                 }
-                else if (scan_model_id == 1) { // Common model
+                else if (resolve_model_id == 1) { // Common model
                     generic_read_request.register_count = 67;
-                    scan_state_next = ScanState::ReadModel;
+                    resolve_state_next = ResolveState::ReadModel;
 
                     start_generic_read();
                 }
@@ -573,11 +573,11 @@ void MeterSunSpec::scan_next()
 
             break;
 
-        case ScanState::ReadModel: {
-                uint16_t scan_model_id = scan_deserializer.read_uint16();
-                size_t block_length = scan_deserializer.read_uint16();
+        case ResolveState::ReadModel: {
+                uint16_t resolve_model_id = resolve_deserializer.read_uint16();
+                size_t block_length = resolve_deserializer.read_uint16();
 
-                if (scan_model_id == 1) { // Common model
+                if (resolve_model_id == 1) { // Common model
                     SunSpecCommonModel001_u *common_model = reinterpret_cast<SunSpecCommonModel001_u *>(generic_read_request.data[0]);
                     modbus_bswap_registers(common_model->registers + 2, 64);
                     const SunSpecCommonModel001_s *m = &common_model->model;
@@ -585,7 +585,7 @@ void MeterSunSpec::scan_next()
                     logger.printfln_meter("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
 
                     if (manufacturer_name.length() == 0 && model_name.length() == 0 && serial_number.length() == 0) {
-                        scan_device_found = true;
+                        resolve_device_found = true;
                     }
                     else if (is_solar_edge(m->Mn) &&
                              strncmp(m->Md, "SE-RGMTR-1D-240C-A", 32) == 0 &&
@@ -596,7 +596,7 @@ void MeterSunSpec::scan_next()
                         // as a SE-RGMTR-1D-240C-A meter with serial number 0. Work around this by
                         // accepting a SE-RGMTR-1D-240C-A meter with serial number 0 when looking
                         // for a MTR-240-3PC1-D-A-MW meter.
-                        scan_device_found = true;
+                        resolve_device_found = true;
                     }
                     else if (is_solar_edge(m->Mn) &&
                              strncmp(m->Md, "MTR-240-3PC1-D-A-MW", 32) == 0 &&
@@ -607,14 +607,14 @@ void MeterSunSpec::scan_next()
                         // reported as SE-RGMTR-1D-240C-A meter with serial number 0. But now it is
                         // correctly reported again. Work around this by accepting a MTR-240-3PC1-D-A-MW
                         // meter when looking for a SE-RGMTR-1D-240C-A meter with serial number 0.
-                        scan_device_found = true;
+                        resolve_device_found = true;
                     }
                     else {
                         bool manufacturer_match = strncmp(m->Mn, manufacturer_name.c_str(), 32) == 0 ||
                                                   (is_solar_edge(m->Mn) && is_solar_edge(manufacturer_name.c_str())) ||
                                                   (is_kostal(m->Mn) && is_kostal(manufacturer_name.c_str()));
 
-                        scan_device_found = manufacturer_match &&
+                        resolve_device_found = manufacturer_match &&
                                             strncmp(m->Md, model_name.c_str(), 32) == 0 &&
                                             strncmp(m->SN, serial_number.c_str(), 32) == 0;
                     }
@@ -625,9 +625,9 @@ void MeterSunSpec::scan_next()
                                           static_cast<int>(strnlen(m->Opt, 16)), m->Opt,
                                           static_cast<int>(strnlen(m->Vr, 16)), m->Vr,
                                           static_cast<int>(strnlen(m->SN, 32)), m->SN,
-                                          !scan_device_found ? "not " :"");
+                                          !resolve_device_found ? "not " :"");
 
-                    if (scan_device_found) {
+                    if (resolve_device_found) {
                         if (is_kostal(m->Mn)) {
                             bool acc32_is_int32 = true;
 
@@ -698,12 +698,12 @@ void MeterSunSpec::scan_next()
                     }
                 }
                 else {
-                    logger.printfln_meter("Read full model %u for no reason", scan_model_id);
+                    logger.printfln_meter("Read full model %u for no reason", resolve_model_id);
                 }
 
                 generic_read_request.start_address += 2 + block_length;
                 generic_read_request.register_count = 2;
-                scan_state_next = ScanState::ReadModelHeader;
+                resolve_state_next = ResolveState::ReadModelHeader;
 
                 start_generic_read();
             }
@@ -711,6 +711,6 @@ void MeterSunSpec::scan_next()
             break;
 
         default:
-            esp_system_abortf<48>("Invalid state during scan: %d", static_cast<int>(scan_state));
+            esp_system_abortf<48>("Invalid state during resolve: %d", static_cast<int>(resolve_state));
     }
 }
