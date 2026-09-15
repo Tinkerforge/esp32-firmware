@@ -27,31 +27,40 @@
 
 #include "gcc_warnings.h"
 
+[[gnu::format(__printf__, 1, 0)]]
+void TFNetwork::vlogfln(const char *fmt, va_list args)
+{
+    logger.vprintfln(fmt, args);
+}
+
+void TFNetwork::resolve(const char *host, std::function<void(ip_addr_t *address, int error_number)> &&callback)
+{
+    dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (data->err != ERR_OK) {
+            callback(nullptr, err_to_errno(data->err));
+        }
+        else if (data->addr_ptr == nullptr) {
+            callback(nullptr, -1); // no address available for this host
+        }
+        else {
+            callback(data->addr_ptr, -1);
+        }
+    }, LWIP_DNS_ADDRTYPE_DEFAULT);
+}
+
+uint16_t TFNetwork::get_random_uint16()
+{
+    uint32_t r = esp_random();
+
+    return static_cast<uint16_t>((r >> 16) ^ r);
+}
+
+void TFNetwork::abort(const char *message)
+{
+    esp_system_abort(message);
+}
+
 void NetworkLib::setup()
 {
-    TFNetwork::vlogfln = [](const char *fmt, va_list args) __attribute__((format(printf, 2, 0))) {
-        logger.vprintfln(fmt, args);
-    };
-
-    TFNetwork::resolve = [this](const char *host, std::function<void(ip_addr_t *address, int error_number)> &&callback) {
-        dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-            if (data->err != ERR_OK) {
-                callback(nullptr, err_to_errno(data->err));
-            }
-            else if (data->addr_ptr == nullptr) {
-                callback(nullptr, -1); // no address available for this host
-            }
-            else {
-                callback(data->addr_ptr, -1);
-            }
-        }, LWIP_DNS_ADDRTYPE_DEFAULT);
-    };
-
-    TFNetwork::get_random_uint16 = []() {
-        uint32_t r = esp_random();
-
-        return (r >> 16) ^ r;
-    };
-
     initialized = true;
 }

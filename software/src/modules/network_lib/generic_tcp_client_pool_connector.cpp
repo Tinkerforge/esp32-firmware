@@ -184,10 +184,6 @@ void GenericTCPClientPoolConnector::connect_helper()
 
     pool->acquire(host.c_str(), port, &shared_client,
     [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client_, TFGenericTCPClientPoolShareLevel share_level) {
-        if (result == TFGenericTCPClientConnectResult::NonReentrant) {
-            esp_system_abort("TFGenericTCPClientPool acquire was called in non-reentrant context");
-        }
-
         shared_client = shared_client_;
 
         bool report_result = false;
@@ -299,9 +295,6 @@ void GenericTCPClientPoolConnector::disconnect(bool force)
     }
 
     switch (pool->release(shared_client, force)) {
-    case TFGenericTCPClientDisconnectResult::NonReentrant:
-        esp_system_abort("TFGenericTCPClientPool release was called in non-reentrant context");
-
     case TFGenericTCPClientDisconnectResult::NotConnected:
         esp_system_abort("TFGenericTCPClientPool release was called while not connected");
 
