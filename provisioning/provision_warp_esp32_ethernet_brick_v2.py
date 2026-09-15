@@ -361,6 +361,8 @@ class P:
                           "subnet": ethernet_subnet,
                           "dns": ethernet_dns,
                           "dns2": "0.0.0.0",
+                          "enable_ipv6": False,
+                          "ip6": [],
                       }, error_message="Failed to set ethernet config!")
 
             if use_local_ntp:

@@ -75,14 +75,18 @@ def main():
         print("Testing ESP Wifi.")
         with wifi(ssid, passphrase):
             req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
-                                        data=json.dumps({"enable_ethernet":True,
-                                                        "ip": esp_ethernet_static_ip,
-                                                        "gateway":"0.0.0.0",
-                                                        "subnet":esp_ethernet_static_subnet,
-                                                        "dns":"0.0.0.0",
-                                                        "dns2":"0.0.0.0"}).encode("utf-8"),
-                                        method='PUT',
-                                        headers={"Content-Type": "application/json"})
+                                         data=json.dumps({
+                                             "enable_ethernet": True,
+                                             "ip": esp_ethernet_static_ip,
+                                             "gateway": "0.0.0.0",
+                                             "subnet": esp_ethernet_static_subnet,
+                                             "dns": "0.0.0.0",
+                                             "dns2": "0.0.0.0",
+                                             "enable_ipv6": False,
+                                             "ip6": [],
+                                         }).encode("utf-8"),
+                                         method='PUT',
+                                         headers={"Content-Type": "application/json"})
             try:
                 with urllib.request.urlopen(req, timeout=10) as f:
                     f.read()
@@ -152,14 +156,18 @@ def main():
         result["io0_test_successful"] = None
 
         req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/ethernet/config_update",
-                                    data=json.dumps({"enable_ethernet":True,
-                                                    "ip":"0.0.0.0",
-                                                    "gateway":"0.0.0.0",
-                                                    "subnet":"0.0.0.0",
-                                                    "dns":"0.0.0.0",
-                                                    "dns2":"0.0.0.0"}).encode("utf-8"),
-                                    method='PUT',
-                                    headers={"Content-Type": "application/json"})
+                                     data=json.dumps({
+                                         "enable_ethernet": True,
+                                         "ip": "0.0.0.0",
+                                         "gateway": "0.0.0.0",
+                                         "subnet": "0.0.0.0",
+                                         "dns": "0.0.0.0",
+                                         "dns2": "0.0.0.0",
+                                         "enable_ipv6": False,
+                                         "ip6": [],
+                                     }).encode("utf-8"),
+                                     method='PUT',
+                                     headers={"Content-Type": "application/json"})
 
         try:
             with urllib.request.urlopen(req, timeout=10) as f:

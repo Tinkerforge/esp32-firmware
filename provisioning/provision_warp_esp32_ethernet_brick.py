@@ -259,12 +259,16 @@ def test_wifi(ssid, passphrase, host_ip, ethernet_ip, ethernet_gateway, ethernet
     print("Testing ESP Wifi.")
     with wifi(ssid, passphrase):
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
-                                     data=json.dumps({"enable_ethernet":True,
-                                                      "ip": ethernet_ip,
-                                                      "gateway": ethernet_gateway,
-                                                      "subnet": ethernet_subnet,
-                                                      "dns": ethernet_dns,
-                                                      "dns2":"0.0.0.0"}).encode("utf-8"),
+                                     data=json.dumps({
+                                         "enable_ethernet":True,
+                                         "ip": ethernet_ip,
+                                         "gateway": ethernet_gateway,
+                                         "subnet": ethernet_subnet,
+                                         "dns": ethernet_dns,
+                                         "dns2": "0.0.0.0",
+                                         "enable_ipv6": False,
+                                         "ip6": [],
+                                     }).encode("utf-8"),
                                      method='PUT',
                                      headers={"Content-Type": "application/json"})
         try:
