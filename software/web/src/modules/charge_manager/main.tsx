@@ -532,7 +532,7 @@ function CMStatusCharger(props: {
     }
 
     show_user_dropdown =
-        props.central_auth_enabled! && c.u === ChargerAuthState.Unauthorized && c.s !== CASState.NoVehicle;
+        props.central_auth_enabled! && c.u === ChargerAuthState.Unauthorized && c.s !== CASState.NoVehicle && c.s !== CASState.Error;
 //#endif
 
     let cur = c.ac / 1000.0;
