@@ -1,6 +1,7 @@
 #!/usr/bin/env -S uv run --active --script
 
 import socket
+import time
 from collections import namedtuple
 
 METREL_HOST = '10.4.2.3'
@@ -259,6 +260,7 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
                 retry_on_empty = False
                 is_retry = True
                 debug(f'ST response with empty status, retrying: {result.response}')
+                time.sleep(5)
                 continue
 
             raise BlackboxException(f'ST response with empty status{" after retry" if is_retry else ""}: {result.response}')
@@ -268,6 +270,7 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
                 retry_on_cancel = False
                 is_retry = True
                 debug(f'ST response with cancel status, retrying: {result.response}')
+                time.sleep(5)
                 continue
 
             raise BlackboxException(f'ST response with cancel status{" after retry" if is_retry else ""}: {result.response}')
