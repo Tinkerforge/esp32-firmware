@@ -23,7 +23,7 @@ let x = {
             "source_weather_service": "Automatic via weather service",
             "source_weather_service_desc": /*FFN*/(api_url: string) => <>The data is fetched from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "source_push": "Push via API",
-            "source_push_desc": <>In push mode, temperature data is provided via the API endpoint {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/temperatures`} target="_blank">temperatures/temperatures_update</a> : <span>temperatures/temperatures_update</span>.</>,
+            "source_push_desc": <>In push mode, temperature data is provided via the API endpoint {options.WARP_DOC_BASE_URL.length > 0 ? <a href={`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/temperatures`} target="_blank">temperatures/temperatures_update</a> : <span>temperatures/temperatures_update</span>}.</>,
             "latitude": "Latitude",
             "latitude_muted": "in degrees (e.g., 51.8846)",
             "longitude": "Longitude",
