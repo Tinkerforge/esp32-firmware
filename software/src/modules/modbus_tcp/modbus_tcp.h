@@ -119,4 +119,7 @@ private:
 
     bool send_illegal_data_address = true;
     uint8_t ignored_events = 0;
+
+    TFModbusTCPServerTransferHook *hook = nullptr;
+    size_t trace_buffer_index;
 };

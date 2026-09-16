@@ -29,6 +29,8 @@
 #include "build.h"
 #include "tools/string_builder.h"
 #include "tools/net.h"
+#include "tools/hexdump.h"
+#include "tools/printf.h"
 
 // MODBUS TABLE CHANGELOG
 // 1 - Initial release
@@ -149,6 +151,8 @@ ModbusTCP::ModbusTCP() : server(TFModbusTCPByteOrder::Network)
 
 void ModbusTCP::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("modbus_tcp_srvr");
+
     config = Config::Object({
         {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
@@ -1272,22 +1276,49 @@ void ModbusTCP::start_server() {
 
     this->send_illegal_data_address = config.get("send_illegal_data_address")->asBool();
 
+    this->hook = server.add_transfer_hook([idx=this->trace_buffer_index](TFModbusTCPServerTransferDirection direction, uint64_t connection_id, const uint8_t *buffer, size_t length){
+        // ('S' or 'R') + strlen(UINT64_MAX)=20 + (null terminator or \n)
+        // Rest is maximum length of one modbus packet * 2 for bin->hex
+        char hex[22 + (TF_MODBUS_TCP_HEADER_LENGTH + std::max(TF_MODBUS_TCP_MAX_REQUEST_PAYLOAD_LENGTH, TF_MODBUS_TCP_MAX_RESPONSE_PAYLOAD_LENGTH)) * 2];
+
+        size_t written = snprintf_u(hex, std::size(hex), "%llu%c", connection_id, direction == TFModbusTCPServerTransferDirection::Send ? 'S' : 'R');
+
+        written += hexdump(buffer, length, hex + written, std::size(hex) - written, HexdumpCase::Lower);
+        hex[written] = '\n';
+
+        logger.trace_plain(idx, hex, written + 1);
+    });
+
     // Bind to IPv6 any-address (::) with IPV6_V6ONLY=0 in the library, so the server
     // accepts both IPv4 and IPv6 connections on a single dual-stack socket.
     ip_addr_t bind_addr = IPADDR6_INIT(0, 0, 0, 0);
     server.start(
         &bind_addr, config.get("port")->asUint16(),
-        [](const ip_addr_t *peer_address, uint16_t port) {
+        [idx=this->trace_buffer_index](uint64_t connection_id, const ip_addr_t *peer_address, uint16_t port) {
             char peer_str[INET6_ADDRSTRLEN];
             tf_ipaddr_ntoa(peer_address, peer_str, sizeof(peer_str));
-            logger.printfln("Client %s:%u connected", peer_str, port);
+            logger.printfln("Client %llu %s:%u connected", connection_id, peer_str, port);
+
+            // 'C' + strlen(UINT64_MAX)=20 (conn-id) + (null terminator or \n) + INET6_ADDRSTRLEN + ':' + strlen(UINT16_MAX)=5 (port)
+            char buf[INET6_ADDRSTRLEN + 28];
+            size_t written = snprintf_u(buf, std::size(buf), "%lluC%s:%hu", connection_id, peer_str, port);
+            buf[written] = '\n';
+
+            logger.trace_plain(idx, buf, written + 1);
         },
-        [](const ip_addr_t *peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
+        [idx=this->trace_buffer_index](uint64_t connection_id, const ip_addr_t *peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
             char peer_str[INET6_ADDRSTRLEN];
             tf_ipaddr_ntoa(peer_address, peer_str, sizeof(peer_str));
-            logger.printfln("Client %s:%u disconnected: %s (error %d)", peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
+            logger.printfln("Client %llu %s:%u disconnected: %s (error %d)", connection_id, peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
+
+            // 'D' + strlen(UINT64_MAX)=20 (conn-id) + (null terminator or \n) + INET6_ADDRSTRLEN + ':' + strlen(UINT16_MAX)=5 (port)
+            char buf[INET6_ADDRSTRLEN + 28];
+            size_t written = snprintf_u(buf, std::size(buf), "%lluD%s:%hu", connection_id, peer_str, port);
+            buf[written] = '\n';
+
+            logger.trace_plain(idx, buf, written + 1);
         },
-        [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
+        [this, table](uint64_t connection_id, uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
             TFModbusTCPExceptionCode result = this->dispatch(table, unit_id, function_code, start_address, data_count, data_values);
 
             Config *error_counter = nullptr;
@@ -1321,6 +1352,8 @@ void ModbusTCP::stop_server() {
     task_scheduler.cancel(this->tick_task);
 
     server.stop();
+    server.remove_transfer_hook(this->hook);
+    this->hook = nullptr;
     cache = nullptr;
 
     error_counters.get("illegal_function")->updateUint(0);
