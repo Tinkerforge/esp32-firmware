@@ -1,10 +1,11 @@
 Polyester-Etiketten, silber, permanent klebend, 38 x 23 mm, 1 Zoll Kern, 1500 Etiketten
 https://www.labelident.com/ert-b038x023-1bz1-1500.html
-TFX-27-100
+TFX-27-100 [ESP32-Aufkleber Etikett Rolle Labelident ERT-B038X023-1BZ1-1500]
 
 Armor AXR 7+, Harz Farbband 80 mm x 300 m, 1" Rollenkern, Außenwicklung, 1 Rolle(n)
 https://www.labelident.com/fta-h080-300bk.html
-TFX-27-107
+TFX-27-107 [Harztoner Labelident FTA-H080-300BK]
+TFX-27-158 (Duplikat von TFX-27-107)
 
 Hartpapier Rollenkerne für Etiketten, Ø 1 Zoll (25,4 mm), Wandstärke 3 mm, Breite 110 mm
 https://www.labelident.com/rk-z1-110.html
