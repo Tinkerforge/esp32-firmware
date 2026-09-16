@@ -200,10 +200,11 @@ class P:
 
     def set_iso15118_enabled(ip, enable):
         P.api_put(ip, "iso15118/config", {
-                      "autocharge": False,
-                      "read_soc": enable,
-                      "charge_via_iso15118": False,
-                      "min_charge_current": 1000
+                    "autocharge": False,
+                    "read_soc": enable,
+                    "charge_via_iso15118": False,
+                    "min_charge_current": None,
+                    "fast_timeout": None
                   }, error_message=f"Failed to {'enable' if enable else 'disable'} ISO 15118")
 
     def test_bricklet_ports_warp4(ipcon):
