@@ -707,5 +707,5 @@
 - Fix Home Assistant details for vehicle battery
 - Fix slow memory leak in mDNS result handling
 
-2026-09-16: 2.9.3 (<unknown>)
+2026-09-16: 2.9.3 (b5f7bb9f)
 - Fix "Authorize" button being shown when managed charger is in error state
