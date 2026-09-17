@@ -132,8 +132,7 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     serial_number     = ephemeral_config->get("serial_number")->asString();
     model_id          = ephemeral_config->get("model_id")->asUint16();
     model_instance    = ephemeral_config->get("model_instance")->asUint16();
-    dc_port_type      = ephemeral_config->get("dc_port_type")->asEnum<DCPortType>();
-    model_parser      = MetersSunSpecParser::new_parser(slot, manufacturer_name.c_str(), model_name.c_str(), model_id, dc_port_type);
+    model_parser      = MetersSunSpecParser::new_parser(slot, manufacturer_name.c_str(), model_name.c_str(), model_id, ephemeral_config->get("dc_port_type")->asEnum<DCPortType>());
 
     MeterLocation fixed_location = get_model_fixed_location(model_id);
 

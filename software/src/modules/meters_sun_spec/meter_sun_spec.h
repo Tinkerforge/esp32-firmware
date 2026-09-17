@@ -85,7 +85,6 @@ private:
     String serial_number;
     uint16_t model_id;
     uint16_t model_instance;
-    DCPortType dc_port_type;
     size_t resolve_base_address_index;
     ResolveState resolve_state;
     ResolveState resolve_state_next;
