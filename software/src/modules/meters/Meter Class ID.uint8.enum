@@ -8,6 +8,7 @@ Modbus TCP
 SMA Speedwire
 RCT Power
 ISO15118
+Sonnenbatterie
 
 # Unofficial meter classes
 Mqtt Mirror = 200
