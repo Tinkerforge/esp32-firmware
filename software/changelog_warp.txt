@@ -1027,7 +1027,6 @@
 - Merge generic and Home Assistant MQTT discovery
 - Add meter value automation triggers
 - Add reboot automation trigger
-- Redirect HTTP to HTTPS when in https-only mode
 - Battery control: Support blocking Kostal Plenticore Plus G2 charge/discharge separately
 - Battery control: Don't show some Kostal Plenticore G3 modes as applied too early
 - Battery control: Avoid unnecessarily writing the same values over and over with Deye, Growatt, SAX Power, Sungrow and Victron Energy batteries
