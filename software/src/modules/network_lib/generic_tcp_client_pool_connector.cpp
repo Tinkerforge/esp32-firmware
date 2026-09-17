@@ -24,6 +24,8 @@
 
 #include "gcc_warnings.h"
 
+#define printfln_connector(fmt, ...) printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s" fmt, event_log_message_prefix __VA_OPT__(,) __VA_ARGS__)
+
 void GenericTCPClientPoolConnector::format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
                                                          const char *host, uint16_t port, char *buf, size_t buf_len, Language language /*= Language::English*/)
 {
@@ -206,10 +208,7 @@ void GenericTCPClientPoolConnector::connect_helper()
                 break;
             }
 
-            logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                     "%s%s %s:%u",
-                                     event_log_message_prefix,
-                                     shared, host.c_str(), port);
+            logger.printfln_connector("%s %s:%u", shared, host.c_str(), port);
 
             report_result = true;
             connect_backoff = 1_s;
@@ -222,7 +221,7 @@ void GenericTCPClientPoolConnector::connect_helper()
                 char buf[256] = "";
 
                 format_connect_error(result, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
-                logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
+                logger.printfln_connector("%s", buf);
 
                 report_result = true;
             }
@@ -258,7 +257,7 @@ void GenericTCPClientPoolConnector::connect_helper()
         char buf[256] = "";
 
         format_disconnect_reason(reason, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
-        logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
+        logger.printfln_connector("%s", buf);
 
         disconnect_callback(reason, share_level);
 
