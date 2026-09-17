@@ -1166,7 +1166,7 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
         case 224: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2)->asFloat()); break;
         case 226: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3)->asFloat()); break;
 
-        case 706: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint() / 1000; break;
+        case 706: REQUIRE(evse); val.regs.lower = cache->evse_state->get("allowed_charging_current")->asUint() / 1000; break;
         case 709:
         case 718: REQUIRE(evse); {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
