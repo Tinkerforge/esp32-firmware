@@ -18,6 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h } from "preact";
@@ -171,6 +173,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                         </div>
                     </FormRow>
 
+{/*#if MODULE_OVE_R37_AVAILABLE*/}
                     <FormRow label={__("system.content.country")} help={__("system.content.country_help")}>
                         <InputSelect
                             items={[
@@ -186,7 +189,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                             }}
                         />
                     </FormRow>
-
+{/*#endif*/}
                     <FormRow label={__("system.content.color_scheme")}>
                         <InputSelect
                             items={[
