@@ -76,7 +76,7 @@ let x = {
             "color_scheme_dark": "Dunkel",
 
             "country": "Land",
-            "country_help": "Wählt das Land aus, in dem die Wallbox installiert ist. Dadurch werden länderspezifische Funktionen und Vorschriften aktiviert.",
+            "country_help": <>Wählt das Land aus, in dem __("the_device") installiert ist. Dadurch werden länderspezifische Funktionen und Vorschriften aktiviert.</>,
             "country_other": "Anderes Land",
             "country_germany": "Deutschland",
             "country_austria": "Österreich",

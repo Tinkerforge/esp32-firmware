@@ -76,7 +76,7 @@ let x = {
             "color_scheme_dark": "Dark",
 
             "country": "Country",
-            "country_help": "Selects the country the charger is installed in. This enables country-specific features and regulations.",
+            "country_help": <>Selects the country __("the_device") is installed in. This enables country-specific features and regulations.</>,
             "country_other": "Other country",
             "country_germany": "Germany",
             "country_austria": "Austria",
