@@ -1607,7 +1607,7 @@ void ChargeTracker::register_urls()
     this->update_first_charge_timestamp();
     state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
 
-    api.addPersistentConfig("charge_tracker/config", &config);
+    api.addPersistentConfig("charge_tracker/config", &config, {}, {"letterhead"});
     api.addPersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config, {}, {"letterhead"});
 
     server.on_HTTPThread("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
