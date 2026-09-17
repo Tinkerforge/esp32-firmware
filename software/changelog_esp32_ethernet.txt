@@ -197,3 +197,17 @@
 - Fix network interface priority
 - Improve translations
 - Update timezone database
+
+2026-09-17: 2.3.0 (<unknown>)
+- Add IPv6 support
+- Increase maximum certificate (chain) size to 10179 bytes
+- Redirect HTTP to HTTPS when in https-only mode
+- Fix web server returning 404 to all requests for a short time after reboot
+- Fix validation and error display of number inputs and modal windows
+- Fix crash when receiving strange mDNS packets
+- Improve JSON (de)serialization robustness
+- Improve WebSocket robustness
+- Improve password manager support
+- Improve translations
+- Update timezone database
+- Improve Bricklet communication robustness

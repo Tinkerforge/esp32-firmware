@@ -242,3 +242,8 @@
 - Fix "Authorize" button being shown when managed charger is in error state
 - Make sure "not set" text on Iskra WM3M4(C) meters is really removed  (through EVSE 2.0 Bricklet firmware 2.2.26)
 - Fix EVSE crash caused by race condition between Iskra meter value and display configuration reads (through EVSE 2.0 Bricklet firmware 2.2.26)
+
+2026-09-17: 2.13.4 (<unknown>)
+- Improve Bricklet communication robustness
+- Fix emulated Bender holding registers 706 and 1000 always returning 0
+- Don't show country configuration in web interface; has no effect yet
