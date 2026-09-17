@@ -26,12 +26,12 @@ table_prototypes = [
         {
             'name': 'force_charge_power',
             'type': 'Uint16',
-            'default': 500,  # 0.01 kW
+            'default': 200,  # 0.01 kW
         },
         {
             'name': 'force_discharge_power',
             'type': 'Uint16',
-            'default': 500,  # 0.01 kW
+            'default': 200,  # 0.01 kW
         },
     ]),
 ]

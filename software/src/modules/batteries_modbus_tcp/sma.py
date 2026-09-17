@@ -15,12 +15,12 @@ table_prototypes = [
         {
             'name': 'max_normal_charge_power',
             'type': 'Uint32',
-            'default': 2000,  # W
+            'default': 5000,  # W
         },
         {
             'name': 'max_normal_discharge_power',
             'type': 'Uint32',
-            'default': 2000,  # W
+            'default': 5000,  # W
         },
         {
             'name': 'force_charge_power',

@@ -22,12 +22,12 @@ table_prototypes = [
         {
             'name': 'grid_draw_setpoint_force_charge',  # positive = draw
             'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 1000,  # W
+            'default': 2000,  # W
         },
         {
             'name': 'grid_draw_setpoint_force_discharge',  # negative = feed
             'type': 'Int32',  # FIXME: add range limit to [-2147483648..0]
-            'default': -1000,  # W
+            'default': -2000,  # W
         },
     ]),
 ]
