@@ -710,6 +710,6 @@
 2026-09-16: 2.9.3 (b5f7bb9f)
 - Fix "Authorize" button being shown when managed charger is in error state
 
-2026-09-17: 2.9.4 (<unknown>)
+2026-09-17: 2.9.4 (c009b78f)
 - Improve Bricklet communication robustness
 - Don't show country configuration in web interface; has no effect yet

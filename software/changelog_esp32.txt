@@ -191,7 +191,7 @@
 - Improve translations
 - Update timezone database
 
-2026-09-17: 2.3.0 (<unknown>)
+2026-09-17: 2.3.0 (c009b78f)
 - Add IPv6 support
 - Increase maximum certificate (chain) size to 4352 bytes
 - Fix web server returning 404 to all requests for a short time after reboot

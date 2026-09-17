@@ -1057,7 +1057,7 @@
 - Fix Home Assistant details for vehicle battery
 - Fix slow memory leak in mDNS result handling
 
-2026-09-17: 2.13.3 (<unknown>)
+2026-09-17: 2.13.3 (c009b78f)
 - Improve Bricklet communication robustness
 - Fix emulated Bender holding registers 706 and 1000 always returning 0
 - Don't show country configuration in web interface; has no effect yet
