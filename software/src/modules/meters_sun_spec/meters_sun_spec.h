@@ -20,10 +20,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <unordered_map>
-#include <TFModbusTCPClient.h>
 #include <TFTools/Micros.h>
-#include <lwip/ip_addr.h>
 
 #include "module.h"
 #include "modules/meters/imeter_generator.h"
