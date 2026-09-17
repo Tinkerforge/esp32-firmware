@@ -124,6 +124,19 @@ int tf_hal_create(TF_HAL *hal, uint8_t max_ports) {
     gpio_set_direction((gpio_num_t)CS_PIN_2, GPIO_MODE_OUTPUT);
     deselect_demux();
 
+    // Apply the clock and mode configuration before selecting the first Bricklet.
+    // wait currently MUST set to portMAX_DELAY, or else ESP_ERR_INVALID_ARG is returned.
+    err = spi_device_acquire_bus(hal->hspi_dev, portMAX_DELAY);
+
+    if (err != ESP_OK) {
+        // This should never happen because we pass portMAX_DELAY above
+        // and spi_device_acquire_bus has no other error paths.
+        tf_hal_destroy(hal);
+        return TF_E_NOT_SUPPORTED;
+    }
+
+    spi_device_release_bus(hal->hspi_dev);
+
     return tf_hal_common_prepare(hal, max_ports, 50000);
 }
 
