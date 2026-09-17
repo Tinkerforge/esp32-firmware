@@ -575,12 +575,28 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
     }
 
     override async sendSave(topic: null, new_config: null) {
+        let modified_slots : number[] = [];
+
         for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
+            if (JSON.stringify(API.get_unchecked(`meters/${meter_slot}/config`)) != JSON.stringify(this.state.configs_table[meter_slot])) {
+                modified_slots.push(meter_slot);
+            }
+        }
+
+        if (modified_slots.length == 0) {
+            this.setDirty(false);
+            console.log("Meters: Skip saving because no config changed");
+            return;
+        }
+
+        for (let i = 0; i < modified_slots.length; ++i) {
+            const meter_slot = modified_slots[i];
+
             await API.save_unchecked(
                 `meters/${meter_slot}/config`,
                 this.state.configs_table[meter_slot],
                 () => __("meters.script.save_failed"),
-                meter_slot == options.METERS_MAX_SLOTS - 1 ? this.reboot_string : undefined);
+                i == modified_slots.length - 1 ? this.reboot_string : undefined);
         }
     }
 
