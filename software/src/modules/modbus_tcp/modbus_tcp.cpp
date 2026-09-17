@@ -1192,6 +1192,10 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
 #endif
             }
             break;
+        case 1000: REQUIRE(evse); {
+                auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP);
+                val.regs.lower = slot->get("active")->asBool() ? slot->get("max_current")->asUint() / 1000 : 0;
+        } break;
 
         default: break;
     }
