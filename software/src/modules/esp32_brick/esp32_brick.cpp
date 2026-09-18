@@ -93,9 +93,12 @@ void ESP32Brick::setup()
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
-    task_scheduler.scheduleUncancelable([](){
-        led_blink(BLUE_LED, 2000, 1, 0);
-    }, 100_ms);
+    // LED is on during boot and low-active. Switch it off on first execution by setting the pin high.
+    task_scheduler.scheduleUncancelable([led_pin_high = true, led_pin = static_cast<uint8_t>(blue_led_pin)]() mutable {
+        const bool high = led_pin_high;
+        led_pin_high = !high;
+        digitalWrite(led_pin, high);
+    }, 998_ms);
 
 
 #if MODULE_SYSTEM_AVAILABLE()

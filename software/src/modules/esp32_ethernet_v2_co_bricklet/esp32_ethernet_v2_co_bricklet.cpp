@@ -168,13 +168,13 @@ void ESP32EthernetV2CoBricklet::set_blue_led(const bool on)
         return;
     }
 
-    const int rc = io_scheduler.hal_call([&]() {
-        return tf_warp_esp32_ethernet_v2_co_set_led(&device, on ? TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_ON : TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_OFF);
-    });
+    io_scheduler.scheduleOnce([this, on]() {
+        const int rc = tf_warp_esp32_ethernet_v2_co_set_led(&device, on ? TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_ON : TF_WARP_ESP32_ETHERNET_V2_CO_LED_STATE_OFF);
 
-    if (rc != TF_E_OK) {
-        logger.printfln("Failed to set led: error %i", rc);
-    }
+        if (rc != TF_E_OK) {
+            logger.printfln("Failed to set LED: error %i", rc);
+        }
+    });
 }
 
 

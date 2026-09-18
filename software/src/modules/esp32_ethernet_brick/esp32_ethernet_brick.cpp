@@ -199,15 +199,21 @@ void ESP32EthernetBrick::setup()
     tf_hal_set_local(&hal, &local);
 #endif
 
-    task_scheduler.scheduleUncancelable([](){
 #if MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
-    led_blink(0, 2000, 1, 0, [](uint8_t pin, uint8_t val) {
-        esp32_ethernet_v2_co_bricklet.set_blue_led(val == 0 ? false : true);
-    });
+    // LED is on during boot. Switch it off on first execution.
+    task_scheduler.scheduleUncancelable([led_on = false]() mutable {
+        const bool on = led_on;
+        led_on = !on;
+        esp32_ethernet_v2_co_bricklet.set_blue_led(on);
+    }, 997_ms);
 #else
-    led_blink(blue_led_pin, 2000, 1, 0);
+    // LED is on during boot and low-active. Switch it off on first execution by setting the pin high.
+    task_scheduler.scheduleUncancelable([led_pin_high = true, led_pin = static_cast<uint8_t>(blue_led_pin)]() mutable {
+        const bool high = led_pin_high;
+        led_pin_high = !high;
+        digitalWrite(led_pin, high);
+    }, 998_ms);
 #endif
-    }, 100_ms);
 
     initialized = true;
 }
