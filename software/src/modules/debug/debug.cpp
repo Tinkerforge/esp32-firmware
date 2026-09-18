@@ -1561,7 +1561,9 @@ void Debug::TaskAccounting::add(const char *file, uint_least32_t line, micros_t 
         return;
     }
 
-    file += 4; // Cut off "src/"
+    if (strncmp(file, "src/", 4) == 0) {
+        file += 4;
+    }
 
     if (strncmp(file, "modules/", 8) == 0) {
         file += 8;
