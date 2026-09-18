@@ -107,7 +107,7 @@ private:
     };
 
 #if defined(BOARD_HAS_PSRAM)
-    std::array<TraceBuffer, 16> trace_buffers;
+    std::array<TraceBuffer, 20> trace_buffers;
     size_t trace_buffers_in_use = 0;
     size_t trace_buffer_size_allocd = 0;
     static constexpr size_t MAX_TRACE_BUFFERS_SIZE = 4 << 20;
