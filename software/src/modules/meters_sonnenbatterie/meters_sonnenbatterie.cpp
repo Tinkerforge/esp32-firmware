@@ -291,6 +291,17 @@ esp_http_client_handle_t MetersSonnenbatterie::http_client_init(const sonnen_run
     return http_client;
 }
 
+[[gnu::noinline]]
+static bool is_during_reboot_window()
+{
+    const time_t now = time(nullptr);
+    struct tm tm;
+    localtime_r(&now, &tm);
+    const int hour = tm.tm_hour;
+
+    return 2 <= hour && hour < 5;
+}
+
 [[gnu::noreturn]]
 void MetersSonnenbatterie::sonnen_task(void *arg)
 {
@@ -319,7 +330,12 @@ retry_open: // label for evil goto
             if (err != ESP_OK) {
                 if (err == ESP_ERR_HTTP_CONNECT) {
                     if (!connection_error_printed) {
-                        logger.printfln("Sonnenbatterie unreachable");
+                        // Mark expected Sonnenbatterie reboots between 02:00 and 04:59.
+                        if (is_during_reboot_window()) {
+                            logger.printfln("Sonnenbatterie unreachable, might be nightly reboot");
+                        } else {
+                            logger.printfln("Sonnenbatterie unreachable");
+                        }
                         connection_error_printed = true;
                         meters_sonnenbatterie.set_child_meter_disconnected_state(true);
                     }
@@ -369,44 +385,38 @@ retry_fetch_headers:
                     bool log_error = true;
 
                     // Don't log status codes 500 and 502 while the Sonnenbatterie is restarting between 02:00 and 04:59.
-                    if (status_code == 500 || status_code == 502) {
-                        const time_t now = time(nullptr);
-                        struct tm tm;
-                        localtime_r(&now, &tm);
-                        const int hour = tm.tm_hour;
-
-                        if (2 <= hour && hour < 5) {
-                            log_error = false;
-                        }
+                    if ((status_code == 500 || status_code == 502) && is_during_reboot_window()) {
+                        log_error = false;
                     }
 
                     bool print_simple = true;
+                    int read_bytes = 0;
 
-                    if (content_length <= 100) {
-                        const int read_bytes = esp_http_client_read_response(http_client, runtime_data->api_response_buffer, API_RESPONSE_BUFFER_SIZE);
+                    if (content_length < API_RESPONSE_BUFFER_SIZE) {
+                        read_bytes = esp_http_client_read_response(http_client, runtime_data->api_response_buffer, API_RESPONSE_BUFFER_SIZE - 1);
+                    }
 
-                        if (0 < read_bytes && read_bytes <= 100) {
-                            if (status_code == 500 && read_bytes == 19 && strncmp(runtime_data->api_response_buffer, "{\"error\":\"no data\"}", 19) == 0) {
-                                if (log_error) {
-                                    logger.printfln("Sonnenbatterie has no data");
-                                } else {
-                                    logger.tracefln(runtime_data->trace_buffer_index, "Sonnenbatterie has no data");
-                                }
-                            } else if (read_bytes > 2 && strncmp(runtime_data->api_response_buffer, "{\"error\":\"", 10) == 0) {
-                                if (log_error) {
-                                    logger.printfln("Request returned error: %i %.*s", status_code, read_bytes - 12, runtime_data->api_response_buffer + 10);
-                                } else {
-                                    logger.tracefln(runtime_data->trace_buffer_index, "Request returned error: %i %.*s", status_code, read_bytes - 12, runtime_data->api_response_buffer + 10);
-                                }
+                    if (0 < read_bytes && read_bytes <= 100) {
+                        if (status_code == 500 && read_bytes == 19 && strncmp(runtime_data->api_response_buffer, "{\"error\":\"no data\"}", 19) == 0) {
+                            if (log_error) {
+                                logger.printfln("Sonnenbatterie has no data");
                             } else {
-                                if (log_error) {
-                                    logger.printfln("Request returned status code %i: %.*s", status_code, read_bytes, runtime_data->api_response_buffer);
-                                } else {
-                                    logger.tracefln(runtime_data->trace_buffer_index, "Request returned status code %i: %.*s", status_code, read_bytes, runtime_data->api_response_buffer);
-                                }
+                                logger.tracefln(runtime_data->trace_buffer_index, "Sonnenbatterie has no data");
                             }
-                            print_simple = false;
+                        } else if (read_bytes > 2 && strncmp(runtime_data->api_response_buffer, "{\"error\":\"", 10) == 0) {
+                            if (log_error) {
+                                logger.printfln("Request returned error: %i %.*s", status_code, read_bytes - 12, runtime_data->api_response_buffer + 10);
+                            } else {
+                                logger.tracefln(runtime_data->trace_buffer_index, "Request returned error: %i %.*s", status_code, read_bytes - 12, runtime_data->api_response_buffer + 10);
+                            }
+                        } else {
+                            if (log_error) {
+                                logger.printfln("Request returned status code %i: %.*s", status_code, read_bytes, runtime_data->api_response_buffer);
+                            } else {
+                                logger.tracefln(runtime_data->trace_buffer_index, "Request returned status code %i: %.*s", status_code, read_bytes, runtime_data->api_response_buffer);
+                            }
                         }
+                        print_simple = false;
                     }
 
                     if (print_simple) {
@@ -415,12 +425,17 @@ retry_fetch_headers:
                         } else {
                             logger.tracefln(runtime_data->trace_buffer_index, "Request returned status code %i. Content length: %zu", status_code, content_length);
                         }
-                        if (content_length > 0 && content_length < API_RESPONSE_BUFFER_SIZE) {
-                            runtime_data->api_response_buffer[content_length] = '\n';
-                            if (log_error) {
-                                logger.print_plain(runtime_data->api_response_buffer, content_length + 1);
-                            } else {
-                                logger.trace_plain(runtime_data->trace_buffer_index, runtime_data->api_response_buffer, content_length + 1);
+
+                        if (read_bytes > 0) {
+                            const size_t read_bytes_u = static_cast<size_t>(read_bytes);
+
+                            if (read_bytes_u < API_RESPONSE_BUFFER_SIZE) {
+                                runtime_data->api_response_buffer[read_bytes_u] = '\n';
+                                if (log_error) {
+                                    logger.print_plain(runtime_data->api_response_buffer, read_bytes_u + 1);
+                                } else {
+                                    logger.trace_plain(runtime_data->trace_buffer_index, runtime_data->api_response_buffer, read_bytes_u + 1);
+                                }
                             }
                         }
                     }
@@ -490,7 +505,7 @@ retry_fetch_headers:
         if (needs_flush) {
             int flush_len = -1;
             int flush_ret = esp_http_client_flush_response(http_client, &flush_len);
-            // logger.printfln("Flushed %i bytes and returned %i.", flush_len, flush_ret);
+
             int read_len = 0;
             int reads = 0;
             for (;;) {
@@ -501,8 +516,8 @@ retry_fetch_headers:
                 read_len += data_read;
                 reads++;
             }
-            // logger.printfln("Manually discarded %i bytes with %i read calls", read_len, reads);
-            logger.tracefln(runtime_data->trace_buffer_index, "Flushed %i bytes and returned %i. Manually discarded %i bytes with %i read calls.", flush_len, flush_ret, read_len, reads);
+
+            logger.tracefln(runtime_data->trace_buffer_index, "Flushed %i, returned %i. Discarded %i with %i call(s).", flush_len, flush_ret, read_len, reads);
         }
 
         if (needs_long_delay) {

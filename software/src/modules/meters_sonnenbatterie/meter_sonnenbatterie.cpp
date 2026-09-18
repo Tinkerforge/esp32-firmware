@@ -107,7 +107,7 @@ void MeterSonnenbatterie::setup(Config *config)
     } else if (location == MeterLocation::Battery) {
         meters.declare_value_ids(slot, value_ids_battery, std::size(value_ids_battery));
     } else {
-        logger.printfln("Invalid location");
+        logger.printfln_meter("Invalid location");
         return;
     }
 
