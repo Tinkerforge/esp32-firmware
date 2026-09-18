@@ -96,15 +96,15 @@ void Coredump::pre_init()
 
     char task_name[16];
     uint32_t exc_cause;
+    esp_err_t summary_err;
     char backtrace[192];
     StringWriter sw_bt(backtrace, ARRAY_SIZE(backtrace));
 
     { // Scope for summary
         esp_core_dump_summary_t summary;
-        if (esp_core_dump_get_summary(&summary) != ESP_OK) {
-            strlcpy(task_name, "<unknown>", sizeof(task_name));
-            exc_cause = EXCCAUSE_EXCCAUSE_MASK + 1;
-        } else {
+        summary_err = esp_core_dump_get_summary(&summary);
+
+        if (summary_err == ESP_OK) {
             memcpy(task_name, summary.exc_task, sizeof(task_name));
             exc_cause = summary.ex_info.exc_cause;
 
@@ -121,16 +121,33 @@ void Coredump::pre_init()
             } else {
                 sw_bt.putc('\n');
             }
+        } else {
+            exc_cause = EXCCAUSE_EXCCAUSE_MASK + 1;
         }
     }
 
     { // Scope for panic_reason
         char panic_reason[256];
-        if (esp_core_dump_get_panic_reason(panic_reason, sizeof(panic_reason)) == ESP_OK) {
+        esp_err_t panic_err = esp_core_dump_get_panic_reason(panic_reason, sizeof(panic_reason));
+
+        if (panic_err == ESP_OK) {
             logger.printfln("Task '%.16s' panicked: '%s'", task_name, panic_reason);
-        } else {
+        } else if (summary_err == ESP_OK) {
             const char *exc_name = exc_cause < ARRAY_SIZE(exc_cause_table) ? exc_cause_table[exc_cause] : "<unknown>";
             logger.printfln("Task '%.16s' caused exception %lu: %s", task_name, exc_cause, exc_name);
+        } else {
+            bool encrypted = false;
+
+            {
+                const esp_partition_t *core_part = nullptr;
+                uint32_t out_size;
+
+                if (esp_core_dump_partition_and_size_get(&core_part, &out_size) == ESP_OK) {
+                    encrypted = core_part->encrypted;
+                }
+            }
+
+            logger.printfln("Exception/panic information unavailable. Summary: %s. Panic: %s. Encrypted: %i.", esp_err_to_name(summary_err), esp_err_to_name(panic_err), encrypted);
         }
     }
 
