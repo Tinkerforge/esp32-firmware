@@ -200,11 +200,6 @@ void ESP32EthernetBrick::setup()
 #endif
 
     task_scheduler.scheduleUncancelable([](){
-#if MODULE_WATCHDOG_AVAILABLE()
-    static int watchdog_handle = watchdog.add("esp_ethernet_led_blink", "Main thread blocked");
-    watchdog.reset(watchdog_handle);
-#endif
-
 #if MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
     led_blink(0, 2000, 1, 0, [](uint8_t pin, uint8_t val) {
         esp32_ethernet_v2_co_bricklet.set_blue_led(val == 0 ? false : true);
