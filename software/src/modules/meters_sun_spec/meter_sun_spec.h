@@ -24,7 +24,7 @@
 #include "modules/meters/imeter.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
-#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
+#include "modules/sun_spec/sun_spec_resolver.h"
 #include "config.h"
 #include "model_parser.h"
 
@@ -52,30 +52,24 @@ public:
     bool supports_currents()      override {return true;}
 
 private:
-    enum class ResolveState {
-        Idle,
-        ReadSunSpecID,
-        ReadModelHeader,
-        ReadModel,
-    };
-
     void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
 
     bool alloc_read_buffer(size_t model_regcount);
     void trace_response();
-    void read_start(size_t model_regcount);
+    void read_start(size_t start_address, size_t model_regcount);
     void read_done();
+    void record_timeout();
 
     void resolve_start_delayed();
     void resolve_start();
-    void resolve_read_delayed();
-    void resolve_next_base_address();
-    void resolve_next();
+    void resolve_result(SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length);
 
     uint32_t slot;
     Config *state;
     Config *errors;
+
+    char trace_log_message_prefix[6];
 
     bool read_allowed = false;
     bool values_declared = false;
@@ -85,13 +79,8 @@ private:
     String serial_number;
     uint16_t model_id;
     uint16_t model_instance;
-    size_t resolve_base_address_index;
-    ResolveState resolve_state;
-    ResolveState resolve_state_next;
-    ModbusDeserializer resolve_deserializer;
-    bool resolve_device_found;
-    uint16_t resolve_model_counter;
-    uint64_t resolve_task_id = 0;
+    uint64_t resolve_start_delayed_task_id = 0;
+    SunSpecResolver *resolver = nullptr;
 
     uint32_t quirks = 0;
     IMetersSunSpecParser *model_parser;

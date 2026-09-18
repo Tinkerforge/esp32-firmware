@@ -24,13 +24,9 @@
 #include "models/model_001.h"
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"
-#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 
 #include "gcc_warnings.h"
 
-#define SUN_SPEC_ID 0x53756E53
-#define COMMON_MODEL_ID 1
-#define NON_IMPLEMENTED_UINT16 0xFFFF
 #define RESOLVE_TIMEOUT 1_min
 #define SUCCESSFUL_PARSE_TIMEOUT 1_min
 
@@ -39,32 +35,6 @@
         meters_sun_spec.trace_timestamp(); \
         logger.tracefln_plain(meters_sun_spec.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
-
-// The manufacturer name for SolarEdge devices sometimes has a trailing space
-static inline bool is_solar_edge(const char *manufacturer)
-{
-    return strncmp(manufacturer, "SolarEdge", 32) == 0 || strncmp(manufacturer, "SolarEdge ", 32) == 0;
-}
-
-// Since KOSTAL Smart Energy Meter firmware 2.6.0 the SunSpec manufacturer name
-// got changed from "KOSTAL" to "KOSTAL Solar Electric GmbH"
-static inline bool is_kostal(const char *manufacturer)
-{
-    return strncmp(manufacturer, "KOSTAL", 32) == 0 || strncmp(manufacturer, "KOSTAL Solar Electric GmbH", 32) == 0;
-}
-
-// Do a prefix match to accept any KOSTAL Smart Energy Meter. Known models
-// are "KOSTAL Smart Energy Meter G1" and "KOSTAL Smart Energy Meter G2"
-static inline bool is_kostal_smart_energy_meter(const char *model)
-{
-    return strncmp(model, "KOSTAL Smart Energy Meter", 25) == 0;
-}
-
-static const uint16_t base_addresses[] {
-    40000,
-    50000,
-    0
-};
 
 static MeterLocation get_model_fixed_location(uint16_t model_id)
 {
@@ -124,6 +94,8 @@ MeterClassID MeterSunSpec::get_class() const
 
 void MeterSunSpec::setup(Config *ephemeral_config)
 {
+    snprintf(trace_log_message_prefix, sizeof(trace_log_message_prefix), "m%lur ", slot);
+
     host              = ephemeral_config->get("host")->asString();
     port              = ephemeral_config->get("port")->asUint16();
     device_address    = ephemeral_config->get("device_address")->asUint8();
@@ -207,8 +179,13 @@ void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason
 
     read_allowed = false;
 
-    task_scheduler.cancel(this->resolve_task_id);
-    this->resolve_task_id = 0;
+    task_scheduler.cancel(resolve_start_delayed_task_id);
+    resolve_start_delayed_task_id = 0;
+
+    if (resolver != nullptr) {
+        resolver->destroy();
+        resolver = nullptr;
+    }
 
     free(generic_read_request.data[0]);
 
@@ -274,12 +251,13 @@ void MeterSunSpec::trace_response()
     }
 }
 
-void MeterSunSpec::read_start(size_t model_regcount)
+void MeterSunSpec::read_start(size_t start_address, size_t model_regcount)
 {
     if (!alloc_read_buffer(model_regcount)) {
         return; // this is fatal, the reading will not be restarted till the next reconnect
     }
 
+    generic_read_request.start_address = start_address;
     generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
     generic_read_request.register_count = model_regcount;
     generic_read_request.done_callback = [this]{ read_done(); };
@@ -301,8 +279,7 @@ void MeterSunSpec::read_done()
             read_allowed = false;
         }
         else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
-            auto timeout = errors->get("timeout");
-            timeout->updateUint(timeout->asUint() + 1);
+            record_timeout();
         }
 
         return;
@@ -396,320 +373,137 @@ void MeterSunSpec::read_done()
     }
 }
 
+void MeterSunSpec::record_timeout()
+{
+    auto timeout = errors->get("timeout");
+    timeout->updateUint(timeout->asUint() + 1);
+}
+
 void MeterSunSpec::resolve_start_delayed()
 {
-    task_scheduler.cancel(resolve_task_id);
+    task_scheduler.cancel(resolve_start_delayed_task_id);
+    resolve_start_delayed_task_id = 0;
 
-    resolve_task_id = task_scheduler.scheduleOnce([this](){
-        resolve_task_id = 0;
+    if (shared_client == nullptr || shared_client->get_connection_status() != TFGenericTCPClientConnectionStatus::Connected) {
+        return;
+    }
+
+    resolve_start_delayed_task_id = task_scheduler.scheduleOnce([this](){
+        resolve_start_delayed_task_id = 0;
 
         if (deadline_elapsed(last_connect + RESOLVE_TIMEOUT)) {
-            logger.printfln_meter("Resolve of SunSpec model takes too long, reconnecting to %s:%u", host.c_str(), port);
+            logger.printfln_meter("Looking for SunSpec model %u/%u takes too long, reconnecting to %s:%u",
+                                  model_id, model_instance, host.c_str(), port);
             force_reconnect();
             return;
         }
 
         resolve_start();
-    }, 10_s);
+    }, 5_s);
 }
 
 void MeterSunSpec::resolve_start()
 {
-    free(generic_read_request.data[0]);
-
-    generic_read_request.data[0] = nullptr;
-    generic_read_request.data[1] = nullptr;
-
-    // Buffer must be big enough for the Common model.
-    uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * 68));
-    if (!buffer) {
-        logger.printfln_meter("Cannot alloc read buffer");
-        return;
+    if (resolver != nullptr) {
+        resolver->destroy();
     }
 
-    log_read_errors = false; // don't log errors while probing for the correct base address
-    resolve_base_address_index = 0;
-    resolve_state = ResolveState::Idle;
-    resolve_state_next = ResolveState::ReadSunSpecID;
-    resolve_deserializer.buf = buffer;
-    resolve_device_found = false;
-    resolve_model_counter = model_instance;
-
-    generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
-    generic_read_request.start_address = base_addresses[resolve_base_address_index];
-    generic_read_request.register_count = 2;
-    generic_read_request.data[0] = buffer;
-    generic_read_request.read_twice = false;
-    generic_read_request.done_callback = [this]{ resolve_next(); };
-
-    start_generic_read();
+    resolver = SunSpecResolver::create(event_log_prefix_override,
+                                       event_log_message_prefix,
+                                       []() { meters_sun_spec.trace_timestamp(); },
+                                       meters_sun_spec.trace_buffer_index,
+                                       trace_log_message_prefix,
+                                       shared_client,
+                                       device_address,
+                                       manufacturer_name.c_str(),
+                                       model_name.c_str(),
+                                       serial_number.c_str(),
+                                       model_id,
+                                       model_instance,
+                                       [this](SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length) { resolve_result(common_model, start_address, block_length); },
+                                       [this]() { record_timeout(); });
 }
 
-void MeterSunSpec::resolve_read_delayed()
+void MeterSunSpec::resolve_result(SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length)
 {
-    task_scheduler.scheduleOnce([this](){
-        this->start_generic_read();
-    }, 1_s + (millis_t{esp_random() % 4000}));
-}
+    resolver = nullptr;
 
-void MeterSunSpec::resolve_next_base_address()
-{
-    ++resolve_base_address_index;
-
-    if (resolve_base_address_index >= ARRAY_SIZE(base_addresses)) {
-        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
+    if (common_model == nullptr) {
         resolve_start_delayed();
-    }
-    else {
-        generic_read_request.start_address = base_addresses[resolve_base_address_index];
-        generic_read_request.register_count = 2;
-        resolve_state_next = ResolveState::ReadSunSpecID;
-
-        start_generic_read();
-    }
-}
-
-void MeterSunSpec::resolve_next()
-{
-    trace_response();
-
-    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        if (generic_read_request.result == TFModbusTCPClientTransactionResult::NotConnected) {
-            // the resolve will be restarted by the automatic reconnect
-            return;
-        }
-        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
-            // an abort is triggered before a connection close or before a forced
-            // reconnect. in both cases the resolve will be restarted by the automatic reconnect
-            return;
-        }
-        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
-            auto timeout = errors->get("timeout");
-            timeout->updateUint(timeout->asUint() + 1);
-        }
-
-        if (resolve_state_next == ResolveState::ReadSunSpecID) {
-            resolve_next_base_address();
-        }
-        else {
-            resolve_read_delayed();
-        }
-
         return;
     }
 
-    resolve_deserializer.idx = 0;
-    resolve_state = resolve_state_next;
-
-    switch (resolve_state) {
-        case ResolveState::Idle:
-            break;
-
-        case ResolveState::ReadSunSpecID: {
-                uint32_t sun_spec_id = resolve_deserializer.read_uint32();
-
-                if (sun_spec_id == SUN_SPEC_ID) {
-                    generic_read_request.start_address += generic_read_request.register_count;
-                    generic_read_request.register_count = 2;
-                    log_read_errors = true; // log errors again after the correct base address was found
-                    resolve_state_next = ResolveState::ReadModelHeader;
-
-                    start_generic_read();
-                }
-                else {
-                    resolve_next_base_address();
-                }
-            }
-
-            break;
-
-        case ResolveState::ReadModelHeader: {
-                uint16_t resolve_model_id = resolve_deserializer.read_uint16();
-                size_t block_length = resolve_deserializer.read_uint16();
-
-                if (resolve_model_id == NON_IMPLEMENTED_UINT16) { // End model found
-                    logger.printfln_meter("Configured SunSpec model %u/%u not found at %s:%u:%u",
-                                          model_id, model_instance, host.c_str(), port, device_address);
-                    resolve_start_delayed();
-                }
-                else if (resolve_device_found && resolve_model_id == model_id) {
-                    if (resolve_model_counter > 0) {
-                        --resolve_model_counter;
-
-                        generic_read_request.start_address += generic_read_request.register_count + block_length;
-                        generic_read_request.register_count = 2;
-
-                        start_generic_read();
-                    }
-                    else {
-                        if (!model_parser->is_model_length_supported(block_length)) {
-                            logger.printfln_meter("Configured SunSpec model %u/%u found but has unsupported length: %u",
-                                                  model_id, model_instance, block_length);
-                            resolve_start_delayed();
-                        }
-                        else {
-                            resolve_state_next = ResolveState::Idle;
-
-                            logger.printfln_meter("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
-                                                  model_id, model_instance, host.c_str(), port, device_address, generic_read_request.start_address);
-                            read_start(model_parser->get_interesting_registers_count());
-                        }
-                    }
-                }
-                else if (resolve_model_id == 1) { // Common model
-                    generic_read_request.register_count = 67;
-                    resolve_state_next = ResolveState::ReadModel;
-
-                    start_generic_read();
-                }
-                else {
-                    generic_read_request.start_address += generic_read_request.register_count + block_length;
-                    generic_read_request.register_count = 2;
-
-                    start_generic_read();
-                }
-            }
-
-            break;
-
-        case ResolveState::ReadModel: {
-                uint16_t resolve_model_id = resolve_deserializer.read_uint16();
-                size_t block_length = resolve_deserializer.read_uint16();
-
-                if (resolve_model_id == 1) { // Common model
-                    SunSpecCommonModel001_u *common_model = reinterpret_cast<SunSpecCommonModel001_u *>(generic_read_request.data[0]);
-                    modbus_bswap_registers(common_model->registers + 2, 64);
-                    const SunSpecCommonModel001_s *m = &common_model->model;
-
-                    logger.printfln_meter("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
-
-                    if (manufacturer_name.length() == 0 && model_name.length() == 0 && serial_number.length() == 0) {
-                        resolve_device_found = true;
-                    }
-                    else if (is_solar_edge(m->Mn) &&
-                             strncmp(m->Md, "SE-RGMTR-1D-240C-A", 32) == 0 &&
-                             strncmp(m->SN, "0", 32) == 0 &&
-                             is_solar_edge(manufacturer_name.c_str()) &&
-                             strncmp(model_name.c_str(), "MTR-240-3PC1-D-A-MW", 32) == 0) {
-                        // Sometimes SolarEdge inverters report a MTR-240-3PC1-D-A-MW meter wrongly
-                        // as a SE-RGMTR-1D-240C-A meter with serial number 0. Work around this by
-                        // accepting a SE-RGMTR-1D-240C-A meter with serial number 0 when looking
-                        // for a MTR-240-3PC1-D-A-MW meter.
-                        resolve_device_found = true;
-                    }
-                    else if (is_solar_edge(m->Mn) &&
-                             strncmp(m->Md, "MTR-240-3PC1-D-A-MW", 32) == 0 &&
-                             is_solar_edge(manufacturer_name.c_str()) &&
-                             strncmp(model_name.c_str(), "SE-RGMTR-1D-240C-A", 32) == 0 &&
-                             strncmp(serial_number.c_str(), "0", 32) == 0) {
-                        // A MTR-240-3PC1-D-A-MW meter might have been configured while it was wrongly
-                        // reported as SE-RGMTR-1D-240C-A meter with serial number 0. But now it is
-                        // correctly reported again. Work around this by accepting a MTR-240-3PC1-D-A-MW
-                        // meter when looking for a SE-RGMTR-1D-240C-A meter with serial number 0.
-                        resolve_device_found = true;
-                    }
-                    else {
-                        bool manufacturer_match = strncmp(m->Mn, manufacturer_name.c_str(), 32) == 0 ||
-                                                  (is_solar_edge(m->Mn) && is_solar_edge(manufacturer_name.c_str())) ||
-                                                  (is_kostal(m->Mn) && is_kostal(manufacturer_name.c_str()));
-
-                        resolve_device_found = manufacturer_match &&
-                                            strncmp(m->Md, model_name.c_str(), 32) == 0 &&
-                                            strncmp(m->SN, serial_number.c_str(), 32) == 0;
-                    }
-
-                    logger.printfln_meter("Device Mn='%.*s' Md='%.*s' Opt='%.*s' Vr='%.*s' SN='%.*s' is %smatching",
-                                          static_cast<int>(strnlen(m->Mn, 32)), m->Mn,
-                                          static_cast<int>(strnlen(m->Md, 32)), m->Md,
-                                          static_cast<int>(strnlen(m->Opt, 16)), m->Opt,
-                                          static_cast<int>(strnlen(m->Vr, 16)), m->Vr,
-                                          static_cast<int>(strnlen(m->SN, 32)), m->SN,
-                                          !resolve_device_found ? "not " :"");
-
-                    if (resolve_device_found) {
-                        if (is_kostal(m->Mn)) {
-                            bool acc32_is_int32 = true;
-
-                            if (is_kostal_smart_energy_meter(m->Md)) {
-                                // create null-terminated string from non-terminated character sequence
-                                char version_str[17];
-                                memcpy(version_str, m->Vr, 16);
-                                version_str[16] = 0;
-
-                                SemanticVersion version;
-
-                                if (!version.from_string(version_str, SemanticVersion::WithoutTimestamp)) {
-                                    logger.printfln_meter("Could not parse KOSTAL Smart Energy Meter version: %s", version_str);
-                                }
-                                else if (version.compare(SemanticVersion{2, 6, 0}) >= 0) {
-                                    // KOSTAL fixed this bug in version 2.6.0
-                                    acc32_is_int32 = false;
-                                }
-                            }
-
-                            if (acc32_is_int32) {
-                                quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
-                            }
-
-                            quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
-                        }
-                        else if (strncmp(m->Mn, "SMA", 32) == 0) {
-                            quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16;
-                            quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
-                        }
-                        else if (is_solar_edge(m->Mn)) {
-                            if (model_id >= 200 && model_id < 300) {
-                                // Only meters are inverted, inverters are not.
-                                quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
-                            }
-
-                            quirks |= SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16;
-                            quirks |= SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16;
-                        }
-                        else if (strncmp(m->Mn, "WattNode", 32) == 0) {
-                            quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
-                            quirks |= SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_UINT16;
-                        }
-                        else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
-                            quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
-                        }
-                        else if (strncmp(m->Mn, "TQ-Systems GmbH", 32) == 0) {
-                            quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
-                            quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
-                        }
-                        else if (strncmp(m->Mn, "Fronius", 32) == 0) {
-                            if (model_id >= 200 && model_id < 300 && location == MeterLocation::Load) {
-                                // in the Fronius world model import is posivtive and export is negative,
-                                // the same as in our world model. but in the Fronius world model loads
-                                // are viewed from the perspective of the inverter, not viewed from the
-                                // perspective of the load itself. this means that a load that is importing
-                                // has a positive power value in our world model, but in the Fronius world
-                                // model the inverter is exporting to the load, resulting in a negative
-                                // power value reported by the meter. therefore, we need to invert the power
-                                // value reported by Fronius load meters.
-                                quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
-                            }
-                        }
-
-                        if (quirks) {
-                            logger.printfln_meter("Enabling quirks mode 0x%02lx for %.32s device", quirks, m->Mn);
-                        }
-                    }
-                }
-                else {
-                    logger.printfln_meter("Read full model %u for no reason", resolve_model_id);
-                }
-
-                generic_read_request.start_address += 2 + block_length;
-                generic_read_request.register_count = 2;
-                resolve_state_next = ResolveState::ReadModelHeader;
-
-                start_generic_read();
-            }
-
-            break;
-
-        default:
-            esp_system_abortf<48>("Invalid state during resolve: %d", static_cast<int>(resolve_state));
+    if (!model_parser->is_model_length_supported(block_length)) {
+        logger.printfln_meter("SunSpec model %u/%u at %s:%u:%u:%u has unsupported length: %u",
+                              model_id, model_instance, host.c_str(), port, device_address, start_address, block_length);
+        resolve_start_delayed();
+        return;
     }
+
+    quirks = 0;
+
+    if (sun_spec_is_kostal(common_model->Mn)) {
+        bool acc32_is_int32 = true;
+
+        if (sun_spec_is_kostal_smart_energy_meter(common_model->Md)) {
+            SemanticVersion version;
+
+            if (!version.from_string(common_model->Vr, SemanticVersion::WithoutTimestamp)) {
+                logger.printfln_meter("Could not parse KOSTAL Smart Energy Meter version: %s", common_model->Vr);
+            }
+            else if (version.compare(SemanticVersion{2, 6, 0}) >= 0) {
+                // KOSTAL fixed this bug in version 2.6.0
+                acc32_is_int32 = false;
+            }
+        }
+
+        if (acc32_is_int32) {
+            quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+        }
+
+        quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
+    }
+    else if (strcmp(common_model->Mn, "SMA") == 0) {
+        quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16;
+        quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
+    }
+    else if (sun_spec_is_solar_edge(common_model->Mn)) {
+        if (model_id >= 200 && model_id < 300) {
+            // Only meters are inverted, inverters are not.
+            quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+        }
+
+        quirks |= SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16;
+        quirks |= SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16;
+    }
+    else if (strcmp(common_model->Mn, "WattNode") == 0) {
+        quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+        quirks |= SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_UINT16;
+    }
+    else if (strcmp(common_model->Mn, "SUNGROW") == 0) {
+        quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
+    }
+    else if (strcmp(common_model->Mn, "TQ-Systems GmbH") == 0) {
+        quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+        quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
+    }
+    else if (strcmp(common_model->Mn, "Fronius") == 0) {
+        if (model_id >= 200 && model_id < 300 && location == MeterLocation::Load) {
+            // in the Fronius world model import is posivtive and export is negative,
+            // the same as in our world model. but in the Fronius world model loads
+            // are viewed from the perspective of the inverter, not viewed from the
+            // perspective of the load itself. this means that a load that is importing
+            // has a positive power value in our world model, but in the Fronius world
+            // model the inverter is exporting to the load, resulting in a negative
+            // power value reported by the meter. therefore, we need to invert the power
+            // value reported by Fronius load meters.
+            quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+        }
+    }
+
+    if (quirks != 0) {
+        logger.printfln_meter("Enabling SunSpec quirks mode 0x%02lx for %s device", quirks, common_model->Mn);
+    }
+
+    read_start(start_address, model_parser->get_interesting_registers_count());
 }
