@@ -47,10 +47,8 @@ protected:
 
     uint8_t device_address = 0;
     ReadRequest generic_read_request;
-    bool log_read_errors = true;
 
 private:
-    void esp_system_abort_prefixed(const char *message);
     void read_next();
 
     micros_t last_successful_read = 0_us;

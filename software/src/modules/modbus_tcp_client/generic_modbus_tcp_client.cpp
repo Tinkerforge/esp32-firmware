@@ -32,6 +32,8 @@
 
 #define SUCCESSFUL_READ_TIMEOUT 1_min
 
+#define printfln_client(fmt, ...) printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s" fmt, event_log_message_prefix __VA_OPT__(,) __VA_ARGS__)
+
 void GenericModbusTCPClient::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
 {
     if (result != TFGenericTCPClientConnectResult::Connected) {
@@ -53,16 +55,13 @@ void GenericModbusTCPClient::start_generic_read()
     }
 
     if (read_pending) {
-        esp_system_abort_prefixed("Previous read pending while trying to read");
+        esp_system_abort("Previous read pending while trying to read");
     }
 
     read_pending = true;
 
     if (deadline_elapsed(last_successful_read + SUCCESSFUL_READ_TIMEOUT)) {
-        logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "%sLast successful read occurred too long ago, reconnecting to %s:%u",
-                                  event_log_message_prefix,
-                                 host.c_str(), port);
+        logger.printfln_client("Last successful read occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
 
         read_pending = false;
         generic_read_request.result = TFModbusTCPClientTransactionResult::Aborted;
@@ -94,17 +93,10 @@ void GenericModbusTCPClient::start_generic_read()
     read_next();
 }
 
-[[gnu::noinline]]
-[[gnu::noreturn]]
-void GenericModbusTCPClient::esp_system_abort_prefixed(const char *message)
-{
-    esp_system_abortf<128>("%s%s", event_log_message_prefix, message);
-}
-
 void GenericModbusTCPClient::read_next()
 {
     if (shared_client == nullptr || shared_client->get_connection_status() != TFGenericTCPClientConnectionStatus::Connected) {
-        esp_system_abort_prefixed("Not connected while trying to read");
+        esp_system_abort("Not connected while trying to read");
     }
 
     uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
@@ -125,7 +117,7 @@ void GenericModbusTCPClient::read_next()
     case ModbusRegisterType::Coil:
     case ModbusRegisterType::DiscreteInput:
     default:
-        esp_system_abort_prefixed("Unsupported register type to read");
+        esp_system_abort("Unsupported register type to read");
     }
 
     static_cast<TFModbusTCPSharedClient *>(shared_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,
@@ -139,19 +131,17 @@ void GenericModbusTCPClient::read_next()
         }
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
-                logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "%sModbus error repeated %u time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
-                                         event_log_message_prefix,
-                                         last_read_result_burst_length,
-                                         last_read_result_burst_length > 1 ? "s" : "",
-                                         read_count,
-                                         read_count > 1 ? "s" : "",
-                                         read_start_address,
-                                         get_tf_modbus_tcp_client_transaction_result_name(result),
-                                         static_cast<int>(result),
-                                         error_message != nullptr ? " / " : "",
-                                         error_message != nullptr ? error_message : "");
+            if (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0) {
+                logger.printfln_client("Modbus error repeated %zu time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
+                                       last_read_result_burst_length,
+                                       last_read_result_burst_length > 1 ? "s" : "",
+                                       read_count,
+                                       read_count > 1 ? "s" : "",
+                                       read_start_address,
+                                       get_tf_modbus_tcp_client_transaction_result_name(result),
+                                       static_cast<int>(result),
+                                       error_message != nullptr ? " / " : "",
+                                       error_message != nullptr ? error_message : "");
             }
 
             read_pending = false;
