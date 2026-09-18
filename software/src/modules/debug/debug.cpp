@@ -1020,7 +1020,11 @@ void Debug::register_urls()
     });
 
     server.on_HTTPThread("/debug/task_accounting_simple", HTTP_GET, [this](WebServerRequest req) {
+#if defined(BOARD_HAS_PSRAM)
         constexpr size_t BUF_SIZE = 131072;
+#else
+        constexpr size_t BUF_SIZE = 16384;
+#endif
         auto buf = heap_alloc_array<char>(BUF_SIZE);
         StringWriter sw{buf.get(), BUF_SIZE};
 
