@@ -87,6 +87,8 @@ void ESP32Brick::setup()
     pinMode(BLUE_LED, OUTPUT);
     pinMode(BUTTON, INPUT);
 
+    digitalWrite(GREEN_LED, HIGH);
+
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
@@ -97,18 +99,17 @@ void ESP32Brick::setup()
 
 
 #if MODULE_SYSTEM_AVAILABLE()
-    task_scheduler.scheduleUncancelable([](){
-        static bool last_btn_value = false;
-        static micros_t last_btn_change = 0_us;
+    // Capture list is large enough to hold 8 bytes.
+    task_scheduler.scheduleUncancelable([last_btn_change = 0_us]() mutable {
+        static bool last_btn_value = true; // Button is low-active.
 
         bool btn = digitalRead(BUTTON);
-        digitalWrite(GREEN_LED, btn);
 
         if (btn != last_btn_value) {
+            digitalWrite(GREEN_LED, btn);
             last_btn_change = now_us();
+            last_btn_value = btn;
         }
-
-        last_btn_value = btn;
 
         if (!btn && deadline_elapsed(last_btn_change + 10_s)) {
             logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");

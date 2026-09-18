@@ -75,28 +75,33 @@ void evse_v2_button_recovery_handler()
 
     uint32_t button_press_time = BUTTON_IS_PRESSED;
     bool first = true;
-    while (button_press_time == BUTTON_IS_PRESSED && !deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+    while (true) {
         // Handle first boot with new firmware (i.e. the firmware supporting get_button_press_boot_time is not flashed yet)
         if (tf_evse_v2_get_button_press_boot_time(&evse, false, &button_press_time) == TF_E_NOT_SUPPORTED) {
             button_press_time = 0;
             break;
         }
 
-        if (first && button_press_time == BUTTON_IS_PRESSED) {
+        if (button_press_time == 0) {
+            return;
+        }
+
+        if (button_press_time != BUTTON_IS_PRESSED) {
+            break;
+        }
+
+        if (first) {
             logger.printfln("Button is pressed. Waiting for release.");
             first = false;
         } else {
             led_blink(blue_led_pin, 200, 1, 0);
             led_blink(green_led_pin, 200, 1, 0);
         }
-    }
 
-    if (button_press_time == 0)
-        return;
-
-    if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
-        logger.printfln("Button is pressed for more than 30 seconds. Assuming charger runs with front plate removed. Continuing normal boot.");
-        return;
+        if (deadline_elapsed(start + BUTTON_MAX_PRESS_THRES)) {
+            logger.printfln("Button is pressed for more than 30 seconds. Assuming charger runs with front plate removed. Continuing normal boot.");
+            return;
+        }
     }
 
     auto min_ms = BUTTON_MIN_PRESS_THRES.to<millis_t>().as<uint32_t>();
