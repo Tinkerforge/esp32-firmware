@@ -20,3 +20,4 @@ software/*_valovo_*
 cov-analysis-linux64-*
 software/build_*.sh
 software/signature/keys-*
+software/zzz_overrides.ini
