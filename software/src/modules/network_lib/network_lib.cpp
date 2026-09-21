@@ -33,18 +33,20 @@ void TFNetwork::vlogfln(const char *fmt, va_list args)
     logger.vprintfln(fmt, args);
 }
 
-void TFNetwork::resolve(const char *host, std::function<void(ip_addr_t *address, int error_number)> &&callback)
+void TFNetwork::resolve(const char *host, TFNetworkResolveResultCallback &&callback)
 {
-    dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-        if (data->err != ERR_OK) {
-            callback(nullptr, err_to_errno(data->err));
-        }
-        else if (data->err == ERR_CONN) {
-            callback(nullptr, -1); // no address available for this host
-        }
-        else {
+    dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback = std::move(callback)](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (data->err == ERR_OK) {
             callback(&data->addr, -1);
+            return;
         }
+
+        if (data->err == ERR_CONN) {
+            callback(nullptr, -1); // no address available for this host
+            return;
+        }
+
+        callback(nullptr, err_to_errno(data->err));
     }, LWIP_DNS_ADDRTYPE_DEFAULT);
 }
 

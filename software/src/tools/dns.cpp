@@ -166,6 +166,7 @@ bool dns_gethostbyname_addrtype_lwip_ctx_async(const char *host, FoundCallback &
         static_output.err = ERR_MEM;
         memset(&static_output.addr, 0, sizeof(static_output.addr));
 
+        // If new returned nullptr, found_callback was not moved and can be called.
         found_callback(&static_output);
 
         return true;

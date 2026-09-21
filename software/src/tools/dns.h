@@ -24,8 +24,8 @@
 
 struct dns_gethostbyname_addrtype_lwip_ctx_async_data
 {
-    err_t err;
     ip_addr_t addr;
+    err_t err;
 };
 
 [[gnu::nonnull]]
