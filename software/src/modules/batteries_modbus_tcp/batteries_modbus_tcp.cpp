@@ -695,7 +695,7 @@ void BatteriesModbusTCP::test_load_table(const Config *table_config)
 
 void BatteriesModbusTCP::trace_timestamp()
 {
-    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 5_min)) {
+    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 1_min)) {
         last_trace_timestamp = now_us();
         logger.trace_timestamp(trace_buffer_index);
     }
