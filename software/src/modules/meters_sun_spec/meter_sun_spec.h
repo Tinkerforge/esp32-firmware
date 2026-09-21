@@ -69,7 +69,7 @@ private:
     Config *state;
     Config *errors;
 
-    char trace_log_message_prefix[6];
+    char trace_log_message_prefix[5 + 1]; // strlen("mXYr ") == 5
 
     bool read_allowed = false;
     bool values_declared = false;
