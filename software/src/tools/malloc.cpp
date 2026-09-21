@@ -175,3 +175,17 @@ void free_any(void *ptr)
 {
     heap_caps_free(ptr);
 }
+
+#ifndef CONFIG_COMPILER_CXX_EXCEPTIONS
+// Provide nothrow operator new implementations that don't throw exceptions.
+// This globally replaces the default nothrow variants.
+
+void * operator new(size_t size, const std::nothrow_t &) noexcept {
+    return std::malloc(size);
+}
+
+void * operator new[](size_t size, const std::nothrow_t &) noexcept {
+    return std::malloc(size);
+}
+
+#endif // CONFIG_COMPILER_CXX_EXCEPTIONS
