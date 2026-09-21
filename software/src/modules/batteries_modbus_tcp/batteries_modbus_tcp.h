@@ -95,10 +95,10 @@ private:
         String host;
         uint16_t port;
         uint32_t cookie;
-        BatteryMode mode;
         uint8_t device_address;
         uint16_t transaction_id_mask = UINT16_MAX;
         uint16_t repeat_interval; // seconds
+        BatteryMode mode;
         BatteryModbusTCPTableID table_id;
         Config *discover_table_config = nullptr;
         BatteryModbusTCP::DiscoverContext *discover_ctx = nullptr;

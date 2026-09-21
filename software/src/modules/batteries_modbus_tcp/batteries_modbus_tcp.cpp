@@ -150,9 +150,9 @@ void BatteriesModbusTCP::pre_setup()
     batteries.register_battery_generator(get_class(), this);
 
     test_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
-        {"mode", Config::Enum(BatteryMode::Block)},
         {"device_address", Config::Uint8(1)},
         {"repeat_interval", Config::Uint16(60)},
+        {"mode", Config::Enum(BatteryMode::Block)},
         {"effective_mode", Config::Enum(BatteryMode::Normal, BatteryMode::Block, BatteryMode::ForceDischarge)},
         {"register_blocks", Config::Array({},
             &table_custom_register_block_prototype,
@@ -225,9 +225,9 @@ void BatteriesModbusTCP::register_urls()
             return;
 
         case BatteryModbusTCPTableID::Custom:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             break;
 
 #include "generated/batteries_modbus_tcp_test_setup.inc"
