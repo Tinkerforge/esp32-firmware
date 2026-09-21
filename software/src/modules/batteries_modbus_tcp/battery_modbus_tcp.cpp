@@ -566,7 +566,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         char description[128];
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            trace("b%lu t%d ww m%c em%c i%zu/%zu%s fc%u sa%u dc%u e%d%s%s",
+            trace("b%lu t%d ww m%c em%c i%zu/%zu%s f%u a%u c%u e%d%s%s",
                   ctx->slot,
                   ctx->test ? 1 : 0,
                   get_battery_mode_as_char(ctx->mode),
@@ -599,7 +599,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
             return;
         }
 
-        trace("b%lu t%d ww m%c em%c i%zu/%zu%s fc%u sa%u dc%u",
+        trace("b%lu t%d ww m%c em%c i%zu/%zu%s f%u a%u c%u",
               ctx->slot,
               ctx->test ? 1 : 0,
               get_battery_mode_as_char(ctx->mode),
@@ -760,7 +760,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                     }
 
                     if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                        trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 fc%u sa%u dc%u e%d%s%s",
+                        trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 f%u a%u c%u e%d%s%s",
                               ctx->slot,
                               ctx->test ? 1 : 0,
                               get_battery_mode_as_char(ctx->mode),
@@ -794,7 +794,7 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                         return;
                     }
 
-                    trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 fc%u sa%u dc%u",
+                    trace("b%lu t%d ww m%c em%c i%zu/%zu s2/2 f%u a%u c%u",
                           ctx->slot,
                           ctx->test ? 1 : 0,
                           get_battery_mode_as_char(ctx->mode),
