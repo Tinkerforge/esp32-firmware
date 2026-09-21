@@ -165,7 +165,7 @@ void BatteriesModbusTCP::pre_setup()
     get_battery_modbus_tcp_test_table_prototypes(&test_table_prototypes);
 
     test_config = ConfigRoot{Config::Object({
-        {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS())},
+        {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS() - 1)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"table", Config::Union<BatteryModbusTCPTableID>(*Config::Null(),
