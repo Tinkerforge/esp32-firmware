@@ -10,7 +10,6 @@ let x = {
             "battery_class": "Modbus/TCP",
             "export_basename_suffix": "-Modbus-TCP",
             "test": "Test",
-            "test_muted": "",
             "test_mode": "Für Speichermodus",
             "test_start": "Starten",
             "test_stop": /*SFN*/(mode: string) => mode ? "Stoppen: " + mode : "Stoppen"/*NF*/,
@@ -155,7 +154,11 @@ let x = {
             "register_effective_mode_matching": "Übereinstimmend",
             "register_effective_mode_different": "Abweichend",
             "register_effective_mode_help": <><p>Falls es nicht möglich ist den jeweiligen Speichermodus vollständig umzusetzen, dann sollte der Speichermodus so gut wie möglich angenähert werden und der Speichermodus, der dann wirklich effektiv umgesetzt wurde, als effektiver Modus gesetzt werden.</p>
-                                              <p>Wenn es also z.B. nicht möglich ist für den Modus "Laden blockieren", das Laden alleine zu blockieren und gleichzeitig das Entladen normal zu belassen, sondern Laden und Entladen nur zusammen blockiert werden können, dann sollte der effektive Modus in diesem Fall auf "Blockieren" gesetzt werden.</p></>
+                                              <p>Wenn es also z.B. nicht möglich ist für den Modus "Laden blockieren", das Laden alleine zu blockieren und gleichzeitig das Entladen normal zu belassen, sondern Laden und Entladen nur zusammen blockiert werden können, dann sollte der effektive Modus in diesem Fall auf "Blockieren" gesetzt werden.</p></>,
+
+            "test_start_error": "Fehler beim Starten des Tests",
+            "test_continue_error": "Fehler beim Fortsetzen des Tests",
+            "test_stop_error": "Fehler beim Stoppen des Tests"
         },
         "script": {
         }

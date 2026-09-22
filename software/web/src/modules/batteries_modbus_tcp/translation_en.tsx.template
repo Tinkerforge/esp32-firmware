@@ -10,7 +10,6 @@ let x = {
             "battery_class": "Modbus/TCP",
             "export_basename_suffix": "-Modbus-TCP",
             "test": "Test",
-            "test_muted": "",
             "test_mode": "For battery mode",
             "test_start": "Start",
             "test_stop": /*SFN*/(mode: string) => mode ? "Stop: " + mode : "Stop"/*NF*/,
@@ -155,7 +154,11 @@ let x = {
             "register_effective_mode_matching": "Matching",
             "register_effective_mode_different": "Different",
             "register_effective_mode_help": <><p>If it is not possible to realize certain battery modes completely, then the battery mode should be approximated as closely as possible and the battery mode that got effectively realized should be configured as the effective mode.</p>
-                                              <p>For example, if it is not possible for the mode "block charge" to block the charging alone while leaving the discharging as normal at the same time, but charging and discharging can only be blocked together, then the effective mode should be configured as "block" in this case.</p></>
+                                              <p>For example, if it is not possible for the mode "block charge" to block the charging alone while leaving the discharging as normal at the same time, but charging and discharging can only be blocked together, then the effective mode should be configured as "block" in this case.</p></>,
+
+            "test_start_error": "Error while starting test",
+            "test_continue_error": "Error while keeping test running",
+            "test_stop_error": "Error while stopping test"
         },
         "script": {
         }

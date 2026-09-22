@@ -604,7 +604,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         }
 
         if (result.length > 0) {
-            this.update_log("Error while stopping test: " + result + "\n");
+            this.update_log(__("batteries_modbus_tcp.content.test_stop_error") + ": " + result + "\n");
         }
         else {
             this.setState({stopped: true});
@@ -630,7 +630,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         }
 
         if (result.length > 0) {
-            this.update_log("Error while keeping test running: " + result + "\n");
+            this.update_log(__("batteries_modbus_tcp.content.test_continue_error") + ": " + result + "\n");
         }
     }
 
@@ -684,7 +684,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             }
 
             if (result.length > 0) {
-                this.update_log("Error while starting test: " + result + "\n");
+                this.update_log(__("batteries_modbus_tcp.content.test_start_error") + ": " + result + "\n");
                 this.setState({running: false, cookie: null});
 
                 return;
@@ -699,7 +699,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         let start_button_disabled = this.props.host.trim().length == 0 || !util.hasValue(this.props.port);
 
         return <>
-            <FormRow label={__("batteries_modbus_tcp.content.test")} label_muted={__("batteries_modbus_tcp.content.test_muted")}>
+            <FormRow label={__("batteries_modbus_tcp.content.test")}>
             {!this.state.running ?
                 (this.props.modes.length > 1 ?
                     <Dropdown key="test_start">
