@@ -69,7 +69,8 @@ private:
     Config *state;
     Config *errors;
 
-    char trace_log_message_prefix[5 + 1]; // strlen("mXYr ") == 5
+    char print_prefix[9 + 1]; // strlen("Meter XY: ") == 9
+    char trace_prefix[5 + 1]; // strlen("mXYr ") == 5
 
     bool read_allowed = false;
     bool values_declared = false;

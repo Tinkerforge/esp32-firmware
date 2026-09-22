@@ -94,7 +94,8 @@ MeterClassID MeterSunSpec::get_class() const
 
 void MeterSunSpec::setup(Config *ephemeral_config)
 {
-    snprintf(trace_log_message_prefix, sizeof(trace_log_message_prefix), "m%lur ", slot);
+    snprintf(print_prefix, sizeof(print_prefix), "Meter %lu: ", slot);
+    snprintf(trace_prefix, sizeof(trace_prefix), "m%lur ", slot);
 
     host              = ephemeral_config->get("host")->asString();
     port              = ephemeral_config->get("port")->asUint16();
@@ -408,11 +409,15 @@ void MeterSunSpec::resolve_start()
         resolver->destroy();
     }
 
-    resolver = SunSpecResolver::create(event_log_prefix_override,
-                                       event_log_message_prefix,
-                                       []() { meters_sun_spec.trace_timestamp(); },
-                                       meters_sun_spec.trace_buffer_index,
-                                       trace_log_message_prefix,
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
+    resolver = SunSpecResolver::create(print_prefix,
+                                       [this](const char *fmt, va_list args) { logger.vprintfln(fmt, args); },
+                                       trace_prefix,
+                                       [](const char *fmt, va_list args) { meters_sun_spec.trace_timestamp(); logger.vtracefln_plain(meters_sun_spec.trace_buffer_index, fmt, args); },
+                                       [](const char *buf, size_t len) { meters_sun_spec.trace_timestamp(); logger.trace_plain(meters_sun_spec.trace_buffer_index, buf, len); },
                                        shared_client,
                                        device_address,
                                        manufacturer_name.c_str(),
@@ -422,6 +427,9 @@ void MeterSunSpec::resolve_start()
                                        model_instance,
                                        [this](SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length) { resolve_result(common_model, start_address, block_length); },
                                        [this]() { record_timeout(); });
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 void MeterSunSpec::resolve_result(SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length)

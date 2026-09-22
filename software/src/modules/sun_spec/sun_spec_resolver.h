@@ -33,8 +33,10 @@ struct SunSpecResolverCommonModel {
     char SN[32 + 1];
 };
 
-typedef std::function<void()> SunSpecResolverTimeoutCallback;
+typedef std::function<void(const char *fmt, va_list args)> SunSpecResolverVLogFLnCallback;
+typedef std::function<void(const char *buf, size_t len)> SunSpecResolverTracePlainCallback;
 typedef std::function<void(SunSpecResolverCommonModel *common_model, uint16_t start_address, uint16_t block_length)> SunSpecResolverResultCallback;
+typedef std::function<void()> SunSpecResolverTimeoutCallback;
 
 bool sun_spec_is_solar_edge(const char *manufacturer);
 bool sun_spec_is_kostal(const char *manufacturer);
@@ -47,11 +49,11 @@ private:
     ~SunSpecResolver() {}
 
 public:
-    static SunSpecResolver *create(const char *event_log_prefix_override,
-                                   const char *event_log_message_prefix,
-                                   std::function<void(void)> &&trace_timestamp_callback,
-                                   size_t trace_buffer_index,
-                                   const char *trace_log_message_prefix,
+    static SunSpecResolver *create(const char *print_prefix,
+                                   SunSpecResolverVLogFLnCallback &&vprintfln_callback,
+                                   const char *trace_prefix,
+                                   SunSpecResolverVLogFLnCallback &&vtracefln_callback,
+                                   SunSpecResolverTracePlainCallback &&trace_plain_callback,
                                    TFGenericTCPSharedClient *shared_client,
                                    uint8_t device_address,
                                    const char *manufacturer_name,
@@ -65,6 +67,12 @@ public:
     void destroy();
 
 private:
+    [[gnu::format(__printf__, 2, 3)]]
+    void printfln_(const char *fmt, ...);
+
+    [[gnu::format(__printf__, 2, 3)]]
+    void tracefln_(const char *fmt, ...);
+
     void read();
     void next_base_address();
     void next();
@@ -77,12 +85,11 @@ private:
         ReadModel,
     };
 
-    const char *event_log_prefix_override;
-    size_t event_log_prefix_override_len;
-    const char *event_log_message_prefix;
-    std::function<void(void)> trace_timestamp_callback;
-    size_t trace_buffer_index;
-    const char *trace_log_message_prefix;
+    const char *print_prefix;
+    SunSpecResolverVLogFLnCallback vprintfln_callback;
+    const char *trace_prefix;
+    SunSpecResolverVLogFLnCallback vtracefln_callback;
+    SunSpecResolverTracePlainCallback trace_plain_callback;
     TFGenericTCPSharedClient *shared_client;
     uint8_t device_address;
     const char *manufacturer_name;

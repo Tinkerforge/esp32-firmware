@@ -29,13 +29,8 @@
 #define SUN_SPEC_ID 0x53756E53
 #define NON_IMPLEMENTED_UINT16 0xFFFF
 
-#define printfln_resolver(fmt, ...) printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s" fmt, event_log_message_prefix __VA_OPT__(,) __VA_ARGS__)
-
-#define trace(fmt, ...) \
-    do { \
-        trace_timestamp_callback(); \
-        logger.tracefln_plain(trace_buffer_index, "%s" fmt, trace_log_message_prefix __VA_OPT__(,) __VA_ARGS__); \
-    } while (0)
+#define print(fmt, ...) printfln_("%s" fmt, print_prefix __VA_OPT__(,) __VA_ARGS__)
+#define trace(fmt, ...) tracefln_("%s" fmt, trace_prefix __VA_OPT__(,) __VA_ARGS__)
 
 // The manufacturer name for SolarEdge devices sometimes has a trailing space
 bool sun_spec_is_solar_edge(const char *manufacturer)
@@ -63,11 +58,11 @@ static const uint16_t base_addresses[] {
     0
 };
 
-SunSpecResolver *SunSpecResolver::create(const char *event_log_prefix_override,
-                                         const char *event_log_message_prefix,
-                                         std::function<void(void)> &&trace_timestamp_callback,
-                                         size_t trace_buffer_index,
-                                         const char *trace_log_message_prefix,
+SunSpecResolver *SunSpecResolver::create(const char *print_prefix,
+                                         SunSpecResolverVLogFLnCallback &&vprintfln_callback,
+                                         const char *trace_prefix,
+                                         SunSpecResolverVLogFLnCallback &&vtracefln_callback,
+                                         SunSpecResolverTracePlainCallback &&trace_plain_callback,
                                          TFGenericTCPSharedClient *shared_client,
                                          uint8_t device_address,
                                          const char *manufacturer_name,
@@ -79,14 +74,12 @@ SunSpecResolver *SunSpecResolver::create(const char *event_log_prefix_override,
                                          SunSpecResolverTimeoutCallback &&timeout_callback)
 {
     SunSpecResolver *resolver = new SunSpecResolver;
-    size_t event_log_prefix_override_len = strlen(event_log_prefix_override);
 
-    resolver->event_log_prefix_override = event_log_prefix_override;
-    resolver->event_log_prefix_override_len = event_log_prefix_override_len;
-    resolver->event_log_message_prefix = event_log_message_prefix;
-    resolver->trace_timestamp_callback = std::move(trace_timestamp_callback);
-    resolver->trace_buffer_index = trace_buffer_index;
-    resolver->trace_log_message_prefix = trace_log_message_prefix;
+    resolver->print_prefix = print_prefix;
+    resolver->vprintfln_callback = std::move(vprintfln_callback);
+    resolver->trace_prefix = trace_prefix;
+    resolver->vtracefln_callback = std::move(vtracefln_callback);
+    resolver->trace_plain_callback = std::move(trace_plain_callback);
     resolver->shared_client = shared_client;
     resolver->device_address = device_address;
     resolver->manufacturer_name = manufacturer_name;
@@ -102,8 +95,8 @@ SunSpecResolver *SunSpecResolver::create(const char *event_log_prefix_override,
     resolver->start_address = base_addresses[resolver->base_address_index];
     resolver->data_count = 2;
 
-    logger.printfln_resolver("Looking for SunSpec model %u/%u at %s:%u:%u",
-                             model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+    resolver->print("Looking for SunSpec model %u/%u at %s:%u:%u",
+                    model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
 
     resolver->read();
 
@@ -121,6 +114,24 @@ void SunSpecResolver::destroy()
     }
 
     delete this;
+}
+
+void SunSpecResolver::printfln_(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    vprintfln_callback(fmt, args);
+    va_end(args);
+}
+
+void SunSpecResolver::tracefln_(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    vtracefln_callback(fmt, args);
+    va_end(args);
 }
 
 void SunSpecResolver::read()
@@ -164,16 +175,16 @@ void SunSpecResolver::read()
                   error_message != nullptr ? error_message : "");
 
             if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
-                logger.printfln_resolver("Modbus error repeated %zu time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
-                                         last_read_result_burst_length,
-                                         last_read_result_burst_length > 1 ? "s" : "",
-                                         data_count,
-                                         data_count > 1 ? "s" : "",
-                                         start_address,
-                                         get_tf_modbus_tcp_client_transaction_result_name(result),
-                                         static_cast<int>(result),
-                                         error_message != nullptr ? " / " : "",
-                                         error_message != nullptr ? error_message : "");
+                print("Modbus error repeated %zu time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
+                      last_read_result_burst_length,
+                      last_read_result_burst_length > 1 ? "s" : "",
+                      data_count,
+                      data_count > 1 ? "s" : "",
+                      start_address,
+                      get_tf_modbus_tcp_client_transaction_result_name(result),
+                      static_cast<int>(result),
+                      error_message != nullptr ? " / " : "",
+                      error_message != nullptr ? error_message : "");
             }
 
             if (result == TFModbusTCPClientTransactionResult::NotConnected
@@ -192,8 +203,8 @@ void SunSpecResolver::read()
             }
 
             if (error_counter >= 20) {
-                logger.printfln_resolver("Too many errors while looking for SunSpec model %u/%u at %s:%u:%u",
-                                         model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                print("Too many errors while looking for SunSpec model %u/%u at %s:%u:%u",
+                      model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
                 report_result(nullptr, 0, 0);
                 return;
             }
@@ -208,7 +219,7 @@ void SunSpecResolver::read()
             return;
         }
 
-        char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
+        char data_buf[ARRAY_SIZE(buffer) * 4 + 1]; // 4 nibble per register plus \n
         size_t data_buf_used;
 
         trace("a%u c%u", start_address, data_count);
@@ -217,7 +228,7 @@ void SunSpecResolver::read()
         data_buf[data_buf_used] = '\n';
         ++data_buf_used;
 
-        logger.trace_plain(trace_buffer_index, data_buf, data_buf_used);
+        trace_plain_callback(data_buf, data_buf_used);
 
         next();
     });
@@ -228,8 +239,8 @@ void SunSpecResolver::next_base_address()
     ++base_address_index;
 
     if (base_address_index >= ARRAY_SIZE(base_addresses)) {
-        logger.printfln_resolver("No SunSpec device at %s:%u:%u",
-                                 shared_client->get_host(), shared_client->get_port(), device_address);
+        print("No SunSpec device at %s:%u:%u",
+              shared_client->get_host(), shared_client->get_port(), device_address);
         report_result(nullptr, 0, 0);
         return;
     }
@@ -271,8 +282,8 @@ void SunSpecResolver::next()
             uint16_t candidate_block_length = deserializer.read_uint16();
 
             if (candidate_model_id == NON_IMPLEMENTED_UINT16) { // end model found
-                logger.printfln_resolver("SunSpec model %u/%u not found at %s:%u:%u",
-                                         model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                print("SunSpec model %u/%u not found at %s:%u:%u",
+                      model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
                 report_result(nullptr, 0, 0);
             }
             else if (device_found && candidate_model_id == model_id) {
@@ -285,8 +296,8 @@ void SunSpecResolver::next()
                     read();
                 }
                 else {
-                    logger.printfln_resolver("SunSpec model %u/%u found at %s:%u:%u:%u",
-                                             model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address, start_address);
+                    print("SunSpec model %u/%u found at %s:%u:%u:%u",
+                          model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address, start_address);
                     report_result(&common_model, start_address, candidate_block_length);
                 }
             }
@@ -317,7 +328,7 @@ void SunSpecResolver::next()
                 deserializer.read_string(common_model.Vr, sizeof(common_model.Vr));
                 deserializer.read_string(common_model.SN, sizeof(common_model.SN));
 
-                logger.printfln_resolver("Looking for SunSpec device Mn='%s' Md='%s' SN='%s'", manufacturer_name, model_name, serial_number);
+                print("Looking for SunSpec device Mn='%s' Md='%s' SN='%s'", manufacturer_name, model_name, serial_number);
 
                 if (*manufacturer_name == '\0' && *model_name == '\0' && *serial_number == '\0') {
                     device_found = true;
@@ -354,11 +365,11 @@ void SunSpecResolver::next()
                                    strcmp(common_model.SN, serial_number) == 0;
                 }
 
-                logger.printfln_resolver("SunSpec device Mn='%s' Md='%s' Opt='%s' Vr='%s' SN='%s' is %smatching",
-                                         common_model.Mn, common_model.Md, common_model.Opt, common_model.Vr, common_model.SN, !device_found ? "not " :"");
+                print("SunSpec device Mn='%s' Md='%s' Opt='%s' Vr='%s' SN='%s' is %smatching",
+                      common_model.Mn, common_model.Md, common_model.Opt, common_model.Vr, common_model.SN, !device_found ? "not " :"");
             }
             else {
-                logger.printfln_resolver("Read full SunSpec model %u for no reason", candidate_model_id);
+                print("Read full SunSpec model %u for no reason", candidate_model_id);
             }
 
             state_next = State::ReadModelHeader;
