@@ -36,11 +36,9 @@
 #define MAX_SCAN_READ_TIMEOUT_BURST 10
 
 #define SUN_SPEC_ID 0x53756E53
-
 #define COMMON_MODEL_ID 1
-
+#define END_MODEL_ID 0xFFFF
 #define NON_IMPLEMENTED_UINT16 0xFFFF
-#define NON_IMPLEMENTED_UINT32 0xFFFFFFFF
 
 static const uint16_t base_addresses[] {
     40000,
@@ -716,7 +714,7 @@ void SunSpec::loop()
         if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
             size_t block_length = scan->deserializer.read_uint16();
 
-            if (scan->model_id == NON_IMPLEMENTED_UINT16) {
+            if (scan->model_id == END_MODEL_ID) {
                 scan_printfln(scan->language == Language::English
                               ? "End Model found [model-id: %u, block-length: %zu]"
                               : "End Model gefunden [model-id: %u, block-length: %zu]",

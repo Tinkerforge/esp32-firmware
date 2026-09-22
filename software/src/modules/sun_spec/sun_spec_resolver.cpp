@@ -27,7 +27,8 @@
 #include "gcc_warnings.h"
 
 #define SUN_SPEC_ID 0x53756E53
-#define NON_IMPLEMENTED_UINT16 0xFFFF
+#define COMMON_MODEL_ID 1
+#define END_MODEL_ID 0xFFFF
 
 #define print(fmt, ...) printfln_("%s" fmt, print_prefix __VA_OPT__(,) __VA_ARGS__)
 #define trace(fmt, ...) tracefln_("%s" fmt, trace_prefix __VA_OPT__(,) __VA_ARGS__)
@@ -281,7 +282,7 @@ void SunSpecResolver::next()
             uint16_t candidate_model_id = deserializer.read_uint16();
             uint16_t candidate_block_length = deserializer.read_uint16();
 
-            if (candidate_model_id == NON_IMPLEMENTED_UINT16) { // end model found
+            if (candidate_model_id == END_MODEL_ID) {
                 print("SunSpec model %u/%u not found at %s:%u:%u",
                       model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
                 report_result(nullptr, 0, 0);
@@ -301,7 +302,7 @@ void SunSpecResolver::next()
                     report_result(&common_model, start_address, candidate_block_length);
                 }
             }
-            else if (candidate_model_id == 1) { // common model
+            else if (candidate_model_id == COMMON_MODEL_ID) {
                 state_next = State::ReadModel;
                 data_count = 67;
 
@@ -321,7 +322,7 @@ void SunSpecResolver::next()
             uint16_t candidate_model_id = deserializer.read_uint16();
             uint16_t candidate_block_length = deserializer.read_uint16();
 
-            if (candidate_model_id == 1) { // common model
+            if (candidate_model_id == COMMON_MODEL_ID) {
                 deserializer.read_string(common_model.Mn, sizeof(common_model.Mn));
                 deserializer.read_string(common_model.Md, sizeof(common_model.Md));
                 deserializer.read_string(common_model.Opt, sizeof(common_model.Opt));

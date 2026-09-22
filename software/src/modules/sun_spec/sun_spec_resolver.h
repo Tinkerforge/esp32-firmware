@@ -106,7 +106,7 @@ private:
     State state_next = State::ReadSunSpecID;
     bool device_found = false;
     uint16_t model_counter;
-    uint16_t buffer[68]; // buffer must be big enough for the Common model
+    uint16_t buffer[67]; // buffer must be big enough for the common model
     ModbusDeserializer deserializer;
     uint16_t start_address;
     uint16_t data_count;
