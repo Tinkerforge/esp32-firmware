@@ -57,6 +57,13 @@ public:
         return scheduler.scheduleOnceNoAlloc(task_buf, false, std::move(fn), delay_ms, src_location);
     }
 
+    // Let the IO scheduler perform regular tasks by itself.
+    // Only use with sufficiently large delays to avoid hogging the CPU.
+    uint64_t scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current())
+    {
+        return scheduler.scheduleUncancelable(std::move(fn), first_delay_ms, delay_ms, src_location);
+    }
+
     // Registers an uncancelable driven round.
     // before_io and after_io run on the main task, during_io runs on the IO task.
     // Pass nullptr for before_io/after_io if unused.
@@ -200,5 +207,4 @@ private:
     std::atomic<bool> rebooting{false};
 
     TaskHandle_t task_handle = nullptr;
-    int watchdog_handle = -1;
 };

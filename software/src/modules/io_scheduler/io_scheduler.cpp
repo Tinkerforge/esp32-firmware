@@ -164,12 +164,6 @@ void IoScheduler::task_loop()
     scheduler.setOwnerTask(xTaskGetCurrentTaskHandle());
 
     for (;;) {
-#if MODULE_WATCHDOG_AVAILABLE()
-        if (watchdog_handle >= 0) {
-            watchdog.reset(watchdog_handle);
-        }
-#endif
-
         // Poll SPITFP. This should basically only be for callbacks.
         // Since this uses DMA to transfer the whole packet once the length is known this is nearly thread-safe.
         // If we increase the amount of callbacks in the future, we should increase the task prio once we get a non-zero byte in the tick
@@ -213,7 +207,11 @@ void IoScheduler::start_task()
     }
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    watchdog_handle = watchdog.add("io_scheduler", "IO task blocked", 30_s, 0_ms, true);
+    const int watchdog_handle = watchdog.add("io_scheduler", "IO task blocked", 30_s, 0_ms, true);
+
+    scheduler.scheduleUncancelable([watchdog_handle]() {
+        watchdog.reset(watchdog_handle);
+    }, 1_s, 2_s);
 #endif
 
     auto err = xTaskCreatePinnedToCore(
