@@ -316,7 +316,7 @@ void DayAheadPrices::register_urls()
             calendar_last_generated_wday = -1;
             update_calendar();
         }
-    }, true);
+    }, false);
 
 #ifdef DEBUG_FS_ENABLE
     api.addCommand("day_ahead_prices/debug_price_update", &debug_price_update, {}, [this](Language /*language*/, String &/*errmsg*/) {

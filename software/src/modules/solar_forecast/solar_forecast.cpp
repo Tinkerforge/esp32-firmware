@@ -210,7 +210,7 @@ void SolarForecast::register_urls()
             p.state.get("last_check")->updateUint(current_minutes);
 
             update_cached_wh_state();
-        }, true);
+        }, false);
     }
 
     task_scheduler.scheduleWhenClockSynced([this]() {
