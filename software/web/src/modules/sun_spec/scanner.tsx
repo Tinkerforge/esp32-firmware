@@ -375,6 +375,12 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                 </FormRow></>
                 : undefined}
 
+            {!this.state.running && this.state.progress == 100 && this.state.results.length == 0 ?
+                <FormRow label={__("sun_spec.content.scan_results")}>
+                    <Alert variant="warning" className="mb-0">{__("sun_spec.content.scan_no_result")}</Alert>
+                </FormRow>
+                : undefined}
+
             {this.state.results.length > 0 ?
                 <FormRow label={__("sun_spec.content.scan_results")}>
                     <DiscoveryResultGroup>

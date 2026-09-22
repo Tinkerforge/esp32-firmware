@@ -30,6 +30,8 @@ let x = {
             "scan_result_model_no_supported": "Nicht unterstützt",
             "scan_result_model_other_preferred": /*SFN*/(slot: number|"?") => "Modell " + slot + " bevorzugt"/*NF*/,
 
+            "scan_no_result": "Es wurden keine SunSpec-Geräte gefunden.",
+
             "model_101": "Wechselrichter",
             "model_102": "Wechselrichter",
             "model_103": "Wechselrichter",

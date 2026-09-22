@@ -30,6 +30,8 @@ let x = {
             "scan_result_model_no_supported": "Not supported",
             "scan_result_model_other_preferred": /*SFN*/(slot: number|"?") => "Model " + slot + " preferred"/*NF*/,
 
+            "scan_no_result": "No SunSpec devices found.",
+
             "model_101": "Inverter",
             "model_102": "Inverter",
             "model_103": "Inverter",
