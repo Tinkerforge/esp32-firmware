@@ -30,7 +30,7 @@
 #define COMMON_MODEL_ID 1
 #define END_MODEL_ID 0xFFFF
 
-#define print(fmt, ...) printfln_("%s" fmt, print_prefix __VA_OPT__(,) __VA_ARGS__)
+#define print(fmt_en, fmt_de, ...) printfln_(language == Language::English ? "%s" fmt_en : "%s" fmt_de, print_prefix __VA_OPT__(,) __VA_ARGS__)
 #define trace(fmt, ...) tracefln_("%s" fmt, trace_prefix __VA_OPT__(,) __VA_ARGS__)
 
 // The manufacturer name for SolarEdge devices sometimes has a trailing space
@@ -72,7 +72,8 @@ SunSpecResolver *SunSpecResolver::create(const char *print_prefix,
                                          uint16_t model_id,
                                          uint16_t model_instance,
                                          SunSpecResolverResultCallback &&result_callback,
-                                         SunSpecResolverTimeoutCallback &&timeout_callback)
+                                         SunSpecResolverTimeoutCallback &&timeout_callback,
+                                         Language language /*= Language::English*/)
 {
     SunSpecResolver *resolver = new SunSpecResolver;
 
@@ -90,14 +91,27 @@ SunSpecResolver *SunSpecResolver::create(const char *print_prefix,
     resolver->model_instance = model_instance;
     resolver->timeout_callback = std::move(timeout_callback);
     resolver->result_callback = std::move(result_callback);
+    resolver->language = language;
 
     resolver->model_counter = model_instance;
     resolver->deserializer.buf = resolver->buffer;
     resolver->start_address = base_addresses[resolver->base_address_index];
     resolver->data_count = 2;
 
-    resolver->print("Looking for SunSpec model %u/%u at %s:%u:%u",
-                    model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+    if (*manufacturer_name == '\0' && *model_name == '\0' && *serial_number == '\0') {
+        resolver->printfln_(resolver->language == Language::English
+                            ? "%sLooking for any SunSpec device with model %u/%u at %s:%u:%u"
+                            : "%sSuche nach beliebigem SunSpec-Gerät mit Modell %u/%u unter %s:%u:%u",
+                            print_prefix, model_id, model_instance,
+                            shared_client->get_host(), shared_client->get_port(), device_address);
+    }
+    else {
+        resolver->printfln_(resolver->language == Language::English
+                            ? "%sLooking for SunSpec device '%s / %s / %s' with model %u/%u at %s:%u:%u"
+                            : "%sSuche nach SunSpec-Gerät '%s / %s / %s' mit Modell %u/%u unter %s:%u:%u",
+                            print_prefix, manufacturer_name, model_name, serial_number, model_id, model_instance,
+                            shared_client->get_host(), shared_client->get_port(), device_address);
+    }
 
     resolver->read();
 
@@ -177,10 +191,11 @@ void SunSpecResolver::read()
 
             if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
                 print("Modbus error repeated %zu time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
+                      "Modbus-Fehler hat sich %zu-mal%s beim Lesen von %u Register%s beginnent bei Adresse %u wiederholt: %s (%d)%s%s",
                       last_read_result_burst_length,
-                      last_read_result_burst_length > 1 ? "s" : "",
+                      last_read_result_burst_length > 1 ? (language == Language::English ? "s" : "") : "",
                       data_count,
-                      data_count > 1 ? "s" : "",
+                      data_count > 1 ? (language == Language::English ? "s" : "n") : "",
                       start_address,
                       get_tf_modbus_tcp_client_transaction_result_name(result),
                       static_cast<int>(result),
@@ -204,8 +219,17 @@ void SunSpecResolver::read()
             }
 
             if (error_counter >= 20) {
-                print("Too many errors while looking for SunSpec model %u/%u at %s:%u:%u",
-                      model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                if (*manufacturer_name == '\0' && *model_name == '\0' && *serial_number == '\0') {
+                    print("Too many errors while looking for any SunSpec device with model %u/%u at %s:%u:%u",
+                          "Bei der Suche nach beliebigem SunSpec-Gerät mit Modell %u/%u unter %s:%u:%u sind zu viele Fehler aufgetreten",
+                          model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                }
+                else {
+                    print("Too many errors while looking for SunSpec device '%s / %s / %s' with model %u/%u at %s:%u:%u",
+                          "Bei der Suche nach SunSpec-Gerät '%s / %s / %s' mit Modell %u/%u unter %s:%u:%u sind zu viele Fehler aufgetreten",
+                          manufacturer_name, model_name, serial_number, model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                }
+
                 report_result(nullptr, 0, 0);
                 return;
             }
@@ -240,7 +264,8 @@ void SunSpecResolver::next_base_address()
     ++base_address_index;
 
     if (base_address_index >= ARRAY_SIZE(base_addresses)) {
-        print("No SunSpec device at %s:%u:%u",
+        print("No SunSpec device found at %s:%u:%u",
+              "Kein SunSpec-Gerät unter %s:%u:%u gefunden",
               shared_client->get_host(), shared_client->get_port(), device_address);
         report_result(nullptr, 0, 0);
         return;
@@ -283,7 +308,8 @@ void SunSpecResolver::next()
             uint16_t candidate_block_length = deserializer.read_uint16();
 
             if (candidate_model_id == END_MODEL_ID) {
-                print("SunSpec model %u/%u not found at %s:%u:%u",
+                print("No matching SunSpec model %u/%u found at %s:%u:%u",
+                      "Kein übereinstimmendes SunSpec-Modell %u/%u unter %s:%u:%u gefunden",
                       model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
                 report_result(nullptr, 0, 0);
             }
@@ -297,8 +323,9 @@ void SunSpecResolver::next()
                     read();
                 }
                 else {
-                    print("SunSpec model %u/%u found at %s:%u:%u:%u",
-                          model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address, start_address);
+                    print("Matching SunSpec model %u/%u found at address %u",
+                          "Übereinstimmendes SunSpec-Modell %u/%u an Adresse %u gefunden",
+                          model_id, model_instance, start_address);
                     report_result(&common_model, start_address, candidate_block_length);
                 }
             }
@@ -328,8 +355,6 @@ void SunSpecResolver::next()
                 deserializer.read_string(common_model.Opt, sizeof(common_model.Opt));
                 deserializer.read_string(common_model.Vr, sizeof(common_model.Vr));
                 deserializer.read_string(common_model.SN, sizeof(common_model.SN));
-
-                print("Looking for SunSpec device Mn='%s' Md='%s' SN='%s'", manufacturer_name, model_name, serial_number);
 
                 if (*manufacturer_name == '\0' && *model_name == '\0' && *serial_number == '\0') {
                     device_found = true;
@@ -366,11 +391,15 @@ void SunSpecResolver::next()
                                    strcmp(common_model.SN, serial_number) == 0;
                 }
 
-                print("SunSpec device Mn='%s' Md='%s' Opt='%s' Vr='%s' SN='%s' is %smatching",
-                      common_model.Mn, common_model.Md, common_model.Opt, common_model.Vr, common_model.SN, !device_found ? "not " :"");
+                print("%satching SunSpec device '%s / %s / %s' found at address %u",
+                      "%sbereinstimmendes SunSpec-Gerät '%s / %s / %s' an Adresse %u gefunden",
+                      device_found ? (language == Language::English ? "M" : "Ü") : (language == Language::English ? "Non-m" : "Nicht-ü"),
+                      common_model.Mn, common_model.Md, common_model.SN, start_address);
             }
             else {
-                print("Read full SunSpec model %u for no reason", candidate_model_id);
+                print("Read full SunSpec model %u at address %u for no reason",
+                      "Gesamtes SunSpec-Modell %u an Adresse %u ohne Grund gelesen",
+                      candidate_model_id, start_address);
             }
 
             state_next = State::ReadModelHeader;

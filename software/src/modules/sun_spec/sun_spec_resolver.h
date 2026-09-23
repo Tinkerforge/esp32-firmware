@@ -24,6 +24,7 @@
 #include <TFModbusTCPClient.h>
 
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
+#include "language.h"
 
 struct SunSpecResolverCommonModel {
     char Mn[32 + 1];
@@ -62,7 +63,8 @@ public:
                                    uint16_t model_id,
                                    uint16_t model_instance,
                                    SunSpecResolverResultCallback &&result_callback,
-                                   SunSpecResolverTimeoutCallback &&timeout_callback);
+                                   SunSpecResolverTimeoutCallback &&timeout_callback,
+                                   Language language = Language::English);
 
     void destroy();
 
@@ -99,6 +101,7 @@ private:
     uint16_t model_instance;
     SunSpecResolverResultCallback result_callback;
     SunSpecResolverTimeoutCallback timeout_callback;
+    Language language;
 
     size_t error_counter = 0;
     size_t base_address_index = 0;
