@@ -17,6 +17,7 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
+from software.test_runner.remote_access_snapshot import RemoteAccessSnapshot
 from software.src.modules.remote_access.tests.remote_access import (
     WG_CONTAINER_NAME, WireGuardTestPeer, _generate_wg_keypair, _generate_wg_psk,
 )
@@ -151,11 +152,11 @@ _server = None
 _peer: WireGuardTestPeer | None = None
 _relay: ChargeLogRelay | None = None
 _original_charge_config: dict | None = None
-_charge_config_modified = False
+_snapshot: RemoteAccessSnapshot | None = None
 
 
 def suite_setup(tc: TestContext):
-    global _server, _peer, _relay, _original_charge_config
+    global _server, _peer, _relay, _original_charge_config, _snapshot, CERT_ID
     tc.set_test_timeout(120)
     initial_state = tc.api("charge_tracker/state")  # Skip if no device is configured.
     tc.assert_eq(0, initial_state["generator_state"])
@@ -166,6 +167,8 @@ def suite_setup(tc: TestContext):
     if charge_config["remote_upload_configs"]:
         tc.skip("Monthly uploads are configured and could interfere with this relay test")
     _original_charge_config = charge_config
+    _snapshot = RemoteAccessSnapshot.capture(tc)
+    CERT_ID = _snapshot.cert_id
 
     _server = tc.create_test_https_server(CERT_ID, "charge_log_send_test_cert")
     _peer = WireGuardTestPeer()
@@ -228,30 +231,39 @@ def suite_setup(tc: TestContext):
 
 
 def suite_teardown(tc: TestContext):
-    global _server, _peer, _relay
-    if _charge_config_modified and _original_charge_config is not None:
-        tc.api("charge_tracker/config_update", _original_charge_config, timeout=5)
-    if _server is not None:
+    global _server, _peer, _relay, _snapshot
+    if _server is None:
+        return
+
+    errors: list[Exception] = []
+
+    def attempt(fn):
         try:
-            tc.api("remote_access/config_update", {
-                "enable": False, "relay_host": tc.get_local_ip(), "relay_port": _server.port,
-                "email": "test@example.com", "cert_id": CERT_ID, "mtu": 1240,
-            }, timeout=3)
-        except (OSError, TimeoutError):
-            pass
+            fn()
+        except Exception as exc:
+            errors.append(exc)
+
+    attempt(lambda: tc.api("remote_access/config_update", {
+        "enable": False, "relay_host": tc.get_local_ip(), "relay_port": _server.port,
+        "email": "test@example.com", "cert_id": CERT_ID, "mtu": 1240,
+    }, timeout=3))
+    time.sleep(1)
     if _relay is not None:
-        _relay.stop()
+        attempt(_relay.stop)
         _relay = None
     if _peer is not None:
-        _peer.stop()
+        attempt(_peer.stop)
         _peer = None
-    if _server is not None:
-        try:
-            tc.api("certs/remove", {"id": CERT_ID})
-        except (OSError, TimeoutError):
-            pass
-        _server.stop()
-        _server = None
+    if _snapshot is not None:
+        attempt(lambda: _snapshot.clear_registration(tc, _server))
+    attempt(lambda: tc.api("certs/remove", {"id": CERT_ID}))
+    attempt(_server.stop)
+    _server = None
+    if _snapshot is not None:
+        attempt(lambda: _snapshot.restore(tc))
+        _snapshot = None
+    if errors:
+        raise RuntimeError(f"Charge-log teardown had {len(errors)} cleanup error(s)") from errors[0]
 
 
 def _send_upload(tc: TestContext, file_type: str):
@@ -382,7 +394,6 @@ def test_metadata_rejection_can_be_retried(tc: TestContext):
 
 
 def _start_monthly_upload(tc: TestContext, file_type: int):
-    global _charge_config_modified
     assert _original_charge_config is not None
 
     users = tc.api("remote_access/config")["users"]
@@ -399,7 +410,6 @@ def _start_monthly_upload(tc: TestContext, file_type: int):
         "csv_delimiter": 0,
         "last_upload_timestamp_min": 0,
     }]
-    _charge_config_modified = True
     tc.api("charge_tracker/config_update", config, timeout=5)
     tc.assert_eq(0, tc.api("charge_tracker/config")["remote_upload_configs"][0]["last_upload_timestamp_min"])
     tc.reboot()

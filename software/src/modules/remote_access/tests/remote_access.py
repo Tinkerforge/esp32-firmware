@@ -15,6 +15,7 @@
 # container to simulate the relay's WireGuard endpoint. This requires
 # Docker to be installed and the host kernel to support WireGuard
 # (Linux 5.6+ or wireguard-dkms).
+# Tests require an empty user list and leave remote-access keys empty.
 
 import base64
 import json
@@ -32,6 +33,7 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
+from software.test_runner.remote_access_snapshot import RemoteAccessSnapshot
 
 # Connection state values (from remote_access.cpp)
 STATE_DISCONNECTED = 1
@@ -40,7 +42,7 @@ STATE_CONNECTED = 2
 # Number of connection slots (MAX_USER_CONNECTIONS + 1 management slot)
 NUM_CONNECTION_SLOTS = 6
 
-# Cert ID used for the test CA certificate
+# Replaced at suite setup with a free certificate ID.
 TEST_CERT_ID = 2
 TEST_CERT_NAME = "remote_access_test_cert"
 
@@ -50,7 +52,7 @@ WG_RELAY_IP = "10.123.123.1"
 WG_DEVICE_IP = "10.123.123.2"
 WG_SUBNET = "24"
 
-_original_config: dict | None = None
+_snapshot: RemoteAccessSnapshot | None = None
 _server = None
 _wg_peer: "WireGuardTestPeer | None" = None
 _request_log: list[dict] = []
@@ -645,10 +647,10 @@ def _wait_for_management_request(tc: TestContext, *, timeout: float = 45.0) -> N
 
 
 def suite_setup(tc: TestContext) -> None:
-    global _original_config, _server
+    global _snapshot, _server, TEST_CERT_ID
 
-    # Save the original config to restore later
-    _original_config = tc.api("remote_access/config")
+    _snapshot = RemoteAccessSnapshot.capture(tc)
+    TEST_CERT_ID = _snapshot.cert_id
 
     # Create the HTTPS test server (generates self-signed cert and uploads it)
     _server = tc.create_test_https_server(TEST_CERT_ID, TEST_CERT_NAME)
@@ -658,31 +660,46 @@ def suite_setup(tc: TestContext) -> None:
 
 
 def suite_teardown(tc: TestContext) -> None:
-    global _server, _wg_peer
+    global _server, _wg_peer, _snapshot
 
-    # Disable remote access to stop any ongoing connection attempts
-    try:
-        tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
-    except (TimeoutError, OSError):
-        pass
+    if _server is None:
+        return
+
+    errors: list[Exception] = []
+
+    def attempt(fn):
+        try:
+            fn()
+        except Exception as exc:
+            errors.append(exc)
+
+    # Stop the tunnel before removing the test user and its keys.
+    attempt(lambda: tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3))
 
     # Give the device time to process the disable
     time.sleep(2)
 
     # Clean up the WireGuard interface
     if _wg_peer:
-        _wg_peer.stop()
+        attempt(_wg_peer.stop)
         _wg_peer = None
 
+    if _snapshot is not None:
+        attempt(lambda: _snapshot.clear_registration(tc, _server))
+
     # Clean up the cert
-    try:
-        tc.api("certs/remove", {"id": TEST_CERT_ID})
-    except (TimeoutError, OSError):
-        pass
+    attempt(lambda: tc.api("certs/remove", {"id": TEST_CERT_ID}))
 
     if _server:
-        _server.stop()
+        attempt(_server.stop)
         _server = None
+
+    if _snapshot is not None:
+        attempt(lambda: _snapshot.restore(tc))
+        _snapshot = None
+
+    if errors:
+        raise RuntimeError(f"Remote-access teardown had {len(errors)} cleanup error(s)") from errors[0]
 
 
 def setup(tc: TestContext) -> None:
