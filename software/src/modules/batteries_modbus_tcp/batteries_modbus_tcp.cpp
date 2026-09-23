@@ -362,7 +362,7 @@ void BatteriesModbusTCP::loop()
 
             if (test->state == TestState::Discovering) {
                 test->state = TestState::DestroyDiscover;
-                test->state_after_discover = TestState::Disconnect;
+                test->state_after_destroy_discover = TestState::Disconnect;
 
                 // immediately destroy the discover to stop the separate
                 // discover task from accessing the disconnected client
@@ -456,7 +456,7 @@ void BatteriesModbusTCP::loop()
                 test_load_table(test->discover_table_config);
 
                 test->state = TestState::DestroyDiscover;
-                test->state_after_discover = TestState::CreateWriter;
+                test->state_after_destroy_discover = TestState::CreateWriter;
             });
         }
         else if (test->table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
@@ -467,7 +467,7 @@ void BatteriesModbusTCP::loop()
                 test_load_table(test->discover_table_config);
 
                 test->state = TestState::DestroyDiscover;
-                test->state_after_discover = TestState::CreateWriter;
+                test->state_after_destroy_discover = TestState::CreateWriter;
             });
         }
         else {
@@ -480,13 +480,13 @@ void BatteriesModbusTCP::loop()
         BatteryModbusTCP::destroy_discover(test->discover_ctx);
         test->discover_ctx = nullptr;
 
-        test->state = test->state_after_discover;
+        test->state = test->state_after_destroy_discover;
         break;
 
     case TestState::Discovering:
         if (test->stop) {
             test->state = TestState::DestroyDiscover;
-            test->state_after_discover = TestState::Disconnect;
+            test->state_after_destroy_discover = TestState::Disconnect;
             break;
         }
 

@@ -105,7 +105,7 @@ private:
         BatteryModbusTCP::TableSpec *table = nullptr;
         BatteryModbusTCP::WriterContext *writer_ctx = nullptr;
         TestState state;
-        TestState state_after_discover;
+        TestState state_after_destroy_discover;
         char printfln_buffer[512] = "";
         micros_t printfln_last_flush = 0_us;
         size_t printfln_buffer_used = 0;
