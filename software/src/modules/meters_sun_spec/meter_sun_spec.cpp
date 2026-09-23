@@ -425,14 +425,14 @@ void MeterSunSpec::resolve_start()
                                        serial_number.c_str(),
                                        model_id,
                                        model_instance,
-                                       [this](SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length) { resolve_result(common_model, start_address, block_length); },
+                                       [this](SunSpecResolverCommonModel *common_model, uint16_t start_address, uint16_t block_length) { resolve_result(common_model, start_address, block_length); },
                                        [this]() { record_timeout(); });
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 }
 
-void MeterSunSpec::resolve_result(SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length)
+void MeterSunSpec::resolve_result(SunSpecResolverCommonModel *common_model, uint16_t start_address, uint16_t block_length)
 {
     resolver = nullptr;
 

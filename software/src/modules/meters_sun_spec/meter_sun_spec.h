@@ -63,7 +63,7 @@ private:
 
     void resolve_start_delayed();
     void resolve_start();
-    void resolve_result(SunSpecResolverCommonModel *common_model, size_t start_address, size_t block_length);
+    void resolve_result(SunSpecResolverCommonModel *common_model, uint16_t start_address, uint16_t block_length);
 
     uint32_t slot;
     Config *state;
