@@ -68,7 +68,7 @@ void QueuedChunkedResponse::end(ChunkedResponseResult result)
 
 ChunkedResponseResult QueuedChunkedResponse::wait()
 {
-    std::unique_lock<std::mutex> lock(mutex, std::defer_lock_t()); // don't lock immediatly
+    std::unique_lock<std::mutex> lock(mutex, std::defer_lock_t()); // don't lock immediately
 
     while (is_running) {
         lock.lock();

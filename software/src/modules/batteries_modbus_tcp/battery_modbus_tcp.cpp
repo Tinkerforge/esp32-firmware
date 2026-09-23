@@ -1259,7 +1259,7 @@ void BatteryModbusTCP::set_testing(bool testing_)
     if (!testing_) {
         // clear active/effective mode in case the test is ending. if the
         // global battery control is active it will control the battery
-        // immediatly after the test has ended and set the mode again
+        // immediately after the test has ended and set the mode again
         set_state_mode(BatteryMode::None, BatteryMode::None);
     }
 
