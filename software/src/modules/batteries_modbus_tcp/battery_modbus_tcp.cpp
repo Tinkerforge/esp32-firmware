@@ -34,6 +34,8 @@
 
 #include "gcc_warnings.h"
 
+#define writer_logfln(event_log, fmt_en, fmt_de, ...) writer_logfln_(ctx, event_log, ctx->language == Language::English ? "%s" fmt_en : "%s" fmt_de, ctx->log_prefix __VA_OPT__(,) __VA_ARGS__)
+
 #define trace(fmt, ...) \
     do { \
         batteries_modbus_tcp.trace_timestamp(); \
@@ -154,7 +156,7 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
 }
 
 [[gnu::format(__printf__, 3, 4)]]
-static void writer_logfln(BatteryModbusTCP::WriterContext *ctx, bool event_log, const char *fmt, ...)
+static void writer_logfln_(BatteryModbusTCP::WriterContext *ctx, bool event_log, const char *fmt, ...)
 {
     va_list args;
 
@@ -212,10 +214,9 @@ static void last_writer_step(BatteryModbusTCP::WriterContext *ctx, bool success)
                   get_battery_mode_as_char(ctx->table->effective_mode),
                   ctx->repeat_count);
 
-            writer_logfln(ctx, false,
-                          ctx->language == Language::English
-                          ? "Setting mode %s (repeat %zu)"
-                          : "Setze Modus %s (Wiederholung %zu)",
+            writer_logfln(false,
+                          "Setting mode %s (repeat %zu)",
+                          "Setze Modus %s (Wiederholung %zu)",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                           ctx->repeat_count);
         }
@@ -257,10 +258,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -276,10 +276,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -295,10 +294,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -314,10 +312,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -368,10 +365,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -396,10 +392,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -417,10 +412,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -438,10 +432,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -459,10 +452,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -479,10 +471,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -500,10 +491,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? "Could not allocate read buffer"
-                          : "Konnte Lesepuffer nicht allokieren");
+            writer_logfln(true,
+                          "Could not allocate read buffer",
+                          "Konnte Lesepuffer nicht allokieren");
             last_writer_step(ctx, false);
             return;
         }
@@ -520,10 +510,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
         break;
 
     default:
-        writer_logfln(ctx, true,
-                      ctx->language == Language::English
-                      ? "Unknown function code: %u"
-                      : "Funktionscode unbekannt: %u",
+        writer_logfln(true,
+                      "Unknown function code: %u",
+                      "Funktionscode unbekannt: %u",
                       static_cast<uint8_t>(register_block->function_code));
         last_writer_step(ctx, false);
         return;
@@ -564,10 +553,12 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                   error_message != nullptr ? " / " : "",
                   error_message != nullptr ? error_message : "");
 
-            writer_logfln(ctx, true,
-                          ctx->language == Language::English
-                          ? (buffer_to_check != nullptr ? "Check of precondition for mode %s failed at register block %zu of %zu: %s (%d)%s%s" : "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s")
-                          : (buffer_to_check != nullptr ? "Prüfen der Vorbedingung des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s" : "Setzen des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s"),
+            writer_logfln(true,
+                          "%s mode %s failed at register block %zu of %zu: %s (%d)%s%s",
+                          "%s des Modus %s schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
+                          buffer_to_check != nullptr
+                          ? (ctx->language == Language::English ? "Check of precondition for" : "Prüfen der Vorbedingung")
+                          : (ctx->language == Language::English ? "Setting" : "Setzen"),
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                           ctx->index + 1, ctx->table->register_blocks_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
@@ -621,19 +612,17 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                     }
 
                     if (ctx->repeat_interval > 0) {
-                        writer_logfln(ctx, false,
-                                      ctx->language == Language::English
-                                      ? "Setting mode %s (will repeat in %u second%s)"
-                                      : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                        writer_logfln(false,
+                                      "Setting mode %s (will repeat in %u second%s)",
+                                      "Setze Modus %s (Wiederholung in %u Sekunde%s)",
                                       get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                                       ctx->repeat_interval,
                                       ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
                     }
                     else {
-                        writer_logfln(ctx, false,
-                                      ctx->language == Language::English
-                                      ? "Setting mode %s (once)"
-                                      : "Setze Modus %s (einmalig)",
+                        writer_logfln(false,
+                                      "Setting mode %s (once)",
+                                      "Setze Modus %s (einmalig)",
                                       get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
                     }
                 }
@@ -650,10 +639,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                 if (ctx->last_precondition_not_met_index_plus_one != ctx->index + 1) {
                     ctx->last_precondition_not_met_index_plus_one = ctx->index + 1;
 
-                    writer_logfln(ctx, false,
-                                  ctx->language == Language::English
-                                  ? "Precondition for mode %s not met at register block %zu of %zu"
-                                  : "Vorbedingung des Modus %s nicht erfüllt bei Registerblock %zu von %zu",
+                    writer_logfln(false,
+                                  "Precondition for mode %s not met at register block %zu of %zu",
+                                  "Vorbedingung des Modus %s nicht erfüllt bei Registerblock %zu von %zu",
                                   get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                                   ctx->index + 1, ctx->table->register_blocks_count);
                 }
@@ -757,10 +745,9 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 
                         char step2_description[128];
 
-                        writer_logfln(ctx, true,
-                                      ctx->language == Language::English
-                                      ? "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s"
-                                      : "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
+                        writer_logfln(true,
+                                      "Setting mode %s failed at register block %zu of %zu: %s (%d)%s%s",
+                                      "Setzen des Modus %s (Schritt 2) schlug fehl bei Registerblock %zu von %zu: %s (%d)%s%s",
                                       get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, step2_description, std::size(step2_description)),
                                       ctx->index + 1, ctx->table->register_blocks_count,
                                       get_tf_modbus_tcp_client_transaction_result_name(step2_result),
@@ -823,6 +810,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
                                                                  uint16_t repeat_interval, // seconds
                                                                  BatteryMode mode,
                                                                  TableSpec *table,
+                                                                 const char *log_prefix,
                                                                  VLogFLnFunction &&vlogfln,
                                                                  WriterFailureFunction &&failure,
                                                                  Language language /*= Language::English*/)
@@ -844,6 +832,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
     ctx->repeat_interval = repeat_interval;
     ctx->mode = mode;
     ctx->table = table;
+    ctx->log_prefix = log_prefix;
     ctx->vlogfln = std::move(vlogfln);
     ctx->failure = std::move(failure);
     ctx->test = test;
@@ -890,10 +879,9 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
                 break;
 
             default:
-                writer_logfln(ctx, true,
-                              ctx->language == Language::English
-                              ? "Unknown function code: %u"
-                              : "Funktionscode unbekannt: %u",
+                writer_logfln(true,
+                              "Unknown function code: %u",
+                              "Funktionscode unbekannt: %u",
                               static_cast<uint8_t>(register_block->function_code));
 
                 ctx->failure();
@@ -908,26 +896,23 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
         char description[128];
 
         if (ctx->first_non_precondition_index != 0) {
-            writer_logfln(ctx, false,
-                          ctx->language == Language::English
-                          ? "Checking precondition for mode %s"
-                          : "Prüfe Vorbedingung für Modus %s",
+            writer_logfln(false,
+                          "Checking precondition for mode %s",
+                          "Prüfe Vorbedingung für Modus %s",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
         }
         else if (ctx->repeat_interval > 0) {
-            writer_logfln(ctx, false,
-                          ctx->language == Language::English
-                          ? "Setting mode %s (will repeat in %u second%s)"
-                          : "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+            writer_logfln(false,
+                          "Setting mode %s (will repeat in %u second%s)",
+                          "Setze Modus %s (Wiederholung in %u Sekunde%s)",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
                           ctx->repeat_interval,
                           ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
         }
         else {
-            writer_logfln(ctx, false,
-                          ctx->language == Language::English
-                          ? "Setting mode %s (once)"
-                          : "Setze Modus %s (einmalig)",
+            writer_logfln(false,
+                          "Setting mode %s (once)",
+                          "Setze Modus %s (einmalig)",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
         }
 
@@ -1452,16 +1437,13 @@ void BatteryModbusTCP::update_pending_mode()
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
         writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(shared_client),
-                                   device_address, transaction_id_mask, repeat_interval, pending_mode, table,
+                                   device_address, transaction_id_mask, repeat_interval, pending_mode, table, event_log_message_prefix,
         [this](bool event_log, const char *fmt, va_list args) {
             if (!event_log) {
                 return;
             }
 
-            char message[256];
-
-            vsnprintf(message, sizeof(message), fmt, args);
-            logger.printfln_battery("%s", message);
+            logger.vprintfln(fmt, args);
         },
         [this]() {
             update_pending_mode();

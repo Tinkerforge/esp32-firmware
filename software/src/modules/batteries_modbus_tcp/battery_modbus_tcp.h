@@ -68,6 +68,7 @@ public:
         size_t index = 0;
         size_t first_non_precondition_index = 0; // == index + 1 of the last register block with a read* function code, 0 == no precondition
         size_t last_precondition_not_met_index_plus_one = 0;
+        const char *log_prefix;
         VLogFLnFunction vlogfln;
         WriterFailureFunction failure;
         bool transact_pending = false;
@@ -80,7 +81,7 @@ public:
     static void free_table(TableSpec *table);
     static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *shared_client, uint8_t device_address,
                                         uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
-                                        BatteryMode mode, TableSpec *table, VLogFLnFunction &&vlogfln,
+                                        BatteryMode mode, TableSpec *table, const char *log_prefix, VLogFLnFunction &&vlogfln,
                                         WriterFailureFunction &&failure, Language language = Language::English);
     static void destroy_writer(WriterContext *ctx);
 

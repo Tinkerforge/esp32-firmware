@@ -507,7 +507,7 @@ void BatteriesModbusTCP::loop()
         test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true,
                                                            static_cast<TFModbusTCPSharedClient *>(test->shared_client),
                                                            test->device_address, test->transaction_id_mask, test->repeat_interval,
-                                                           test->mode, test->table,
+                                                           test->mode, test->table, "",
         [this](bool event_log, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
