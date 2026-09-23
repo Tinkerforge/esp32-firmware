@@ -93,7 +93,6 @@ SunSpecResolver *SunSpecResolver::create(const char *print_prefix,
     resolver->result_callback = std::move(result_callback);
     resolver->language = language;
 
-    resolver->model_counter = model_instance;
     resolver->deserializer.buf = resolver->buffer;
     resolver->start_address = base_addresses[resolver->base_address_index];
     resolver->data_count = 2;
@@ -308,9 +307,17 @@ void SunSpecResolver::next()
             uint16_t candidate_block_length = deserializer.read_uint16();
 
             if (candidate_model_id == END_MODEL_ID) {
-                print("No matching SunSpec model %u/%u found at %s:%u:%u",
-                      "Kein übereinstimmendes SunSpec-Modell %u/%u unter %s:%u:%u gefunden",
-                      model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                if (!device_found) {
+                    print("No matching SunSpec device found at %s:%u:%u",
+                          "Kein übereinstimmendes SunSpec-Gerät unter %s:%u:%u gefunden",
+                          shared_client->get_host(), shared_client->get_port(), device_address);
+                }
+                else {
+                    print("No matching SunSpec model %u/%u found at %s:%u:%u",
+                          "Kein übereinstimmendes SunSpec-Modell %u/%u unter %s:%u:%u gefunden",
+                          model_id, model_instance, shared_client->get_host(), shared_client->get_port(), device_address);
+                }
+
                 report_result(nullptr, 0, 0);
             }
             else if (device_found && candidate_model_id == model_id) {
@@ -350,6 +357,15 @@ void SunSpecResolver::next()
             uint16_t candidate_block_length = deserializer.read_uint16();
 
             if (candidate_model_id == COMMON_MODEL_ID) {
+                if (device_found) {
+                    print("No matching SunSpec model %u/%u for SunSpec device '%s / %s / %s' found at %s:%u:%u",
+                          "Kein übereinstimmendes SunSpec-Modell %u/%u für SunSpec-Gerät '%s / %s / %s' unter %s:%u:%u gefunden",
+                          model_id, model_instance, common_model.Mn, common_model.Md, common_model.SN,
+                          shared_client->get_host(), shared_client->get_port(), device_address);
+                }
+
+                device_found = false;
+
                 deserializer.read_string(common_model.Mn, sizeof(common_model.Mn));
                 deserializer.read_string(common_model.Md, sizeof(common_model.Md));
                 deserializer.read_string(common_model.Opt, sizeof(common_model.Opt));
@@ -391,10 +407,13 @@ void SunSpecResolver::next()
                                    strcmp(common_model.SN, serial_number) == 0;
                 }
 
-                print("%satching SunSpec device '%s / %s / %s' found at address %u",
-                      "%sbereinstimmendes SunSpec-Gerät '%s / %s / %s' an Adresse %u gefunden",
-                      device_found ? (language == Language::English ? "M" : "Ü") : (language == Language::English ? "Non-m" : "Nicht-ü"),
-                      common_model.Mn, common_model.Md, common_model.SN, start_address);
+                if (device_found) {
+                    model_counter = model_instance;
+
+                    print("Matching SunSpec device '%s / %s / %s' found at address %u",
+                          "Übereinstimmendes SunSpec-Gerät '%s / %s / %s' an Adresse %u gefunden",
+                          common_model.Mn, common_model.Md, common_model.SN, start_address);
+                }
             }
             else {
                 print("Read full SunSpec model %u at address %u for no reason",
