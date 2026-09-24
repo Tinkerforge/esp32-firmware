@@ -2,10 +2,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include "mbedtls/ssl.h"
+#include "mbedtls/ssl_ciphersuites.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/net_sockets.h"
@@ -37,8 +39,20 @@ int main(int argc, char **argv)
     CHECK(mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_SERVER,
                                       MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT));
     const bool tls13 = strcmp(argv[3], "13") == 0;
+    const bool mixed = strcmp(argv[3], "mixed") == 0 || strcmp(argv[3], "dual") == 0;
+    const bool capped = strcmp(argv[3], "capped") == 0;
     mbedtls_ssl_conf_min_tls_version(&conf, tls13 ? MBEDTLS_SSL_VERSION_TLS1_3 : MBEDTLS_SSL_VERSION_TLS1_2);
-    mbedtls_ssl_conf_max_tls_version(&conf, tls13 ? MBEDTLS_SSL_VERSION_TLS1_3 : MBEDTLS_SSL_VERSION_TLS1_2);
+    mbedtls_ssl_conf_max_tls_version(&conf, tls13 || mixed ? MBEDTLS_SSL_VERSION_TLS1_3 : MBEDTLS_SSL_VERSION_TLS1_2);
+    if (mixed || capped) {
+        static const int suites[] = {
+            MBEDTLS_TLS1_3_AES_256_GCM_SHA384,
+            MBEDTLS_TLS1_3_CHACHA20_POLY1305_SHA256,
+            MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+            MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
+            0
+        };
+        mbedtls_ssl_conf_ciphersuites(&conf, suites);
+    }
     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
     mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &rng);
     mbedtls_ssl_conf_session_tickets_cb(&conf, nullptr, nullptr, nullptr);
@@ -67,6 +81,15 @@ int main(int argc, char **argv)
     close(listener);
     timeval timeout = {5, 0};
     setsockopt(peer.fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    if (mixed || capped) {
+        unsigned char hello[1024];
+        ssize_t len = recv(peer.fd, hello, sizeof(hello), MSG_PEEK);
+        if (len <= 0) return 5;
+        const auto version = classify_client_hello(hello, static_cast<size_t>(len), sizeof(hello), !capped);
+        if (version == ClientHelloVersion::Incomplete) return 6;
+        make_group_policy(groups, version == ClientHelloVersion::Tls13,
+                          atoi(argv[4]) != 0, atoi(argv[5]) != 0);
+    }
     mbedtls_ssl_set_bio(&ssl, &peer, mbedtls_net_send, mbedtls_net_recv, nullptr);
     int ret = mbedtls_ssl_handshake(&ssl);
     if (ret == 0) {

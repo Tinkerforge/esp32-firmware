@@ -26,6 +26,10 @@ source = pathlib.Path('../isotls/isotls_policy.cpp').read_text()
 start = source.index('static void make_group_policy(')
 end = source.index('\n}', start) + 2
 pathlib.Path(sys.argv[1]).write_text(source[start:end] + '\n')
+start = source.index('enum class ClientHelloVersion')
+end = source.index('// Peeks the ClientHello', start)
+with pathlib.Path(sys.argv[1]).open('a') as out:
+    out.write(source[start:end])
 PY
 g++ -Wall -Wextra -Werror -O1 -I "$BUILD" -I "$BUILD/mbedtls/include" -I "$BUILD/mbedtls/library" \
     -o "$BUILD/server" -x c++ _named_group_server.cpp.inc -x none \

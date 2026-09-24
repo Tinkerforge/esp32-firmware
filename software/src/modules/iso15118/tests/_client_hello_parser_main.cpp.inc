@@ -40,6 +40,10 @@ int main()
     expect("openssl tls13 full", classify_client_hello(hello_tls13, sizeof(hello_tls13), cap), ClientHelloVersion::Tls13);
     expect("openssl tls12 full", classify_client_hello(hello_tls12, sizeof(hello_tls12), cap), ClientHelloVersion::NoTls13);
 
+    expect("ISO20 unavailable, mixed offer", classify_client_hello(hello_tls13, sizeof(hello_tls13), cap, false), ClientHelloVersion::NoTls13);
+    expect("ISO20 unavailable, capped peek", classify_client_hello(hello_tls13, 64, 64, false), ClientHelloVersion::NoTls13);
+    expect("ISO20 unavailable, no data", classify_client_hello(nullptr, 0, cap, false), ClientHelloVersion::NoTls13);
+
     // Every prefix must be Incomplete or the correct final answer, never the wrong answer
     for (size_t len = 0; len < sizeof(hello_tls13); len++) {
         ClientHelloVersion v = classify_client_hello(hello_tls13, len, cap);

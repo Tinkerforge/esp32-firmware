@@ -160,7 +160,7 @@ bool ISOTLS::configure_ssl_policy()
     return true;
 }
 
-// Classification of a peeked ClientHello: Does the client offer TLS 1.3
+// Classification of a peeked ClientHello within the configured service version cap.
 enum class ClientHelloVersion : uint8_t {
     Incomplete, // Not enough data peeked yet, more may arrive
     Tls13,      // TLS 1.3 offered, or undeterminable from a complete or capped record
@@ -170,9 +170,17 @@ enum class ClientHelloVersion : uint8_t {
 // Parses the first TLS record of a ClientHello, without consuming it.
 // Returns Incomplete only while more data may still arrive (record incomplete
 // and below cap). Whenever the answer can not be determined from the available
-// data, Tls13 is returned so that the stricter TLS 1.3 group policy applies.
-static ClientHelloVersion classify_client_hello(const uint8_t *buf, size_t len, size_t cap)
+// data, Tls13 is returned so that the stricter TLS 1.3 group policy applies,
+// unless ISO-20 prerequisites already restrict the service to TLS 1.2.
+static ClientHelloVersion classify_client_hello(const uint8_t *buf, size_t len, size_t cap, bool iso20_allowed = true)
 {
+    // The service may already be capped to TLS 1.2 because no usable ISO-20
+    // identity/OCSP is available [HUB20-532-002]. A mixed-version ClientHello
+    // must then retain the ISO-2 P-256 group, even if TLS 1.3 is offered.
+    if (!iso20_allowed) {
+        return ClientHelloVersion::NoTls13;
+    }
+
     if (len < 5) {
         return ClientHelloVersion::Incomplete;
     }
@@ -262,9 +270,9 @@ static ClientHelloVersion classify_client_hello(const uint8_t *buf, size_t len, 
     return extensions_complete ? ClientHelloVersion::NoTls13 : out_of_data;
 }
 
-// Peeks the ClientHello and selects the group list for this connection: TLS 1.3 capable
-// clients must not get a secp256r1 key exchange (HUB20-533-005), TLS 1.2 only
-// clients need secp256r1 [V2G2-006].
+// Peeks the ClientHello and selects the group list for this connection: TLS 1.3
+// must not get a secp256r1 key exchange (HUB20-533-005). TLS 1.2 clients and
+// TLS 1.2-capped service need secp256r1 [V2G2-006, HUB20-532-002].
 // Returns false while the ClientHello is not fully peeked yet.
 bool ISOTLS::apply_group_policy()
 {
@@ -284,7 +292,7 @@ bool ISOTLS::apply_group_policy()
         } else if (len == 0) {
             free_any(buf); // Peer closed: proceed, the handshake will report it
         } else {
-            result = classify_client_hello(buf, static_cast<size_t>(len), peek_cap);
+            result = classify_client_hello(buf, static_cast<size_t>(len), peek_cap, iso20_allowed);
             free_any(buf);
             if (result == ClientHelloVersion::Incomplete) {
                 return false;
@@ -292,7 +300,7 @@ bool ISOTLS::apply_group_policy()
         }
     }
 
-    const bool tls13 = (result == ClientHelloVersion::Tls13);
+    const bool tls13 = iso20_allowed && (result == ClientHelloVersion::Tls13);
     bool secp521 = true;
     bool ed448 = true;
 #if MODULE_OCPP_AVAILABLE()
@@ -304,8 +312,8 @@ bool ISOTLS::apply_group_policy()
     // Mutate stable per-connection storage rather than replacing the config
     // pointer: Mbed TLS may already have cached it during setup/session_reset.
     make_group_policy(groups, tls13, secp521, ed448);
-    iso15118.trace("ISOTLS: ClientHello offers %s, using the %s group list",
-                    tls13 ? "TLS 1.3" : "TLS 1.2 or lower", tls13 ? "TLS 1.3" : "TLS 1.2");
+    iso15118.trace("ISOTLS: Using %s group policy (ISO20 %s)",
+                    tls13 ? "TLS 1.3" : "TLS 1.2", iso20_allowed ? "available" : "unavailable");
     group_policy_applied = true;
     return true;
 }
