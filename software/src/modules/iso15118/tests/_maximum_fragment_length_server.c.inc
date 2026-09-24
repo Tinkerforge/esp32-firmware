@@ -37,20 +37,40 @@ static unsigned char *read_file(const char *path, size_t *len)
 }
 
 static int stall_next_send;
+static int handshake_backpressure;
+static int send_phase;
+static size_t record_remaining;
 
 static int debug_send(void *context, const unsigned char *buffer, size_t length)
 {
+    if (handshake_backpressure && send_phase++ % 2 == 0) {
+        puts("handshake WANT_WRITE");
+        return MBEDTLS_ERR_SSL_WANT_WRITE;
+    }
     if (stall_next_send) {
         stall_next_send = 0;
         puts("simulated WANT_WRITE");
         return MBEDTLS_ERR_SSL_WANT_WRITE;
     }
-    if (length >= 5) {
+    if (record_remaining == 0 && length >= 5) {
         printf("wire record: type %u length %u\n", buffer[0],
                ((unsigned int) buffer[3] << 8) | buffer[4]);
         fflush(stdout);
+        record_remaining = 5 + ((size_t) buffer[3] << 8) + buffer[4];
+        if (handshake_backpressure && length != record_remaining) {
+            fputs("multiple queued records during handshake\n", stderr);
+            return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+        }
     }
-    return mbedtls_net_send(context, buffer, length);
+    if (handshake_backpressure && length > 37) {
+        length = 37;
+        puts("handshake short write");
+    }
+    int ret = mbedtls_net_send(context, buffer, length);
+    if (ret > 0 && record_remaining >= (size_t) ret) {
+        record_remaining -= (size_t) ret;
+    }
+    return ret;
 }
 
 int main(int argc, char **argv)
@@ -117,10 +137,35 @@ int main(int argc, char **argv)
     }
 
     mbedtls_ssl_set_bio(&ssl, &client, debug_send, mbedtls_net_recv, NULL);
-    ret = mbedtls_ssl_handshake(&ssl);
+    handshake_backpressure = getenv("MFL_BACKPRESSURE") != NULL &&
+        strcmp(getenv("MFL_BACKPRESSURE"), "0") != 0;
+    do {
+        ret = mbedtls_ssl_handshake(&ssl);
+        if (ret == MBEDTLS_ERR_SSL_WANT_WRITE && ssl.handshake->outgoing_hs != NULL) {
+            printf("fragment retry: %zu/%zu\n", ssl.handshake->outgoing_hs_offset,
+                   ssl.handshake->outgoing_hs_len);
+            if (strcmp(getenv("MFL_BACKPRESSURE"), "abort") == 0) {
+                if (mbedtls_ssl_session_reset(&ssl) != 0 ||
+                    ssl.handshake->outgoing_hs != NULL ||
+                    ssl.handshake->outgoing_hs_len != 0 ||
+                    ssl.handshake->outgoing_hs_offset != 0) {
+                    return 2;
+                }
+                mbedtls_ssl_free(&ssl);
+                mbedtls_net_free(&client);
+                puts("aborted fragmented handshake reset successfully");
+                return 0;
+            }
+        }
+    } while (ret == MBEDTLS_ERR_SSL_WANT_WRITE || ret == MBEDTLS_ERR_SSL_WANT_READ);
+    handshake_backpressure = 0;
     if (ret != 0) {
         mbedtls_strerror(ret, error, sizeof(error));
         printf("handshake failed: %d -0x%04x %s\n", ret, (unsigned int) -ret, error);
+        return 2;
+    }
+    if (ssl.handshake != NULL && ssl.handshake->outgoing_hs != NULL) {
+        fputs("handshake plaintext retained after successful flush\n", stderr);
         return 2;
     }
 
