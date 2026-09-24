@@ -183,6 +183,7 @@ private:
     void free_iso20_candidate(size_t index);
     bool build_iso20_certificate_authorities();
     bool configure_ssl_policy();
+    void configure_signature_policy(mbedtls_ssl_protocol_version version);
     bool apply_group_policy();
     bool leaf_cert_is_cached();
     void cache_leaf_cert();

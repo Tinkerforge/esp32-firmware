@@ -72,14 +72,15 @@ const uint16_t iso15118_groups_tls12[] = {
     MBEDTLS_SSL_IANA_TLS_GROUP_NONE
 };
 
-// ISO 15118 signature algorithms (HUB20-533-001/002):
-// ISO 15118-20 Table 8: ecdsa_secp521r1_sha512, ed448.
-// ISO 15118-2 [V2G2-006]: ECDSA with SHA256 (secp256r1 leaf), TLS 1.2 only.
-// NOTE: The explicit list is required because a our mbedTLS patch that
-// widens the default TLS 1.2 list with the TLS 1.3 algorithms.
-const uint16_t iso15118_sig_algs[] = {
+// ISO 15118-20 Table 8, in its required order (V2G20-1667).
+const uint16_t iso15118_sig_algs_tls13[] = {
     MBEDTLS_TLS1_3_SIG_ECDSA_SECP521R1_SHA512,
-    MBEDTLS_TLS1_3_SIG_ED448, // HUB: "Support for Ed448-based SECC certificates may be introduced in a future revision."
+    MBEDTLS_TLS1_3_SIG_ED448,
+    MBEDTLS_TLS1_3_SIG_NONE
+};
+
+// ISO 15118-2 [V2G2-006]: ECDSA with SHA256 (secp256r1 leaf).
+const uint16_t iso15118_sig_algs_tls12[] = {
     MBEDTLS_TLS1_3_SIG_ECDSA_SECP256R1_SHA256,
     MBEDTLS_TLS1_3_SIG_NONE
 };
@@ -116,6 +117,20 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_custom =
 
 } // namespace
 
+void ISOTLS::configure_signature_policy(mbedtls_ssl_protocol_version version)
+{
+    // TLS 1.2 filters received schemes while parsing ClientHello, before the
+    // certificate callback. TLS 1.3 retains the peer list unfiltered and checks
+    // this policy later. Start with TLS 1.2 so its cached list cannot retain
+    // ISO-20 schemes, then select TLS 1.3 in the negotiated-version callback.
+    const uint16_t *algorithms = iso15118_sig_algs_tls12;
+    if (version == MBEDTLS_SSL_VERSION_TLS1_3) {
+        algorithms = iso15118_sig_algs_tls13;
+    }
+
+    mbedtls_ssl_conf_sig_algs(ssl_conf, algorithms);
+}
+
 bool ISOTLS::configure_ssl_policy()
 {
     int ret = mbedtls_ssl_config_defaults(ssl_conf,
@@ -135,7 +150,7 @@ bool ISOTLS::configure_ssl_policy()
     mbedtls_ssl_conf_ciphersuites(ssl_conf, iso15118_ciphersuites);
     // Strict default, replaced per connection in apply_group_policy()
     mbedtls_ssl_conf_groups(ssl_conf, iso15118_groups_tls13);
-    mbedtls_ssl_conf_sig_algs(ssl_conf, iso15118_sig_algs);
+    configure_signature_policy(MBEDTLS_SSL_VERSION_UNKNOWN);
 
     // Default authmode: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
     // For TLS 1.3 / ISO 15118-20, mutual authentication is enabled
