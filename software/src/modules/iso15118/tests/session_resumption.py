@@ -1,5 +1,7 @@
 #!/usr/bin/env -S uv run --locked --group iso15118-tests --script
 
+import os
+import select
 import ssl
 import time
 
@@ -182,6 +184,71 @@ def test_tls12_not_resumed(tc: TestContext):
             result = client.sap(tls, [ISO2])
             tc.assert_eq("OK_SuccessfulNegotiation", result["ResponseCode"])
             tc.assert_eq(1, result["SchemaID"])
+
+
+def test_tls13_idle_ticket_renewal(tc: TestContext):
+    if os.environ.get("ISO15118_TICKET_SOAK") != "1":
+        tc.skip("Set ISO15118_TICKET_SOAK=1 for the one-hour on-device renewal test")
+    assert client is not None
+    tc.set_test_timeout(3700)
+    context = client.tls13_context()
+    ticket_messages = collect_new_session_tickets(context)
+    observed_at = []
+    original_callback = context._msg_callback
+
+    def callback(*args):
+        before = len(ticket_messages)
+        original_callback(*args)
+        if len(ticket_messages) > before:
+            observed_at.append(time.monotonic())
+
+    context._msg_callback = callback
+    with managed_socket(client.connect_tls(context)) as tls:
+        tc.assert_false(tls.session_reused)
+        tc.assert_eq("OK_SuccessfulNegotiation", client.sap(tls, [ISO20_AC])["ResponseCode"])
+        tc.assert_eq(1, len(ticket_messages))
+        first = parse_new_session_ticket(ticket_messages[0])
+        assert_ticket_policy(tc, first)
+        tls.setblocking(False)
+        deadline = observed_at[0] + 3605
+        next_progress = observed_at[0] + 300
+        while len(ticket_messages) < 2:
+            now = time.monotonic()
+            if now >= deadline:
+                tc.fail("No replacement ticket received before expiry")
+            if now >= next_progress:
+                print(f"Waiting for idle renewal: {now - observed_at[0]:.0f}s elapsed", flush=True)
+                next_progress += 300
+            if select.select([tls], [], [], min(5, deadline - now))[0]:
+                try:
+                    data = tls.recv(1)
+                except ssl.SSLWantReadError:
+                    continue
+                tc.fail(f"Unexpected application data or closed connection while idle: {data!r}")
+        tc.assert_eq(2, len(ticket_messages))
+        replacement = parse_new_session_ticket(ticket_messages[1])
+        assert_ticket_policy(tc, replacement)
+        elapsed = observed_at[1] - observed_at[0]
+        # One second of margin is built into the 3579-second schedule.
+        tc.assert_(3578 <= elapsed <= first["lifetime"] - 20)
+        tc.assert_(replacement["nonce"] != first["nonce"])
+        tc.assert_(replacement["ticket"] != first["ticket"])
+        tc.assert_eq(first["ticket"][:8], replacement["ticket"][:8])
+        session = tls.session
+        tc.assert_true(session.has_ticket)
+        print(f"PASS idle replacement at {elapsed:.3f}s; {first['lifetime'] - elapsed:.3f}s before expiry", flush=True)
+
+    time.sleep(1)
+    before = len(ticket_messages)
+    with managed_socket(client.connect_tls(context, session=session)) as tls:
+        tc.assert_true(tls.session_reused)
+        tc.assert_eq("Failed_NoNegotiation", client.sap(tls, [ISO20_AC, ISO2])["ResponseCode"])
+    tc.assert_eq(before + 1, len(ticket_messages))
+    resumed = parse_new_session_ticket(ticket_messages[-1])
+    assert_ticket_policy(tc, resumed)
+    tc.assert_eq(first["ticket"][:8], resumed["ticket"][:8])
+    tc.assert_eq(3, len({parse_new_session_ticket(message)["nonce"] for message in ticket_messages}))
+    tc.assert_eq(3, len({parse_new_session_ticket(message)["ticket"] for message in ticket_messages}))
 
 
 if __name__ == "__main__":

@@ -711,6 +711,11 @@ void ISO15118::state_machines_loop()
         begin_iec_transition(fds[FDS_ACTIVE_INDEX].fd >= 0 ? ModemOff::Delayed : ModemOff::Immediate);
     }
 
+    // Renew TLS tickets on active connections even when no input is available.
+    if (!common.tls.service_tickets()) {
+        common.reset_active_socket();
+    }
+
     // Clear revents before polling
     for (int i = 0; i < FDS_COUNT; i++) {
         fds[i].revents = 0;

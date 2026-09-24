@@ -52,6 +52,10 @@ def test_named_group_preference(tc: TestContext):
     run(tc, "_named_group_preference.sh", 600, os.environ.copy())
 
 
+def test_ticket_renewal(tc: TestContext):
+    run(tc, "_ticket_renewal.sh", 600, os.environ.copy())
+
+
 def test_ocsp_stapling_patch(tc: TestContext):
     env = os.environ.copy()
     env["PORT"] = str(tc.find_free_port(18443))
