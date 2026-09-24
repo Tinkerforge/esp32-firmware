@@ -432,6 +432,8 @@ bool ISOTLS::start_session(int fd)
 
     // Reset SSL state for new connection
     mbedtls_ssl_session_reset(ssl);
+    // Restore the pre-negotiation policy after a previous TLS 1.3 connection.
+    configure_signature_policy(MBEDTLS_SSL_VERSION_UNKNOWN);
 
     // Store socket fd and set up I/O callbacks
     socket_fd = fd;
@@ -681,6 +683,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
     }
 
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
+    configure_signature_policy(ver);
 
     if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && iso20_allowed && iso20_candidate_count > 0) {
         if (selected_iso20_candidate >= iso20_candidate_count) {
