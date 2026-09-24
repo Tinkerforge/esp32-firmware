@@ -119,6 +119,7 @@ typedef struct {
     const char                  *cert_common_name;
     esp_err_t (*crt_bundle_attach)(void *conf);
     esp_transport_handle_t      ext_transport;
+    const int                   *ciphersuites_list;
 } websocket_config_storage_t;
 
 typedef enum {
@@ -617,6 +618,9 @@ static esp_err_t tf_websocket_client_create_transport(tf_websocket_client_handle
 
         esp_transport_set_default_port(ssl, WEBSOCKET_SSL_DEFAULT_PORT);
         esp_transport_list_add(client->transport_list, ssl, "_ssl"); // need to save to transport list, for cleanup
+        if (client->config->ciphersuites_list != NULL) {
+            esp_transport_ssl_set_ciphersuites_list(ssl, client->config->ciphersuites_list);
+        }
         if (client->keep_alive_cfg.keep_alive_enable) {
             esp_transport_ssl_set_keep_alive(ssl, &client->keep_alive_cfg);
         }
@@ -856,6 +860,7 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
     client->config->cert_common_name = config->cert_common_name;
     client->config->crt_bundle_attach = config->crt_bundle_attach;
     client->config->ext_transport = config->ext_transport;
+    client->config->ciphersuites_list = config->ciphersuites_list;
 
     if (config->uri) {
         if (tf_websocket_client_set_uri(client, config->uri) != ESP_OK) {

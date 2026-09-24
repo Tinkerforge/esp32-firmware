@@ -221,5 +221,11 @@ def test_invalid_tls_cipher_suite(tc: TestContext):
     run_openssl_failure(tc, "InvalidTLSCipherSuite", ["-tls1_2", "-cipher", "AES128-SHA256:@SECLEVEL=0"])
 
 
+def test_csms_rejects_ecdhe_ecdsa_cbc(tc: TestContext):
+    # Matches the server's EC certificate and the compiled library's supported
+    # key exchange. Rejection must come from the OCPP-specific AEAD allow list.
+    run_openssl_failure(tc, "InvalidTLSCipherSuite", ["-tls1_2", "-cipher", "ECDHE-ECDSA-AES128-SHA256:@SECLEVEL=0"])
+
+
 if __name__ == "__main__":
     run_testsuite(locals())
