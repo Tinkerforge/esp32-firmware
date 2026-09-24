@@ -39,6 +39,7 @@ let x = {
             "model_112": "Inverter",
             "model_113": "Inverter",
             "model_122": "Inverter measurements and status",
+            "model_124": "Inverter storage controls",
             "model_160": "PV generation",
             "model_201": "Meter",
             "model_202": "Meter",

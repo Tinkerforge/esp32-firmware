@@ -39,6 +39,7 @@ let x = {
             "model_112": "Wechselrichter",
             "model_113": "Wechselrichter",
             "model_122": "Wechselrichter Messwerte und Status",
+            "model_124": "Wechselrichter Speichersteuerung",
             "model_160": "PV-Erzeugung",
             "model_201": "Zähler",
             "model_202": "Zähler",

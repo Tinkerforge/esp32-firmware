@@ -50,6 +50,7 @@ export interface SunSpecScanResult {
 interface SunSpecScannerProps {
     host: string;
     port: number;
+    exclude_model_from_display_name?: boolean;
     on_is_model_visible: (model_id: number) => boolean;
     on_is_model_supported: (model_id: number) => boolean;
     on_result_selected: (result: SunSpecScanResult) => void;
@@ -144,11 +145,18 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                     manufacturer_name = 'KOSTAL';
                 }
 
+                let model_name = scan_result.model_name.trim();
+                let display_name = model_name.startsWith(manufacturer_name) ? model_name : manufacturer_name + ' ' + model_name;
+
+                if (!this.props.exclude_model_from_display_name) {
+                    display_name += ': ' + translate_unchecked(`sun_spec.content.model_${scan_result.model_id}`);
+                }
+
                 this.setState({results: this.state.results.concat({
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
-                    display_name: removeUnicodeHacks((scan_result.model_name.startsWith(manufacturer_name) ? scan_result.model_name.trim() : manufacturer_name + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
+                    display_name: removeUnicodeHacks(display_name).substring(0, 65),
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,

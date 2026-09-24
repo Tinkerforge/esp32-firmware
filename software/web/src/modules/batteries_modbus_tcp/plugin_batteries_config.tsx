@@ -24,7 +24,7 @@ import { h, Fragment, Component, ComponentChild, ComponentChildren } from "preac
 import { Button, Dropdown, Alert } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/generated/battery_class_id.enum";
-import { BatteryConfig, BatteryState } from "../batteries/types";
+import { BatteryConfig } from "../batteries/types";
 import { BatteryMode } from "../batteries/generated/battery_mode.enum";
 import { BatteryModbusTCPTableID } from "./generated/battery_modbus_tcp_table_id.enum";
 import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./generated/battery_modbus_tcp_specs";
@@ -50,6 +50,14 @@ export type ModbusTCPBatteriesConfig = [
         table: TableConfig;
     },
 ];
+
+export type ModbusTCPBatteriesState = {
+    active_mode: number,
+    effective_mode: number,
+    discovering: boolean,
+    checking: boolean,
+    testing: boolean,
+}
 
 interface RegisterEditorProps {
     register_address_mode: ModbusRegisterAddressMode;
@@ -934,7 +942,7 @@ export function pre_init() {
 
                 return clone;
             },
-            get_state_info: (battery_slot: number, config: BatteryConfig, battery_state: BatteryState): {state_name: string, warning: ComponentChild} => {
+            get_state_info: (battery_slot: number, config: ModbusTCPBatteriesConfig, battery_state: ModbusTCPBatteriesState): {state_name: string, warning: ComponentChild} => {
                 if (!util.hasValue(config[1].table) || !util.hasValue(battery_state)) {
                     return undefined;
                 }

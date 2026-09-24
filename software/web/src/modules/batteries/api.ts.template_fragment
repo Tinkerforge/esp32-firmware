@@ -9,3 +9,10 @@ export interface state___{{{battery_id}}} {
     checking: boolean,
     testing: boolean,
 }
+
+// FIXME: this state is specific to the batteries_sun_spec module
+//export interface state___{{{battery_id}}} {
+//    mode: number,
+//    resolving: boolean,
+//    testing: boolean,
+//}

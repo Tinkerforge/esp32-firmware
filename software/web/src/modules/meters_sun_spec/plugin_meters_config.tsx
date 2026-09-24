@@ -163,7 +163,8 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                     }} />
             </FormRow>,
             <hr/>,
-            <SunSpecScanner host={this.props.config[1].host} port={this.props.config[1].port}
+            <SunSpecScanner
+                host={this.props.config[1].host} port={this.props.config[1].port}
                 on_is_model_visible={(model_id: number) => MODEL_SPECS[model_id] !== undefined}
                 on_is_model_supported={(model_id: number) => MODEL_SPECS[model_id].is_supported}
                 on_result_selected={(result: SunSpecScanResult) => {
