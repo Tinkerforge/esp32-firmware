@@ -556,8 +556,6 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
      has_step2, step2_function_code, buffer_to_compare, buffer_to_free]
     (TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (ctx->destroy_requested) {
-            ctx->transact_pending = false;
-
             free(buffer_to_free);
             delete ctx;
             return;
@@ -752,8 +750,6 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                 [ctx, register_block, buffer_to_free, step2_function_code, step2_data_count, step2_buffer_len, step2_buffer]
                 (TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                     if (ctx->destroy_requested) {
-                        ctx->transact_pending = false;
-
                         free(buffer_to_free);
                         delete ctx;
                         return;
