@@ -1,0 +1,87 @@
+From: Olaf Lüke <olaf@tinkerforge.com>
+Date: Thu, 24 Sep 2026 20:00:00 +0200
+Subject: [PATCH] Add resumable post-handshake TLS 1.3 ticket issuance
+
+Reuse the ticket writer and flush state machine without resetting record keys.
+The application owns scheduling and full-handshake age limits.
+---
+diff --git a/include/mbedtls/ssl.h b/include/mbedtls/ssl.h
+--- a/include/mbedtls/ssl.h
++++ b/include/mbedtls/ssl.h
+@@ -4770,3 +4770,18 @@
++
++/**
++ * \brief Send one fresh TLS 1.3 session ticket on an established server connection.
++ *
++ * Tickets must be enabled and the initial handshake must be complete. Finish
++ * any pending application write before calling. After WANT_READ/WANT_WRITE,
++ * call this function again without interleaving other SSL operations until it
++ * returns zero. Retries flush the same ticket rather than generating another.
++ * The caller owns renewal scheduling and the maximum full-handshake age policy.
++ *
++ * \return 0 when the ticket has been flushed, WANT_READ/WANT_WRITE to retry,
++ *         BAD_INPUT_DATA for an invalid context/state or disabled tickets,
++ *         or another negative error (connection must then be reset/freed).
++ */
++int mbedtls_ssl_send_session_ticket(mbedtls_ssl_context *ssl);
+ #endif /* MBEDTLS_SSL_SESSION_TICKETS &&
+           MBEDTLS_SSL_SRV_C &&
+           MBEDTLS_SSL_PROTO_TLS1_3*/
+diff --git a/library/ssl_misc.h b/library/ssl_misc.h
+--- a/library/ssl_misc.h
++++ b/library/ssl_misc.h
+@@ -774,5 +774,6 @@
+     uint16_t hrr_selected_group;
+ #if defined(MBEDTLS_SSL_SESSION_TICKETS)
+-    uint16_t new_session_tickets_count;         /*!< number of session tickets */
++    uint16_t new_session_tickets_count;         /*!< number of session tickets */
++    unsigned char ticket_renewal_pending;        /*!< resumable post-handshake issuance */
+ #endif
+ #endif /* MBEDTLS_SSL_SRV_C */
+diff --git a/library/ssl_tls13_server.c b/library/ssl_tls13_server.c
+--- a/library/ssl_tls13_server.c
++++ b/library/ssl_tls13_server.c
+@@ -3703,7 +3703,43 @@
+ 
+     return ret;
+ }
++
++int mbedtls_ssl_send_session_ticket(mbedtls_ssl_context *ssl)
++{
++    int ret;
++    if (ssl == NULL || ssl->conf == NULL || ssl->handshake == NULL ||
++        ssl->session == NULL || ssl->conf->endpoint != MBEDTLS_SSL_IS_SERVER ||
++        ssl->tls_version != MBEDTLS_SSL_VERSION_TLS1_3 ||
++        ssl->conf->f_ticket_write == NULL ||
++        ssl->conf->new_session_tickets_count == 0) {
++        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
++    }
++
++    if (!ssl->handshake->ticket_renewal_pending) {
++        /* Do not consume/overwrite a pending application write: its caller
++         * must finish retrying that operation before starting a ticket. */
++        if (ssl->state != MBEDTLS_SSL_HANDSHAKE_OVER || ssl->out_left != 0) {
++            return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
++        }
++        ssl->handshake->ticket_renewal_pending = 1;
++        ssl->handshake->new_session_tickets_count = 1;
++        mbedtls_ssl_handshake_set_state(
++            ssl, MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET);
++    } else if (ssl->state != MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET &&
++               ssl->state != MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET_FLUSH) {
++        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
++    }
++
++    /* Reuse the normal writer, fragment drain and flush states. This neither
++     * resets record sequence numbers nor repeats the certificate handshake. */
++    ret = mbedtls_ssl_handshake(ssl);
++    if (ret == 0) {
++        ssl->handshake->ticket_renewal_pending = 0;
++    }
++    return ret;
++}
++
+ #endif /* MBEDTLS_SSL_SESSION_TICKETS */
+ 
+ /*
+  * TLS 1.3 State Machine -- server side

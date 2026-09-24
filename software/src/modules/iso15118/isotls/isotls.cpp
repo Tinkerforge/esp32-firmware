@@ -299,6 +299,7 @@ void ISOTLS::cleanup()
         free_any(ticket_ctx);
         ticket_ctx = nullptr;
     }
+    ticket_policy.clear();
 #endif
 
     for (size_t i = 0; i < ISO2_CANDIDATE_MAX; ++i) {
@@ -381,6 +382,10 @@ bool ISOTLS::setup_tickets()
         return false;
     }
 
+    ret = ticket_policy.setup(mbedtls_ctr_drbg_random, ctr_drbg);
+    if (ret != 0) {
+        return false;
+    }
     mbedtls_ssl_conf_session_tickets_cb(ssl_conf, ticket_write_cb, ticket_parse_cb, this);
     // One ticket per full handshake, we offer no VAS [V2G20-2023]
     mbedtls_ssl_conf_new_session_tickets(ssl_conf, 1);
@@ -402,7 +407,7 @@ int ISOTLS::ticket_write_cb(void *ctx, const mbedtls_ssl_session *session, unsig
         return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
     }
 
-    return mbedtls_ssl_ticket_write(self->ticket_ctx, session, start, end, tlen, lifetime);
+    return self->ticket_policy.write(self->ticket_ctx, session, start, end, tlen, lifetime, now_us().to<millis_t>().as<uint64_t>());
 }
 
 int ISOTLS::ticket_parse_cb(void *ctx, mbedtls_ssl_session *session, unsigned char *buf, size_t len)
@@ -413,7 +418,7 @@ int ISOTLS::ticket_parse_cb(void *ctx, mbedtls_ssl_session *session, unsigned ch
         return MBEDTLS_ERR_SSL_INVALID_MAC;
     }
 
-    int ret = mbedtls_ssl_ticket_parse(self->ticket_ctx, session, buf, len);
+    int ret = self->ticket_policy.parse(self->ticket_ctx, session, buf, len, now_us().to<millis_t>().as<uint64_t>());
     if (ret == 0) {
         // The EV offered a valid ticket PSK. Will become "resumed_session" once the handshake completed
         self->ticket_psk_accepted = true;
@@ -432,6 +437,10 @@ bool ISOTLS::start_session(int fd)
 
     // Reset SSL state for new connection
     mbedtls_ssl_session_reset(ssl);
+#if ISO15118_TLS_TICKETS
+    ticket_policy.reset();
+    application_write_pending = false;
+#endif
     // Restore the pre-negotiation policy after a previous TLS 1.3 connection.
     configure_signature_policy(MBEDTLS_SSL_VERSION_UNKNOWN);
 
@@ -457,7 +466,11 @@ bool ISOTLS::start_session(int fd)
 
 void ISOTLS::end_session()
 {
-    if (session_active && ssl != nullptr) {
+    if (session_active && ssl != nullptr
+#if ISO15118_TLS_TICKETS
+        && !ticket_policy.pending
+#endif
+        ) {
         // Send close_notify alert (best effort, ignore errors)
         mbedtls_ssl_close_notify(ssl);
     }
@@ -600,11 +613,56 @@ bool ISOTLS::do_handshake()
     }
 }
 
+#if ISO15118_TLS_TICKETS
+bool ISOTLS::service_tickets()
+{
+    if (!session_active || !is_tls13_active() || application_write_pending) {
+        return true;
+    }
+
+    const uint64_t now = now_us().to<millis_t>().as<uint64_t>();
+    if (ticket_policy.pending && ticket_policy.expired(now)) {
+        // A blocked renewal must not finish sending after the seven-day cutoff.
+        return false;
+    }
+
+    if (!ticket_policy.pending && !ticket_policy.due(now)) {
+        return true;
+    }
+
+    ticket_policy.pending = true;
+    const int ret = mbedtls_ssl_send_session_ticket(ssl);
+    if ((ret == MBEDTLS_ERR_SSL_WANT_READ) || (ret == MBEDTLS_ERR_SSL_WANT_WRITE)) {
+        return true;
+    }
+
+    if (ret != 0) {
+        log_mbedtls_error(ret, "Ticket renewal failed");
+        return false;
+    }
+
+    ticket_policy.pending = false;
+    return true;
+}
+#endif
+
 ssize_t ISOTLS::read(uint8_t *data, size_t len)
 {
     if (!session_active || (ssl == nullptr)) {
         return -1;
     }
+
+    if (!service_tickets()) {
+        errno = ECONNRESET;
+        return -1;
+    }
+
+#if ISO15118_TLS_TICKETS
+    if (ticket_policy.pending) {
+        errno = EWOULDBLOCK;
+        return -1;
+    }
+#endif
 
     int ret = mbedtls_ssl_read(ssl, data, len);
 
@@ -631,7 +689,24 @@ ssize_t ISOTLS::write(const uint8_t *data, size_t len)
         return -1;
     }
 
+    // Finish a renewal already started by the idle service before app writes.
+#if ISO15118_TLS_TICKETS
+    if (ticket_policy.pending) {
+        if (!service_tickets()) {
+            errno = ECONNRESET;
+            return -1;
+        }
+
+        if (ticket_policy.pending) {
+            errno = EWOULDBLOCK;
+            return -1;
+        }
+    }
+#endif
     int ret = mbedtls_ssl_write(ssl, data, len);
+#if ISO15118_TLS_TICKETS
+    application_write_pending = ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE;
+#endif
 
     if (ret >= 0) {
         return ret;

@@ -38,6 +38,7 @@ patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0016-Prefer-r
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0017-Resume-fragmented-TLS-1.3-handshake-output.rawpatch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0018-Fragment-TLS-1.2-handshake-output.rawpatch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0019-Honor-TLS-1.3-server-group-preference.rawpatch"
+patch -d "$BUILD/mbedtls" -p1 --fuzz=0 --forward < "$PATCH_ROOT/0020-Add-post-handshake-TLS-1.3-ticket-issuance.patch"
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_RECORD_SIZE_LIMIT
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_OUT_CONTENT_LEN 4096
