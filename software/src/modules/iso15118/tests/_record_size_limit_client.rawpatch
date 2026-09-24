@@ -1,0 +1,31 @@
+--- library/ssl_tls13_client.c
++++ library/ssl_tls13_client.c
+@@ -1169,8 +1169,28 @@
+ #if defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
++    /* Test-only ClientHello construction; the real client hashes these bytes. */
++    const unsigned char mfl_code = ssl->conf->mfl_code;
++    const int mfl_first = (mfl_code & 0x80) == 0;
++    const size_t mfl_len = (mfl_code & 0x7f) == 6 ? 0 : 1;
++    if (mfl_code != 0 && mfl_first) {
++        MBEDTLS_SSL_CHK_BUF_PTR(p, end, 4 + mfl_len);
++        MBEDTLS_PUT_UINT16_BE(MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH, p, 0);
++        MBEDTLS_PUT_UINT16_BE(mfl_len, p, 2);
++        if (mfl_len != 0) p[4] = mfl_code & 0x7f;
++        p += 4 + mfl_len;
++    }
+     ret = mbedtls_ssl_tls13_write_record_size_limit_ext(
+         ssl, p, end, &ext_len);
+     if (ret != 0) {
+         return ret;
+     }
++    MBEDTLS_PUT_UINT16_BE(1024, p, 4);
+     p += ext_len;
++    if (mfl_code != 0 && !mfl_first) {
++        MBEDTLS_SSL_CHK_BUF_PTR(p, end, 4 + mfl_len);
++        MBEDTLS_PUT_UINT16_BE(MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH, p, 0);
++        MBEDTLS_PUT_UINT16_BE(mfl_len, p, 2);
++        if (mfl_len != 0) p[4] = mfl_code & 0x7f;
++        p += 4 + mfl_len;
++    }
++    ((mbedtls_ssl_config *) ssl->conf)->mfl_code = MBEDTLS_SSL_MAX_FRAG_LEN_NONE;
+ #endif

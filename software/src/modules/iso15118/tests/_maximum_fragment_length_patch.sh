@@ -34,6 +34,7 @@ grep -q "3.6.6" "$BUILD/mbedtls/include/mbedtls/build_info.h" || { echo "mbedTLS
 patch -d "$BUILD/mbedtls" -p1 --forward < "$PATCH_ROOT/0001-ssl_tls-Add-work-around-for-broken-asymmetric-buffer.patch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0015-Enforce-negotiated-input-fragment-limits.rawpatch"
+patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0016-Prefer-record-size-limit-over-maximum-fragment-length.rawpatch"
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_RECORD_SIZE_LIMIT
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_OUT_CONTENT_LEN 4096
@@ -107,6 +108,32 @@ run_negative() {
 }
 
 run_negative invalid-mfl $((PORT + 1)) $((PORT + 2))
-run_negative conflicting-limits $((PORT + 3)) $((PORT + 4))
 python3 _maximum_fragment_length_receive.py "$BUILD/server" "$CERTS"
+
+# Build a client with deliberately unusual but transcript-authenticated offers.
+# The server binary above retains the production-only patches and 16 KiB input.
+patch -d "$BUILD/mbedtls/library" --forward < _record_size_limit_client.rawpatch
+make -C "$BUILD/mbedtls" lib -j"$(nproc)" > /dev/null
+gcc -Wall -Wextra -Werror -O1 -I "$BUILD/mbedtls/include" \
+    -o "$BUILD/client" -x c _record_size_limit_client.c.inc -x none \
+    "$BUILD/mbedtls/library/libmbedtls.a" \
+    "$BUILD/mbedtls/library/libmbedx509.a" \
+    "$BUILD/mbedtls/library/libmbedcrypto.a"
+for code in 0 1 129 5 133 6 134; do
+    log="$BUILD/server-precedence-$code.log"
+    start_server "$PORT" "$log"
+    if ! timeout 15 "$BUILD/client" "$PORT" "$CERTS/certs/v2gRootCACert.pem" "$code"; then
+        cat "$log"
+        exit 1
+    fi
+    wait "$SERVER_PID"
+    SERVER_PID=
+    grep -q "maximum input fragment: 16384" "$log" || { cat "$log"; exit 1; }
+    grep -q "response: 1536 bytes in 2 records" "$log" || { cat "$log"; exit 1; }
+    # RSL=1024 includes inner content type; GCM adds 16 wire bytes.
+    while read -r _ _ _ _ _ record_length; do
+        [ "$record_length" -le 1040 ] || { cat "$log"; exit 1; }
+    done < <(grep "wire record: type 23" "$log")
+    echo "ok   TLS 1.3 record_size_limit precedence, MFL test code $code"
+done
 echo PASS
