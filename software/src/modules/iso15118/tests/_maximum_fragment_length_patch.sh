@@ -1,5 +1,5 @@
 #!/bin/bash
-# Host-only regression test for TLS 1.3 maximum_fragment_length support.
+# Host-only regression test for TLS 1.2/1.3 maximum_fragment_length support.
 
 set -eu
 
@@ -36,6 +36,7 @@ patch -d "$BUILD/mbedtls/library" --forward < "$PATCH"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0015-Enforce-negotiated-input-fragment-limits.rawpatch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0016-Prefer-record-size-limit-over-maximum-fragment-length.rawpatch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0017-Resume-fragmented-TLS-1.3-handshake-output.rawpatch"
+patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0018-Fragment-TLS-1.2-handshake-output.rawpatch"
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_RECORD_SIZE_LIMIT
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_OUT_CONTENT_LEN 4096
@@ -50,17 +51,19 @@ start_server() {
     local port=$1
     local log=$2
     "$BUILD/server" "$port" "$CERTS/certs/cpoCertChain.pem" \
-        "$CERTS/private_keys/seccLeaf_unencrypted.key" > "$log" 2>&1 &
+        "$CERTS/private_keys/seccLeaf_unencrypted.key" "${TLS_VERSION:-13}" send > "$log" 2>&1 &
     SERVER_PID=$!
     sleep 0.2
 }
 
+for version in 12 13; do
 for backpressure in 0 1; do
 for length in 512 1024 2048 4096; do
     log="$BUILD/server-$length.log"
     output="$BUILD/client-$length.log"
-    MFL_BACKPRESSURE=$backpressure start_server "$PORT" "$log"
-    openssl s_client -connect "127.0.0.1:$PORT" -tls1_3 -maxfraglen "$length" \
+    TLS_VERSION=$version MFL_BACKPRESSURE=$backpressure start_server "$PORT" "$log"
+    timeout 20 openssl s_client -connect "127.0.0.1:$PORT" "-tls1_$((version - 10))" -maxfraglen "$length" \
+        -cipher ECDHE-ECDSA-AES128-GCM-SHA256 \
         -CAfile "$CERTS/certs/v2gRootCACert.pem" -tlsextdebug \
         < /dev/null > "$output" 2>&1 || true
     if ! wait "$SERVER_PID"; then
@@ -80,10 +83,23 @@ for length in 512 1024 2048 4096; do
     grep -q "Verify return code: 0 (ok)" "$output" || { cat "$output"; exit 1; }
     grep -q "maximum input fragment: $length" "$log" || { cat "$log"; exit 1; }
     grep -q "maximum output fragment: $length" "$log" || { cat "$log"; exit 1; }
-    maximum_payload=$((length - 1))
+    maximum_payload=$length
+    [ "$version" = 12 ] || maximum_payload=$((length - 1))
     expected_records=$(( (1536 + maximum_payload - 1) / maximum_payload ))
     grep -q "response: 1536 bytes in $expected_records records" "$log" || { cat "$log"; exit 1; }
     maximum_wire_record=$((length + 16))
+    if [ "$version" = 12 ]; then
+        maximum_wire_record=$((length + 24)) # explicit nonce + GCM tag
+        # Includes the full-chain Certificate message, not only application data.
+        handshake_limit=$length
+        while read -r _ _ _ record_type _ record_length; do
+            if [ "$record_type" = 20 ]; then
+                handshake_limit=$maximum_wire_record
+            elif [ "$record_type" = 22 ]; then
+                [ "$record_length" -le "$handshake_limit" ] || { cat "$log"; exit 1; }
+            fi
+        done < <(grep "wire record:" "$log")
+    fi
     while read -r _ _ _ _ _ record_length; do
         if [ "$record_length" -gt "$maximum_wire_record" ]; then
             echo "FAIL encrypted record $record_length exceeded negotiated limit $maximum_wire_record"
@@ -91,7 +107,8 @@ for length in 512 1024 2048 4096; do
             exit 1
         fi
     done < <(grep "wire record: type 23" "$log")
-    echo "ok   TLS 1.3 maximum_fragment_length $length backpressure=$backpressure"
+    echo "ok   TLS 1.$((version - 10)) maximum_fragment_length $length backpressure=$backpressure"
+done
 done
 done
 
@@ -117,14 +134,16 @@ run_negative() {
     echo "ok   $mode rejected with illegal_parameter"
 }
 
+for version in 12 13; do
 log="$BUILD/server-abort.log"
-MFL_BACKPRESSURE=abort start_server "$PORT" "$log"
-timeout 15 openssl s_client -connect "127.0.0.1:$PORT" -tls1_3 -maxfraglen 512 \
+TLS_VERSION=$version MFL_BACKPRESSURE=abort start_server "$PORT" "$log"
+timeout 15 openssl s_client -connect "127.0.0.1:$PORT" "-tls1_$((version - 10))" -maxfraglen 512 \
     < /dev/null > "$BUILD/client-abort.log" 2>&1 || true
 wait "$SERVER_PID"
 SERVER_PID=
 grep -q "aborted fragmented handshake reset successfully" "$log" || { cat "$log"; exit 1; }
-echo "ok   reset during fragmented handshake backpressure"
+echo "ok   TLS 1.$((version - 10)) reset during fragmented handshake backpressure"
+done
 
 run_negative invalid-mfl $((PORT + 1)) $((PORT + 2))
 python3 _maximum_fragment_length_receive.py "$BUILD/server" "$CERTS"

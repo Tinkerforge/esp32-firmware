@@ -1,4 +1,4 @@
-// TLS 1.3 test server for maximum_fragment_length negotiation.
+// TLS 1.2/1.3 test server for maximum_fragment_length negotiation.
 // Usage: maximum_fragment_length_server <port> <chain.pem> <key.pem>
 
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     mbedtls_net_context client;
 
     if (argc != 4 && argc != 6) {
-        fprintf(stderr, "usage: %s <port> <chain.pem> <key.pem> [12|13 receive]\n", argv[0]);
+        fprintf(stderr, "usage: %s <port> <chain.pem> <key.pem> [12|13 receive|send]\n", argv[0]);
         return 1;
     }
 
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
     printf("maximum output fragment: %zu\n", mbedtls_ssl_get_output_max_frag_len(&ssl));
     fflush(stdout);
 
-    if (argc == 6) {
+    if (argc == 6 && strcmp(argv[5], "receive") == 0) {
         unsigned char incoming[16384];
         stall_next_send = 1;
         do {
