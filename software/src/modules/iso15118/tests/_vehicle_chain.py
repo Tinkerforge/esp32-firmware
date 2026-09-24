@@ -367,7 +367,7 @@ def main():
 
         assert csms.call("SetVariables", {"setVariableData": [{
             "component": {"name": "ISO15118Ctrlr"},
-            "variable": {"name": "PrivateEnviromentEnabled"},
+            "variable": {"name": "PrivateEnvironmentEnabled"},
             "attributeValue": "true",
         }]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
         time.sleep(3)
@@ -408,7 +408,7 @@ def main():
 
         assert csms.call("SetVariables", {"setVariableData": [{
             "component": {"name": "ISO15118Ctrlr"},
-            "variable": {"name": "PrivateEnviromentEnabled"},
+            "variable": {"name": "PrivateEnvironmentEnabled"},
             "attributeValue": "false",
         }]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
         # Let tfocpp finish the preceding M07 response callback before

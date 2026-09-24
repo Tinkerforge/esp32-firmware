@@ -596,7 +596,7 @@ def main() -> None:
         common.enable_debug_mode(args.charger)
         public_result = csms.call("SetVariables", {"setVariableData": [{
             "component": {"name": "ISO15118Ctrlr"},
-            "variable": {"name": "PrivateEnviromentEnabled"},
+            "variable": {"name": "PrivateEnvironmentEnabled"},
             "attributeValue": "false",
         }]})["setVariableResult"][0]
         assert public_result["attributeStatus"] == "Accepted", public_result
