@@ -1,0 +1,132 @@
+--- library/ssl_tls.c
++++ library/ssl_tls.c
+@@ -3259,24 +3259,9 @@
+-    /*
+-     * The buffer management is broken somewhere resulting in an input buffer
+-     * that has the same size as the output buffer. We want to shrink the
+-     * output buffer, but can't force a server to only send fragments that
+-     * fit in a smaller than default input buffer (not every server supports
+-     * negotiating a smaller fragment size), so just return the configured
+-     * input buffer size here.
+-     */
+-    return max_len;
+-
+     size_t read_mfl;
+ 
+-#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
+-    /* Use the configured MFL for the client if we're past SERVER_HELLO_DONE */
+-    if (ssl->conf->endpoint == MBEDTLS_SSL_IS_CLIENT &&
+-        ssl->state >= MBEDTLS_SSL_SERVER_HELLO_DONE) {
+-        return ssl_mfl_code_to_length(ssl->conf->mfl_code);
+-    }
+-#endif
+-
+-    if (ssl->session != NULL) {
++    /* NONE is not a negotiated limit. Its conversion uses the minimum of
++     * input/output capacities, which is wrong for asymmetric receivers. */
++    if (ssl->session != NULL &&
++        ssl->session->mfl_code != MBEDTLS_SSL_MAX_FRAG_LEN_NONE) {
+         read_mfl = ssl_mfl_code_to_length(ssl->session->mfl_code);
+         if (read_mfl < max_len) {
+             max_len = read_mfl;
+@@ -3287,7 +3268,8 @@
+     /* Check if a smaller max length was negotiated */
+-    if (ssl->session_in != NULL) {
++    if (ssl->session_in != NULL &&
++        ssl->session_in->mfl_code != MBEDTLS_SSL_MAX_FRAG_LEN_NONE) {
+         read_mfl = ssl_mfl_code_to_length(ssl->session_in->mfl_code);
+         if (read_mfl < max_len) {
+             max_len = read_mfl;
+         }
+     }
+@@ -3294,7 +3276,8 @@
+     /* During a handshake, use the value being negotiated */
+-    if (ssl->session_negotiate != NULL) {
++    if (ssl->session_negotiate != NULL &&
++        ssl->session_negotiate->mfl_code != MBEDTLS_SSL_MAX_FRAG_LEN_NONE) {
+         read_mfl = ssl_mfl_code_to_length(ssl->session_negotiate->mfl_code);
+         if (read_mfl < max_len) {
+             max_len = read_mfl;
+         }
+     }
+--- library/ssl_misc.h
++++ library/ssl_misc.h
+@@ -474,11 +474,14 @@
+ static inline size_t mbedtls_ssl_get_input_buflen(const mbedtls_ssl_context *ctx)
+ {
++    /* Keep the asymmetric-buffer workaround at the allocation boundary.
++     * Buffer capacity must not override the negotiated protocol limit. */
++    (void) ctx;
+ #if defined(MBEDTLS_SSL_DTLS_CONNECTION_ID)
+-    return mbedtls_ssl_get_input_max_frag_len(ctx)
++    return MBEDTLS_SSL_IN_CONTENT_LEN
+            + MBEDTLS_SSL_HEADER_LEN + MBEDTLS_SSL_PAYLOAD_OVERHEAD
+            + MBEDTLS_SSL_CID_IN_LEN_MAX;
+ #else
+-    return mbedtls_ssl_get_input_max_frag_len(ctx)
++    return MBEDTLS_SSL_IN_CONTENT_LEN
+            + MBEDTLS_SSL_HEADER_LEN + MBEDTLS_SSL_PAYLOAD_OVERHEAD;
+ #endif
+ }
+--- library/ssl_msg.c
++++ library/ssl_msg.c
+@@ -4349,4 +4349,15 @@
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++    /* Check plaintext after authentication, independently of allocation size.
++     * For TLS 1.3 this is content, after removing inner type and padding. */
++    if (ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_STREAM &&
++        rec->data_len > mbedtls_ssl_get_input_max_frag_len(ssl)) {
++        mbedtls_ssl_pend_fatal_alert(ssl, MBEDTLS_SSL_ALERT_MSG_RECORD_OVERFLOW,
++                                   MBEDTLS_ERR_SSL_INVALID_RECORD);
++        return mbedtls_ssl_handle_pending_alert(ssl);
++    }
++#endif
++
+     /* Check actual (decrypted) record content length against
+      * configured maximum. */
+     if (rec->data_len > MBEDTLS_SSL_IN_CONTENT_LEN) {
+@@ -4379,5 +4390,10 @@
+     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+ 
++    /* Retry a fatal alert if the nonblocking transport previously stalled. */
++    if (ssl->send_alert != 0) {
++        return mbedtls_ssl_handle_pending_alert(ssl);
++    }
++
+     MBEDTLS_SSL_DEBUG_MSG(2, ("=> read record"));
+ 
+     if (ssl->keep_current_message == 0) {
+@@ -5162,6 +5178,32 @@
+         /*
+          * Fetch record contents from underlying transport.
+          */
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++        size_t wire_limit = mbedtls_ssl_get_input_max_frag_len(ssl);
++        if (ssl->transform_in != NULL) {
++            const mbedtls_ssl_transform *transform = ssl->transform_in;
++            if (transform->tls_version == MBEDTLS_SSL_VERSION_TLS1_3) {
++                /* RFC 8446: allow record protection expansion, then check
++                 * the authenticated content length separately. */
++                wire_limit += 256;
++            } else if (transform->taglen != 0) {
++                wire_limit += transform->ivlen - transform->fixed_ivlen
++                              + transform->taglen;
++            } else {
++                /* TLS 1.2 CBC permits up to 256 bytes of padding. */
++                wire_limit += transform->ivlen + transform->maclen;
++                if (transform->ivlen != 0) {
++                    wire_limit += 256;
++                }
++            }
++        }
++        if (rec.data_len > wire_limit) {
++            /* Reject impossible lengths before fetching/decrypting payload. */
++            mbedtls_ssl_pend_fatal_alert(ssl, MBEDTLS_SSL_ALERT_MSG_RECORD_OVERFLOW,
++                                       MBEDTLS_ERR_SSL_INVALID_RECORD);
++            return mbedtls_ssl_handle_pending_alert(ssl);
++        }
++#endif
+         ret = mbedtls_ssl_fetch_input(ssl, rec.buf_len);
+         if (ret != 0) {
+             MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_fetch_input", ret);

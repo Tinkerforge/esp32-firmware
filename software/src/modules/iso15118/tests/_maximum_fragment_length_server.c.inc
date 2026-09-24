@@ -36,8 +36,15 @@ static unsigned char *read_file(const char *path, size_t *len)
     return buffer;
 }
 
+static int stall_next_send;
+
 static int debug_send(void *context, const unsigned char *buffer, size_t length)
 {
+    if (stall_next_send) {
+        stall_next_send = 0;
+        puts("simulated WANT_WRITE");
+        return MBEDTLS_ERR_SSL_WANT_WRITE;
+    }
     if (length >= 5) {
         printf("wire record: type %u length %u\n", buffer[0],
                ((unsigned int) buffer[3] << 8) | buffer[4]);
@@ -66,8 +73,8 @@ int main(int argc, char **argv)
     mbedtls_net_context listener;
     mbedtls_net_context client;
 
-    if (argc != 4) {
-        fprintf(stderr, "usage: %s <port> <chain.pem> <key.pem>\n", argv[0]);
+    if (argc != 4 && argc != 6) {
+        fprintf(stderr, "usage: %s <port> <chain.pem> <key.pem> [12|13 receive]\n", argv[0]);
         return 1;
     }
 
@@ -95,8 +102,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    mbedtls_ssl_conf_min_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
-    mbedtls_ssl_conf_max_tls_version(&config, MBEDTLS_SSL_VERSION_TLS1_3);
+    const mbedtls_ssl_protocol_version version = argc == 6 && strcmp(argv[4], "12") == 0
+        ? MBEDTLS_SSL_VERSION_TLS1_2 : MBEDTLS_SSL_VERSION_TLS1_3;
+    mbedtls_ssl_conf_min_tls_version(&config, version);
+    mbedtls_ssl_conf_max_tls_version(&config, version);
     mbedtls_ssl_conf_rng(&config, mbedtls_ctr_drbg_random, &drbg);
     if (mbedtls_ssl_conf_own_cert(&config, &certificate, &key) != 0 ||
         mbedtls_ssl_setup(&ssl, &config) != 0 ||
@@ -117,6 +126,22 @@ int main(int argc, char **argv)
 
     printf("maximum input fragment: %zu\n", mbedtls_ssl_get_input_max_frag_len(&ssl));
     printf("maximum output fragment: %zu\n", mbedtls_ssl_get_output_max_frag_len(&ssl));
+    fflush(stdout);
+
+    if (argc == 6) {
+        unsigned char incoming[16384];
+        stall_next_send = 1;
+        do {
+            ret = mbedtls_ssl_read(&ssl, incoming, sizeof(incoming));
+        } while (ret == MBEDTLS_ERR_SSL_WANT_WRITE || ret == MBEDTLS_ERR_SSL_WANT_READ);
+        printf("received: %d\n", ret);
+        if (ret > 0) {
+            stall_next_send = 0;
+            mbedtls_ssl_close_notify(&ssl);
+            return 0;
+        }
+        return ret == MBEDTLS_ERR_SSL_INVALID_RECORD ? 3 : 4;
+    }
 
     while (written < sizeof(response)) {
         ret = mbedtls_ssl_write(&ssl, response + written, sizeof(response) - written);
