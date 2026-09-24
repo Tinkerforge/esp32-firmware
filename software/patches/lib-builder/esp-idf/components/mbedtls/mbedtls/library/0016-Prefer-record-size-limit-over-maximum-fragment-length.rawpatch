@@ -1,0 +1,69 @@
+--- library/ssl_tls13_server.c
++++ library/ssl_tls13_server.c
+@@ -1287,6 +1287,10 @@
+     int hrr_required = 0;
+     int no_usable_share_for_key_agreement = 0;
+ 
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++    const unsigned char *max_fragment_length_ext = NULL;
++    const unsigned char *max_fragment_length_ext_end = NULL;
++#endif
+ #if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED)
+     int got_psk = 0;
+     struct psk_attributes psk = PSK_ATTRIBUTES_INIT;
+@@ -1684,13 +1688,10 @@
+             case MBEDTLS_TLS_EXT_MAX_FRAGMENT_LENGTH:
+                 MBEDTLS_SSL_DEBUG_MSG(3, ("found max_fragment_length extension"));
+ 
+-                ret = ssl_tls13_parse_max_fragment_length_ext(
+-                    ssl, p, extension_data_end);
+-                if (ret != 0) {
+-                    MBEDTLS_SSL_DEBUG_RET(
+-                        1, ("ssl_tls13_parse_max_fragment_length_ext"), ret);
+-                    return ret;
+-                }
++                /* RFC 8449 section 5: defer even value validation until we
++                 * know whether record_size_limit was offered, in any order. */
++                max_fragment_length_ext = p;
++                max_fragment_length_ext_end = extension_data_end;
+                 break;
+ #endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
+ 
+@@ -1719,18 +1720,26 @@
+         p += extension_data_len;
+     }
+ 
+-#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH) && \
+-    defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
+-    if ((handshake->received_extensions &
+-         MBEDTLS_SSL_EXT_MASK(MAX_FRAGMENT_LENGTH)) != 0 &&
+-        (handshake->received_extensions &
+-         MBEDTLS_SSL_EXT_MASK(RECORD_SIZE_LIMIT)) != 0) {
+-        MBEDTLS_SSL_DEBUG_MSG(1, ("max_fragment_length and record_size_limit both received"));
+-        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER,
+-                                     MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER);
+-        return MBEDTLS_ERR_SSL_ILLEGAL_PARAMETER;
++#if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
++    /* Also clear any previous ClientHello's selection (HelloRetryRequest).
++     * Keeping the received-extension mask preserves duplicate detection;
++     * NONE prevents emitting MFL in EncryptedExtensions. */
++    ssl->session_negotiate->mfl_code = MBEDTLS_SSL_MAX_FRAG_LEN_NONE;
++    if (max_fragment_length_ext != NULL
++#if defined(MBEDTLS_SSL_RECORD_SIZE_LIMIT)
++        && (handshake->received_extensions &
++            MBEDTLS_SSL_EXT_MASK(RECORD_SIZE_LIMIT)) == 0
++#endif
++        ) {
++        ret = ssl_tls13_parse_max_fragment_length_ext(
++            ssl, max_fragment_length_ext, max_fragment_length_ext_end);
++        if (ret != 0) {
++            MBEDTLS_SSL_DEBUG_RET(
++                1, ("ssl_tls13_parse_max_fragment_length_ext"), ret);
++            return ret;
++        }
+     }
+-#endif
++#endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
+ 
+     MBEDTLS_SSL_PRINT_EXTS(3, MBEDTLS_SSL_HS_CLIENT_HELLO,
+                            handshake->received_extensions);
