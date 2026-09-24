@@ -56,7 +56,10 @@ def get_variables(requests):
         variable = {"name": name}
         if instance is not None:
             variable["instance"] = instance
-        data.append({"component": {"name": "ISO15118Ctrlr"}, "variable": variable})
+        component = {"name": "ISO15118Ctrlr"}
+        if name == "ProtocolSupported":
+            component["evse"] = {"id": 1}
+        data.append({"component": component, "variable": variable})
     return csms.call("GetVariables", {"getVariableData": data})["getVariableResult"]
 
 
@@ -65,8 +68,11 @@ def set_variable(name, value, instance=None):
     variable = {"name": name}
     if instance is not None:
         variable["instance"] = instance
+    component = {"name": "ISO15118Ctrlr"}
+    if name == "ProtocolSupported":
+        component["evse"] = {"id": 1}
     result = csms.call("SetVariables", {"setVariableData": [{
-        "component": {"name": "ISO15118Ctrlr"},
+        "component": component,
         "variable": variable,
         "attributeValue": value,
     }]})
