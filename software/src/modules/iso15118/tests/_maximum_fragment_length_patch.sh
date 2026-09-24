@@ -35,6 +35,7 @@ patch -d "$BUILD/mbedtls" -p1 --forward < "$PATCH_ROOT/0001-ssl_tls-Add-work-aro
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0015-Enforce-negotiated-input-fragment-limits.rawpatch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0016-Prefer-record-size-limit-over-maximum-fragment-length.rawpatch"
+patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0017-Resume-fragmented-TLS-1.3-handshake-output.rawpatch"
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_RECORD_SIZE_LIMIT
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_OUT_CONTENT_LEN 4096
@@ -54,10 +55,11 @@ start_server() {
     sleep 0.2
 }
 
+for backpressure in 0 1; do
 for length in 512 1024 2048 4096; do
     log="$BUILD/server-$length.log"
     output="$BUILD/client-$length.log"
-    start_server "$PORT" "$log"
+    MFL_BACKPRESSURE=$backpressure start_server "$PORT" "$log"
     openssl s_client -connect "127.0.0.1:$PORT" -tls1_3 -maxfraglen "$length" \
         -CAfile "$CERTS/certs/v2gRootCACert.pem" -tlsextdebug \
         < /dev/null > "$output" 2>&1 || true
@@ -67,6 +69,13 @@ for length in 512 1024 2048 4096; do
         exit 1
     fi
     SERVER_PID=
+    if [ "$backpressure" = 1 ]; then
+        grep -q "handshake WANT_WRITE" "$log" || { cat "$log"; exit 1; }
+        grep -q "handshake short write" "$log" || { cat "$log"; exit 1; }
+        if [ "$length" -le 1024 ]; then
+            grep -q "fragment retry:" "$log" || { cat "$log"; exit 1; }
+        fi
+    fi
     grep -q "TLS server extension \"max fragment length\" (id=1), len=1" "$output" || { cat "$output"; exit 1; }
     grep -q "Verify return code: 0 (ok)" "$output" || { cat "$output"; exit 1; }
     grep -q "maximum input fragment: $length" "$log" || { cat "$log"; exit 1; }
@@ -82,7 +91,8 @@ for length in 512 1024 2048 4096; do
             exit 1
         fi
     done < <(grep "wire record: type 23" "$log")
-    echo "ok   TLS 1.3 maximum_fragment_length $length"
+    echo "ok   TLS 1.3 maximum_fragment_length $length backpressure=$backpressure"
+done
 done
 
 run_negative() {
@@ -106,6 +116,15 @@ run_negative() {
     grep -q "handshake failed: -26112 " "$log" || { cat "$log"; exit 1; }
     echo "ok   $mode rejected with illegal_parameter"
 }
+
+log="$BUILD/server-abort.log"
+MFL_BACKPRESSURE=abort start_server "$PORT" "$log"
+timeout 15 openssl s_client -connect "127.0.0.1:$PORT" -tls1_3 -maxfraglen 512 \
+    < /dev/null > "$BUILD/client-abort.log" 2>&1 || true
+wait "$SERVER_PID"
+SERVER_PID=
+grep -q "aborted fragmented handshake reset successfully" "$log" || { cat "$log"; exit 1; }
+echo "ok   reset during fragmented handshake backpressure"
 
 run_negative invalid-mfl $((PORT + 1)) $((PORT + 2))
 python3 _maximum_fragment_length_receive.py "$BUILD/server" "$CERTS"
