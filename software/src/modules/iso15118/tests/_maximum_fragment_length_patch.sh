@@ -15,6 +15,7 @@ cleanup() {
 trap cleanup EXIT
 
 PATCH="$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls/library/0014-Add-TLS-1.3-maximum-fragment-length-server-support.rawpatch)"
+PATCH_ROOT="$(dirname "$(dirname "$PATCH")")"
 CERTS="$(realpath ../tools/certs/output/iso20)"
 PORT=${PORT:-19443}
 
@@ -29,8 +30,13 @@ else
 fi
 
 grep -q "3.6.6" "$BUILD/mbedtls/include/mbedtls/build_info.h" || { echo "mbedTLS source is not 3.6.6"; exit 1; }
+# Reproduce the actual interaction, including the old buffer workaround.
+patch -d "$BUILD/mbedtls" -p1 --forward < "$PATCH_ROOT/0001-ssl_tls-Add-work-around-for-broken-asymmetric-buffer.patch"
 patch -d "$BUILD/mbedtls/library" --forward < "$PATCH"
+patch -d "$BUILD/mbedtls/library" --forward < "$PATCH_ROOT/library/0015-Enforce-negotiated-input-fragment-limits.rawpatch"
 python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_RECORD_SIZE_LIMIT
+python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH
+python3 "$BUILD/mbedtls/scripts/config.py" set MBEDTLS_SSL_OUT_CONTENT_LEN 4096
 make -C "$BUILD/mbedtls" lib -j"$(nproc)" > /dev/null
 gcc -Wall -Wextra -Werror -O1 -I "$BUILD/mbedtls/include" -I "$BUILD/mbedtls/library" \
     -o "$BUILD/server" -x c _maximum_fragment_length_server.c.inc -x none \
@@ -102,4 +108,5 @@ run_negative() {
 
 run_negative invalid-mfl $((PORT + 1)) $((PORT + 2))
 run_negative conflicting-limits $((PORT + 3)) $((PORT + 4))
+python3 _maximum_fragment_length_receive.py "$BUILD/server" "$CERTS"
 echo PASS
