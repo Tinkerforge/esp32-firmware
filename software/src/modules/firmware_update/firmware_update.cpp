@@ -1619,7 +1619,6 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
 
             if (index_buf[0] != '\0') {
                 SemanticVersion version;
-                bool found_update = false;
 
                 if (!version.from_string(index_buf)) {
                     logger.printfln("Firmware index entry is malformed: %s", index_buf);
@@ -1637,26 +1636,11 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
                     return;
                 }
 
-//              if (/* all updates */) {
-                    found_update = true;
-/*              }
-                else { // only stable updates
-                    // the stable update is the newest version that was
-                    // released more than 7 days before the next version
-                    if (version.timestamp + (7 * 24 * 60 * 60) < last_version_timestamp) {
-                        found_update = true;
-                    }
-
-                    last_version_timestamp = version.timestamp;
-                }*/
-
-                if (found_update) {
-                    logger.printfln("Firmware update available: %s", index_buf);
-                    state.get("check_state")->updateEnum(CheckState::Idle);
-                    state.get("update_version")->updateString(index_buf);
-                    https_client.abort_async();
-                    return;
-                }
+                logger.printfln("Firmware update available: %s", index_buf);
+                state.get("check_state")->updateEnum(CheckState::Idle);
+                state.get("update_version")->updateString(index_buf);
+                https_client.abort_async();
+                return;
             }
 
             size_t index_buf_consumed = static_cast<size_t>(p + 1 - index_buf);

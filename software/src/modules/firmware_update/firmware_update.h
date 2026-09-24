@@ -156,7 +156,6 @@ private:
     int cert_id = -1;
     char index_buf[64 + 1];
     size_t index_buf_used;
-    //uint32_t last_version_timestamp;
     bool check_for_update_in_progress = false;
     bool install_firmware_in_progress = false;
     bool mark_update_partition_invalid = true;
