@@ -64,16 +64,6 @@ def run_case(server, certs, version, length, size, header_only=False, padding=0)
         chain = certs / "certs/cpoCertChain.pem"
         private_key = certs / "private_keys/seccLeaf_unencrypted.key"
         ca = certs / "certs/v2gRootCACert.pem"
-        if version == 12:
-            # Keep this receive regression independent of the TLS 1.2 writer's
-            # lack of fragmentation for a multi-certificate handshake message.
-            chain = ca = directory / "cert.pem"
-            private_key = directory / "key.pem"
-            subprocess.run([
-                "openssl", "req", "-x509", "-newkey", "ec", "-pkeyopt",
-                "ec_paramgen_curve:P-256", "-nodes", "-subj", "/CN=mfl",
-                "-days", "1", "-keyout", str(private_key), "-out", str(chain),
-            ], check=True, capture_output=True)
         with socket.create_server(("127.0.0.1", 0)) as listener:
             proxy_port = listener.getsockname()[1]
             with socket.socket() as reservation:
@@ -123,7 +113,9 @@ def run_case(server, certs, version, length, size, header_only=False, padding=0)
                                 source = key.fileobj
                                 header, body = record(source)
                                 if source is upstream:
-                                    if header[0] == 22 and body[0] == 2:
+                                    # Later Certificate fragments can start with 0x02;
+                                    # they are not another ServerHello.
+                                    if server_random is None and header[0] == 22 and body[0] == 2:
                                         server_random = body[6:38]
                                     downstream.sendall(header + body)
                                     continue
