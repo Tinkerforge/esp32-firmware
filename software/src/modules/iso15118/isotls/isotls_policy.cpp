@@ -19,6 +19,7 @@
 
 #include "../isotls.h"
 #include "../iso15118.h"
+#include "../generated/module_dependencies.h"
 
 #include "event_log_prefix.h"
 #include "tools/malloc.h"
@@ -46,31 +47,23 @@ const int iso15118_ciphersuites[] = {
     0
 };
 
-// ISO 15118 named groups, version dependent per HUB20-533-003/005.
-// mbedTLS has a single group list for both TLS versions, so the list is
-// selected per connection from the peeked ClientHello (see apply_group_policy).
-//
-// TLS 1.3 (ISO 15118-20 Table 7):
-// [V2G20-2674] secp521r1 (primary signature curve)
-// [V2G20-2319] x448 (alternative)
-// A secp256r1 key_share must never be accepted in TLS 1.3 (HUB20-533-005).
-// Clients whose initial key_share is not in this list (e.g. X25519) get a
-// HelloRetryRequest.
-const uint16_t iso15118_groups_tls13[] = {
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,
-    MBEDTLS_SSL_IANA_TLS_GROUP_X448,
-    MBEDTLS_SSL_IANA_TLS_GROUP_NONE
-};
-
-// TLS 1.2 (ISO 15118-2):
-// [V2G2-006] secp256r1
-// The -20 groups stay allowed, HUB20-533-003 permits the union of both sets.
-const uint16_t iso15118_groups_tls12[] = {
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1,
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,
-    MBEDTLS_SSL_IANA_TLS_GROUP_X448,
-    MBEDTLS_SSL_IANA_TLS_GROUP_NONE
-};
+// ISO named-group policy [V2G20-2460/2320, HUB20-533-003/005].
+// CryptographicSuiteList selects P-521 and/or Ed448 (mapped to X448 for DH).
+// Table 7 prefers P-521 when both are enabled. ISO-2 retains P-256.
+static void make_group_policy(uint16_t *groups, bool tls13, bool secp521, bool ed448)
+{
+    size_t count = 0;
+    if (!tls13) {
+        groups[count++] = MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1;
+    }
+    if (secp521) {
+        groups[count++] = MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1;
+    }
+    if (ed448) {
+        groups[count++] = MBEDTLS_SSL_IANA_TLS_GROUP_X448;
+    }
+    groups[count] = MBEDTLS_SSL_IANA_TLS_GROUP_NONE;
+}
 
 // ISO 15118-20 Table 8, in its required order (V2G20-1667).
 const uint16_t iso15118_sig_algs_tls13[] = {
@@ -149,7 +142,8 @@ bool ISOTLS::configure_ssl_policy()
     mbedtls_ssl_conf_max_tls_version(ssl_conf, iso20_allowed ? MBEDTLS_SSL_VERSION_TLS1_3 : MBEDTLS_SSL_VERSION_TLS1_2);
     mbedtls_ssl_conf_ciphersuites(ssl_conf, iso15118_ciphersuites);
     // Strict default, replaced per connection in apply_group_policy()
-    mbedtls_ssl_conf_groups(ssl_conf, iso15118_groups_tls13);
+    make_group_policy(groups, true, true, true);
+    mbedtls_ssl_conf_groups(ssl_conf, groups);
     configure_signature_policy(MBEDTLS_SSL_VERSION_UNKNOWN);
 
     // Default authmode: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
@@ -299,7 +293,17 @@ bool ISOTLS::apply_group_policy()
     }
 
     const bool tls13 = (result == ClientHelloVersion::Tls13);
-    mbedtls_ssl_conf_groups(ssl_conf, tls13 ? iso15118_groups_tls13 : iso15118_groups_tls12);
+    bool secp521 = true;
+    bool ed448 = true;
+#if MODULE_OCPP_AVAILABLE()
+    if (certificate_store_live) {
+        secp521 = ocpp.is_iso20_suite_enabled(OcppCurve21::Secp521r1);
+        ed448 = ocpp.is_iso20_suite_enabled(OcppCurve21::Ed448);
+    }
+#endif
+    // Mutate stable per-connection storage rather than replacing the config
+    // pointer: Mbed TLS may already have cached it during setup/session_reset.
+    make_group_policy(groups, tls13, secp521, ed448);
     iso15118.trace("ISOTLS: ClientHello offers %s, using the %s group list",
                     tls13 ? "TLS 1.3" : "TLS 1.2 or lower", tls13 ? "TLS 1.3" : "TLS 1.2");
     group_policy_applied = true;

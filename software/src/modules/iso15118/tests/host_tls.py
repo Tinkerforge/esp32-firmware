@@ -48,6 +48,10 @@ def test_certificate_profiles(tc: TestContext):
     run_python(tc, "_certificate_profiles.py", 60)
 
 
+def test_named_group_preference(tc: TestContext):
+    run(tc, "_named_group_preference.sh", 600, os.environ.copy())
+
+
 def test_ocsp_stapling_patch(tc: TestContext):
     env = os.environ.copy()
     env["PORT"] = str(tc.find_free_port(18443))

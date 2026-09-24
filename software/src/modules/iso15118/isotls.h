@@ -209,6 +209,7 @@ private:
     bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
     bool mutual_auth_session = false;
     bool group_policy_applied = false; // HUB20-533-005
+    uint16_t groups[4] = {}; // Stable storage: Mbed TLS caches this pointer at setup/reset.
     bool iso20_allowed = true;
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
 
