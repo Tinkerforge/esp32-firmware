@@ -30,6 +30,7 @@
 #include <mbedtls/base64.h>
 #include <mbedtls/error.h>
 #include <mbedtls/ssl.h>
+#include <mbedtls/ssl_ciphersuites.h>
 #include <esp_transport_ws.h>
 #include <LittleFS.h>
 
@@ -349,6 +350,19 @@ static bool load_tls_config(PlatformContext *p, const PlatformTlsConfig *tls)
 static bool create_client(PlatformContext *p)
 {
     tf_websocket_client_config_t websocket_cfg = {};
+    // OCPP A00.FR.320: keep CSMS policy independent of library defaults and
+    // the EV-side ISO 15118 TLS 1.2 CBC suites. Review on crypto deprecation.
+    static const int csms_ciphersuites[] = {
+        MBEDTLS_TLS1_3_AES_256_GCM_SHA384,
+        MBEDTLS_TLS1_3_AES_128_GCM_SHA256,
+        MBEDTLS_TLS1_3_CHACHA20_POLY1305_SHA256,
+        MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+        MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+        MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+        MBEDTLS_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+        0
+    };
+    websocket_cfg.ciphersuites_list = csms_ciphersuites;
     websocket_cfg.uri = p->url.c_str();
     websocket_cfg.subprotocol = p->subprotocol.c_str();
 
