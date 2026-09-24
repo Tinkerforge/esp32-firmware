@@ -5,7 +5,7 @@ Provisions the certificate store step by step and checks the TLS server behavior
   1. store live but empty, no TLS handshake possible
   2. -2 and -20 chains provisioned, OCSP unknown: TLS 1.2 works and is
      verified against the dev V2G root, TLS 1.3 refused
-  3. PrivateEnviromentEnabled does not waive OCSP because this station
+  3. PrivateEnvironmentEnabled does not waive OCSP because this station
      supports PnC; TLS 1.3 remains unavailable while OCSP is unknown
   4. Good OCSP responses for a -20 leaf and two intermediate CAs are
      delivered via GetCertificateStatus; TLS 1.3 remains unavailable until
@@ -367,7 +367,7 @@ def provision_iso20_chain(csms, workdir):
     result = csms.call("CertificateSigned", {
         "certificateChain": "".join(
             certificate.public_bytes(serialization.Encoding.PEM).decode("ascii")
-            for certificate in chain.certificates
+            for certificate in [*chain.certificates, chain.issuers[-1]]
         ),
         "certificateType": "V2G20Certificate",
         "requestId": sign_req["requestId"],
@@ -827,21 +827,23 @@ def main():
 
         request = start_v2g_certificate_csr(csms)
         includes_root = sign_iso2_csr_at(
-            request["csr"], datetime.now(timezone.utc) - timedelta(days=1))
+            request["csr"], datetime.now(timezone.utc) + timedelta(seconds=180))
         root_pem = includes_root[3].public_bytes(serialization.Encoding.PEM).decode("ascii")
-        rejected = csms.call("CertificateSigned", {
+        result = csms.call("CertificateSigned", {
             "certificateChain": includes_root[4] + root_pem,
             "certificateType": "V2GCertificate",
             "requestId": request["requestId"],
         }, timeout=90)
-        check("SECC chain including the V2G root is rejected [HUB20-42-004]",
-              rejected["status"] == "Rejected"
-              and rejected.get("statusInfo", {}).get("reasonCode") == "ChainIncludesRoot",
-              rejected)
-        root_response, matches_after_root_rejection = installed_chain_for_leaf(csms, accepted_hash)
-        check("root-inclusion rejection keeps the accepted chain unchanged",
-              len(matches_after_root_rejection) == 1
-              and root_response.get("certificateHashDataChain", []) == accepted_entries,
+        check("SECC chain including the V2G root is accepted [HUB20-42-004]",
+              result["status"] == "Accepted", result)
+        root_leaf_hash = certificate_hash_data(includes_root[0], includes_root[1])
+        root_response, root_matches = installed_chain_for_leaf(csms, root_leaf_hash)
+        check("bundled root is omitted from the installed chain hashes",
+              len(root_matches) == 1
+              and root_matches[0].get("childCertificateHashData") == [
+                  certificate_hash_data(includes_root[1], includes_root[2]),
+                  certificate_hash_data(includes_root[2], includes_root[3]),
+              ],
               root_response)
 
         # Restore a currently valid -2 identity before EV-side TLS checks.
@@ -907,7 +909,7 @@ def main():
               try_tls(args.charger, iface, tls13=True, mutual=True) is None)
 
         assert csms.call("SetVariables", {"setVariableData": [{
-            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnviromentEnabled"},
+            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnvironmentEnabled"},
             "attributeValue": "true"}]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
         time.sleep(3)
         private_version = try_tls(args.charger, iface, tls13=True, mutual=True)
@@ -957,7 +959,7 @@ def main():
               try_tls(args.charger, iface, tls13=True, mutual=True) == "TLSv1.3")
 
         assert csms.call("SetVariables", {"setVariableData": [{
-            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnviromentEnabled"},
+            "component": {"name": "ISO15118Ctrlr"}, "variable": {"name": "PrivateEnvironmentEnabled"},
             "attributeValue": "false"}]})["setVariableResult"][0]["attributeStatus"] == "Accepted"
         time.sleep(3)
         check("OCSP-good chain remains available after returning to public mode",

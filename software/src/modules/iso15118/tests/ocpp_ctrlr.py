@@ -37,7 +37,7 @@ VARIABLES = [
     ("V2G20SECCLeafCryptoSuite", None),
     ("ISO15118EvseId", None),
     ("EnforceTlsEnabled", None),
-    ("PrivateEnviromentEnabled", None),
+    ("PrivateEnvironmentEnabled", None),
     ("PWMChargingFallbackTimeout", None),
 ]
 
@@ -45,7 +45,7 @@ BOOLEAN_VARIABLES = [
     "Enabled",
     "V2GCertificateInstallationEnabled",
     "EnforceTlsEnabled",
-    "PrivateEnviromentEnabled",
+    "PrivateEnvironmentEnabled",
 ]
 
 
@@ -131,7 +131,7 @@ def suite_setup(tc: TestContext):
     client = EVTestClient(environment.host, environment.iface, environment.secc_ll)
     pnc_supported = "iso15118_pnc" in tc.api("info/features")
     saved_ocpp = tc.api("ocpp/config")
-    csms = CSMSSim(interactive=("SignCertificate",))
+    csms = CSMSSim(interactive=("SignCertificate", "NotifyReport"))
     test_ocpp = dict(saved_ocpp)
     test_ocpp.update({
         "enable": True,
@@ -216,6 +216,40 @@ def test_controller_values_available(tc: TestContext):
 
     contract = get_variables([("ContractCertificateInstallationEnabled", None)])[0]
     tc.assert_eq("Accepted" if pnc_supported else "UnknownVariable", contract["attributeStatus"])
+
+
+def test_device_model_report(tc: TestContext):
+    assert csms is not None
+    result = csms.call("GetBaseReport", {"requestId": 103, "reportBase": "FullInventory"})
+    tc.assert_eq("Accepted", result["status"])
+    entries = {}
+    while True:
+        report, message_id = csms.expect("NotifyReport", timeout=30)
+        csms.respond(message_id, {})
+        tc.assert_eq(103, report["requestId"])
+        for entry in report.get("reportData", []):
+            entries[(entry["component"]["name"], entry["variable"]["name"])] = entry
+        if not report.get("tbc", False):
+            break
+    chain_size = entries[("SecurityCtrlr", "MaxCertificateChainSize")]
+    tc.assert_eq("10000", chain_size["variableAttribute"][0]["value"])
+    tc.assert_eq("ReadOnly", chain_size["variableAttribute"][0]["mutability"])
+    tc.assert_eq(10000, chain_size["variableCharacteristics"]["maxLimit"])
+    private = entries[("ISO15118Ctrlr", "PrivateEnvironmentEnabled")]
+    tc.assert_eq("ReadWrite", private["variableAttribute"][0]["mutability"])
+    tc.assert_eq(saved_values["PrivateEnvironmentEnabled"], private["variableAttribute"][0]["value"])
+
+
+def test_private_environment_persists_across_reboot(tc: TestContext):
+    assert csms is not None
+    expected = "false" if saved_values["PrivateEnvironmentEnabled"] == "true" else "true"
+    tc.assert_eq("Accepted", set_variable("PrivateEnvironmentEnabled", expected))
+    connection_count = csms.connection_count
+    tc.reboot()
+    csms.wait_for_connection(after=connection_count, timeout=60)
+    result = get_variables([("PrivateEnvironmentEnabled", None)])[0]
+    tc.assert_eq("Accepted", result["attributeStatus"])
+    tc.assert_eq(expected, result["attributeValue"])
 
 
 def test_evseid_set_and_read_back(tc: TestContext):
