@@ -28,6 +28,9 @@ sun-spec-model-generator = [
     "xlsx2csv",
 ]
 
+# test_runner.py actually uses the tests group,
+# to make sure the first run of a test script starts
+# fast enough for the named pipe to connect)
 test-runner = [
     "junit-xml",
     #"esptool",  # FIXME: moved to main dependencies for now

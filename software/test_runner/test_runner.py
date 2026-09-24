@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --group test-runner --script
+#!/usr/bin/env -S uv run --group tests --script
 
 from pathlib import Path
 import subprocess
