@@ -28,7 +28,7 @@ def ext(kind, data):
 
 @contextlib.contextmanager
 def server(policy, version=13):
-    certs = CERTS if version == 13 else CERTS.parent / 'iso2'
+    certs = CERTS if version in (13, 'dual') else CERTS.parent / 'iso2'
     p = subprocess.Popen([SERVER, str(certs / 'certs/cpoCertChain.pem'),
                           str(certs / 'private_keys/seccLeaf_unencrypted.key'), str(version),
                           str(int(policy[0])), str(int(policy[1]))],
@@ -50,14 +50,16 @@ def share(group):
     return ec.generate_private_key(curve).public_key().public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
 
 
-def hello(groups, shares, reverse=False, malformed=False):
+def hello(groups, shares, reverse=False, malformed=False, mixed_ciphers=None):
     group_ext = ext(10, vector(b''.join(u16(g) for g in groups)))
     share_ext = ext(51, vector(b''.join(u16(g) + vector(share(g)) for g in shares)))
     if malformed:
         share_ext = ext(51, b'\x00\x04\x00\x19\x00')
-    extensions = ext(43, b'\x02\x03\x04') + ext(13, vector(b'\x06\x03'))
+    versions = b'\x02\x03\x04' if mixed_ciphers is None else b'\x04\x03\x04\x03\x03'
+    extensions = ext(43, versions) + ext(13, vector(b'\x06\x03\x04\x03'))
     extensions += share_ext + group_ext if reverse else group_ext + share_ext
-    body = b'\x03\x03' + os.urandom(32) + b'\x00' + vector(b'\x13\x02') + b'\x01\x00' + vector(extensions)
+    ciphers = b'\x13\x02' if mixed_ciphers is None else mixed_ciphers
+    body = b'\x03\x03' + os.urandom(32) + b'\x00' + vector(ciphers) + b'\x01\x00' + vector(extensions)
     msg = b'\x01' + len(body).to_bytes(3, 'big') + body
     return b'\x16\x03\x01' + vector(msg)
 
@@ -146,3 +148,59 @@ for policy, groups, expected, version in [
     count += 1
     print('ok authenticated', policy, groups, version)
 print(f'PASS {count} scenarios')
+
+# Mixed-version offers use the production ISO cipher allowlist. A pre-existing
+# TLS 1.2 service cap must still permit P-256 when the client offers TLS 1.3.
+for mode, suites, groups, expected_version, expected_cipher in [
+    ('capped', 'TLS_AES_256_GCM_SHA384', 'P-256:P-521', 'TLSv1.2', 'ECDHE-ECDSA-AES128-SHA256'),
+    ('capped', 'TLS_AES_128_GCM_SHA256', 'P-256', 'TLSv1.2', 'ECDHE-ECDSA-AES128-SHA256'),
+    ('dual', 'TLS_AES_256_GCM_SHA384', 'P-521:P-256', 'TLSv1.3', 'TLS_AES_256_GCM_SHA384'),
+]:
+    with server((1, 1), mode) as (port, proc):
+        root = CERTS if mode == 'dual' else CERTS.parent / 'iso2'
+        result = subprocess.run(['openssl', 's_client', '-connect', f'127.0.0.1:{port}',
+                                 '-min_protocol', 'TLSv1.2', '-max_protocol', 'TLSv1.3',
+                                 '-ciphersuites', suites, '-cipher', 'ECDHE-ECDSA-AES128-SHA256',
+                                 '-groups', groups, '-CAfile', str(root / 'certs/v2gRootCACert.pem'),
+                                 '-verify_hostname', 'SECCCert', '-verify_return_error', '-ign_eof'],
+                                input='ping', capture_output=True, text=True, timeout=15)
+        output = result.stdout + result.stderr
+        assert result.returncode == 0, output
+        assert 'pong' in output and expected_version in output and expected_cipher in output, output
+        assert 'Verify return code: 0 (ok)' in output, output
+        out, err = proc.communicate(timeout=10)
+        assert proc.returncode == 0 and 'COMPLETE' in out, (out, err)
+    print('ok mixed-version authenticated', mode, suites)
+
+for cipher in ('ECDHE-ECDSA-AES128-SHA256', 'ECDHE-ECDSA-AES128-GCM-SHA256'):
+    with server((1, 1), 'mixed') as (port, proc):
+        result = subprocess.run(['openssl', 's_client', '-connect', f'127.0.0.1:{port}',
+                                 '-min_protocol', 'TLSv1.2', '-max_protocol', 'TLSv1.3',
+                                 '-ciphersuites', 'TLS_AES_128_GCM_SHA256', '-cipher', cipher,
+                                 '-groups', 'P-256:P-521'],
+                                input='', capture_output=True, text=True, timeout=15)
+        assert result.returncode != 0 and 'alert handshake failure' in result.stderr, (result.stdout, result.stderr)
+    print('ok dual-version server rejects no common TLS13 cipher', cipher)
+
+# A genuine TLS 1.2-only offer remains accepted by the dual-version server;
+# RFC 8446's downgrade sentinel is required in that ServerHello.
+with server((1, 1), 'mixed') as (port, proc):
+    result = subprocess.run(['openssl', 's_client', '-connect', f'127.0.0.1:{port}',
+                             '-tls1_2', '-cipher', 'ECDHE-ECDSA-AES128-SHA256', '-groups', 'P-256',
+                             '-CAfile', str(CERTS.parent / 'iso2/certs/v2gRootCACert.pem'),
+                             '-verify_hostname', 'SECCCert', '-verify_return_error', '-ign_eof', '-msg'],
+                            input='ping', capture_output=True, text=True, timeout=15)
+    output = result.stdout + result.stderr
+    assert result.returncode == 0 and 'pong' in output and 'Verify return code: 0 (ok)' in output, output
+    # OpenSSL's message dump wraps at 16 bytes, so normalize whitespace.
+    assert '44 4f 57 4e 47 52 44 01' in ' '.join(output.split()), output
+    out, err = proc.communicate(timeout=10)
+    assert proc.returncode == 0 and 'COMPLETE' in out, (out, err)
+print('ok TLS12-only offer and downgrade sentinel')
+for ciphers in (b'\x00\x00\xc0\x23', b'\x00\x00'):
+    with server((1, 1), 'mixed') as (port, proc):
+        with socket.create_connection(('127.0.0.1', port), timeout=5) as sock:
+            sock.sendall(hello([P256, P521], [P521], mixed_ciphers=ciphers))
+            assert response(sock) == ('alert', 40)
+    print('ok NULL-containing mixed offer', ciphers.hex())
+print('PASS 8 mixed-version scenarios')
