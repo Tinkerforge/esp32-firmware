@@ -18,6 +18,7 @@
  */
 
 #include "vehicle_certificate.h"
+#include "tools/certificate_time.h"
 
 #include <cstring>
 #include "mbedtls/asn1.h"
@@ -212,13 +213,7 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
         }
     }
 
-    if (mbedtls_x509_time_is_past(&cert.valid_to)) {
-        flags |= MBEDTLS_X509_BADCERT_EXPIRED;
-    }
-
-    if (mbedtls_x509_time_is_future(&cert.valid_from)) {
-        flags |= MBEDTLS_X509_BADCERT_FUTURE;
-    }
+    flags |= certificate_time_flags(cert, time(nullptr));
 
     char url[256];
     if (require_ocsp && !ocsp_url(cert, url, sizeof(url))) {

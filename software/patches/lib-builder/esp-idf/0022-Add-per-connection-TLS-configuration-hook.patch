@@ -1,0 +1,59 @@
+diff --git a/components/esp-tls/esp_tls.h b/components/esp-tls/esp_tls.h
+--- a/components/esp-tls/esp_tls.h
++++ b/components/esp-tls/esp_tls.h
+@@ -245,8 +245,12 @@
+     esp_tls_dyn_buf_strategy_t esp_tls_dyn_buf_strategy; /*!< ESP-TLS dynamic buffer strategy */
+ #endif
+ 
++    void (*configure_hook)(void *ssl_config, void *ctx); /*!< Optional Mbed TLS hook after trust configuration. */
++    void *configure_hook_ctx;
+ } esp_tls_cfg_t;
+ 
++#define ESP_TLS_CONFIGURE_HOOK_SUPPORTED 1
++
+ #if defined(CONFIG_ESP_TLS_SERVER_SESSION_TICKETS)
+ /**
+  * @brief Data structures necessary to support TLS session tickets according to RFC5077
+diff --git a/components/esp-tls/esp_tls_mbedtls.c b/components/esp-tls/esp_tls_mbedtls.c
+--- a/components/esp-tls/esp_tls_mbedtls.c
++++ b/components/esp-tls/esp_tls_mbedtls.c
+@@ -1116,6 +1116,9 @@
+         ESP_LOGD(TAG, "Set the ciphersuites list");
+         mbedtls_ssl_conf_ciphersuites(&tls->conf, cfg->ciphersuites_list);
+     }
++    if (cfg->configure_hook != NULL) {
++        cfg->configure_hook(&tls->conf, cfg->configure_hook_ctx);
++    }
+     return ESP_OK;
+ }
+ 
+diff --git a/components/tcp_transport/include/esp_transport_ssl.h b/components/tcp_transport/include/esp_transport_ssl.h
+--- a/components/tcp_transport/include/esp_transport_ssl.h
++++ b/components/tcp_transport/include/esp_transport_ssl.h
+@@ -206,6 +206,9 @@
+  */
+ void esp_transport_ssl_set_ciphersuites_list(esp_transport_handle_t t, const int *ciphersuites_list);
+ 
++/** Configure an optional per-connection Mbed TLS hook, after CA/bundle setup. */
++void esp_transport_ssl_set_configure_hook(esp_transport_handle_t t, void (*hook)(void *, void *), void *ctx);
++
+ /**
+  * @brief      Set the ssl context to use secure element (atecc608a) for client(device) private key and certificate
+  *
+diff --git a/components/tcp_transport/transport_ssl.c b/components/tcp_transport/transport_ssl.c
+--- a/components/tcp_transport/transport_ssl.c
++++ b/components/tcp_transport/transport_ssl.c
+@@ -509,6 +509,13 @@
+     ssl->cfg.ciphersuites_list = ciphersuites_list;
+ }
+ 
++void esp_transport_ssl_set_configure_hook(esp_transport_handle_t t, void (*hook)(void *, void *), void *ctx)
++{
++    transport_esp_tls_t *ssl = esp_transport_get_context_data(t);
++    ssl->cfg.configure_hook = hook;
++    ssl->cfg.configure_hook_ctx = ctx;
++}
++
+ #ifdef CONFIG_ESP_TLS_USE_SECURE_ELEMENT
+ void esp_transport_ssl_use_secure_element(esp_transport_handle_t t)
+ {

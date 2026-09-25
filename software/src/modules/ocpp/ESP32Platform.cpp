@@ -41,6 +41,7 @@
 #include "build.h"
 #include "options.h"
 #include "tools/tf_websocket_client.h"
+#include "tools/certificate_time.h"
 #include "tools/bricklets.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
@@ -93,6 +94,8 @@ struct PlatformContext {
     std::unique_ptr<unsigned char[]> client_cert = nullptr;
     std::unique_ptr<unsigned char[]> client_key = nullptr;
     bool use_cert_bundle = false;
+    int (*base_verify)(void *, mbedtls_x509_crt *, int, uint32_t *) = nullptr;
+    void *base_verify_ctx = nullptr;
     bool recreate_client = false;
     uint32_t connect_started_ms = 0;
 
@@ -349,6 +352,25 @@ static bool load_tls_config(PlatformContext *p, const PlatformTlsConfig *tls)
     return true;
 }
 
+static int verify_csms_dates(void *ctx, mbedtls_x509_crt *cert, int depth, uint32_t *flags)
+{
+    auto *p = static_cast<PlatformContext *>(ctx);
+    // The bundle verifier must see its original flags and authenticate the
+    // issuer before we add date failures; it may clear NOT_TRUSTED on success.
+    int ret = p->base_verify == nullptr ? 0 : p->base_verify(p->base_verify_ctx, cert, depth, flags);
+    *flags |= certificate_time_flags(*cert, time(nullptr));
+    return ret;
+}
+
+static void configure_csms_dates(void *config, void *ctx)
+{
+    auto *conf = static_cast<mbedtls_ssl_config *>(config);
+    auto *p = static_cast<PlatformContext *>(ctx);
+    p->base_verify = conf->MBEDTLS_PRIVATE(f_vrfy);
+    p->base_verify_ctx = conf->MBEDTLS_PRIVATE(p_vrfy);
+    mbedtls_ssl_conf_verify(conf, verify_csms_dates, p);
+}
+
 static bool create_client(PlatformContext *p)
 {
     tf_websocket_client_config_t websocket_cfg = {};
@@ -367,6 +389,10 @@ static bool create_client(PlatformContext *p)
     websocket_cfg.ciphersuites_list = csms_ciphersuites;
     websocket_cfg.uri = p->url.c_str();
     websocket_cfg.subprotocol = p->subprotocol.c_str();
+    if (p->subprotocol == "ocpp2.1") {
+        websocket_cfg.tls_configure = configure_csms_dates;
+        websocket_cfg.tls_configure_ctx = p;
+    }
 
     if (p->ca_cert != nullptr) {
         websocket_cfg.cert_pem = (const char *)p->ca_cert.get();

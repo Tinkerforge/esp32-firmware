@@ -2,10 +2,19 @@
 # ruff: noqa: I001
 
 import contextlib
+from datetime import datetime, timedelta, timezone
+import ipaddress
 from pathlib import Path
+import socket
+import ssl
 import subprocess
 import tempfile
+import threading
 import time
+
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
 
 import tinkerforge_util as tfutil
 
@@ -26,6 +35,7 @@ server_cert = None
 server_key = None
 bogus_server_cert = None
 bogus_server_key = None
+date_server_certs = {}
 
 
 def generate_certificates(ip: str):
@@ -68,6 +78,28 @@ def generate_certificates(ip: str):
     bogus_ca_key, bogus_ca_cert = make_ca("WARP4 untrusted test CA")
     server_cert, server_key = make_server("ocpp-tls-security-events", ca_key, ca_cert)
     bogus_cert, bogus_key = make_server("ocpp-untrusted", bogus_ca_key, bogus_ca_cert)
+
+    # Keep issuer, server key, SAN and usage valid; vary only the leaf validity.
+    issuer = x509.load_pem_x509_certificate(ca_cert.read_bytes())
+    issuer_key = serialization.load_pem_private_key(ca_key.read_bytes(), password=None)
+    key = serialization.load_pem_private_key(server_key.read_bytes(), password=None)
+    now = datetime.now(timezone.utc)
+    for label, start, end in [
+        ("expired", now - timedelta(days=2), now - timedelta(days=1)),
+        ("future", now + timedelta(days=1), now + timedelta(days=2)),
+    ]:
+        cert = (x509.CertificateBuilder()
+                .subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "ocpp-date-test")]))
+                .issuer_name(issuer.subject).public_key(key.public_key())
+                .serial_number(x509.random_serial_number())
+                .not_valid_before(start).not_valid_after(end)
+                .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+                .add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address(ip))]), critical=False)
+                .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
+                .sign(issuer_key, hashes.SHA256()))
+        path = directory / f"server-{label}.pem"
+        path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+        date_server_certs[label] = path
     return ca_cert, bogus_cert, bogus_key
 
 
@@ -86,7 +118,7 @@ def configure(tc: TestContext, url: str):
     tc.api("ocpp/config_update", config, timeout=5)
 
 
-def reconnect_and_assert(tc: TestContext, event_type: str, port: int):
+def reconnect_and_assert(tc: TestContext, event_type: str | None, port: int):
     assert server_cert is not None
     assert server_key is not None
     csms = CSMSSim(port=port, certfile=str(server_cert), keyfile=str(server_key))
@@ -94,13 +126,14 @@ def reconnect_and_assert(tc: TestContext, event_type: str, port: int):
         csms.stop()
         raise TimeoutError("WARP4 did not reconnect to the valid CSMS")
     try:
-        tc.wait_for(
-            lambda: tc.assert_eq(
-                1,
-                sum(event.get("type") == event_type for event in csms.security_events),
-            ),
-            timeout=30,
-        )
+        if event_type is not None:
+            tc.wait_for(
+                lambda: tc.assert_eq(
+                    1,
+                    sum(event.get("type") == event_type for event in csms.security_events),
+                ),
+                timeout=30,
+            )
     finally:
         csms.stop()
 
@@ -211,6 +244,104 @@ def test_invalid_csms_certificate(tc: TestContext):
     finally:
         invalid_csms.stop()
     reconnect_and_assert(tc, "InvalidCsmsCertificate", port)
+
+
+def run_date_failure(tc: TestContext, label: str, expected_alert: str):
+    tc.set_test_timeout(120)
+    # Give each date case a fresh transport context. Repeated live OCPP
+    # reconfiguration after peer shutdown currently has a separate teardown
+    # stall; this test checks date validation, not that lifecycle behavior.
+    tc.reboot()
+    tc.wait_for(lambda: tc.assert_(tc.api("ntp/state")["time"] >= int(time.time() / 60) - 1), timeout=30)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(date_server_certs[label], server_key)
+    # Avoid an old endpoint reconnect racing the new configuration after boot.
+    port = tc.find_free_port(19543 if label == "expired" else 19643)
+    observed = []
+
+    def accept_tls(listener):
+        try:
+            raw, _ = listener.accept()
+            with raw:
+                raw.settimeout(15)
+                with context.wrap_socket(raw, server_side=True):
+                    observed.append("invalid certificate accepted")
+        except Exception as exc:
+            observed.append(exc)
+
+    # Observe an actual authenticated TLS rejection. Merely seeing no WebSocket
+    # connection would also pass if the charger never attempted to connect.
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("0.0.0.0", port))
+        listener.listen(1)
+        listener.settimeout(30)
+        worker = threading.Thread(target=accept_tls, args=(listener,), daemon=True)
+        worker.start()
+        try:
+            configure(tc, f"wss://{local_ip}:{port}")
+        finally:
+            worker.join(timeout=50)
+        tc.assert_not(worker.is_alive())
+    tc.assert_eq(1, len(observed))
+    print(f"CSMS {label} TLS observation: {observed[0]!r}")
+    tc.assert_(isinstance(observed[0], ssl.SSLError))
+    tc.assert_(expected_alert in str(observed[0]).upper())
+    print(f"CSMS {label} certificate rejected: {observed[0]}")
+    time.sleep(1)
+    trace = tc.http_request("GET", "/trace_log", timeout=15).decode(errors="replace")
+    tc.assert_("TLS connection failed: InvalidCsmsCertificate" in trace)
+    # Pre-BootNotification event delivery is a separate known queue issue.
+    # These date cases assert the alert, classification and TLS recovery;
+    # test_invalid_csms_certificate retains its event-delivery assertion.
+    reconnect_and_assert(tc, None, port)
+
+
+def test_expired_csms_certificate(tc: TestContext):
+    run_date_failure(tc, "expired", "CERTIFICATE_EXPIRED")
+
+
+def test_future_csms_certificate(tc: TestContext):
+    run_date_failure(tc, "future", "CERTIFICATE_UNKNOWN")
+
+
+def test_ocpp16_retains_legacy_date_policy(tc: TestContext):
+    tc.set_test_timeout(90)
+    tc.reboot()
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(date_server_certs["expired"], server_key)
+    observed = []
+    port = tc.find_free_port(19743)
+
+    def accept_tls(listener):
+        try:
+            raw, _ = listener.accept()
+            with raw:
+                raw.settimeout(15)
+                with context.wrap_socket(raw, server_side=True) as tls:
+                    # Application data proves the device accepted the server
+                    # certificate; server-side handshake completion alone does not.
+                    observed.append(tls.recv(4096))
+        except Exception as exc:
+            observed.append(exc)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("0.0.0.0", port))
+        listener.listen(1)
+        listener.settimeout(30)
+        worker = threading.Thread(target=accept_tls, args=(listener,), daemon=True)
+        worker.start()
+        try:
+            config = dict(saved_ocpp, enable=True, protocol=0, url=f"wss://{local_ip}:{port}",
+                          identity=IDENTITY, enable_auth=True, **{"pass": PASSWORD, "cert_id": cert_id})
+            tc.api("ocpp/config_update", config, timeout=5)
+        finally:
+            worker.join(timeout=50)
+        tc.assert_not(worker.is_alive())
+    tc.assert_eq(1, len(observed))
+    tc.assert_(isinstance(observed[0], bytes) and observed[0].startswith(b"GET "))
+    print("OCPP 1.6 sent its WebSocket upgrade over TLS with an expired trusted server certificate")
 
 
 def test_invalid_tls_version(tc: TestContext):

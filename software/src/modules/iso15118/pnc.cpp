@@ -18,6 +18,7 @@
  */
 
 #include "pnc.h"
+#include "tools/certificate_time.h"
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -83,7 +84,7 @@ PncVerifyResult pnc_validate_chain(const uint8_t *chain, const size_t *cert_len,
 
     {
         uint32_t flags = 0;
-        int ret = mbedtls_x509_crt_verify(&certs, &trust, nullptr, nullptr, &flags, nullptr, nullptr);
+        int ret = mbedtls_x509_crt_verify(&certs, &trust, nullptr, nullptr, &flags, certificate_time_verify, nullptr);
         if (ret != 0) {
             iso15118.trace("PNC: Contract chain verification failed: -0x%04x flags 0x%08lx", static_cast<unsigned>(-ret), static_cast<unsigned long>(flags));
             if ((flags & MBEDTLS_X509_BADCERT_EXPIRED) != 0) {

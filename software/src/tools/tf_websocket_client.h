@@ -158,6 +158,8 @@ typedef struct {
     struct ifreq                *if_name;                   /*!< The name of interface for data to go through. Use the default interface without setting */
     esp_transport_handle_t      ext_transport;              /*!< External WebSocket tcp_transport handle to the client; or if null, the client will create its own transport handle. */
     const int                   *ciphersuites_list;         /*!< Optional zero-terminated TLS cipher suite IDs for the internal transport. Must remain valid for the client's lifetime. NULL uses library defaults. */
+    void (*tls_configure)(void *ssl_config, void *ctx);     /*!< Optional Mbed TLS configuration hook, called after trust configuration. */
+    void *tls_configure_ctx;                                /*!< Must remain valid for the client's lifetime. */
 } tf_websocket_client_config_t;
 
 /**

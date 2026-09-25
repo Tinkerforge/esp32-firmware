@@ -12,7 +12,12 @@ else
 fi
 PATCH_ROOT=$(realpath ../../../../patches/lib-builder/esp-idf/components/mbedtls/mbedtls)
 git -C "$BUILD/mbedtls" apply --ignore-space-change "$PATCH_ROOT/0021-Fix-TLS-1.3-server-rejection-alert-keys.patch"
+python3 "$BUILD/mbedtls/scripts/config.py" unset MBEDTLS_HAVE_TIME_DATE
+make -C "$BUILD/mbedtls" clean > /dev/null
 make -C "$BUILD/mbedtls" lib -j"$(nproc)" > /dev/null
+g++ -Wall -Wextra -Werror -std=c++17 -I "$BUILD/mbedtls/include" -I ../../.. \
+    -x c++ _certificate_time.cpp.inc -o "$BUILD/certificate-time"
+"$BUILD/certificate-time"
 # Compile the production verification callback/worker with a small RTOS/OCPP
 # adapter. Only the post-handshake OCPP handoff is excluded in this host harness.
 python3 - "$BUILD/verification.inc" <<'PY'
@@ -26,7 +31,7 @@ text = text[:start] + text[end:]
 Path(sys.argv[1]).write_text('#define MODULE_OCPP_AVAILABLE() 1\n' + text)
 PY
 g++ -Wall -Wextra -Werror -std=c++17 -O1 -g \
-    -I "$BUILD/mbedtls/include" -I ../isotls -I "$BUILD" \
+    -I "$BUILD/mbedtls/include" -I ../isotls -I ../../.. -I "$BUILD" \
     -o "$BUILD/server" -x c++ _vehicle_certificate_server.cpp.inc ../isotls/vehicle_certificate.cpp -x none \
     "$BUILD/mbedtls/library/libmbedtls.a" "$BUILD/mbedtls/library/libmbedx509.a" "$BUILD/mbedtls/library/libmbedcrypto.a"
 python3 _vehicle_certificate.py "$BUILD/server"

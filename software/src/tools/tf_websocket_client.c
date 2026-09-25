@@ -120,6 +120,8 @@ typedef struct {
     esp_err_t (*crt_bundle_attach)(void *conf);
     esp_transport_handle_t      ext_transport;
     const int                   *ciphersuites_list;
+    void (*tls_configure)(void *ssl_config, void *ctx);
+    void *tls_configure_ctx;
 } websocket_config_storage_t;
 
 typedef enum {
@@ -621,6 +623,14 @@ static esp_err_t tf_websocket_client_create_transport(tf_websocket_client_handle
         if (client->config->ciphersuites_list != NULL) {
             esp_transport_ssl_set_ciphersuites_list(ssl, client->config->ciphersuites_list);
         }
+        if (client->config->tls_configure != NULL) {
+#ifdef ESP_TLS_CONFIGURE_HOOK_SUPPORTED
+            esp_transport_ssl_set_configure_hook(ssl, client->config->tls_configure, client->config->tls_configure_ctx);
+#else
+            ESP_LOGE(TAG, "TLS configuration hook requires patched ESP-TLS library");
+            return ESP_ERR_NOT_SUPPORTED;
+#endif
+        }
         if (client->keep_alive_cfg.keep_alive_enable) {
             esp_transport_ssl_set_keep_alive(ssl, &client->keep_alive_cfg);
         }
@@ -861,6 +871,8 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
     client->config->crt_bundle_attach = config->crt_bundle_attach;
     client->config->ext_transport = config->ext_transport;
     client->config->ciphersuites_list = config->ciphersuites_list;
+    client->config->tls_configure = config->tls_configure;
+    client->config->tls_configure_ctx = config->tls_configure_ctx;
 
     if (config->uri) {
         if (tf_websocket_client_set_uri(client, config->uri) != ESP_OK) {
