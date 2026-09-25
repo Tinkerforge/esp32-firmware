@@ -20,6 +20,7 @@
 #include "rtc.h"
 
 #include <time.h>
+#include <esp_attr.h> // for COREDUMP_RTC_DATA_ATTR
 
 #define TRACE_LOG_PREFIX nullptr
 
@@ -29,6 +30,8 @@
 #include "musl_libc_timegm.h"
 
 #include "gcc_warnings.h"
+
+COREDUMP_RTC_DATA_ATTR uint32_t tf_coredump_timestamp;
 
 static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_min;
 
@@ -123,8 +126,12 @@ void Rtc::register_urls() {
     }, true);
 
     task_scheduler.scheduleUncancelable([this]() {
-        struct timeval tv{};
+        struct timeval tv;
         gettimeofday(&tv, nullptr);
+
+        // Intentionally truncate to uint32_t, which can be stored atomically.
+        // There won't be any confusion whether a crash happened in 1970, 2038 or 2106.
+        tf_coredump_timestamp = static_cast<uint32_t>(tv.tv_sec);
 
         if (!timestamp_acceptable(tv))
             return;
