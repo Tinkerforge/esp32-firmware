@@ -1,5 +1,5 @@
 /*
-2026c;2026-07-16T07:55:13.643003+00:00
+2026d;2026-09-25T08:59:20.378551+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -437,7 +437,7 @@ static const TableValue America_vals[] = {
     {true, {"MST7"}},
     {false, {.sub_table=&Indiana}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
-    {true, {"MST7MDT,M3.2.0,M11.1.0"}},
+    {true, {"CST6"}},
     {true, {"EST5EDT,M3.2.0,M11.1.0"}},
     {true, {"EST5"}},
     {true, {"<-03>3"}},
