@@ -118,7 +118,7 @@ def configure(tc: TestContext, url: str):
     tc.api("ocpp/config_update", config, timeout=5)
 
 
-def reconnect_and_assert(tc: TestContext, event_type: str | None, port: int):
+def reconnect_and_assert(tc: TestContext, event_type: str, port: int):
     assert server_cert is not None
     assert server_key is not None
     csms = CSMSSim(port=port, certfile=str(server_cert), keyfile=str(server_key))
@@ -126,14 +126,20 @@ def reconnect_and_assert(tc: TestContext, event_type: str | None, port: int):
         csms.stop()
         raise TimeoutError("WARP4 did not reconnect to the valid CSMS")
     try:
-        if event_type is not None:
-            tc.wait_for(
-                lambda: tc.assert_eq(
-                    1,
-                    sum(event.get("type") == event_type for event in csms.security_events),
-                ),
-                timeout=30,
-            )
+        tc.wait_for(
+            lambda: tc.assert_eq(
+                1,
+                sum(event.get("type") == event_type for event in csms.security_events),
+            ),
+            timeout=30,
+        )
+        # Allow the remaining queued calls to drain before checking duplicates.
+        time.sleep(1)
+        events = [event for event in csms.security_events if event.get("type") == event_type]
+        tc.assert_eq(1, len(events))
+        timestamp = datetime.fromisoformat(events[0]["timestamp"].replace("Z", "+00:00"))
+        tc.assert_(abs((datetime.now(timezone.utc) - timestamp).total_seconds()) < 120)
+        print(f"Recovered CSMS received exactly one {event_type} event at {events[0]['timestamp']}")
     finally:
         csms.stop()
 
@@ -219,17 +225,20 @@ def suite_teardown(tc: TestContext):
             time.sleep(1)
         try:
             api_with_retry("ocpp/config_update", saved_ocpp)
+            tc.assert_eq(saved_ocpp, tc.api("ocpp/config"))
         except Exception as e:  # noqa: BLE001
             errors.append(e)
     if cert_added:
         try:
             api_with_retry("certs/remove", {"id": cert_id})
+            tc.assert_not(any(cert["id"] == cert_id for cert in tc.api("certs/state")["certs"]))
         except Exception as e:  # noqa: BLE001
             errors.append(e)
     if tmpdir is not None:
         tmpdir.cleanup()
     if errors:
         raise errors[0]
+    print("Restored OCPP configuration and removed the temporary trust certificate")
 
 
 def test_invalid_csms_certificate(tc: TestContext):
@@ -251,6 +260,8 @@ def run_date_failure(tc: TestContext, label: str, expected_alert: str):
     # Give each date case a fresh transport context. Repeated live OCPP
     # reconfiguration after peer shutdown currently has a separate teardown
     # stall; this test checks date validation, not that lifecycle behavior.
+    # Configure promptly after reboot: this also regresses delayed startup
+    # replacing an already-started client and losing its queued security event.
     tc.reboot()
     tc.wait_for(lambda: tc.assert_(tc.api("ntp/state")["time"] >= int(time.time() / 60) - 1), timeout=30)
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -291,10 +302,7 @@ def run_date_failure(tc: TestContext, label: str, expected_alert: str):
     time.sleep(1)
     trace = tc.http_request("GET", "/trace_log", timeout=15).decode(errors="replace")
     tc.assert_("TLS connection failed: InvalidCsmsCertificate" in trace)
-    # Pre-BootNotification event delivery is a separate known queue issue.
-    # These date cases assert the alert, classification and TLS recovery;
-    # test_invalid_csms_certificate retains its event-delivery assertion.
-    reconnect_and_assert(tc, None, port)
+    reconnect_and_assert(tc, "InvalidCsmsCertificate", port)
 
 
 def test_expired_csms_certificate(tc: TestContext):

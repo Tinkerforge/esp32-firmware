@@ -99,8 +99,10 @@ void Ocpp::pre_setup()
         if (this->state.get("txn_id")->asInt32() != INT32_MAX)
             return "OCPP config may not be updated while a transaction is in progress! Unplug the vehicle.";
 
-        if (source != ConfigSource::File)
-            task_scheduler.scheduleOnce([this](){ this->apply_config(); });
+        if (source != ConfigSource::File) {
+            task_scheduler.cancel(apply_config_task_id);
+            apply_config_task_id = task_scheduler.scheduleOnce([this](){ this->apply_config(); });
+        }
         return "";
     }};
 
@@ -247,6 +249,9 @@ bool Ocpp::start_client_21()
 }
 
 void Ocpp::apply_config() {
+    // An early config update supersedes delayed startup. Reapplying the same
+    // config would destroy the new client's queued TLS security events.
+    apply_config_task_id = 0;
     task_scheduler.cancel(task_id);
     task_id = 0;
 
@@ -848,7 +853,7 @@ void Ocpp::setup()
     }
 
     // Should we use on_network_connected here?
-    task_scheduler.scheduleOnce([this](){ this->apply_config(); }, 5_s);
+    apply_config_task_id = task_scheduler.scheduleOnce([this](){ this->apply_config(); }, 5_s);
 }
 
 void Ocpp::register_urls()

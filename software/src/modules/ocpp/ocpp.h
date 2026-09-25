@@ -144,6 +144,7 @@ private:
     ConfigRoot change_configuration;
 
     uint64_t task_id = 0;
+    uint64_t apply_config_task_id = 0;
     bool client_started = false;
 
     std::unique_ptr<OcppChargePoint> cp;
