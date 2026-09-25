@@ -45,7 +45,7 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
           critical_aia=False, key_agreement=False, signing_hash=None,
           ski=True, aki=True, critical_ids=False, crl_sign=False, identifier_method=2,
           content_commitment=False, key_encipherment=False, data_encipherment=False,
-          encipher_only=False, decipher_only=False, extra_extensions=()):
+          encipher_only=False, decipher_only=False, extra_extensions=(), critical_eku=True):
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
                .not_valid_before(NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
@@ -62,7 +62,7 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
         builder = builder.add_extension(x509.AuthorityKeyIdentifier(
             key_identifier(issuer_key, identifier_method) if aki is True else aki, None, None), critical_ids)
     if eku is not None:
-        builder = builder.add_extension(x509.ExtendedKeyUsage(eku), True)
+        builder = builder.add_extension(x509.ExtendedKeyUsage(eku), critical_eku)
     if source == "crl":
         builder = builder.add_extension(x509.CRLDistributionPoints([
             x509.DistributionPoint([x509.UniformResourceIdentifier("https://crl.example/list")],
@@ -161,7 +161,7 @@ def run(server):
 
         good = chain("valid")
         scenario("valid full chain", [good], [True])
-        scenario("optional EKU omitted", [chain("no-eku", leaf_opts={"eku": None})], [True])
+        scenario("mandatory EKU omitted", [chain("no-eku", leaf_opts={"eku": None})], [False])
         scenario("client and server EKU", [chain("both-eku", leaf_opts={"eku": [EKU.CLIENT_AUTH, EKU.SERVER_AUTH]})], [True])
         scenario("role suffix", [chain("suffix", leaf_role=("ManufacturerEV",), sub1_role=("MakerEV",))], [True])
         for tag, opts in [

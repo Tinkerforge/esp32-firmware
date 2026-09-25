@@ -147,5 +147,46 @@ def generate_tests():
     return tests
 
 
+def test_eku_client_server_control(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    path, chain = env.chain("eku-client-server", leaf_opts={
+        "eku": [validation.fixtures.EKU.SERVER_AUTH, validation.fixtures.EKU.CLIENT_AUTH]})
+    env.positive("Vehicle EKU allows clientAuth plus serverAuth in either order", path, chain)
+
+
+def test_eku_private_waiver(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    saved = env.variable("PrivateEnvironmentEnabled")
+    try:
+        env.variable("PrivateEnvironmentEnabled", "true")
+        path, _ = env.chain("eku-private-missing", leaf_opts={"eku": None, "source": None},
+                            sub1_opts={"source": None}, sub2_opts={"source": None})
+        env.negative("Private source waiver retains mandatory EKU", path, "UNSUPPORTED_CERTIFICATE")
+    finally:
+        env.variable("PrivateEnvironmentEnabled", saved)
+
+
+def generate_eku_tests():
+    eku = validation.fixtures.EKU
+    tests = {}
+    cases = [("missing", {"eku": None}),
+             ("noncritical", {"eku": [eku.CLIENT_AUTH], "critical_eku": False}),
+             ("server_only", {"eku": [eku.SERVER_AUTH]}),
+             ("any_only", {"eku": [eku.ANY_EXTENDED_KEY_USAGE]}),
+             ("client_and_any", {"eku": [eku.CLIENT_AUTH, eku.ANY_EXTENDED_KEY_USAGE]}),
+             ("client_and_code_signing", {"eku": [eku.CLIENT_AUTH, eku.CODE_SIGNING]})]
+    for label, options in cases:
+        def test(tc, label=label, options=options):
+            check_extension(tc, "leaf", f"eku-{label}", options, "UNSUPPORTED_CERTIFICATE")
+        tests[f"test_eku_leaf_{label}"] = test
+    for position in ("sub1", "sub2"):
+        def test(tc, position=position):
+            check_extension(tc, position, "eku-excluded", {"eku": [eku.CLIENT_AUTH]}, "UNSUPPORTED_CERTIFICATE")
+        tests[f"test_eku_{position}_excluded"] = test
+    return tests
+
+
 if __name__ == "__main__":
-    run_testsuite(dict(locals(), **generate_tests()))
+    run_testsuite(dict(locals(), **generate_tests(), **generate_eku_tests()))

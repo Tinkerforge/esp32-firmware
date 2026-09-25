@@ -30,6 +30,7 @@ namespace {
 constexpr int sequence = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 constexpr unsigned char aia_oid[] = {0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x01, 0x01};
 constexpr unsigned char ocsp_oid[] = {0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x30, 0x01};
+constexpr unsigned char eku_oid[] = {0x55, 0x1d, 0x25};
 
 // All views borrow the parsed certificate's DER. No allocation or network I/O.
 struct Der {
@@ -132,6 +133,35 @@ bool key_identifier_matches(const mbedtls_x509_buf &identifier, const mbedtls_x5
     }
     hash[12] = (hash[12] & 0x0f) | 0x40;
     return memcmp(identifier.p, hash + 12, 8) == 0;
+}
+
+bool critical_eku(const mbedtls_x509_crt &cert)
+{
+    // Mbed TLS exposes parsed EKU values but not the extension's critical bit.
+    if (cert.v3_ext.p == nullptr) {
+        return false;
+    }
+    Der raw{cert.v3_ext.p, cert.v3_ext.p + cert.v3_ext.len}, extensions{};
+    if (!raw.take(sequence, extensions) || !raw.empty()) {
+        return false;
+    }
+    while (!extensions.empty()) {
+        Der extension{}, oid{}, value{};
+        int critical = 0;
+        if (!extensions.take(sequence, extension) || !extension.take(MBEDTLS_ASN1_OID, oid)) {
+            return false;
+        }
+        if (!extension.empty() && (*extension.p == MBEDTLS_ASN1_BOOLEAN) && (mbedtls_asn1_get_bool(&extension.p, extension.end, &critical) != 0)) {
+            return false;
+        }
+        if (!extension.take(MBEDTLS_ASN1_OCTET_STRING, value) || !extension.empty()) {
+            return false;
+        }
+        if (equals(oid, eku_oid)) {
+            return critical != 0;
+        }
+    }
+    return false;
 }
 
 }
@@ -250,17 +280,24 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
         flags |= MBEDTLS_X509_BADCERT_KEY_USAGE;
     }
 
-    // EKU is optional in the original B.8 profile. If supplied, it must
-    // explicitly authorize clientAuth; anyExtendedKeyUsage is insufficient.
-    if (leaf && (cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_EXTENDED_KEY_USAGE)) {
+    // V2G20-1001/2432, AMD1 Tables B.13/B.14: a vehicle leaf requires
+    // critical clientAuth EKU, optionally serverAuth. Vehicle CAs omit EKU.
+    const bool has_eku = cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_EXTENDED_KEY_USAGE;
+    if (leaf) {
         bool client_auth = false;
         for (const mbedtls_x509_sequence *eku = &cert.ext_key_usage; eku != nullptr; eku = eku->next) {
-            client_auth |= MBEDTLS_OID_CMP(MBEDTLS_OID_CLIENT_AUTH, &eku->buf) == 0;
+            const bool client = MBEDTLS_OID_CMP(MBEDTLS_OID_CLIENT_AUTH, &eku->buf) == 0;
+            client_auth |= client;
+            if (!client && MBEDTLS_OID_CMP(MBEDTLS_OID_SERVER_AUTH, &eku->buf) != 0) {
+                flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
+            }
         }
 
-        if (!client_auth) {
+        if (!has_eku || !client_auth || !critical_eku(cert)) {
             flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
         }
+    } else if (has_eku) {
+        flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
     }
 
     flags |= certificate_time_flags(cert, time(nullptr));
