@@ -862,14 +862,14 @@ void WebSockets::stop() {
         this->keepAliveCloseDead_async(keep_alive_fds[i]);
     }
 
-#if MODULE_WATCHDOG_AVAILABLE()
-    watchdog.remove(this->watchdog_handle);
-#endif
-
     for (size_t i = 0; i < ARRAY_SIZE(this->task_ids); ++i) {
         task_scheduler.cancel(this->task_ids[i]);
         this->task_ids[i] = 0;
     }
+
+#if MODULE_WATCHDOG_AVAILABLE()
+    watchdog.remove(this->watchdog_handle);
+#endif
 }
 
 void WebSockets::onConnect_HTTPThread(std::function<bool(WebSocketsClient *)> &&fn)
