@@ -22,6 +22,12 @@
 #include "mbedtls/x509_crt.h"
 
 namespace ISOVehicleCertificate {
+    // V2G20-2443 / RFC 8446: reject certificate-policy failures with
+    // certificate_unknown, not BADCERT_OTHER's access_denied. Mbed TLS 3.6
+    // preserves unknown callback bits and uses its default certificate alert.
+    // Recheck bit allocation and alert mapping when upgrading Mbed TLS.
+    constexpr uint32_t POLICY_FAILURE = 0x00100000;
+
     bool ocsp_url(const mbedtls_x509_crt &cert, char *url, size_t capacity);
     uint32_t verify(const mbedtls_x509_crt &cert, bool leaf, bool require_ocsp);
 }

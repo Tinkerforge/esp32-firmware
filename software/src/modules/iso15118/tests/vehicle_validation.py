@@ -217,9 +217,13 @@ class VehicleValidationEnvironment:
         start = time.monotonic()
         try:
             with self.connect(path) as tls:
-                vehicle.sap_iso20(tls)
+                # TLS 1.3 clients can return before the server has validated
+                # their certificate flight. Read its rejection directly:
+                # writing SAP can race close and mask the alert with EOF.
+                self.tc.assert_eq(b"", tls.recv(1))
         except ssl.SSLError as exc:
             error = str(exc)
+            print(f"TLS rejection for {label}: {error}")
         # EOF, timeouts, and malformed SAP responses must fail the runner case,
         # rather than count as successful certificate rejection.
         try:
@@ -811,14 +815,40 @@ def test_environment_transition_and_reboot(tc: TestContext):
         tc.assert_eq(before, sorted(env.inventory(), key=env.identity))
 
 
+def test_private_source_waiver_preserves_role_validation(tc: TestContext):
+    """HUB20-21-007 / V2G20-2443: a source waiver never waives vehicle role."""
+    tc.set_test_timeout(120)
+    env = environment
+    saved = env.variable("PrivateEnvironmentEnabled")
+    try:
+        env.variable("PrivateEnvironmentEnabled", "true")
+        path, _ = env.chain("private-no-sources", leaf_opts={"source": None},
+                            sub1_opts={"source": None}, sub2_opts={"source": None})
+        with env.connect(path) as tls:
+            vehicle.sap_iso20(tls)
+            session = vehicle.session_setup(tls)
+            vehicle.authorization_setup(tls, session)
+            tc.assert_eq("OK", vehicle.final_authorization(tls, session)["ResponseCode"])
+        time.sleep(2)
+        path, _ = env.chain("private-contract-no-sources", leaf_role="MSP",
+                            leaf_opts={"source": None}, sub1_opts={"source": None},
+                            sub2_opts={"source": None})
+        env.negative("private waiver retains role rejection", path, "CERTIFICATE_UNKNOWN")
+    finally:
+        env.variable("PrivateEnvironmentEnabled", saved)
+
+
 def generate_tests():
     cases = [
-        ("contract_leaf", {"leaf_role": "MSP"}, "ACCESS_DENIED"),
-        ("provisioning_leaf", {"leaf_role": "OEM"}, "ACCESS_DENIED"),
-        ("contract_intermediate", {"sub1_role": "MSP"}, "ACCESS_DENIED"),
-        ("missing_leaf_source", {"leaf_opts": {"source": None}}, "ACCESS_DENIED"),
-        ("missing_intermediate_source", {"sub2_opts": {"source": None}}, "ACCESS_DENIED"),
-        ("crl_only_source", {"leaf_opts": {"source": "crl"}}, "ACCESS_DENIED"),
+        ("contract_leaf", {"leaf_role": "MSP"}, "CERTIFICATE_UNKNOWN"),
+        ("provisioning_leaf", {"leaf_role": "OEM"}, "CERTIFICATE_UNKNOWN"),
+        ("contract_intermediate", {"sub1_role": "MSP"}, "CERTIFICATE_UNKNOWN"),
+        ("missing_leaf_source", {"leaf_opts": {"source": None}}, "CERTIFICATE_UNKNOWN"),
+        ("missing_intermediate_source", {"sub2_opts": {"source": None}}, "CERTIFICATE_UNKNOWN"),
+        ("missing_all_sources", {"leaf_opts": {"source": None}, "sub1_opts": {"source": None},
+                                 "sub2_opts": {"source": None}}, "CERTIFICATE_UNKNOWN"),
+        ("crl_only_source", {"leaf_opts": {"source": "crl"}}, "CERTIFICATE_UNKNOWN"),
+        ("expired_contract_leaf", {"leaf_role": "MSP", "leaf_opts": {"expired": True}}, "CERTIFICATE_EXPIRED"),
         ("expired_leaf", {"leaf_opts": {"expired": True}}, "CERTIFICATE_EXPIRED"),
         ("future_leaf", {"leaf_opts": {"future": True}}, "CERTIFICATE_UNKNOWN"),
         ("expired_intermediate", {"sub1_opts": {"expired": True}}, "CERTIFICATE_EXPIRED"),

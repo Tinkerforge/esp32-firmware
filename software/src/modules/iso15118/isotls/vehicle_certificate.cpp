@@ -187,11 +187,11 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
 {
     uint32_t flags = 0;
     if (cert.version != 3 || !vehicle_role(cert.subject)) {
-        flags |= MBEDTLS_X509_BADCERT_OTHER;
+        flags |= POLICY_FAILURE;
     }
 
     if (!(cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_BASIC_CONSTRAINTS) || (cert.MBEDTLS_PRIVATE(ca_istrue) != 0) == leaf) {
-        flags |= MBEDTLS_X509_BADCERT_OTHER;
+        flags |= POLICY_FAILURE;
     }
 
     const unsigned int usage = cert.MBEDTLS_PRIVATE(key_usage);
@@ -217,7 +217,7 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
 
     char url[256];
     if (require_ocsp && !ocsp_url(cert, url, sizeof(url))) {
-        flags |= MBEDTLS_X509_BADCERT_OTHER;
+        flags |= POLICY_FAILURE;
     }
 
     return flags;
