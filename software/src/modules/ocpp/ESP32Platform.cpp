@@ -24,6 +24,7 @@
 #include <ocpp16/Types16.h>
 #include <ocpp21/Platform21.h>
 #include <time.h>
+#include <mutex>
 #define URL_PARSER_IMPLEMENTATION_STATIC
 #include <lib/url.h>
 #include <esp_crt_bundle.h>
@@ -70,6 +71,29 @@ struct PlatformMeterCache {
     uint32_t current_offered_l3_idx;
 };
 
+struct PendingWebsocketMessages {
+    struct Message {
+        std::unique_ptr<char[]> data;
+        size_t length = 0;
+    };
+
+    std::mutex mutex;
+    Message messages[4];
+    size_t head = 0;
+    size_t count = 0;
+    bool overflow = false;
+
+    // Called only after the previous WebSocket task has been joined.
+    void clear()
+    {
+        for (auto &message : messages) {
+            message = {};
+        }
+        head = count = 0;
+        overflow = false;
+    }
+};
+
 // Per connection state, one instance per platform_init. The pointer is
 // threaded through the platform API as void *ctx.
 struct PlatformContext {
@@ -98,8 +122,13 @@ struct PlatformContext {
     void *base_verify_ctx = nullptr;
     bool recreate_client = false;
     uint32_t connect_started_ms = 0;
+    uint64_t generation = 0;
+    PendingWebsocketMessages pending_messages;
 
+    // Reassembly belongs to the WebSocket task, never to the main scheduler.
     std::unique_ptr<char[]> frag_buf = nullptr;
+    size_t frag_len = 0;
+    size_t frag_received = 0;
 };
 
 // The largest messages currently seen are CertificateSigned chains, Get15118EVCertificate EXI responses
@@ -117,11 +146,12 @@ static char model_buf[21] = {};
 // their context here, platform_destroy may run before they execute.
 #define MAX_PLATFORM_CONTEXTS 4
 static PlatformContext *active_ctxs[MAX_PLATFORM_CONTEXTS] = {};
+static uint64_t next_context_generation = 0;
 
-static bool ctx_alive(PlatformContext *p)
+static bool ctx_alive(PlatformContext *p, uint64_t generation)
 {
     for (auto *c : active_ctxs) {
-        if (c == p) {
+        if ((c == p) && (c->generation == generation)) {
             return true;
         }
     }
@@ -155,12 +185,15 @@ static PlatformConnectionError classify_connection_error(const tf_websocket_erro
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     PlatformContext *p = (PlatformContext *)handler_args;
+    const uint64_t generation = p->generation;
     tf_websocket_event_data_t *data = (tf_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_BEFORE_CONNECT: {
         const uint32_t started_ms = millis();
-        task_scheduler.scheduleOnce([p, started_ms](){
-            if (!ctx_alive(p)) {
+        p->frag_buf = nullptr;
+        p->frag_len = p->frag_received = 0;
+        task_scheduler.scheduleOnce([p, generation, started_ms](){
+            if (!ctx_alive(p, generation)) {
                 return;
             }
             p->connect_started_ms = started_ms;
@@ -183,8 +216,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_DISCONNECTED:
     case WEBSOCKET_EVENT_CLOSED: {
         const uint32_t event_ms = millis();
-        task_scheduler.scheduleOnce([p, event_id, event_ms](){
-            if (!ctx_alive(p)) {
+        task_scheduler.scheduleOnce([p, generation, event_id, event_ms](){
+            if (!ctx_alive(p, generation)) {
                 return;
             }
             logger.tracefln(ocpp.trace_buf_idx, "OCPP WebSocket %s (%lu ms since connection attempt)",
@@ -198,8 +231,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         // Event data belongs to the websocket task. Copy it before scheduling.
         const auto details = data->error_handle;
         const uint32_t event_ms = millis();
-        task_scheduler.scheduleOnce([p, details, event_ms](){
-            if (!ctx_alive(p)) {
+        task_scheduler.scheduleOnce([p, generation, details, event_ms](){
+            if (!ctx_alive(p, generation)) {
                 return;
             }
             const char *type = "unknown";
@@ -235,50 +268,84 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         });
         break;
     }
-    case WEBSOCKET_EVENT_DATA:
+    case WEBSOCKET_EVENT_DATA: {
         if (data->payload_len == 0) {
             return;
         } if (data->op_code != WS_TRANSPORT_OPCODES_TEXT) {
             return;
         }
 
-        // Discarding the result is fine:
-        // If we are rebooting, we don't need this data.
-        (void)task_scheduler.await([data, p](){
-            if (!ctx_alive(p)) {
-                return;
-            }
+        // Never await the main scheduler here. It can be waiting for this task
+        // to exit during disconnect/reconfiguration. Copy before returning.
+        // event data and the transport RX buffer are only valid in this call.
+        if (data->payload_offset == 0) {
+            p->frag_buf = ((data->payload_len > 0) && (data->payload_len <= OCPP_RECV_MESSAGE_MAX)) ? heap_alloc_array<char>(data->payload_len) : nullptr;
+            p->frag_len = data->payload_len;
+            p->frag_received = 0;
+        }
+        if ((p->frag_buf == nullptr) || (data->data_len < 0) || (data->payload_offset < 0) ||
+            (static_cast<size_t>(data->payload_len) != p->frag_len) ||
+            (static_cast<size_t>(data->payload_offset) != p->frag_received) ||
+            (static_cast<size_t>(data->data_len) > (p->frag_len - p->frag_received))) {
+            p->frag_buf = nullptr;
+            return;
+        }
+        memcpy(p->frag_buf.get() + p->frag_received, data->data_ptr, data->data_len);
+        p->frag_received += data->data_len;
+        if (p->frag_received != p->frag_len) {
+            return;
+        }
 
-            if (data->payload_offset == 0 && data->data_len == data->payload_len) {
-                // const cast is safe here:
-                // - data->data_ptr is only set in tf_websocket_client_dispatch_event to the const char *data param
-                // - const char *data is either null or (in tf_websocket_client_recv) set to client->rx_buffer
-                // - client->rx_buffer is char * (so not const)
-                p->recv_cb(const_cast<char *>(data->data_ptr), data->data_len, p->recv_cb_userdata);
-                return;
-            }
-
-            // The message exceeds the websocket rx buffer and arrives in chunks
-            if (data->payload_offset == 0) {
-                p->frag_buf = data->payload_len <= OCPP_RECV_MESSAGE_MAX ? heap_alloc_array<char>(data->payload_len) : nullptr;
-                if (p->frag_buf == nullptr) {
-                    logger.printfln("Dropping oversized message (%d bytes)", data->payload_len);
+        // Bound queued payloads to four maximum-size messages. Disconnect on
+        // overload rather than retaining unbounded data or blocking shutdown.
+        {
+            auto &pending = p->pending_messages;
+            std::lock_guard<std::mutex> lock{pending.mutex};
+            if (pending.count == ARRAY_SIZE(pending.messages)) {
+                p->frag_buf = nullptr;
+                if (!pending.overflow) {
+                    pending.overflow = true;
+                    task_scheduler.scheduleOnce([p, generation](){
+                        if (ctx_alive(p, generation)) {
+                            logger.printfln("OCPP receive queue full; disconnecting");
+                            platform_disconnect(p);
+                        }
+                    });
                 }
-            }
-            if (p->frag_buf == nullptr || data->payload_offset + data->data_len > data->payload_len) {
-                p->frag_buf = nullptr;
                 return;
             }
-            memcpy(p->frag_buf.get() + data->payload_offset, data->data_ptr, data->data_len);
-            if (data->payload_offset + data->data_len == data->payload_len) {
-                p->recv_cb(p->frag_buf.get(), data->payload_len, p->recv_cb_userdata);
-                p->frag_buf = nullptr;
+            auto &message = pending.messages[(pending.head + pending.count) % ARRAY_SIZE(pending.messages)];
+            message.data = std::move(p->frag_buf);
+            message.length = p->frag_len;
+            ++pending.count;
+        }
+        // The context owns pending payloads. Scheduled callbacks only carry an
+        // identity. Stale callbacks never access a destroyed/reused queue.
+        task_scheduler.scheduleOnce([p, generation](){
+            if (!ctx_alive(p, generation)) {
+                return;
             }
-        }, 60_s); // TODO: 60s timeout -> measure how long we actually need. Have seen >10s with CertificateSigned / secp521r1
+            PendingWebsocketMessages::Message message;
+            {
+                auto &pending = p->pending_messages;
+                std::lock_guard<std::mutex> lock{pending.mutex};
+                if (pending.count == 0) {
+                    return;
+                }
+                message = std::move(pending.messages[pending.head]);
+                pending.head = (pending.head + 1) % ARRAY_SIZE(pending.messages);
+                --pending.count;
+            }
+            // Release the queue lock before protocol code can send or stop.
+            if (p->recv_cb != nullptr) {
+                p->recv_cb(message.data.get(), message.length, p->recv_cb_userdata);
+            }
+        });
         break;
+    }
     case WEBSOCKET_EVENT_PONG:
-        task_scheduler.scheduleOnce([p](){
-            if (!ctx_alive(p)) {
+        task_scheduler.scheduleOnce([p, generation](){
+            if (!ctx_alive(p, generation) || p->pong_cb == nullptr) {
                 return;
             }
             p->pong_cb(p->pong_cb_userdata);
@@ -473,6 +540,10 @@ static void build_auth_headers(PlatformContext *p, BasicAuthCredentials *credent
 
 static void start_websocket_client(PlatformContext *p)
 {
+    // The previous task has been joined. Invalidate its queued callbacks even
+    // when reconnecting with the same PlatformContext and transport object.
+    p->generation = ++next_context_generation;
+    p->pending_messages.clear();
     if (!network.is_connected()) {
         logger.tracefln(ocpp.trace_buf_idx, "OCPP connection deferred: network not connected");
         return;
@@ -572,7 +643,13 @@ void platform_disconnect(void *_ctx)
     PlatformContext *p = (PlatformContext *)_ctx;
     if (p->client_running) {
         tf_websocket_client_close(p->client, pdMS_TO_TICKS(1000));
+        // close() can return early when run is already false, before the task
+        // has finished dispatching its final events. Join before invalidating
+        // callbacks or allowing the context to be reused.
+        tf_websocket_client_stop(p->client);
         p->client_running = false;
+        p->generation = ++next_context_generation;
+        p->pending_messages.clear();
     }
 }
 

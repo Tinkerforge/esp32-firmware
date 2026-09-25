@@ -2,6 +2,7 @@
 # ruff: noqa: I001
 
 import contextlib
+import json
 from datetime import datetime, timedelta, timezone
 import ipaddress
 from pathlib import Path
@@ -186,6 +187,9 @@ def suite_setup(tc: TestContext):
     disabled["enable"] = False
     tc.api("ocpp/config_update", disabled, timeout=5)
     time.sleep(1)
+    # Security-event timestamps are compared with host UTC. Establish that
+    # precondition even when this suite is started immediately after flashing.
+    tc.wait_for(lambda: tc.assert_(abs(tc.api("ntp/state")["time"] - int(time.time() / 60)) <= 1), timeout=30)
 
     local_ip = tc.get_local_ip()
     ca_cert, bogus_cert, bogus_key = generate_certificates(local_ip)
@@ -257,10 +261,9 @@ def test_invalid_csms_certificate(tc: TestContext):
 
 def run_date_failure(tc: TestContext, label: str, expected_alert: str):
     tc.set_test_timeout(120)
-    # Give each date case a fresh transport context. Repeated live OCPP
-    # reconfiguration after peer shutdown currently has a separate teardown
-    # stall; this test checks date validation, not that lifecycle behavior.
-    # Configure promptly after reboot: this also regresses delayed startup
+    # Give each date case a fresh startup context. Live reconfiguration is
+    # covered separately below. Configure promptly after reboot to regress
+    # delayed startup
     # replacing an already-started client and losing its queued security event.
     tc.reboot()
     tc.wait_for(lambda: tc.assert_(tc.api("ntp/state")["time"] >= int(time.time() / 60) - 1), timeout=30)
@@ -316,6 +319,9 @@ def test_future_csms_certificate(tc: TestContext):
 def test_ocpp16_retains_legacy_date_policy(tc: TestContext):
     tc.set_test_timeout(90)
     tc.reboot()
+    # HTTP may be reachable before the network module reports readiness. The
+    # legacy stack's reconnect interval can exceed this TLS listener's timeout.
+    tc.wait_for(lambda: tc.assert_(tc.api("network/state")["connected"]), timeout=30)
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(date_server_certs["expired"], server_key)
     observed = []
@@ -348,8 +354,90 @@ def test_ocpp16_retains_legacy_date_policy(tc: TestContext):
             worker.join(timeout=50)
         tc.assert_not(worker.is_alive())
     tc.assert_eq(1, len(observed))
+    if isinstance(observed[0], Exception):
+        print(f"OCPP 1.6 TLS failure: {observed[0]!r}")
     tc.assert_(isinstance(observed[0], bytes) and observed[0].startswith(b"GET "))
     print("OCPP 1.6 sent its WebSocket upgrade over TLS with an expired trusted server certificate")
+
+
+def test_live_reconfiguration_with_incoming_messages(tc: TestContext):
+    tc.set_test_timeout(180)
+    boot_id = tc.api("event_log/boot_id")
+    servers = [CSMSSim(certfile=str(server_cert), keyfile=str(server_key)) for _ in range(2)]
+    try:
+        configure(tc, f"wss://{local_ip}:{servers[0].port}")
+        tc.assert_(servers[0].connected.wait(timeout=30))
+        for cycle in range(8):
+            old = servers[cycle % 2]
+            new = servers[(cycle + 1) % 2]
+            after = new.connection_count
+            stop = threading.Event()
+
+            def incoming():
+                from websockets.exceptions import ConnectionClosed
+                try:
+                    sequence = 0
+                    while not stop.is_set():
+                        old.ws.send(json.dumps([2, f"reconfigure-{cycle}-{sequence}", "GetVariables", {
+                            "getVariableData": [{"component": {"name": "OCPPCommCtrlr"},
+                                                 "variable": {"name": "HeartbeatInterval"}}],
+                        }]))
+                        sequence += 1
+                        time.sleep(0.02)
+                except ConnectionClosed:
+                    pass
+
+            worker = threading.Thread(target=incoming, daemon=True)
+            worker.start()
+            try:
+                configure(tc, f"wss://{local_ip}:{new.port}")
+                # API responsiveness must survive client teardown while RX is active.
+                tc.api("ocpp/state", timeout=3)
+                new.wait_for_connection(after=after, timeout=15)
+                response = new.call("GetVariables", {
+                    "getVariableData": [{"component": {"name": "OCPPCommCtrlr"},
+                                         "variable": {"name": "HeartbeatInterval"}}],
+                }, timeout=5)
+                tc.assert_eq(1, len(response["getVariableResult"]))
+                tc.assert_eq(boot_id, tc.api("event_log/boot_id"))
+                print(f"Live reconfiguration {cycle + 1}/8 completed without reboot")
+            finally:
+                stop.set()
+                worker.join(timeout=5)
+    finally:
+        for server in servers:
+            server.stop()
+
+
+def test_receive_buffer_chunks_and_peer_close(tc: TestContext):
+    tc.set_test_timeout(120)
+    boot_id = tc.api("event_log/boot_id")
+    for cycle in range(4):
+        server = CSMSSim(certfile=str(server_cert), keyfile=str(server_key))
+        try:
+            configure(tc, f"wss://{local_ip}:{server.port}")
+            tc.assert_(server.connected.wait(timeout=15))
+            # Whitespace expands a valid request beyond the transport RX buffer
+            # without changing the OCPP payload or exceeding its parser capacity.
+            for suffix in ("large", "small"):
+                message_id = f"chunks-{cycle}-{suffix}"
+                frame = json.dumps([2, message_id, "GetVariables", {
+                    "getVariableData": [{"component": {"name": "OCPPCommCtrlr"},
+                                         "variable": {"name": "HeartbeatInterval"}}],
+                }])
+                if suffix == "large":
+                    frame = frame[:1] + " " * 12000 + frame[1:]
+                server.ws.send(frame)
+            for suffix in ("large", "small"):
+                message_id, response = server.responses.get(timeout=10)
+                tc.assert_eq(f"chunks-{cycle}-{suffix}", message_id)
+                tc.assert_eq(1, len(response["getVariableResult"]))
+            server.ws.close()
+            tc.api("ocpp/state", timeout=3)
+            tc.assert_eq(boot_id, tc.api("event_log/boot_id"))
+            print(f"RX chunk reassembly, ordered replies and peer close {cycle + 1}/4 passed")
+        finally:
+            server.stop()
 
 
 def test_invalid_tls_version(tc: TestContext):
