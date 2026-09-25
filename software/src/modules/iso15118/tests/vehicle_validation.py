@@ -234,9 +234,11 @@ class VehicleValidationEnvironment:
         self.record(label, {"error": error, "seconds": round(time.monotonic() - start, 3)})
         time.sleep(1)
 
-    def positive(self, label, path, certificates, statuses=None, *, allow_cached=False):
+    def positive(self, label, path, certificates, statuses=None, *, allow_cached=False, expected_server=None):
         start = time.monotonic()
         with self.connect(path) as tls:
+            if expected_server is not None:
+                self.tc.assert_eq(expected_server.public_bytes(serialization.Encoding.DER), tls.getpeercert(binary_form=True))
             vehicle.sap_iso20(tls)
             elapsed = time.monotonic() - start
             try:
@@ -637,6 +639,118 @@ def test_automatic_renewal_after_five_minute_expiry(tc: TestContext):
             csms.respond(mid, {"status": "Rejected"})
         set_wait(saved_wait["attributeValue"])
         tc.assert_eq(saved_wait, csms.call("GetVariables", {"getVariableData": [wait_variable]})["getVariableResult"][0])
+
+
+def test_seven_day_renewal_with_sub_ca_inventory(tc: TestContext):
+    # TC_HU_SECC_ISO20_Install_SECC_Cert_Chain_Expiry_7_Days_001;
+    # OCPP A03.FR.02/A03.FR.23 and M03: replace one complete SECC chain.
+    import _certificate_profiles as profiles
+
+    tc.set_test_timeout(180)
+    env = environment
+    csms = env.csms
+    root, _, root_key = env.pki["iso20"]
+    old_leaf = x509.load_pem_x509_certificate((env.work / "iso20-secc.pem").read_bytes())
+    old_id = env.identity({"certificateType": "V2GCertificateChain",
+                           "certificateHashData": certificate_hash_data(old_leaf, root)})
+    before = env.inventory()
+    independent = [entry for entry in before if env.identity(entry) != old_id]
+    connection_count = csms.connection_count
+    security_count = len(csms.security_events)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    sub1_key, sub2_key = [ec.generate_private_key(ec.SECP521R1()) for _ in range(2)]
+    sub1 = profiles.certificate(profiles.name("Renewal Sub CA 1"), sub1_key, root.subject, root_key,
+                                x509.random_serial_number(), now - timedelta(days=1), now + timedelta(days=90),
+                                hashes.SHA512(), path_length=1)
+    sub2 = profiles.certificate(profiles.name("Renewal Sub CA 2"), sub2_key, sub1.subject, sub1_key,
+                                x509.random_serial_number(), now - timedelta(days=1), now + timedelta(days=60),
+                                hashes.SHA512(), path_length=0)
+
+    def issue(request, start, end):
+        tc.assert_eq("V2G20Certificate", request["certificateType"])
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        tc.assert_eq(old_leaf.subject, csr.subject)
+        tc.assert_eq("secp521r1", csr.public_key().curve.name)
+        return (x509.CertificateBuilder().subject_name(csr.subject).issuer_name(sub2.subject)
+                .public_key(csr.public_key()).serial_number(x509.random_serial_number())
+                .not_valid_before(start).not_valid_after(end)
+                .add_extension(x509.BasicConstraints(False, None), True)
+                .add_extension(profiles.key_usage(ca=False), True)
+                .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(sub2_key.public_key()), False)
+                .add_extension(x509.SubjectKeyIdentifier.from_public_key(csr.public_key()), False)
+                .add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
+                .add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
+                    fixtures.AIA.OCSP, x509.UniformResourceIdentifier(profiles.OCSP_URL))]), False)
+                .sign(sub2_key, hashes.SHA512()))
+
+    def install(request, leaf):
+        chain = [leaf, sub2, sub1]
+        hashes_expected = [certificate_hash_data(cert, issuer) for cert, issuer in
+                           zip(chain, [sub2, sub1, root])]
+        result = csms.call("CertificateSigned", {"certificateType": "V2G20Certificate",
+            "requestId": request["requestId"], "certificateChain": b"".join(fixtures.pem(c) for c in chain).decode()})
+        tc.assert_eq("Accepted", result["status"])
+        expected_entry = {"certificateType": "V2GCertificateChain", "certificateHashData": hashes_expected[0],
+                          "childCertificateHashData": hashes_expected[1:]}
+        actual = env.inventory()
+        tc.assert_eq(sorted(independent + [expected_entry], key=env.identity), sorted(actual, key=env.identity))
+        filtered = csms.call("GetInstalledCertificateIds", {"certificateType": ["V2GCertificateChain"]})
+        tc.assert_eq("Accepted", filtered["status"])
+        tc.assert_eq(sorted([e for e in actual if e["certificateType"] == "V2GCertificateChain"], key=env.identity),
+                     sorted(filtered["certificateHashDataChain"], key=env.identity))
+
+        # M06 requests and Good responses cover all three non-root certificates.
+        responses = {}
+        stamp = datetime.now(timezone.utc)
+        for cert, issuer, key, hash_data in zip(chain, [sub2, sub1, root], [sub2_key, sub1_key, root_key], hashes_expected):
+            response = (ocsp.OCSPResponseBuilder().add_response(cert, issuer, hashes.SHA256(),
+                ocsp.OCSPCertStatus.GOOD, stamp - timedelta(minutes=1), stamp + timedelta(days=1), None, None)
+                .responder_id(ocsp.OCSPResponderEncoding.HASH, issuer).certificates([issuer]).sign(key, hashes.SHA512()))
+            responses[json.dumps(hash_data, sort_keys=True)] = base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()
+        while responses:
+            request_status, mid = csms.expect("GetCertificateStatus", timeout=30)
+            data = request_status["ocspRequestData"]
+            key = json.dumps({k: data[k] for k in hashes_expected[0]}, sort_keys=True)
+            tc.assert_(key in responses)
+            tc.assert_eq(profiles.OCSP_URL, data["responderURL"])
+            csms.respond(mid, {"status": "Accepted", "ocspResult": responses.pop(key)})
+        return expected_entry
+
+    pending = False
+    try:
+        tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+        pending = True
+        request, mid = csms.expect("SignCertificate", timeout=60)
+        csms.respond(mid, {"status": "Accepted"})
+        first = issue(request, now - timedelta(seconds=5), now + timedelta(days=7, minutes=5))
+        start = time.monotonic()
+        first_entry = install(request, first)
+        pending = False
+        renewal, mid = csms.expect("SignCertificate", timeout=30)
+        pending = True
+        elapsed = time.monotonic() - start
+        tc.assert_(renewal["requestId"] != request["requestId"])
+        tc.assert_eq(certificate_hash_data(root, root), renewal["hashRootCertificate"])
+        csms.respond(mid, {"status": "Accepted"})
+        replacement = issue(renewal, datetime.now(timezone.utc) - timedelta(seconds=1), now + timedelta(days=45))
+        replaced_entry = install(renewal, replacement)
+        pending = False
+        tc.assert_(first_entry["certificateHashData"] != replaced_entry["certificateHashData"])
+        path, certs = env.chain("sub-ca-renewal")
+        time.sleep(2)
+        # Root-only EV trust validates the served intermediate path.
+        env.positive("renewed two-Sub-CA SECC chain completes ISO-20 authorization", path, certs,
+                     expected_server=replacement)
+        tc.assert_eq(connection_count, csms.connection_count)
+        tc.assert_eq(security_count, len(csms.security_events))
+        env.record("seven-day automatic renewal with exact Sub-CA inventory", {
+            "seconds_after_install": round(elapsed, 3), "initial": first_entry, "replacement": replaced_entry})
+    finally:
+        if pending:
+            tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+            _, mid = csms.expect("SignCertificate", timeout=60)
+            csms.respond(mid, {"status": "Rejected"})
 
 
 def generate_tests():
