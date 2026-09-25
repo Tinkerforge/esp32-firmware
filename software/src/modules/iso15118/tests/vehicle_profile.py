@@ -1,6 +1,7 @@
 #!/usr/bin/env -S uv run --locked --group iso15118-tests --script
-"""V2G20-1001/2432: vehicle certificate cryptographic profile checks."""
+"""V2G20-1001/2432, Annex B.8: vehicle certificate profile checks."""
 
+from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, ed448
 
@@ -56,6 +57,50 @@ def check_curve(tc, position, curve):
         setattr(env, field, saved)
 
 
+def check_extension(tc, position, label, options, alert="CERTIFICATE_UNKNOWN"):
+    tc.set_test_timeout(90)
+    env = validation.environment
+    label = f"profile-{position}-{label}"
+    path, _ = env.chain(label, **{f"{position}_opts": options})
+    env.negative(label, path, alert)
+
+
+def test_optional_usage_control(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    optional = dict(content_commitment=True, key_encipherment=True, key_agreement=True)
+    path, chain = env.chain("profile-optional-usage", leaf_opts=optional,
+                           sub1_opts=optional, sub2_opts=optional)
+    env.positive("Annex B.8 permitted optional usage bits", path, chain)
+
+
+def test_critical_key_identifiers(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    path, chain = env.chain("profile-critical-key-identifiers",
+                           **{f"{position}_opts": {"critical_ids": True}
+                              for position in ("leaf", "sub1", "sub2")})
+    # Parser capability control; AMD1 profiles designate these noncritical.
+    env.positive("Critical method-2 SKI and AKI parser capability", path, chain)
+
+
+def test_method1_key_identifiers(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    path, chain = env.chain("profile-method1-key-identifiers",
+                           **{f"{position}_opts": {"identifier_method": 1}
+                              for position in ("leaf", "sub1", "sub2")})
+    env.positive("AMD1 method-1 SKI and AKI are processed", path, chain)
+
+
+def test_unknown_noncritical_extension(tc: TestContext):
+    tc.set_test_timeout(120)
+    env = validation.environment
+    extension = x509.UnrecognizedExtension(x509.ObjectIdentifier("1.3.6.1.4.1.55555.15118.1"), b"\x05\x00")
+    path, chain = env.chain("profile-unknown-noncritical", leaf_opts={"extra_extensions": [(extension, False)]})
+    env.positive("Unknown noncritical extension is ignored", path, chain)
+
+
 def generate_tests():
     tests = {}
     for position in ("leaf", "sub1", "sub2"):
@@ -68,6 +113,37 @@ def generate_tests():
             def test(tc, position=position, curve=curve):
                 check_curve(tc, position, curve)
             tests[f"test_{position}_{curve.name}"] = test
+    for position in ("leaf", "sub1", "sub2"):
+        for identifier in ("ski", "aki"):
+            for label, value in (("missing", False), ("wrong", b"\x40" + b"\x00" * 7),
+                                 ("wrong_method1", b"\x12" * 20)):
+                def test(tc, position=position, identifier=identifier, label=label, value=value):
+                    check_extension(tc, position, f"{identifier}-{label}", {identifier: value})
+                tests[f"test_{position}_{identifier}_{label}"] = test
+        for label, options in (("data_encipherment", {"data_encipherment": True}),
+                               ("encipher_only", {"key_agreement": True, "encipher_only": True}),
+                               ("decipher_only", {"key_agreement": True, "decipher_only": True}),
+                               ("crl_sign", {"crl_sign": True})):
+            def test(tc, position=position, label=label, options=options):
+                # Mbed TLS excludes CAs restricted to encipher/decipher-only
+                # during issuer selection, before vehicle-profile verification.
+                alert = "UNKNOWN_CA" if position != "leaf" and label in ("encipher_only", "decipher_only") else "UNSUPPORTED_CERTIFICATE"
+                check_extension(tc, position, label, options, alert)
+            tests[f"test_{position}_{label}"] = test
+        def test(tc, position=position):
+            extension = x509.UnrecognizedExtension(x509.ObjectIdentifier("1.3.6.1.4.1.55555.15118.1"), b"\x05\x00")
+            check_extension(tc, position, "unknown-critical", {"extra_extensions": [(extension, True)]}, "BAD_CERTIFICATE")
+        tests[f"test_{position}_unknown_critical"] = test
+        def test(tc, position=position):
+            # AMD1 Tables B.13/B.14 exclude authorityCertIssuer/serialNumber.
+            # Encode the well-formed pair explicitly to isolate that policy.
+            key = validation.environment.sub2_key if position == "leaf" else (
+                validation.environment.sub1_key if position == "sub2" else validation.environment.pki["vehicle"][2])
+            identifier = validation.fixtures.key_identifier(key)
+            value = b"\x30\x17\x80\x08" + identifier + b"\xa1\x08\x86\x06http:x\x82\x01\x01"
+            extension = x509.UnrecognizedExtension(x509.ObjectIdentifier("2.5.29.35"), value)
+            check_extension(tc, position, "aki-issuer-serial", {"aki": False, "extra_extensions": [(extension, False)]})
+        tests[f"test_{position}_aki_issuer_serial"] = test
     return tests
 
 

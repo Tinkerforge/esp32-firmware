@@ -30,4 +30,5 @@ namespace ISOVehicleCertificate {
 
     bool ocsp_url(const mbedtls_x509_crt &cert, char *url, size_t capacity);
     uint32_t verify(const mbedtls_x509_crt &cert, bool leaf, bool require_ocsp);
+    bool issuer_key_matches(const mbedtls_x509_crt &cert, const mbedtls_x509_crt &issuer);
 }

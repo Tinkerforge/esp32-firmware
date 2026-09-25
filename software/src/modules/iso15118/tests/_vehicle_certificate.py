@@ -30,10 +30,22 @@ def name(cn, role):
     return x509.Name(attrs)
 
 
+def key_identifier(key, method=2):
+    # V2G20-3431/3432: RFC 5280 section 4.2.1.2 methods 1 and 2.
+    # Works for EC and Ed448 keys.
+    digest = x509.SubjectKeyIdentifier.from_public_key(key.public_key()).digest
+    if method == 1:
+        return digest
+    return bytes([(digest[-8] & 0x0f) | 0x40]) + digest[-7:]
+
+
 def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
           source=URL, eku=None, usage=True, constraints=True, digital=True,
           key_cert_sign=None, expired=False, future=False, method=AIA.OCSP,
-           critical_aia=False, key_agreement=False, signing_hash=None):
+          critical_aia=False, key_agreement=False, signing_hash=None,
+          ski=True, aki=True, critical_ids=False, crl_sign=False, identifier_method=2,
+          content_commitment=False, key_encipherment=False, data_encipherment=False,
+          encipher_only=False, decipher_only=False, extra_extensions=()):
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
                .not_valid_before(NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
@@ -41,9 +53,14 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
     if constraints:
         builder = builder.add_extension(x509.BasicConstraints(ca, path_length), True)
     if usage:
-        builder = builder.add_extension(x509.KeyUsage(digital, False, False, False, key_agreement,
+        builder = builder.add_extension(x509.KeyUsage(digital, content_commitment, key_encipherment, data_encipherment, key_agreement,
                                                      ca if key_cert_sign is None else key_cert_sign,
-                                                     False, False, False), True)
+                                                     crl_sign, encipher_only, decipher_only), True)
+    if ski is not False:
+        builder = builder.add_extension(x509.SubjectKeyIdentifier(key_identifier(key, identifier_method) if ski is True else ski), critical_ids)
+    if aki is not False:
+        builder = builder.add_extension(x509.AuthorityKeyIdentifier(
+            key_identifier(issuer_key, identifier_method) if aki is True else aki, None, None), critical_ids)
     if eku is not None:
         builder = builder.add_extension(x509.ExtendedKeyUsage(eku), True)
     if source == "crl":
@@ -55,6 +72,8 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
         builder = builder.add_extension(x509.AuthorityInformationAccess([
             x509.AccessDescription(method, x509.UniformResourceIdentifier(url)) for url in urls
         ]), critical_aia)
+    for extension, critical in extra_extensions:
+        builder = builder.add_extension(extension, critical)
     return builder.sign(issuer_key, None if isinstance(issuer_key, ed448.Ed448PrivateKey) else signing_hash or hashes.SHA512())
 
 

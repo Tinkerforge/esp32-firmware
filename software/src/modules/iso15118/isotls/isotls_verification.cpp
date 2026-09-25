@@ -253,5 +253,22 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
         *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
     }
 
+    // V2G20-3432: compare each non-anchor AKI with the actual issuer key.
+    // The worker has now authenticated intermediates and selected the anchor.
+    for (size_t i = 0; i < CERTS_MAX_VERIFY && verify_ctx->certs[i] != nullptr; ++i) {
+        const mbedtls_x509_crt *child = verify_ctx->certs[i];
+        const mbedtls_x509_crt *root = verify_ctx->anchor_root;
+        if ((root != nullptr) && (child->raw.len == root->raw.len) && (memcmp(child->raw.p, root->raw.p, root->raw.len) == 0)) {
+            break;
+        }
+        const mbedtls_x509_crt *issuer = (i + 1) < CERTS_MAX_VERIFY ? verify_ctx->certs[i + 1] : nullptr;
+        if (issuer == nullptr) {
+            issuer = root;
+        }
+        if (issuer != nullptr && !ISOVehicleCertificate::issuer_key_matches(*child, *issuer)) {
+            *flags |= ISOVehicleCertificate::POLICY_FAILURE;
+        }
+    }
+
     return 0; // No error; verification failure is not an error
 }

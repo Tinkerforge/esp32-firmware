@@ -23,6 +23,7 @@
 #include <cstring>
 #include "mbedtls/asn1.h"
 #include "mbedtls/oid.h"
+#include "mbedtls/sha1.h"
 
 namespace {
 
@@ -110,6 +111,34 @@ bool vehicle_role(const mbedtls_x509_name &subject)
     return count == 1;
 }
 
+bool key_identifier_matches(const mbedtls_x509_buf &identifier, const mbedtls_x509_crt &cert)
+{
+    // V2G20-3431/3432: RFC 5280 4.2.1.2 methods 1 and 2 hash only the
+    // subjectPublicKey BIT STRING, excluding its unused-bits count byte.
+    // SHA-1 here identifies a key; it does not authenticate a certificate.
+    if (((identifier.len != 8) && (identifier.len != 20)) || (cert.pk_raw.p == nullptr)) {
+        return false;
+    }
+    Der raw{cert.pk_raw.p, cert.pk_raw.p + cert.pk_raw.len}, spki{}, algorithm{}, bits{};
+    if (!raw.take(sequence, spki) || !raw.empty() || !spki.take(sequence, algorithm) || !spki.take(MBEDTLS_ASN1_BIT_STRING, bits) || !spki.empty() || (bits.size() < 2) || (*bits.p != 0)) {
+        return false;
+    }
+    unsigned char hash[20];
+    if (mbedtls_sha1(bits.p + 1, bits.size() - 1, hash) != 0) {
+        return false;
+    }
+    if (identifier.len == 20) {
+        return memcmp(identifier.p, hash, 20) == 0;
+    }
+    hash[12] = (hash[12] & 0x0f) | 0x40;
+    return memcmp(identifier.p, hash + 12, 8) == 0;
+}
+
+}
+
+bool ISOVehicleCertificate::issuer_key_matches(const mbedtls_x509_crt &cert, const mbedtls_x509_crt &issuer)
+{
+    return key_identifier_matches(cert.authority_key_id.keyIdentifier, issuer);
 }
 
 bool ISOVehicleCertificate::ocsp_url(const mbedtls_x509_crt &cert, char *url, size_t capacity)
@@ -201,13 +230,23 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
         flags |= POLICY_FAILURE;
     }
 
+    const auto &authority = cert.authority_key_id;
+    if (!key_identifier_matches(cert.subject_key_id, cert) ||
+        ((authority.keyIdentifier.len != 8) && (authority.keyIdentifier.len != 20)) ||
+        (authority.authorityCertIssuer.buf.p != nullptr) || (authority.authorityCertSerialNumber.len != 0)) {
+        flags |= POLICY_FAILURE;
+    }
+    // AKI derivation is checked against the authenticated issuer after chain
+    // verification, never against an unverified issuer name or its claimed SKI.
+
     if (!(cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_BASIC_CONSTRAINTS) || (cert.MBEDTLS_PRIVATE(ca_istrue) != 0) == leaf) {
         flags |= POLICY_FAILURE;
     }
 
     const unsigned int usage = cert.MBEDTLS_PRIVATE(key_usage);
     const unsigned int required = leaf ? MBEDTLS_X509_KU_DIGITAL_SIGNATURE : MBEDTLS_X509_KU_KEY_CERT_SIGN;
-    if (!(cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_KEY_USAGE) || !(usage & required) || (leaf && (usage & (MBEDTLS_X509_KU_KEY_CERT_SIGN | MBEDTLS_X509_KU_CRL_SIGN)))) {
+    const unsigned int forbidden = MBEDTLS_X509_KU_DATA_ENCIPHERMENT | MBEDTLS_X509_KU_ENCIPHER_ONLY | MBEDTLS_X509_KU_DECIPHER_ONLY | MBEDTLS_X509_KU_CRL_SIGN | (leaf ? MBEDTLS_X509_KU_KEY_CERT_SIGN : 0);
+    if (!(cert.MBEDTLS_PRIVATE(ext_types) & MBEDTLS_X509_EXT_KEY_USAGE) || ((usage & required) != required) || (usage & forbidden)) {
         flags |= MBEDTLS_X509_BADCERT_KEY_USAGE;
     }
 
