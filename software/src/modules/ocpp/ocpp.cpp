@@ -29,6 +29,9 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#if MODULE_ISO15118_AVAILABLE()
+#include "modules/iso15118/isotls/vehicle_certificate.h"
+#endif
 
 Ocpp::Iso15118SeccChain::~Iso15118SeccChain()
 {
@@ -664,9 +667,21 @@ bool Ocpp::request_iso15118_vehicle_chain_status(const VehicleChainCertDer *chai
         if (!platform_cert_hash_data21(bundle.get(), i, bundle.get(), i + 1, &vehicle_chain_hashes[i])) {
             return false;
         }
-        if (!platform_cert_ocsp_url21(bundle.get(), i, urls[i], sizeof(urls[i]))) {
-            urls[i][0] = '\0';
+#if MODULE_ISO15118_AVAILABLE()
+        // Use exactly the same bounded URL parser as handshake validation.
+        // Never emit an M07 OCSP request with an empty or unusable source.
+        mbedtls_x509_crt cert;
+        mbedtls_x509_crt_init(&cert);
+        const bool source_ok = (mbedtls_x509_crt_parse_der(&cert, chain[i].der, chain[i].len) == 0) && ISOVehicleCertificate::ocsp_url(cert, urls[i], sizeof(urls[i]));
+        mbedtls_x509_crt_free(&cert);
+        if (!source_ok) {
+            return false;
         }
+#else
+        if (!platform_cert_ocsp_url21(bundle.get(), i, urls[i], sizeof(urls[i])) || urls[i][0] == '\0') {
+            return false;
+        }
+#endif
         url_ptrs[i] = urls[i];
     }
     vehicle_chain_count = chain_len;

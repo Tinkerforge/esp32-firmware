@@ -546,10 +546,6 @@ bool ISOTLS::do_handshake()
 
             iso15118.trace("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
 
-            if (certs_presented && !verification_context->leaf_cert_cached) {
-                cache_leaf_cert();
-            }
-
             // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
             if (is_tls13_active()) {
                 // Accepted ticket PSK and no presented client chain: This was a PSK resumption [V2G20-2677]
@@ -804,7 +800,6 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
                 } else {
                     // Second ClientHello after a HelloRetryRequest, the callback runs once per ClientHello. Reuse the context.
                     memset(verification_context->certs, 0, sizeof(verification_context->certs));
-                    verification_context->leaf_cert_cached = false;
                     verification_context->async_started = false;
                     verification_context->intermediates_valid = false;
                     verification_context->anchor_root = nullptr;

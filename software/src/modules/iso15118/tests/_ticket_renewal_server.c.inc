@@ -12,6 +12,13 @@
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/x509_crt.h"
 #include "ssl_misc.h"
+#include "mbedtls/debug.h"
+
+static void debug_cb(void *ctx, int level, const char *file, int line, const char *message)
+{
+    (void)ctx; (void)level;
+    fprintf(stderr, "%s:%d: %s", file, line, message);
+}
 
 #define CHECK(x) do { int r = (x); if (r != 0) { fprintf(stderr, "%s: -0x%x\n", #x, -r); return 1; } } while (0)
 #define ASSERT(x) CHECK((x) ? 0 : -1)
@@ -64,6 +71,10 @@ int main(int argc, char **argv)
     mbedtls_ssl_conf_min_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_3);
     mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_3);
     mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &rng);
+    if (getenv("TLS_DEBUG")) {
+        mbedtls_ssl_conf_dbg(&conf, debug_cb, NULL);
+        mbedtls_debug_set_threshold(2);
+    }
     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
     CHECK(mbedtls_ssl_conf_own_cert(&conf, &cert, &key));
     CHECK(mbedtls_ssl_ticket_setup(&tickets, mbedtls_ctr_drbg_random, &rng, MBEDTLS_CIPHER_AES_256_GCM, 3600));

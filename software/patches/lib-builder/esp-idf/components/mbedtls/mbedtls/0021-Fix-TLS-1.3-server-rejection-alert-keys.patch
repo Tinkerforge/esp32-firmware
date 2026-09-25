@@ -1,0 +1,75 @@
+From: Olaf Lüke <olaf@tinkerforge.com>
+Subject: [PATCH] Switch server outbound keys after flushing ServerFinished
+
+RFC 8446 section 4.4.4: alerts sent after ServerFinished use application
+traffic keys, even while authenticating the client's second flight. Switch
+at the next server step, after ssl_prepare_handshake_step drains Finished,
+including fragmented/nonblocking output. Do not reset its sequence at wrapup.
+---
+diff --git a/library/ssl_tls13_server.c b/library/ssl_tls13_server.c
+--- a/library/ssl_tls13_server.c
++++ b/library/ssl_tls13_server.c
+@@ -3623,3 +3623,20 @@
+                               ssl->state));
+ 
++    /* The previous step's ServerFinished has been flushed by
++     * ssl_prepare_handshake_step. The peer now reads application keys, even
++     * if its Certificate/CertificateVerify/Finished subsequently fails.
++     * Do not switch inside the Finished writer: its output may still be
++     * buffered or waiting for WANT_WRITE/handshake-fragment retries. */
++    if (ssl->transform_application != NULL &&
++        ssl->transform_out != ssl->transform_application &&
++        (ssl->state == MBEDTLS_SSL_CLIENT_CERTIFICATE ||
++         ssl->state == MBEDTLS_SSL_CLIENT_CERTIFICATE_VERIFY ||
++         ssl->state == MBEDTLS_SSL_CLIENT_FINISHED
++#if defined(MBEDTLS_SSL_EARLY_DATA)
++         || ssl->state == MBEDTLS_SSL_END_OF_EARLY_DATA
++#endif
++        )) {
++        mbedtls_ssl_set_outbound_transform(ssl, ssl->transform_application);
++    }
++
+     switch (ssl->state) {
+diff --git a/library/ssl_tls13_generic.c b/library/ssl_tls13_generic.c
+--- a/library/ssl_tls13_generic.c
++++ b/library/ssl_tls13_generic.c
+@@ -668,6 +668,4 @@
+         if (ssl->conf->endpoint == MBEDTLS_SSL_IS_SERVER) {
+-            /* The client was asked for a certificate but didn't send
+-             * one. The client should know what's going on, so we
+-             * don't send an alert.
+-             */
++            /* RFC 8446: a required empty client Certificate is rejected
++             * with certificate_required, not the SSLv3 no_certificate code. */
+             ssl->session_negotiate->verify_result = MBEDTLS_X509_BADCERT_MISSING;
+@@ -677,3 +675,3 @@
+                 MBEDTLS_SSL_PEND_FATAL_ALERT(
+-                    MBEDTLS_SSL_ALERT_MSG_NO_CERT,
++                    MBEDTLS_SSL_ALERT_MSG_CERT_REQUIRED,
+                     MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE);
+@@ -1319,3 +1319,7 @@
+     MBEDTLS_SSL_DEBUG_MSG(1, ("Switch to application keys for outbound traffic"));
+-    mbedtls_ssl_set_outbound_transform(ssl, ssl->transform_application);
++    /* The server switches after its Finished. Preserve any sequence numbers
++     * already consumed under application keys. The client still switches here. */
++    if (ssl->transform_out != ssl->transform_application) {
++        mbedtls_ssl_set_outbound_transform(ssl, ssl->transform_application);
++    }
+ 
+diff --git a/library/ssl_tls.c b/library/ssl_tls.c
+--- a/library/ssl_tls.c
++++ b/library/ssl_tls.c
+@@ -10085,5 +10085,13 @@
+             alert = MBEDTLS_SSL_ALERT_MSG_CERT_UNKNOWN;
+         }
++#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
++        if (ssl->tls_version == MBEDTLS_SSL_VERSION_TLS1_3) {
++            /* Let handshake_step retain/retry the alert on WANT_WRITE. */
++            mbedtls_ssl_pend_fatal_alert(ssl, alert, ret);
++        } else
++#endif
++        {
+         mbedtls_ssl_send_alert_message(ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
+                                        alert);
++        }
+     }

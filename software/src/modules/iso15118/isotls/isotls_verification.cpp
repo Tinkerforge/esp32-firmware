@@ -18,6 +18,7 @@
  */
 
 #include "../isotls.h"
+#include "vehicle_certificate.h"
 
 #include "event_log_prefix.h"
 #include "../generated/module_dependencies.h"
@@ -26,10 +27,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <limits>
 
 #include "mbedtls/error.h"
-#include "mbedtls/sha256.h"
 
 namespace {
 
@@ -55,87 +54,6 @@ bool cert_signature_is_valid(const mbedtls_x509_crt *child, mbedtls_x509_crt *pa
 }
 
 } // namespace
-
-bool ISOTLS::leaf_cert_is_cached()
-{
-    const mbedtls_x509_crt *leaf_cert = verification_context->certs[0];
-    mbedtls_sha256(leaf_cert->raw.p, leaf_cert->raw.len, verification_context->leaf_sha256, 0);
-
-    for (cert_cache_entry *entry = peer_cert_cache; entry != nullptr; entry = entry->next) {
-        if (memcmp(verification_context->leaf_sha256, entry->sha256, sizeof(entry->sha256)) == 0) {
-            entry->last_seen = now_us();
-            iso15118.trace("ISOTLS: Found cached certificate of peer '%s'", entry->dn);
-
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void ISOTLS::cache_leaf_cert()
-{
-    size_t entry_count = 0;
-    micros_t lru = std::numeric_limits<micros_t>::max();
-
-    cert_cache_entry **lru_entry_ptr = nullptr;
-    cert_cache_entry *lru_entry = nullptr;
-
-    cert_cache_entry **entry_ptr = &peer_cert_cache;
-    cert_cache_entry *entry = peer_cert_cache;
-
-    while (entry != nullptr) {
-        entry_count++;
-
-        if (entry->last_seen < lru) {
-            lru = entry->last_seen;
-            lru_entry_ptr = entry_ptr;
-            lru_entry = entry;
-        }
-
-        entry_ptr = &entry->next;
-        entry = entry->next;
-    }
-
-    if (entry_count < 10) {
-        // Allocate new entry
-        entry = static_cast<cert_cache_entry *>(perm_aligned_alloc_prefer(alignof(cert_cache_entry), sizeof(cert_cache_entry), RAM::PSRAM, RAM::DRAM));
-    } else {
-        // Reuse existing entry
-        *lru_entry_ptr = lru_entry->next;
-        entry = lru_entry;
-        free(entry->dn);
-    }
-
-    // Insert at the beginning
-    entry->next = peer_cert_cache;
-    peer_cert_cache = entry;
-
-    entry->last_seen = now_us();
-    memcpy(entry->sha256, verification_context->leaf_sha256, sizeof(entry->sha256));
-
-    const mbedtls_x509_crt *leaf_cert = verification_context->certs[0];
-    const mbedtls_asn1_buf &subject = leaf_cert->subject.val;
-    const size_t subject_len = subject.len;
-
-    entry->dn = static_cast<char *>(malloc_psram_or_dram(subject_len + 1));
-    memcpy(entry->dn, subject.p, subject_len);
-    entry->dn[subject_len] = 0;
-
-    iso15118.trace("ISOTLS: Caching certificate of peer '%s'", entry->dn);
-}
-
-mbedtls_x509_crt *ISOTLS::find_anchor_by_name(const mbedtls_x509_crt *topmost) const
-{
-    for (mbedtls_x509_crt *root = trusted_ca_iso20; root != nullptr; root = root->next) {
-        if (topmost->issuer_raw.len == root->subject_raw.len
-         && memcmp(topmost->issuer_raw.p, root->subject_raw.p, root->subject_raw.len) == 0) {
-            return root;
-        }
-    }
-
-    return nullptr;
-}
 
 void ISOTLS::hand_off_vehicle_chain()
 {
@@ -167,9 +85,6 @@ void ISOTLS::hand_off_vehicle_chain()
      && memcmp(topmost->issuer_raw.p, topmost->subject_raw.p, topmost->subject_raw.len) == 0) {
         root = topmost;
         chain_len = count - 1;
-    } else if (root == nullptr) {
-        // Cached leaf shortcut, the verify task did not run
-        root = find_anchor_by_name(topmost);
     }
 
     if (chain_len == 0) {
@@ -271,6 +186,23 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
     verification_context_t *verify_ctx = isotls->verification_context;
     verify_ctx->certs[index] = cert;
 
+    // Exempt only an actual installed anchor, never a peer certificate merely
+    // claiming to be self-signed. Keep Mbed TLS's existing validation flags.
+    bool anchor = false;
+    for (const mbedtls_x509_crt *root = isotls->trusted_ca_iso20; root != nullptr; root = root->next) {
+        if ((index > 0) && (root->raw.len == cert->raw.len) && (memcmp(root->raw.p, cert->raw.p, cert->raw.len) == 0)) {
+            anchor = true;
+            break;
+        }
+    }
+    if (!anchor) {
+        bool require_ocsp = true;
+#if MODULE_OCPP_AVAILABLE()
+        require_ocsp = ocpp.is_iso20_ocsp_required();
+#endif
+        *flags |= ISOVehicleCertificate::verify(*cert, index == 0, require_ocsp);
+    }
+
     if (index > 0) {
         // Leaf not reached, more certs to come.
         return 0;
@@ -288,13 +220,9 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
         return 0; // No error; verification failure is not an error
     }
 
-    if (isotls->leaf_cert_is_cached()) {
-        verify_ctx->leaf_cert_cached = true;
-        verify_ctx->intermediates_valid = true;
-
-        return 0;
-    }
-
+    // Revalidate the complete chain on each full handshake. A leaf-only cache
+    // cannot establish the signatures of newly presented intermediates or a
+    // changed trust anchor. The successful result lasts for this session only.
     // The verify task checks the intermediate signatures and the trust
     // store anchoring of the topmost certificate, so it runs even when the chain has no intermediates.
     const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 12288, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
@@ -311,6 +239,17 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
     // Verify leaf certificate
     if (!cert_signature_is_valid(leaf_cert, ca_cert)) {
         iso15118.trace("ISOTLS: Leaf certificate failed verification");
+        *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
+    }
+
+    // Both cores still verify signatures in parallel, but the result must be
+    // known before Mbed TLS accepts Certificate and issues session tickets.
+    // Propagate failure through its normal, resumable certificate-alert path.
+    if (verify_ctx->async_started) {
+        xQueueSemaphoreTake(verify_ctx->sem_handle, portMAX_DELAY_nowarn);
+        verify_ctx->async_started = false;
+    }
+    if (!verify_ctx->intermediates_valid) {
         *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
     }
 

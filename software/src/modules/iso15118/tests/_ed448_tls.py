@@ -62,7 +62,7 @@ def make_ed448_pki(workdir):
     run(["openssl", "genpkey", "-algorithm", "ED448", "-out", str(client_key)])
     run([
         "openssl", "req", "-new", "-key", str(client_key),
-        "-out", str(client_csr), "-subj", "/C=DE/O=Ed448 Test/CN=Ed448 EVCC",
+        "-out", str(client_csr), "-subj", "/O=Ed448 Test/CN=Ed448 EVCC/DC=EV",
     ])
     client_ext.write_text(
         "[ext]\n"
@@ -70,6 +70,8 @@ def make_ed448_pki(workdir):
         "keyUsage=critical,digitalSignature\n"
         "subjectKeyIdentifier=hash\n"
         "authorityKeyIdentifier=keyid,issuer\n"
+        "extendedKeyUsage=critical,clientAuth\n"
+        "authorityInfoAccess=OCSP;URI:http://ocsp.vehicle.test/ed448\n"
     )
     run([
         "openssl", "x509", "-req", "-in", str(client_csr),
@@ -347,10 +349,10 @@ def main():
 
         tls_probe(args.charger, iface, "ecdsa_secp521r1_sha512",
                   p521 / "certs" / "v2gRootCACert.pem",
-                  p521 / "certs" / "oemLeafCert.pem",
-                  p521 / "private_keys" / "oemLeaf.key",
+                  p521 / "certs" / "vehicleLeafCert.pem",
+                  p521 / "private_keys" / "vehicleLeaf.key",
                   "ECDSA", p521_ocsp, ed448_ocsp,
-                  p521 / "certs" / "oemCertChain.pem", "12345",
+                  p521 / "certs" / "vehicleCertChain.pem", "12345",
                   expected_ca_count=5)
         tls_probe(args.charger, iface, "ed448", v2g_root, client_cert,
                   client_key, "Ed448", ed448_ocsp, p521_ocsp,
@@ -370,24 +372,24 @@ def main():
         tls_probe(args.charger, iface,
                   "ecdsa_secp521r1_sha512:ed448",
                   p521 / "certs" / "v2gRootCACert.pem",
-                  p521 / "certs" / "oemLeafCert.pem",
-                  p521 / "private_keys" / "oemLeaf.key",
+                  p521 / "certs" / "vehicleLeafCert.pem",
+                  p521 / "private_keys" / "vehicleLeaf.key",
                   "ECDSA", p521_ocsp, ed448_ocsp,
-                  p521 / "certs" / "oemCertChain.pem", "12345",
+                  p521 / "certs" / "vehicleCertChain.pem", "12345",
                   request_ca=oem_root)
         tls_probe(args.charger, iface,
                   "ecdsa_secp521r1_sha512:ed448",
                   p521 / "certs" / "v2gRootCACert.pem",
-                  p521 / "certs" / "oemLeafCert.pem",
-                  p521 / "private_keys" / "oemLeaf.key",
+                  p521 / "certs" / "vehicleLeafCert.pem",
+                  p521 / "private_keys" / "vehicleLeaf.key",
                   "ECDSA", p521_ocsp, ed448_ocsp,
-                  p521 / "certs" / "oemCertChain.pem", "12345")
+                  p521 / "certs" / "vehicleCertChain.pem", "12345")
         tls_probe(args.charger, iface, "ed448:ecdsa_secp521r1_sha512",
                   p521 / "certs" / "v2gRootCACert.pem",
-                  p521 / "certs" / "oemLeafCert.pem",
-                  p521 / "private_keys" / "oemLeaf.key",
+                  p521 / "certs" / "vehicleLeafCert.pem",
+                  p521 / "private_keys" / "vehicleLeaf.key",
                   "ECDSA", p521_ocsp, ed448_ocsp,
-                  p521 / "certs" / "oemCertChain.pem", "12345")
+                  p521 / "certs" / "vehicleCertChain.pem", "12345")
         trace = urllib.request.urlopen(
             f"http://{args.charger}/trace_log", timeout=20).read().decode(errors="replace")
         assert "ISO20 candidate" in trace and "ecdsa" in trace and "ed448" in trace, trace
@@ -403,9 +405,9 @@ def main():
         time.sleep(2)
         tls_probe(args.charger, iface, "ecdsa_secp521r1_sha512",
                   p521 / "certs" / "v2gRootCACert.pem",
-                  p521 / "certs" / "oemLeafCert.pem",
-                  p521 / "private_keys" / "oemLeaf.key",
-                  client_chain=p521 / "certs" / "oemCertChain.pem",
+                  p521 / "certs" / "vehicleLeafCert.pem",
+                  p521 / "private_keys" / "vehicleLeaf.key",
+                  client_chain=p521 / "certs" / "vehicleCertChain.pem",
                   key_password="12345", expect_success=False)
         assert "Ed448" in run(["openssl", "x509", "-in", str(ed448_leaf), "-noout", "-text"]).stdout
         assert "id-ecPublicKey" in run(["openssl", "x509", "-in", str(p521_leaf), "-noout", "-text"]).stdout

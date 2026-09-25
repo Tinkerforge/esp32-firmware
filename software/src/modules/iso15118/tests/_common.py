@@ -268,8 +268,8 @@ class EVTestClient:
         context.verify_mode = ssl.CERT_REQUIRED
         context.load_verify_locations(cafile=str(CERTS_DIR / "iso20/certs/v2gRootCACert.pem"))
         context.load_cert_chain(
-            certfile=str(CERTS_DIR / "iso20/certs/oemCertChain.pem"),
-            keyfile=str(CERTS_DIR / "iso20/private_keys/oemLeaf.key"),
+            certfile=str(CERTS_DIR / "iso20/certs/vehicleCertChain.pem"),
+            keyfile=str(CERTS_DIR / "iso20/private_keys/vehicleLeaf.key"),
             password="12345",
         )
         return context

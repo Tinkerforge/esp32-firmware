@@ -552,6 +552,7 @@ generate_der_copies "iso2"
 # [V2G20-2675] Key length for ECC shall be 521 bit
 generate_cert_chain "iso20" "secp521r1" 22345
 generate_oem_cert_chain "iso20" "secp521r1" 42345
+uv run --locked --group iso15118-tests python "$SCRIPT_DIR/generate_vehicle_certs.py" --password "$PASSWORD"
 generate_mo_cert_chain "iso20" "secp521r1" 72345
 generate_cps_cert_chain "iso20" "secp521r1" 82345
 generate_der_copies "iso20"

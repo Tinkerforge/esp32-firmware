@@ -60,4 +60,6 @@ try:
 finally:
     if proc.poll() is None:
         proc.terminate()
-    proc.communicate(timeout=10)
+    remaining_out, remaining_err = proc.communicate(timeout=10)
+    if remaining_out or remaining_err:
+        print(remaining_out, remaining_err, file=sys.stderr)

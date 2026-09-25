@@ -59,8 +59,8 @@ def connect_tls13(charger, iface, cert=None, key=None):
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_REQUIRED
     ctx.load_verify_locations(cafile=str(CERTS / "iso20" / "certs" / "v2gRootCACert.pem"))
-    ctx.load_cert_chain(certfile=str(cert or CERTS / "iso20" / "certs" / "oemCertChain.pem"),
-                        keyfile=str(key or CERTS / "iso20" / "private_keys" / "oemLeaf.key"),
+    ctx.load_cert_chain(certfile=str(cert or CERTS / "iso20" / "certs" / "vehicleCertChain.pem"),
+                        keyfile=str(key or CERTS / "iso20" / "private_keys" / "vehicleLeaf.key"),
                         password="12345")
     raw = common.connect_secc(charger, iface)
     raw.settimeout(30)
@@ -79,20 +79,21 @@ def mint_oem_leaf(workdir, tag):
     run(["openssl", "ecparam", "-name", "secp521r1", "-genkey", "-noout", "-out", str(key)])
     csr = workdir / f"oem_{tag}.csr"
     run(["openssl", "req", "-new", "-key", str(key),
-         "-subj", "/CN=OEMProvCert/O=WARP/C=DE/DC=OEM", "-out", str(csr)])
+         "-subj", "/CN=TestEVCC/O=WARP/DC=EV", "-out", str(csr)])
     ext = workdir / f"oem_{tag}.cnf"
     ext.write_text("[e]\nbasicConstraints=critical,CA:false\n"
-                   "keyUsage=critical,digitalSignature,keyAgreement\nsubjectKeyIdentifier=hash\n")
+                   "keyUsage=critical,digitalSignature\nsubjectKeyIdentifier=hash\n"
+                   "extendedKeyUsage=critical,clientAuth\nauthorityInfoAccess=OCSP;URI:http://ocsp.vehicle.test/leaf\n")
     leaf = workdir / f"oem_{tag}.pem"
     run(["openssl", "x509", "-req", "-in", str(csr),
-         "-CA", str(pki / "certs" / "oemSubCA2Cert.pem"),
-         "-CAkey", str(pki / "private_keys" / "oemSubCA2.key"), "-passin", "pass:12345",
+         "-CA", str(pki / "certs" / "vehicleSubCA2Cert.pem"),
+         "-CAkey", str(pki / "private_keys" / "vehicleSubCA2.key"), "-passin", "pass:12345",
          "-set_serial", str(int.from_bytes(tag.encode() + os.urandom(8), "big")),
          "-days", "60", "-sha512", "-extfile", str(ext), "-extensions", "e", "-out", str(leaf)])
     chain = workdir / f"oem_{tag}_chain.pem"
     chain.write_text(leaf.read_text()
-                     + (pki / "certs" / "oemSubCA2Cert.pem").read_text()
-                     + (pki / "certs" / "oemSubCA1Cert.pem").read_text())
+                     + (pki / "certs" / "vehicleSubCA2Cert.pem").read_text()
+                     + (pki / "certs" / "vehicleSubCA1Cert.pem").read_text())
     return chain, key
 
 
@@ -203,9 +204,9 @@ def certificate_hash_data(cert, issuer):
 
 def expected_vehicle_hashes(leaf):
     pki = CERTS / "iso20" / "certs"
-    return [certificate_hash_data(leaf, pki / "oemSubCA2Cert.pem"),
-            certificate_hash_data(pki / "oemSubCA2Cert.pem", pki / "oemSubCA1Cert.pem"),
-            certificate_hash_data(pki / "oemSubCA1Cert.pem", pki / "oemRootCACert.pem")]
+    return [certificate_hash_data(leaf, pki / "vehicleSubCA2Cert.pem"),
+            certificate_hash_data(pki / "vehicleSubCA2Cert.pem", pki / "vehicleSubCA1Cert.pem"),
+            certificate_hash_data(pki / "vehicleSubCA1Cert.pem", pki / "oemRootCACert.pem")]
 
 
 def request_hashes(request):
@@ -234,9 +235,9 @@ def forge_oem_chain(workdir):
 
     names = {
         "root": dn(pki / "oemRootCACert.pem"),
-        "sub1": dn(pki / "oemSubCA1Cert.pem"),
-        "sub2": dn(pki / "oemSubCA2Cert.pem"),
-        "leaf": dn(pki / "oemLeafCert.pem"),
+        "sub1": dn(pki / "vehicleSubCA1Cert.pem"),
+        "sub2": dn(pki / "vehicleSubCA2Cert.pem"),
+        "leaf": dn(pki / "vehicleLeafCert.pem"),
     }
     keys = {}
     for k in names:
@@ -254,7 +255,8 @@ def forge_oem_chain(workdir):
              "-subj", "/" + names[name].replace(",", "/"), "-out", str(csr)])
         ext = workdir / f"forge_{name}.cnf"
         ext.write_text("[e]\nbasicConstraints=critical,CA:" + ("true" if ca else "false") + "\n"
-                       "keyUsage=critical," + ("keyCertSign,cRLSign" if ca else "digitalSignature,keyAgreement") + "\n")
+                       "keyUsage=critical," + ("keyCertSign,cRLSign" if ca else "digitalSignature,keyAgreement") + "\n"
+                       "authorityInfoAccess=OCSP;URI:http://ocsp.vehicle.test/forged\n")
         crt = workdir / f"forge_{name}.pem"
         run(["openssl", "x509", "-req", "-in", str(csr), "-CA", str(issuer_crt),
              "-CAkey", str(issuer_key), "-CAcreateserial", "-days", "60", "-sha512",

@@ -204,8 +204,8 @@ def connect(charger, iface, tls13, client_cert=None, client_key=None):
         ctx.minimum_version = ssl.TLSVersion.TLSv1_3
         ctx.verify_mode = ssl.CERT_REQUIRED
         ctx.load_verify_locations(cafile=str(CERTS / "iso20" / "certs" / "v2gRootCACert.pem"))
-        ctx.load_cert_chain(certfile=str(client_cert or CERTS / "iso20" / "certs" / "oemCertChain.pem"),
-                            keyfile=str(client_key or CERTS / "iso20" / "private_keys" / "oemLeaf.key"),
+        ctx.load_cert_chain(certfile=str(client_cert or CERTS / "iso20" / "certs" / "vehicleCertChain.pem"),
+                            keyfile=str(client_key or CERTS / "iso20" / "private_keys" / "vehicleLeaf.key"),
                             password="12345")
     else:
         ctx.maximum_version = ssl.TLSVersion.TLSv1_2

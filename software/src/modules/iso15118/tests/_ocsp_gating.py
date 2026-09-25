@@ -384,8 +384,8 @@ def try_tls(charger, iface, tls13, mutual=False):
         ctx.minimum_version = ssl.TLSVersion.TLSv1_3
         ctx.load_verify_locations(cafile=str(CERTS / "iso20" / "certs" / "v2gRootCACert.pem"))
         if mutual:
-            ctx.load_cert_chain(certfile=str(CERTS / "iso20" / "certs" / "oemCertChain.pem"),
-                                keyfile=str(CERTS / "iso20" / "private_keys" / "oemLeaf.key"),
+            ctx.load_cert_chain(certfile=str(CERTS / "iso20" / "certs" / "vehicleCertChain.pem"),
+                                keyfile=str(CERTS / "iso20" / "private_keys" / "vehicleLeaf.key"),
                                 password="12345")
     else:
         ctx.maximum_version = ssl.TLSVersion.TLSv1_2

@@ -169,18 +169,9 @@ private:
         mbedtls_x509_crt *certs[CERTS_MAX_VERIFY];
         StaticSemaphore_t sem_buf;
         SemaphoreHandle_t sem_handle;
-        uint8_t leaf_sha256[32];
-        bool leaf_cert_cached;
         bool async_started;
         bool intermediates_valid;
         mbedtls_x509_crt *anchor_root; // trust store root the chain verified against
-    };
-
-    struct cert_cache_entry {
-        micros_t last_seen;
-        uint8_t sha256[32];
-        char *dn;
-        cert_cache_entry *next;
     };
 
     bool load_certificates();
@@ -192,10 +183,7 @@ private:
     bool configure_ssl_policy();
     void configure_signature_policy(mbedtls_ssl_protocol_version version);
     bool apply_group_policy();
-    bool leaf_cert_is_cached();
-    void cache_leaf_cert();
     void verify_intermediate_certs();
-    mbedtls_x509_crt *find_anchor_by_name(const mbedtls_x509_crt *topmost) const;
     void hand_off_vehicle_chain();
     static void verify_certs_task(void *ctx);
     static int cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *flags);
@@ -224,7 +212,6 @@ private:
 
     // Async verification
     verification_context_t *verification_context = nullptr;
-    cert_cache_entry *peer_cert_cache = nullptr;
 
     // Socket file descriptor for current session
     int socket_fd = -1;

@@ -15,6 +15,8 @@ for patch_file in "$PATCH_ROOT"/library/001[4-9]-*.rawpatch; do
     patch -d "$BUILD/mbedtls/library" --forward < "$patch_file"
 done
 patch -d "$BUILD/mbedtls" -p1 --fuzz=0 --forward < "$PATCH_ROOT/0020-Add-post-handshake-TLS-1.3-ticket-issuance.patch"
+git -C "$BUILD/mbedtls" apply --ignore-space-change "$PATCH_ROOT/0021-Fix-TLS-1.3-server-rejection-alert-keys.patch"
+make -C "$BUILD/mbedtls" clean > /dev/null
 make -C "$BUILD/mbedtls" lib -j"$(nproc)" > /dev/null
 gcc -Wall -Wextra -Werror -O1 -I "$BUILD/mbedtls/include" -I "$BUILD/mbedtls/library" \
     -c -o "$BUILD/server.o" -x c _ticket_renewal_server.c.inc
