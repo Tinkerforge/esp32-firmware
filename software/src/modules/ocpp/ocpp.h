@@ -38,6 +38,7 @@ public:
     void setup() override;
     void register_urls() override;
     void pre_reboot() override;
+    void mark_remote_reset();
 
     bool on_tag_seen(const char *tag_id);
 
@@ -121,6 +122,7 @@ public:
 
     size_t trace_buf_idx;
 private:
+    Ocpp21::BootNotificationReason boot_reason = Ocpp21::BootNotificationReason::POWER_UP;
     void apply_config();
 
     static constexpr bool supports_iso15118_pnc();

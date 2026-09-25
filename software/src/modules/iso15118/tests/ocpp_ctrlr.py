@@ -169,9 +169,9 @@ def suite_setup(tc: TestContext):
         "enable": True,
         "protocol": 1,
         "url": f"wss://{local_ip}:{csms.port}",
-        "identity": "warp4-c08-test",
+        "identity": "warp4-device-model-test",
         "enable_auth": True,
-        "pass": "warp4-c08-test-password",
+        "pass": "warp4-device-model-test-password",
         "cert_id": csms_tls.cert_id,
     })
     connect_test_ocpp(tc)
@@ -344,10 +344,10 @@ def test_identity_persists_and_drives_csr_after_reboot(tc: TestContext):
     assert csms is not None
     tc.set_test_timeout(180)
     expected = {
-        "SeccId": "DE*TFO*EC08SUBJECT",
+        "SeccId": "DE*TFO*ETESTSUBJECT",
         "CountryName": "DE",
-        "OrganizationName": "C08 ISO Subject Organization",
-        "ISO15118EvseId": "DE*TFO*EC08EVSE",
+        "OrganizationName": "ISO Subject Test Organization",
+        "ISO15118EvseId": "DE*TFO*ETESTEVSE",
     }
     security_request = {"component": {"name": "SecurityCtrlr"}, "variable": {"name": "OrganizationName"}}
     security_before = csms.call("GetVariables", {"getVariableData": [security_request]})["getVariableResult"][0]
@@ -400,7 +400,7 @@ def test_private_environment_persists_across_reboot(tc: TestContext):
 
 
 def test_missing_v2g_root_notify_event(tc: TestContext):
-    # Hubject catalogue 47/E5: isolated untrusted issuer, no installed-root mutation.
+    # OCPP A02.FR.06 and N07: isolated untrusted issuer, no installed-root mutation.
     assert csms is not None
     tc.set_test_timeout(120)
     listing_request = {"certificateType": ["V2GRootCertificate", "V2GCertificateChain"]}
@@ -416,7 +416,7 @@ def test_missing_v2g_root_notify_event(tc: TestContext):
         csr = x509.load_pem_x509_csr(request["csr"].encode())
         tc.assert_(csr.is_signature_valid)
         key = ec.generate_private_key(ec.SECP256R1())
-        subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "C10 uninstalled test root")])
+        subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Uninstalled certificate-event test root")])
         now = datetime.now(timezone.utc)
         root = (x509.CertificateBuilder().subject_name(subject).issuer_name(subject)
                 .public_key(key.public_key()).serial_number(x509.random_serial_number())

@@ -21,6 +21,8 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <esp_system.h>
+#include <esp_attr.h>
 
 #include <algorithm>
 #include <vector>
@@ -80,8 +82,23 @@ static void reset_state(Config *state) {
     state->get("pong_timeout")->updateUint(0);
 }
 
+static RTC_NOINIT_ATTR uint32_t remote_reset_marker;
+static constexpr uint32_t REMOTE_RESET_MARKER = 0x4f435052;
+
+void Ocpp::mark_remote_reset()
+{
+    remote_reset_marker = REMOTE_RESET_MARKER;
+}
+
 void Ocpp::pre_setup()
 {
+    // Consume at boot, including when OCPP is disabled. Only a software reset
+    // with our marker is a remote reset. Power loss/watchdog must not inherit it.
+    if ((esp_reset_reason() == ESP_RST_SW) && (remote_reset_marker == REMOTE_RESET_MARKER)) {
+        boot_reason = Ocpp21::BootNotificationReason::REMOTE_RESET;
+    }
+
+    remote_reset_marker = 0;
     trace_buf_idx = logger.alloc_trace_buffer("ocpp", 128 * 1024);
 
     config = ConfigRoot{Config::Object({
@@ -245,7 +262,7 @@ bool Ocpp::start_client_21()
         pass = config.get("pass")->asEphemeralCStr();
     }
 
-    return cp21->start(url.c_str(), config.get("identity")->asEphemeralCStr(), pass, security_profile, is_tls ? &tls : nullptr);
+    return cp21->start(url.c_str(), config.get("identity")->asEphemeralCStr(), pass, security_profile, is_tls ? &tls : nullptr, boot_reason);
 }
 
 void Ocpp::apply_config() {

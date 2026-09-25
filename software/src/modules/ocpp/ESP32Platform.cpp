@@ -1424,6 +1424,7 @@ void platform_remove_file(const char *name)
 
 void platform_reset(bool hard)
 {
+    ocpp.mark_remote_reset();
     if (hard) {
         /*
         At receipt of a hard reset the Charge Point SHALL restart (all) the hardware, it is not required to gracefully stop

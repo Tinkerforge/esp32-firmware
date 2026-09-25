@@ -323,6 +323,7 @@ class CSMSSim:
         keyfile: str | None = None,
         ssl_context: ssl.SSLContext | None = None,
         expected_basic_auth: tuple[str, str] | None = None,
+        record_calls: bool = False,
     ):
         from websockets.sync.server import serve
 
@@ -332,6 +333,8 @@ class CSMSSim:
         self.pending_requests = []
         self.responses = queue.Queue()
         self.security_events = []
+        self.received_calls = []
+        self.record_calls = record_calls
         self.connected = threading.Event()
         self.authorization = None
         self.current_time_offset_s = 0
@@ -391,6 +394,11 @@ class CSMSSim:
                 message = json.loads(raw)
                 if message[0] == 2:
                     _, message_id, action, payload = message
+                    if self.record_calls:
+                        self.received_calls.append((self.connection_count, action, payload))
+                    if action == "NotifyEvent" and all(e["variable"]["name"] == "AvailabilityState" for e in payload["eventData"]):
+                        self.respond(message_id, {})
+                        continue
                     if action in self.interactive:
                         self.requests.put((action, payload, message_id))
                     elif action == "BootNotification":
