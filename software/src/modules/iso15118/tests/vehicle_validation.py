@@ -97,7 +97,7 @@ class VehicleValidationEnvironment:
         self.csms_tls = common.LocalCSMSTls(self.host, tc.get_local_ip())
         self.csms = common.CSMSSim(
             port=tc.find_free_port(9500),
-            interactive=("SignCertificate", "GetCertificateStatus", "GetCertificateChainStatus"),
+            interactive=("SignCertificate", "GetCertificateStatus", "GetCertificateChainStatus", "NotifyEvent"),
             certfile=str(self.csms_tls.certfile), keyfile=str(self.csms_tls.keyfile))
         config = dict(self.saved["ocpp/config"])
         config.update(enable=True, protocol=1, url=f"wss://{tc.get_local_ip()}:{self.csms.port}",
@@ -410,6 +410,140 @@ def test_iso2_tls12_and_sap(tc: TestContext):
         result = vehicle.exchange(tls, "supportedAppProtocolReq", {"AppProtocol": [common.ISO2]}, Namespace.SAP, 0x8001)
         tc.assert_eq("OK_SuccessfulNegotiation", result["supportedAppProtocolRes"]["ResponseCode"])
         environment.record("ISO-2 TLS 1.2 + SAP", tls.cipher())
+
+
+def missing_root_lifecycle(tc: TestContext, bundled_root: bool):
+    # TC_HU_SECC_ISO20_Install_Leaf_Certificate_Without_Trusted_Root_001;
+    # OCPP A02.FR.06, A02.FR.07, M03, M04 and N07.
+    tc.set_test_timeout(240)
+    env = environment
+    csms = env.csms
+    root, root_pem, root_key = env.pki["iso20"]
+    root_hash = certificate_hash_data(root, root)
+    before = env.inventory()
+    before_ids = {env.identity(entry) for entry in before}
+    root_id = env.identity({"certificateType": "V2GRootCertificate", "certificateHashData": root_hash})
+    tc.assert_(root_id in before_ids)
+    old_leaf = x509.load_pem_x509_certificate((env.work / "iso20-secc.pem").read_bytes())
+    iso2_leaf = x509.load_pem_x509_certificate((env.work / "iso2-secc.pem").read_bytes())
+    old_chain_id = env.identity({"certificateType": "V2GCertificateChain",
+                                 "certificateHashData": certificate_hash_data(old_leaf, root)})
+    for cert, issuer in ((old_leaf, root), (iso2_leaf, env.pki["iso2"][0])):
+        tc.assert_(env.identity({"certificateType": "V2GCertificateChain",
+                                "certificateHashData": certificate_hash_data(cert, issuer)}) in before_ids)
+
+    path, certs = env.chain(f"root-deletion-{bundled_root}")
+    security_before = len(csms.security_events)
+    event_ids = []
+    pending = False
+    deleted = False
+    payload = None
+    try:
+        result = csms.call("DeleteCertificate", {"certificateHashData": root_hash})
+        tc.assert_eq("Accepted", result["status"])
+        deleted = True
+        after = env.inventory()
+        # The dependent ISO-20 chain is deleted, preserving the ISO-2 identity.
+        tc.assert_eq(before_ids - {root_id, old_chain_id}, {env.identity(entry) for entry in after})
+        count_request = {"getVariableData": [{"component": {"name": "SecurityCtrlr"},
+                                             "variable": {"name": "CertificateEntries"}}]}
+        count = csms.call("GetVariables", count_request)["getVariableResult"][0]
+        tc.assert_eq("Accepted", count["attributeStatus"])
+        tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+        pending = True
+        request, mid = csms.expect("SignCertificate", timeout=60)
+        csms.respond(mid, {"status": "Accepted"})
+        tc.assert_eq("V2G20Certificate", request["certificateType"])
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        tc.assert_(isinstance(csr.public_key(), ec.EllipticCurvePublicKey))
+        tc.assert_eq("secp521r1", csr.public_key().curve.name)
+        tc.assert_eq(old_leaf.subject, csr.subject)
+        now = datetime.now(timezone.utc)
+        replacement = (x509.CertificateBuilder().subject_name(csr.subject).issuer_name(root.subject)
+                       .public_key(csr.public_key()).serial_number(x509.random_serial_number())
+                       .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=45))
+                       .add_extension(x509.BasicConstraints(False, None), True)
+                       .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), True)
+                       .add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
+                           fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
+                       .sign(root_key, hashes.SHA512()))
+        chain = fixtures.pem(replacement) + (root_pem if bundled_root else b"")
+        payload = {"certificateType": "V2G20Certificate", "requestId": request["requestId"],
+                   "certificateChain": chain.decode()}
+        for _ in range(2):
+            rejected = csms.call("CertificateSigned", payload)
+            tc.assert_eq("Rejected", rejected["status"])
+            tc.assert_(rejected["statusInfo"]["reasonCode"] in ("NoTrustedRoot", "UntrustedChain"))
+            event, mid = csms.expect("NotifyEvent", timeout=10)
+            csms.respond(mid, {})
+            tc.assert_eq(0, event["seqNo"])
+            tc.assert_eq(False, event.get("tbc", False))
+            tc.assert_eq(1, len(event["eventData"]))
+            data = event["eventData"][0]
+            tc.assert_eq({"name": "SecurityCtrlr"}, data["component"])
+            tc.assert_eq({"name": "CertificateEntries"}, data["variable"])
+            tc.assert_eq(count["attributeValue"], data["actualValue"])
+            tc.assert_eq("Alerting", data["trigger"])
+            tc.assert_eq("HardWiredNotification", data["eventNotificationType"])
+            tc.assert_eq(3, data["severity"])
+            tc.assert_eq(rejected["statusInfo"]["reasonCode"], data["techCode"])
+            tc.assert_eq("V2GCertificateChain installation failed because the corresponding V2G root was not found.", data["techInfo"])
+            tc.assert_("variableMonitoringId" not in data and "cleared" not in data)
+            tc.assert_(isinstance(data["eventId"], int) and data["eventId"] >= 0)
+            event_ids.append(data["eventId"])
+            for stamp in (event["generatedAt"], data["timestamp"]):
+                tc.assert_(abs((datetime.now(timezone.utc) - datetime.fromisoformat(stamp.replace("Z", "+00:00"))).total_seconds()) < 120)
+            tc.assert_eq(after, env.inventory())
+        tc.assert_(event_ids[0] != event_ids[1])
+        tc.assert_eq(security_before, len(csms.security_events))
+
+        # With the ISO-20 identity removed, complete TLS 1.2 and ISO-2 SAP
+        # using the exact unaffected ISO-2 identity.
+        from iso15118.shared.messages.enums import Namespace
+        with env.connect(None, tls12=True) as tls:
+            tc.assert_eq(iso2_leaf.public_bytes(serialization.Encoding.DER), tls.getpeercert(binary_form=True))
+            result = vehicle.exchange(tls, "supportedAppProtocolReq", {"AppProtocol": [common.ISO2]}, Namespace.SAP, 0x8001)
+            tc.assert_eq("OK_SuccessfulNegotiation", result["supportedAppProtocolRes"]["ResponseCode"])
+        tc.assert_eq(security_before, len(csms.security_events))
+        env.record("missing-root lifecycle", {"bundled_root": bundled_root, "event_ids": event_ids,
+                   "deleted_leaf_serial": format(old_leaf.serial_number, "x"),
+                   "rejected_leaf_serial": format(replacement.serial_number, "x")})
+    finally:
+        # Independent root provisioning makes the rejected enrollment usable.
+        if deleted:
+            tc.assert_eq("Accepted", csms.call("InstallCertificate", {
+                "certificateType": "V2GRootCertificate", "certificate": root_pem.decode()})["status"])
+        if pending and payload is not None:
+            tc.assert_eq("Accepted", csms.call("CertificateSigned", payload)["status"])
+            now = datetime.now(timezone.utc)
+            response = (ocsp.OCSPResponseBuilder().add_response(replacement, root, hashes.SHA256(),
+                ocsp.OCSPCertStatus.GOOD, now - timedelta(minutes=1), now + timedelta(days=1), None, None)
+                .responder_id(ocsp.OCSPResponderEncoding.HASH, root).certificates([root]).sign(root_key, hashes.SHA512()))
+            env.statuses[format(replacement.serial_number, "x")] = base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()
+            (env.work / "iso20-secc.pem").write_bytes(fixtures.pem(replacement))
+            req, mid = csms.expect("GetCertificateStatus", timeout=30)
+            tc.assert_eq(format(replacement.serial_number, "x"), req["ocspRequestData"]["serialNumber"].lower().lstrip("0"))
+            csms.respond(mid, {"status": "Accepted", "ocspResult": env.statuses[format(replacement.serial_number, "x")]})
+            replacement_id = env.identity({"certificateType": "V2GCertificateChain",
+                                           "certificateHashData": certificate_hash_data(replacement, root)})
+            tc.assert_eq(before_ids - {old_chain_id} | {replacement_id}, {env.identity(entry) for entry in env.inventory()})
+        elif pending:
+            tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+            _, mid = csms.expect("SignCertificate", timeout=60)
+            csms.respond(mid, {"status": "Rejected"})
+
+    time.sleep(2)
+    env.positive("ISO-20 recovery after independent root provisioning", path, certs)
+    tc.assert_eq(security_before, len(csms.security_events))
+
+
+def test_missing_root_lifecycle_root_free(tc: TestContext):
+    missing_root_lifecycle(tc, False)
+
+
+def test_missing_root_lifecycle_bundled_root(tc: TestContext):
+    missing_root_lifecycle(tc, True)
 
 
 def generate_tests():
