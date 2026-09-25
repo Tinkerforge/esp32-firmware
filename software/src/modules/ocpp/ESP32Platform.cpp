@@ -1347,6 +1347,11 @@ void platform_cert_store_changed21(void *ctx)
 {
     (void)ctx;
 #if MODULE_ISO15118_AVAILABLE()
+    // A live connection must not retain public anchors in private mode, or
+    // private-mode revocation exemptions after switching back to public.
+    if (ocpp.iso15118_environment_changed()) {
+        iso15118.common.reset_active_socket();
+    }
     iso15118.common.tls.certs_dirty = true;
     task_scheduler.scheduleOnce([]() { iso15118.reconcile_enabled(); });
 #endif

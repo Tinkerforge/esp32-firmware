@@ -175,8 +175,10 @@ class VehicleValidationEnvironment:
         self.sub1_key, self.sub2_key, self.leaf_key = [ec.generate_private_key(ec.SECP521R1()) for _ in range(3)]
         fixtures.write_key(self.work / "vehicle.key", self.leaf_key)
 
-    def connect(self, cert, *, tls12=False):
+    def connect(self, cert, *, tls12=False, message_callback=None):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        if message_callback is not None:
+            context._msg_callback = message_callback
         context.minimum_version = context.maximum_version = ssl.TLSVersion.TLSv1_2 if tls12 else ssl.TLSVersion.TLSv1_3
         context.check_hostname = False
         context.load_verify_locations(cadata=self.pki["iso2" if tls12 else "iso20"][1].decode())
@@ -751,6 +753,62 @@ def test_seven_day_renewal_with_sub_ca_inventory(tc: TestContext):
             tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
             _, mid = csms.expect("SignCertificate", timeout=60)
             csms.respond(mid, {"status": "Rejected"})
+
+
+def test_environment_transition_and_reboot(tc: TestContext):
+    """HUB20-21-007: ISO15118Ctrlr.PrivateEnvironmentEnabled changes reset TLS policy."""
+    tc.set_test_timeout(360)
+    env = environment
+    saved = env.variable("PrivateEnvironmentEnabled")
+    before = sorted(env.inventory(), key=env.identity)
+    path, certs = env.chain("environment-transition")
+    try:
+        for initial, changed in [("false", "true"), ("true", "false")]:
+            env.variable("PrivateEnvironmentEnabled", initial)
+            with env.connect(path) as tls:
+                vehicle.sap_iso20(tls)
+                # Public mode emits M07; private mode may do so in PnC builds.
+                try:
+                    request, mid = env.csms.expect("GetCertificateChainStatus", timeout=2)
+                except TimeoutError:
+                    pass
+                else:
+                    env.csms.respond(mid, vehicle.chain_status_response(request, ["Good"] * 3))
+                session = vehicle.session_setup(tls)
+                vehicle.authorization_setup(tls, session)
+                tc.assert_eq("OK", vehicle.final_authorization(tls, session)["ResponseCode"])
+                # An unchanged value must not tear down the connection.
+                env.variable("PrivateEnvironmentEnabled", initial)
+                tc.assert_eq("OK", vehicle.final_authorization(tls, session)["ResponseCode"])
+                env.variable("PrivateEnvironmentEnabled", changed)
+                tc.assert_eq(changed, env.variable("PrivateEnvironmentEnabled"))
+                tc.assert_(vehicle.tls_closed(tls))
+                env.record("live environment transition closes TLS", {"from": initial, "to": changed})
+            time.sleep(2)
+
+        # A new leaf forces a fresh public M07 request after the transition.
+        path, certs = env.chain("environment-public-recovery")
+        env.positive("public-mode recovery enforces fresh M07", path, certs)
+        env.variable("PrivateEnvironmentEnabled", "true")
+        connection_count = env.csms.connection_count
+        tc.reboot()
+        env.csms.wait_for_connection(after=connection_count, timeout=60)
+        tc.assert_eq("true", env.variable("PrivateEnvironmentEnabled"))
+        tc.assert_eq(before, sorted(env.inventory(), key=env.identity))
+        common.enable_debug_mode(env.host)
+        tc.wait_for(lambda: tc.assert_(common.sdp_request(env.iface, expected_from=env.target_ll) is not None), timeout=30)
+        # OCSP is memory-only. Private non-PnC operation must recover using
+        # the persisted private PKI without inheriting a previous TLS context.
+        with env.connect(path) as tls:
+            vehicle.sap_iso20(tls)
+            session = vehicle.session_setup(tls)
+            vehicle.authorization_setup(tls, session)
+            tc.assert_eq("OK", vehicle.final_authorization(tls, session)["ResponseCode"])
+        env.record("private environment and certificate inventory survive reboot")
+    finally:
+        env.variable("PrivateEnvironmentEnabled", saved)
+        tc.assert_eq(saved, env.variable("PrivateEnvironmentEnabled"))
+        tc.assert_eq(before, sorted(env.inventory(), key=env.identity))
 
 
 def generate_tests():

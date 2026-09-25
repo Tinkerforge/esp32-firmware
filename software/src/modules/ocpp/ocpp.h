@@ -72,6 +72,7 @@ public:
     bool is_iso15118_store_live();
     bool is_iso20_suite_enabled(OcppCurve21 curve) const;
     bool is_iso20_ocsp_required() const;
+    bool iso15118_environment_changed();
     bool is_iso20_tls_ready(uint32_t chain_id);
     bool is_iso20_tls_ready();
     bool get_iso15118_ocsp_staple(uint32_t chain_id, uint8_t cert_idx, std::unique_ptr<uint8_t[]> *der_out, size_t *der_len_out);
@@ -127,6 +128,8 @@ private:
 
     static constexpr bool supports_iso15118_pnc();
     bool private_environment_waives_iso15118_ocsp() const;
+    bool is_private_iso15118_environment() const;
+    bool last_private_environment = false;
 
     bool start_client();
     bool start_client_21();

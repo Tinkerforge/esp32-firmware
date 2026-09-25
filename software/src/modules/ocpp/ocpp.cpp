@@ -18,6 +18,7 @@
  */
 
 #include "ocpp.h"
+#include "root_policy.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -337,11 +338,11 @@ const Ocpp21::CertEntry *Ocpp::best_iso15118_secc_chain(bool iso20, bool *valid_
     const Ocpp21::CertEntry *best = nullptr;
     bool best_valid = false;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group != group) {
+        if ((e.group != group) || !Iso15118RootPolicy::allowed(e, is_private_iso15118_environment())) {
             continue;
         }
         bool valid = e.not_before <= now && now <= e.not_after;
-        if (best == nullptr || (valid && !best_valid) || (valid == best_valid && e.not_before > best->not_before)) {
+        if ((best == nullptr) || (valid && !best_valid) || (valid == best_valid && e.not_before > best->not_before)) {
             best = &e;
             best_valid = valid;
         }
@@ -365,7 +366,7 @@ size_t Ocpp::get_iso15118_secc_chains(bool iso20, Iso15118SeccChain *chains_out,
     time_t now = platform_get_system_time(cp21->connection.platform_ctx);
     std::vector<const Ocpp21::CertEntry *> candidates;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group != group || !e.has_anchor || e.not_before > now || now > e.not_after) {
+        if ((e.group != group) || !Iso15118RootPolicy::allowed(e, is_private_iso15118_environment()) || (e.not_before > now) || (now > e.not_after)) {
             continue;
         }
         if (iso20 &&
@@ -462,7 +463,7 @@ std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(RootGroup group)
     }
     size_t count = 0;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group == cert_group) {
+        if ((e.group == cert_group) && Iso15118RootPolicy::allowed(e, is_private_iso15118_environment())) {
             ++count;
         }
     }
@@ -476,7 +477,7 @@ std::unique_ptr<char[]> Ocpp::get_iso15118_root_bundle(RootGroup group)
     }
     size_t used = 0;
     for (const auto &e : cp21->cert_store.all()) {
-        if (e.group != cert_group) {
+        if (e.group != cert_group || !Iso15118RootPolicy::allowed(e, is_private_iso15118_environment())) {
             continue;
         }
         used += cp21->cert_store.readPem(e, bundle.get() + used, OCPP21_ROOT_PEM_MAX + 1);
@@ -542,7 +543,20 @@ constexpr bool Ocpp::supports_iso15118_pnc()
 
 bool Ocpp::private_environment_waives_iso15118_ocsp() const
 {
-    return cp21 && client_started && cp21->device_model.private_environment_enabled && !supports_iso15118_pnc();
+    return is_private_iso15118_environment() && !supports_iso15118_pnc();
+}
+
+bool Ocpp::is_private_iso15118_environment() const
+{
+    return cp21 && client_started && cp21->device_model.private_environment_enabled;
+}
+
+bool Ocpp::iso15118_environment_changed()
+{
+    const bool current = is_private_iso15118_environment();
+    const bool changed = current != last_private_environment;
+    last_private_environment = current;
+    return changed;
 }
 
 // HUB20-532-002: TLS 1.3 with the -20 chain is only offered with a
@@ -572,7 +586,7 @@ bool Ocpp::is_iso20_tls_ready(uint32_t chain_id)
     }
     const Ocpp21::CertEntry *chain = cp21->cert_store.findSeccChainById(chain_id);
     time_t now = platform_get_system_time(cp21->connection.platform_ctx);
-    if (chain == nullptr || chain->group != Ocpp21::CertGroup::V2G20Chain || !chain->has_anchor ||
+    if ((chain == nullptr) || (chain->group != Ocpp21::CertGroup::V2G20Chain) || !Iso15118RootPolicy::allowed(*chain, is_private_iso15118_environment()) ||
         chain->not_before > now || now > chain->not_after) {
         return false;
     }
