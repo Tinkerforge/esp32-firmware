@@ -476,9 +476,44 @@ void ISO2::handle_authorization_req()
         authorize_pnc(req, res);
     }
 
+    bool close_session = false;
+#if MODULE_OCPP_AVAILABLE()
+    // HUB20-538-002 / HUB20-432-004: selecting ISO-2 after mutual TLS 1.3
+    // must preserve the vehicle-chain revocation gate used by ISO-20.
+    if (res->ResponseCode == iso2_responseCodeType_OK && iso15118.common.tls.is_mutual_auth_session()) {
+        switch (ocpp.get_iso15118_vehicle_chain_check()) {
+            case Ocpp::VehicleChainCheck::NotRequired:
+            case Ocpp::VehicleChainCheck::Good:
+                break;
+
+            case Ocpp::VehicleChainCheck::Pending:
+                res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
+                break;
+
+            case Ocpp::VehicleChainCheck::Revoked:
+            case Ocpp::VehicleChainCheck::Unknown:
+            default:
+                iso15118.trace("ISO2: Vehicle chain status invalid, failing authorization");
+                res->ResponseCode = iso2_responseCodeType_FAILED;
+                close_session = true;
+                break;
+        }
+    }
+#endif
+
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
     state = ISO2State::Authorization;
+
+    if (close_session) {
+        // HUB20-432-008/009/010: let the failure response reach the EV first.
+        int socket_to_close = iso15118.common.get_active_socket();
+        task_scheduler.scheduleOnce([socket_to_close]() {
+            if (iso15118.common.get_active_socket() == socket_to_close) {
+                iso15118.common.reset_active_socket();
+            }
+        }, 2_s);
+    }
 }
 
 void ISO2::handle_charge_parameter_discovery_req()
