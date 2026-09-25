@@ -21,6 +21,7 @@
 #include <LittleFS.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/error.h>
+#include <mbedtls/platform_util.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -36,6 +37,18 @@ static inline String get_cert_path(uint8_t cert_id) {
 
 static inline String get_cert_name_path(uint8_t cert_id) {
     return StringSumHelper(CERT_DIRECTORY "/") + cert_id + "_name";
+}
+
+static void clear_upload(ConfigRoot &upload)
+{
+    // Clear before releasing the command buffer, including on duplicate/missing-ID errors.
+    auto cert = upload.get("cert");
+    const auto &value = cert->asString();
+    if (value.length() != 0) {
+        mbedtls_platform_zeroize(const_cast<char *>(value.c_str()), value.length());
+    }
+    cert->clearString();
+    upload.get("name")->clearString();
 }
 
 void Certs::pre_setup()
@@ -167,7 +180,8 @@ void Certs::register_urls()
 {
     api.addState("certs/state", &state);
 
-    api.addCommand("certs/add", &add, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("certs/add", &add, {"cert"}, [this](Language /*language*/, String &errmsg) {
+        defer { clear_upload(add); };
         if (add.get("cert")->asString().isEmpty()) {
             errmsg = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
             return;
@@ -195,14 +209,11 @@ void Certs::register_urls()
             f.write(reinterpret_cast<const uint8_t *>(cert.c_str()), cert.length());
         }
 
-        // Cert is written into flash. Drop from config to free memory.
-        add.get("name")->clearString();
-        add.get("cert")->clearString();
-
         this->update_state();
     }, true);
 
-    api.addCommand("certs/modify", &add, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("certs/modify", &add, {"cert"}, [this](Language /*language*/, String &errmsg) {
+        defer { clear_upload(add); };
         uint8_t cert_id = add.get("id")->asUint8();
         bool found = false;
         for (const auto &cert: state.get("certs")) {
@@ -229,10 +240,6 @@ void Certs::register_urls()
             const String &cert = add.get("cert")->asString();
             f.write(reinterpret_cast<const uint8_t *>(cert.c_str()), cert.length());
         }
-
-        // Cert is written into flash. Drop from config to free memory.
-        add.get("name")->clearString();
-        add.get("cert")->clearString();
 
         this->update_state();
     }, true);
