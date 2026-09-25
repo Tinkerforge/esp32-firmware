@@ -186,6 +186,17 @@ bool ISOVehicleCertificate::ocsp_url(const mbedtls_x509_crt &cert, char *url, si
 uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, bool require_ocsp)
 {
     uint32_t flags = 0;
+    // V2G20-1001/2432, Annex B.8: the generic TLS profile also permits
+    // P-256/P-384 and SHA-256/SHA-384 for legacy connections. Vehicle
+    // certificates in ISO-20 must use the P-521/SHA-512 or Ed448 profile.
+    const mbedtls_pk_type_t key_type = mbedtls_pk_get_type(&cert.pk);
+    const bool p521 = ((key_type == MBEDTLS_PK_ECKEY) || (key_type == MBEDTLS_PK_ECDSA)) && (mbedtls_pk_ec(cert.pk)->MBEDTLS_PRIVATE(grp).id == MBEDTLS_ECP_DP_SECP521R1);
+    const bool ed448 = key_type == MBEDTLS_PK_ED448;
+    const bool signature_allowed = ((cert.MBEDTLS_PRIVATE(sig_pk) == MBEDTLS_PK_ECDSA) && (cert.MBEDTLS_PRIVATE(sig_md) == MBEDTLS_MD_SHA512)) || (cert.MBEDTLS_PRIVATE(sig_pk) == MBEDTLS_PK_ED448);
+    if ((!p521 && !ed448) || !signature_allowed) {
+        flags |= POLICY_FAILURE;
+    }
+
     if (cert.version != 3 || !vehicle_role(cert.subject)) {
         flags |= POLICY_FAILURE;
     }

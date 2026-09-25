@@ -15,7 +15,7 @@ import importlib.util
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, ed448
 from cryptography.x509.oid import AuthorityInformationAccessOID as AIA, ExtendedKeyUsageOID as EKU, NameOID
 
 URL = "https://ocsp.example/status"
@@ -33,7 +33,7 @@ def name(cn, role):
 def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
           source=URL, eku=None, usage=True, constraints=True, digital=True,
           key_cert_sign=None, expired=False, future=False, method=AIA.OCSP,
-          critical_aia=False, key_agreement=False):
+           critical_aia=False, key_agreement=False, signing_hash=None):
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
                .not_valid_before(NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
@@ -55,7 +55,7 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
         builder = builder.add_extension(x509.AuthorityInformationAccess([
             x509.AccessDescription(method, x509.UniformResourceIdentifier(url)) for url in urls
         ]), critical_aia)
-    return builder.sign(issuer_key, hashes.SHA512())
+    return builder.sign(issuer_key, None if isinstance(issuer_key, ed448.Ed448PrivateKey) else signing_hash or hashes.SHA512())
 
 
 def pem(cert):

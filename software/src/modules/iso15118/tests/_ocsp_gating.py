@@ -98,10 +98,14 @@ class Tls13ServerFlight:
 
 
 def certificate_hash_data(certificate, issuer):
+    from cryptography.hazmat.primitives.asymmetric import ed448
     public_key = issuer.public_key()
-    assert isinstance(public_key, ec.EllipticCurvePublicKey)
-    issuer_key = public_key.public_bytes(
-        serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+    if isinstance(public_key, ed448.Ed448PublicKey):
+        issuer_key = public_key.public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    else:
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        issuer_key = public_key.public_bytes(
+            serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
     serial = format(certificate.serial_number, "x")
     if len(serial) % 2:
         serial = "0" + serial

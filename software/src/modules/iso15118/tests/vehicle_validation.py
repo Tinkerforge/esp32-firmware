@@ -140,7 +140,7 @@ class VehicleValidationEnvironment:
                        .public_key(csr.public_key()).serial_number(x509.random_serial_number())
                        .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=45))
                        .add_extension(x509.BasicConstraints(False, None), True)
-                       .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), True))
+                       .add_extension(x509.KeyUsage(True, False, False, False, label == "iso2", False, False, False, False), True))
             if label == "iso20":
                 builder = builder.add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
                     fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
