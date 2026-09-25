@@ -143,7 +143,7 @@ class TestContext:
     def dbg(self, *args, **kwargs):
         x = io.StringIO()
         print(*args, file=x, **kwargs)
-        message = str(x)
+        message = x.getvalue()
         self._to_runner("dbg", message=message + ("\n" if not message.endswith("\n") else ""))
 
     def _wait_for_start(self):
