@@ -79,7 +79,7 @@ def mint_oem_leaf(workdir, tag):
     run(["openssl", "ecparam", "-name", "secp521r1", "-genkey", "-noout", "-out", str(key)])
     csr = workdir / f"oem_{tag}.csr"
     run(["openssl", "req", "-new", "-key", str(key),
-         "-subj", "/CN=TestEVCC/O=WARP/DC=EV", "-out", str(csr)])
+         "-subj", "/CN=WVWV123456789ABCDEF7/O=WARP/DC=EV", "-out", str(csr)])
     ext = workdir / f"oem_{tag}.cnf"
     ext.write_text("[e]\nbasicConstraints=critical,CA:false\n"
                    "keyUsage=critical,digitalSignature\nsubjectKeyIdentifier=hash\n"

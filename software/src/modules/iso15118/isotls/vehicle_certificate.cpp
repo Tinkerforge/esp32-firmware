@@ -112,6 +112,143 @@ bool vehicle_role(const mbedtls_x509_name &subject)
     return count == 1;
 }
 
+bool directory_string(const mbedtls_x509_buf &value)
+{
+    // V2G20-3038 / RFC 5280: CN, O and OU use UTF8String, 1..64
+    // characters. Count Unicode scalar values, not their encoded bytes.
+    if ((value.tag != MBEDTLS_ASN1_UTF8_STRING) || (value.len == 0) || (value.len > 256)) {
+        return false;
+    }
+    size_t count = 0;
+    for (size_t i = 0; i < value.len; ++count) {
+        uint32_t code = value.p[i++];
+        unsigned int continuation = 0;
+        uint32_t minimum = 0;
+
+        if (code >= 0xc2 && code <= 0xdf) {
+            continuation = 1; minimum = 0x80; code &= 0x1f;
+        } else if (code >= 0xe0 && code <= 0xef) {
+            continuation = 2; minimum = 0x800; code &= 0x0f;
+        } else if (code >= 0xf0 && code <= 0xf4) {
+            continuation = 3; minimum = 0x10000; code &= 0x07;
+        } else if (code >= 0x80) {
+            return false;
+        }
+
+        while (continuation-- > 0) {
+            if (i == value.len || (value.p[i] & 0xc0) != 0x80) {
+                return false;
+            }
+            code = (code << 6) | (value.p[i++] & 0x3f);
+        }
+
+        if (code < minimum || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) {
+            return false;
+        }
+    }
+    return count <= 64;
+}
+
+bool evccid(const mbedtls_x509_buf &value)
+{
+    // V2G20-3087/2090/2093/2094/2095: C.5 syntax and C.6 check digit.
+    // Hyphens are optional only at element boundaries. Case is insignificant.
+    if ((value.len < 20) || (value.len > 64)) {
+        return false;
+    }
+
+    unsigned char normalized[64];
+    size_t length = 0;
+    bool separator = false;
+    for (size_t i = 0; i < value.len; ++i) {
+        unsigned char c = value.p[i];
+        if (c == '-') {
+            if (separator || (length != 3 && length != 4 && i + 2 != value.len)) {
+                return false;
+            }
+            separator = true;
+            continue;
+        }
+
+        separator = false;
+        if (c >= 'a' && c <= 'z') {
+            c -= 'a' - 'A';
+        }
+
+        if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) || c == 'I' || c == 'O' || c == 'Q') {
+            return false;
+        }
+
+        normalized[length++] = c;
+    }
+    if (separator || length < 20 || normalized[3] != 'V') {
+        return false;
+    }
+
+    unsigned int checksum = 0;
+    unsigned int position = 0;
+
+    // Leading zeros are removed within each element before decimal expansion.
+    const size_t starts[] = {0, 3, 4};
+    for (size_t start : starts) {
+        const size_t end = start == 0 ? 3 : start == 3 ? 4 : length - 1;
+        while (start < end && normalized[start] == '0') {
+            ++start;
+        }
+
+        for (size_t i = start; i < end; ++i) {
+            const unsigned int n = normalized[i] <= '9' ? normalized[i] - '0' : normalized[i] - 'A' + 10;
+            if (n >= 10) {
+                checksum = (checksum + (n / 10) * ((1u << (position++ % 28)) % 11)) % 11;
+            }
+            checksum = (checksum + (n % 10) * ((1u << (position++ % 28)) % 11)) % 11;
+        }
+    }
+
+    return normalized[length - 1] == (checksum == 10 ? 'X' : '0' + checksum);
+}
+
+bool vehicle_name(const mbedtls_x509_name &dn, bool leaf_subject)
+{
+    unsigned int organizations = 0;
+    unsigned int common_names = 0;
+
+    for (const mbedtls_x509_name *name = &dn; name != nullptr; name = name->next) {
+        const auto &value = name->val;
+        if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_ORGANIZATION, &name->oid) == 0) {
+            if (++organizations != 1 || !directory_string(value)) {
+                return false;
+            }
+        } else if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_CN, &name->oid) == 0) {
+            if (++common_names != 1 || !directory_string(value) || (leaf_subject && !evccid(value))) {
+                return false;
+            }
+        } else if (MBEDTLS_OID_CMP(MBEDTLS_OID_DOMAIN_COMPONENT, &name->oid) == 0) {
+            if (value.tag != MBEDTLS_ASN1_IA5_STRING || value.len == 0) {
+                return false;
+            }
+            for (size_t i = 0; i < value.len; ++i) {
+                if (value.p[i] > 0x7f) {
+                    return false;
+                }
+            }
+        } else if (!leaf_subject && MBEDTLS_OID_CMP(MBEDTLS_OID_AT_ORG_UNIT, &name->oid) == 0) {
+            if (!directory_string(value)) {
+                return false;
+            }
+        } else if (!leaf_subject && MBEDTLS_OID_CMP(MBEDTLS_OID_AT_COUNTRY, &name->oid) == 0) {
+            if (value.tag != MBEDTLS_ASN1_PRINTABLE_STRING || value.len != 2 ||
+                value.p[0] < 'A' || value.p[0] > 'Z' || value.p[1] < 'A' || value.p[1] > 'Z') {
+                return false;
+            }
+        } else {
+            // V2G20-2598/3073: leaf subject is O, CN and the EV-role DC.
+            return false;
+        }
+    }
+    return organizations == 1 && common_names == 1;
+}
+
 bool key_identifier_matches(const mbedtls_x509_buf &identifier, const mbedtls_x509_crt &cert)
 {
     // V2G20-3431/3432: RFC 5280 4.2.1.2 methods 1 and 2 hash only the
@@ -257,6 +394,9 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
     }
 
     if (cert.version != 3 || !vehicle_role(cert.subject)) {
+        flags |= POLICY_FAILURE;
+    }
+    if (!vehicle_name(cert.subject, leaf) || !vehicle_name(cert.issuer, false)) {
         flags |= POLICY_FAILURE;
     }
 

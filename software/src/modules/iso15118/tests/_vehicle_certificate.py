@@ -22,6 +22,15 @@ URL = "https://ocsp.example/status"
 NOW = datetime.now(timezone.utc)
 
 
+def evccid(unique="123456789ABCDEF", wmi="WVW", *, separators=False):
+    # V2G20-2095 / C.6: decimal expansion, then positional modulo-11.
+    elements = [wmi, "V", unique]
+    significant = "".join(element.lstrip("0") for element in elements).upper()
+    digits = "".join(str(int(char, 36)) for char in significant)
+    check = sum(int(digit) * 2 ** (index % 28) for index, digit in enumerate(digits)) % 11
+    return ("-" if separators else "").join(elements + ["X" if check == 10 else str(check)])
+
+
 def name(cn, role):
     attrs = [x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Vehicle Test"),
              x509.NameAttribute(NameOID.COMMON_NAME, cn)]
@@ -93,7 +102,7 @@ def run(server):
         keys = [ec.generate_private_key(ec.SECP521R1()) for _ in range(5)]
         root_key, sub1_key, sub2_key, leaf_key, server_key = keys
         root_name = name("OEM root", None)
-        sub1_name, sub2_name, leaf_name = [name(cn, ["EV"]) for cn in ["Sub1", "Sub2", "EVCCID"]]
+        sub1_name, sub2_name, leaf_name = [name(cn, ["EV"]) for cn in ["Sub1", "Sub2", evccid()]]
         root = issue(root_name, root_key, root_name, root_key, ca=True, path_length=2, source=None)
         server_name = name("localhost", None)
         server_cert = issue(server_name, server_key, root_name, root_key, eku=[EKU.SERVER_AUTH], source=None)
@@ -110,7 +119,7 @@ def run(server):
                        **(dict(ca=True, path_length=1) | (sub1_opts or {})))
             s2 = issue(s2_name, sub2_key, s1_name, sub1_key,
                        **(dict(ca=True, path_length=0) | (sub2_opts or {})))
-            leaf = issue(name("EVCCID", leaf_role), leaf_key, s2_name, sub2_key,
+            leaf = issue(name(evccid(), leaf_role), leaf_key, s2_name, sub2_key,
                          **(dict(eku=[EKU.CLIENT_AUTH]) | (leaf_opts or {})))
             path = work / f"{tag}.pem"
             path.write_bytes(pem(leaf) + pem(s2) + pem(s1))

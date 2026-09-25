@@ -199,14 +199,16 @@ class VehicleValidationEnvironment:
             raw.close()
             raise
 
-    def chain(self, label, leaf_opts=None, sub1_opts=None, sub2_opts=None, leaf_role="EV", sub1_role="EV", forged=False):
+    def chain(self, label, leaf_opts=None, sub1_opts=None, sub2_opts=None, leaf_role="EV", sub1_role="EV", forged=False,
+              leaf_name=None, sub1_name=None, sub2_name=None):
         root, _, root_key = self.pki["vehicle"]
-        n1, n2 = fixtures.name("Sub1", [sub1_role]), fixtures.name("Sub2", ["EV"])
+        n1 = sub1_name if sub1_name is not None else fixtures.name("Sub1", [sub1_role])
+        n2 = sub2_name if sub2_name is not None else fixtures.name("Sub2", ["EV"])
         sub1 = fixtures.issue(n1, self.sub1_key, root.subject,
             ec.generate_private_key(ec.SECP521R1()) if forged else root_key,
             **(dict(ca=True, path_length=1) | (sub1_opts or {})))
         sub2 = fixtures.issue(n2, self.sub2_key, n1, self.sub1_key, **(dict(ca=True, path_length=0) | (sub2_opts or {})))
-        leaf = fixtures.issue(fixtures.name("EVCCID", [leaf_role]), self.leaf_key, n2, self.sub2_key,
+        leaf = fixtures.issue(leaf_name if leaf_name is not None else fixtures.name(fixtures.evccid(), [leaf_role]), self.leaf_key, n2, self.sub2_key,
                               **(dict(eku=[fixtures.EKU.CLIENT_AUTH]) | (leaf_opts or {})))
         path = self.work / f"vehicle-{label}.pem"
         path.write_bytes(b"".join(fixtures.pem(c) for c in [leaf, sub2, sub1]))

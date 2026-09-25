@@ -25,7 +25,7 @@ def generate(directory, password):
         key = ec.generate_private_key(ec.SECP521R1())
         ca = index < 2
         subject = x509.Name([x509.NameAttribute(NameOID.ORGANIZATION_NAME, "WARP Test"),
-                             x509.NameAttribute(NameOID.COMMON_NAME, label),
+                             x509.NameAttribute(NameOID.COMMON_NAME, label if ca else "WVWV123456789ABCDEF7"),
                              x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "EV")])
         builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer.subject)
                    .public_key(key.public_key()).serial_number(x509.random_serial_number())
