@@ -37,6 +37,7 @@ server_key = None
 bogus_server_cert = None
 bogus_server_key = None
 date_server_certs = {}
+name_server_certs = {}
 
 
 def generate_certificates(ip: str):
@@ -101,6 +102,29 @@ def generate_certificates(ip: str):
         path = directory / f"server-{label}.pem"
         path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
         date_server_certs[label] = path
+    # Trusted, currently valid identities: vary only CN and SAN. An IP
+    # endpoint must match an iPAddress SAN, not a DNS SAN containing IP text.
+    wrong_ip = "192.0.2.1" if ip != "192.0.2.1" else "192.0.2.2"
+    for label, cn, names in [
+        ("matching_ip_san", "different.example.invalid", [x509.IPAddress(ipaddress.ip_address(ip))]),
+        ("wrong_ip_san", "different.example.invalid", [x509.IPAddress(ipaddress.ip_address(wrong_ip))]),
+        ("matching_cn_wrong_san", ip, [x509.IPAddress(ipaddress.ip_address(wrong_ip))]),
+        ("ip_text_dns_san", "different.example.invalid", [x509.DNSName(ip)]),
+        ("matching_cn_no_san", ip, []),
+    ]:
+        cert = (x509.CertificateBuilder()
+                .subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, cn)]))
+                .issuer_name(issuer.subject).public_key(key.public_key())
+                .serial_number(x509.random_serial_number())
+                .not_valid_before(now - timedelta(days=1)).not_valid_after(now + timedelta(days=2))
+                .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+                .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False))
+        if names:
+            cert = cert.add_extension(x509.SubjectAlternativeName(names), critical=False)
+        cert = cert.sign(issuer_key, hashes.SHA256())
+        path = directory / f"server-name-{label}.pem"
+        path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+        name_server_certs[label] = path
     return ca_cert, bogus_cert, bogus_key
 
 
@@ -314,6 +338,74 @@ def test_expired_csms_certificate(tc: TestContext):
 
 def test_future_csms_certificate(tc: TestContext):
     run_date_failure(tc, "future", "CERTIFICATE_UNKNOWN")
+
+
+def run_name_failure(tc: TestContext, label: str):
+    tc.set_test_timeout(90)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(name_server_certs[label], server_key)
+    observed = []
+
+    def accept_tls(listener):
+        try:
+            raw, _ = listener.accept()
+            with raw:
+                raw.settimeout(15)
+                with context.wrap_socket(raw, server_side=True) as tls:
+                    observed.append(tls.recv(4096))
+        except Exception as exc:
+            observed.append(exc)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("0.0.0.0", 0))
+        port = listener.getsockname()[1]
+        listener.listen(1)
+        listener.settimeout(30)
+        worker = threading.Thread(target=accept_tls, args=(listener,), daemon=True)
+        worker.start()
+        try:
+            configure(tc, f"wss://{local_ip}:{port}")
+        finally:
+            worker.join(timeout=50)
+        tc.assert_not(worker.is_alive())
+    tc.assert_eq(1, len(observed))
+    tc.assert_(isinstance(observed[0], ssl.SSLError))
+    tc.assert_("BAD_CERTIFICATE" in str(observed[0]).upper())
+    print(f"CSMS identity {label} rejected: {observed[0]}")
+    reconnect_and_assert(tc, "InvalidCsmsCertificate", port)
+
+
+def test_csms_name_matching_ip_san_different_cn(tc: TestContext):
+    server = CSMSSim(certfile=str(name_server_certs["matching_ip_san"]), keyfile=str(server_key))
+    try:
+        configure(tc, f"wss://{local_ip}:{server.port}")
+        tc.assert_(server.connected.wait(timeout=30))
+        response = server.call("GetVariables", {
+            "getVariableData": [{"component": {"name": "OCPPCommCtrlr"},
+                                 "variable": {"name": "HeartbeatInterval"}}],
+        }, timeout=10)
+        tc.assert_eq(1, len(response["getVariableResult"]))
+        tc.assert_eq([], server.security_events)
+        print("Matching IP SAN accepted despite different CN; OCPP request/response passed")
+    finally:
+        server.stop()
+
+
+def test_csms_name_wrong_ip_san(tc: TestContext):
+    run_name_failure(tc, "wrong_ip_san")
+
+
+def test_csms_name_matching_cn_wrong_san(tc: TestContext):
+    run_name_failure(tc, "matching_cn_wrong_san")
+
+
+def test_csms_name_ip_text_dns_san(tc: TestContext):
+    run_name_failure(tc, "ip_text_dns_san")
+
+
+def test_csms_name_matching_cn_no_san(tc: TestContext):
+    run_name_failure(tc, "matching_cn_no_san")
 
 
 def test_ocpp16_retains_legacy_date_policy(tc: TestContext):

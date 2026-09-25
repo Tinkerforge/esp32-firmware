@@ -25,6 +25,7 @@
 #include <ocpp21/Platform21.h>
 #include <time.h>
 #include <mutex>
+#include <lwip/inet.h>
 #define URL_PARSER_IMPLEMENTATION_STATIC
 #include <lib/url.h>
 #include <esp_crt_bundle.h>
@@ -120,6 +121,8 @@ struct PlatformContext {
     bool use_cert_bundle = false;
     int (*base_verify)(void *, mbedtls_x509_crt *, int, uint32_t *) = nullptr;
     void *base_verify_ctx = nullptr;
+    unsigned char csms_ip[16] = {};
+    size_t csms_ip_len = 0;
     bool recreate_client = false;
     uint32_t connect_started_ms = 0;
     uint64_t generation = 0;
@@ -419,23 +422,39 @@ static bool load_tls_config(PlatformContext *p, const PlatformTlsConfig *tls)
     return true;
 }
 
-static int verify_csms_dates(void *ctx, mbedtls_x509_crt *cert, int depth, uint32_t *flags)
+static int verify_csms_certificate(void *ctx, mbedtls_x509_crt *cert, int depth, uint32_t *flags)
 {
     auto *p = static_cast<PlatformContext *>(ctx);
     // The bundle verifier must see its original flags and authenticate the
     // issuer before we add date failures; it may clear NOT_TRUSTED on success.
     int ret = p->base_verify == nullptr ? 0 : p->base_verify(p->base_verify_ctx, cert, depth, flags);
     *flags |= certificate_time_flags(*cert, time(nullptr));
+    // RFC 6125 section 1.7 / RFC 2818 section 3.1: an IP reference
+    // identity must match an iPAddress SAN. Mbed TLS also tries DNS SANs
+    // and CN fallback against IP text, which must not authenticate it.
+    if (depth == 0 && p->csms_ip_len != 0) {
+        bool matched = false;
+        for (auto *san = &cert->subject_alt_names; san != nullptr; san = san->next) {
+            if ((san->buf.tag & MBEDTLS_ASN1_TAG_VALUE_MASK) == MBEDTLS_X509_SAN_IP_ADDRESS &&
+                san->buf.len == p->csms_ip_len && memcmp(san->buf.p, p->csms_ip, p->csms_ip_len) == 0) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            *flags |= MBEDTLS_X509_BADCERT_CN_MISMATCH;
+        }
+    }
     return ret;
 }
 
-static void configure_csms_dates(void *config, void *ctx)
+static void configure_csms_verification(void *config, void *ctx)
 {
     auto *conf = static_cast<mbedtls_ssl_config *>(config);
     auto *p = static_cast<PlatformContext *>(ctx);
     p->base_verify = conf->MBEDTLS_PRIVATE(f_vrfy);
     p->base_verify_ctx = conf->MBEDTLS_PRIVATE(p_vrfy);
-    mbedtls_ssl_conf_verify(conf, verify_csms_dates, p);
+    mbedtls_ssl_conf_verify(conf, verify_csms_certificate, p);
 }
 
 static bool create_client(PlatformContext *p)
@@ -457,7 +476,18 @@ static bool create_client(PlatformContext *p)
     websocket_cfg.uri = p->url.c_str();
     websocket_cfg.subprotocol = p->subprotocol.c_str();
     if (p->subprotocol == "ocpp2.1") {
-        websocket_cfg.tls_configure = configure_csms_dates;
+        auto *url = parse_url(p->url.c_str(), nullptr, 0);
+        if (url == nullptr) {
+            return false;
+        }
+        p->csms_ip_len = 0;
+        if (inet_pton(AF_INET, url->host, p->csms_ip) == 1) {
+            p->csms_ip_len = 4;
+        } else if (inet_pton(AF_INET6, url->host, p->csms_ip) == 1) {
+            p->csms_ip_len = 16;
+        }
+        free(url);
+        websocket_cfg.tls_configure = configure_csms_verification;
         websocket_cfg.tls_configure_ctx = p;
     }
 
