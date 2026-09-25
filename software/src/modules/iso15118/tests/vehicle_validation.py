@@ -546,6 +546,99 @@ def test_missing_root_lifecycle_bundled_root(tc: TestContext):
     missing_root_lifecycle(tc, True)
 
 
+def test_automatic_renewal_after_five_minute_expiry(tc: TestContext):
+    # TC_HU_SECC_ISO20_Install_SECC_Cert_Chain_Expiry_5_Minutes_001;
+    # OCPP A03.FR.02/A03.FR.23: automatic enrollment survives old-chain expiry.
+    tc.set_test_timeout(480)
+    env = environment
+    csms = env.csms
+    root, _, root_key = env.pki["iso20"]
+    old_leaf = x509.load_pem_x509_certificate((env.work / "iso20-secc.pem").read_bytes())
+    old_hash = certificate_hash_data(old_leaf, root)
+    before = {env.identity(entry) for entry in env.inventory()}
+    old_id = env.identity({"certificateType": "V2GCertificateChain", "certificateHashData": old_hash})
+    wait_variable = {"component": {"name": "SecurityCtrlr"}, "variable": {"name": "CertSigningWaitMinimum"}}
+    saved_wait = csms.call("GetVariables", {"getVariableData": [wait_variable]})["getVariableResult"][0]
+    tc.assert_eq("Accepted", saved_wait["attributeStatus"])
+
+    def set_wait(value):
+        result = csms.call("SetVariables", {"setVariableData": [dict(wait_variable, attributeValue=value)]})
+        tc.assert_eq("Accepted", result["setVariableResult"][0]["attributeStatus"])
+
+    def issue(request, start, end):
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        tc.assert_eq(old_leaf.subject, csr.subject)
+        tc.assert_eq("secp521r1", csr.public_key().curve.name)
+        return (x509.CertificateBuilder().subject_name(csr.subject).issuer_name(root.subject)
+                .public_key(csr.public_key()).serial_number(x509.random_serial_number())
+                .not_valid_before(start).not_valid_after(end)
+                .add_extension(x509.BasicConstraints(False, None), True)
+                .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), True)
+                .add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
+                    fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
+                .sign(root_key, hashes.SHA512()))
+
+    def install(request, leaf):
+        result = csms.call("CertificateSigned", {"certificateType": "V2G20Certificate",
+                          "requestId": request["requestId"], "certificateChain": fixtures.pem(leaf).decode()})
+        tc.assert_eq("Accepted", result["status"])
+        now = datetime.now(timezone.utc)
+        response = (ocsp.OCSPResponseBuilder().add_response(leaf, root, hashes.SHA256(),
+            ocsp.OCSPCertStatus.GOOD, now - timedelta(minutes=1), now + timedelta(days=1), None, None)
+            .responder_id(ocsp.OCSPResponderEncoding.HASH, root).certificates([root]).sign(root_key, hashes.SHA512()))
+        status, mid = csms.expect("GetCertificateStatus", timeout=30)
+        tc.assert_eq(certificate_hash_data(leaf, root), {k: status["ocspRequestData"][k] for k in certificate_hash_data(leaf, root)})
+        csms.respond(mid, {"status": "Accepted", "ocspResult": base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()})
+        (env.work / "iso20-secc.pem").write_bytes(fixtures.pem(leaf))
+        leaf_id = env.identity({"certificateType": "V2GCertificateChain", "certificateHashData": certificate_hash_data(leaf, root)})
+        tc.assert_eq(before - {old_id} | {leaf_id}, {env.identity(entry) for entry in env.inventory()})
+
+    pending = False
+    try:
+        # Isolate expiry from the independent CSR retry/backoff mechanism.
+        set_wait("600")
+        tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+        pending = True
+        request, mid = csms.expect("SignCertificate", timeout=60)
+        csms.respond(mid, {"status": "Accepted"})
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        short_leaf = issue(request, now - timedelta(seconds=5), now + timedelta(seconds=295))
+        installed_at = time.monotonic()
+        install(request, short_leaf)
+        pending = False
+        renewal, mid = csms.expect("SignCertificate", timeout=30)
+        pending = True
+        elapsed = time.monotonic() - installed_at
+        tc.assert_eq("V2G20Certificate", renewal["certificateType"])
+        tc.assert_(renewal["requestId"] != request["requestId"])
+        tc.assert_eq(certificate_hash_data(root, root), renewal["hashRootCertificate"])
+        csms.respond(mid, {"status": "Accepted"})
+        env.record("automatic five-minute renewal CSR", {"seconds_after_install": round(elapsed, 3),
+                   "not_after": short_leaf.not_valid_after_utc.isoformat(), "request_id": renewal["requestId"]})
+
+        # Real wall-clock expiry; no device clock manipulation or reconnect.
+        while datetime.now(timezone.utc) <= short_leaf.not_valid_after_utc + timedelta(seconds=2):
+            time.sleep(min(10, max(0.1, (short_leaf.not_valid_after_utc + timedelta(seconds=3) - datetime.now(timezone.utc)).total_seconds())))
+        tc.assert_(datetime.now(timezone.utc) > short_leaf.not_valid_after_utc)
+        replacement = issue(renewal, datetime.now(timezone.utc) - timedelta(seconds=1), datetime.now(timezone.utc) + timedelta(days=45))
+        install(renewal, replacement)
+        pending = False
+        path, certs = env.chain("automatic-renewal")
+        time.sleep(2)
+        env.positive("ISO-20 authorization after old-chain expiry and automatic renewal", path, certs)
+        env.record("five-minute expiry renewal replaced old inventory", {
+            "expired_serial": format(short_leaf.serial_number, "x"),
+            "replacement_serial": format(replacement.serial_number, "x")})
+    finally:
+        if pending:
+            tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+            _, mid = csms.expect("SignCertificate", timeout=60)
+            csms.respond(mid, {"status": "Rejected"})
+        set_wait(saved_wait["attributeValue"])
+        tc.assert_eq(saved_wait, csms.call("GetVariables", {"getVariableData": [wait_variable]})["getVariableResult"][0])
+
+
 def generate_tests():
     cases = [
         ("contract_leaf", {"leaf_role": "MSP"}, "ACCESS_DENIED"),
