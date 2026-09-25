@@ -5,6 +5,7 @@ import socket
 
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import ec, ed448
+from cryptography.x509.oid import NameOID
 
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
@@ -15,6 +16,7 @@ from _common import (
     EVTestClient,
     ISO2,
     IsoTestEnvironment,
+    LocalCSMSTls,
     SDP_SECURITY_NO_TLS,
     SDP_SECURITY_TLS,
     managed_socket,
@@ -29,9 +31,14 @@ saved_ocpp = None
 test_ocpp = None
 saved_values = {}
 pnc_supported = False
+csms_tls = None
+saved_certs = None
 
 
 VARIABLES = [
+    ("SeccId", None),
+    ("CountryName", None),
+    ("OrganizationName", None),
     ("Enabled", None),
     ("V2GCertificateInstallationEnabled", None),
     ("V2G20SECCLeafCryptoSuite", None),
@@ -40,6 +47,13 @@ VARIABLES = [
     ("PrivateEnvironmentEnabled", None),
     ("PWMChargingFallbackTimeout", None),
 ]
+
+IDENTITY_LIMITS = {
+    "SeccId": (7, 64),
+    "CountryName": (2, 2),
+    "OrganizationName": (1, 64),
+    "ISO15118EvseId": (7, 37),
+}
 
 BOOLEAN_VARIABLES = [
     "Enabled",
@@ -125,25 +139,38 @@ def restore_values(tc: TestContext):
                     errors.append(f"ISO15118Ctrlr.{name}: {status}")
             except Exception as e:
                 errors.append(f"ISO15118Ctrlr.{name}: {e}")
+        try:
+            results = get_variables([(name, None) for name in saved_values])
+            tc.assert_eq(["Accepted"] * len(saved_values), [r["attributeStatus"] for r in results])
+            tc.assert_eq(list(saved_values.values()), [r["attributeValue"] for r in results])
+        except Exception as e:
+            errors.append(f"restored value readback: {e}")
 
     if errors:
         raise RuntimeError("Could not restore ISO15118Ctrlr values: " + "; ".join(errors))
 
 
 def suite_setup(tc: TestContext):
-    global environment, client, csms, saved_ocpp, test_ocpp, saved_values, pnc_supported
+    global environment, client, csms, saved_ocpp, test_ocpp, saved_values, pnc_supported, csms_tls, saved_certs
     environment = IsoTestEnvironment(tc)
     environment.start()
     client = EVTestClient(environment.host, environment.iface, environment.secc_ll)
     pnc_supported = "iso15118_pnc" in tc.api("info/features")
     saved_ocpp = tc.api("ocpp/config")
-    csms = CSMSSim(interactive=("SignCertificate", "NotifyReport"))
+    saved_certs = tc.api("certs/state")
+    local_ip = tc.get_local_ip()
+    csms_tls = LocalCSMSTls(environment.host, local_ip)
+    csms = CSMSSim(interactive=("SignCertificate", "NotifyReport"),
+                   certfile=str(csms_tls.certfile), keyfile=str(csms_tls.keyfile))
     test_ocpp = dict(saved_ocpp)
     test_ocpp.update({
         "enable": True,
         "protocol": 1,
-        "url": f"ws://{tc.get_local_ip()}:{csms.port}",
-        "enable_auth": False,
+        "url": f"wss://{local_ip}:{csms.port}",
+        "identity": "warp4-c08-test",
+        "enable_auth": True,
+        "pass": "warp4-c08-test-password",
+        "cert_id": csms_tls.cert_id,
     })
     connect_test_ocpp(tc)
     variables = list(VARIABLES)
@@ -181,6 +208,7 @@ def suite_teardown(tc: TestContext):
             tc.api("ocpp/config_update", disabled, timeout=5)
             time.sleep(1)
             tc.api("ocpp/config_update", saved_ocpp, timeout=5)
+            tc.assert_eq(saved_ocpp, tc.api("ocpp/config"))
         except Exception as e:
             errors.append(e)
     if csms is not None:
@@ -193,11 +221,18 @@ def suite_teardown(tc: TestContext):
             environment.stop()
         except Exception as e:
             errors.append(e)
+    if csms_tls is not None:
+        try:
+            csms_tls.close()
+            tc.assert_eq(saved_certs, tc.api("certs/state"))
+        except Exception as e:
+            errors.append(e)
     if errors:
         raise errors[0]
 
 
 def test_protocol_supported(tc: TestContext):
+    assert csms is not None
     results = get_variables([("ProtocolSupported", str(i)) for i in range(1, 5)])
     values = [result.get("attributeValue") for result in results]
     tc.assert_eq(["Accepted", "Accepted", "Accepted"], [r["attributeStatus"] for r in results[:3]])
@@ -207,6 +242,18 @@ def test_protocol_supported(tc: TestContext):
         "urn:iso:std:iso:15118:-20:AC,1,0",
     ], values[:3])
     tc.assert_eq("UnknownVariable", results[3]["attributeStatus"])
+    for instance, value in zip(("1", "2", "3"), values[:3]):
+        tc.assert_eq("Rejected", set_variable("ProtocolSupported", "urn:example,1,0", instance))
+        tc.assert_eq(value, get_variables([("ProtocolSupported", instance)])[0]["attributeValue"])
+    for component, status in (
+        ({"name": "ISO15118Ctrlr"}, "UnknownVariable"),
+        ({"name": "ISO15118Ctrlr", "evse": {"id": 2}}, "UnknownComponent"),
+    ):
+        result = csms.call("GetVariables", {"getVariableData": [{
+            "component": component,
+            "variable": {"name": "ProtocolSupported", "instance": "1"},
+        }]})["getVariableResult"][0]
+        tc.assert_eq(status, result["attributeStatus"])
 
 
 def test_controller_values_available(tc: TestContext):
@@ -229,21 +276,113 @@ def test_device_model_report(tc: TestContext):
     result = csms.call("GetBaseReport", {"requestId": 103, "reportBase": "FullInventory"})
     tc.assert_eq("Accepted", result["status"])
     entries = {}
+    seq_no = 0
     while True:
         report, message_id = csms.expect("NotifyReport", timeout=30)
         csms.respond(message_id, {})
         tc.assert_eq(103, report["requestId"])
+        tc.assert_eq(seq_no, report["seqNo"])
+        seq_no += 1
         for entry in report.get("reportData", []):
-            entries[(entry["component"]["name"], entry["variable"]["name"])] = entry
+            key = (entry["component"]["name"], entry["variable"]["name"], entry["variable"].get("instance"))
+            # This suite inspects station-level and EVSE-1 ISO variables only.
+            if key[0] in ("ISO15118Ctrlr", "SecurityCtrlr"):
+                tc.assert_(key not in entries)
+                entries[key] = entry
         if not report.get("tbc", False):
             break
-    chain_size = entries[("SecurityCtrlr", "MaxCertificateChainSize")]
+    chain_size = entries[("SecurityCtrlr", "MaxCertificateChainSize", None)]
     tc.assert_eq("10000", chain_size["variableAttribute"][0]["value"])
     tc.assert_eq("ReadOnly", chain_size["variableAttribute"][0]["mutability"])
     tc.assert_eq(10000, chain_size["variableCharacteristics"]["maxLimit"])
-    private = entries[("ISO15118Ctrlr", "PrivateEnvironmentEnabled")]
+    private = entries[("ISO15118Ctrlr", "PrivateEnvironmentEnabled", None)]
     tc.assert_eq("ReadWrite", private["variableAttribute"][0]["mutability"])
     tc.assert_eq(saved_values["PrivateEnvironmentEnabled"], private["variableAttribute"][0]["value"])
+
+    for name, (minimum, maximum) in IDENTITY_LIMITS.items():
+        entry = entries[("ISO15118Ctrlr", name, None)]
+        tc.assert_("evse" not in entry["component"])
+        characteristics = entry["variableCharacteristics"]
+        tc.assert_eq("string", characteristics["dataType"])
+        tc.assert_eq(minimum, characteristics["minLimit"])
+        tc.assert_eq(maximum, characteristics["maxLimit"])
+        attribute = entry["variableAttribute"][0]
+        tc.assert_eq("ReadWrite", attribute["mutability"])
+        tc.assert_eq(True, attribute["persistent"])
+        tc.assert_eq(saved_values[name], attribute["value"])
+
+    protocols = get_variables([("ProtocolSupported", str(i)) for i in range(1, 4)])
+    for i, result in enumerate(protocols, 1):
+        entry = entries[("ISO15118Ctrlr", "ProtocolSupported", str(i))]
+        tc.assert_eq({"id": 1}, entry["component"]["evse"])
+        tc.assert_eq("ReadOnly", entry["variableAttribute"][0]["mutability"])
+        tc.assert_eq(result["attributeValue"], entry["variableAttribute"][0]["value"])
+    tc.assert_(("ISO15118Ctrlr", "ProtocolSupported", "4") not in entries)
+    suite = entries[("ISO15118Ctrlr", "V2G20SECCLeafCryptoSuite", None)]
+    tc.assert_eq("OptionList", suite["variableCharacteristics"]["dataType"])
+    tc.assert_eq("ecdsa_secp521r1_sha512,ed448", suite["variableCharacteristics"]["valuesList"])
+    print("FullInventory: identity bounds/type/mutability/persistence, protocol EVSE association and crypto valuesList passed")
+
+
+def test_identity_length_boundaries(tc: TestContext):
+    # Hubject 3.2.3–3.2.6: both inclusive limits and adjacent invalid lengths.
+    for name, (minimum, maximum) in IDENTITY_LIMITS.items():
+        for length in sorted({minimum, maximum}):
+            value = "DE" if name == "CountryName" else "Z" * length
+            tc.assert_eq("Accepted", set_variable(name, value))
+            tc.assert_eq(value, get_variables([(name, None)])[0]["attributeValue"])
+        previous = get_variables([(name, None)])[0]["attributeValue"]
+        for length in (minimum - 1, maximum + 1):
+            tc.assert_eq("Rejected", set_variable(name, "Z" * length))
+            tc.assert_eq(previous, get_variables([(name, None)])[0]["attributeValue"])
+        print(f"{name}: inclusive {minimum}–{maximum} accepted, adjacent invalid lengths rejected without changing value")
+
+
+def test_identity_persists_and_drives_csr_after_reboot(tc: TestContext):
+    assert csms is not None
+    tc.set_test_timeout(180)
+    expected = {
+        "SeccId": "DE*TFO*EC08SUBJECT",
+        "CountryName": "DE",
+        "OrganizationName": "C08 ISO Subject Organization",
+        "ISO15118EvseId": "DE*TFO*EC08EVSE",
+    }
+    security_request = {"component": {"name": "SecurityCtrlr"}, "variable": {"name": "OrganizationName"}}
+    security_before = csms.call("GetVariables", {"getVariableData": [security_request]})["getVariableResult"][0]
+    tc.assert_eq("Accepted", security_before["attributeStatus"])
+    tc.assert_(security_before["attributeValue"] != expected["OrganizationName"])
+    for name, value in expected.items():
+        tc.assert_eq("Accepted", set_variable(name, value))
+    connection_count = csms.connection_count
+    tc.reboot()
+    csms.wait_for_connection(after=connection_count, timeout=60)
+    tc.wait_for(lambda: tc.assert_(csms.connected.is_set()), timeout=5)
+    results = get_variables([(name, None) for name in expected])
+    tc.assert_eq(["Accepted"] * len(expected), [r["attributeStatus"] for r in results])
+    tc.assert_eq(list(expected.values()), [r["attributeValue"] for r in results])
+    security_after = csms.call("GetVariables", {"getVariableData": [security_request]})["getVariableResult"][0]
+    tc.assert_eq(security_before, security_after)
+    for trigger, certificate_type, dc in (
+        ("SignV2GCertificate", "V2GCertificate", "CPO"),
+        ("SignV2G20Certificate", "V2G20Certificate", "CSO"),
+    ):
+        tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": trigger})["status"])
+        request, message_id = csms.expect("SignCertificate", timeout=60)
+        # Reject enrollment so the temporary pending key is removed.
+        csms.respond(message_id, {"status": "Rejected"})
+        tc.assert_eq(certificate_type, request["certificateType"])
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        for oid, value in (
+            (NameOID.COMMON_NAME, expected["SeccId"]),
+            (NameOID.COUNTRY_NAME, expected["CountryName"]),
+            (NameOID.ORGANIZATION_NAME, expected["OrganizationName"]),
+            (NameOID.DOMAIN_COMPONENT, dc),
+        ):
+            tc.assert_eq([value], [attribute.value for attribute in csr.subject.get_attributes_for_oid(oid)])
+        print(f"{certificate_type}: signed CSR uses persisted CN/C/O after reboot, DC={dc}")
+    # A following request ensures the final rejection has been processed.
+    tc.assert_eq(expected["SeccId"], get_variables([("SeccId", None)])[0]["attributeValue"])
 
 
 def test_private_environment_persists_across_reboot(tc: TestContext):
