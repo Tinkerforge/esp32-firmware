@@ -54,11 +54,12 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
           critical_aia=False, key_agreement=False, signing_hash=None,
           ski=True, aki=True, critical_ids=False, crl_sign=False, identifier_method=2,
           content_commitment=False, key_encipherment=False, data_encipherment=False,
-          encipher_only=False, decipher_only=False, extra_extensions=(), critical_eku=True):
+          encipher_only=False, decipher_only=False, extra_extensions=(), critical_eku=True,
+          not_before=None, not_after=None):
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
-               .not_valid_before(NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
-               .not_valid_after(NOW - timedelta(days=1) if expired else NOW + timedelta(days=30)))
+               .not_valid_before(not_before if not_before is not None else NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
+               .not_valid_after(not_after if not_after is not None else NOW - timedelta(days=1) if expired else NOW + timedelta(days=30)))
     if constraints:
         builder = builder.add_extension(x509.BasicConstraints(ca, path_length), True)
     if usage:

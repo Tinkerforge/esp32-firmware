@@ -301,6 +301,37 @@ bool critical_eku(const mbedtls_x509_crt &cert)
     return false;
 }
 
+bool validity_encoding(const mbedtls_x509_crt &cert)
+{
+    // RFC 5280 4.1.2.5: seconds and Z are mandatory. Dates through 2049
+    // use UTCTime, later dates GeneralizedTime. The library parser permits
+    // missing Z and both year encodings, so inspect the original signed DER.
+    if (cert.tbs.p == nullptr) {
+        return false;
+    }
+    Der raw{cert.tbs.p, cert.tbs.p + cert.tbs.len}, tbs{}, ignored{}, validity{};
+    if (!raw.take(sequence, tbs) || !raw.empty() ||
+        !tbs.take(MBEDTLS_ASN1_CONTEXT_SPECIFIC | MBEDTLS_ASN1_CONSTRUCTED, ignored) ||
+        !tbs.take(MBEDTLS_ASN1_INTEGER, ignored) || !tbs.take(sequence, ignored) ||
+        !tbs.take(sequence, ignored) || !tbs.take(sequence, validity)) {
+        return false;
+    }
+    for (unsigned int i = 0; i < 2; ++i) {
+        const auto &date = i == 0 ? cert.valid_from : cert.valid_to;
+        const bool utc = date.year >= 1950 && date.year <= 2049;
+        Der value{};
+        if (!validity.take(utc ? MBEDTLS_ASN1_UTC_TIME : MBEDTLS_ASN1_GENERALIZED_TIME, value) || (value.size() != (utc ? 13u : 15u)) || (value.p[value.size() - 1] != 'Z')) {
+            return false;
+        }
+        for (size_t j = 0; j + 1 < value.size(); ++j) {
+            if ((value.p[j] < '0') || (value.p[j] > '9')) {
+                return false;
+            }
+        }
+    }
+    return validity.empty();
+}
+
 }
 
 bool ISOVehicleCertificate::issuer_key_matches(const mbedtls_x509_crt &cert, const mbedtls_x509_crt &issuer)
@@ -440,6 +471,9 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
         flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
     }
 
+    if (!validity_encoding(cert)) {
+        flags |= POLICY_FAILURE;
+    }
     flags |= certificate_time_flags(cert, time(nullptr));
 
     char url[256];
