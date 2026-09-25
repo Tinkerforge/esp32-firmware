@@ -1429,7 +1429,7 @@ void EVSEV2::start_polling_all_energy_meter_values(size_t id_count)
             const int rc = tf_evse_v2_get_all_energy_meter_values(&device, this->all_energy_meter_values, &len);
 
             if (rc != TF_E_OK) {
-                logger.printfln("tf_evse_v2_get_all_energy_meter_values failed: %s (%i)", tf_hal_strerror(rc), rc);
+                logger.trace_bricklet_error(rc, "tf_evse_v2_get_all_energy_meter_values");
                 this->all_energy_meter_values_valid = false;
                 return;
             }
@@ -1440,15 +1440,10 @@ void EVSEV2::start_polling_all_energy_meter_values(size_t id_count)
             }
 
             if (len > id_count) {
-#ifdef DEBUG_FS_ENABLE
-                esp_system_abort("Received more energy meter values than expected; buffer overflow on heap");
-#else
-                logger.printfln("Received more energy meter values than expected; buffer overflow on heap");
-#endif
-            } else {
-                logger.printfln("Received less energy values than expected :-?");
+                esp_system_abort("Received more energy meter values than expected; buffer overflow in arena");
             }
 
+            logger.printfln("Received less energy values than expected :-?");
             this->all_energy_meter_values_valid = false;
         },
         [this]() {
