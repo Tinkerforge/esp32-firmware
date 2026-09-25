@@ -200,7 +200,7 @@ def main():
                             case 'notify_test_success':
                                 test_finished = True
                                 if meta_test:
-                                    print("\r", end="")
+                                    tprint("\r", end="")
                                 else:
                                     tprint(green("Success"), f"({time.monotonic() - start:.3f}s)")
 
