@@ -2,9 +2,11 @@
 
 import time
 import socket
+from datetime import datetime, timedelta, timezone
 
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import ec, ed448
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.oid import NameOID
 
 import tinkerforge_util as tfutil
@@ -160,7 +162,7 @@ def suite_setup(tc: TestContext):
     saved_certs = tc.api("certs/state")
     local_ip = tc.get_local_ip()
     csms_tls = LocalCSMSTls(environment.host, local_ip)
-    csms = CSMSSim(interactive=("SignCertificate", "NotifyReport"),
+    csms = CSMSSim(interactive=("SignCertificate", "NotifyReport", "NotifyEvent"),
                    certfile=str(csms_tls.certfile), keyfile=str(csms_tls.keyfile))
     test_ocpp = dict(saved_ocpp)
     test_ocpp.update({
@@ -395,6 +397,77 @@ def test_private_environment_persists_across_reboot(tc: TestContext):
     result = get_variables([("PrivateEnvironmentEnabled", None)])[0]
     tc.assert_eq("Accepted", result["attributeStatus"])
     tc.assert_eq(expected, result["attributeValue"])
+
+
+def test_missing_v2g_root_notify_event(tc: TestContext):
+    # Hubject catalogue 47/E5: isolated untrusted issuer, no installed-root mutation.
+    assert csms is not None
+    tc.set_test_timeout(120)
+    listing_request = {"certificateType": ["V2GRootCertificate", "V2GCertificateChain"]}
+    before = csms.call("GetInstalledCertificateIds", listing_request)
+    count = csms.call("GetVariables", {"getVariableData": [{
+        "component": {"name": "SecurityCtrlr"}, "variable": {"name": "CertificateEntries"},
+    }]})["getVariableResult"][0]["attributeValue"]
+    security_before = len(csms.security_events)
+    tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+    request, mid = csms.expect("SignCertificate", timeout=60)
+    csms.respond(mid, {"status": "Accepted"})
+    try:
+        csr = x509.load_pem_x509_csr(request["csr"].encode())
+        tc.assert_(csr.is_signature_valid)
+        key = ec.generate_private_key(ec.SECP256R1())
+        subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "C10 uninstalled test root")])
+        now = datetime.now(timezone.utc)
+        root = (x509.CertificateBuilder().subject_name(subject).issuer_name(subject)
+                .public_key(key.public_key()).serial_number(x509.random_serial_number())
+                .not_valid_before(now - timedelta(days=1)).not_valid_after(now + timedelta(days=1))
+                .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+                .sign(key, hashes.SHA256()))
+        leaf = (x509.CertificateBuilder().subject_name(csr.subject).issuer_name(subject)
+                .public_key(csr.public_key()).serial_number(x509.random_serial_number())
+                .not_valid_before(now - timedelta(days=1)).not_valid_after(now + timedelta(days=1))
+                .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+                .sign(key, hashes.SHA256()))
+        ids = []
+        for bundled in (False, True):
+            chain = leaf.public_bytes(serialization.Encoding.PEM)
+            if bundled:
+                chain += root.public_bytes(serialization.Encoding.PEM)
+            result = csms.call("CertificateSigned", {
+                "certificateType": "V2G20Certificate", "requestId": request["requestId"],
+                "certificateChain": chain.decode(),
+            })
+            tc.assert_eq("Rejected", result["status"])
+            tc.assert_(result["statusInfo"]["reasonCode"] in ("NoTrustedRoot", "UntrustedChain"))
+            event, event_mid = csms.expect("NotifyEvent", timeout=10)
+            csms.respond(event_mid, {})
+            tc.assert_eq(0, event["seqNo"])
+            tc.assert_eq(False, event.get("tbc", False))
+            tc.assert_eq(1, len(event["eventData"]))
+            data = event["eventData"][0]
+            tc.assert_eq({"name": "SecurityCtrlr"}, data["component"])
+            tc.assert_eq({"name": "CertificateEntries"}, data["variable"])
+            tc.assert_eq(count, data["actualValue"])
+            tc.assert_eq("Alerting", data["trigger"])
+            tc.assert_eq("HardWiredNotification", data["eventNotificationType"])
+            tc.assert_eq(3, data["severity"])
+            tc.assert_eq(result["statusInfo"]["reasonCode"], data["techCode"])
+            tc.assert_eq("V2GCertificateChain installation failed because the corresponding V2G root was not found.", data["techInfo"])
+            tc.assert_("variableMonitoringId" not in data)
+            tc.assert_(isinstance(data["eventId"], int) and data["eventId"] >= 0)
+            ids.append(data["eventId"])
+            for stamp in (event["generatedAt"], data["timestamp"]):
+                tc.assert_(abs((datetime.now(timezone.utc) - datetime.fromisoformat(stamp.replace("Z", "+00:00"))).total_seconds()) < 120)
+            tc.assert_eq(before, csms.call("GetInstalledCertificateIds", listing_request))
+            print(f"Missing-root rejection with bundled_root={bundled}: exact NotifyEvent payload and unchanged inventory passed")
+        tc.assert_(ids[0] != ids[1])
+        tc.assert_eq(security_before, len(csms.security_events))
+    finally:
+        # A new trigger aborts the old pending key; reject the new CSR as well.
+        tc.assert_eq("Accepted", csms.call("TriggerMessage", {"requestedMessage": "SignV2G20Certificate"})["status"])
+        _, cleanup_mid = csms.expect("SignCertificate", timeout=60)
+        csms.respond(cleanup_mid, {"status": "Rejected"})
+        tc.assert_eq(before, csms.call("GetInstalledCertificateIds", listing_request))
 
 
 def test_evseid_set_and_read_back(tc: TestContext):
