@@ -260,14 +260,14 @@ class VehicleValidationEnvironment:
                 root = self.pki["vehicle"][0]
                 expected_hashes = [certificate_hash_data(c, issuer) for c, issuer in zip(certificates, certificates[1:] + [root])]
                 actual = req["certificateStatusRequests"]
-                self.tc.assert_eq(3, len(actual))
+                self.tc.assert_eq(len(certificates), len(actual))
                 for entry, expected_hash in zip(actual, expected_hashes):
                     self.tc.assert_eq(expected_hash, entry["certificateHashData"])
                     self.tc.assert_eq("OCSP", entry["source"])
                     self.tc.assert_eq([fixtures.URL], entry["urls"])
             session = vehicle.session_setup(tls)
             vehicle.authorization_setup(tls, session)
-            status = statuses or ["Good"] * 3
+            status = statuses or ["Good"] * len(certificates)
             if request is not None:
                 pending = vehicle.authorization(tls, session)
                 self.tc.assert_eq("Ongoing", pending["EVSEProcessing"])

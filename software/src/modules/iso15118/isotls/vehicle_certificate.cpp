@@ -272,33 +272,75 @@ bool key_identifier_matches(const mbedtls_x509_buf &identifier, const mbedtls_x5
     return memcmp(identifier.p, hash + 12, 8) == 0;
 }
 
-bool critical_eku(const mbedtls_x509_crt &cert)
+uint32_t extension_criticality(const mbedtls_x509_crt &cert, bool leaf)
 {
-    // Mbed TLS exposes parsed EKU values but not the extension's critical bit.
+    // AMD1 B.8: inspect flags in signed DER, as parsed extensions do not
+    // retain criticality. Presence and contents are checked separately.
+    uint32_t flags = 0;
     if (cert.v3_ext.p == nullptr) {
-        return false;
+        return ISOVehicleCertificate::POLICY_FAILURE;
     }
     Der raw{cert.v3_ext.p, cert.v3_ext.p + cert.v3_ext.len}, extensions{};
     if (!raw.take(sequence, extensions) || !raw.empty()) {
-        return false;
+        return ISOVehicleCertificate::POLICY_FAILURE;
     }
     while (!extensions.empty()) {
         Der extension{}, oid{}, value{};
         int critical = 0;
         if (!extensions.take(sequence, extension) || !extension.take(MBEDTLS_ASN1_OID, oid)) {
-            return false;
+            return ISOVehicleCertificate::POLICY_FAILURE;
         }
         if (!extension.empty() && (*extension.p == MBEDTLS_ASN1_BOOLEAN) && (mbedtls_asn1_get_bool(&extension.p, extension.end, &critical) != 0)) {
-            return false;
+            return ISOVehicleCertificate::POLICY_FAILURE;
         }
         if (!extension.take(MBEDTLS_ASN1_OCTET_STRING, value) || !extension.empty()) {
-            return false;
+            return ISOVehicleCertificate::POLICY_FAILURE;
         }
         if (equals(oid, eku_oid)) {
-            return critical != 0;
+            if (!critical) {
+                flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
+            }
+        } else if ((oid.size() == 3) && (oid.p[0] == 0x55) && (oid.p[1] == 0x1d)) {
+            switch (oid.p[2]) {
+                case 15: // KeyUsage
+                    if (!critical) {
+                        flags |= MBEDTLS_X509_BADCERT_KEY_USAGE;
+                    }
+                    break;
+                case 19: // BasicConstraints
+                    if (!critical) {
+                        flags |= ISOVehicleCertificate::POLICY_FAILURE;
+                    }
+                    {
+                        // Do not inherit the library's legacy INTEGER-as-cA
+                        // compatibility. DER omits DEFAULT FALSE on leaves.
+                        Der constraints{}, ca{}, path{};
+                        bool valid = value.take(sequence, constraints) && value.empty();
+                        if (valid && leaf) {
+                            valid = constraints.empty();
+                        } else if (valid) {
+                            valid = constraints.take(MBEDTLS_ASN1_BOOLEAN, ca) && ca.size() == 1 && ca.p[0] == 0xff &&
+                                    constraints.take(MBEDTLS_ASN1_INTEGER, path) && path.size() == 1 && path.p[0] <= 1 && constraints.empty();
+                        }
+                        if (!valid) {
+                            flags |= ISOVehicleCertificate::POLICY_FAILURE;
+                        }
+                    }
+                    break;
+                case 14: // SubjectKeyIdentifier
+                case 35: // AuthorityKeyIdentifier
+                case 31: // CRLDistributionPoints
+                case 32: // CertificatePolicies
+                    if (critical) {
+                        flags |= ISOVehicleCertificate::POLICY_FAILURE;
+                    }
+                    break;
+            }
+        } else if (equals(oid, aia_oid) && critical) {
+            flags |= ISOVehicleCertificate::POLICY_FAILURE;
         }
     }
-    return false;
+    return flags;
 }
 
 bool validity_encoding(const mbedtls_x509_crt &cert)
@@ -444,6 +486,14 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
         flags |= POLICY_FAILURE;
     }
 
+    // Mbed TLS stores pathLenConstraint + 1. Zero means absent/unbounded.
+    // B.8 leaf has no path length, vehicle CAs have an explicit limit 0 or 1.
+    const int path_length = cert.MBEDTLS_PRIVATE(max_pathlen);
+    if (leaf ? (path_length != 0) : ((path_length < 1) || (path_length > 2))) {
+        flags |= POLICY_FAILURE;
+    }
+    flags |= extension_criticality(cert, leaf);
+
     const unsigned int usage = cert.MBEDTLS_PRIVATE(key_usage);
     const unsigned int required = leaf ? MBEDTLS_X509_KU_DIGITAL_SIGNATURE : MBEDTLS_X509_KU_KEY_CERT_SIGN;
     const unsigned int forbidden = MBEDTLS_X509_KU_DATA_ENCIPHERMENT | MBEDTLS_X509_KU_ENCIPHER_ONLY | MBEDTLS_X509_KU_DECIPHER_ONLY | MBEDTLS_X509_KU_CRL_SIGN | (leaf ? MBEDTLS_X509_KU_KEY_CERT_SIGN : 0);
@@ -464,7 +514,7 @@ uint32_t ISOVehicleCertificate::verify(const mbedtls_x509_crt &cert, bool leaf, 
             }
         }
 
-        if (!has_eku || !client_auth || !critical_eku(cert)) {
+        if (!has_eku || !client_auth) {
             flags |= MBEDTLS_X509_BADCERT_EXT_KEY_USAGE;
         }
     } else if (has_eku) {

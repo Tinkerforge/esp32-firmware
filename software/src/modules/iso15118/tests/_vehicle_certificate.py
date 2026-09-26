@@ -55,22 +55,23 @@ def issue(subject, key, issuer, issuer_key, *, ca=False, path_length=None,
           ski=True, aki=True, critical_ids=False, crl_sign=False, identifier_method=2,
           content_commitment=False, key_encipherment=False, data_encipherment=False,
           encipher_only=False, decipher_only=False, extra_extensions=(), critical_eku=True,
-          not_before=None, not_after=None):
+          not_before=None, not_after=None, critical_constraints=True, critical_usage=True,
+          critical_ski=None, critical_aki=None):
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
                .not_valid_before(not_before if not_before is not None else NOW + timedelta(days=1) if future else NOW - timedelta(days=2))
                .not_valid_after(not_after if not_after is not None else NOW - timedelta(days=1) if expired else NOW + timedelta(days=30)))
     if constraints:
-        builder = builder.add_extension(x509.BasicConstraints(ca, path_length), True)
+        builder = builder.add_extension(x509.BasicConstraints(ca, path_length), critical_constraints)
     if usage:
         builder = builder.add_extension(x509.KeyUsage(digital, content_commitment, key_encipherment, data_encipherment, key_agreement,
                                                      ca if key_cert_sign is None else key_cert_sign,
-                                                     crl_sign, encipher_only, decipher_only), True)
+                                                     crl_sign, encipher_only, decipher_only), critical_usage)
     if ski is not False:
-        builder = builder.add_extension(x509.SubjectKeyIdentifier(key_identifier(key, identifier_method) if ski is True else ski), critical_ids)
+        builder = builder.add_extension(x509.SubjectKeyIdentifier(key_identifier(key, identifier_method) if ski is True else ski), critical_ids if critical_ski is None else critical_ski)
     if aki is not False:
         builder = builder.add_extension(x509.AuthorityKeyIdentifier(
-            key_identifier(issuer_key, identifier_method) if aki is True else aki, None, None), critical_ids)
+            key_identifier(issuer_key, identifier_method) if aki is True else aki, None, None), critical_ids if critical_aki is None else critical_aki)
     if eku is not None:
         builder = builder.add_extension(x509.ExtendedKeyUsage(eku), critical_eku)
     if source == "crl":

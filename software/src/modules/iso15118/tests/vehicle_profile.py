@@ -80,8 +80,7 @@ def test_critical_key_identifiers(tc: TestContext):
     path, chain = env.chain("profile-critical-key-identifiers",
                            **{f"{position}_opts": {"critical_ids": True}
                               for position in ("leaf", "sub1", "sub2")})
-    # Parser capability control; AMD1 profiles designate these noncritical.
-    env.positive("Critical method-2 SKI and AKI parser capability", path, chain)
+    env.negative("AMD1 key identifiers must be noncritical", path, "CERTIFICATE_UNKNOWN")
 
 
 def test_method1_key_identifiers(tc: TestContext):

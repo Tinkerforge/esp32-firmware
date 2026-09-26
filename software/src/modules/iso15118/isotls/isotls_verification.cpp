@@ -265,6 +265,13 @@ int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *
         if (issuer == nullptr) {
             issuer = root;
         }
+        // With two vehicle CAs, the lower CA is Sub-CA2 (pathLen 0).
+        // A single CA may retain Sub-CA1's unused pathLen 1 allowance:
+        // AMD1 B.2.3 does not require filling every permitted CA level.
+        const bool issuer_is_anchor = (issuer != nullptr) && (root != nullptr) && (issuer->raw.len == root->raw.len) && (memcmp(issuer->raw.p, root->raw.p, root->raw.len) == 0);
+        if ((i == 1) && (issuer != nullptr) && !issuer_is_anchor && (child->MBEDTLS_PRIVATE(max_pathlen) != 1)) {
+            *flags |= ISOVehicleCertificate::POLICY_FAILURE;
+        }
         if (issuer != nullptr && !ISOVehicleCertificate::issuer_key_matches(*child, *issuer)) {
             *flags |= ISOVehicleCertificate::POLICY_FAILURE;
         }
