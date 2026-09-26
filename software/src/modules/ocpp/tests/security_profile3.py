@@ -224,6 +224,11 @@ def test_profile3_required_tls12_suites(tc: TestContext):
                 "certificateType": "CSMSRootCertificate",
                 "certificate": ca_cert.read_text(),
             })["status"])
+            tc.assert_eq("Accepted", bootstrap.call("SetVariables", {"setVariableData": [{
+                "component": {"name": "SecurityCtrlr"},
+                "variable": {"name": "OrganizationName"},
+                "attributeValue": "Profile 3 test operator",
+            }]})["setVariableResult"][0]["attributeStatus"])
             tc.assert_eq("Accepted", bootstrap.call("TriggerMessage", {
                 "requestedMessage": "SignChargingStationCertificate",
             })["status"])
