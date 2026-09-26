@@ -507,12 +507,7 @@ void ISO2::handle_authorization_req()
 
     if (close_session) {
         // HUB20-432-008/009/010: let the failure response reach the EV first.
-        int socket_to_close = iso15118.common.get_active_socket();
-        task_scheduler.scheduleOnce([socket_to_close]() {
-            if (iso15118.common.get_active_socket() == socket_to_close) {
-                iso15118.common.reset_active_socket();
-            }
-        }, 2_s);
+        iso15118.common.schedule_socket_close(2_s);
     }
 }
 

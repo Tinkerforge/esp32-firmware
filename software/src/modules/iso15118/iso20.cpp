@@ -404,12 +404,7 @@ void ISO20::handle_authorization_req()
 
     if (close_session) {
         // [HUB20-432-008/009] Close the TLS session, delayed so the failed AuthorizationRes reaches the EV first
-        int socket_to_close = iso15118.common.get_active_socket();
-        task_scheduler.scheduleOnce([socket_to_close]() {
-            if (iso15118.common.get_active_socket() == socket_to_close) {
-                iso15118.common.reset_active_socket();
-            }
-        }, 2_s);
+        iso15118.common.schedule_socket_close(2_s);
     }
 }
 
@@ -770,16 +765,9 @@ void ISO20::handle_session_stop_req()
         cancel_sequence_timeout(next_timeout);
 
         // [V2G20-1633] Wait at least 5s before closing TCP connection
-        // Schedule delayed socket reset to allow EV to close first
-        // Capture the current socket fd to avoid closing a new session's socket
-        // if a new connection arrives before the 5s delay expires
-        int socket_to_close = iso15118.common.get_active_socket();
-        task_scheduler.scheduleOnce([socket_to_close]() {
-            // Only close if this is still the same socket (no new session connected)
-            if (iso15118.common.get_active_socket() == socket_to_close) {
-                iso15118.common.reset_active_socket();
-            }
-        }, 5_s);
+        // The timer belongs to this connection and is cancelled if the EV
+        // closes first, even when a later connection reuses its socket fd.
+        iso15118.common.schedule_socket_close(5_s);
     }
 }
 

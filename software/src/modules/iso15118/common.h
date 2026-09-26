@@ -112,6 +112,7 @@ public:
     void prepare_din_header(struct din_MessageHeaderType *header);
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
     void reset_active_socket();
+    void schedule_socket_close(millis_t delay);
     int get_active_socket() const { return active_socket; }
     int get_listen_socket() const { return listen_socket; }
 
@@ -135,6 +136,7 @@ private:
 
     int listen_socket = -1;
     int active_socket = -1;
+    uint64_t socket_close_task = 0;
     struct sockaddr_storage source_addr;
     socklen_t addr_len = sizeof(source_addr);
 

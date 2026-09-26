@@ -297,6 +297,10 @@ void Common::handle_socket()
 
 void Common::reset_active_socket()
 {
+    if (socket_close_task != 0) {
+        task_scheduler.cancel(socket_close_task);
+        socket_close_task = 0;
+    }
     tls.end_session();
     tls_requested_by_ev = false;
     api_state.get("encryption")->updateEnum(Encryption::Unencrypted);
@@ -311,6 +315,21 @@ void Common::reset_active_socket()
     cancel_sequence_timeout(iso15118.iso2.next_timeout);
     cancel_sequence_timeout(iso15118.din70121.next_timeout);
     cancel_sequence_timeout(iso15118.iso20.next_timeout);
+}
+
+void Common::schedule_socket_close(millis_t delay)
+{
+    // A file descriptor can be reused by the next connection. Cancel this
+    // connection's timer in reset_active_socket(), rather than comparing fds
+    // when the timer fires. Repeated failure responses must not delay closure.
+    if ((active_socket < 0) || (socket_close_task != 0)) {
+        return;
+    }
+
+    socket_close_task = task_scheduler.scheduleOnce([this]() {
+        socket_close_task = 0;
+        reset_active_socket();
+    }, delay);
 }
 
 void Common::prepare_din_header(struct din_MessageHeaderType *header)

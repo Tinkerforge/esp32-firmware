@@ -303,7 +303,10 @@ def test_device_model_report(tc: TestContext):
 
     for name, (minimum, maximum) in IDENTITY_LIMITS.items():
         entry = entries[("ISO15118Ctrlr", name, None)]
-        tc.assert_("evse" not in entry["component"])
+        if name == "ISO15118EvseId":
+            tc.assert_eq({"id": 1}, entry["component"]["evse"])
+        else:
+            tc.assert_("evse" not in entry["component"])
         characteristics = entry["variableCharacteristics"]
         tc.assert_eq("string", characteristics["dataType"])
         tc.assert_eq(minimum, characteristics["minLimit"])
