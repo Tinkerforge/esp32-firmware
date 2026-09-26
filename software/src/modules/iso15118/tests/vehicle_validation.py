@@ -140,8 +140,12 @@ class VehicleValidationEnvironment:
                        .public_key(csr.public_key()).serial_number(x509.random_serial_number())
                        .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=45))
                        .add_extension(x509.BasicConstraints(False, None), True)
-                       .add_extension(x509.KeyUsage(True, False, False, False, label == "iso2", False, False, False, False), True))
+                       .add_extension(x509.KeyUsage(True, False, False, False, True, False, False, False, False), True)
+                       .add_extension(x509.SubjectKeyIdentifier.from_public_key(csr.public_key()), False)
+                       .add_extension(x509.AuthorityKeyIdentifier(
+                           root.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest, None, None), False))
             if label == "iso20":
+                builder = builder.add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
                 builder = builder.add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
                     fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
             leaf = builder.sign(root_key, hashes.SHA512() if label == "iso20" else hashes.SHA256())
@@ -175,7 +179,7 @@ class VehicleValidationEnvironment:
         self.sub1_key, self.sub2_key, self.leaf_key = [ec.generate_private_key(ec.SECP521R1()) for _ in range(3)]
         fixtures.write_key(self.work / "vehicle.key", self.leaf_key)
 
-    def connect(self, cert, *, tls12=False, message_callback=None):
+    def connect(self, cert, *, tls12=False, message_callback=None, group="secp521r1"):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         if message_callback is not None:
             context._msg_callback = message_callback
@@ -185,7 +189,7 @@ class VehicleValidationEnvironment:
         if tls12:
             context.set_ciphers("ECDHE-ECDSA-AES128-SHA256")
         else:
-            context.set_ecdh_curve("secp521r1")
+            context.set_ecdh_curve(group)
             if cert is not None:
                 context.load_cert_chain(str(cert), str(self.work / "vehicle.key"))
         response = common.sdp_request(self.iface, expected_from=self.target_ll)
@@ -242,9 +246,9 @@ class VehicleValidationEnvironment:
         self.record(label, {"error": error, "seconds": round(time.monotonic() - start, 3)})
         time.sleep(1)
 
-    def positive(self, label, path, certificates, statuses=None, *, allow_cached=False, expected_server=None):
+    def positive(self, label, path, certificates, statuses=None, *, allow_cached=False, expected_server=None, group="secp521r1"):
         start = time.monotonic()
-        with self.connect(path) as tls:
+        with self.connect(path, group=group) as tls:
             if expected_server is not None:
                 self.tc.assert_eq(expected_server.public_bytes(serialization.Encoding.DER), tls.getpeercert(binary_form=True))
             vehicle.sap_iso20(tls)
@@ -474,7 +478,10 @@ def missing_root_lifecycle(tc: TestContext, bundled_root: bool):
                        .public_key(csr.public_key()).serial_number(x509.random_serial_number())
                        .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=45))
                        .add_extension(x509.BasicConstraints(False, None), True)
-                       .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), True)
+                       .add_extension(x509.KeyUsage(True, False, False, False, True, False, False, False, False), True)
+                       .add_extension(x509.SubjectKeyIdentifier.from_public_key(csr.public_key()), False)
+                       .add_extension(x509.AuthorityKeyIdentifier(root.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest, None, None), False)
+                       .add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
                        .add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
                            fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
                        .sign(root_key, hashes.SHA512()))
@@ -584,7 +591,10 @@ def test_automatic_renewal_after_five_minute_expiry(tc: TestContext):
                 .public_key(csr.public_key()).serial_number(x509.random_serial_number())
                 .not_valid_before(start).not_valid_after(end)
                 .add_extension(x509.BasicConstraints(False, None), True)
-                .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), True)
+                .add_extension(x509.KeyUsage(True, False, False, False, True, False, False, False, False), True)
+                .add_extension(x509.SubjectKeyIdentifier.from_public_key(csr.public_key()), False)
+                .add_extension(x509.AuthorityKeyIdentifier(root.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest, None, None), False)
+                .add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
                 .add_extension(x509.AuthorityInformationAccess([x509.AccessDescription(
                     fixtures.AIA.OCSP, x509.UniformResourceIdentifier("http://ocsp.vehicle.test/secc"))]), False)
                 .sign(root_key, hashes.SHA512()))
@@ -599,7 +609,9 @@ def test_automatic_renewal_after_five_minute_expiry(tc: TestContext):
             .responder_id(ocsp.OCSPResponderEncoding.HASH, root).certificates([root]).sign(root_key, hashes.SHA512()))
         status, mid = csms.expect("GetCertificateStatus", timeout=30)
         tc.assert_eq(certificate_hash_data(leaf, root), {k: status["ocspRequestData"][k] for k in certificate_hash_data(leaf, root)})
-        csms.respond(mid, {"status": "Accepted", "ocspResult": base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()})
+        encoded = base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()
+        env.statuses[format(leaf.serial_number, "x")] = encoded
+        csms.respond(mid, {"status": "Accepted", "ocspResult": encoded})
         (env.work / "iso20-secc.pem").write_bytes(fixtures.pem(leaf))
         leaf_id = env.identity({"certificateType": "V2GCertificateChain", "certificateHashData": certificate_hash_data(leaf, root)})
         tc.assert_eq(before - {old_id} | {leaf_id}, {env.identity(entry) for entry in env.inventory()})
@@ -667,9 +679,10 @@ def test_seven_day_renewal_with_sub_ca_inventory(tc: TestContext):
     security_count = len(csms.security_events)
     now = datetime.now(timezone.utc).replace(microsecond=0)
     sub1_key, sub2_key = [ec.generate_private_key(ec.SECP521R1()) for _ in range(2)]
-    sub1 = profiles.certificate(profiles.name("Renewal Sub CA 1"), sub1_key, root.subject, root_key,
-                                x509.random_serial_number(), now - timedelta(days=1), now + timedelta(days=90),
-                                hashes.SHA512(), path_length=1)
+    sub1 = fixtures.issue(profiles.name("Renewal Sub CA 1"), sub1_key, root.subject, root_key,
+                          ca=True, path_length=1, digital=False, identifier_method=1,
+                          aki=root.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest,
+                          source=profiles.OCSP_URL, not_before=now - timedelta(days=1), not_after=now + timedelta(days=90))
     sub2 = profiles.certificate(profiles.name("Renewal Sub CA 2"), sub2_key, sub1.subject, sub1_key,
                                 x509.random_serial_number(), now - timedelta(days=1), now + timedelta(days=60),
                                 hashes.SHA512(), path_length=0)
@@ -684,7 +697,7 @@ def test_seven_day_renewal_with_sub_ca_inventory(tc: TestContext):
                 .public_key(csr.public_key()).serial_number(x509.random_serial_number())
                 .not_valid_before(start).not_valid_after(end)
                 .add_extension(x509.BasicConstraints(False, None), True)
-                .add_extension(profiles.key_usage(ca=False), True)
+                .add_extension(profiles.key_usage(ca=False, key_agreement=True), True)
                 .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(sub2_key.public_key()), False)
                 .add_extension(x509.SubjectKeyIdentifier.from_public_key(csr.public_key()), False)
                 .add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
@@ -716,6 +729,7 @@ def test_seven_day_renewal_with_sub_ca_inventory(tc: TestContext):
                 ocsp.OCSPCertStatus.GOOD, stamp - timedelta(minutes=1), stamp + timedelta(days=1), None, None)
                 .responder_id(ocsp.OCSPResponderEncoding.HASH, issuer).certificates([issuer]).sign(key, hashes.SHA512()))
             responses[json.dumps(hash_data, sort_keys=True)] = base64.b64encode(response.public_bytes(serialization.Encoding.DER)).decode()
+            env.statuses[format(cert.serial_number, "x")] = responses[json.dumps(hash_data, sort_keys=True)]
         while responses:
             request_status, mid = csms.expect("GetCertificateStatus", timeout=30)
             data = request_status["ocspRequestData"]
@@ -815,6 +829,16 @@ def test_environment_transition_and_reboot(tc: TestContext):
         env.variable("PrivateEnvironmentEnabled", saved)
         tc.assert_eq(saved, env.variable("PrivateEnvironmentEnabled"))
         tc.assert_eq(before, sorted(env.inventory(), key=env.identity))
+        # Reboot discarded cached SECC OCSP. Refill all currently installed
+        # chain entries before later public-mode certificate-negative tests.
+        while True:
+            try:
+                req, mid = env.csms.expect("GetCertificateStatus", timeout=3)
+            except TimeoutError:
+                break
+            serial = req["ocspRequestData"]["serialNumber"].lower().lstrip("0")
+            value = env.statuses.get(serial)
+            env.csms.respond(mid, {"status": "Accepted", "ocspResult": value} if value else {"status": "Failed"})
 
 
 def test_private_source_waiver_preserves_role_validation(tc: TestContext):

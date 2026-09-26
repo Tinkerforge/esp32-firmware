@@ -59,7 +59,7 @@ def install_chain(tc, label):
         .public_key(parsed.public_key()).serial_number(x509.random_serial_number())
         .not_valid_before(now - timedelta(seconds=5)).not_valid_after(now + timedelta(days=45))
         .add_extension(x509.BasicConstraints(False, None), True)
-        .add_extension(profiles.key_usage(ca=False, key_agreement=label == "iso2"), True)
+        .add_extension(profiles.key_usage(ca=False, key_agreement=True), True)
         .add_extension(x509.SubjectKeyIdentifier.from_public_key(parsed.public_key()), False)
         .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(keys[1].public_key()), False)
         .add_extension(x509.ExtendedKeyUsage([fixtures.EKU.SERVER_AUTH]), True)
