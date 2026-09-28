@@ -41,6 +41,7 @@ let x = {
                 "shown in web interface and charge log",
             "edit_user_current": "Maximum charge current",
             "edit_user_password": "Password",
+            "edit_user_password_help": "Up to 64 characters. Do not use umlauts, accented characters or emoji.",
 
             "evse_user_description": "Charge release",
 

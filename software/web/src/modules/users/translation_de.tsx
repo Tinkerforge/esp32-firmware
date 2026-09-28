@@ -41,6 +41,7 @@ let x = {
                 "zur Anzeige im Ladelog und Webinterface",
             "edit_user_current": "Maximaler Ladestrom",
             "edit_user_password": "Passwort",
+            "edit_user_password_help": "Bis zu 64 Zeichen. Keine Umlaute, Akzente oder Emoji.",
 
             "evse_user_description": "Ladefreigabe",
 
