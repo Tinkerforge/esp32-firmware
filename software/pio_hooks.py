@@ -1317,12 +1317,6 @@ def main():
 
     if nightly:
         for frontend_module in frontend_modules:
-            if frontend_module.space == "Nightly":
-                break
-        else:
-            frontend_modules.append(util.FlavoredName("Nightly").get())
-
-        for frontend_module in frontend_modules:
             if frontend_module.space == "Debug":
                 break
         else:
@@ -1656,6 +1650,9 @@ def main():
     options_value['product_name_user_agent'] = json.dumps(product_name_user_agent)
     options_origin['product_name_user_agent'] = 'pio_hooks.py'
 
+    options_value['under_construction'] = '1' if nightly else '0'
+    options_origin['under_construction'] = 'pio_hooks.py'
+
     for key, value in sorted(options_value.items()):
         if len(value) == 0:
             print(f"Option {key} in {options_origin[key]} has no value", file=sys.stderr)
@@ -1871,6 +1868,9 @@ def main():
         if color.endswith(';'):
             color = color[:-1]
 
+    with open(os.path.join('web', 'src', 'under_construction.gif'), 'rb') as f:
+        under_construction_base64 = b64encode(f.read()).decode('ascii')
+
     tfutil.specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
         '{{{theme_color}}}': color
@@ -1904,6 +1904,7 @@ def main():
 
     tfutil.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
         '{{{logo_base64}}}': logo_base64,
+        '{{{under_construction_base64}}}': under_construction_base64,
         '{{{navbar_imports}}}': '\n'.join([f'import {{ {x.component.camel}Navbar }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode != 'Close']),
         '{{{navbar}}}': '\n                                    '.join(navbar),
         '{{{navbar_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_components if x.mode == 'Open']),
