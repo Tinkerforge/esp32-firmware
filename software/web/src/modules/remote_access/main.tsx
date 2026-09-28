@@ -1100,7 +1100,7 @@ export class RemoteAccess extends ConfigComponent<
                                                             }}
                                                         />
                                                     </FormRow>
-                                                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
+                                                    <FormRow label={__("remote_access.content.password")}>
                                                         <InputPassword
                                                             required={
                                                                 this.state
