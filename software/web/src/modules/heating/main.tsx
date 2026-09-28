@@ -436,7 +436,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.min_hold_time}
                             onValue={this.set("min_hold_time")}
                             min={10}
-                            max={60}
+                            max={120}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.remaining_holding_time")} label_muted={__("heating.content.remaining_holding_time_muted")}>

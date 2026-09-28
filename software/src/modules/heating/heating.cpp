@@ -53,7 +53,7 @@ void Heating::pre_setup()
     config = ConfigRoot{Config::Object({
         {"sgr_blocking_type", Config::Uint(0, 0, 1)},
         {"sgr_extended_type", Config::Uint(0, 0, 1)},
-        {"min_hold_time", Config::Uint(15, 10, 60)},
+        {"min_hold_time", Config::Uint(15, 10, 120)},
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
         {"enable_heating_curve", Config::Bool(false)},
