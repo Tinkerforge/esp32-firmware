@@ -9,7 +9,7 @@ import traceback
 import typing
 import functools
 import json
-from tinkerforge_util.colored import red, green, blue
+from tinkerforge_util.colored import red, green, blue, yellow
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
@@ -127,7 +127,8 @@ class Stage3:
     def __init__(self,
                  generation,
                  is_front_panel_button_pressed_function,
-                 has_evse_error_function,
+                 get_evse_error_function,
+                 get_dc_fault_current_state_function,
                  get_iec_state_function,
                  reset_dc_fault_function,
                  switch_phases_function,
@@ -142,7 +143,8 @@ class Stage3:
                  get_gpio_state_function):
         self.generation = generation
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
-        self.has_evse_error_function = has_evse_error_function
+        self.get_evse_error_function = get_evse_error_function
+        self.get_dc_fault_current_state_function = get_dc_fault_current_state_function
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
         self.switch_phases_function = switch_phases_function
@@ -178,9 +180,9 @@ class Stage3:
                 tries -= 1
 
                 if tries == 1:
-                    print('WARNING: Could not complete action for device at position {0}, 1 try left: {1}'.format(position, e))
+                    print(yellow('WARNING: Could not complete action for device at position {0}, 1 try left: {1}'.format(position, e)))
                 elif tries > 1:
-                    print('WARNING: Could not complete action for device at position {0}, {1} tries left: {2}'.format(position, tries, e))
+                    print(yellow('WARNING: Could not complete action for device at position {0}, {1} tries left: {2}'.format(position, tries, e)))
                 else:
                     fatal_error('Could not complete action for device at position {0}: {1}'.format(position, e), other_exception=e)
 
@@ -218,9 +220,9 @@ class Stage3:
                     tries[position] -= 1
 
                     if tries[position] == 1:
-                        print('WARNING: Could not complete action {0} for device at position {1}, 1 try left: {2}'.format(position[1], position[0], e))
+                        print(yellow('WARNING: Could not complete action {0} for device at position {1}, 1 try left: {2}'.format(position[1], position[0], e)))
                     elif tries[position] > 1:
-                        print('WARNING: Could not complete action {0} for device at position {1}, {2} tries left: {3}'.format(position[1], position[0], tries[position], e))
+                        print(yellow('WARNING: Could not complete action {0} for device at position {1}, {2} tries left: {3}'.format(position[1], position[0], tries[position], e)))
                     else:
                         fatal_error('Could not complete action {0} for device at position {1}: {2}'.format(position[1], position[0], e), other_exception=e)
                 else:
@@ -759,18 +761,23 @@ class Stage3:
         tries = 3
 
         while tries > 0:
-            if not self.has_evse_error_function():
+            error = self.get_evse_error_function()
+            dc_fault = self.get_dc_fault_current_state_function()
+
+            if error == 0 and dc_fault == 0:
                 break
 
-            gpio = self.get_gpio_state_function()
+            gpio = [int(x) for x in self.get_gpio_state_function()]
             tries -= 1
 
             if tries == 1:
-                print(f'WARNING: Charger error not cleared, 1 try left, GPIO={gpio}')
+                print(yellow(f'WARNING: Charger error not cleared, 1 try left, error={error} dc_fault={dc_fault} gpio={gpio}'))
             elif tries > 1:
-                print(f'WARNING: Charger error not cleared, {tries} tries left, GPIO={gpio}')
+                print(yellow(f'WARNING: Charger error not cleared, {tries} tries left, error={error} dc_fault={dc_fault} gpio={gpio}'))
             else:
-                fatal_error(f'Charger error not cleared, GPIO={gpio}')
+                fatal_error(f'Charger error not cleared, error={error} dc_fault={dc_fault} gpio={gpio}')
+
+            time.sleep(2)
 
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
@@ -966,7 +973,8 @@ class Stage3:
 
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
-        assert self.has_evse_error_function != None
+        assert self.get_evse_error_function != None
+        assert self.get_dc_fault_current_state_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
@@ -1022,7 +1030,7 @@ class Stage3:
 
                 fatal_error('Charger not in IEC state {0}. Is CP wire connected correctly to the EVSE?'.format(state))
 
-            if self.has_evse_error_function():
+            if self.get_evse_error_function() != 0:
                 if state != 'D':
                     fatal_error('Unexpected EVSE error')
             else:
@@ -1359,7 +1367,8 @@ def main():
 
     stage3 = Stage3(3,
                     is_front_panel_button_pressed_function=lambda: False,
-                    has_evse_error_function=lambda: False,
+                    get_evse_error_function=lambda: 0,
+                    get_dc_fault_current_state_function=lambda: 0,
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
                     switch_phases_function=lambda x: None,

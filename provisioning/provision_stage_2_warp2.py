@@ -342,9 +342,13 @@ def reset_dc_fault():
     global evse
     return retry_wrapper(lambda: evse.reset_dc_fault_current_state(0xDC42FA23), "reset DC fault current state")
 
-def has_evse_error():
+def get_evse_error():
     global evse
-    return retry_wrapper(lambda: evse.get_state().error_state != 0, "get EVSE error state")
+    return retry_wrapper(lambda: evse.get_state().error_state, "get EVSE error state")
+
+def get_dc_fault_current_state():
+    global evse
+    return retry_wrapper(lambda: evse.get_state().dc_fault_current_state, "get EVSE DC fault current state")
 
 def get_contactor_state():
     global evse
@@ -767,7 +771,8 @@ def led_wrap():
     try:
         stage3 = Stage3(int(scanner.qr_gen),
                         is_front_panel_button_pressed_function=is_front_panel_button_pressed,
-                        has_evse_error_function=has_evse_error,
+                        get_evse_error_function=get_evse_error,
+                        get_dc_fault_current_state_function=get_dc_fault_current_state,
                         get_iec_state_function=get_iec_state,
                         reset_dc_fault_function=reset_dc_fault,
                         switch_phases_function=switch_phases,
