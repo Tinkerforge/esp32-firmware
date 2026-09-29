@@ -754,6 +754,21 @@ class Stage3:
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
+        tries = 3
+
+        while tries > 0:
+            if not self.has_evse_error_function():
+                break
+
+            tries -= 1
+
+            if tries == 1:
+                print('WARNING: Charger error not cleared, 1 try left')
+            elif tries > 1:
+                print(f'WARNING: Charger error not cleared, {tries} tries left')
+            else:
+                fatal_error('Charger error not cleared')
+
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
 
