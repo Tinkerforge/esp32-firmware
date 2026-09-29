@@ -674,7 +674,6 @@ def set_iso15118_enabled(enable: bool):
     except Exception as e:
         fatal_error("Failed to enable ISO 15118: {}".format(e), other_exception=e)
 
-
 def get_iso15118_ev_mac():
     try:
         with urllib.request.urlopen("http://{}/iso15118/state_slac/pev_mac".format(host), timeout=5) as f:
@@ -683,7 +682,6 @@ def get_iso15118_ev_mac():
         fatal_error("Failed to get ISO 15118 EV MAC address: {} {}".format(e, e.read()), other_exception=e)
     except Exception as e:
         fatal_error("Failed to get ISO 15118 EV MAC address: {}".format(e), other_exception=e)
-
 
 def get_iso15118_attenuation_profile():
     try:
@@ -733,6 +731,10 @@ def upload_iso15118_pib():
 
     set_iso15118_enabled(False)
 
+def get_gpio_state():
+    global evse
+    return retry_wrapper(lambda: evse.get_low_level_state().gpio, "get GPIO state")
+
 def led_wrap():
     global commit_message
     global files_to_commit
@@ -776,7 +778,8 @@ def led_wrap():
                         get_meter_voltages_function=get_meter_voltages,
                         set_iso15118_enabled_function=set_iso15118_enabled,
                         get_iso15118_ev_mac_function=get_iso15118_ev_mac,
-                        get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile)
+                        get_iso15118_attenuation_profile_function=get_iso15118_attenuation_profile,
+                        get_gpio_state_function=get_gpio_state)
 
         stage3.setup()
         stage3.set_led_strip_color((0, 0, 255))

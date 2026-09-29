@@ -138,7 +138,8 @@ class Stage3:
                  get_meter_voltages_function,
                  set_iso15118_enabled_function,
                  get_iso15118_ev_mac_function,
-                 get_iso15118_attenuation_profile_function):
+                 get_iso15118_attenuation_profile_function,
+                 get_gpio_state_function):
         self.generation = generation
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
@@ -153,6 +154,7 @@ class Stage3:
         self.set_iso15118_enabled_function = set_iso15118_enabled_function
         self.get_iso15118_ev_mac_function = get_iso15118_ev_mac_function
         self.get_iso15118_attenuation_profile_function = get_iso15118_attenuation_profile_function
+        self.get_gpio_state_function = get_gpio_state_function
 
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
@@ -760,14 +762,15 @@ class Stage3:
             if not self.has_evse_error_function():
                 break
 
+            gpio = self.get_gpio_state_function()
             tries -= 1
 
             if tries == 1:
-                print('WARNING: Charger error not cleared, 1 try left')
+                print(f'WARNING: Charger error not cleared, 1 try left, GPIO={gpio:b}')
             elif tries > 1:
-                print(f'WARNING: Charger error not cleared, {tries} tries left')
+                print(f'WARNING: Charger error not cleared, {tries} tries left, GPIO={gpio:b}')
             else:
-                fatal_error('Charger error not cleared')
+                fatal_error('Charger error not cleared, GPIO={gpio:b}')
 
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
@@ -968,6 +971,7 @@ class Stage3:
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
         assert self.reset_evse_function != None
+        assert self.get_gpio_state_function != None
 
         report = result["electrical_tests"]
 
@@ -1366,7 +1370,8 @@ def main():
                     get_meter_voltages_function=lambda: None,
                     set_iso15118_enabled_function=lambda: None,
                     get_iso15118_ev_mac_function=lambda: None,
-                    get_iso15118_attenuation_profile_function=lambda: None)
+                    get_iso15118_attenuation_profile_function=lambda: None,
+                    get_gpio_state_function=lambda: None)
 
     stage3.setup()
 
