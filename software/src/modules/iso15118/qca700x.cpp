@@ -796,6 +796,18 @@ void QCA700x::state_machine_loop()
     // Only process frames if modem has been detected via signature check
     // This prevents processing garbage data when no modem is connected
     if (!modem_detected) {
+        // Received frames are discarded here.
+        // This is expected for a short time during modem (re)initialization.
+        // Trace it anyway, since frames that are visible in the ll trace but never reach SLAC are otherwise very confusing when analyzing debug reports.
+        if (spi_buffer_length > 0) {
+            rx_bytes_discarded_undetected += spi_buffer_length;
+            if (deadline_elapsed(next_rx_discarded_trace)) {
+                iso15118.trace("QCA700x: Discarded %lu received bytes, modem not verified (SLAC state %s)",
+                               rx_bytes_discarded_undetected, get_slac_state_name(iso15118.slac.state));
+                rx_bytes_discarded_undetected = 0;
+                next_rx_discarded_trace = now_us() + 10_s;
+            }
+        }
         spi_buffer_length = 0;
         start_next_op(); // Keep sending and draining the modem's hardware buffer.
         return;

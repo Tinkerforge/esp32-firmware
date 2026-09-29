@@ -127,6 +127,9 @@ private:
 
     bool spi_initialized = false;
 
+    uint32_t rx_bytes_discarded_undetected = 0;
+    micros_t next_rx_discarded_trace = 0_us;
+
     // Modem presence verified via SPI signature check; frame processing is
     // paused while false to avoid parsing garbage from a disconnected bus.
     bool modem_detected = false;

@@ -36,6 +36,11 @@
 extern const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH]  = {0x00, 0xB0, 0x52, 0x00, 0x00, 0x01};
 extern const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+static uint32_t ms_since(const micros_t t)
+{
+    return (now_us() - t).to<millis_t>().as<uint32_t>();
+}
+
 void SLAC::pre_setup()
 {
     api_state = Config::Object({
@@ -124,6 +129,10 @@ void SLAC::handle_modem_reset(void)
     const uint16_t spi_config = iso15118.qca700x.read_register(QCA700X_SPI_REG_SPI_CONFIG) | QCA700X_SPI_INT_CPU_ON;
     iso15118.qca700x.write_register(QCA700X_SPI_REG_SPI_CONFIG, spi_config);
 
+    // "Tentatively" accepted SLAC session is void after a modem reset.
+    tentative_state_a_deadline = {};
+    session_started_in_state_a = false;
+
     next_timeout = {};
     state = SLACState::ModemInitialization;
 }
@@ -154,8 +163,8 @@ void SLAC::handle_modem_initialization(void)
         const uint8_t modem_initialization_tries = static_cast<uint8_t>(api_state.get("modem_initialization_tries")->asUint8() + 1);
         api_state.get("modem_initialization_tries")->updateUint(modem_initialization_tries);
 
-        // Trigger reset every 50 tries
-        if ((modem_initialization_tries % 50) == 0) {
+        // Trigger reset every SLAC_MODEM_INIT_PROBES_PER_RESET tries.
+        if ((modem_initialization_tries % SLAC_MODEM_INIT_PROBES_PER_RESET) == 0) {
             state = SLACState::ModemReset;
         }
 
@@ -198,6 +207,7 @@ void SLAC::handle_modem_initialization(void)
 
     iso15118.trace("QCA700X modem found and initialized");
 
+    set_key_tries = 0;
     state = SLACState::CMSetKeyRequest;
 }
 
@@ -219,13 +229,24 @@ void SLAC::handle_cm_set_key_request(void)
 
     log_cm_set_key_request(cm_set_key_request);
     // Internal communication with the modem, no spec-defined timing.
-    // After a cold boot the modem can sometimes take ~180ms to respond.
-    next_timeout = now_us() + 500_ms;
+    // After a cold boot the modem can sometimes take ~180ms to respond,
+    // and the main loop can be blocked for several hundred ms during boot.
+    // On timeout the request is repeated (see state_machine_loop()).
+    set_key_tries++;
+    next_timeout = now_us() + SLAC_TT_CM_SET_KEY_CONFIRMATION;
     state = SLACState::WaitForCMSetKeyConfirmation;
 }
 
 void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_key_confirmation)
 {
+    // A late CNF (e.g. after the timeout already triggered a modem reset) must
+    // not move the state machine forward: This would skip the modem
+    // initialization, which leaves the QCA700x frame processing disabled.
+    if (state != SLACState::WaitForCMSetKeyConfirmation) {
+        iso15118.trace("CM_SET_KEY.CNF ignored in state %s", get_slac_state_name(state));
+        return;
+    }
+
     if (cm_set_key_confirmation.result != 0x01) {
         iso15118.trace("CM_SET_KEY.CNF result unexpected: %02x", cm_set_key_confirmation.result);
         state = SLACState::ModemReset;
@@ -250,79 +271,118 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
 // ISO 15118-3 A.9.1.2 Table A.2
 void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_request)
 {
-    // CP state guard: reject SLAC if no EV is physically connected.
-    // Per [V2G3-M06-11], SLAC matching requires a prior transition from State A to Bx/Cx/Dx.
-    uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
-    if (iec_state == 0) { // State A
-        iso15118.trace("CM_SLAC_PARM.REQ ignored: no EV connected (IEC 61851 State A)");
-        return;
-    }
+    const uint8_t *src = cm_slac_parm_request.header.source_mac;
 
-    // State guard: Only accept CM_SLAC_PARM.REQ in appropriate states.
-    // Without this guard, a crosstalk CM_SLAC_PARM.REQ from a neighboring EV
-    // can overwrite our tracked PEV mid-matching or tear down an established link.
+    // CP state guard: Per [V2G3-M06-11], SLAC matching requires a prior
+    // transition from State A to Bx/Cx/Dx.
+
+    // The IEC 61851 state we see is a cached copy of the EVSE bricklet state
+    // that can lag behind by several hundred ms (bricklet polling + main loop
+    // latency). EVs can start SLAC right after they see State B, so a request
+    // from the EV we are connected to can arrive while we still think we are
+    // in State A. Rejecting it can make the EV give up on ISO 15118 entirely.
+
+    // Instead, accept the request tentatively and abort the session in
+    // handle_tentative_state_a() if no EV shows up within SLAC_TT_TENTATIVE_STATE_A.
+    if (last_iec_state == IEC_STATE_A) {
+        const bool idle      = (state == SLACState::WaitForSlacParamRequest);
+        const bool tentative = tentative_state_a_deadline.is_some();
+
+        if (!idle && !tentative) {
+            iso15118.trace("CM_SLAC_PARM.REQ ignored: no EV connected (IEC 61851 State A for %lu ms) in state %s",
+                           ms_since(last_iec_state_change), get_slac_state_name(state));
+            return;
+        }
+
+        if (idle) {
+            iso15118.trace("CM_SLAC_PARM.REQ from %02x:%02x:%02x:%02x:%02x:%02x in IEC 61851 State A (for %lu ms), accepting tentatively",
+                           src[0], src[1], src[2], src[3], src[4], src[5], ms_since(last_iec_state_change));
+            tentative_state_a_deadline = now_us() + SLAC_TT_TENTATIVE_STATE_A;
+            session_started_in_state_a = true;
+        } else {
+            // Tentative session in progress. Allow any EV (also a different one) to restart it, we don't know yet which one is ours.
+            // The original deadline is kept.
+            iso15118.trace("CM_SLAC_PARM.REQ from %02x:%02x:%02x:%02x:%02x:%02x during tentative session in state %s, restarting",
+                           src[0], src[1], src[2], src[3], src[4], src[5], get_slac_state_name(state));
+        }
+    } else {
+        // State guard: Only accept CM_SLAC_PARM.REQ in appropriate states.
+        // Without this guard, a crosstalk CM_SLAC_PARM.REQ from a neighboring EV
+        // can overwrite our tracked PEV mid-matching or tear down an established link.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
-    switch (state) {
-        case SLACState::WaitForSlacParamRequest:
-            // Normal case: idle and waiting for a new SLAC session. Accept any EV.
-            break;
+        switch (state) {
+            case SLACState::WaitForSlacParamRequest:
+                // Normal case: idle and waiting for a new SLAC session. Accept any EV.
+                break;
 
-        case SLACState::SlacInitEF:
-            // EV sent CM_SLAC_PARM.REQ during the E/F retry cycle.
-            // This is an ISO EV that was slow to start SLAC. Restore 5% duty
-            // and accept the request.
-            iso15118.trace("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
-            iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-            slac_init_retry_count = 0;
-            break;
+            case SLACState::SlacInitEF:
+                // EV sent CM_SLAC_PARM.REQ during the E/F retry cycle.
+                // This is an ISO EV that was slow to start SLAC. Restore 5% duty
+                // and accept the request.
+                iso15118.trace("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+                slac_init_retry_count = 0;
+                break;
 
-        case SLACState::WaitForStartAttenCharIndication:
-        case SLACState::WaitForMNBCSound:
-        case SLACState::WaitForAttenChar:
-        case SLACState::WaitForSlacMatch:
-            // Active matching in progress. Per [V2G3-A09-16], the same EV may
-            // retry CM_SLAC_PARM.REQ (e.g. if it didn't receive our CNF).
-            // Accept retries from the same PEV, ignore crosstalk from others.
-            if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-                iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
-                                cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
-                                cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
-                                cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
-                                get_slac_state_name(state));
+            case SLACState::WaitForStartAttenCharIndication:
+            case SLACState::WaitForMNBCSound:
+            case SLACState::WaitForAttenChar:
+            case SLACState::WaitForSlacMatch:
+                // Active matching in progress. Per [V2G3-A09-16], the same EV may
+                // retry CM_SLAC_PARM.REQ (e.g. if it didn't receive our CNF).
+                // Accept retries from the same PEV, ignore crosstalk from others.
+                if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+                    // Exception: The session was started by a request received inState A, which may have been crosstalk.
+                    //            A request that arrives while an EV is connected is more likely from our EV.
+                    if (session_started_in_state_a) {
+                        iso15118.trace("CM_SLAC_PARM.REQ from different EV (%02x:%02x:%02x:%02x:%02x:%02x) in state %s, session was started in State A: restarting SLAC",
+                                        src[0], src[1], src[2], src[3], src[4], src[5], get_slac_state_name(state));
+                        break;
+                    }
+                    iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
+                                    cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
+                                    cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
+                                    cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
+                                    get_slac_state_name(state));
+                    return;
+                }
+                // Same EV retrying: fall through and restart the SLAC process for this EV.
+                break;
+
+            case SLACState::WaitForSDP:
+            case SLACState::LinkDetected:
+                // Link is established or being established.
+                // Reject crosstalk from different EVs.
+                if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+                    iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
+                        cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
+                        cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
+                        cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
+                        get_slac_state_name(state));
+                    return;
+                }
+                // In autocharge mode, the EV retries SLAC because we didn't send
+                // CM_SLAC_MATCH.CNF. Ignore these retries.
+                if (iso15118.iec_temporary_active) {
+                    iso15118.trace("CM_SLAC_PARM.REQ ignored: IEC transition already active in state %s", get_slac_state_name(state));
+                    return;
+                }
+                // Same EV restarting SLAC without IEC transition active means it
+                // considers the link dead. Accept and restart the SLAC process.
+                iso15118.trace("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
+                break;
+
+            default:
+                iso15118.trace("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
                 return;
-            }
-            // Same EV retrying: fall through and restart the SLAC process for this EV.
-            break;
-
-        case SLACState::WaitForSDP:
-        case SLACState::LinkDetected:
-            // Link is established or being established.
-            // Reject crosstalk from different EVs.
-            if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
-                iso15118.trace("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
-                    cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
-                    cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
-                    cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
-                    get_slac_state_name(state));
-                return;
-            }
-            // In autocharge mode, the EV retries SLAC because we didn't send
-            // CM_SLAC_MATCH.CNF. Ignore these retries.
-            if (iso15118.iec_temporary_active) {
-                iso15118.trace("CM_SLAC_PARM.REQ ignored: IEC transition already active in state %s", get_slac_state_name(state));
-                return;
-            }
-            // Same EV restarting SLAC without IEC transition active means it
-            // considers the link dead. Accept and restart the SLAC process.
-            iso15118.trace("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
-            break;
-
-        default:
-            iso15118.trace("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
-            return;
-    }
+        }
 #pragma GCC diagnostic pop
+
+        // Not in State A (anymore). Any "tentative" session is confirmed.
+        tentative_state_a_deadline = {};
+        session_started_in_state_a = false;
+    }
 
     // If we had a previous link (e.g. same EV retrying), tear it down now.
     iso15118.qca700x.link_down();
@@ -598,6 +658,13 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         return;
     }
 
+    // Never hand out the NMK while the session is only tentative (CM_SLAC_PARM.REQ received in IEC 61851 State A and no EV seen since).
+    // If this is our EV, the State A -> B transition will show up shortly and the EV retries the request.
+    if (tentative_state_a_deadline.is_some() && (last_iec_state == 0)) {
+        iso15118.trace("CM_SLAC_MATCH.REQ ignored: tentative session, still no EV connected (IEC 61851 State A)");
+        return;
+    }
+
     log_cm_slac_match_request(cm_slac_match_request);
 
 #if MODULE_EV_AVAILABLE()
@@ -727,6 +794,10 @@ void SLAC::handle_cm_qualcomm_op_attr_request()
 void SLAC::handle_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirmation &cm_qualcomm_get_sw_confirmation)
 {
     log_cm_qualcomm_get_sw_confirmation(cm_qualcomm_get_sw_confirmation);
+    if (state != SLACState::WaitForCMQualcommGetSwResponse) {
+        iso15118.trace("VS_SW_VER.CNF ignored in state %s", get_slac_state_name(state));
+        return;
+    }
     next_timeout = now_us() + 100_ms;
     state = SLACState::CMQualcommLinkStatusRequest;
 }
@@ -734,6 +805,10 @@ void SLAC::handle_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirma
 void SLAC::handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation)
 {
     log_cm_qualcomm_link_status_confirmation(cm_qualcomm_link_status_confirmation);
+    if (state != SLACState::WaitForCMQualcommLinkStatusResponse) {
+        iso15118.trace("VS_LINK_STATUS.CNF ignored in state %s", get_slac_state_name(state));
+        return;
+    }
     next_timeout = now_us() + 100_ms;
     state = SLACState::CMQualcommOpAttrRequest;
 }
@@ -741,6 +816,10 @@ void SLAC::handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStat
 void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation)
 {
     log_cm_qualcomm_op_attr_confirmation(cm_qualcomm_op_attr_confirmation);
+    if (state != SLACState::WaitForCMQualcommOpAttrResponse) {
+        iso15118.trace("VS_OP_ATTRIBUTES.CNF ignored in state %s", get_slac_state_name(state));
+        return;
+    }
     next_timeout = {};
     state = SLACState::WaitForSlacParamRequest;
 }
@@ -759,9 +838,24 @@ void SLAC::handle_vs_module_operation_confirmation(const uint8_t *data, size_t l
 
 void SLAC::handle_tap(void)
 {
+    read_and_dispatch_tap_frame();
+}
+
+void SLAC::drain_tap(void)
+{
+    // Bounded to not block the main loop if frames keep coming in.
+    for (int i = 0; i < 16; i++) {
+        if (!read_and_dispatch_tap_frame()) {
+            return;
+        }
+    }
+}
+
+bool SLAC::read_and_dispatch_tap_frame(void)
+{
     // Check if l2tap is ready
-    if (!iso15118.qca700x.is_l2tap_ready()) {
-        return;
+    if (!iso15118.qca700x.is_l2tap_ready() || (buffer == nullptr)) {
+        return false;
     }
 
     // Non-blocking read from l2tap - returns complete Ethernet frames (HomePlug only due to filter)
@@ -770,10 +864,10 @@ void SLAC::handle_tap(void)
         if (errno != EWOULDBLOCK && errno != EAGAIN) {
             iso15118.trace("SLAC: L2TAP read error: errno %d [%s]", errno, strerror(errno));
         }
-        return;
+        return false;
     }
     if (length == 0) {
-        return;
+        return false;
     }
 
     // Buffer contains raw Ethernet frame, already filtered to HomePlug (0x88E1)
@@ -797,10 +891,119 @@ void SLAC::handle_tap(void)
 
         default: iso15118.trace("Unhandled mm_type: %04x", mm_type); break;
     }
+
+    return true;
+}
+
+void SLAC::update_iec_state_tracking(void)
+{
+    const uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
+    if (iec_state != last_iec_state) {
+        last_iec_state        = iec_state;
+        last_iec_state_change = now_us();
+    }
+}
+
+// Frames are only processed by the QCA700x driver if the modem was verified by handle_modem_initialization().
+// If SLAC ever ends up in an operational state without that (e.g. through a state transition that skipped the
+// modem initialization), all received frames would be silently discarded and SLAC would never see a CM_SLAC_PARM.REQ.
+// Detect this and recover.
+void SLAC::check_modem_detected_invariant(void)
+{
+    if (iso15118.qca700x.is_modem_detected()) {
+        return;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+    switch (state) {
+        case SLACState::ModemReset:
+        case SLACState::ModemInitialization:
+        case SLACState::ModemDisabled:
+            return;
+        default:
+            break;
+    }
+#pragma GCC diagnostic pop
+
+    iso15118.trace("SLAC: Modem not verified in state %s, resetting modem", get_slac_state_name(state));
+    handle_modem_reset();
+}
+
+void SLAC::abort_tentative_session(void)
+{
+    iso15118.trace("SLAC: Still no EV connected (IEC 61851 State A) %lu ms after CM_SLAC_PARM.REQ from %02x:%02x:%02x:%02x:%02x:%02x, assuming crosstalk, aborting SLAC in state %s",
+                   ms_since(tentative_state_a_deadline.unwrap() - SLAC_TT_TENTATIVE_STATE_A),
+                   pev_mac[0], pev_mac[1], pev_mac[2], pev_mac[3], pev_mac[4], pev_mac[5],
+                   get_slac_state_name(state));
+
+    tentative_state_a_deadline = {};
+    session_started_in_state_a = false;
+
+    cancel_link_up_task();
+    iso15118.qca700x.link_down();
+    iso15118.common.reset_evcc_vendor();
+
+    memset(pev_mac, 0, SLAC_MAC_ADDRESS_LENGTH);
+    for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
+        api_state.get("pev_mac")->get(i)->updateUint(0);
+    }
+    memset(pev_run_id, 0, SLAC_RUN_ID_LENGTH);
+    for (size_t i = 0; i < SLAC_RUN_ID_LENGTH; i++) {
+        api_state.get("pev_run_id")->get(i)->updateUint(0);
+    }
+    api_state.get("received_sounds")->updateUint(0);
+    api_state.get("received_aag_lists")->updateUint(0);
+    api_state.get("atten_char_indication_tries")->updateUint(0);
+    std::fill_n(aag_list, SLAC_AAG_LIST_LENGTH, 0);
+
+    // Back to idle. TT_EVSE_SLAC_init is started once an EV is detected.
+    next_timeout = {};
+    state = SLACState::WaitForSlacParamRequest;
+}
+
+// See handle_cm_slac_parm_request(): A CM_SLAC_PARM.REQ that arrives while the cached IEC 61851 state is still A is accepted tentatively.
+// Confirm the session once an EV is seen, abort it if none shows up in time.
+void SLAC::handle_tentative_state_a(void)
+{
+    if (tentative_state_a_deadline.is_none()) {
+        return;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+    switch (state) {
+        case SLACState::WaitForStartAttenCharIndication:
+        case SLACState::WaitForMNBCSound:
+        case SLACState::WaitForAttenChar:
+        case SLACState::WaitForSlacMatch:
+            break;
+        default:
+            // Session ended otherwise (timeout, reset, ...)
+            tentative_state_a_deadline = {};
+            return;
+    }
+#pragma GCC diagnostic pop
+
+    if (last_iec_state != 0) {
+        iso15118.trace("SLAC: EV connected (IEC state %lu) %lu ms after tentatively accepted CM_SLAC_PARM.REQ, continuing SLAC in state %s",
+                       last_iec_state, ms_since(tentative_state_a_deadline.unwrap() - SLAC_TT_TENTATIVE_STATE_A),
+                       get_slac_state_name(state));
+        tentative_state_a_deadline = {};
+        return;
+    }
+
+    if (deadline_elapsed(tentative_state_a_deadline.unwrap())) {
+        abort_tentative_session();
+    }
 }
 
 void SLAC::state_machine_loop()
 {
+    update_iec_state_tracking();
+    check_modem_detected_invariant();
+    handle_tentative_state_a();
+
     if (state == SLACState::LinkDetected) {
         api_state.get("state")->updateEnum(state);
         return;
@@ -867,7 +1070,14 @@ void SLAC::state_machine_loop()
     }
 #pragma GCC diagnostic pop
 
-    // Handle timeouts of expected responses
+    // Handle timeouts of expected responses.
+    // If the main loop was blocked for a while, the expected frame may have arrived in time and already be queued in l2tap
+    // (the central poll only runs after this function).
+    // Dispatch those frames before acting on the timeout, otherwise a late-processed but valid response races with the timeout handling.
+    if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
+        drain_tap();
+    }
+
     if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
         iso15118.trace("SLAC: Timeout in state %s", get_slac_state_name(state));
         // As long as we have received some sounds we will do the average attenuation profile calculation
@@ -895,6 +1105,17 @@ void SLAC::state_machine_loop()
             state = SLACState::WaitForAttenChar;
             api_state.get("atten_char_indication_tries")->updateUint(atten_char_indication_tries + 1);
             log_cm_atten_char_indication(cm_atten_char_indication);
+        } else if (state == SLACState::WaitForCMSetKeyConfirmation) {
+            // Internal modem communication: Repeat the request a few times before resetting the modem.
+            if (set_key_tries < SLAC_C_CM_SET_KEY_ATTEMPTS) {
+                iso15118.trace("SLAC: Repeating CM_SET_KEY.REQ (attempt %u/%u)",
+                               static_cast<unsigned>(set_key_tries + 1), static_cast<unsigned>(SLAC_C_CM_SET_KEY_ATTEMPTS));
+                next_timeout = {};
+                state = SLACState::CMSetKeyRequest;
+            } else {
+                iso15118.trace("SLAC: No CM_SET_KEY.CNF after %u attempts, resetting modem", static_cast<unsigned>(set_key_tries));
+                handle_modem_reset();
+            }
         // For the vendor specific requests we just go to the next state if there is no response.
         // We should not fail if they don't work.
         } else if (state == SLACState::WaitForCMQualcommGetSwResponse) {

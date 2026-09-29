@@ -138,6 +138,13 @@
 #define SLAC_TP_MATCH_LEAVE                 1000_ms
 #define SLAC_T_STEP_EF                         4_s
 
+// WARP specific (not defined by ISO 15118-3)
+#define SLAC_TT_CM_SET_KEY_CONFIRMATION        1_s
+#define SLAC_C_CM_SET_KEY_ATTEMPTS             3
+#define SLAC_MODEM_INIT_PROBES_PER_RESET     100
+#define SLAC_TT_TENTATIVE_STATE_A           1500_ms
+
+
 struct [[gnu::packed]] SLAC_HomeplugMessageHeaderV0 {
     // Ethernet Header
     uint8_t  destination_mac[6];
@@ -594,7 +601,21 @@ private:
     void handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &cm_qualcomm_host_action_indication);
     void handle_vs_module_operation_confirmation(const uint8_t *data, size_t length);
 
+    bool read_and_dispatch_tap_frame(void);
+    void drain_tap(void);
+
+    void update_iec_state_tracking(void);
+    void handle_tentative_state_a(void);
+    void abort_tentative_session(void);
+    void check_modem_detected_invariant(void);
+
     Option<micros_t> next_timeout = {};
+
+    uint8_t set_key_tries = 0;
+    uint32_t last_iec_state = 0;
+    micros_t last_iec_state_change = 0_us;
+    Option<micros_t> tentative_state_a_deadline = {};
+    bool session_started_in_state_a = false;
 
     micros_t next_modem_initialization_probe = 0_us;
 
