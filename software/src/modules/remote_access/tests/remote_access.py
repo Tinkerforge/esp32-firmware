@@ -9,6 +9,7 @@
 # - State reset when disabling the module
 # - Timeout-based reconnection
 # - Full registration with a functioning management connection
+# - Server-side reachability after removing one of multiple users
 #
 # A local HTTPS server is started to simulate the relay server.
 # For full registration tests, a WireGuard peer runs inside a Docker
@@ -18,6 +19,8 @@
 # Tests require an empty user list and leave remote-access keys empty.
 
 import base64
+import ctypes
+import ctypes.util
 import json
 import os
 import shutil
@@ -29,6 +32,7 @@ import threading
 import uuid as uuid_mod
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
@@ -101,6 +105,28 @@ def _generate_wg_keypair() -> tuple[str, str]:
 def _generate_wg_psk() -> str:
     """Generate a random 32-byte pre-shared key, base64-encoded (44 chars)."""
     return base64.b64encode(os.urandom(32)).decode()
+
+
+def _password_key(password: str, salt: bytes, length: int) -> bytes:
+    """Match the web client's Argon2id parameters for login and secret keys."""
+    return Argon2id(salt=salt, length=length, iterations=2,
+                    lanes=1, memory_cost=19 * 1024).derive(password.encode())
+
+
+def _encrypt_user_secret(secret: bytes, key: bytes, nonce: bytes) -> bytes:
+    """Create the libsodium secretbox value returned by /api/user/get_secret."""
+    library = ctypes.util.find_library("sodium")
+    if library is None:
+        raise RuntimeError("libsodium is required for the password-based relay test")
+    sodium = ctypes.CDLL(library)
+    sodium.crypto_secretbox_easy.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                             ctypes.c_ulonglong, ctypes.c_void_p,
+                                             ctypes.c_void_p]
+    sodium.crypto_secretbox_easy.restype = ctypes.c_int
+    encrypted = ctypes.create_string_buffer(len(secret) + 16)
+    if sodium.crypto_secretbox_easy(encrypted, secret, len(secret), nonce, key) != 0:
+        raise RuntimeError("Could not encrypt the mock user's secret")
+    return encrypted.raw
 
 
 # ---------------------------------------------------------------------------
@@ -358,6 +384,28 @@ class WireGuardTestPeer:
                 FileNotFoundError, ValueError):
             pass
         return False
+
+    def get_user_tunnel_config(self, conn_no: int) -> dict:
+        """Read device configuration from the relay through a user tunnel."""
+        # wg set configures allowed-ips, but does not install a route to them.
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME, "ip", "route", "replace",
+             f"10.123.{conn_no}.2/32", "dev", "wg0"],
+            check=True, capture_output=True, text=True, timeout=5,
+        )
+        script = (
+            "import urllib.request; "
+            "opener = urllib.request.build_opener(urllib.request.ProxyHandler({})); "
+            f"response = opener.open('http://10.123.{conn_no}.2/remote_access/config', timeout=3); "
+            "print(response.read().decode())"
+        )
+        result = subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME, "python3", "-c", script],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode != 0:
+            raise AssertionError(f"Device unreachable through user tunnel: {result.stderr.strip()}")
+        return json.loads(result.stdout)
 
 
 # ---------------------------------------------------------------------------
@@ -1095,6 +1143,192 @@ def _wait_for_any_user_slot_active(tc: TestContext, *, timeout: float = 15.0) ->
         if not active:
             raise AssertionError(f"No active user slot yet, state={state[1:]}")
     tc.wait_for(_check, timeout=timeout)
+
+
+def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password: bool) -> None:
+    """Keep the second user's tunnel up while removing the first user."""
+    tc.set_test_timeout(240 if use_password else 180)
+
+    try:
+        wg = _do_full_registration(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+    initial_config = tc.api("remote_access/config")
+    tc.assert_eq(1, len(initial_config["users"]))
+    removed_user_id = initial_config["users"][0]["id"]
+
+    remaining_uuid = str(uuid_mod.uuid4())
+    charger_private, charger_public = _generate_wg_keypair()
+    psk = _generate_wg_psk()
+    connection_numbers: list[int] = []
+    password = "test-user-password"
+    login_salt = os.urandom(48)
+    secret_salt = os.urandom(48)
+    secret_nonce = os.urandom(24)
+    user_secret = X25519PrivateKey.generate().private_bytes_raw()
+    login_key = _password_key(password, login_salt, 24) if use_password else b""
+    secret_key = _password_key(password, secret_salt, 32) if use_password else b""
+    encrypted_secret = (_encrypt_user_secret(user_secret, secret_key, secret_nonce)
+                        if use_password else b"")
+
+    def relay_handler(method: str, path: str, body: bytes) -> tuple[int, str]:
+        _log_request(method, path, body)
+        if use_password and path.startswith("/api/auth/get_login_salt?") and method == "GET":
+            if "email=remaining%40example.com" not in path:
+                return 400, '{"error": "wrong email"}'
+            return 200, json.dumps(list(login_salt))
+        if use_password and path == "/api/auth/login" and method == "POST":
+            request = json.loads(body)
+            if request.get("email") != "remaining@example.com" or request.get("login_key") != list(login_key):
+                return 401, '{"error": "wrong credentials"}'
+            return 200, "{}"
+        if use_password and path == "/api/user/get_secret" and method == "GET":
+            return 200, json.dumps({
+                "secret": list(encrypted_secret),
+                "secret_nonce": list(secret_nonce),
+                "secret_salt": list(secret_salt),
+            })
+        if path == "/api/allow_user" and method == "PUT":
+            request = json.loads(body)
+            connection_numbers.append(request["wg_keys"][0]["connection_no"])
+            if use_password:
+                if (request.get("user_auth") != {"LoginKey": base64.b64encode(login_key).decode()}
+                        or request.get("email") != "remaining@example.com"
+                        or "user_uuid" in request):
+                    return 401, '{"error": "wrong credentials"}'
+            else:
+                if request.get("user_auth") != {"AuthToken": "test-token"}:
+                    return 401, '{"error": "wrong credentials"}'
+            return 200, json.dumps({"user_id": remaining_uuid})
+        if path == "/api/management" and method == "PUT":
+            users = json.loads(body)["data"]["V2"]["configured_users"]
+            return 200, json.dumps({
+                "configured_users": [1] * len(users),
+                # The protocol's string "null" leaves existing user details unchanged.
+                "configured_users_emails": ["null"] * len(users),
+                "configured_users_uuids": [user["user_id"] for user in users],
+            })
+        return 404, '{"error": "not found"}'
+
+    _server.set_response_fn(relay_handler)
+    add_user = {
+        "email": "remaining@example.com",
+        "note": "",
+        "wg_keys": [{
+            "charger_private": charger_private,
+            "charger_public": charger_public,
+            "psk": psk,
+            "web_private": wg.relay_private,
+            "web_public": wg.relay_public,
+        }],
+    }
+    if use_password:
+        registration_config = _make_config_update(tc, email="remaining@example.com")
+
+        def wait_for_registration_message():
+            state = tc.api("remote_access/registration_state")
+            tc.assert_eq(2, state["state"])
+            tc.assert_true(state["message"])
+            return base64.b64decode(state["message"])
+
+        tc.api("remote_access/get_login_salt", registration_config, timeout=5)
+        tc.assert_eq(login_salt, tc.wait_for(wait_for_registration_message, timeout=10))
+        tc.api("remote_access/login", {
+            "config": registration_config,
+            "login_key": base64.b64encode(login_key).decode(),
+        }, timeout=5)
+
+        def wait_for_login():
+            state = tc.api("remote_access/registration_state")
+            tc.assert_eq(2, state["state"])
+            tc.assert_eq("", state["message"])
+
+        tc.wait_for(wait_for_login, timeout=10)
+        tc.api("remote_access/get_secret_salt", registration_config, timeout=5)
+        tc.assert_eq(secret_salt, tc.wait_for(wait_for_registration_message, timeout=10))
+        add_user.update({
+            "user_uuid": "null",
+            "secret_key": base64.b64encode(secret_key).decode(),
+            "login_key": base64.b64encode(login_key).decode(),
+        })
+    else:
+        add_user.update({
+            "user_uuid": remaining_uuid,
+            "auth_token": "test-token",
+            "public_key": wg.relay_public,
+        })
+
+    tc.api("remote_access/add_user", add_user, timeout=10)
+
+    def added_user():
+        users = tc.api("remote_access/config")["users"]
+        tc.assert_eq(2, len(users))
+        tc.assert_eq(remaining_uuid, users[1]["uuid"])
+        return users[1]
+
+    remaining_user = tc.wait_for(added_user, timeout=15)
+    tc.assert_eq(1, len(connection_numbers))
+    conn_no = connection_numbers[0]
+    wg.add_user_peer(charger_public, psk, conn_no)
+
+    def assert_reachable(expected_users: list[dict]):
+        config = wg.get_user_tunnel_config(conn_no)
+        tc.assert_true(config["enable"])
+        tc.assert_eq(initial_config["uuid"], config["uuid"])
+        tc.assert_eq(expected_users, config["users"])
+
+    conn_uuid = uuid_mod.uuid4().bytes
+    wg.send_management_command(1, _CONN_COMMAND_CONNECT, conn_no, conn_uuid)
+    tc.wait_for(lambda: assert_reachable(initial_config["users"] + [remaining_user]),
+                timeout=20, poll_delay=1)
+
+    def assert_remaining_user_connected():
+        slots = _get_connection_state(tc)[1:]
+        tc.assert_eq(1, len([slot for slot in slots
+                             if slot["user"] == remaining_user["id"] - 1
+                             and slot["connection"] == 0
+                             and slot["state"] == STATE_CONNECTED]))
+
+    tc.wait_for(assert_remaining_user_connected, timeout=10)
+
+    # Keep the surviving user's connection open while removing the other user.
+    tc.api("remote_access/remove_user", {"id": removed_user_id}, timeout=5)
+
+    def assert_user_removed():
+        config = tc.api("remote_access/config")
+        tc.assert_true(config["enable"])
+        tc.assert_eq([remaining_user], config["users"])
+
+    tc.wait_for(assert_user_removed, timeout=10)
+    tc.wait_for(lambda: assert_reachable([remaining_user]), timeout=20, poll_delay=1)
+    assert_remaining_user_connected()
+
+    # A new connection must also work with the surviving user's stored keys.
+    wg.send_management_command(2, _CONN_COMMAND_DISCONNECT, conn_no, conn_uuid)
+
+    def assert_user_tunnels_closed():
+        for slot in _get_connection_state(tc)[1:]:
+            tc.assert_eq(255, slot["user"])
+            tc.assert_eq(STATE_DISCONNECTED, slot["state"])
+
+    tc.wait_for(assert_user_tunnels_closed, timeout=10)
+    wg.send_management_command(3, _CONN_COMMAND_CONNECT, conn_no, uuid_mod.uuid4().bytes)
+    tc.wait_for(lambda: assert_reachable([remaining_user]), timeout=20, poll_delay=1)
+    tc.assert_eq(STATE_CONNECTED, _get_connection_state(tc)[0]["state"])
+    tc.assert_false(any("/api/selfdestruct" in req["path"] for req in _get_request_log()))
+
+
+def test_device_reachable_after_user_removal(tc: TestContext) -> None:
+    """An existing token-authenticated user's tunnel survives another user's removal."""
+    _check_device_reachable_after_user_removal(tc, use_password=False)
+
+
+def test_device_reachable_after_password_user_removal(tc: TestContext) -> None:
+    """A user added with email and password stays reachable after removal."""
+    _check_device_reachable_after_user_removal(tc, use_password=True)
 
 
 def test_user_connect_command_updates_state(tc: TestContext) -> None:
