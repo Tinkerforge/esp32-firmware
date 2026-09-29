@@ -1146,7 +1146,7 @@ def _wait_for_any_user_slot_active(tc: TestContext, *, timeout: float = 15.0) ->
 
 
 def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password: bool) -> None:
-    """Keep the second user's tunnel up while removing the first user."""
+    """Open a connection for the remaining user after removal and config save."""
     tc.set_test_timeout(240 if use_password else 180)
 
     try:
@@ -1161,8 +1161,16 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
     removed_user_id = initial_config["users"][0]["id"]
 
     remaining_uuid = str(uuid_mod.uuid4())
-    charger_private, charger_public = _generate_wg_keypair()
-    psk = _generate_wg_psk()
+    user_keys = []
+    for _ in range(2):
+        charger_private, charger_public = _generate_wg_keypair()
+        user_keys.append({
+            "charger_private": charger_private,
+            "charger_public": charger_public,
+            "psk": _generate_wg_psk(),
+            "web_private": wg.relay_private,
+            "web_public": wg.relay_public,
+        })
     connection_numbers: list[int] = []
     password = "test-user-password"
     login_salt = os.urandom(48)
@@ -1193,7 +1201,7 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
             })
         if path == "/api/allow_user" and method == "PUT":
             request = json.loads(body)
-            connection_numbers.append(request["wg_keys"][0]["connection_no"])
+            connection_numbers.extend(key["connection_no"] for key in request["wg_keys"])
             if use_password:
                 if (request.get("user_auth") != {"LoginKey": base64.b64encode(login_key).decode()}
                         or request.get("email") != "remaining@example.com"
@@ -1217,13 +1225,7 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
     add_user = {
         "email": "remaining@example.com",
         "note": "",
-        "wg_keys": [{
-            "charger_private": charger_private,
-            "charger_public": charger_public,
-            "psk": psk,
-            "web_private": wg.relay_private,
-            "web_public": wg.relay_public,
-        }],
+        "wg_keys": user_keys,
     }
     if use_password:
         registration_config = _make_config_update(tc, email="remaining@example.com")
@@ -1270,29 +1272,31 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
         return users[1]
 
     remaining_user = tc.wait_for(added_user, timeout=15)
-    tc.assert_eq(1, len(connection_numbers))
-    conn_no = connection_numbers[0]
-    wg.add_user_peer(charger_public, psk, conn_no)
+    tc.assert_eq(2, len(connection_numbers))
+    first_conn_no, second_conn_no = connection_numbers
+    tc.assert_eq(first_conn_no + 1, second_conn_no)
+    for key, conn_no in zip(user_keys, connection_numbers):
+        wg.add_user_peer(key["charger_public"], key["psk"], conn_no)
 
-    def assert_reachable(expected_users: list[dict]):
+    def assert_reachable(conn_no: int, expected_users: list[dict]):
         config = wg.get_user_tunnel_config(conn_no)
         tc.assert_true(config["enable"])
         tc.assert_eq(initial_config["uuid"], config["uuid"])
         tc.assert_eq(expected_users, config["users"])
 
     conn_uuid = uuid_mod.uuid4().bytes
-    wg.send_management_command(1, _CONN_COMMAND_CONNECT, conn_no, conn_uuid)
-    tc.wait_for(lambda: assert_reachable(initial_config["users"] + [remaining_user]),
+    wg.send_management_command(1, _CONN_COMMAND_CONNECT, first_conn_no, conn_uuid)
+    tc.wait_for(lambda: assert_reachable(first_conn_no, initial_config["users"] + [remaining_user]),
                 timeout=20, poll_delay=1)
 
-    def assert_remaining_user_connected():
+    def assert_remaining_user_connected(expected_connections: list[int]):
         slots = _get_connection_state(tc)[1:]
-        tc.assert_eq(1, len([slot for slot in slots
-                             if slot["user"] == remaining_user["id"] - 1
-                             and slot["connection"] == 0
-                             and slot["state"] == STATE_CONNECTED]))
+        connected = [slot["connection"] for slot in slots
+                     if slot["user"] == remaining_user["id"] - 1
+                     and slot["state"] == STATE_CONNECTED]
+        tc.assert_eq(expected_connections, sorted(connected))
 
-    tc.wait_for(assert_remaining_user_connected, timeout=10)
+    tc.wait_for(lambda: assert_remaining_user_connected([0]), timeout=10)
 
     # Keep the surviving user's connection open while removing the other user.
     tc.api("remote_access/remove_user", {"id": removed_user_id}, timeout=5)
@@ -1303,11 +1307,25 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
         tc.assert_eq([remaining_user], config["users"])
 
     tc.wait_for(assert_user_removed, timeout=10)
-    tc.wait_for(lambda: assert_reachable([remaining_user]), timeout=20, poll_delay=1)
-    assert_remaining_user_connected()
+    tc.wait_for(lambda: assert_reachable(first_conn_no, [remaining_user]),
+                timeout=20, poll_delay=1)
+    assert_remaining_user_connected([0])
 
-    # A new connection must also work with the surviving user's stored keys.
-    wg.send_management_command(2, _CONN_COMMAND_DISCONNECT, conn_no, conn_uuid)
+    management_requests_before_save = len([req for req in _get_request_log()
+                                           if req["path"] == "/api/management"])
+    tc.api("remote_access/config_update", _make_config_update(tc, email="remaining@example.com"),
+           timeout=5)
+
+    def assert_management_synced_after_save():
+        management_requests = [req for req in _get_request_log()
+                               if req["path"] == "/api/management"]
+        if len(management_requests) <= management_requests_before_save:
+            raise AssertionError("No fresh relay management request after saving remote access config")
+        users = json.loads(management_requests[-1]["body"])["data"]["V2"]["configured_users"]
+        tc.assert_eq([remaining_uuid], [user["user_id"] for user in users])
+
+    tc.wait_for(assert_management_synced_after_save, timeout=45)
+    _wait_for_management_connected(tc, timeout=60)
 
     def assert_user_tunnels_closed():
         for slot in _get_connection_state(tc)[1:]:
@@ -1315,19 +1333,28 @@ def _check_device_reachable_after_user_removal(tc: TestContext, *, use_password:
             tc.assert_eq(STATE_DISCONNECTED, slot["state"])
 
     tc.wait_for(assert_user_tunnels_closed, timeout=10)
-    wg.send_management_command(3, _CONN_COMMAND_CONNECT, conn_no, uuid_mod.uuid4().bytes)
-    tc.wait_for(lambda: assert_reachable([remaining_user]), timeout=20, poll_delay=1)
+    tc.assert_false(wg.is_user_peer_connected(user_keys[1]["charger_public"]))
+    time.sleep(2)
+    wg.send_management_command(1, _CONN_COMMAND_CONNECT, second_conn_no, uuid_mod.uuid4().bytes)
+
+    def assert_second_peer_connected():
+        tc.assert_true(wg.is_user_peer_connected(user_keys[1]["charger_public"]))
+
+    tc.wait_for(assert_second_peer_connected, timeout=20, poll_delay=1)
+    tc.wait_for(lambda: assert_reachable(second_conn_no, [remaining_user]),
+                timeout=20, poll_delay=1)
+    tc.wait_for(lambda: assert_remaining_user_connected([1]), timeout=10)
     tc.assert_eq(STATE_CONNECTED, _get_connection_state(tc)[0]["state"])
     tc.assert_false(any("/api/selfdestruct" in req["path"] for req in _get_request_log()))
 
 
 def test_device_reachable_after_user_removal(tc: TestContext) -> None:
-    """An existing token-authenticated user's tunnel survives another user's removal."""
+    """A token user can open a tunnel after removal and config save."""
     _check_device_reachable_after_user_removal(tc, use_password=False)
 
 
 def test_device_reachable_after_password_user_removal(tc: TestContext) -> None:
-    """A user added with email and password stays reachable after removal."""
+    """A password user can open a tunnel after removal and config save."""
     _check_device_reachable_after_user_removal(tc, use_password=True)
 
 
