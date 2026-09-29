@@ -1199,8 +1199,20 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                         break;
                     }
 
-                    case AsyncHTTPSClientError::HTTPError:
+                    case AsyncHTTPSClientError::HTTPError: {
+                        char err_buf[216];
+                        translate_HTTPError_detailed(event->error_handle, err_buf, sizeof(err_buf), true);
+                        if (strstr(url.c_str(), "/management") != nullptr) {
+                            if (!this->management_request_failed) {
+                                this->management_request_failed = true;
+                                logger.printfln("Management request failed with HTTPS error: %s", err_buf);
+                            }
+                        } else {
+                            update_registration_state(RegistrationState::Error, String(err_buf));
+                        }
+                        this->cleanup_after();
                         break;
+                    }
 
                     case AsyncHTTPSClientError::NoHTTPSURL:
                     case AsyncHTTPSClientError::Busy:
@@ -1314,6 +1326,7 @@ void RemoteAccess::parse_login_salt()
         return;
     }
     update_registration_state(RegistrationState::Success, String(base64));
+    this->management_request_allowed = true;
 }
 
 void RemoteAccess::login(const Config &user_config, const String &login_key)
@@ -1522,6 +1535,7 @@ static std::vector<int> find_charge_tracker_configs(const uint8_t user_id) {
 void RemoteAccess::resolve_management()
 {
     if (!this->management_request_allowed) {
+        logger.printfln("Management request not allowed, skipping resolve_management");
         return;
     }
 
