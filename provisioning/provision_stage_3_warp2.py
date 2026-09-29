@@ -766,11 +766,11 @@ class Stage3:
             tries -= 1
 
             if tries == 1:
-                print(f'WARNING: Charger error not cleared, 1 try left, GPIO={gpio:b}')
+                print(f'WARNING: Charger error not cleared, 1 try left, GPIO={gpio}')
             elif tries > 1:
-                print(f'WARNING: Charger error not cleared, {tries} tries left, GPIO={gpio:b}')
+                print(f'WARNING: Charger error not cleared, {tries} tries left, GPIO={gpio}')
             else:
-                fatal_error('Charger error not cleared, GPIO={gpio:b}')
+                fatal_error(f'Charger error not cleared, GPIO={gpio}')
 
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
