@@ -128,7 +128,7 @@ class Stage3:
                  generation,
                  is_front_panel_button_pressed_function,
                  get_evse_error_function,
-                 get_dc_fault_current_state_function,
+                 get_dc_fault_current_bits_function,
                  get_iec_state_function,
                  reset_dc_fault_function,
                  switch_phases_function,
@@ -144,7 +144,7 @@ class Stage3:
         self.generation = generation
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.get_evse_error_function = get_evse_error_function
-        self.get_dc_fault_current_state_function = get_dc_fault_current_state_function
+        self.get_dc_fault_current_bits_function = get_dc_fault_current_bits_function
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
         self.switch_phases_function = switch_phases_function
@@ -762,20 +762,20 @@ class Stage3:
 
         while tries > 0:
             error = self.get_evse_error_function()
-            dc_fault = self.get_dc_fault_current_state_function()
+            dc_fault_bits = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
 
-            if error == 0 and dc_fault == 0:
+            if error == 0 and dc_fault_bits == 0:
                 break
 
             gpio = [int(x) for x in self.get_gpio_state_function()]
             tries -= 1
 
             if tries == 1:
-                print(yellow(f'WARNING: Charger error not cleared, 1 try left, error={error} dc_fault={dc_fault} gpio={gpio}'))
+                print(yellow(f'WARNING: Charger error not cleared, 1 try left, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}'))
             elif tries > 1:
-                print(yellow(f'WARNING: Charger error not cleared, {tries} tries left, error={error} dc_fault={dc_fault} gpio={gpio}'))
+                print(yellow(f'WARNING: Charger error not cleared, {tries} tries left, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}'))
             else:
-                fatal_error(f'Charger error not cleared, error={error} dc_fault={dc_fault} gpio={gpio}')
+                fatal_error(f'Charger error not cleared, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}')
 
             time.sleep(2)
 
@@ -974,7 +974,7 @@ class Stage3:
     # requires power_on
     def test_charger(self, result, has_phase_switch, is_warp2):
         assert self.get_evse_error_function != None
-        assert self.get_dc_fault_current_state_function != None
+        assert self.get_dc_fault_current_bits_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
@@ -1368,7 +1368,7 @@ def main():
     stage3 = Stage3(3,
                     is_front_panel_button_pressed_function=lambda: False,
                     get_evse_error_function=lambda: 0,
-                    get_dc_fault_current_state_function=lambda: 0,
+                    get_dc_fault_current_bits_function=lambda: 0,
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
                     switch_phases_function=lambda x: None,
