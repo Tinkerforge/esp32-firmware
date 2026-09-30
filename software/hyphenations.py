@@ -1969,6 +1969,7 @@ en_hyph = [
     "de-ter-mine",
     "Re-set-ting",
     "trig-gered",
+    "Trig-gered",
     "re-quest-ed",
     "ac-ti-vat-ed",
     "Re-ject-ing",

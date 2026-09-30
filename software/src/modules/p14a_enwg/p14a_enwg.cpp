@@ -72,6 +72,15 @@ void P14aEnwg::pre_setup()
             stop_input_check();
         }
 
+        if (!was_enabled && will_enable) {
+            // Report the initial state to the automation module once the module gets enabled, same as on boot.
+            last_trigger_state = TriggerState::Unknown;
+        }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+        automation.set_enabled(AutomationTriggerID::P14aEnwg, will_enable);
+#endif
+
         task_scheduler.scheduleOnce([this]() {
             this->update();
         }, 0_s);
@@ -88,14 +97,37 @@ void P14aEnwg::pre_setup()
         {"active", Config::Bool(false)}, // Set §14a active via API
         {"limit_w", Config::Uint32(0)},  // Power limit in W when set via API
     });
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::P14aEnwg,
+        Config::Object({
+            {"active", Config::Bool(true)} // true = §14a triggered, false = §14a not triggered
+        }),
+        nullptr,
+        false
+    );
+#endif
 }
 
 void P14aEnwg::setup()
 {
     api.restorePersistentConfig("p14a_enwg/config", &config);
 
-    if (is_enabled() && config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::Input) {
-        start_input_check();
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::P14aEnwg, is_enabled());
+#endif
+
+    if (is_enabled()) {
+        if (config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::Input) {
+            // The first check_inputs() run always calls update().
+            start_input_check();
+        } else {
+            // Evaluate the initial state once, so that the automation trigger fires for the initial state after boot.
+            task_scheduler.scheduleOnce([this]() {
+                this->update();
+            });
+        }
     }
 
     initialized = true;
@@ -212,7 +244,8 @@ void P14aEnwg::check_inputs()
     input_value = get_em_input();
 #endif
 
-    if (input_value != last_input_value || phases != last_phases) {
+    // Update on the first check after boot or after enabling the module, so that the initial state is reported to the automation module.
+    if ((last_trigger_state == TriggerState::Unknown) || (input_value != last_input_value) || (phases != last_phases)) {
         last_input_value = input_value;
         last_phases = phases;
         update();
@@ -222,8 +255,7 @@ void P14aEnwg::check_inputs()
 void P14aEnwg::update()
 {
     if (!is_enabled()) {
-        state.get("active")->updateBool(false);
-        state.get("limit_w")->updateUint(0);
+        set_state(false, 0);
 #if MODULE_EVSE_COMMON_AVAILABLE()
         if (last_current_mA != 32000) {
             evse_common.set_p14a_enwg_current(32000);
@@ -268,8 +300,7 @@ void P14aEnwg::update()
             break;
     }
 
-    state.get("active")->updateBool(active);
-    state.get("limit_w")->updateUint(active ? limit_w : 0);
+    set_state(active, limit_w);
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
     uint16_t new_current_mA = 32000;
@@ -312,15 +343,34 @@ void P14aEnwg::stop_input_check()
     task_scheduler.cancel(input_check_task_id);
     input_check_task_id = 0;
 
-    // Reset state when stopping
-    state.get("active")->updateBool(false);
-    state.get("limit_w")->updateUint(0);
+    // Don't reset state and current here:
+    // stop_input_check() is only called from the config update handler, which always schedules update() that then sets state and current according to the new config.
+    // Resetting here could produce a spurious active -> inactive -> active sequence for the automation trigger when switching from Input to another active source.
+}
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    if (last_current_mA != 32000) {
-        evse_common.set_p14a_enwg_current(32000);
-        last_current_mA = 32000;
+void P14aEnwg::set_state(bool active, uint32_t limit_w)
+{
+    state.get("active")->updateBool(active);
+    state.get("limit_w")->updateUint(active ? limit_w : 0);
+
+    const TriggerState new_trigger_state = active ? TriggerState::Active : TriggerState::Inactive;
+
+    if (new_trigger_state == last_trigger_state) {
+        return;
     }
+
+    const bool was_unknown = last_trigger_state == TriggerState::Unknown;
+    last_trigger_state = new_trigger_state;
+
+    if (was_unknown && !is_enabled()) {
+        return;
+    }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    task_scheduler.scheduleOnce([this, active]() {
+        bool active_ = active;
+        automation.trigger(AutomationTriggerID::P14aEnwg, &active_, this);
+    });
 #endif
 }
 
@@ -350,3 +400,25 @@ uint32_t P14aEnwg::get_managed_chargers_limit()
 
     return state.get("limit_w")->asUint();
 }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+bool P14aEnwg::has_triggered(const Config *conf, void *data)
+{
+    const Config *cfg = static_cast<const Config *>(conf->get());
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    switch (conf->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::P14aEnwg:
+            return *static_cast<bool *>(data) == cfg->get("active")->asBool();
+
+        default:
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+    return false;
+}
+#endif

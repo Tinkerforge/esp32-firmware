@@ -22,10 +22,24 @@
 #include "config.h"
 #include "module.h"
 #include "generated/p14a_enwg_source.enum.h"
+#include "generated/module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
 
 class P14aEnwg final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                     , public IAutomationBackend
+#endif
 {
 private:
+    enum class TriggerState : uint8_t {
+        Unknown,
+        Inactive,
+        Active,
+    };
+
     ConfUnionPrototype<P14aEnwgSource> source_prototypes[3];
 
     ConfigRoot config;
@@ -40,7 +54,10 @@ private:
     uint32_t last_phases = 0;
     uint16_t last_current_mA = 32000;
 
+    TriggerState last_trigger_state = TriggerState::Unknown;
+
     void update();
+    void set_state(bool active, uint32_t limit_w);
     void check_inputs();
     bool get_em_input();
     void start_input_check();
@@ -61,4 +78,10 @@ public:
     uint32_t get_managed_chargers_limit();
 
     void set_eebus_limit(bool active, uint32_t limit_w);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 };
+
+#include "generated/module_available_end.h"
