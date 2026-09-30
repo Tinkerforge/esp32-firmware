@@ -479,21 +479,42 @@ class Stage3:
     # internal
     def check_iec_state(self, expected_state):
         assert self.get_iec_state_function != None
+        assert self.get_evse_error_function != None
+        assert self.get_dc_fault_current_bits_function != None
+        assert self.get_gpio_state_function != None
 
         actual_states = set()
         start = time.monotonic()
-
         error_counter = 0
+
         while time.monotonic() < start + IEC_STATE_CHECK_DURATION:
             try:
                 actual_states.add(self.get_iec_state_function()) # FIXME: missing error handling
             except:
                 error_counter += 1
+
                 if error_counter == 3:
                     raise
+
             time.sleep(IEC_STATE_CHECK_INTERVAL)
 
-        return actual_states == set(expected_state)
+        success = actual_states == set(expected_state)
+
+        if not success:
+            error = self.get_evse_error_function()
+            dc_fault_bits = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
+            gpio = [int(x) for x in self.get_gpio_state_function()]
+
+            if len(actual_states) == 0:
+                actual_states_str = 'none'
+            elif len(actual_states) == 1:
+                actual_states_str = list(actual_states)[0]
+            else:
+                actual_states_str = str(actual_states)
+
+            print(yellow(f'WARNING: Charger in wrong IEC state {actual_states_str}, instead of {expected_state}, evse_error={error} evse_dc_fault_bits={dc_fault_bits} evse_gpio={gpio}'))
+
+        return success
 
     def setup(self):
         assert not self.prepared
