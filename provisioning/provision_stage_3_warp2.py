@@ -764,11 +764,19 @@ class Stage3:
     def reset_dc_fault(self, cp_pe_state):
         print('Resetting DC fault')
 
-        error_0 = self.get_evse_error_function()
-        dc_fault_bits_0 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
-        gpio_0 = [int(x) for x in self.get_gpio_state_function()]
+        for i in range(30):
+            error_0 = self.get_evse_error_function()
+            dc_fault_bits_0 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
+            gpio_0 = [int(x) for x in self.get_gpio_state_function()]
 
-        print(f'Charger state before DC fault reset: error_0={error_0} dc_fault_bits_0={dc_fault_bits_0} gpio_0={gpio_0}')
+            print(f'Charger state before DC fault reset: i={i} error_0={error_0} dc_fault_bits_0={dc_fault_bits_0} gpio_0={gpio_0}')
+
+            if dc_fault_bits_0 == 0:
+                break
+
+            time.sleep(0.5)
+        else:
+            fatal_error('DC fault still present')
 
         self.reset_dc_fault_function()
 
