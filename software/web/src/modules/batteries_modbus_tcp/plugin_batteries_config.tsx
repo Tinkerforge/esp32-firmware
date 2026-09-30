@@ -56,6 +56,7 @@ export type ModbusTCPBatteriesState = {
     effective_mode: number,
     discovering: boolean,
     checking: boolean,
+    waiting: boolean,
     testing: boolean,
 }
 
@@ -972,7 +973,15 @@ export function pre_init() {
                     state_name += ', ' + __("batteries_modbus_tcp.content.checking");
 
                     if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
-                        warning.push(__("batteries_modbus_tcp.content.kostal_plenticore_plus_g2_checking_warning"));
+                        warning.push(__("batteries_modbus_tcp.content.kostal_plenticore_watchdog_warning"));
+                    }
+                }
+
+                if (battery_state.waiting) {
+                    state_name += ', ' + __("batteries_modbus_tcp.content.waiting");
+
+                    if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
+                        warning.push(__("batteries_modbus_tcp.content.kostal_plenticore_watchdog_warning"));
                     }
                 }
 
@@ -1474,8 +1483,7 @@ export function pre_init() {
                             force_discharge_rate: config[1].table[1].force_discharge_rate,
                         };
                     }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2
-                          || config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticorePlusG2) {
                         edit_children.push(
                             <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputNumber
@@ -1503,6 +1511,48 @@ export function pre_init() {
                         extra_values = {
                             force_charge_power: config[1].table[1].force_charge_power,
                             force_discharge_power: config[1].table[1].force_discharge_power,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.KostalPlenticoreG3) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].force_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].force_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.kostal_plenticore_watchdog_timeout")} help={__("batteries_modbus_tcp.content.kostal_plenticore_watchdog_timeout_help")}>
+                                <InputNumber
+                                    required
+                                    min={30}
+                                    max={65535}
+                                    unit="s"
+                                    value={config[1].table[1].watchdog_timeout}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {watchdog_timeout: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
+                            watchdog_timeout: config[1].table[1].watchdog_timeout,
                         };
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.ChintPowerHybridInverter) {

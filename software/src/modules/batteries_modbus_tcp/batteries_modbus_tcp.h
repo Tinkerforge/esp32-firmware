@@ -99,7 +99,8 @@ private:
         uint32_t cookie;
         uint8_t device_address;
         uint16_t transaction_id_mask = UINT16_MAX;
-        uint16_t repeat_interval; // seconds
+        seconds_t repeat_interval;
+        seconds_t kostal_plenticore_g3_watchdog_timeout = 0_s;
         BatteryMode mode;
         BatteryModbusTCPTableID table_id;
         Config *discover_table_config = nullptr;
@@ -123,6 +124,7 @@ private:
     Test *test = nullptr;
 
     BatteryModbusTCP *instances[OPTIONS_BATTERIES_MAX_SLOTS()];
+    millis_t last_force_mode[OPTIONS_BATTERIES_MAX_SLOTS()];
 
     micros_t last_trace_timestamp = -1_us;
 };

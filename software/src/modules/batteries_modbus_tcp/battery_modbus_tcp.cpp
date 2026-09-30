@@ -169,16 +169,20 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx);
 
 static void last_writer_step(BatteryModbusTCP::WriterContext *ctx, bool success)
 {
+    if (success && ctx->battery != nullptr) {
+        ctx->battery->set_state_mode(ctx->mode, ctx->table->effective_mode);
+    }
+
     if (ctx->destroy_requested) {
         delete ctx;
         return;
     }
 
-    if (success && ctx->battery != nullptr) {
-        ctx->battery->set_state_mode(ctx->mode, ctx->table->effective_mode);
+    if (success && (ctx->mode == BatteryMode::ForceCharge || ctx->mode == BatteryMode::ForceDischarge)) {
+        *ctx->last_force_mode = now_us().to<millis_t>();
     }
 
-    millis_t delay = success ? seconds_t{ctx->repeat_interval} : 5_s;
+    millis_t delay = success ? ctx->repeat_interval : 5_s;
 
     if (delay == 0_s) {
         return;
@@ -611,13 +615,13 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
                         ctx->battery->set_state_checking(false);
                     }
 
-                    if (ctx->repeat_interval > 0) {
+                    if (ctx->repeat_interval > 0_s) {
                         writer_logfln(false,
-                                      "Setting mode %s (will repeat in %u second%s)",
-                                      "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                                      "Setting mode %s (will repeat in %lu second%s)",
+                                      "Setze Modus %s (Wiederholung in %lu Sekunde%s)",
                                       get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
-                                      ctx->repeat_interval,
-                                      ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
+                                      ctx->repeat_interval.as<uint32_t>(),
+                                      ctx->repeat_interval > 1_s ? (ctx->language == Language::English ? "s" : "n") : "");
                     }
                     else {
                         writer_logfln(false,
@@ -804,38 +808,63 @@ static void next_writer_step(BatteryModbusTCP::WriterContext *ctx)
 BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTCP *battery,
                                                                  uint32_t slot,
                                                                  bool test,
+                                                                 millis_t *last_force_mode,
                                                                  TFModbusTCPSharedClient *shared_client,
                                                                  uint8_t device_address,
                                                                  uint16_t transaction_id_mask,
-                                                                 uint16_t repeat_interval, // seconds
+                                                                 seconds_t repeat_interval,
                                                                  BatteryMode mode,
                                                                  TableSpec *table,
+                                                                 seconds_t kostal_plenticore_g3_watchdog_timeout,
                                                                  const char *log_prefix,
                                                                  VLogFLnFunction &&vlogfln,
                                                                  WriterFailureFunction &&failure,
                                                                  Language language /*= Language::English*/)
 {
-    trace("b%lu t%d wc m%c em%c",
-          slot,
-          test ? 1 : 0,
-          get_battery_mode_as_char(mode),
-          get_battery_mode_as_char(table->effective_mode));
-
     WriterContext *ctx = new WriterContext;
 
     ctx->language = language;
     ctx->battery = battery;
     ctx->slot = slot;
+    ctx->last_force_mode = last_force_mode;
     ctx->shared_client = shared_client;
     ctx->device_address = device_address;
     ctx->transaction_id_mask = transaction_id_mask;
     ctx->repeat_interval = repeat_interval;
     ctx->mode = mode;
     ctx->table = table;
+    ctx->kostal_plenticore_g3_watchdog_timeout = kostal_plenticore_g3_watchdog_timeout;
     ctx->log_prefix = log_prefix;
     ctx->vlogfln = std::move(vlogfln);
     ctx->failure = std::move(failure);
     ctx->test = test;
+
+    millis_t remaining_kostal_plenticore_g3_watchdog_timeout = *ctx->last_force_mode + ctx->kostal_plenticore_g3_watchdog_timeout - now_us().to<millis_t>();
+    bool wait_for_kostal_plenticore_g3_watchdog = remaining_kostal_plenticore_g3_watchdog_timeout > 0_us &&
+                                                  (ctx->mode == BatteryMode::Normal ||
+                                                   ctx->mode == BatteryMode::BlockCharge ||
+                                                   ctx->mode == BatteryMode::BlockDischarge);
+
+    trace("b%lu t%d wc m%c em%c%s",
+          ctx->slot,
+          ctx->test ? 1 : 0,
+          get_battery_mode_as_char(ctx->mode),
+          get_battery_mode_as_char(ctx->table->effective_mode),
+          wait_for_kostal_plenticore_g3_watchdog ? " kww" : "");
+
+    if (wait_for_kostal_plenticore_g3_watchdog) {
+        char description[128];
+
+        if (ctx->battery != nullptr) {
+            ctx->battery->set_state_waiting(true);
+        }
+
+        writer_logfln(false,
+                      "Waiting for precondition for mode %s",
+                      "Warte auf Vorbedingung für Modus %s",
+                      get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
+    }
+
     ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
         if (ctx->destroy_requested) {
             delete ctx;
@@ -849,7 +878,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
               ctx->test ? 1 : 0,
               get_battery_mode_as_char(ctx->mode),
               get_battery_mode_as_char(ctx->table->effective_mode),
-              ctx->repeat_interval > 0 ? 'f' : 'o');
+              ctx->repeat_interval > 0_s ? 'f' : 'o');
 
         for (size_t i = 0; i < ctx->table->register_blocks_count; ++i) {
             const BatteryModbusTCP::RegisterBlockSpec *register_block = &ctx->table->register_blocks[i];
@@ -889,8 +918,12 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
             }
         }
 
-        if (ctx->battery != nullptr && ctx->first_non_precondition_index != 0) {
-            ctx->battery->set_state_checking(true);
+        if (ctx->battery != nullptr) {
+            if (ctx->first_non_precondition_index != 0) {
+                ctx->battery->set_state_checking(true);
+            }
+
+            ctx->battery->set_state_waiting(false);
         }
 
         char description[128];
@@ -901,13 +934,13 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
                           "Prüfe Vorbedingung für Modus %s",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)));
         }
-        else if (ctx->repeat_interval > 0) {
+        else if (ctx->repeat_interval > 0_s) {
             writer_logfln(false,
-                          "Setting mode %s (will repeat in %u second%s)",
-                          "Setze Modus %s (Wiederholung in %u Sekunde%s)",
+                          "Setting mode %s (will repeat in %lu second%s)",
+                          "Setze Modus %s (Wiederholung in %lu Sekunde%s)",
                           get_battery_mode_description(ctx->mode, ctx->table->effective_mode, ctx->language, description, std::size(description)),
-                          ctx->repeat_interval,
-                          ctx->repeat_interval > 1 ? (ctx->language == Language::English ? "s" : "n") : "");
+                          ctx->repeat_interval.as<uint32_t>(),
+                          ctx->repeat_interval > 1_s ? (ctx->language == Language::English ? "s" : "n") : "");
         }
         else {
             writer_logfln(false,
@@ -917,7 +950,7 @@ BatteryModbusTCP::WriterContext *BatteryModbusTCP::create_writer(BatteryModbusTC
         }
 
         next_writer_step(ctx);
-    });
+    }, wait_for_kostal_plenticore_g3_watchdog ? remaining_kostal_plenticore_g3_watchdog_timeout : 0_ms);
 
     return ctx;
 }
@@ -934,8 +967,9 @@ void BatteryModbusTCP::destroy_writer(BatteryModbusTCP::WriterContext *ctx)
           get_battery_mode_as_char(ctx->mode),
           get_battery_mode_as_char(ctx->table->effective_mode));
 
-    if (ctx->battery != nullptr && ctx->first_non_precondition_index != 0) {
+    if (ctx->battery != nullptr) {
         ctx->battery->set_state_checking(false);
+        ctx->battery->set_state_waiting(false);
     }
 
     if (ctx->transact_pending) {
@@ -1184,7 +1218,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     case BatteryModbusTCPTableID::Custom:
         device_address = table_config->get("device_address")->asUint8();
         transaction_id_mask = UINT16_MAX;
-        repeat_interval = table_config->get("repeat_interval")->asUint16();
+        repeat_interval = seconds_t{table_config->get("repeat_interval")->asUint16()};
         break;
 
 #include "generated/battery_modbus_tcp_setup.inc"
@@ -1194,8 +1228,11 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         break;
     }
 
-    if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
-     || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+    if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2) {
+        discover_table_config = new Config(*table_config);
+    }
+    else if (table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+        kostal_plenticore_g3_watchdog_timeout = seconds_t{table_config->get("watchdog_timeout")->asUint16()} + 5_s; // +5s to compensate for clock drift
         discover_table_config = new Config(*table_config);
     }
     else {
@@ -1269,6 +1306,11 @@ void BatteryModbusTCP::set_state_discovering(bool discovering)
 void BatteryModbusTCP::set_state_checking(bool checking)
 {
     state->get("checking")->updateBool(checking);
+}
+
+void BatteryModbusTCP::set_state_waiting(bool waiting)
+{
+    state->get("waiting")->updateBool(waiting);
 }
 
 void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level)
@@ -1438,8 +1480,10 @@ void BatteryModbusTCP::update_pending_mode()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        writer_ctx = create_writer(this, slot, false, static_cast<TFModbusTCPSharedClient *>(shared_client),
-                                   device_address, transaction_id_mask, repeat_interval, pending_mode, table, event_log_message_prefix,
+        writer_ctx = create_writer(this, slot, false, &last_force_mode[slot],
+                                   static_cast<TFModbusTCPSharedClient *>(shared_client),
+                                   device_address, transaction_id_mask, repeat_interval, pending_mode,
+                                   table, kostal_plenticore_g3_watchdog_timeout, event_log_message_prefix,
         [this](bool event_log, const char *fmt, va_list args) {
             if (!event_log) {
                 return;

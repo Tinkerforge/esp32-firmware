@@ -1636,6 +1636,8 @@ de_hyph = [
     "über-nom-men",
     "Be-kann-tes",
     "Auf-recht-er-hal-ten",
+    "auf-ge-hört",
+    "ver-las-sen",
 ]
 
 en_hyph = [

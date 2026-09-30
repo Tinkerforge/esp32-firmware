@@ -45,6 +45,7 @@ void BatteriesModbusTCP::pre_setup()
 
     for (size_t i = 0; i < OPTIONS_BATTERIES_MAX_SLOTS(); ++i) {
         instances[i] = nullptr;
+        last_force_mode[i] = now_us().to<millis_t>();
     }
 
     table_prototypes.push_back({BatteryModbusTCPTableID::None, *Config::Null()});
@@ -141,6 +142,7 @@ void BatteriesModbusTCP::pre_setup()
         {"effective_mode", Config::Enum(BatteryMode::None)},
         {"discovering", Config::Bool(false)},
         {"checking", Config::Bool(false)},
+        {"waiting", Config::Bool(false)},
         {"testing", Config::Bool(false)},
     });
 
@@ -227,7 +229,7 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::Custom:
             test->device_address = table_config->get("device_address")->asUint8();
-            test->repeat_interval = table_config->get("repeat_interval")->asUint16();
+            test->repeat_interval = seconds_t{table_config->get("repeat_interval")->asUint16()};
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             break;
 
@@ -238,8 +240,11 @@ void BatteriesModbusTCP::register_urls()
             return;
         }
 
-        if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2
-         || table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+        if (table_id == BatteryModbusTCPTableID::KostalPlenticorePlusG2) {
+            test->discover_table_config = new Config(*table_config);
+        }
+        else if (table_id == BatteryModbusTCPTableID::KostalPlenticoreG3) {
+            test->kostal_plenticore_g3_watchdog_timeout = seconds_t{table_config->get("watchdog_timeout")->asUint16()} + 5_s; // +5s to compensate for clock drift
             test->discover_table_config = new Config(*table_config);
         }
         else {
@@ -505,10 +510,10 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true,
+        test->writer_ctx = BatteryModbusTCP::create_writer(instances[test->slot], test->slot, true, &last_force_mode[test->slot],
                                                            static_cast<TFModbusTCPSharedClient *>(test->shared_client),
                                                            test->device_address, test->transaction_id_mask, test->repeat_interval,
-                                                           test->mode, test->table, "",
+                                                           test->mode, test->table, test->kostal_plenticore_g3_watchdog_timeout, "",
         [this](bool event_log, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
@@ -563,7 +568,7 @@ void BatteriesModbusTCP::loop()
 
 IBattery *BatteriesModbusTCP::new_battery(uint32_t slot, Config *state, Config *errors)
 {
-    BatteryModbusTCP *battery = new BatteryModbusTCP(slot, state, errors, modbus_tcp_client.get_pool());
+    BatteryModbusTCP *battery = new BatteryModbusTCP(slot, state, errors, &last_force_mode[slot], modbus_tcp_client.get_pool());
 
     instances[slot] = battery;
 

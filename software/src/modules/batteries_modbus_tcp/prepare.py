@@ -554,7 +554,7 @@ for group, modes in all_modes.items():
             print(f'Error: Table prototype {group.space} has unknown member {member_name}')
             sys.exit(1)
 
-    setup_inc.append(f'        repeat_interval = {repeat_intervals[group]};\n'
+    setup_inc.append(f'        repeat_interval = {repeat_intervals[group]}_s;\n'
                       '        break;\n\n')
 
     load_tables_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
@@ -571,7 +571,7 @@ for group, modes in all_modes.items():
             print(f'Error: Table prototype {group.space} has unknown member {member_name}')
             sys.exit(1)
 
-    test_setup_inc.append(f'        test->repeat_interval = {repeat_intervals[group]};\n'
+    test_setup_inc.append(f'        test->repeat_interval = {repeat_intervals[group]}_s;\n'
                            '        break;\n\n')
 
     test_load_table_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'

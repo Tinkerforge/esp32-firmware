@@ -59,12 +59,14 @@ public:
         uint64_t task_id = 0;
         BatteryModbusTCP *battery;
         uint32_t slot;
+        millis_t *last_force_mode;
         TFModbusTCPSharedClient *shared_client;
         uint8_t device_address;
         uint16_t transaction_id_mask;
-        uint16_t repeat_interval; // seconds
+        seconds_t repeat_interval;
         BatteryMode mode;
         TableSpec *table;
+        seconds_t kostal_plenticore_g3_watchdog_timeout;
         size_t repeat_count = 0;
         size_t index = 0;
         size_t first_non_precondition_index = 0; // == index + 1 of the last register block with a read* function code, 0 == no precondition
@@ -80,9 +82,11 @@ public:
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
-    static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, TFModbusTCPSharedClient *shared_client, uint8_t device_address,
-                                        uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
-                                        BatteryMode mode, TableSpec *table, const char *log_prefix, VLogFLnFunction &&vlogfln,
+    static WriterContext *create_writer(BatteryModbusTCP *battery, uint32_t slot, bool test, millis_t *last_force_mode,
+                                        TFModbusTCPSharedClient *shared_client, uint8_t device_address,
+                                        uint16_t transaction_id_mask, seconds_t repeat_interval, BatteryMode mode,
+                                        TableSpec *table, seconds_t kostal_plenticore_g3_watchdog_timeout,
+                                        const char *log_prefix, VLogFLnFunction &&vlogfln,
                                         WriterFailureFunction &&failure, Language language = Language::English);
     static void destroy_writer(WriterContext *ctx);
 
@@ -108,8 +112,8 @@ public:
     static void discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback);
     static void discover_kostal_plenticore_g3_variant(DiscoverContext *ctx,  std::function<void(KostalPlenticoreG3Variant variant)> &&callback);
 
-    BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
-        GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
+    BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, millis_t *last_force_mode_, TFModbusTCPClientPool *pool_) :
+        GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_), last_force_mode(last_force_mode_) {}
 
     [[gnu::const]] BatteryClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
@@ -123,6 +127,7 @@ public:
     void set_state_mode(BatteryMode active_mode, BatteryMode effective_mode);
     void set_state_discovering(bool discovering);
     void set_state_checking(bool checking);
+    void set_state_waiting(bool waiting);
 
 private:
     void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
@@ -133,13 +138,15 @@ private:
     uint32_t slot;
     Config *state;
     Config *errors;
+    millis_t *last_force_mode;
 
     BatteryModbusTCPTableID table_id;
     // FIXME: might be allocated. leaking if allocated, because as of right now battery instances don't get destroyed
     TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     uint8_t device_address;
     uint16_t transaction_id_mask = UINT16_MAX;
-    uint16_t repeat_interval; // seconds
+    seconds_t repeat_interval;
+    seconds_t kostal_plenticore_g3_watchdog_timeout = 0_s;
     BatteryMode requested_mode = BatteryMode::None;
     bool discover_pending = false;
     bool testing = false;
