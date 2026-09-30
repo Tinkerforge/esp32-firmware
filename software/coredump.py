@@ -19,11 +19,11 @@ import test_runner.parttool as parttool
 def find_gdb():
     path = shutil.which("xtensa-esp32-elf-gdb")
     if path is not None:
-        return path
+        return [path]
 
     path = shutil.which("pio")
     if path is not None:
-        return path + " pkg exec xtensa-esp32-elf-gdb --"
+        return [path, "pkg", "exec", "xtensa-esp32-elf-gdb", "--"]
 
     return None
 
@@ -343,7 +343,7 @@ if __name__ == '__main__':
                 with open("coredump_py_gdb_cmds", "r", encoding="utf-8") as f:
                     coredump_py_gdb_cmds = f.read().replace("\n", " ")
 
-            os.system(f"{gdb} " +
+            os.system(shlex.join(gdb) + " " +
                         ("-q --batch " if not args.interactive else "") +
                         "-iex 'set pagination off' " +
                         f"-iex 'directory {repo_dir}' " +
@@ -386,12 +386,12 @@ if __name__ == '__main__':
         if firmware_path:
             time_of_crash = "unknown time"
             try:
-                gdb_timestamp_output = subprocess.check_output([gdb, "-q", "--batch", "-ex", "p tf_coredump_timestamp", firmware_path, core_dump_path])
+                gdb_timestamp_output = subprocess.check_output(gdb + ["-q", "--batch", "-ex", "p tf_coredump_timestamp", firmware_path, core_dump_path])
                 found_timestamp = re.compile(r"^[$]1 = (.+)$", re.MULTILINE).findall(gdb_timestamp_output.decode("utf-8"))
 
                 if found_timestamp:
                     time_of_crash = datetime.datetime.fromtimestamp(int(found_timestamp[0]), tz=None).strftime('%Y-%m-%d %H:%M:%S')
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, OSError, ValueError):
                 pass
 
             if args.local_source:
