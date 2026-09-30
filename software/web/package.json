@@ -11,6 +11,7 @@
     "argon2-browser": "^1.18.0",
     "bootstrap": "^5.3.8",
     "deepsignal": "^1.6.0",
+    "lean-qr": "^2.7.4",
     "preact": "^10.29.7",
     "react": "npm:@preact/compat@^18.3.1",
     "react-bootstrap": "^2.10.10",

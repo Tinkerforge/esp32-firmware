@@ -30,7 +30,7 @@ import {NavbarItem} from "../../ts/components/navbar_item";
 import {CollapsedSection} from "../../ts/components/collapsed_section";
 import {Table, TableRow} from "../../ts/components/table";
 import {Button, ListGroup, ListGroupItem} from "react-bootstrap";
-import {Share2, Plus} from "react-feather";
+import {Share2, Plus, Download, Eye, EyeOff} from "react-feather";
 import {Switch} from "../../ts/components/switch";
 import {ShipDiscoveryState} from "./generated/ship_discovery_state.enum";
 import {NodeState} from "./generated/node_state.enum";
@@ -41,6 +41,8 @@ import {OutputFloat} from "../../ts/components/output_float";
 import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
 import {IPConfiguration} from "../../ts/components/ip_configuration";
 import { DiscoveryResultGroup, DiscoveryResultItem } from "ts/components/discovery_result";
+import * as options from "../../options";
+import {generate as generateQR} from "lean-qr/nano";
 
 const EEBUS_NO_VALUE = -2147483648;
 const MAX_PEER_REMEMBERED = 4
@@ -125,6 +127,87 @@ function PhaseRow(props: {
             </div>
         </div>
     </FormRow>;
+}
+
+
+// EEBUS SHIP QR code according to SHIP TS 1.1.0 §12.7 and EEBUS TS SHIP Requirements for Installation Process 1.1.0 §3.1.
+// Values must match the mDNS TXT record set in ship_mdns.cpp.
+function EEBusQRCode(props: {ski: string}) {
+    const [show, setShow] = useState(false);
+    const toggle = <Button variant="secondary" className="mt-2 w-100" onClick={() => setShow(!show)}>
+        <span class="me-2">{show ? __("eebus.content.qr_hide") : __("eebus.content.qr_show")}</span>
+        {show ? <EyeOff/> : <Eye/>}
+    </Button>;
+
+    if (!show) {
+        return toggle;
+    }
+
+    const is_charger = API.hasModule("evse_common");
+    const ship_id = API.get("info/name").name; // Must match eebus.get_eebus_name(). Device Name is a required dependency of EEBUS.
+    const ski_grouped = props.ski.replace(/(.{4})(?!$)/g, "$1 "); // [SRIP-310/9] Groups of four, separated by spaces
+    // [SRIP-220/2] Whitespace is prohibited in values, [SRIP-220/3] recommends '-' instead.
+    const txt = (s: string) => s.replace(/ /g, "-");
+    const payload = [
+        "SHIP",
+        "SKI:" + ski_grouped,
+        "ID:" + ship_id,
+        "BRAND:" + txt(options.MANUFACTURER),
+        "TYPE:" + (is_charger ? "ChargingStation" : "EnergyManagementSystem"),
+        "MODEL:" + txt(options.PRODUCT_NAME),
+        "CAT:" + (is_charger ? "3" : "2"), // [SRIP-220/15] 2: EMS, 3: E-mobility
+        "ENDSHIP;",
+    ].join(";");
+
+    const qr = generateQR(payload);
+    const quiet = 4; // [SHIP 12.7] Quiet zone of at least 4 modules
+    let path = "";
+    for (let y = 0; y < qr.size; ++y)
+        for (let x = 0; x < qr.size; ++x)
+            if (qr.get(x, y))
+                path += `M${x + quiet} ${y + quiet}h1v1h-1z`;
+    const dim = qr.size + 2 * quiet;
+
+    const download = () => {
+        const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        const ski_groups = ski_grouped.split(" ");
+        // Shrink font size if a (rough estimate of the) text width would exceed the 43 unit wide text column.
+        const fit = (s: string, size: number, em_width: number) => Math.min(size, 43 / (em_width * Math.max(s.length, 1))).toFixed(2);
+        // Printable label. The layout uses an 85 x 42 unit coordinate system that is printed at 1.3 mm per unit,
+        // resulting in a 110.5 mm x 54.6 mm label. The QR code is 36 units = 46.8 mm wide including the quiet zone,
+        // which results in a module size well above the minimum of 0.33 mm required by [SHIP 12.7].
+        const label =
+`<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="110.5mm" height="54.6mm" viewBox="0 0 85 42" font-family="Helvetica, Arial, sans-serif">
+<title>${esc(payload)}</title>
+<rect x="0.1" y="0.1" width="84.8" height="41.8" rx="2" fill="#fff" stroke="#999" stroke-width="0.2"/>
+<svg x="2" y="3" width="36" height="36" viewBox="0 0 ${dim} ${dim}" shape-rendering="crispEdges"><path d="${path}" fill="#000"/></svg>
+<svg x="40" y="3.5" width="7" height="7" viewBox="0 0 6.35 6.35" color="#000">${EEBUS_LOGO_SVG_CONTENT}</svg>
+<text x="48.5" y="9.3" font-size="5.5" font-weight="bold">EEBUS</text>
+<text x="40" y="16.5" font-size="${fit(options.PRODUCT_NAME, 3.4, 0.62)}" font-weight="bold">${esc(options.PRODUCT_NAME)}</text>
+<text x="40" y="21.5" font-size="2.2" fill="#555">SHIP ID</text>
+<text x="40" y="25" font-size="${fit(ship_id, 2.8, 0.6)}" font-family="Courier New, monospace">${esc(ship_id)}</text>
+<text x="40" y="29.5" font-size="2.2" fill="#555">SKI</text>
+<text x="40" y="33" font-size="2.8" font-family="Courier New, monospace">${ski_groups.slice(0, 5).join(" ")}</text>
+<text x="40" y="36.5" font-size="2.8" font-family="Courier New, monospace">${ski_groups.slice(5).join(" ")}</text>
+</svg>
+`;
+        util.downloadToFile(label, `${ship_id}-eebus-qr-code.svg`, "image/svg+xml");
+    };
+
+    return <>
+        {toggle}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${dim} ${dim}`} width="100%"
+             shape-rendering="crispEdges" class="d-block mt-2" role="img" aria-label="EEBUS QR code">
+            <title>{payload}</title>
+            <rect width={dim} height={dim} fill="#fff"/>
+            <path d={path} fill="#000"/>
+        </svg>
+        <Button variant="primary" className="mt-2 w-100" onClick={download}>
+            <span class="me-2">{__("eebus.content.qr_download")}</span>
+            <Download/>
+        </Button>
+    </>;
 }
 
 /**
@@ -215,7 +298,10 @@ function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild
     );
 }
 
-const EEBusLogo = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 6.35 6.35"><defs><clipPath id="a" clipPathUnits="userSpaceOnUse"><path d="M-45.28-91.6H88.44V30.23H-45.28Z"/></clipPath></defs><path d="M0 0c14.1 0 26.35-6.83 32.36-16.77a35.23 35.23 0 0 1-64.72 0C-26.34-6.83-14.1 0 0 0" clip-path="url(#a)" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.91262641;stroke-dasharray:none" transform="matrix(.09 0 0 -.09 3.18 .4)"/><path d="M3.18 5.94A3.4 3.4 0 0 1 .26 4.43a3.18 3.18 0 0 0 5.84 0 3.4 3.4 0 0 1-2.92 1.51" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352777"/><path d="M3.96 1.72q-.34.21-.4.68L3.3 3.97l-.03.25q.02.61.75.62h1.26l.07-.47H3.98a.3.3 0 0 1-.16-.09.3.3 0 0 1-.06-.17v-.03l.03-.2.07-.44h1.66l.08-.47H3.94l.08-.56c.04-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.34 0-.48.02-.66.13M1.21 1.72q-.34.21-.41.68L.55 3.97l-.02.25q.02.61.74.62h1.27l.07-.47H1.22a.3.3 0 0 1-.15-.09.3.3 0 0 1-.07-.17v-.03l.03-.2.07-.44h1.67l.07-.47H1.18l.09-.56c.03-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.35 0-.48.02-.66.13" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352778"/></svg>
+// EEBUS logo in a 6.35 x 6.35 coordinate system. Shared by the navbar icon and the printable QR code label.
+const EEBUS_LOGO_SVG_CONTENT = '<defs><clipPath id="a" clipPathUnits="userSpaceOnUse"><path d="M-45.28-91.6H88.44V30.23H-45.28Z"/></clipPath></defs><path d="M0 0c14.1 0 26.35-6.83 32.36-16.77a35.23 35.23 0 0 1-64.72 0C-26.34-6.83-14.1 0 0 0" clip-path="url(#a)" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.91262641;stroke-dasharray:none" transform="matrix(.09 0 0 -.09 3.18 .4)"/><path d="M3.18 5.94A3.4 3.4 0 0 1 .26 4.43a3.18 3.18 0 0 0 5.84 0 3.4 3.4 0 0 1-2.92 1.51" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352777"/><path d="M3.96 1.72q-.34.21-.4.68L3.3 3.97l-.03.25q.02.61.75.62h1.26l.07-.47H3.98a.3.3 0 0 1-.16-.09.3.3 0 0 1-.06-.17v-.03l.03-.2.07-.44h1.66l.08-.47H3.94l.08-.56c.04-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.34 0-.48.02-.66.13M1.21 1.72q-.34.21-.41.68L.55 3.97l-.02.25q.02.61.74.62h1.27l.07-.47H1.22a.3.3 0 0 1-.15-.09.3.3 0 0 1-.07-.17v-.03l.03-.2.07-.44h1.67l.07-.47H1.18l.09-.56c.03-.2.18-.35.35-.35h1.37l.08-.47h-1.2c-.35 0-.48.02-.66.13" style="fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:.352778"/>';
+
+const EEBusLogo = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 6.35 6.35" dangerouslySetInnerHTML={{__html: EEBUS_LOGO_SVG_CONTENT}}/>
 
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={EEBusLogo}/>;
@@ -298,6 +384,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")}
                                  help={__("eebus.content.ski_help")}>
                             <InputText value={ski}/>
+                            {state.state.ski.length == 40 && <EEBusQRCode ski={state.state.ski}/>}
                         </FormRow>
 
                         <CollapsedSection heading={__("eebus.content.usecase_details")}>

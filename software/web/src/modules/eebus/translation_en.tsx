@@ -32,8 +32,12 @@ let x = {
                 <p>The Subject Key Identifier (SKI) is a unique cryptographic identifier for this device.</p>
                 <p>If this device needs to communicate with, for example, a "Steuerbox", the SKI may be
                     required during the setup of the Steuerbox.</p>
+                <p>The QR code contains the SKI and further device information as defined in the EEBUS SHIP specification. It can be scanned by apps of compatible devices to simplify the pairing.</p>
             </>,
             "unknown": "Unknown",
+            "qr_show": "Show QR code",
+            "qr_hide": "Hide QR code",
+            "qr_download": "Download QR code",
             "searching_peers": "Searching....",
             "add_peer_title": "Add EEBUS device",
             "add_peer_message": /*SFN*/(have: number, max: number) => `${have} of ${max} EEBUS devices configured`/*NF*/,
