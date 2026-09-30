@@ -71,9 +71,16 @@ void Ship::setup_mdns()
     }
 
     // Optional Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER());
-    mdns_service_txt_item_set("_ship", "_tcp", "model", OPTIONS_PRODUCT_NAME());
+    // [SRIP-220/2] Whitespace is prohibited in TXT values, [SRIP-220/3] recommends '-' instead.
+    // Keep in sync with the QR code in web/src/modules/eebus/main.tsx.
+    String brand = OPTIONS_MANUFACTURER();
+    String model = OPTIONS_PRODUCT_NAME();
+    brand.replace(' ', '-');
+    model.replace(' ', '-');
+    mdns_service_txt_item_set("_ship", "_tcp", "brand", brand.c_str());
+    mdns_service_txt_item_set("_ship", "_tcp", "model", model.c_str());
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE);
+    mdns_service_txt_item_set("_ship", "_tcp", "cat", EEBUS_DEVICE_CATEGORY); // [SRIP-220/23]
 
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     eebus.trace_fmtln("setup_mdns() done");

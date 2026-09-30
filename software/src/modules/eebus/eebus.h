@@ -29,9 +29,11 @@
 #if MODULE_EVSE_COMMON_AVAILABLE()
 #define EEBUS_MODE_EVSE
 #define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined
+#define EEBUS_DEVICE_CATEGORY "3"           // [SRIP-220/15] Device category: 3 = E-mobility related device
 #else
 #define EEBUS_MODE_EM
 #define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined
+#define EEBUS_DEVICE_CATEGORY "2"                  // [SRIP-220/15] Device category: 2 = Energy Management System
 #endif
 
 //#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
