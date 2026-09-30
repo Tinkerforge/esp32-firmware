@@ -771,7 +771,7 @@ class Stage3:
 
             print(f'Charger state before DC fault reset: i={i} error_0={error_0} dc_fault_bits_0={dc_fault_bits_0} gpio_0={gpio_0}')
 
-            if dc_fault_bits_0 == 0:
+            if not any(gpio_0[:3]):
                 break
 
             time.sleep(0.5)
