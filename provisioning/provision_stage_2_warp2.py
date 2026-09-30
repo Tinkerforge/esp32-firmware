@@ -789,7 +789,12 @@ def led_wrap():
         stage3.setup()
         stage3.set_led_strip_color((0, 0, 255))
     except BaseException as e:
-        print(red(f'Setup failed: {e}'))
+        e_str = str(e)
+
+        if len(e_str) == 0:
+            e_str = type(e).__name__
+
+        print(red(f'Setup failed: {e_str}'))
         orig_print(red(traceback.format_exc().rstrip()))
 
         commit_message += ' (setup failure)'
@@ -808,9 +813,14 @@ def led_wrap():
 
         print(green('Test successful. Aftermath pending...'))
     except BaseException as e:
-        print(red(f'Test failed: {e}'))
+        e_str = str(e)
 
-        result['failure_exception'] = str(e)
+        if len(e_str) == 0:
+            e_str = type(e).__name__
+
+        print(red(f'Test failed: {e_str}'))
+
+        result['failure_exception'] = e_str
         result['failure_traceback'] = traceback.format_exc()
 
         if power_off_on_error:
@@ -901,7 +911,12 @@ def led_wrap():
 
         print(green('Done!'))
     except BaseException as e:
-        print(red(f'Aftermath failed: {e}'))
+        e_str = str(e)
+
+        if len(e_str) == 0:
+            e_str = type(e).__name__
+
+        print(red(f'Aftermath failed: {e_str}'))
         orig_print(red(traceback.format_exc().rstrip()))
 
         stage3.set_led_strip_color((255, 0, 0))
