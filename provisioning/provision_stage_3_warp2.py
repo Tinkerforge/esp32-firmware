@@ -779,26 +779,26 @@ class Stage3:
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
-        tries = 3
+        error_1 = self.get_evse_error_function()
+        dc_fault_bits_1 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
+        gpio_1 = [int(x) for x in self.get_gpio_state_function()]
 
-        while tries > 0:
-            error = self.get_evse_error_function()
-            dc_fault_bits = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
+        if error_1 != 0 or dc_fault_bits_1 != 0:
+            print(yellow(f'WARNING: Charger error not cleared, error_1={error_1} dc_fault_bits_1={dc_fault_bits_1} gpio_1={gpio_1}'))
 
-            if error == 0 and dc_fault_bits == 0:
-                break
+            self.reset_dc_fault_function()
 
-            gpio = [int(x) for x in self.get_gpio_state_function()]
-            tries -= 1
+            time.sleep(EVSE_SETTLE_DURATION)
 
-            if tries == 1:
-                print(yellow(f'WARNING: Charger error not cleared, 1 try left, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}'))
-            elif tries > 1:
-                print(yellow(f'WARNING: Charger error not cleared, {tries} tries left, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}'))
-            else:
-                fatal_error(f'Charger error not cleared, error={error} dc_fault_bits={dc_fault_bits} gpio={gpio}')
+            print('Waiting DC protect calibration')
 
-            time.sleep(2)
+            time.sleep(DC_PROTECT_SETTLE_DURATION)
+
+            error_2 = self.get_evse_error_function()
+            dc_fault_bits_2 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
+            gpio_2 = [int(x) for x in self.get_gpio_state_function()]
+
+            fatal_error(f'Charger error not cleared, error_2={error_2} dc_fault_bits_2={dc_fault_bits_2} gpio={gpio_2}')
 
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
