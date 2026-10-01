@@ -764,20 +764,29 @@ class Stage3:
     def reset_dc_fault(self, cp_pe_state):
         print('Resetting DC fault')
 
-        for i in range(30):
-            error_0 = self.get_evse_error_function()
-            dc_fault_bits_0 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
-            gpio_0 = [int(x) for x in self.get_gpio_state_function()]
+        # wait for DC fault to actually clear
+        start = time.monotonic()
+        duration = -1
+        timeout = 30
 
-            print(f'Charger state before DC fault reset: i={i} error_0={error_0} dc_fault_bits_0={dc_fault_bits_0} gpio_0={gpio_0}')
+        while duration < timeout:
+            gpio_state = self.get_gpio_state_function()
 
-            if not any(gpio_0[:3]):
+            if not any(gpio_state[:3]):
+                if duration < 0:
+                    print('DC fault already cleared')
+                else:
+                    print(f'DC fault cleared after {duration}s')
+
                 break
 
-            time.sleep(0.5)
-        else:
-            fatal_error('DC fault still present')
+            time.sleep(0.1)
 
+            duration = time.monotonic() - start
+        else:
+            fatal_error(f'DC fault still present after {timeout}s')
+
+        # reset DC fault state in EVSE
         self.reset_dc_fault_function()
 
         time.sleep(EVSE_SETTLE_DURATION)
@@ -793,27 +802,7 @@ class Stage3:
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
-        error_1 = self.get_evse_error_function()
-        dc_fault_bits_1 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
-        gpio_1 = [int(x) for x in self.get_gpio_state_function()]
-
-        if error_1 != 0 or dc_fault_bits_1 != 0:
-            print(yellow(f'WARNING: Charger error not cleared, error_1={error_1} dc_fault_bits_1={dc_fault_bits_1} gpio_1={gpio_1}'))
-
-            self.reset_dc_fault_function()
-
-            time.sleep(EVSE_SETTLE_DURATION)
-
-            print('Waiting DC protect calibration')
-
-            time.sleep(DC_PROTECT_SETTLE_DURATION)
-
-            error_2 = self.get_evse_error_function()
-            dc_fault_bits_2 = self.get_dc_fault_current_bits_function() & 0b111111  # ignore sensor type
-            gpio_2 = [int(x) for x in self.get_gpio_state_function()]
-
-            fatal_error(f'Charger error not cleared, error_2={error_2} dc_fault_bits_2={dc_fault_bits_2} gpio={gpio_2}')
-
+        # change to target CP/PE state
         if cp_pe_state != 'A':
             self.change_cp_pe_state(cp_pe_state)
 
