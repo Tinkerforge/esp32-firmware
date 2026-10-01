@@ -262,7 +262,7 @@
 - Add EEBUS support
 - Add outside temperature module
 - Heating: Add temperature curve
-- Heating: Improve plan by finding an optimal solution that includes the minimum hold time.
+- Heating: Improve plan by finding an optimal solution that includes the minimum hold time
 - Add configuration changes without reboot for most modules
 - Add HTTPS support to web interface and HTTP API
 - Centralize §14a support in separate sub-page
@@ -318,7 +318,7 @@
 - Update timezone database
 
 2026-05-13: 1.5.2 (2ca86775)
-- Fix support for TLS 1.3 signature algorithms in TLS 1.2; unbreaks solar forecast.
+- Fix support for TLS 1.3 signature algorithms in TLS 1.2; unbreaks solar forecast
 - Disallow overriding known meter locations
 - Fix Iskra WM3M4C's non-resettable energy values being marked as resettable
 - Support Iskra WM3M4
