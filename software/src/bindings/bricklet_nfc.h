@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-10-25.      *
+ * This file was automatically generated on 2026-10-01.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -31,6 +31,7 @@ struct TF_NFC;
 typedef void (*TF_NFC_ReaderStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
 typedef void (*TF_NFC_CardemuStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
 typedef void (*TF_NFC_P2PStateChangedHandler)(struct TF_NFC *nfc, uint8_t state, bool idle, void *user_data);
+typedef void (*TF_NFC_SimpleTagSeenHandler)(struct TF_NFC *nfc, uint8_t tag_type, uint8_t tag_id_length, uint8_t tag_id_data[10], void *user_data);
 
 #endif
 /**
@@ -49,6 +50,9 @@ typedef struct TF_NFC {
 
     TF_NFC_P2PStateChangedHandler p2p_state_changed_handler;
     void *p2p_state_changed_user_data;
+
+    TF_NFC_SimpleTagSeenHandler simple_tag_seen_handler;
+    void *simple_tag_seen_user_data;
 
 #endif
     uint16_t magic;
@@ -198,6 +202,16 @@ typedef struct TF_NFC {
 /**
  * \ingroup TF_NFC
  */
+#define TF_NFC_FUNCTION_SET_SIMPLE_TAG_SEEN_CALLBACK_CONFIGURATION 33
+
+/**
+ * \ingroup TF_NFC
+ */
+#define TF_NFC_FUNCTION_GET_SIMPLE_TAG_SEEN_CALLBACK_CONFIGURATION 34
+
+/**
+ * \ingroup TF_NFC
+ */
 #define TF_NFC_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -271,6 +285,11 @@ typedef struct TF_NFC {
  * \ingroup TF_NFC
  */
 #define TF_NFC_CALLBACK_P2P_STATE_CHANGED 24
+
+/**
+ * \ingroup TF_NFC
+ */
+#define TF_NFC_CALLBACK_SIMPLE_TAG_SEEN 32
 
 #endif
 
@@ -798,6 +817,23 @@ int tf_nfc_register_cardemu_state_changed_callback(TF_NFC *nfc, TF_NFC_CardemuSt
  * See {@link tf_nfc_p2p_get_state} for more information about the possible states.
  */
 int tf_nfc_register_p2p_state_changed_callback(TF_NFC *nfc, TF_NFC_P2PStateChangedHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_NFC
+ *
+ * Registers the given \c handler to the Simple Tag Seen callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t tag_type, uint8_t tag_id_length, uint8_t tag_id_data[10], void *user_data) \endcode
+ *
+ * This callback is called when a tag is seen in simple mode.
+ * It will be called again periodically when a tag is constantly seen.
+ * See {@link tf_nfc_set_simple_tag_seen_callback_configuration} for the period setting.
+ *
+ * .. versionadded:: 2.1.4$nbsp;(Plugin)
+ */
+int tf_nfc_register_simple_tag_seen_callback(TF_NFC *nfc, TF_NFC_SimpleTagSeenHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
@@ -1276,6 +1312,28 @@ int tf_nfc_cardemu_set_tag_id(TF_NFC *nfc, uint8_t tag_id_length, const uint8_t 
  * .. versionadded:: 2.1.0$nbsp;(Plugin)
  */
 int tf_nfc_cardemu_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[7]);
+
+/**
+ * \ingroup TF_NFC
+ *
+ * If you enable this callback by setting a positive period, the
+ * {@link tf_nfc_register_simple_tag_seen_callback} callback is triggered every time a new tag is seen in
+ * simple mode. If a tag is constantly seen, the callback will trigger again
+ * periodically, depending on the period setting. A period of 0 will disable the
+ * callback.
+ *
+ * .. versionadded:: 2.1.4$nbsp;(Plugin)
+ */
+int tf_nfc_set_simple_tag_seen_callback_configuration(TF_NFC *nfc, uint32_t period);
+
+/**
+ * \ingroup TF_NFC
+ *
+ * Returns the configuration as set by {@link tf_nfc_set_simple_tag_seen_callback_configuration}.
+ *
+ * .. versionadded:: 2.1.4$nbsp;(Plugin)
+ */
+int tf_nfc_get_simple_tag_seen_callback_configuration(TF_NFC *nfc, uint32_t *ret_period);
 
 /**
  * \ingroup TF_NFC

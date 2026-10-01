@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2026-10-01.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -111,6 +111,26 @@ typedef struct TF_LEDStripV2 {
  * \ingroup TF_LEDStripV2
  */
 #define TF_LED_STRIP_V2_FUNCTION_GET_FRAME_STARTED_CALLBACK_CONFIGURATION 14
+
+/**
+ * \ingroup TF_LEDStripV2
+ */
+#define TF_LED_STRIP_V2_FUNCTION_START_FRAME 15
+
+/**
+ * \ingroup TF_LEDStripV2
+ */
+#define TF_LED_STRIP_V2_FUNCTION_TRUNCATE_FRAME 16
+
+/**
+ * \ingroup TF_LEDStripV2
+ */
+#define TF_LED_STRIP_V2_FUNCTION_SET_AUTO_TRUNCATE 17
+
+/**
+ * \ingroup TF_LEDStripV2
+ */
+#define TF_LED_STRIP_V2_FUNCTION_GET_AUTO_TRUNCATE 18
 
 /**
  * \ingroup TF_LEDStripV2
@@ -593,6 +613,9 @@ int tf_led_strip_v2_get_led_values_low_level(TF_LEDStripV2 *led_strip_v2, uint16
  *
  * For an explanation of the general approach see {@link tf_led_strip_v2_set_led_values}.
  *
+ * A frame duration of 0ms will disable automatic frame transfer. In this case,
+ * {@link tf_led_strip_v2_start_frame} must be called to start a transfer.
+ *
  * Default value: 100ms (10 frames per second).
  */
 int tf_led_strip_v2_set_frame_duration(TF_LEDStripV2 *led_strip_v2, uint16_t duration);
@@ -700,6 +723,60 @@ int tf_led_strip_v2_set_frame_started_callback_configuration(TF_LEDStripV2 *led_
  * {@link tf_led_strip_v2_set_frame_started_callback_configuration}.
  */
 int tf_led_strip_v2_get_frame_started_callback_configuration(TF_LEDStripV2 *led_strip_v2, bool *ret_enable);
+
+/**
+ * \ingroup TF_LEDStripV2
+ *
+ * Start transferring the current frame, irrespective of the configured frame
+ * duration.
+ *
+ * This function can be used to update the LEDs with a variable frame rate.
+ * The automatic transfer of frames should be disabled by setting the frame
+ * duration to zero.
+ *
+ * .. versionadded:: 2.2.0$nbsp;(Plugin)
+ */
+int tf_led_strip_v2_start_frame(TF_LEDStripV2 *led_strip_v2);
+
+/**
+ * \ingroup TF_LEDStripV2
+ *
+ * Truncates the length of the frame stored on the bricklet to the specified
+ * value.
+ *
+ * Normally, the maximum amount of previously set LED values is transferred for
+ * every frame. For example, if values for 256 LEDs have been set, every frame
+ * update will transfer the data for all 256 LEDs, regardless of how many LED
+ * values had actually changed. By truncating the frame, the amount of transferred
+ * LED values can be reduced again. This can be used to quickly update the
+ * beginning of an LED strip and is usually only useful with a dynamic frame rate.
+ *
+ * Truncating to a length of zero will stop automatic frame updates until any LED
+ * value is set again.
+ *
+ * .. versionadded:: 2.3.0$nbsp;(Plugin)
+ */
+int tf_led_strip_v2_truncate_frame(TF_LEDStripV2 *led_strip_v2, uint16_t length);
+
+/**
+ * \ingroup TF_LEDStripV2
+ *
+ * Automatically truncates the frame after it was sent.
+ * See {@link tf_led_strip_v2_truncate_frame}.
+ *
+ * .. versionadded:: 2.3.0$nbsp;(Plugin)
+ */
+int tf_led_strip_v2_set_auto_truncate(TF_LEDStripV2 *led_strip_v2, uint16_t length);
+
+/**
+ * \ingroup TF_LEDStripV2
+ *
+ * Returns length to which the frame will automatically be truncated, as set by
+ * {@link tf_led_strip_v2_set_auto_truncate}.
+ *
+ * .. versionadded:: 2.3.0$nbsp;(Plugin)
+ */
+int tf_led_strip_v2_get_auto_truncate(TF_LEDStripV2 *led_strip_v2, uint16_t *ret_length);
 
 /**
  * \ingroup TF_LEDStripV2

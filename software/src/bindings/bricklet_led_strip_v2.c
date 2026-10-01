@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2026-10-01.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -132,24 +132,39 @@ int tf_led_strip_v2_get_response_expected(TF_LEDStripV2 *led_strip_v2, uint8_t f
                 *ret_response_expected = (led_strip_v2->response_expected[0] & (1 << 5)) != 0;
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_LED_STRIP_V2_FUNCTION_START_FRAME:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (led_strip_v2->response_expected[0] & (1 << 6)) != 0;
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_LED_STRIP_V2_FUNCTION_TRUNCATE_FRAME:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (led_strip_v2->response_expected[0] & (1 << 7)) != 0;
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_RESET:
+        case TF_LED_STRIP_V2_FUNCTION_SET_AUTO_TRUNCATE:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (led_strip_v2->response_expected[1] & (1 << 0)) != 0;
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_WRITE_UID:
+        case TF_LED_STRIP_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (led_strip_v2->response_expected[1] & (1 << 1)) != 0;
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (led_strip_v2->response_expected[1] & (1 << 2)) != 0;
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_RESET:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (led_strip_v2->response_expected[1] & (1 << 3)) != 0;
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (led_strip_v2->response_expected[1] & (1 << 4)) != 0;
             }
             break;
         default:
@@ -211,32 +226,53 @@ int tf_led_strip_v2_set_response_expected(TF_LEDStripV2 *led_strip_v2, uint8_t f
                 led_strip_v2->response_expected[0] &= ~(1 << 5);
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_LED_STRIP_V2_FUNCTION_START_FRAME:
             if (response_expected) {
                 led_strip_v2->response_expected[0] |= (1 << 6);
             } else {
                 led_strip_v2->response_expected[0] &= ~(1 << 6);
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_LED_STRIP_V2_FUNCTION_TRUNCATE_FRAME:
             if (response_expected) {
                 led_strip_v2->response_expected[0] |= (1 << 7);
             } else {
                 led_strip_v2->response_expected[0] &= ~(1 << 7);
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_RESET:
+        case TF_LED_STRIP_V2_FUNCTION_SET_AUTO_TRUNCATE:
             if (response_expected) {
                 led_strip_v2->response_expected[1] |= (1 << 0);
             } else {
                 led_strip_v2->response_expected[1] &= ~(1 << 0);
             }
             break;
-        case TF_LED_STRIP_V2_FUNCTION_WRITE_UID:
+        case TF_LED_STRIP_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 led_strip_v2->response_expected[1] |= (1 << 1);
             } else {
                 led_strip_v2->response_expected[1] &= ~(1 << 1);
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+            if (response_expected) {
+                led_strip_v2->response_expected[1] |= (1 << 2);
+            } else {
+                led_strip_v2->response_expected[1] &= ~(1 << 2);
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_RESET:
+            if (response_expected) {
+                led_strip_v2->response_expected[1] |= (1 << 3);
+            } else {
+                led_strip_v2->response_expected[1] &= ~(1 << 3);
+            }
+            break;
+        case TF_LED_STRIP_V2_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                led_strip_v2->response_expected[1] |= (1 << 4);
+            } else {
+                led_strip_v2->response_expected[1] &= ~(1 << 4);
             }
             break;
         default:
@@ -1022,6 +1058,235 @@ int tf_led_strip_v2_get_frame_started_callback_configuration(TF_LEDStripV2 *led_
     _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_led_strip_v2_start_frame(TF_LEDStripV2 *led_strip_v2) {
+    if (led_strip_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = led_strip_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_led_strip_v2_get_response_expected(led_strip_v2, TF_LED_STRIP_V2_FUNCTION_START_FRAME, &_response_expected);
+    tf_tfp_prepare_send(led_strip_v2->tfp, TF_LED_STRIP_V2_FUNCTION_START_FRAME, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(led_strip_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_led_strip_v2_truncate_frame(TF_LEDStripV2 *led_strip_v2, uint16_t length) {
+    if (led_strip_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = led_strip_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_led_strip_v2_get_response_expected(led_strip_v2, TF_LED_STRIP_V2_FUNCTION_TRUNCATE_FRAME, &_response_expected);
+    tf_tfp_prepare_send(led_strip_v2->tfp, TF_LED_STRIP_V2_FUNCTION_TRUNCATE_FRAME, 2, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(led_strip_v2->tfp);
+
+    length = tf_leconvert_uint16_to(length); memcpy(_send_buf + 0, &length, 2);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(led_strip_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_led_strip_v2_set_auto_truncate(TF_LEDStripV2 *led_strip_v2, uint16_t length) {
+    if (led_strip_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = led_strip_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_led_strip_v2_get_response_expected(led_strip_v2, TF_LED_STRIP_V2_FUNCTION_SET_AUTO_TRUNCATE, &_response_expected);
+    tf_tfp_prepare_send(led_strip_v2->tfp, TF_LED_STRIP_V2_FUNCTION_SET_AUTO_TRUNCATE, 2, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(led_strip_v2->tfp);
+
+    length = tf_leconvert_uint16_to(length); memcpy(_send_buf + 0, &length, 2);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(led_strip_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_led_strip_v2_get_auto_truncate(TF_LEDStripV2 *led_strip_v2, uint16_t *ret_length) {
+    if (led_strip_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (led_strip_v2->magic != 0x5446 || led_strip_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = led_strip_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(led_strip_v2->tfp, TF_LED_STRIP_V2_FUNCTION_GET_AUTO_TRUNCATE, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(led_strip_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(led_strip_v2->tfp);
+        if (_error_code != 0 || _length != 2) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_length != NULL) { *ret_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
+        tf_tfp_packet_processed(led_strip_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(led_strip_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 2) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
