@@ -2138,31 +2138,41 @@ static void charge_log_send_tcp_task(void *arg)
 
     upload_args->generation_params->current_min = rtc.timestamp_minutes();
 
+    bool generation_error = false;
     if (upload_args->file_type == FileType::PDF) {
-        charge_tracker.generate_pdf(
+        int rc = charge_tracker.generate_pdf(
             [&tcp_send_fn](const void *buffer, size_t len) -> int {
                 return tcp_send_fn(buffer, len);
             },
             static_cast<PDFGenerationParams *>(upload_args->generation_params.get()),
             nullptr);
+        generation_error = rc != 0;
     } else {
         CSVChargeLogGenerator csv_generator;
-        csv_generator.generateCSV(
+        int rc = csv_generator.generateCSV(
             *static_cast<CSVGenerationParams *>(upload_args->generation_params.get()),
             [&tcp_send_fn](const char *buffer, size_t len) -> int {
                 return tcp_send_fn(buffer, len);
             }
         );
+        generation_error = rc < 0;
     }
 
-    if (send_error) {
-        logger.printfln("Error occurred while sending charge log data via TCP");
+    if (send_error || generation_error) {
+        if (send_error) {
+            logger.printfln("Error occurred while sending charge log data via TCP");
+        } else {
+            logger.printfln("Error occurred while generating charge log for upload");
+        }
+
         close(tcp_sock);
         charge_tracker.charge_log_send_ctx.tcp_sock = -1;
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ServerErrorAfterDataSend;
         charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
-            push_upload_result_error(upload_args->cookie, "Connection lost while transmitting charge log data. Please try again.");
+            push_upload_result_error(upload_args->cookie, send_error
+                ? "Connection lost while transmitting charge log data. Please try again."
+                : "Failed to generate charge log for upload. Please try again.");
         }
         cleanup_and_delete_task();
         return;
@@ -2635,6 +2645,11 @@ int ChargeTracker::generate_pdf(
     const PDFGenerationParams *params,
     WebServerRequest *request
 ) {
+    if ((params->display_name_cache == nullptr) || (params->charger_display_name_cache == nullptr)) {
+        logger.printfln("Cannot generate PDF charge log: Generation parameters not initialized");
+        return -1;
+    }
+
     char stats_buf[384];
     double charged_sum = 0;
     uint32_t charged_cost_sum = 0;

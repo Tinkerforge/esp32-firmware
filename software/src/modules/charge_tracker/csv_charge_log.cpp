@@ -284,6 +284,11 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
 
 int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                                         std::function<esp_err_t(const char* data, size_t length)> callback) {
+    if ((params.display_name_cache == nullptr) || (params.charger_display_name_cache == nullptr)) {
+        logger.printfln("Cannot generate CSV charge log: Generation parameters not initialized");
+        return -1;
+    }
+
     String header_line;
 
     if (params.flavor == CSVFlavor::Excel) {
