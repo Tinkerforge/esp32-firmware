@@ -2208,6 +2208,7 @@ en_hyph = [
     "Di-rec-tive",
     "Son-nen-bat-te-rie",
     "spec-i-fi-ca-tion",
+    "re-solv-ing",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
