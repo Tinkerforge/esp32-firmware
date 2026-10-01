@@ -1062,7 +1062,7 @@
 - Fix emulated Bender holding registers 706 and 1000 always returning 0
 - Don't show country configuration in web interface; has no effect yet
 
-2026-10-01: 2.13.4 (<unknown>)
+2026-10-01: 2.13.4 (098f202e)
 - Add support for Sonnenbatterie grid and battery meters
 - Modbus TCP: Improve network communication robustness
 - SunSpec: Improve device scan robustness
