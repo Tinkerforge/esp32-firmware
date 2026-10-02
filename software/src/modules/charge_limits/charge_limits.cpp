@@ -239,7 +239,6 @@ void ChargeLimits::register_urls()
 
     task_scheduler.scheduleUncancelable([this](){
         bool charging = charge_tracker.current_charge.get("user_id")->asInt() != -1;
-        uint16_t target_current = 32000;
 
         if (!charging) {
             if (was_charging) {
@@ -259,28 +258,38 @@ void ChargeLimits::register_urls()
 #if OPTIONS_PRODUCT_ID_IS_WARP4()
                 state.get("target_soc_pct")->updateUint(0);
 #endif
+
+                was_charging  = false;
+                was_triggered = false;
             }
-        } else { // charging
+
+            return;
+        }
+
+        // Currently charging
+        uint16_t target_current = 32000;
+
+        if (!was_charging) {
+            state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
+            if (!isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
+                state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
+        }
+
+        if (active_limits.get("duration")->asUint() > 0) {
+            if (!was_charging)
+                state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
+                                                                + map_duration(active_limits.get("duration")->asUint()));
+
+            uint32_t uptime = evse_common.get_low_level_state().get("uptime")->asUint();
+            if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
+                target_current = 0;
+        }
+
+        if (active_limits.get("energy_wh")->asUint() > 0) {
             float energy_now_kwh;
             evse_common.get_charger_meter_energy(&energy_now_kwh); // TODO: Use freshness check?
 
-            if (!was_charging) {
-                state.get("start_timestamp_ms")->updateUint(charge_tracker.current_charge.get("evse_uptime_start")->asUint());
-                if (!isnan(charge_tracker.current_charge.get("meter_start")->asFloat()))
-                    state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
-            }
-
-            if (active_limits.get("duration")->asUint() > 0) {
-                if (!was_charging)
-                    state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
-                                                                    + map_duration(active_limits.get("duration")->asUint()));
-
-                uint32_t uptime = evse_common.get_low_level_state().get("uptime")->asUint();
-                if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
-                    target_current = 0;
-            }
-
-            if (active_limits.get("energy_wh")->asUint() > 0 && !isnan(energy_now_kwh)) {
+            if (!isnan(energy_now_kwh)) {
                 if (!was_charging) {
                     float start = state.get("start_energy_kwh")->asFloat();
                     if (!isnan(start)) {
@@ -289,29 +298,27 @@ void ChargeLimits::register_urls()
                 }
 
                 float target = state.get("target_energy_kwh")->asFloat();
-                if (!isnan(target)) {
-                    if (!isnan(energy_now_kwh) && target <= energy_now_kwh) {
-                        target_current = 0;
-                    }
-                }
-            }
-
-            // SoC target check
-#if OPTIONS_PRODUCT_ID_IS_WARP4()
-            if (active_limits.get("soc_pct")->asUint() > 0 && ev_meter_has_soc) {
-                if (!was_charging) {
-                    state.get("target_soc_pct")->updateUint(active_limits.get("soc_pct")->asUint());
-                }
-
-                float soc = NAN;
-                meters.get_soc(ev_meter_slot, &soc);
-
-                if (!isnan(soc) && soc >= static_cast<float>(active_limits.get("soc_pct")->asUint())) {
+                if (!isnan(target) && target <= energy_now_kwh) {
                     target_current = 0;
                 }
             }
-#endif
         }
+
+        // SoC target check
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+        if (active_limits.get("soc_pct")->asUint() > 0 && ev_meter_has_soc) {
+            if (!was_charging) {
+                state.get("target_soc_pct")->updateUint(active_limits.get("soc_pct")->asUint());
+            }
+
+            float soc = NAN;
+            meters.get_soc(ev_meter_slot, &soc);
+
+            if (!isnan(soc) && soc >= static_cast<float>(active_limits.get("soc_pct")->asUint())) {
+                target_current = 0;
+            }
+        }
+#endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
         if (target_current == 0 && !was_triggered) {
@@ -324,7 +331,7 @@ void ChargeLimits::register_urls()
 
         evse_common.set_charge_limits_slot(target_current, true);
 
-        was_charging = charging;
+        was_charging = true;
 
     }, 1_s);
 }
