@@ -37,7 +37,8 @@
 // 2 - Add coils 1000, 1001
 // 3 - Add phase switch, EVSE LED color, EVSE GPIOs, NFC tag injection
 // 4 - Add button state
-#define MODBUS_TABLE_VERSION 4
+// 5 - Add beta version number
+#define MODBUS_TABLE_VERSION 5
 
 struct WarpInputRegisterCtx {
         Option<float> energy_abs = {};
@@ -224,6 +225,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInp
         case 8: val.u = build_timestamp(); break;
         case 10: val.u = esp32_common.get_uid_num(); break;
         case 12: val.u = now_us().to<seconds_t>().as<uint32_t>(); break;
+        case 14: val.u = BUILD_VERSION_BETA == 255 /* no beta */ ? 0 : BUILD_VERSION_BETA; break;
 
         case 1000: REQUIRE(evse); val.u = cache->evse_state->get("iec61851_state")->asUint(); break;
         case 1002: REQUIRE(evse); val.u = cache->evse_state->get("charger_state")->asUint(); break;

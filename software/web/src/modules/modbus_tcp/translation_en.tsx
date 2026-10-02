@@ -42,7 +42,7 @@ let x = {
                         <td>Register table version</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Current version: 4</td>
+                        <td>Current version: 5</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -86,6 +86,13 @@ let x = {
                         <td>uint32</td>
                         <td>---</td>
                         <td>Time in seconds since the boot-up of the charger firmware.</td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>Firmware version Beta</td>
+                        <td>uint32</td>
+                        <td>---</td>
+                        <td>For example 3 for firmware 2.4.0-beta.3+66558ade. 0 means, that no beta firmware is installed.</td>
                     </tr>
                     <tr>
                         <td>1000</td>

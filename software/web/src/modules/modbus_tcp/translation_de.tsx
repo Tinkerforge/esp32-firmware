@@ -42,7 +42,7 @@ let x = {
                         <td>Version der Registertabelle</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Aktuelle Version: 4</td>
+                        <td>Aktuelle Version: 5</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -87,6 +87,13 @@ let x = {
                         <td>uint32</td>
                         <td>---</td>
                         <td>Zeit in Sekunden seit dem Start der Wallbox-Firmware.</td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>Firmware-Version Beta</td>
+                        <td>uint32</td>
+                        <td>---</td>
+                        <td>Beispielsweise 3 für Firmware 2.4.0-beta.3+66558ade. 0 bedeutet, dass keine Beta-Firmware installiert ist.</td>
                     </tr>
                     <tr>
                         <td>1000</td>
