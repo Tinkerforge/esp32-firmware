@@ -11,6 +11,7 @@ import sax_power
 import growatt
 import kostal
 import chint_power
+import solaredge
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -28,6 +29,7 @@ modules = [
     growatt,
     kostal,
     chint_power,
+    solaredge,
 ]
 
 display_names = {}
