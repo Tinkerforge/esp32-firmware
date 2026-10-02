@@ -25,11 +25,11 @@
 #define SEMANTIC_VERSION_MAX_STRING_LENGTH (29 + 1) // strlen("MAJ.MIN.PAT-beta.BET+TIMESTAM") == 29 + 1 for NUL-terminator
 
 struct SemanticVersion {
-    uint8_t major = 255;
-    uint8_t minor = 255;
-    uint8_t patch = 255;
-    uint8_t beta = 255;
-    uint32_t timestamp = UINT32_MAX;
+    uint8_t major = 1;
+    uint8_t minor = 0;
+    uint8_t patch = 0;
+    uint8_t beta = 255; // no beta
+    uint32_t timestamp = 0xffffffff; // no timestamp
 
     enum Format {
         WithTimestamp,

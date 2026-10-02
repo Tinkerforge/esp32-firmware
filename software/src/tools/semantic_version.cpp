@@ -35,7 +35,7 @@ bool SemanticVersion::from_string(const char *buf, Format format)
     // major
     uint32_t major_candidate = strtoul(p, &end, 10);
 
-    if (p == end || *end != '.' || major_candidate > 254) {
+    if (p == end || *end != '.' || major_candidate > 255) {
         return false;
     }
 
@@ -44,7 +44,7 @@ bool SemanticVersion::from_string(const char *buf, Format format)
     // minor
     uint32_t minor_candidate = strtoul(p, &end, 10);
 
-    if (p == end || *end != '.' || minor_candidate > 254) {
+    if (p == end || *end != '.' || minor_candidate > 255) {
         return false;
     }
 
@@ -53,30 +53,30 @@ bool SemanticVersion::from_string(const char *buf, Format format)
     // patch
     uint32_t patch_candidate = strtoul(p, &end, 10);
 
-    if (p == end || (strncmp(end, "-beta.", 6) != 0 && *end != timestamp_marker) || patch_candidate > 254) {
+    if (p == end || (strncmp(end, "-beta.", 6) != 0 && *end != timestamp_marker) || patch_candidate > 255) {
         return false;
     }
 
     // beta
-    uint32_t beta_candidate = 255;
+    uint32_t beta_candidate = 255; // no beta
 
     if (*end != timestamp_marker) {
         p = end + 6; // skip "-beta."
         beta_candidate = strtoul(p, &end, 10);
 
-        if (p == end || *end != timestamp_marker || beta_candidate > 254) {
+        if (p == end || *end != timestamp_marker || beta_candidate >= 255) {
             return false;
         }
     }
 
     // timestamp
-    uint32_t timestamp_candidate = UINT32_MAX;
+    uint32_t timestamp_candidate = 0xffffffff; // no timestamp
 
     if (format == Format::WithTimestamp) {
         p = end + 1; // skip plus
         timestamp_candidate = strtoul(p, &end, 16);
 
-        if (p == end || *end != '\0') {
+        if (p == end || *end != '\0' || timestamp_candidate >= 0xffffffff) {
             return false;
         }
     }
