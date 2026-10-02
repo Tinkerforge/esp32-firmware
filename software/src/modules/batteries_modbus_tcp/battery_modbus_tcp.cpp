@@ -1012,6 +1012,8 @@ static void read_kostal_plenticore_byte_order(BatteryModbusTCP::DiscoverContext 
 
         if (error) {
             ctx->task_id = task_scheduler.scheduleOnce([ctx]() {
+                ctx->task_id = 0;
+
                 read_kostal_plenticore_byte_order(ctx);
             }, 5_s);
         }
