@@ -1438,12 +1438,13 @@ esp_err_t tf_websocket_client_start(tf_websocket_client_handle_t client)
         }
     }
 
+    xEventGroupClearBits(client->status_bits, STOPPED_BIT | CLOSE_FRAME_SENT_BIT | REQUESTED_STOP_BIT);
     if (xTaskCreatePinnedToCore(tf_websocket_client_task, client->config->task_name ? client->config->task_name : "websocket_task",
                                 client->config->task_stack, client, client->config->task_prio, &client->task_handle, client->config->task_core_id) != pdTRUE) {
         ESP_LOGE(TAG, "Error create websocket task");
+        xEventGroupSetBits(client->status_bits, STOPPED_BIT);
         return ESP_FAIL;
     }
-    xEventGroupClearBits(client->status_bits, STOPPED_BIT | CLOSE_FRAME_SENT_BIT | REQUESTED_STOP_BIT);
     ESP_LOGI(TAG, "Started");
     return ESP_OK;
 }
