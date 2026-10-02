@@ -1032,43 +1032,43 @@ BatteryModbusTCP::DiscoverContext *BatteryModbusTCP::create_discover(BatteryModb
 {
     trace("b%lu t%d dc", slot, test ? 1 : 0);
 
-    DiscoverContext *discover = new DiscoverContext;
+    DiscoverContext *ctx = new DiscoverContext;
 
-    discover->language = language;
-    discover->battery = battery;
-    discover->slot = slot;
-    discover->shared_client = shared_client;
-    discover->device_address = device_address;
-    discover->transaction_id_mask = transaction_id_mask;
-    discover->vlogfln = std::move(vlogfln);
-    discover->test = test;
+    ctx->language = language;
+    ctx->battery = battery;
+    ctx->slot = slot;
+    ctx->shared_client = shared_client;
+    ctx->device_address = device_address;
+    ctx->transaction_id_mask = transaction_id_mask;
+    ctx->vlogfln = std::move(vlogfln);
+    ctx->test = test;
 
-    if (discover->battery != nullptr) {
-        discover->battery->set_state_discovering(true);
+    if (ctx->battery != nullptr) {
+        ctx->battery->set_state_discovering(true);
     }
 
-    return discover;
+    return ctx;
 }
 
-void BatteryModbusTCP::destroy_discover(DiscoverContext *discover)
+void BatteryModbusTCP::destroy_discover(DiscoverContext *ctx)
 {
-    if (discover == nullptr) {
+    if (ctx == nullptr) {
         return;
     }
 
-    trace("b%lu t%d dd", discover->slot, discover->test ? 1 : 0);
+    trace("b%lu t%d dd", ctx->slot, ctx->test ? 1 : 0);
 
-    if (discover->battery != nullptr) {
-        discover->battery->set_state_discovering(false);
+    if (ctx->battery != nullptr) {
+        ctx->battery->set_state_discovering(false);
     }
 
-    if (discover->transact_pending) {
-        discover->destroy_requested = true;
+    if (ctx->transact_pending) {
+        ctx->destroy_requested = true;
         return;
     }
 
-    task_scheduler.cancel(discover->task_id);
-    free_discover(discover);
+    task_scheduler.cancel(ctx->task_id);
+    free_discover(ctx);
 }
 
 void BatteryModbusTCP::discover_kostal_plenticore_plus_g2_variant(DiscoverContext *ctx, std::function<void(KostalPlenticorePlusG2Variant variant)> &&callback)
