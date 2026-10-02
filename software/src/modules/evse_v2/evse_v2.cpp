@@ -1483,7 +1483,7 @@ static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float p
 
     struct closure_t {
         aligned_storage<Task> task_buf;
-        float current[3];
+        float values[4];
     };
 
     closure_t *closure = new closure_t;
@@ -1492,13 +1492,15 @@ static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float p
         return;
     }
 
-    closure->current[0] = current[0];
-    closure->current[1] = current[1];
-    closure->current[2] = current[2];
+    float *values = closure->values;
+    values[0] = power;
+    values[1] = current[0];
+    values[2] = current[1];
+    values[3] = current[2];
 
     // Transfer ownership, will free the whole closure.
-    task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [power, closure]() {
-        meters_evse_v2.energy_meter_values_callback(power, closure->current);
+    task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [values]() {
+        meters_evse_v2.energy_meter_values_callback(values);
     });
 #endif
 }

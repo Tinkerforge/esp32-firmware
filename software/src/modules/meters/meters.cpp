@@ -1067,33 +1067,68 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     }
 }
 
-void Meters::update_all_values(uint32_t slot, const float new_values[])
+void Meters::update_batch_values(uint32_t slot, size_t count, const uint32_t *indices, const float *new_values)
 {
     if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
-        logger.printfln_meter("Tried to update all values from array for non-existent slot");
+        logger.printfln_meter("Tried to update values for non-existent slot");
         return;
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
-
     Config &values = meter_slot.values;
-    size_t base_value_count = meter_slot.base_value_count;
+    const size_t base_value_count = meter_slot.base_value_count;
     bool changed_any_value = false;
 
-    for (size_t i = 0; i < base_value_count; i++) {
-        float new_value = new_values[i];
-        if (!isnan(new_value)) {
-            Config *conf_val = static_cast<Config *>(values.get(i));
+    if (indices == nullptr) {
+        count = base_value_count;
+    }
 
-            // Think about ordering and short-circuting issues before changing this!
-            float old_value = conf_val->asFloat();
-            if (conf_val->updateFloat(new_value) && !isnan(old_value))
-                changed_any_value = true;
+    for (size_t i = 0; i < count; i++) {
+        uint32_t index;
+
+        if (indices == nullptr) {
+            index = i;
+        } else {
+            index = indices[i];
+
+            if (index >= base_value_count) {
+                if (index == UINT32_MAX) {
+                    logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
+                    continue;
+                } else {
+                    logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, base_value_count);
+                    continue;
+                }
+            }
+        }
+
+        const float new_value = new_values[i];
+
+        if (isnan(new_value)) {
+            continue;
+        }
+
+        Config *conf_val = static_cast<Config *>(values.get(index));
+
+        // Think about ordering and short-circuting issues before changing this!
+        float old_value = conf_val->asFloat();
+        if (conf_val->updateFloat(new_value) && !isnan(old_value)) {
+            changed_any_value = true;
         }
     }
 
     if (meter_slot.value_combiner_filters_bitmask) {
-        apply_filters(meter_slot, base_value_count, new_values);
+        if (indices == nullptr) {
+            apply_filters(meter_slot, base_value_count, new_values);
+        } else {
+            float base_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
+
+            for (size_t i = 0; i < base_value_count; i++) {
+                base_values[i] = values.get(i)->asFloat();
+            }
+
+            apply_filters(meter_slot, base_value_count, base_values);
+        }
     }
 
     if (changed_any_value) {
@@ -1101,6 +1136,11 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     }
 
     finish_update(slot);
+}
+
+void Meters::update_all_values(uint32_t slot, const float new_values[])
+{
+    update_batch_values(slot, 0, nullptr, new_values);
 }
 
 void Meters::update_all_values(uint32_t slot, const Config *new_values)

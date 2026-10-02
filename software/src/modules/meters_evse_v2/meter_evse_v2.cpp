@@ -82,10 +82,10 @@ void MeterEVSEV2::update_from_evse_v2_all_data(const EVSEV2MeterData *meter_data
 
         meters.declare_value_ids(slot, ids, id_count);
 
-        value_index_power       = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
-        value_index_currents[0] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
-        value_index_currents[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
-        value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
+        value_indices[0] = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
+        value_indices[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL1ImExSum);
+        value_indices[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
+        value_indices[3] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
 
         meters.update_all_values(slot, all_values);
 
@@ -95,18 +95,13 @@ void MeterEVSEV2::update_from_evse_v2_all_data(const EVSEV2MeterData *meter_data
     }
 }
 
-void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
+void MeterEVSEV2::energy_meter_values_callback(const float values[4])
 {
-    if (value_index_power == UINT32_MAX) {
+    if (value_indices[0] == UINT32_MAX) {
         return;
     }
 
-    meters.update_value(slot, value_index_power, power);
-    for (size_t i = 0; i < ARRAY_SIZE(value_index_currents); i++) {
-        meters.update_value(slot, value_index_currents[i], current[i]);
-    }
-
-    meters.finish_update(slot);
+    meters.update_batch_values(slot, std::size(value_indices), value_indices, values);
 }
 
 void MeterEVSEV2::energy_meter_all_values_callback(const float *all_values)

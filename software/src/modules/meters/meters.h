@@ -139,6 +139,7 @@ public:
 
     // Remember to call finish_update when done updating all values for one read-out.
     void update_value(uint32_t slot, uint32_t index, float new_value);
+    void update_batch_values(uint32_t slot, size_t count, const uint32_t *indices, const float *new_values);
     void finish_update(uint32_t slot);
 
     // Calls finish_update automatically.
