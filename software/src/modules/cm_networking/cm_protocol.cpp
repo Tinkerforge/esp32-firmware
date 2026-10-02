@@ -493,7 +493,7 @@ void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager
 
             // If we have not received a valid packet for one minute, invalidate manager_addr.
             // Otherwise we would send state packets to this address forever.
-            if (deadline_elapsed(last_successful_recv + 60_s))
+            if (manager_addr_valid && deadline_elapsed(last_successful_recv + 60_s))
                 manager_addr_valid = false;
 
             return;
