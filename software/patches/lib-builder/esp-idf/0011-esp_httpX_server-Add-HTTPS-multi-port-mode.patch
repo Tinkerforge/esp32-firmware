@@ -73,15 +73,15 @@ index 54c6923c6d..15eaf315f8 100644
      char pending_data[PARSER_BLOCK_SIZE];   /*!< Buffer for pending data to be received */
      size_t pending_len;                     /*!< Length of pending data to be received */
      bool for_async_req;                     /*!< If true, the socket will not be LRU purged */
-@@ -127,7 +128,7 @@ struct httpd_req_aux {
+@@ -129,7 +130,7 @@ struct httpd_req_aux {
   */
  struct httpd_data {
      httpd_config_t config;                  /*!< HTTPD server configuration */
 -    int listen_fd;                          /*!< Server listener FD */
 +    int listen_fds[ESP_HTTPD_LISTEN_PORTS]; /*!< Server listener FD */
      int ctrl_fd;                            /*!< Ctrl message receiver FD */
- #if CONFIG_HTTPD_QUEUE_WORK_BLOCKING
-     SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl socket semaphore */
+     SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl mbox slot reservation (sized to LWIP_UDP_RECVMBOX_SIZE) */
+     int msg_fd;                             /*!< Ctrl message sender FD */
 @@ -218,7 +219,7 @@ void httpd_sess_init(struct httpd_data *hd);
   *  - ESP_OK   : on successfully queuing the work
   *  - ESP_FAIL : in case of control socket error while sending
@@ -95,12 +95,30 @@ diff --git a/components/esp_http_server/src/httpd_main.c b/components/esp_http_s
 index 943075317f..3720f67d0f 100644
 --- a/components/esp_http_server/src/httpd_main.c
 +++ b/components/esp_http_server/src/httpd_main.c
+@@ -48,7 +48,7 @@ static esp_err_t httpd_accept_conn(struct httpd_data *hd, int listen_fd)
+     }
+ }
+ 
+-static esp_err_t httpd_accept_conn(struct httpd_data *hd)
++static esp_err_t httpd_accept_conn(struct httpd_data *hd, size_t listen_index)
+ {
+     /* If no space is available for new session, close the least recently used one */
+     if (hd->config.lru_purge_enable == true) {
+@@ -72,7 +72,7 @@ static esp_err_t httpd_accept_conn(struct httpd_data *hd, int listen_fd)
+     struct sockaddr_storage addr_from;
+     socklen_t addr_from_len = sizeof(addr_from);
+ 
+-    int new_fd = accept(hd->listen_fd, (struct sockaddr *)&addr_from, &addr_from_len);
++    int new_fd = accept(hd->listen_fds[listen_index], (struct sockaddr *)&addr_from, &addr_from_len);
+     if (new_fd < 0) {
+         ESP_LOGE(TAG, LOG_FMT("error in accept (%d)"), errno);
+         return ESP_FAIL;
 @@ -121,7 +121,7 @@ static esp_err_t httpd_accept_conn(struct httpd_data *hd, int listen_fd)
          }
  #endif // __APPLE__
      }
 -    if (ESP_OK != httpd_sess_new(hd, new_fd)) {
-+    if (ESP_OK != httpd_sess_new(hd, new_fd, listen_fd)) {
++    if (ESP_OK != httpd_sess_new(hd, new_fd, hd->listen_fds[listen_index])) {
          ESP_LOGE(TAG, LOG_FMT("session creation failed"));
          goto exit;
      }
@@ -147,7 +165,7 @@ index 943075317f..3720f67d0f 100644
       * process? */
 -    if (FD_ISSET(hd->listen_fd, &read_set)) {
 -        ESP_LOGD(TAG, LOG_FMT("processing listen socket %d"), hd->listen_fd);
--        if (httpd_accept_conn(hd, hd->listen_fd) != ESP_OK) {
+-        if (httpd_accept_conn(hd) != ESP_OK) {
 -            ESP_LOGW(TAG, LOG_FMT("error accepting new connection"));
 +    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
 +        const int listen_fd = hd->listen_fds[i];
@@ -155,7 +173,7 @@ index 943075317f..3720f67d0f 100644
 +        if (listen_fd >= 0) {
 +            if (FD_ISSET(listen_fd, &read_set)) {
 +                ESP_LOGD(TAG, LOG_FMT("processing listen socket %d"), listen_fd);
-+                if (httpd_accept_conn(hd, listen_fd) != ESP_OK) {
++                if (httpd_accept_conn(hd, i) != ESP_OK) {
 +                    ESP_LOGW(TAG, LOG_FMT("error accepting new connection"));
 +                }
 +            }
@@ -326,6 +344,17 @@ index 943075317f..3720f67d0f 100644
  }
  
  static struct httpd_data *httpd_create(const httpd_config_t *config)
+@@ -537,7 +587,9 @@ static esp_err_t httpd_server(struct httpd_data *hd)
+                                hd->config.core_id,
+                                hd->config.task_caps) != ESP_OK) {
+         /* Close the open socket */
+-        close(hd->listen_fd);
++        for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++            if (hd->listen_fds[i] != -1) close(hd->listen_fds[i]);
++        }
+         /* Close the control socket */
+         cs_free_ctrl_sock(hd->ctrl_fd);
+         /* Close the message socket */
 diff --git a/components/esp_http_server/src/httpd_sess.c b/components/esp_http_server/src/httpd_sess.c
 index eaeaee7c1a..b673120ddb 100644
 --- a/components/esp_http_server/src/httpd_sess.c

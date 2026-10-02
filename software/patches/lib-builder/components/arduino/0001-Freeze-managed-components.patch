@@ -14,19 +14,19 @@ diff --git a/idf_component.yml b/idf_component.yml
 index dd783e537..fa841ab60 100644
 --- a/idf_component.yml
 +++ b/idf_component.yml
-@@ -35,12 +35,15 @@ dependencies:
+@@ -34,12 +34,15 @@ dependencies:
    espressif/mdns:
-     version: "^1.2.3"
+     version: "^1.11.2"
      require: public
 +    override_path: ../../managed_components/espressif__mdns
    espressif/libsodium:
-     version: "^1.0.21"
+     version: "^1.0.22"
      require: public
      rules:
        - if: idf_version < 6.0
 +    override_path: ../../managed_components/espressif__libsodium
    joltwallet/littlefs:
-     version: "^1.10.2"
+     version: "^1.22.1"
 +    override_path: ../../managed_components/joltwallet__littlefs
  examples:
    - path: ./idf_component_examples/Arduino_ESP_Matter_over_OpenThread

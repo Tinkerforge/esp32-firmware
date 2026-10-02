@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2018-2025 Espressif Systems (Shanghai) CO LTD
+ * SPDX-FileCopyrightText: 2018-2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -17,6 +17,8 @@
 
 #include <esp_http_server.h>
 #include "osal.h"
+#include "freertos/semphr.h"
+#include "sdkconfig.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +38,19 @@ extern "C" {
 
 /* Formats a log string to prepend context function name */
 #define LOG_FMT(x)      "%s: " x, __func__
+
+/**
+ * @brief Control message data structure for internal use. Sent to control socket.
+ */
+struct httpd_ctrl_data {
+    enum httpd_ctrl_msg {
+        HTTPD_CTRL_SHUTDOWN,
+        HTTPD_CTRL_WORK,
+        HTTPD_CTRL_MAX,
+    } hc_msg;
+    httpd_work_fn_t hc_work;
+    void *hc_work_arg;
+};
 
 /**
  * @brief Thread related data for internal use
@@ -117,9 +132,7 @@ struct httpd_data {
     httpd_config_t config;                  /*!< HTTPD server configuration */
     int listen_fds[ESP_HTTPD_LISTEN_PORTS]; /*!< Server listener FD */
     int ctrl_fd;                            /*!< Ctrl message receiver FD */
-#if CONFIG_HTTPD_QUEUE_WORK_BLOCKING
-    SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl socket semaphore */
-#endif
+    SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl mbox slot reservation (sized to LWIP_UDP_RECVMBOX_SIZE) */
     int msg_fd;                             /*!< Ctrl message sender FD */
     struct thread_data hd_td;               /*!< Information for the HTTPD thread */
     struct sock_db *hd_sd;                  /*!< The socket database */
@@ -563,6 +576,16 @@ esp_err_t httpd_ws_get_frame_type(httpd_req_t *req);
  *  - ESP_ERR_INVALID_ARG : Null arguments
  */
 esp_err_t httpd_sess_trigger_close_(httpd_handle_t handle, struct sock_db *session);
+
+/**
+ * @brief   Directly closes the least recently used session
+ *
+ * @param[in] hd  Server instance data
+ *
+ * @return
+ *  - ESP_OK    : if session closed successfully
+ */
+esp_err_t httpd_sess_close_lru_direct(struct httpd_data *hd);
 
 /** End of WebSocket related functions
  * @}

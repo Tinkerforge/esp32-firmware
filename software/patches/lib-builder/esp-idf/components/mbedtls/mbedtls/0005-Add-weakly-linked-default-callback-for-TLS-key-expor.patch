@@ -11,7 +11,7 @@ diff --git a/library/ssl_tls.c b/library/ssl_tls.c
 index f8c10d18b..fa6feb23f 100644
 --- a/library/ssl_tls.c
 +++ b/library/ssl_tls.c
-@@ -1312,12 +1312,20 @@ static int ssl_cookie_check_dummy(void *ctx,
+@@ -1312,12 +1312,19 @@ static int ssl_cookie_check_dummy(void *ctx,
  }
  #endif /* MBEDTLS_SSL_DTLS_HELLO_VERIFY && MBEDTLS_SSL_SRV_C */
  
@@ -27,7 +27,6 @@ index f8c10d18b..fa6feb23f 100644
 +
 +    if (&mbedtls_ssl_export_keys_default_cb != &__mbedtls_ssl_export_keys_default_cb) {
 +        ssl->f_export_keys = &mbedtls_ssl_export_keys_default_cb;
-+        printf("mbedTLS default key export callback is %p\n", mbedtls_ssl_export_keys_default_cb);
 +    }
  }
  

@@ -196,7 +196,7 @@ index 53cdcf026..d72cdaac5 100644
 +    0,
  };
  
- /*
+ int mbedtls_x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
 @@ -2121,7 +2125,7 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
  /*
   * Check the signature of a certificate by its parent

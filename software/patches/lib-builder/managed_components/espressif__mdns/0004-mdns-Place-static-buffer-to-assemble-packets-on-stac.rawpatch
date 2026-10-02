@@ -12,7 +12,7 @@ diff --git a/mdns_send.c b/mdns_send.c
 index b658b16ea1..97600c5ee1 100644
 --- a/mdns_send.c
 +++ b/mdns_send.c
-@@ -1339,7 +1339,7 @@
+@@ -1345,7 +1345,7 @@
   */
  void mdns_priv_dispatch_tx_packet(mdns_tx_packet_t *p)
  {
