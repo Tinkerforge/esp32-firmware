@@ -83,7 +83,7 @@ public:
     bool get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]);
 
     struct automation_trigger_data_t {
-        tag_t tag;
+        const tag_t *tag;
         int8_t charger_index;
     };
 
