@@ -1149,6 +1149,8 @@ def main():
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
 
+    beta = version[3] != "255"
+
     build_src_filter = ['+<*>', '-<empty.cpp>']
 
     if not os.path.isdir("build"):
@@ -1315,7 +1317,7 @@ def main():
 
     frontend_modules = [util.FlavoredName(x).get() for x in ['Web Server'] + get_finalized_list('custom_frontend_modules')]
 
-    if nightly:
+    if nightly or beta:
         for frontend_module in frontend_modules:
             if frontend_module.space == "Debug":
                 break
@@ -1358,7 +1360,7 @@ def main():
 
         frontend_components.append(FrontendComponent(module, component, mode))
 
-    if nightly:
+    if nightly or beta:
         for frontend_component in frontend_components:
             if frontend_component.module.space == "Debug" and frontend_component.component.space == "Debug":
                 break
@@ -1401,7 +1403,7 @@ def main():
     # API::setup migrates the config and expects that tasks can be scheduled and the logger is initialized
     backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + get_finalized_list('custom_backend_modules')]
 
-    if nightly:
+    if nightly or beta:
         for backend_module in backend_modules:
             if backend_module.space == "Debug":
                 break
@@ -1650,7 +1652,7 @@ def main():
     options_value['product_name_user_agent'] = json.dumps(product_name_user_agent)
     options_origin['product_name_user_agent'] = 'pio_hooks.py'
 
-    options_value['under_construction'] = '1' if nightly else '0'
+    options_value['under_construction'] = '1' if nightly or beta else '0'
     options_origin['under_construction'] = 'pio_hooks.py'
 
     for key, value in sorted(options_value.items()):
