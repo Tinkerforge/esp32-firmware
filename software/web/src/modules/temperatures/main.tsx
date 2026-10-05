@@ -165,7 +165,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                     <SubPage.Status collapsed={!state.config_enable}>
                             <>
                                 <FormRow label={__("temperatures.content.temperature_forecast")}>
-                                    <div class="card">
+                                    <div class="card uplot-card">
                                         <div style="position: relative;">
                                             <UplotLoader
                                                 ref={this.uplot_loader_ref}

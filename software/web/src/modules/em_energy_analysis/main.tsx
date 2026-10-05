@@ -283,7 +283,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
 
         return <StatusSection name="em_energy_analysis">
             <FormRow label={__("em_energy_analysis.status.power_history")}>
-                <div class="card">
+                <div class="card uplot-card">
                     <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_ref}
                                         show

@@ -1393,7 +1393,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             if (power_idx >= 0 && values && values.length > power_idx) {
                 children.push(
                     <FormRow label={__("meters.status.power_history")}>
-                        <div class="card">
+                        <div class="card uplot-card">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader ref={this.uplot_loader_ref}
                                             show

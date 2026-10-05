@@ -1191,7 +1191,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
 {/*#if MODULE_DAY_AHEAD_PRICES_AVAILABLE*/}
                     <FormRow label={__("batteries.content.schedule_graph")} label_muted={__("batteries.content.schedule_graph_muted")} hidden={!is_day_ahead_prices_enabled()}>
-                        <div class="card">
+                        <div class="card uplot-card">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
                                     ref={this.uplot_loader_ref}

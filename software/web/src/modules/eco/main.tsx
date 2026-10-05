@@ -434,7 +434,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     <span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span>
                 </InputNumber>
 
-                <div class="card mt-2">
+                <div class="card uplot-card mt-2">
                 <EcoChart visible={visible} charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
                 </div>
                 <div class="mt-2">

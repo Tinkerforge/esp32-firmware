@@ -306,7 +306,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             <SubPage name="heating" title={__("heating.content.heating")}>
                 <SubPage.Status>
                     <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")} help={__("heating.content.status_help")}>
-                    <div class="card">
+                    <div class="card uplot-card">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader
                                 ref={this.uplot_loader_ref}
