@@ -54,7 +54,7 @@ P = ">>>"
 # context this script is running in \r doesn't work and just does the same as \n,
 # resulting in a scrolling progress bar. use \n + ESC[1A (curser up one line) to
 # emulate the behavior of \r to fix the progress bar
-def subprocess_call(cmd):
+def subprocess_call(cmd, shell=False):
     stdout_len_ref = [0]
     stderr_len_ref = [0]
 
@@ -85,7 +85,7 @@ def subprocess_call(cmd):
         sys.stderr.buffer.write(new_stderr)
         sys.stderr.buffer.flush()
 
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell) as p:
         while p.poll() == None:
             communicate(p, timeout=0.1)
 
@@ -333,7 +333,14 @@ def save_flashed_binaries(binaries, last_flashed_dir):
             shutil.copy2(path, os.path.join(last_flashed_dir, name))
 
 
-def upload_callback(source, target, env):
+def upload_custom(source, target, env):
+    cmd = env.subst(env.GetProjectOption("upload_command", "false"))
+
+    print(f"{P} Running: {cmd}")
+    return subprocess_call(cmd, shell=True)
+
+
+def upload_fast(source, target, env):
     # Upload callback invoked by PlatformIO
     build_dir = env.subst("$BUILD_DIR")
     last_flashed_dir = os.path.join(build_dir, "last_flashed")
@@ -422,8 +429,14 @@ def upload_callback(source, target, env):
     return ret
 
 
-# Register the custom upload command with PlatformIO (unless mode is "off")
-_mode = os.environ.get("FAST_FLASH", "").strip().lower() \
-    or env.GetProjectOption("custom_fast_flash", "fast").strip().lower()
-if _mode != "off":
-    env.Replace(UPLOADCMD=upload_callback)
+_upload_protocol = env.GetProjectOption("upload_protocol", "").strip().lower()
+
+if _upload_protocol == "custom":
+    env.Replace(UPLOADCMD=upload_custom)
+else:
+    # Register the custom upload command with PlatformIO (unless mode is "off")
+    _mode = os.environ.get("FAST_FLASH", "").strip().lower() \
+        or env.GetProjectOption("custom_fast_flash", "fast").strip().lower()
+
+    if _mode != "off":
+        env.Replace(UPLOADCMD=upload_fast)
