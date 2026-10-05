@@ -437,6 +437,7 @@ function NfcTagsSection({
                         </FormRow>
                         <FormRow label={__("users.content.nfc_tag_id")}>
                             <InputTextPatterned
+                                required
                                 value={editTag.tag_id}
                                 onValue={(v) => setEditTag({...editTag, tag_id: v})}
                                 minLength={2}
