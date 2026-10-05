@@ -47,7 +47,7 @@ let x = {
             "type_4": "NFC Forum Type 4",
             "type_5": "NFC Forum Type 5",
             "type_6": "Smartphone",
-            "tag_id_invalid_feedback": "The tag ID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
+            "tag_id_invalid_feedback": "The tag ID must have up to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "tag_id_already_exists": "This tag already exists."
         },
         "automation": {
@@ -57,7 +57,7 @@ let x = {
             "trigger_charge_start": "Charge start",
             "trigger_charge_stop": "Charge stop",
             "action": "Action",
-            "tag_id_invalid_feedback": "The tag ID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
+            "tag_id_invalid_feedback": "The tag ID must have up to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "table_tag_id": "Tag ID",
             "table_user_id": "Assigned user",
             "table_tag_type": "Tag type",

@@ -47,7 +47,7 @@ let x = {
             "type_4": "NFC Forum Typ 4",
             "type_5": "NFC Forum Typ 5",
             "type_6": "Smartphone",
-            "tag_id_invalid_feedback": "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
+            "tag_id_invalid_feedback": "Die Tag-ID muss aus bis zu zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
             "tag_id_already_exists": "Dieses Tag ist bereits konfiguriert."
         },
         "automation": {
@@ -57,7 +57,7 @@ let x = {
             "trigger_charge_start": "Ladevorgang Start",
             "trigger_charge_stop": "Ladevorgang Stopp",
             "action": "Aktion",
-            "tag_id_invalid_feedback": "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
+            "tag_id_invalid_feedback": "Die Tag-ID muss bis zu zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
             "table_tag_id": "Tag-ID",
             "table_user_id": "Zugeordneter Benutzer",
             "table_tag_type": "Tag-Typ",

@@ -439,9 +439,9 @@ function NfcTagsSection({
                             <InputTextPatterned
                                 value={editTag.tag_id}
                                 onValue={(v) => setEditTag({...editTag, tag_id: v})}
-                                minLength={8}
+                                minLength={2}
                                 maxLength={29}
-                                pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                                pattern="^([0-9a-fA-F]{2}:?){0,9}[0-9a-fA-F]{2}$"
                                 placeholder={__("users.content.nfc_tag_id_placeholder")}
                                 invalidFeedback={__("users.content.nfc_tag_id_invalid")}
                             />

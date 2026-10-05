@@ -141,9 +141,9 @@ function get_nfc_inject_tag_edit_children(
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, { tag_id: v }));
                 }}
-                minLength={8}
+                minLength={2}
                 maxLength={29}
-                pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
+                pattern="^([0-9a-fA-F]{2}:?){0,9}[0-9a-fA-F]{2}$"
                 invalidFeedback={__("nfc.automation.tag_id_invalid_feedback")}
             />
         </FormRow>,
