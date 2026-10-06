@@ -45,6 +45,11 @@ export type EvseButtonAutomationTrigger = [
     null,
 ];
 
+export type EvseButtonLongPressAutomationTrigger = [
+    AutomationTriggerID.EVSEButtonLongPress,
+    null,
+];
+
 function get_evse_button_table_children(trigger: EvseButtonAutomationTrigger) {
     return __("evse.automation.automation_button_trigger_text");
 }
@@ -56,6 +61,21 @@ function get_evse_button_edit_children(_: EvseButtonAutomationTrigger, __: (trig
 function new_evse_button_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EVSEButton,
+        null,
+    ];
+}
+
+function get_evse_button_long_press_table_children(_: EvseButtonLongPressAutomationTrigger) {
+    return __("evse.automation.automation_button_long_press_trigger_text");
+}
+
+function get_evse_button_long_press_edit_children(_: EvseButtonLongPressAutomationTrigger, __: (trigger: AutomationTrigger) => void): ComponentChildren {
+    return []
+}
+
+function new_evse_button_long_press_config(): AutomationTrigger {
+    return [
+        AutomationTriggerID.EVSEButtonLongPress,
         null,
     ];
 }
@@ -128,6 +148,13 @@ export function pre_init() {
             clone_config: (trigger: AutomationTrigger) => [trigger[0], null] as AutomationTrigger,
             get_edit_children: get_evse_button_edit_children,
             get_table_children: get_evse_button_table_children,
+        },
+        [AutomationTriggerID.EVSEButtonLongPress]: {
+            name: () => __("evse.automation.automation_trigger_button_long_press"),
+            new_config: new_evse_button_long_press_config,
+            clone_config: (trigger: AutomationTrigger) => [trigger[0], null] as AutomationTrigger,
+            get_edit_children: get_evse_button_long_press_edit_children,
+            get_table_children: get_evse_button_long_press_table_children,
         },
         [AutomationTriggerID.EVSEShutdownInput]: {
             name: () => __("evse.automation.automation_trigger_shutdown_input"),

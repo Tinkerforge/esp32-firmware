@@ -19,6 +19,8 @@
 
 #pragma once
 
+#define EVSE_BUTTON_LONG_PRESS_DURATION_MS 2000
+
 #include "device_module.h"
 #include "config.h"
 #include "modules/evse_common/evse_common.h"
@@ -222,6 +224,9 @@ private:
 
     float *all_energy_meter_values = nullptr;
     bool   all_energy_meter_values_valid = false;
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool   button_long_press_triggered = false;
+#endif
 
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;

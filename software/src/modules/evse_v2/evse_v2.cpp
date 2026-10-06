@@ -155,6 +155,11 @@ void EVSEV2::pre_setup()
     );
 
     automation.register_trigger(
+        AutomationTriggerID::EVSEButtonLongPress,
+        *Config::Null()
+    );
+
+    automation.register_trigger(
         AutomationTriggerID::EVSEShutdownInput,
         automation_cfg
     );
@@ -1310,6 +1315,20 @@ void EVSEV2::publish_all_data()
             automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
         }
     }
+
+    // Long press detection: Check the hold duration on every poll while the button is held
+    // and once more on release, so that a press that ends between two polls is not lost.
+    // Fires exactly once per press. Times are EVSE uptimes in ms.
+    if (button_pressed || button_pressed_changed) {
+        const uint32_t hold_end_time = button_pressed ? uptime : button_release_time;
+        const uint32_t hold_duration_ms = hold_end_time - button_press_time;
+        const bool long_press = !button_long_press_triggered && hold_duration_ms >= EVSE_BUTTON_LONG_PRESS_DURATION_MS;
+        button_long_press_triggered = button_pressed && (button_long_press_triggered || long_press);
+
+        if (long_press && boot_stage > BootStage::SETUP) {
+            automation.trigger(AutomationTriggerID::EVSEButtonLongPress, nullptr, this);
+        }
+    }
 #else
     (void)button_pressed_changed;
 #endif
@@ -1512,6 +1531,7 @@ bool EVSEV2::has_triggered(const Config *conf, void *data)
     switch (conf->getTag<AutomationTriggerID>())
     {
     case AutomationTriggerID::EVSEButton:
+    case AutomationTriggerID::EVSEButtonLongPress:
         return true;
 
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
