@@ -35,6 +35,9 @@
 
 #define CHARGE_RECORD_FOLDER "/charge-records"
 
+// Charges with at most ~1 Wh are considered "empty".
+#define CHARGE_TRACKER_EMPTY_CHARGE_THRESHOLD_KWH 0.0015f
+
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;
@@ -125,6 +128,7 @@ struct GenerationParams {
     uint32_t end_min = 0;
     uint32_t current_min = 0;
     Language language = Language::German;
+    bool filter_empty_charges = false;
 
     // Initialized in init()
     uint32_t electricity_price = 0;
@@ -144,7 +148,7 @@ struct GenerationParams {
 
     bool init();
 
-    virtual bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request);
+    virtual bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request);
     bool include_charge(const Charge *charge) const;
     bool include_device(const char *directory) const;
     bool include_device(uint32_t uid) const;
@@ -157,5 +161,5 @@ struct PDFGenerationParams final : public GenerationParams {
 
     PDFGenerationParams(Config *pdf_letterhead_config) : pdf_letterhead_config(pdf_letterhead_config) {}
 
-    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) override;
+    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) override;
 };

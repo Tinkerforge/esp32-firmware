@@ -34,7 +34,7 @@
 #define EVENT_LOG_PREFIX "csv_charge_log"
 #define MAX_ACCUMULATED 2048
 
-bool CSVGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+bool CSVGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) {
     if (!this->GenerationParams::parse_request(buf, doc, request))
         return false;
 

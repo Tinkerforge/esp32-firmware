@@ -25,6 +25,7 @@ interface remote_upload_config {
     letterhead: string;
     user_id: number;
     csv_delimiter: CSVFlavor;
+    filter_empty_charges: boolean;
     last_upload_timestamp_min: number;
 }
 
@@ -39,6 +40,7 @@ export interface send_charge_log_pdf {
     letterhead?: string;
     persist_letterhead: boolean;
     remote_access_user_uuid: string;
+    filter_empty_charges?: boolean;
 }
 
 export interface send_charge_log_csv {
@@ -51,6 +53,7 @@ export interface send_charge_log_csv {
     language: Language;
     csv_delimiter: CSVFlavor;
     remote_access_user_uuid: string;
+    filter_empty_charges?: boolean;
 }
 
 export interface upload_result {
@@ -74,6 +77,7 @@ export interface csv {
     user_filter?: number;
     device_filter?: number;
     csv_delimiter?: number;
+    filter_empty_charges?: boolean;
 }
 
 export interface pdf_letterhead_config {
@@ -155,4 +159,5 @@ export interface pdf {
     user_filter?: number;
     device_filter?: number;
     letterhead?: string;
+    filter_empty_charges?: boolean;
 }

@@ -32,7 +32,7 @@
 struct CSVGenerationParams final : public GenerationParams {
     CSVFlavor flavor = CSVFlavor::Excel;
 
-    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) override;
+    bool parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) override;
 };
 
 class CSVChargeLogGenerator {

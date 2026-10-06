@@ -408,6 +408,7 @@ def _start_monthly_upload(tc: TestContext, file_type: int):
         "user_filter": -2,
         "device_filter": -2,
         "csv_delimiter": 0,
+        "filter_empty_charges": True,
         "last_upload_timestamp_min": 0,
     }]
     tc.api("charge_tracker/config_update", config, timeout=5)

@@ -32,6 +32,7 @@ import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
 import { Button, Collapse, ListGroup, ListGroupItem, Spinner, Dropdown, Row } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
+import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
@@ -68,6 +69,7 @@ interface S {
     language: string;
     pdf_letterhead: string;
     csv_flavor: "excel" | "rfc4180";
+    filter_empty_charges: boolean;
     show_spinner: boolean;
     last_charges: Readonly<Charge[]>;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
@@ -79,6 +81,7 @@ interface S {
         letterhead: string;
         user_id: number;
         csv_delimiter: CSVFlavor;
+        filter_empty_charges: boolean;
         last_upload_timestamp_min: number;
     };
     next_upload_timestamp_min: number;
@@ -241,6 +244,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   file_type: "0",
                   language: null,
                   csv_flavor: 'excel',
+                  filter_empty_charges: true,
                   start_date: new Date(NaN),
                   end_date: new Date(NaN),
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
@@ -253,6 +257,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     letterhead: "",
                     user_id: 0,
                     csv_delimiter: CSVFlavor.Excel,
+                    filter_empty_charges: true,
                     last_upload_timestamp_min: 0,
                   },
                   next_upload_timestamp_min: 0,
@@ -362,6 +367,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             letterhead: send_config.letterhead,
                             user_id: send_config.user_id,
                             csv_delimiter: send_config.csv_delimiter,
+                            filter_empty_charges: send_config.filter_empty_charges,
                             last_upload_timestamp_min: send_config.last_upload_timestamp_min,
                         }
                     });
@@ -439,6 +445,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     device_filter: config.device_filter,
                     letterhead: config.letterhead,
                     persist_letterhead: false,
+                    filter_empty_charges: config.filter_empty_charges,
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                     remote_access_user_uuid: user.uuid
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
@@ -451,6 +458,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     user_filter: config.user_filter,
                     device_filter: config.device_filter,
                     csv_delimiter: config.csv_delimiter,
+                    filter_empty_charges: config.filter_empty_charges,
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                     remote_access_user_uuid: user.uuid
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
@@ -472,6 +480,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 letterhead: "",
                 user_id: 0,
                 csv_delimiter: CSVFlavor.Excel,
+                filter_empty_charges: true,
                 last_upload_timestamp_min: Math.floor(Date.now() / 1000 / 60),
             }
         });
@@ -555,6 +564,18 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     ]}
                 />
             </FormRow>
+            <FormRow label={__("charge_tracker.content.filter_empty_charges")}>
+                <Switch
+                    desc={__("charge_tracker.content.filter_empty_charges_desc")}
+                    checked={this.state.new_remote_upload_config.filter_empty_charges}
+                    onClick={() => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            filter_empty_charges: !this.state.new_remote_upload_config.filter_empty_charges
+                        }
+                    })}
+                />
+            </FormRow>
             <Collapse in={this.state.new_remote_upload_config.file_type === 0}>
                 <div>
                     <FormRow label={__("charge_tracker.content.letterhead_label")}>
@@ -612,7 +633,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    async downloadCSVChargeLog(language: number, flavor: 'excel' | 'rfc4180', user_filter: number, device_filter: number, start_date: Date, end_date: Date) {
+    async downloadCSVChargeLog(language: number, flavor: 'excel' | 'rfc4180', user_filter: number, device_filter: number, start_date: Date, end_date: Date, filter_empty_charges: boolean) {
         const start_minutes = date_to_minutes(start_date, 'start_of_day');
         const end_minutes = date_to_minutes(end_date, 'end_of_day');
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
@@ -625,6 +646,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             user_filter: user_filter,
             device_filter: device_filter,
             csv_delimiter: csvFlavorEnum,
+            filter_empty_charges: filter_empty_charges,
         };
 
         try {
@@ -716,6 +738,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         user_filter: parseInt(state.user_filter),
                         device_filter: parseInt(state.device_filter),
                         letterhead: state.pdf_letterhead,
+                        filter_empty_charges: state.filter_empty_charges,
                         cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                         remote_access_user_uuid,
                         persist_letterhead: true
@@ -729,6 +752,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         user_filter: parseInt(state.user_filter),
                         device_filter: parseInt(state.device_filter),
                         csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
+                        filter_empty_charges: state.filter_empty_charges,
                         cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                         remote_access_user_uuid
                     }, () => __("charge_tracker.script.upload_charge_log_failed"));
@@ -807,6 +831,14 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </div>
                 </FormRow>
 
+                <FormRow label={__("charge_tracker.content.filter_empty_charges")} label_muted={__("charge_tracker.content.filter_empty_charges_muted")}>
+                    <Switch
+                        desc={__("charge_tracker.content.filter_empty_charges_desc")}
+                        checked={state.filter_empty_charges}
+                        onClick={() => this.setState({filter_empty_charges: !state.filter_empty_charges})}
+                    />
+                </FormRow>
+
                 <FormRow label={__("charge_tracker.content.file_type")} label_muted={__("charge_tracker.content.file_type_muted")}>
                     <InputSelect
                         value={state.file_type}
@@ -877,11 +909,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         user_filter: parseInt(state.user_filter),
                                         device_filter: parseInt(state.device_filter),
                                         letterhead: state.pdf_letterhead,
+                                        filter_empty_charges: state.filter_empty_charges,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     download_charge_log(pdf, parseInt(state.language), state.start_date, state.end_date, "pdf", "application/pdf");
                                 } else {
                                     // Download CSV
-                                    await this.downloadCSVChargeLog(parseInt(state.language), state.csv_flavor, parseInt(state.user_filter), parseInt(state.device_filter), state.start_date, state.end_date);
+                                    await this.downloadCSVChargeLog(parseInt(state.language), state.csv_flavor, parseInt(state.user_filter), parseInt(state.device_filter), state.start_date, state.end_date, state.filter_empty_charges);
                                 }
                             } finally {
                                 this.setState({show_spinner: false});

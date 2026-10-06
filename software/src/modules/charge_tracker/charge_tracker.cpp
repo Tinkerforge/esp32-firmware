@@ -231,6 +231,7 @@ void ChargeTracker::pre_setup()
         {"user_filter", Config::Int16(0)},
         {"device_filter", Config::Int52(DEVICE_FILTER_ALL_CHARGERS)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
+        {"filter_empty_charges", Config::Bool(true)},
         {"last_upload_timestamp_min", Config::Uint32(0)}
     });
 #endif
@@ -1437,7 +1438,7 @@ bool GenerationParams::init() {
     return result && this->display_name_cache != nullptr && this->charger_display_name_cache != nullptr;
 }
 
-bool GenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+bool GenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) {
     if (request.contentLength() > 1024) {
         request.send_plain(413);
         return false;
@@ -1472,6 +1473,7 @@ bool GenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDoc
     this->start_min = doc["start_timestamp_min"];
     this->end_min = doc["end_timestamp_min"];
     this->language = (Language)((uint8_t)doc["language"]);
+    this->filter_empty_charges = doc["filter_empty_charges"] | false; // Default to false
 
     this->current_min = rtc.timestamp_minutes();
     // This is 0 if there is no time sync.
@@ -1496,7 +1498,7 @@ size_t GenerationParams::get_charger_display_name(uint32_t uid, char *buf) const
     return 0;
 }
 
-bool PDFGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<192> &doc, WebServerRequest &request) {
+bool PDFGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) {
     if (!this->GenerationParams::parse_request(buf, doc, request))
         return false;
 
@@ -1570,6 +1572,10 @@ bool GenerationParams::include_charge(const Charge *charge) const {
                      || charge->cs.user_id == user; // User matches.
     if (!include_user)
         return false;
+
+    if (this->filter_empty_charges && !charged_invalid(charge->cs, charge->ce) && ((charge->ce.meter_end - charge->cs.meter_start) < CHARGE_TRACKER_EMPTY_CHARGE_THRESHOLD_KWH)) {
+        return false;
+    }
 
     // device intentionally not checked here: Checking this for every charge is inefficient, because we know which device a complete set of charge-record files belongs to.
     return true;
@@ -1686,7 +1692,7 @@ void ChargeTracker::register_urls()
         PDFGenerationParams params{&this->pdf_letterhead_config};
         {
             auto buf = heap_alloc_array<char>(1024);
-            StaticJsonDocument<192> doc;
+            StaticJsonDocument<256> doc;
             if (!params.parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
         }
@@ -1725,7 +1731,7 @@ void ChargeTracker::register_urls()
         CSVGenerationParams params{};
         {
             auto buf = heap_alloc_array<char>(1024);
-            StaticJsonDocument<192> doc;
+            StaticJsonDocument<256> doc;
             if (!params.parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
         }
@@ -1762,7 +1768,7 @@ void ChargeTracker::register_urls()
 
         {
             auto buf = heap_alloc_array<char>(1024);
-            StaticJsonDocument<192> doc;
+            StaticJsonDocument<256> doc;
             if (!params->parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
 
@@ -1807,7 +1813,7 @@ void ChargeTracker::register_urls()
 
         {
             auto buf = heap_alloc_array<char>(1024);
-            StaticJsonDocument<192> doc;
+            StaticJsonDocument<256> doc;
             if (!params->parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
 
@@ -2252,6 +2258,9 @@ bool ChargeTracker::try_start_monthly_upload_for_user(int user_idx)
     params->start_min = monthly_upload_start_timestamp_min;
     params->end_min = monthly_upload_end_timestamp_min;
     params->language = upload_config->get("language")->asEnum<Language>();
+    params->filter_empty_charges = upload_config->get("filter_empty_charges")->asBool();
+    // Not part of the config hash on purpose. The hash is used for deduplication of uploads and would change for all existing configs when adding this field.
+    params->current_min = rtc.timestamp_minutes();
 
     params->init();
 
