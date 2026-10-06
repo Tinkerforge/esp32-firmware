@@ -1306,7 +1306,7 @@ bool GenerationParams::init() {
             for (size_t user_id = 0; user_id < MAX_PASSIVE_USERS; ++user_id) {
                 f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
 
-                char buf[USERNAME_LENGTH];
+                char buf[USERNAME_LENGTH] = {}; // Stays empty if the file does not exist.
                 f.read((uint8_t *)buf, DISPLAY_NAME_LENGTH);
 
                 auto length = strnlen(buf, DISPLAY_NAME_LENGTH);
@@ -1344,14 +1344,21 @@ bool GenerationParams::init() {
             }
         }
 
+        char empty_name[4] = {};
 #if OPTIONS_PRODUCT_ID_IS_WARP()
         this->charger_display_name_cache = static_cast<decltype(charger_display_name_cache)>(malloc_iram_or_psram_or_dram(sizeof(charger_display_name_cache[0])));
         if (this->charger_display_name_cache == nullptr)
             return;
+
+        this->charger_display_name_cache[0].set(0, 0, empty_name);
 #else
         this->charger_display_name_cache = static_cast<decltype(charger_display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_TRACKED_CHARGERS * sizeof(charger_display_name_cache[0])));
         if (this->charger_display_name_cache == nullptr)
             return;
+
+        for (size_t i = 0; i < MAX_TRACKED_CHARGERS; ++i) {
+            this->charger_display_name_cache[i].set(0, 0, empty_name);
+        }
 
         if (LittleFS.exists(CHARGER_NAMES_FILE)) {
             File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
