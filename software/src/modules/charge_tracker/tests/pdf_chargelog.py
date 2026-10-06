@@ -380,7 +380,7 @@ def entry_charged(e: ChargeLogEntry) -> float | None:
 
 
 def entry_is_empty(e: ChargeLogEntry) -> bool:
-    return not entry_charged_invalid(e) and (e.meter_end - e.meter_start) < EMPTY_CHARGE_THRESHOLD_KWH
+    return entry_charged_invalid(e) or (e.meter_end - e.meter_start) < EMPTY_CHARGE_THRESHOLD_KWH
 
 
 @dataclass
@@ -861,7 +861,6 @@ def test_content_de(tc: TestContext):
     # Note
     tc.assert_in(parsed.note, "Enthalten sind alle Ladevorgänge, die im angegebenen Zeitraum begonnen haben.")
     tc.assert_in(parsed.note, "Bei einem Ladevorgang ist die Startzeit unbekannt")
-    tc.assert_in(parsed.note, "Die Summen sind daher unvollständig.")
     tc.assert_in(parsed.note, TEXTS['de']['note_empty_filtered'])
     tc.assert_in(parsed.note, "MID-konform")
 
@@ -892,6 +891,7 @@ def test_filter_empty_charges_off(tc: TestContext):
     verify_charges(tc, parsed, charges, tz, 'de', 0, users)
     verify_totals(tc, parsed, charges, 'de', 0)
     tc.assert_eq(False, TEXTS['de']['note_empty_filtered'] in parsed.note)
+    tc.assert_in(parsed.note, "Die Summen sind daher unvollständig.")
 
 
 def test_english_with_cost(tc: TestContext):

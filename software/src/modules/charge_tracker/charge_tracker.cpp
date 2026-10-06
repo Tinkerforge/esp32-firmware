@@ -1694,7 +1694,7 @@ bool GenerationParams::include_charge(const Charge *charge) const {
     if (!include_user)
         return false;
 
-    if (this->filter_empty_charges && !charged_invalid(charge->cs, charge->ce) && ((charge->ce.meter_end - charge->cs.meter_start) < CHARGE_TRACKER_EMPTY_CHARGE_THRESHOLD_KWH)) {
+    if (this->filter_empty_charges && (charged_invalid(charge->cs, charge->ce) || ((charge->ce.meter_end - charge->cs.meter_start) < CHARGE_TRACKER_EMPTY_CHARGE_THRESHOLD_KWH))) {
         return false;
     }
 
