@@ -512,7 +512,7 @@ class Stage3:
             else:
                 actual_states_str = str(actual_states)
 
-            print(yellow(f'WARNING: Charger in wrong IEC state {actual_states_str}, instead of {expected_state}, evse_error={error} evse_dc_fault_bits={dc_fault_bits} evse_gpio={gpio}'))
+            print(yellow(f'WARNING: Charger in wrong IEC state {actual_states_str}, instead of {expected_state}, evse_error={error} evse_dc_fault_bits={dc_fault_bits:#b} evse_gpio={gpio}'))
 
         return success
 
@@ -762,9 +762,8 @@ class Stage3:
         time.sleep(beep_duration / 1000)
 
     def reset_dc_fault(self, cp_pe_state):
-        print('Resetting DC fault')
+        print('Waiting for DC fault to clear')
 
-        # wait for DC fault to actually clear
         start = time.monotonic()
         duration = -1
         timeout = 30
@@ -776,7 +775,7 @@ class Stage3:
                 if duration < 0:
                     print('DC fault already cleared')
                 else:
-                    print(f'DC fault cleared after {duration}s')
+                    print(f'DC fault cleared after {duration:.3f}s')
 
                 break
 
@@ -784,12 +783,14 @@ class Stage3:
 
             duration = time.monotonic() - start
         else:
-            fatal_error(f'DC fault still present after {timeout}s')
-
-        # reset DC fault state in EVSE
-        self.reset_dc_fault_function()
+            fatal_error(f'DC fault still present after {timeout:.3f}s')
 
         time.sleep(EVSE_SETTLE_DURATION)
+
+        print('Resetting DC fault state')
+        self.reset_dc_fault_function()
+
+        time.sleep(DC_PROTECT_SETTLE_DURATION)
 
         self.change_cp_pe_state('A')
 
@@ -798,7 +799,7 @@ class Stage3:
         if not self.check_iec_state('A'):
             fatal_error('Charger not in IEC state A')
 
-        print('Waiting DC protect calibration')
+        print('Waiting for DC protect calibration')
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
