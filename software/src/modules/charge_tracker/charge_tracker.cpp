@@ -1331,16 +1331,20 @@ bool GenerationParams::init() {
             char buf[USERNAME_LENGTH + 1]; // +1 to always fit \0
             size_t length = this->display_name_cache[user_id].get(buf);
 
+            const char *b = nullptr;
+
             if (length == 0) {
                 // length should never be 0 except if we manually upload test data to the charger.
-                const char *b = CSVTranslations::getDeletedUser(this->language);
-                length = strlen(b);
-                strncpy(buf, b, DISPLAY_NAME_LENGTH);
+                b = CSVTranslations::getDeletedUser(this->language);
             } else if (user_id == 0 && strcmp(buf, "Anonymous") == 0) {
                 // Replace "Anonymous" with translated string
-                const char *b = CSVTranslations::getUnknownUser(this->language);
-                length = strlen(b);
-                strncpy(buf, b, DISPLAY_NAME_LENGTH);
+                b = CSVTranslations::getUnknownUser(this->language);
+            }
+
+            if (b != nullptr) {
+                length = std::min(strlen(b), static_cast<size_t>(DISPLAY_NAME_LENGTH));
+                strncpy(buf, b, DISPLAY_NAME_LENGTH); // Pads with \0: set() copies whole 32 bit words.
+                this->display_name_cache[user_id].set(length, buf);
             }
         }
 
@@ -1680,14 +1684,15 @@ void ChargeTracker::register_urls()
         logger.printfln("Beginning PDF generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
 
         PDFGenerationParams params{&this->pdf_letterhead_config};
-        if (!params.init())
-            return request.send_plain(500, "Failed to generate PDF: Task timed out");
-
         {
             auto buf = heap_alloc_array<char>(1024);
             StaticJsonDocument<192> doc;
             if (!params.parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
+        }
+
+        if (!params.init()) {
+            return request.send_plain(500, "Failed to generate PDF: Task timed out");
         }
 
         const auto callback = [this, &request](const void *data, size_t len) -> esp_err_t {
@@ -1718,14 +1723,15 @@ void ChargeTracker::register_urls()
         logger.printfln("Beginning CSV generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
 
         CSVGenerationParams params{};
-        if (!params.init())
-            return request.send_plain(500, "Failed to generate CSV: Task timed out");
-
         {
             auto buf = heap_alloc_array<char>(1024);
             StaticJsonDocument<192> doc;
             if (!params.parse_request(buf, doc, request))
                 return request.unsafe_ResponseAlreadySent();
+        }
+
+        if (!params.init()) {
+            return request.send_plain(500, "Failed to generate CSV: Task timed out");
         }
 
         const auto callback = [this, &request](const char* buffer, size_t len) -> esp_err_t {
@@ -1751,9 +1757,6 @@ void ChargeTracker::register_urls()
         }
 
         auto params = std::make_unique<PDFGenerationParams>(&this->pdf_letterhead_config);
-        if (!params->init())
-            return request.send_plain(500, "Failed to generate PDF mail: Task timed out");
-
         uint32_t cookie = 0;
         String remote_access_user_uuid;
 
@@ -1773,6 +1776,10 @@ void ChargeTracker::register_urls()
                 return request.send_plain(400, "Missing remote_access_user_uuid parameter");
             }
             remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
+        }
+
+        if (!params->init()) {
+            return request.send_plain(500, "Failed to generate PDF mail: Task timed out");
         }
 
         ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
@@ -1795,9 +1802,6 @@ void ChargeTracker::register_urls()
         }
 
         auto params = std::make_unique<CSVGenerationParams>();
-        if (!params->init())
-            return request.send_plain(500, "Failed to generate CSV mail: Task timed out");
-
         uint32_t cookie = 0;
         String remote_access_user_uuid;
 
@@ -1817,6 +1821,10 @@ void ChargeTracker::register_urls()
                 return request.send_plain(400, "Missing remote_access_user_uuid parameter");
             }
             remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
+        }
+
+        if (!params->init()) {
+            return request.send_plain(500, "Failed to generate CSV mail: Task timed out");
         }
 
         ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
