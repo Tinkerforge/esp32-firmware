@@ -779,16 +779,19 @@ class Stage3:
 
                 break
 
-            time.sleep(0.1)
+            time.sleep(0.05)
 
             duration = time.monotonic() - start
         else:
             fatal_error(f'DC fault still present after {timeout:.3f}s')
 
-        time.sleep(EVSE_SETTLE_DURATION)
+        time.sleep(RELAY_SETTLE_DURATION)
 
         print('Resetting DC fault state')
+
         self.reset_dc_fault_function()
+
+        print('Waiting for DC protect calibration')
 
         time.sleep(DC_PROTECT_SETTLE_DURATION)
 
