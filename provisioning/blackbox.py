@@ -132,8 +132,13 @@ def bb_call(request):
             pending_response_bytes += data
 
             while b'\r' in pending_response_bytes:
+                prev_pending_response_bytes = pending_response_bytes
                 response_bytes, pending_response_bytes = pending_response_bytes.split(b'\r', 1)
-                response = response_bytes.decode('ascii').strip()
+
+                try:
+                    response = response_bytes.decode('ascii').strip()
+                except Exception as e:
+                    raise BlackboxException(f'Could not decode {repr(response_bytes)} / {repr(prev_pending_response_bytes)} as ASCII: {e}') from e
 
                 if len(response) == 0:
                     continue
