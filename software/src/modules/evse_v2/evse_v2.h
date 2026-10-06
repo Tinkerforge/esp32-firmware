@@ -19,7 +19,7 @@
 
 #pragma once
 
-#define EVSE_BUTTON_LONG_PRESS_DURATION_MS 2000
+#define EVSE_BUTTON_LONG_PRESS_DURATION 2_s
 
 #include "device_module.h"
 #include "config.h"
@@ -225,7 +225,8 @@ private:
     float *all_energy_meter_values = nullptr;
     bool   all_energy_meter_values_valid = false;
 #if MODULE_AUTOMATION_AVAILABLE()
-    bool   button_long_press_triggered = false;
+    micros_t button_long_press_deadline = 0_us;
+    bool     button_long_press_triggered = false;
 #endif
 
     ConfigRoot reset_dc_fault_current_state;
