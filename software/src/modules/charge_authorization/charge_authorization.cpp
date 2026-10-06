@@ -61,7 +61,7 @@ void ChargeAuthorization::setup()
     initialized = true;
 }
 
-void ChargeAuthorization::notify_auth(int16_t user_id, millis_t last_seen, CMAuthType auth_type, int action, Config::ConfVariant auth_info)
+void ChargeAuthorization::notify_auth(int16_t user_id, millis_t last_seen, CMAuthType auth_type, int action, const Config::ConfVariant &auth_info)
 {
     auto seen_at = now_us() - last_seen;
 

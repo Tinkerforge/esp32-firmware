@@ -354,7 +354,7 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
     return true;
 }
 
-bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory) {
+bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, const Config::ConfVariant &auth_info, const char *directory) {
 #if MODULE_REQUIRE_METER_AVAILABLE()
     if (!require_meter.allow_charging(meter_start) && directory == nullptr) {
         return false;

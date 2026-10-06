@@ -77,7 +77,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, Config::ConfVariant auth_info, const char *directory = nullptr);
+    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, CMAuthType auth_method, const Config::ConfVariant &auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     bool removeOldRecords();
     bool setupRecords(const char *directory = nullptr);

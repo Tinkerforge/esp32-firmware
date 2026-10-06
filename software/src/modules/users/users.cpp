@@ -734,7 +734,7 @@ uint16_t Users::get_user_current(uint8_t user_id) {
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
 // Only returns true if the triggered action was a charge start.
-bool Users::trigger_charge_action(uint8_t user_id, CMAuthType auth_method, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
+bool Users::trigger_charge_action(uint8_t user_id, CMAuthType auth_method, const Config::ConfVariant &auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
     bool user_enabled = get_user_slot()->get("active")->asBool();
     if (!user_enabled)
@@ -779,7 +779,7 @@ void Users::remove_username_file()
 }
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
-bool Users::start_charging(uint8_t user_id, uint16_t current_limit, CMAuthType auth_type, Config::ConfVariant auth_info)
+bool Users::start_charging(uint8_t user_id, uint16_t current_limit, CMAuthType auth_type, const Config::ConfVariant &auth_info)
 {
     last_charge_action_triggered = now_us();
 
