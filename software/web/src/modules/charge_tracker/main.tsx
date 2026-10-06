@@ -170,20 +170,65 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
 }
 
 
-function date_to_minutes(d: Date, round_mode: 'start_of_day' | 'end_of_day') {
-    let date = d ?? new Date(0);
+function is_valid_date(d: Date) {
     // dates are "invalid date" (i.e. getTime returns NaN) if the user clicks an input's clear button.
-    if (isNaN(date.getTime()))
-        date = new Date(0);
+    return d != null && !isNaN(d.getTime()) && d.getTime() != 0;
+}
 
-    if (date.getTime() != 0) {
-        switch (round_mode) {
-            case 'start_of_day': date.setHours( 0,  0, 0, 0); break;
-            case 'end_of_day':   date.setHours(23, 59, 0, 0); break;
-        }
+// The end filter is exclusive: Use the start of the next day for 'end_of_day' to include all charges that started on the selected day.
+function date_to_minutes(d: Date, round_mode: 'start_of_day' | 'end_of_day') {
+    if (!is_valid_date(d))
+        return 0;
+
+    // Copy the date: The caller's date (i.e. the one shown in the date input) must not be modified.
+    let date = new Date(d.getTime());
+    date.setHours(0, 0, 0, 0);
+
+    if (round_mode == 'end_of_day')
+        date.setDate(date.getDate() + 1);
+
+    return Math.floor(date.getTime() / 1000 / 60);
+}
+
+function format_date_for_filename(d: Date) {
+    const pad = (n: number) => (n < 10 ? "0" : "") + n.toString();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Makes e.g. Ladelog-warp4-AbC-2026-08.pdf for a whole month and Ladelog-warp4-AbC-2026-08-01_2026-08-15.pdf otherwise
+function download_charge_log(content: BlobPart, language: Language, start_date: Date, end_date: Date, extension: string, content_type: string) {
+    const german = language == Language.German;
+    const file_type = german ? "Ladelog" : "charge-log";
+    const have_start = is_valid_date(start_date);
+    const have_end = is_valid_date(end_date);
+
+    if (!have_start && !have_end) {
+        util.downloadToTimestampedFile(content, file_type, extension, content_type);
+        return;
     }
 
-    return date.getTime() / 1000 / 60;
+    let period: string;
+
+    if (have_start && have_end) {
+        const last_day_of_start_month = new Date(start_date.getFullYear(), start_date.getMonth() + 1, 0).getDate();
+        const whole_month = (start_date.getDate() == 1)
+                         && (end_date.getFullYear() == start_date.getFullYear())
+                         && (end_date.getMonth() == start_date.getMonth())
+                         && (end_date.getDate() == last_day_of_start_month);
+
+        if (whole_month) {
+            period = format_date_for_filename(start_date).substring(0, 7);
+        } else {
+            period = format_date_for_filename(start_date) + "_" + format_date_for_filename(end_date);
+        }
+    } else if (have_start) {
+        period = (german ? "ab-" : "from-") + format_date_for_filename(start_date);
+    } else {
+        period = (german ? "bis-" : "until-") + format_date_for_filename(end_date);
+    }
+
+    const name = API.get_unchecked('info/name')?.name ?? "unknown";
+    util.downloadToFile(content, `${file_type}-${name}-${period}.${extension}`, content_type);
 }
 
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState> {
@@ -378,12 +423,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             // Get last month's time range
             const now = new Date();
             const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            startOfLastMonth.setHours(0, 0, 0, 0);
-            const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-            endOfLastMonth.setHours(23, 59, 0, 0);
+            // The end filter is exclusive.
+            const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
             let start_minutes = Math.floor(startOfLastMonth.getTime() / 1000 / 60);
-            let end_minutes = Math.floor(endOfLastMonth.getTime() / 1000 / 60);
+            let end_minutes = Math.floor(startOfThisMonth.getTime() / 1000 / 60);
 
             if (config.file_type == FileType.PDF) {
                 await API.call("charge_tracker/send_charge_log_pdf", {
@@ -568,7 +612,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    async downloadCSVChargeLog(language: number, flavor: 'excel' | 'rfc4180', user_filter: number, device_filter: number, start_minutes: number, end_minutes: number, price?: number) {
+    async downloadCSVChargeLog(language: number, flavor: 'excel' | 'rfc4180', user_filter: number, device_filter: number, start_date: Date, end_date: Date) {
+        const start_minutes = date_to_minutes(start_date, 'start_of_day');
+        const end_minutes = date_to_minutes(end_date, 'end_of_day');
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
         const payload = {
@@ -583,7 +629,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         try {
             const csv = await API.call("charge_tracker/csv", payload, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-            util.downloadToTimestampedFile(csv, language == Language.German ? "Ladelog" : "charge-log", "csv", flavor === 'excel' ? "text/csv; charset=windows-1252; header=present" : "text/csv; charset=utf-8; header=present");
+            download_charge_log(csv, language, start_date, end_date, "csv", flavor === 'excel' ? "text/csv; charset=windows-1252; header=present" : "text/csv; charset=utf-8; header=present");
         } catch (err) {
             util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err);
         }
@@ -832,10 +878,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         device_filter: parseInt(state.device_filter),
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-                                    util.downloadToTimestampedFile(pdf, parseInt(state.language) == Language.German ? "Ladelog" : "charge-log", "pdf", "application/pdf");
+                                    download_charge_log(pdf, parseInt(state.language), state.start_date, state.end_date, "pdf", "application/pdf");
                                 } else {
                                     // Download CSV
-                                    await this.downloadCSVChargeLog(parseInt(state.language), state.csv_flavor, parseInt(state.user_filter), parseInt(state.device_filter), start_minutes, end_minutes, state.electricity_price);
+                                    await this.downloadCSVChargeLog(parseInt(state.language), state.csv_flavor, parseInt(state.user_filter), parseInt(state.device_filter), state.start_date, state.end_date);
                                 }
                             } finally {
                                 this.setState({show_spinner: false});
