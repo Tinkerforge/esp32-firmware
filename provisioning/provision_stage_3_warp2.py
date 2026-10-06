@@ -987,10 +987,13 @@ class Stage3:
 
     def test_zloop(self, phase, report):
         key = f'zloop_{phase}'
-        report[key] = blackbox.bb_measure_zloop()._asdict()
+        report[key] = blackbox.bb_measure_zloop(max_tries=5)._asdict()
 
         if not report[key]['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+
+        if report[key]['try_count'] > 1:
+            print(yellow(f'WARNING: Electrical test required {report[key]['try_count']} tries to pass'))
 
     def test_uc(self, phase, report):
         key = f'uc_{phase}'

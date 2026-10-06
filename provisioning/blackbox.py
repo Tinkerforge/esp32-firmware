@@ -92,7 +92,7 @@ METREL_RESULTS = {
 
 CallResult = namedtuple('CallResult', 'success response')
 DeviceInfo = namedtuple('DeviceInfo', 'product_name model_name firmware_version serial_number calibration_date')
-TestResult = namedtuple('TestResult', 'passed parameters limits results')
+TestResult = namedtuple('TestResult', 'try_count max_tries passed parameters limits results')
 
 
 class BlackboxException(Exception):
@@ -208,18 +208,18 @@ def bb_get_device_info():
     return DeviceInfo(product_name, model_name, firmware_version, serial_number, calibration_date)
 
 
-def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
+def bb_start_test(suffix, max_tries=1):
     result = bb_call('BB; START_SINGLETEST ' + suffix)
 
     if not result.success:
         raise BlackboxException(f'ST failed: {result.response}')
 
-    is_retry = False
+    try_count = 0
 
     while True:
+        try_count += 1
+
         passed = None
-        empty = False
-        cancel = False
         parameters = {}
         limits = {}
         results = {}
@@ -235,9 +235,9 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
                 elif suffix == '= fail':
                     passed = False
                 elif suffix == '= empty':
-                    empty = True
+                    pass
                 elif suffix == '= cancel':
-                    cancel = True
+                    pass
                 else:
                     raise BlackboxException(f'ST response malformed: {result.response}')
             else:
@@ -260,27 +260,14 @@ def bb_start_test(suffix, retry_on_empty=True, retry_on_cancel=True):
         if passed != None:
             break
 
-        if empty:
-            if retry_on_empty:
-                retry_on_empty = False
-                is_retry = True
-                debug(f'ST response with empty status, retrying: {result.response}')
-                time.sleep(5)
-                continue
+        if try_count < max_tries:
+            debug(f'ST response with empty or cancel status, retrying: {result.response}')
+            time.sleep(5)
+            continue
 
-            raise BlackboxException(f'ST response with empty status{" after retry" if is_retry else ""}: {result.response}')
+        raise BlackboxException(f'ST response with empty or cancel status after {try_count} {"try" if try_count == 1 else "tries"}: {result.response}')
 
-        if cancel:
-            if retry_on_cancel:
-                retry_on_cancel = False
-                is_retry = True
-                debug(f'ST response with cancel status, retrying: {result.response}')
-                time.sleep(5)
-                continue
-
-            raise BlackboxException(f'ST response with cancel status{" after retry" if is_retry else ""}: {result.response}')
-
-    return TestResult(passed, parameters, limits, results)
+    return TestResult(try_count, max_tries, passed, parameters, limits, results)
 
 
 def bb_measure_voltage():
@@ -296,8 +283,8 @@ def bb_measure_zline():
     return bb_start_test('17; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
 
 
-def bb_measure_zloop():
-    return bb_start_test('15; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
+def bb_measure_zloop(max_tries=1):
+    return bb_start_test('15; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT', max_tries=max_tries)
 
 
 def bb_measure_uc():
