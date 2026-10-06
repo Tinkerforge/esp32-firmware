@@ -1308,25 +1308,25 @@ void EVSEV2::publish_all_data()
     bool button_pressed_changed = evse_common.button_state.get("button_pressed")->updateBool(button_pressed);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (button_pressed_changed && button_pressed) {
-        // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
-        // Losing the button press during startup is probably acceptable.
-        if (boot_stage > BootStage::SETUP) {
-            automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
-        }
-    }
-
-    // Long press detection: Check the hold duration on every poll while the button is held
-    // and once more on release, so that a press that ends between two polls is not lost.
-    // Fires exactly once per press. Times are EVSE uptimes in ms.
+    // Button press detection. Times are EVSE uptimes in ms.
+    // - Long press fires once as soon as the button has been held for EVSE_BUTTON_LONG_PRESS_DURATION_MS,
+    //   while the button is still held.
+    // - Short press fires on release, but only if the long press did not fire for this press.
+    // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
+    // Losing the button press during startup is probably acceptable.
     if (button_pressed || button_pressed_changed) {
         const uint32_t hold_end_time = button_pressed ? uptime : button_release_time;
         const uint32_t hold_duration_ms = hold_end_time - button_press_time;
         const bool long_press = !button_long_press_triggered && hold_duration_ms >= EVSE_BUTTON_LONG_PRESS_DURATION_MS;
+        const bool short_press = !button_pressed && !button_long_press_triggered && !long_press;
         button_long_press_triggered = button_pressed && (button_long_press_triggered || long_press);
 
-        if (long_press && boot_stage > BootStage::SETUP) {
-            automation.trigger(AutomationTriggerID::EVSEButtonLongPress, nullptr, this);
+        if (boot_stage > BootStage::SETUP) {
+            if (long_press) {
+                automation.trigger(AutomationTriggerID::EVSEButtonLongPress, nullptr, this);
+            } else if (short_press) {
+                automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
+            }
         }
     }
 #else
