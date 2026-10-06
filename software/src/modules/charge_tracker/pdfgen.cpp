@@ -136,8 +136,15 @@ typedef SSIZE_T ssize_t;
 #define PDF_MAX_OBJECTS 2400
 #else
 // Maximum tracked charges: 130 files × 256 records = 33,280 charges
-// Pages needed: 1 + ceil((33280 - 32) / 40) = 833 pages
-// Objects: 3 header + 13 first page + 832 × 12 other pages + 2 footer = 10,002
+// Pages needed: 1 (at least 8 charges) + ceil((33280 - 8) / 32) + 1 (possible split for the summary) = 1042 pages
+//             + 15 summary pages (256 users + 256 chargers in subtotal tables, ~50 rows per page)
+// Objects: 4 header (none, info, 2 fonts)
+//        + 1057 pages × 4 (page, frame stream, image stream, image)
+//        + ceil(33280 / 8) + 1 = 4161 table content streams
+//        + (256 + 256) / 8 + 2 = 66 subtotal row streams
+//        + 2 footer (pages, catalog)
+//        = 8461
+// WARP1 (7680 charges, 256 users): 4 + (243 + 6) × 4 + 961 + 34 + 2 = 1997 < 2400
 #define PDF_MAX_OBJECTS 10100
 #endif
 #define PDF_MAX_OBJECTS_PER_PAGE 100
@@ -270,6 +277,7 @@ struct pdf_doc {
     float height;
 
     struct pdf_object *current_font;
+    int font_obj_index[PDF_FONT_COUNT];
 
     std::function<ssize_t(const void *buf, size_t len)> write_fn;
     std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)> stream_fn;
@@ -288,6 +296,17 @@ struct pdf_doc {
         int current_obj_index;
         bool is_image;
     } callback_context;
+
+    struct {
+        bool in_text;
+        int32_t line_x; // Start of the current text line in 1/100 pt (positions are written with 2 decimals)
+        int32_t line_y;
+        int font;
+        float font_size;
+        uint32_t fill_colour;
+        uint32_t stroke_colour;
+        float line_width;
+    } sb;
 };
 
 /**
@@ -567,13 +586,33 @@ struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *inf
         time_t now = time(nullptr);
         struct tm tm;
         localtime_r(&now, &tm);
-        // ISO 8601 date time with time offset
-        strftime(obj->info->date, sizeof(obj->info->date), "%FT%T%z", &tm);
+
+        // Only set the creation date if the time is synced.
+        if (tm.tm_year + 1900 >= 2024) {
+            // PDF date format: D:YYYYMMDDHHmmSSOHH'mm
+            char offset[8] = "";
+            strftime(offset, sizeof(offset), "%z", &tm); // +hhmm
+            size_t len = strftime(obj->info->date, sizeof(obj->info->date), "%Y%m%d%H%M%S", &tm);
+            if ((strlen(offset) == 5) && ((len + 8) < sizeof(obj->info->date))) {
+                snprintf(obj->info->date + len, sizeof(obj->info->date) - len, "%c%c%c'%c%c'", offset[0], offset[1], offset[2], offset[3], offset[4]);
+            }
+        }
     }
 
-    if (pdf_set_font(pdf, DEFAULT_FONT) < 0) {
+    // The largest content stream of the charge log is about 3.2 KiB.
+    if (dstr_ensure(&pdf->scratch_str, 3 * 1024) < 0) {
         pdf_destroy(pdf);
         return nullptr;
+    }
+
+    // Register all fonts up front. They are header objects and therefore have fixed indices.
+    static const char *const font_names[PDF_FONT_COUNT] = {PDF_FONT_NAME_REGULAR, PDF_FONT_NAME_BOLD};
+    for (int i = PDF_FONT_COUNT - 1; i >= 0; --i) {
+        if (pdf_set_font(pdf, font_names[i]) < 0) {
+            pdf_destroy(pdf);
+            return nullptr;
+        }
+        pdf->font_obj_index[i] = pdf->current_font->index;
     }
 
     return pdf;
@@ -794,6 +833,41 @@ static int pdf_add_image(struct pdf_doc *pdf, struct pdf_object *page,
                          struct pdf_object *image, struct pdf_object *image_stream, float x, float y,
                          float width, float height);
 
+// Writes a UTF-8 string as PDFDocEncoding text string. PDFDocEncoding matches Latin-1 for the printable characters >= 0xA0.
+static void pdf_write_info_string(struct pdf_doc *pdf, const char *key, const char *utf8)
+{
+    char buf[2 * 64 + 1];
+    size_t used = 0;
+    const int len = (int)strlen(utf8);
+
+    for (int i = 0; (i < len) && ((used + 2) < sizeof(buf));) {
+        uint32_t code = 0;
+        int code_len = pdf_utf8_to_utf32(&utf8[i], len - i, &code);
+        if (code_len <= 0) {
+            ++i;
+            continue;
+        }
+        i += code_len;
+
+        char c;
+        if ((code >= 0x20) && (code < 0x7F)) {
+            c = (char)code;
+        } else if ((code >= 0xA0) && (code <= 0xFF)) {
+            c = (char)code;
+        } else {
+            c = '?';
+        }
+
+        if ((c == '(') || (c == ')') || (c == '\\')) {
+            buf[used++] = '\\';
+        }
+        buf[used++] = c;
+    }
+    buf[used] = '\0';
+
+    pdf_printf(pdf, "  /%s (%s)\r\n", key, buf);
+}
+
 static int pdf_save_object(struct pdf_doc *pdf, int index)
 {
     struct pdf_object *object = pdf_get_object(pdf, index);
@@ -848,15 +922,15 @@ static int pdf_save_object(struct pdf_doc *pdf, int index)
 
         pdf_printf(pdf, "<<\r\n");
         if (info->creator[0])
-            pdf_printf(pdf, "  /Creator (%s)\r\n", info->creator);
+            pdf_write_info_string(pdf, "Creator", info->creator);
         if (info->producer[0])
-            pdf_printf(pdf, "  /Producer (%s)\r\n", info->producer);
+            pdf_write_info_string(pdf, "Producer", info->producer);
         if (info->title[0])
-            pdf_printf(pdf, "  /Title (%s)\r\n", info->title);
+            pdf_write_info_string(pdf, "Title", info->title);
         if (info->author[0])
-            pdf_printf(pdf, "  /Author (%s)\r\n", info->author);
+            pdf_write_info_string(pdf, "Author", info->author);
         if (info->subject[0])
-            pdf_printf(pdf, "  /Subject (%s)\r\n", info->subject);
+            pdf_write_info_string(pdf, "Subject", info->subject);
         if (info->date[0])
             pdf_printf(pdf, "  /CreationDate (D:%s)\r\n", info->date);
         pdf_printf(pdf, ">>\r\n");
@@ -872,8 +946,9 @@ static int pdf_save_object(struct pdf_doc *pdf, int index)
         pdf_printf(pdf, "  /MediaBox [0 0 %f %f]\r\n", pdf->width, pdf->height);
         pdf_printf(pdf, "  /Resources <<\r\n");
         pdf_printf(pdf, "    /Font <<\r\n");
-        //for (struct pdf_object *font = pdf_find_first_object(pdf, OBJ_font); font; font = pdf_find_next_object(pdf, font, OBJ_font))
-        pdf_printf(pdf, "      /F%d %d 0 R\r\n", 1, 2/*font->font.index, font->index*/);
+        for (int i = 0; i < PDF_FONT_COUNT; ++i) {
+            pdf_printf(pdf, "      /F%d %d 0 R\r\n", i + 1, pdf->font_obj_index[i]);
+        }
         pdf_printf(pdf, "    >>\r\n");
         // We trim transparency to just 4-bits
         pdf_printf(pdf, "    /ExtGState <<\r\n");
@@ -1498,6 +1573,7 @@ static const uint16_t helvetica_bold_widths[256] = {
     615,  560, 615,  560,
 };
 
+#if 0 // Unused width tables, see find_font_widths
 static const uint16_t helvetica_bold_oblique_widths[256] = {
     280,  280, 280,  280, 280, 280, 280, 280,  280, 280, 280, 280,  280, 280,
     280,  280, 280,  280, 280, 280, 280, 280,  280, 280, 280, 280,  280, 280,
@@ -1697,6 +1773,8 @@ static const uint16_t courier_widths[256] = {
     604,
 };
 
+#endif
+
 static int pdf_text_point_width(struct pdf_doc *pdf, const char *text,
                                 ptrdiff_t text_len, float size,
                                 const uint16_t *widths, float *point_width)
@@ -1733,6 +1811,7 @@ static const uint16_t *find_font_widths(const char *font_name)
         return helvetica_widths;
     if (strcasecmp(font_name, "Helvetica-Bold") == 0)
         return helvetica_bold_widths;
+#if 0 // Only the Helvetica fonts are used. Don't spend flash on the other width tables.
     if (strcasecmp(font_name, "Helvetica-BoldOblique") == 0)
         return helvetica_bold_oblique_widths;
     if (strcasecmp(font_name, "Helvetica-Oblique") == 0)
@@ -1754,6 +1833,7 @@ static const uint16_t *find_font_widths(const char *font_name)
         return symbol_widths;
     if (strcasecmp(font_name, "ZapfDingbats") == 0)
         return zapfdingbats_widths;
+#endif
 
     return nullptr;
 }
@@ -1771,138 +1851,441 @@ int pdf_get_font_text_width(struct pdf_doc *pdf, const char *font_name,
                            pdf->current_font->font.name);
     return pdf_text_point_width(pdf, text, -1, size, widths, text_width);
 }
-#if 0
-static const char *find_word_break(const char *string)
+
+/*
+ * Content stream builder
+ *
+ * Collects multiple drawing operations into pdf->scratch_str and writes them as one content stream.
+ * Avoids printf for the numbers. Table pages contain a lot of them.
+ */
+
+#define PDF_WIDTH_SCALE (1.0f / (14.0f * 72.0f)) // Our widths arrays are for 14pt fonts
+
+/*
+ * Left and right side bearings (distance between the glyph's advance box and its ink) of Helvetica and
+ * Helvetica-Bold in WinAnsiEncoding, in 1/1000 of the font size. Used to align the ink of text exactly
+ * to margins and column edges.
+ */
+static const int8_t helvetica_lsb[256] = {
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,  124,   52,   14,   40,   29,   52,   48,   73,   38,   40,   50,   87,   46,   87,   -8,
+      43,  102,   34,   32,   28,   35,   43,   46,   37,   38,  110,  110,   45,   50,   50,   77,
+      34,   17,   79,   48,   89,   90,   90,   44,   83,  100,   17,   79,   80,   75,   76,   38,
+      91,   38,   93,   48,   21,   85,   30,   22,   22,   13,   28,   64,   -8,   23,   44,  -22,
+      22,   42,   54,   31,   26,   40,   18,   35,   70,   66,  -18,   58,   68,   70,   70,   36,
+      54,   26,   69,   34,   14,   65,   10,    6,   17,   20,   31,   43,  100,   29,   75,    0,
+       2,    0,   64,   11,   47,  115,   38,   38,   20,    9,   48,   91,   43,    0,   28,    0,
+       0,   65,   65,   48,   49,   50,   -5,   -9,    5,   63,   34,   85,   40,    0,   31,   13,
+       0,  121,   52,   26,   67,   11,  100,   44,   30,  -13,   37,   98,   40,   46,  -13,   28,
+      48,   50,   10,    7,   92,   65,   48,  110,   39,   52,   40,   98,   26,   25,   25,   95,
+      17,   17,   17,   17,   17,   17,   11,   48,   90,   90,   90,   90,    1,   71,   -1,    9,
+      20,   76,   38,   38,   38,   38,   38,   95,   30,   85,   85,   85,   85,   13,   91,   70,
+      42,   42,   42,   42,   42,   42,   34,   31,   40,   40,   40,   40,   -5,   65,   -7,    3,
+      36,   70,   36,   36,   36,   36,   36,   50,   18,   65,   65,   65,   65,   20,   54,   20,
+};
+
+static const int8_t helvetica_rsb[256] = {
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,   70,   50,   14,   31,   30,   30,   49,   42,   77,   46,   50,   86,   49,   87,   -6,
+      49,  127,   45,   50,   36,   43,   43,   36,   43,   47,   64,   63,   50,   50,   45,   47,
+      64,   14,   44,   45,   55,   54,   32,   69,   78,   84,   74,    9,   23,   72,   76,   36,
+      50,   36,   43,   46,   18,   77,   22,   15,   18,    6,   28,   28,   -6,   69,   44,  -22,
+     102,   21,   33,   23,   61,   43,   20,   75,   70,   72,   69,   -2,   70,   71,   69,   46,
+      33,   61,   12,   41,   24,   74,   14,   14,   27,   22,   43,   58,  100,   72,   76,    0,
+      13,    0,   64,   14,   33,  115,   43,   43,   26,    7,   46,   90,   41,    0,   28,    0,
+       0,   64,   64,   34,   31,   50,   -5,   -1,   14,   62,   41,   94,   45,    0,   43,    6,
+       0,  127,   46,   21,   67,   11,  100,   50,   37,  -14,   37,  101,   40,   49,  -14,   31,
+      49,   50,   16,   20,   32,   12,   15,   64,   46,  120,   41,  105,   20,   26,   22,   83,
+      14,   14,   14,   14,   14,   14,   50,   45,   54,   54,   54,   54,   68,   -2,   -8,    3,
+      55,   76,   36,   36,   36,   36,   36,   96,   34,   77,   77,   77,   77,    7,   51,   56,
+      21,   21,   21,   21,   21,   21,   44,   23,   43,   43,   43,   43,   74,    4,   -2,    9,
+      46,   69,   46,   46,   46,   46,   46,   50,   82,   74,   74,   74,   74,   22,   34,   22,
+};
+
+static const int8_t helvetica_bold_lsb[256] = {
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,  112,   50,    3,   22,   22,   55,   50,   40,   22,   23,   50,   64,   26,   64,    2,
+      29,   68,   30,   29,   24,   27,   32,   29,   22,   28,  113,  113,   40,   50,   40,   64,
+      27,   26,   82,   44,   77,   79,   74,   42,   68,   63,   24,   74,   80,   66,   68,   40,
+      76,   43,   80,   32,   14,   76,   24,   13,   22,   27,   30,   66,  -12,   18,   61,  -22,
+      17,   28,   59,   34,   29,   22,   14,   41,   67,   67,    4,   59,   67,   60,   63,   35,
+      58,   28,   63,   29,   14,   58,   14,    5,   16,    9,   21,   37,  100,   72,   60,    0,
+       6,    0,   66,   21,   72,   92,   31,   28,    8,   11,   32,   83,   28,    0,   30,    0,
+       0,   71,   66,   75,   73,   50,   -9,   -7,   -9,   71,   29,   80,   23,    0,   21,   27,
+       0,   66,   37,   31,   26,    5,  100,   33,   18,  -14,   30,   88,   40,   26,  -14,   16,
+      48,   56,    7,    6,  121,   58,   20,   64,   27,   31,   23,   88,   23,   23,   18,   51,
+      26,   26,   26,   26,   26,   26,    1,   44,   79,   79,   79,   79,  -10,   63,  -19,   -9,
+       0,   68,   40,   40,   40,   40,   40,   79,   31,   76,   76,   76,   76,   27,   76,   67,
+      28,   28,   28,   28,   28,   28,   27,   34,   22,   22,   22,   22,  -10,   67,  -19,   -9,
+      35,   63,   35,   35,   35,   35,   35,   50,   11,   58,   58,   58,   58,    9,   58,    9,
+};
+
+static const int8_t helvetica_bold_rsb[256] = {
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       0,   71,   50,    3,   29,   26,   28,   50,   30,   48,   33,   51,   64,   35,   64,    3,
+      39,  127,   41,   40,   34,   39,   37,   28,   31,   40,   70,   70,   55,   50,   55,   55,
+      28,   19,   56,   37,   41,   43,   25,   67,   65,   65,   70,    5,   32,   57,   61,   36,
+      34,   33,   45,   34,   13,   68,   20,   12,   14,   17,   33,   25,  -11,   73,   62,  -22,
+     120,   32,   36,   34,   66,   31,   20,   78,   70,   71,   68,    8,   71,   65,   65,   42,
+      37,   67,   19,   36,   32,   70,   20,   12,   21,   18,   32,   72,  100,   37,   65,    0,
+      10,    0,   77,   21,   68,   92,   33,   36,    7,   10,   34,   83,   30,    0,   33,    0,
+       0,   72,   77,   63,   60,   50,   -1,   -3,  -12,   71,   36,   86,   24,    0,   32,   17,
+       0,  117,   34,   19,   26,    4,  100,   38,   19,  -14,   41,   88,   40,   35,  -14,   18,
+      49,   57,   14,   13,   16,   38,   27,   90,   39,  100,   22,   94,   28,    5,   21,   67,
+      19,   19,   19,   19,   19,   19,   34,   37,   43,   43,   43,   43,   65,  -12,  -21,   -9,
+      41,   61,   36,   36,   36,   36,   36,   79,   23,   68,   68,   68,   68,   17,   34,   36,
+      32,   32,   32,   32,   32,   32,   32,   34,   31,   31,   31,   31,   71,  -12,  -21,   -9,
+      42,   65,   42,   42,   42,   42,   42,   50,   13,   70,   70,   70,   70,   18,   37,   18,
+};
+
+static int8_t font_side_bearing(int font, uint8_t c, bool right)
 {
-    /* Skip over the actual word */
-    while (string && *string && (*string < 0 || !isspace(*string)))
-        string++;
-
-    return string;
-}
-
-int pdf_add_text_wrap(struct pdf_doc *pdf, struct pdf_object *page,
-                      const char *text, float size, float xoff, float yoff,
-                      uint32_t colour, float wrap_width, int align,
-                      float *height)
-{
-    /* Move through the text string, stopping at word boundaries,
-     * trying to find the longest text string we can fit in the given width
-     */
-    const char *start = text;
-    const char *last_best = text;
-    const char *end = text;
-    char line[512];
-    const uint16_t *widths;
-    float orig_yoff = yoff;
-
-    widths = find_font_widths(pdf->current_font->font.name);
-    if (!widths)
-        return pdf_set_err(pdf, -EINVAL,
-                           "Unable to determine width for font '%s'",
-                           pdf->current_font->font.name);
-
-    while (start && *start) {
-        const char *new_end = find_word_break(end + 1);
-        float line_width;
-        int output = 0;
-        float xoff_align = xoff;
-        int e;
-
-        end = new_end;
-
-        e = pdf_text_point_width(pdf, start, end - start, size, widths,
-                                 &line_width);
-        if (e < 0)
-            return e;
-
-        if (line_width >= wrap_width) {
-            if (last_best == start) {
-                /* There is a single word that is too long for the line */
-                ptrdiff_t i;
-                /* Find the best character to chop it at */
-                for (i = end - start - 1; i > 0; i--) {
-                    float this_width;
-                    // Don't look at places that are in the middle of a utf-8
-                    // sequence
-                    if ((start[i - 1] & 0xc0) == 0xc0 ||
-                        ((start[i - 1] & 0xc0) == 0x80 &&
-                         (start[i] & 0xc0) == 0x80))
-                        continue;
-                    e = pdf_text_point_width(pdf, start, i, size, widths,
-                                             &this_width);
-                    if (e < 0)
-                        return e;
-                    if (this_width < wrap_width)
-                        break;
-                }
-                if (i == 0)
-                    return pdf_set_err(pdf, -EINVAL,
-                                       "Unable to find suitable line break");
-
-                end = start + i;
-            } else
-                end = last_best;
-            output = 1;
-        }
-        if (*end == '\0')
-            output = 1;
-
-        if (*end == '\n' || *end == '\r')
-            output = 1;
-
-        if (output) {
-            int len = end - start;
-            float char_spacing = 0;
-            if (len >= (int)sizeof(line))
-                len = (int)sizeof(line) - 1;
-            strncpy(line, start, len);
-            line[len] = '\0';
-
-            e = pdf_text_point_width(pdf, start, len, size, widths,
-                                     &line_width);
-            if (e < 0)
-                return e;
-
-            switch (align) {
-            case PDF_ALIGN_RIGHT:
-                xoff_align += wrap_width - line_width;
-                break;
-            case PDF_ALIGN_CENTER:
-                xoff_align += (wrap_width - line_width) / 2;
-                break;
-            case PDF_ALIGN_JUSTIFY:
-                if ((len - 1) > 0 && *end != '\r' && *end != '\n' &&
-                    *end != '\0')
-                    char_spacing = (wrap_width - line_width) / (len - 2);
-                break;
-            case PDF_ALIGN_JUSTIFY_ALL:
-                if ((len - 1) > 0)
-                    char_spacing = (wrap_width - line_width) / (len - 2);
-                break;
-            }
-
-            if (align != PDF_ALIGN_NO_WRITE) {
-                pdf_add_text_spacing(pdf, page, line, size, xoff_align, yoff,
-                                     colour, char_spacing);
-            }
-
-            if (*end == ' ')
-                end++;
-
-            start = last_best = end;
-            yoff -= size;
-        } else
-            last_best = end;
+    // All digits have the same advance width, but different bearings. Use the bearings of '0' for all of them, so that numbers in a column line up digit by digit instead of by the ink of their first or last digit.
+    if ((c >= '0') && (c <= '9')) {
+        c = '0';
     }
 
-    if (height)
-        *height = orig_yoff - yoff;
-    return 0;
+    if (font == PDF_FONT_BOLD) {
+        return right ? helvetica_bold_rsb[c] : helvetica_bold_lsb[c];
+    }
+
+    return right ? helvetica_rsb[c] : helvetica_lsb[c];
 }
-#endif
-int pdf_add_line(struct pdf_doc *pdf, struct pdf_object *page, float x1,
-                 float y1, float x2, float y2, float width, uint32_t colour)
+
+static const uint16_t *font_widths(int font)
+{
+    return font == PDF_FONT_BOLD ? helvetica_bold_widths : helvetica_widths;
+}
+
+// Appends v with up to 'decimals' decimal places, followed by a space.
+static void sb_append_num(struct dstr *str, float v, int decimals = 2)
+{
+    char buf[24];
+    char *const end = buf + sizeof(buf);
+    char *p = end;
+
+    *--p = ' ';
+
+    bool neg = v < 0;
+    if (neg) {
+        v = -v;
+    }
+
+    const uint32_t scale = decimals == 3 ? 1000 : 100;
+    const uint32_t fixed = (uint32_t)(v * scale + 0.5f);
+    uint32_t integer = fixed / scale;
+    uint32_t frac = fixed % scale;
+
+    if (frac != 0) {
+        int digits = decimals;
+        while (frac % 10 == 0) {
+            frac /= 10;
+            --digits;
+        }
+        for (int i = 0; i < digits; ++i) {
+            *--p = (char)('0' + frac % 10);
+            frac /= 10;
+        }
+        *--p = '.';
+    }
+
+    do {
+        *--p = (char)('0' + integer % 10);
+        integer /= 10;
+    } while (integer != 0);
+
+    if (neg && (fixed != 0)) {
+        *--p = '-';
+    }
+
+    dstr_append_data(str, p, (size_t)(end - p));
+}
+
+static void sb_end_text(struct pdf_doc *pdf)
+{
+    if (pdf->sb.in_text) {
+        dstr_append(&pdf->scratch_str, "ET\n");
+        pdf->sb.in_text = false;
+    }
+}
+
+static void sb_set_fill_colour(struct pdf_doc *pdf, uint32_t colour)
+{
+    colour &= 0xFFFFFF;
+    if (colour == pdf->sb.fill_colour) {
+        return;
+    }
+
+    pdf->sb.fill_colour = colour;
+    sb_append_num(&pdf->scratch_str, PDF_RGB_R(colour), 3);
+    sb_append_num(&pdf->scratch_str, PDF_RGB_G(colour), 3);
+    sb_append_num(&pdf->scratch_str, PDF_RGB_B(colour), 3);
+    dstr_append(&pdf->scratch_str, "rg\n");
+}
+
+static void sb_set_stroke(struct pdf_doc *pdf, uint32_t colour, float width)
+{
+    colour &= 0xFFFFFF;
+    if (colour != pdf->sb.stroke_colour) {
+        pdf->sb.stroke_colour = colour;
+        sb_append_num(&pdf->scratch_str, PDF_RGB_R(colour), 3);
+        sb_append_num(&pdf->scratch_str, PDF_RGB_G(colour), 3);
+        sb_append_num(&pdf->scratch_str, PDF_RGB_B(colour), 3);
+        dstr_append(&pdf->scratch_str, "RG\n");
+    }
+
+    if (width != pdf->sb.line_width) {
+        pdf->sb.line_width = width;
+        sb_append_num(&pdf->scratch_str, width);
+        dstr_append(&pdf->scratch_str, "w\n");
+    }
+}
+
+// Converts UTF-8 to the WinAnsi encoding used by the standard fonts.
+// Control characters are dropped, except '\n' if keep_newlines is set. Invalid UTF-8 bytes are skipped.
+static size_t sb_encode_text(const char *text, size_t len, uint8_t *out, size_t out_cap, bool keep_newlines)
+{
+    size_t n = 0;
+
+    for (size_t i = 0; (i < len) && (n < out_cap);) {
+        uint8_t c = 0;
+        int code_len = pdf_utf8_to_pdfencoding(&text[i], (int)(len - i), &c);
+        if (code_len <= 0) {
+            ++i;
+            continue;
+        }
+        i += (size_t)code_len;
+
+        if ((c == '\n') && keep_newlines) {
+            out[n++] = c;
+            continue;
+        }
+
+        if (c < 0x20) {
+            continue;
+        }
+
+        out[n++] = c;
+    }
+
+    return n;
+}
+
+static float sb_encoded_width(const uint16_t *widths, const uint8_t *text, size_t len, float size)
+{
+    uint32_t sum = 0;
+    for (size_t i = 0; i < len; ++i) {
+        sum += widths[text[i]];
+    }
+
+    return (float)sum * size * PDF_WIDTH_SCALE;
+}
+
+static void sb_emit_text(struct pdf_doc *pdf, int font, const uint8_t *text, size_t len, float size, float x, float y, uint32_t colour)
+{
+    if (len == 0) {
+        return;
+    }
+
+    struct dstr *str = &pdf->scratch_str;
+
+    if (!pdf->sb.in_text) {
+        dstr_append(str, "BT\n");
+        pdf->sb.in_text = true;
+        pdf->sb.line_x = 0;
+        pdf->sb.line_y = 0;
+    }
+
+    if ((font != pdf->sb.font) || (size != pdf->sb.font_size)) {
+        pdf->sb.font = font;
+        pdf->sb.font_size = size;
+        dstr_append(str, font == PDF_FONT_BOLD ? "/F2 " : "/F1 ");
+        sb_append_num(str, size);
+        dstr_append(str, "Tf\n");
+    }
+
+    sb_set_fill_colour(pdf, colour);
+
+    // Move relative to the previous text: Td is shorter than a complete text matrix (Tm).
+    // The positions are rounded to 1/100 pt before calculating the offset, so that rounding errors don't add up.
+    const int32_t new_x = static_cast<int32_t>(lroundf(x * 100));
+    const int32_t new_y = static_cast<int32_t>(lroundf(y * 100));
+    sb_append_num(str, (new_x - pdf->sb.line_x) / 100.0f);
+    sb_append_num(str, (new_y - pdf->sb.line_y) / 100.0f);
+    dstr_append(str, "Td (");
+    pdf->sb.line_x = new_x;
+    pdf->sb.line_y = new_y;
+
+    // Escape magic characters
+    size_t run_start = 0;
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t c = text[i];
+        if ((c == '(') || (c == ')') || (c == '\\')) {
+            dstr_append_data(str, text + run_start, i - run_start);
+            dstr_append_data(str, "\\", 1);
+            run_start = i;
+        }
+    }
+    dstr_append_data(str, text + run_start, len - run_start);
+
+    dstr_append(str, ") Tj\n");
+}
+
+void pdf_stream_begin(struct pdf_doc *pdf)
+{
+    pdf->scratch_str.used_len = 0;
+    dstr_data(&pdf->scratch_str)[0] = '\0';
+
+    pdf->sb.in_text = false;
+    pdf->sb.font = -1;
+    pdf->sb.font_size = -1;
+    pdf->sb.fill_colour = UINT32_MAX;
+    pdf->sb.stroke_colour = UINT32_MAX;
+    pdf->sb.line_width = -1;
+}
+
+int pdf_stream_end(struct pdf_doc *pdf)
+{
+    sb_end_text(pdf);
+    return pdf_add_stream(pdf, dstr_data(&pdf->scratch_str));
+}
+
+void pdf_stream_fill_rect(struct pdf_doc *pdf, float x, float y, float width, float height, uint32_t colour)
+{
+    sb_end_text(pdf);
+    sb_set_fill_colour(pdf, colour);
+
+    sb_append_num(&pdf->scratch_str, x);
+    sb_append_num(&pdf->scratch_str, y);
+    sb_append_num(&pdf->scratch_str, width);
+    sb_append_num(&pdf->scratch_str, height);
+    dstr_append(&pdf->scratch_str, "re f\n");
+}
+
+void pdf_stream_line(struct pdf_doc *pdf, float x1, float y1, float x2, float y2, float width, uint32_t colour)
+{
+    sb_end_text(pdf);
+    sb_set_stroke(pdf, colour, width);
+
+    sb_append_num(&pdf->scratch_str, x1);
+    sb_append_num(&pdf->scratch_str, y1);
+    dstr_append(&pdf->scratch_str, "m ");
+    sb_append_num(&pdf->scratch_str, x2);
+    sb_append_num(&pdf->scratch_str, y2);
+    dstr_append(&pdf->scratch_str, "l S\n");
+}
+
+float pdf_text_width(struct pdf_doc *pdf, int font, const char *text, float size)
+{
+    float width = 0;
+    pdf_get_font_text_width(pdf, font == PDF_FONT_BOLD ? PDF_FONT_NAME_BOLD : PDF_FONT_NAME_REGULAR, text, size, &width);
+    return width;
+}
+
+void pdf_stream_text(struct pdf_doc *pdf, int font, const char *text, float size, float x, float y, uint32_t colour, int align, float max_width)
+{
+    uint8_t buf[192];
+    // Leave room for the ellipsis.
+    size_t len = sb_encode_text(text, strlen(text), buf, sizeof(buf) - 1, false);
+
+    const uint16_t *widths = font_widths(font);
+    float width = sb_encoded_width(widths, buf, len, size);
+
+    // Tolerate rounding errors
+    if ((max_width > 0) && (width > (max_width + 0.01f))) {
+        const float ellipsis_width = widths[0x85] * size * PDF_WIDTH_SCALE;
+
+        while ((len > 0) && (((width + ellipsis_width) > max_width) || (buf[len - 1] == ' '))) {
+            --len;
+            width -= widths[buf[len]] * size * PDF_WIDTH_SCALE;
+        }
+
+        buf[len++] = 0x85; // WinAnsi "…"
+        width += ellipsis_width;
+    }
+
+    // Align the ink, not the advance box, to x.
+    if (align == PDF_ALIGN_RIGHT) {
+        x -= width - (len > 0 ? font_side_bearing(font, buf[len - 1], true) * size / 1000.0f : 0);
+    } else if (align == PDF_ALIGN_CENTER) {
+        x -= width / 2;
+    } else if (len > 0) {
+        x -= font_side_bearing(font, buf[0], false) * size / 1000.0f;
+    }
+
+    sb_emit_text(pdf, font, buf, len, size, x, y, colour);
+}
+
+int pdf_stream_text_wrap(struct pdf_doc *pdf, int font, const char *text, float size, float x, float y, float width, float leading, uint32_t colour, bool draw)
+{
+    size_t text_len = strlen(text);
+    if (text_len == 0) {
+        return 0;
+    }
+
+    uint8_t *buf = (uint8_t *)malloc(text_len);
+    if (buf == nullptr) {
+        return pdf_set_err(pdf, -ENOMEM, "Failed to allocate text wrap buffer");
+    }
+
+    const size_t len = sb_encode_text(text, text_len, buf, text_len, true);
+    const uint16_t *widths = font_widths(font);
+
+    int lines = 0;
+    size_t start = 0;
+
+    while (start < len) {
+        // Skip leading spaces of wrapped lines.
+        while ((start < len) && (buf[start] == ' ')) {
+            ++start;
+        }
+
+        float line_width = 0;
+        size_t last_space = SIZE_MAX;
+        size_t i = start;
+
+        for (; (i < len) && (buf[i] != '\n'); ++i) {
+            float char_width = widths[buf[i]] * size * PDF_WIDTH_SCALE;
+            if (((line_width + char_width) > width) && (i > start)) {
+                break;
+            }
+            if (buf[i] == ' ') {
+                last_space = i;
+            }
+            line_width += char_width;
+        }
+
+        size_t end;
+        size_t next;
+        if ((i >= len) || (buf[i] == '\n')) {
+            end = i;
+            next = i + 1;
+        } else if (last_space != SIZE_MAX) {
+            end = last_space;
+            next = last_space + 1;
+        } else {
+            // A single word that is too long for the line
+            end = i;
+            next = i;
+        }
+
+        if (draw && (end > start)) {
+            sb_emit_text(pdf, font, buf + start, end - start, size, x - font_side_bearing(font, buf[start], false) * size / 1000.0f, y - lines * leading, colour);
+        }
+
+        ++lines;
+        start = next;
+    }
+
+    free(buf);
+    return lines;
+}
+
+int pdf_add_line(struct pdf_doc *pdf, struct pdf_object *page, float x1, float y1, float x2, float y2, float width, uint32_t colour)
 {
     int ret;
     struct dstr str = INIT_DSTR;
@@ -1920,8 +2303,7 @@ int pdf_add_line(struct pdf_doc *pdf, struct pdf_object *page, float x1,
     return ret;
 }
 
-int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float x1,
-                 float y1, float x2, float y2, float width, uint32_t colour, float spacing, int count, bool first_line_double_wide)
+int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float x1, float y1, float x2, float y2, float width, uint32_t colour, float spacing, int count, bool first_line_double_wide)
 {
     int ret;
     //struct dstr str = INIT_DSTR;
@@ -1929,8 +2311,7 @@ int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float
 
     dstr_printf(&pdf->scratch_str, "%f w ", width);
     dstr_printf(&pdf->scratch_str, "/DeviceRGB CS ");
-    dstr_printf(&pdf->scratch_str, "%f %f %f RG ", PDF_RGB_R(colour), PDF_RGB_G(colour),
-                PDF_RGB_B(colour));
+    dstr_printf(&pdf->scratch_str, "%f %f %f RG ", PDF_RGB_R(colour), PDF_RGB_G(colour), PDF_RGB_B(colour));
 
     if (first_line_double_wide) {
         dstr_printf(&pdf->scratch_str, "%f %f m ", x1, y1 + width / 2);

@@ -336,24 +336,49 @@ int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float
                  float y1, float x2, float y2, float width, uint32_t colour, float spacing, int count, bool first_line_double_wide);
 
 /**
- * Add a text string to the document, making it wrap if it is too
- * long
- * @param pdf PDF document to add to
- * @param page Page to add object to (NULL => most recently added page)
- * @param text String to display
- * @param size Point size of the font
- * @param xoff X location to put it in
- * @param yoff Y location to put it in
- * @param colour Colour to draw the text
- * @param wrap_width Width at which to wrap the text
- * @param align Text alignment (see PDF_ALIGN_xxx)
- * @param height Store the final height of the wrapped text here (optional)
- * @return < 0 on failure, >= 0 on success
+ * Fonts available in every document. Index i is referenced as /F(i+1) in content streams.
  */
-int pdf_add_text_wrap(struct pdf_doc *pdf, struct pdf_object *page,
-                      const char *text, float size, float xoff, float yoff,
-                      uint32_t colour, float wrap_width, int align,
-                      float *height);
+enum {
+    PDF_FONT_REGULAR = 0,
+    PDF_FONT_BOLD = 1,
+    PDF_FONT_COUNT
+};
+
+#define PDF_FONT_NAME_REGULAR "Helvetica"
+#define PDF_FONT_NAME_BOLD "Helvetica-Bold"
+
+/**
+ * Content stream builder: Collects multiple drawing operations and writes them as a single content stream.
+ * Must only be used inside a stream callback: Call pdf_stream_begin, then any number of pdf_stream_* drawing
+ * functions, then return the result of pdf_stream_end from the callback.
+ */
+void pdf_stream_begin(struct pdf_doc *pdf);
+int pdf_stream_end(struct pdf_doc *pdf);
+
+void pdf_stream_fill_rect(struct pdf_doc *pdf, float x, float y, float width, float height, uint32_t colour);
+void pdf_stream_line(struct pdf_doc *pdf, float x1, float y1, float x2, float y2, float width, uint32_t colour);
+
+/**
+ * Draw a single line of text.
+ * @param align PDF_ALIGN_LEFT: x is the left edge, PDF_ALIGN_RIGHT: x is the right edge, PDF_ALIGN_CENTER: x is the center
+ * @param max_width If > 0, the text is truncated with an ellipsis to fit into max_width.
+ */
+void pdf_stream_text(struct pdf_doc *pdf, int font, const char *text, float size, float x, float y,
+                     uint32_t colour, int align = PDF_ALIGN_LEFT, float max_width = 0);
+
+/**
+ * Draw text word-wrapped to the given width. '\n' starts a new line.
+ * y is the baseline of the first line.
+ * @param draw If false, the text is only measured. This can be called outside of stream callbacks.
+ * @return Number of lines (drawn or required), < 0 on failure
+ */
+int pdf_stream_text_wrap(struct pdf_doc *pdf, int font, const char *text, float size, float x, float y,
+                         float width, float leading, uint32_t colour, bool draw);
+
+/**
+ * Width of text in points. Shortcut for pdf_get_font_text_width with PDF_FONT_REGULAR or PDF_FONT_BOLD.
+ */
+float pdf_text_width(struct pdf_doc *pdf, int font, const char *text, float size);
 
 /**
  * Add a line to the document
@@ -455,6 +480,6 @@ int pdf_utf8_to_pdfencoding(const char *utf8, int len, uint8_t *res);
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #endif
 
-#define DEFAULT_FONT "Times-Roman"
+#define DEFAULT_FONT PDF_FONT_NAME_REGULAR
 
 #endif // PDFGEN_H
