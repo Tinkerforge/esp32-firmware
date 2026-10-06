@@ -20,8 +20,10 @@
 #include "pdf_charge_log.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <algorithm>
 
 #define CHARGE_TRACKER_PDF_LOGO_WARP 0
 #define CHARGE_TRACKER_PDF_LOGO_ELTAKO 1
@@ -405,67 +407,126 @@
     #error "OPTIONS_CHARGE_TRACKER_PDF_LOGO has unknown value"
 #endif
 
-#define LEFT_MARGIN PDF_MM_TO_POINT(15)
-#define LETTERHEAD_LEFT_MARGIN PDF_MM_TO_POINT(25)
-#define LETTERHEAD_WIDTH PDF_MM_TO_POINT(80)
 
-#define RIGHT_MARGIN PDF_MM_TO_POINT(10)
-// TODO: This is the bottom margin of the logo background rectangle!
-// That is not what one expects to be the top margin of the page
-#define TOP_MARGIN PDF_MM_TO_POINT(35)
-#define BOTTOM_MARGIN PDF_MM_TO_POINT(10)
+// Layout
+//
+// All vertical positions named *_T are distances from the top edge of the page.
+// PDF coordinates start at the bottom edge, use Y() to convert.
+//
+// Everything above the table is placed on a two column grid: The left column starts at MARGIN_L, the right column at RIGHT_COL_X.
 
-#define LINE_WIDTH (PDF_A4_WIDTH - LEFT_MARGIN - RIGHT_MARGIN)
-#define FONT_SIZE 9
-#define LINE_SPACING 4
-#define LINE_HEIGHT (FONT_SIZE + LINE_SPACING)
+#define PAGE_W PDF_A4_WIDTH
+#define PAGE_H PDF_A4_HEIGHT
+#define Y(t) (PAGE_H - (t))
 
-#define DISPLAY_NAME_COLUMN 1
+#define MARGIN_L PDF_MM_TO_POINT(15)
+#define MARGIN_R PDF_MM_TO_POINT(15)
+#define CONTENT_W (PAGE_W - MARGIN_L - MARGIN_R)
+#define RIGHT_EDGE (PAGE_W - MARGIN_R)
 
-#define TABLE_COL_START 0
-#define TABLE_COL_USER 1
-#define TABLE_COL_CHARGER 2
-#define TABLE_COL_ENERGY 3
-#define TABLE_COL_DURATION 4
-#define TABLE_COL_METER_START 5
-#define TABLE_COL_COST 6
-#define TABLE_COLS 7
+#define GRID_GAP 10.0f
+#define COL_W ((CONTENT_W - GRID_GAP) / 2)
+#define RIGHT_COL_X (MARGIN_L + COL_W + GRID_GAP)
 
-static const float table_column_offsets[] {
-    (0 * LINE_WIDTH),
-    (0.1333 * LINE_WIDTH),
-    (0.35 * LINE_WIDTH),
-    (0.5666 * LINE_WIDTH),
-    (0.6875 * LINE_WIDTH),
-    (0.7916 * LINE_WIDTH),
-    (0.9292 * LINE_WIDTH),
-    LINE_WIDTH
+// Font sizes
+#define SIZE_TITLE 18.0f
+#define SIZE_TILE_VALUE 14.0f
+#define SIZE_SECTION 10.0f
+#define SIZE_TEXT 9.0f
+#define SIZE_SMALL 7.5f
+
+// Header bar with logo, on every page
+#define BAR_H 56.0f
+#define LOGO_H 24.0f
+
+// First page
+#define TITLE_T 86.0f
+#define SUBTITLE_T 100.0f
+#define TITLE_RULE_T 110.0f
+
+// Letterhead position is kept compatible with the old layout (window envelopes).
+#define LETTERHEAD_X PDF_MM_TO_POINT(25)
+#define LETTERHEAD_W (RIGHT_COL_X - GRID_GAP - LETTERHEAD_X)
+#define BLOCK_T 127.0f // Baseline of the first letterhead and info line
+#define BLOCK_LEADING 12.0f
+#define INFO_LABEL_GAP 10.0f
+
+#define TILES_GAP_T 13.0f // Between the last baseline of the info block and the tiles
+#define TILE_H 40.0f
+#define TILE_STRIPE_W 3.0f
+#define TILE_PADDING 10.0f
+
+#define SECTION_GAP_T 22.0f // Between the tiles and the baseline of the section title
+#define SECTION_TABLE_GAP_T 7.0f
+
+// Following pages
+#define CONT_TITLE_T 82.0f
+#define CONT_TABLE_T 94.0f
+
+// Table
+#define TABLE_HEADER_H 22.0f
+#define HEADER_BASELINE_1 9.5f // Header cells with two lines
+#define HEADER_BASELINE_2 18.0f // Second line and single line header cells
+#define ROW_H 21.0f // One charge, two lines
+#define ROW_BASELINE_1 8.5f
+#define ROW_BASELINE_2 17.0f
+#define ROW_BASELINE_CENTER 12.75f // Single line cells are centered vertically
+#define CELL_PADDING 3.5f
+
+// Charges per page. Must be multiples of PDF_TABLE_LINES_PER_OBJECT (except on the last page), because the charges are fetched in blocks of PDF_TABLE_LINES_PER_OBJECT.
+// The number on the first page depends on the height of the header.
+#define TABLE_LINES_PER_PAGE 32
+
+static_assert(TABLE_LINES_PER_PAGE % PDF_TABLE_LINES_PER_OBJECT == 0, "TABLE_LINES_PER_PAGE must be a multiple of PDF_TABLE_LINES_PER_OBJECT");
+
+// Summary below the table: totals row, subtotal tables and note
+#define TOTALS_H 20.0f
+#define TOTALS_BASELINE 13.0f
+#define NOTE_GAP 12.0f
+#define NOTE_PADDING 9.0f
+#define NOTE_TITLE_BASELINE 15.0f
+#define NOTE_TEXT_BASELINE 26.0f
+#define NOTE_LEADING 10.0f
+#define NOTE_TEXT_X (MARGIN_L + TILE_STRIPE_W + NOTE_PADDING)
+#define NOTE_TEXT_W (RIGHT_EDGE - NOTE_PADDING - NOTE_TEXT_X)
+
+// Subtotal tables below the totals row
+#define SUB_TITLE_H 27.0f
+#define SUB_TITLE_BASELINE 20.0f
+#define SUB_HEADER_H TABLE_HEADER_H // Two line headers, like the charge table
+#define SUB_ROW_H 14.0f
+#define SUB_BASELINE 10.0f
+
+// Footer
+#define CONTENT_BOTTOM_T 798.0f
+#define FOOTER_RULE_T 806.0f
+#define FOOTER_T 818.0f
+
+static_assert(CONT_TABLE_T + TABLE_HEADER_H + TABLE_LINES_PER_PAGE * ROW_H <= CONTENT_BOTTOM_T, "Too many charges per page");
+
+#define COLOR_TEXT PDF_RGB(0x22, 0x22, 0x22)
+#define COLOR_MUTED PDF_RGB(0x6B, 0x72, 0x80)
+#define COLOR_LIGHT_BG PDF_RGB(0xF3, 0xF4, 0xF6)
+#define COLOR_RULE PDF_RGB(0xD1, 0xD5, 0xDB)
+
+static constexpr uint32_t accent = logo_background & 0xFFFFFF;
+
+struct VisibleColumn {
+    int8_t top_cell;    // PDFTableColumn or -1 for the charge number
+    int8_t bottom_cell; // PDFTableColumn or -1 for single line cells
+    float width;        // 0: Shares the remaining width
+    bool right_aligned;
 };
 
-#define TABLE_LINES_FIRST_PAGE 32
-#define TABLE_LINES_PER_PAGE 40
-
-#define TABLE_LINES_PER_OBJECT 8
-
-static int get_streams_per_page(bool first_page, int *table_lines_to_place)
-{
-    int result = 0;
-    if (first_page) {
-        result += 1  // letter head
-                + 1; // stats
-    }
-    result += 1 // table header
-            + 1  // logo background
-            + 1; // page number
-
-    int to_place = std::min(*table_lines_to_place, first_page ? TABLE_LINES_FIRST_PAGE : TABLE_LINES_PER_PAGE);
-    *table_lines_to_place -= to_place;
-
-    result += ceil((float)to_place / TABLE_LINES_PER_OBJECT) // table content
-            + 1;    // line borders
-
-    return result;
-}
+static const VisibleColumn visible_columns[PDF_VCOL_COUNT] = {
+    {-1,                  -1,                28, true}, // Charge number: Up to 5 digits
+    {PDF_COL_START,       PDF_COL_END,       70, false},
+    {PDF_COL_USER,        PDF_COL_CHARGER,    0, false},
+    {PDF_COL_DURATION,    -1,                52, true},
+    {PDF_COL_METER_START, PDF_COL_METER_END, 72, true},
+    {PDF_COL_ENERGY,      -1,                60, true},
+    {PDF_COL_COST,        -1,                50, true},
+};
 
 // 1274 is the guesstimated optimal MSS. See event_log.cpp.
 #ifdef BOARD_HAS_PSRAM
@@ -474,124 +535,713 @@ static constexpr size_t pdf_write_buffer_size = 8 * 1274; // Half the TCP send w
 static constexpr size_t pdf_write_buffer_size = 2 * 1274;
 #endif
 
+namespace {
+
+enum class FlowKind {
+    Totals,
+    SubTitle,
+    SubHeader,
+    SubRow,
+    Note,
+};
+
+// An element of the summary below the table (totals, subtotal tables, note), placed on a page.
+struct FlowItem {
+    FlowKind kind;
+    int page;
+    float top_t;
+    int table;        // SubTitle, SubHeader, SubRow
+    uint32_t row;     // SubRow: Row in its table
+    uint32_t sub_row; // SubRow: Index over the rows of all subtotal tables
+};
+
+struct Layout {
+    const PDFReport *report;
+    int vcols;         // Number of visible columns
+    int cells_per_row; // Number of cells per charge returned by the callback
+    float col_x[PDF_VCOL_COUNT + 1];
+    float info_value_x;
+
+    float tiles_t;
+    float section_t;
+    float first_table_t;
+    int rows_first_page;
+
+    uint32_t table_rows;
+    float note_h;
+
+    int table_pages;     // Pages with charges. The summary starts on the last one of them.
+    int pages;
+    int rows_last_page;  // Rows on the last page with charges
+    int rows_split_page; // Rows on the second to last page with charges if the last one was split to keep the summary with the rows. -1 if not split.
+
+    bool is_first(int page) const { return page == 0; }
+
+    float table_t(int page) const { return is_first(page) ? first_table_t : CONT_TABLE_T; }
+    float rows_t(int page) const { return table_t(page) + TABLE_HEADER_H; }
+
+    int rows_on_page(int page) const {
+        if (page >= table_pages) {
+            return 0;
+        }
+        if (page == table_pages - 1) {
+            return rows_last_page;
+        }
+        if ((page == (table_pages - 2)) && (rows_split_page >= 0)) {
+            return rows_split_page;
+        }
+        return is_first(page) ? rows_first_page : TABLE_LINES_PER_PAGE;
+    }
+
+    // Rows drawn on a page: A message is shown in place of the first row if there are no charges.
+    int displayed_rows(int page) const {
+        return ((table_rows == 0) && (page == 0)) ? 1 : rows_on_page(page);
+    }
+
+    // Number of charges on all previous pages
+    int first_row_number(int page) const {
+        if (page == 0) {
+            return 0;
+        }
+        // All pages before the last two pages with charges are full.
+        if (page <= table_pages - 2) {
+            return rows_first_page + (page - 1) * TABLE_LINES_PER_PAGE;
+        }
+        return first_row_number(page - 1) + rows_on_page(page - 1);
+    }
+
+    int charge_chunks(int page) const {
+        return (rows_on_page(page) + PDF_TABLE_LINES_PER_OBJECT - 1) / PDF_TABLE_LINES_PER_OBJECT;
+    }
+
+    // Calls f for every element of the summary, in order. f returns false to stop.
+    template<typename F>
+    void for_each_flow_item(F &&f) const {
+        FlowItem item{};
+        item.page = table_pages - 1;
+        item.top_t = rows_t(item.page) + displayed_rows(item.page) * ROW_H;
+
+        auto ensure_space = [&item](float height) {
+            if (item.top_t + height > CONTENT_BOTTOM_T) {
+                ++item.page;
+                item.top_t = CONT_TABLE_T;
+            }
+        };
+
+        auto emit = [&item, &f](FlowKind kind, float height) {
+            item.kind = kind;
+            if (!f(static_cast<const FlowItem &>(item))) {
+                return false;
+            }
+            item.top_t += height;
+            return true;
+        };
+
+        ensure_space(TOTALS_H);
+        if (!emit(FlowKind::Totals, TOTALS_H)) {
+            return;
+        }
+
+        uint32_t sub_row = 0;
+        for (int table = 0; table < report->subtotal_table_count; ++table) {
+            const PDFSubtotalTable &st = report->subtotal_tables[table];
+            if (st.rows == 0) {
+                continue;
+            }
+
+            item.table = table;
+
+            // Keep the title with the header and the first rows.
+            ensure_space(SUB_TITLE_H + SUB_HEADER_H + SUB_ROW_H * std::min<uint32_t>(st.rows, 2));
+            if (!emit(FlowKind::SubTitle, SUB_TITLE_H)) {
+                return;
+            }
+            if (!emit(FlowKind::SubHeader, SUB_HEADER_H)) {
+                return;
+            }
+
+            for (uint32_t row = 0; row < st.rows; ++row) {
+                if (item.top_t + SUB_ROW_H > CONTENT_BOTTOM_T) {
+                    // Continue on the next page with a repeated header.
+                    ensure_space(SUB_ROW_H);
+                    if (!emit(FlowKind::SubHeader, SUB_HEADER_H)) {
+                        return;
+                    }
+                }
+
+                item.row = row;
+                item.sub_row = sub_row++;
+                if (!emit(FlowKind::SubRow, SUB_ROW_H)) {
+                    return;
+                }
+            }
+        }
+
+        if (report->note[0] != '\0') {
+            ensure_space(NOTE_GAP + note_h);
+            if (!emit(FlowKind::Note, NOTE_GAP + note_h)) {
+                return;
+            }
+        }
+    }
+
+    int last_flow_page() const {
+        int last = table_pages - 1;
+        for_each_flow_item([&last](const FlowItem &item) {
+            last = item.page;
+            return true;
+        });
+        return last;
+    }
+
+    // Rows of the subtotal tables on the given page
+    void sub_rows_on_page(int page, uint32_t *first, uint32_t *count) const {
+        *first = 0;
+        *count = 0;
+
+        if (page < table_pages - 1) {
+            return;
+        }
+
+        for_each_flow_item([page, first, count](const FlowItem &item) {
+            if (item.page > page) {
+                return false;
+            }
+            if ((item.page == page) && (item.kind == FlowKind::SubRow)) {
+                if (*count == 0) {
+                    *first = item.sub_row;
+                }
+                ++*count;
+            }
+            return true;
+        });
+    }
+
+    int sub_row_chunks(int page) const {
+        uint32_t first, count;
+        sub_rows_on_page(page, &first, &count);
+        return (int)((count + PDF_TABLE_LINES_PER_OBJECT - 1) / PDF_TABLE_LINES_PER_OBJECT);
+    }
+
+    int streams_on_page(int page) const {
+        return 1 // frame: everything except the text of the table rows
+             + charge_chunks(page)
+             + sub_row_chunks(page);
+    }
+
+    // Height of the summary that must be placed on the same page as the last charges.
+    float summary_keep_h() const {
+        for (int table = 0; table < report->subtotal_table_count; ++table) {
+            const uint32_t rows = report->subtotal_tables[table].rows;
+            if (rows > 0) {
+                return TOTALS_H + SUB_TITLE_H + SUB_HEADER_H + SUB_ROW_H * std::min<uint32_t>(rows, 2);
+            }
+        }
+
+        return TOTALS_H + (report->note[0] != '\0' ? NOTE_GAP + note_h : 0);
+    }
+
+    void init(struct pdf_doc *pdf, const PDFReport *r, uint32_t rows) {
+        report = r;
+        table_rows = rows;
+        vcols = r->show_cost_column ? PDF_VCOL_COUNT : PDF_VCOL_COUNT - 1;
+        cells_per_row = r->show_cost_column ? PDF_COL_COUNT : PDF_COL_COUNT - 1;
+
+        // Columns
+        float fixed = 0;
+        int flexible = 0;
+        for (int i = 0; i < vcols; ++i) {
+            fixed += visible_columns[i].width;
+            flexible += visible_columns[i].width == 0 ? 1 : 0;
+        }
+        const float flexible_width = (CONTENT_W - fixed) / flexible;
+
+        col_x[0] = MARGIN_L;
+        for (int i = 0; i < vcols; ++i) {
+            col_x[i + 1] = col_x[i] + (visible_columns[i].width == 0 ? flexible_width : visible_columns[i].width);
+        }
+
+        // Info block
+        float label_w = 0;
+        for (int i = 0; i < r->info_rows; ++i) {
+            label_w = std::max(label_w, pdf_text_width(pdf, PDF_FONT_REGULAR, r->info_labels[i], SIZE_TEXT));
+        }
+        info_value_x = RIGHT_COL_X + std::min(label_w + INFO_LABEL_GAP, COL_W / 2);
+
+        // Vertical layout of the first page depends on the height of the letterhead and info block.
+        const int block_lines = std::max(1, std::max(r->letterhead_lines, r->info_rows));
+        tiles_t = BLOCK_T + (block_lines - 1) * BLOCK_LEADING + TILES_GAP_T;
+        section_t = tiles_t + TILE_H + SECTION_GAP_T;
+        first_table_t = section_t + SECTION_TABLE_GAP_T;
+
+        const int fitting_first = (int)floorf((CONTENT_BOTTOM_T - first_table_t - TABLE_HEADER_H) / ROW_H);
+        rows_first_page = std::max(PDF_TABLE_LINES_PER_OBJECT, (fitting_first / PDF_TABLE_LINES_PER_OBJECT) * PDF_TABLE_LINES_PER_OBJECT);
+
+        // Note
+        int note_lines = 0;
+        if (r->note[0] != '\0') {
+            note_lines = std::max(0, pdf_stream_text_wrap(pdf, PDF_FONT_REGULAR, r->note, SIZE_SMALL, 0, 0, NOTE_TEXT_W, NOTE_LEADING, 0, false));
+        }
+        note_h = NOTE_TEXT_BASELINE + std::max(0, note_lines - 1) * NOTE_LEADING + NOTE_PADDING;
+
+        // Pages with charges
+        uint32_t remaining = rows;
+        rows_last_page = (int)std::min<uint32_t>(remaining, (uint32_t)rows_first_page);
+        remaining -= (uint32_t)rows_last_page;
+        table_pages = 1;
+
+        while (remaining > 0) {
+            rows_last_page = (int)std::min<uint32_t>(remaining, TABLE_LINES_PER_PAGE);
+            remaining -= (uint32_t)rows_last_page;
+            ++table_pages;
+        }
+
+        rows_split_page = -1;
+
+        // If the start of the summary does not fit below the rows of the last page, move the last rows to a new page.
+        // The (now) second to last page must contain a multiple of PDF_TABLE_LINES_PER_OBJECT rows.
+        const int last = table_pages - 1;
+        const float space = CONTENT_BOTTOM_T - rows_t(last) - displayed_rows(last) * ROW_H;
+        if ((space < summary_keep_h()) && (rows_last_page > PDF_TABLE_LINES_PER_OBJECT)) {
+            rows_split_page = ((rows_last_page - 1) / PDF_TABLE_LINES_PER_OBJECT) * PDF_TABLE_LINES_PER_OBJECT;
+            rows_last_page -= rows_split_page;
+            ++table_pages;
+        }
+
+        pages = last_flow_page() + 1;
+    }
+
+    float cell_text_x(int vcol) const {
+        return visible_columns[vcol].right_aligned ? col_x[vcol + 1] - CELL_PADDING : col_x[vcol] + CELL_PADDING;
+    }
+
+    int cell_align(int vcol) const {
+        return visible_columns[vcol].right_aligned ? PDF_ALIGN_RIGHT : PDF_ALIGN_LEFT;
+    }
+
+    float cell_max_width(int vcol) const {
+        return col_x[vcol + 1] - col_x[vcol] - 2 * CELL_PADDING;
+    }
+
+    // Subtotal tables: The name spans the number, time and name columns. The other values are aligned to the charge table.
+    void sub_cell(int sub_col, float *x, int *align, float *max_w) const {
+        if (sub_col == PDF_SUB_COL_NAME) {
+            *x = col_x[PDF_VCOL_NUMBER] + CELL_PADDING;
+            *align = PDF_ALIGN_LEFT;
+            *max_w = col_x[PDF_VCOL_DURATION] - col_x[PDF_VCOL_NUMBER] - 2 * CELL_PADDING;
+            return;
+        }
+
+        static const int vcol_of_sub_col[PDF_SUB_COL_COUNT_] = {
+            PDF_VCOL_NUMBER,
+            PDF_VCOL_METER,
+            PDF_VCOL_DURATION,
+            PDF_VCOL_ENERGY,
+            PDF_VCOL_COST,
+        };
+
+        const int vcol = vcol_of_sub_col[sub_col];
+        *x = cell_text_x(vcol);
+        *align = cell_align(vcol);
+        *max_w = cell_max_width(vcol);
+    }
+
+    int sub_cols() const {
+        return report->show_cost_column ? PDF_SUB_COL_COUNT_ : PDF_SUB_COL_COUNT_ - 1;
+    }
+};
+
+} // anonymous namespace
+
+static const char *next_cell(const char *cell)
+{
+    return cell + strlen(cell) + 1;
+}
+
+static void draw_first_page_header(struct pdf_doc *pdf, const Layout &l)
+{
+    const PDFReport &r = *l.report;
+
+    // Title
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.title, SIZE_TITLE, MARGIN_L, Y(TITLE_T), COLOR_TEXT, PDF_ALIGN_LEFT, CONTENT_W);
+    pdf_stream_text(pdf, PDF_FONT_REGULAR, r.subtitle, SIZE_TEXT, MARGIN_L, Y(SUBTITLE_T), COLOR_MUTED, PDF_ALIGN_LEFT, CONTENT_W);
+    pdf_stream_line(pdf, MARGIN_L, Y(TITLE_RULE_T), RIGHT_EDGE, Y(TITLE_RULE_T), 1, accent);
+
+    // Letterhead (left column)
+    const char *line = r.letterhead;
+    for (int i = 0; i < r.letterhead_lines; ++i) {
+        pdf_stream_text(pdf, PDF_FONT_REGULAR, line, SIZE_TEXT, LETTERHEAD_X, Y(BLOCK_T + i * BLOCK_LEADING), COLOR_TEXT, PDF_ALIGN_LEFT, LETTERHEAD_W);
+        line = next_cell(line);
+    }
+
+    // Info block (right column)
+    for (int i = 0; i < r.info_rows; ++i) {
+        const float y = Y(BLOCK_T + i * BLOCK_LEADING);
+        pdf_stream_text(pdf, PDF_FONT_REGULAR, r.info_labels[i], SIZE_TEXT, RIGHT_COL_X, y, COLOR_MUTED, PDF_ALIGN_LEFT, l.info_value_x - RIGHT_COL_X - INFO_LABEL_GAP);
+        pdf_stream_text(pdf, r.info_bold[i] ? PDF_FONT_BOLD : PDF_FONT_REGULAR, r.info_values[i], SIZE_TEXT, l.info_value_x, y, COLOR_TEXT, PDF_ALIGN_LEFT, RIGHT_EDGE - l.info_value_x);
+    }
+
+    // Tiles: The first one spans the left column, the other two share the right column.
+    const float small_tile_w = (COL_W - GRID_GAP) / 2;
+    const float tile_x[PDF_TILE_COUNT] = {MARGIN_L, RIGHT_COL_X, RIGHT_COL_X + small_tile_w + GRID_GAP};
+    const float tile_w[PDF_TILE_COUNT] = {COL_W, small_tile_w, small_tile_w};
+
+    for (int i = 0; i < PDF_TILE_COUNT; ++i) {
+        if (r.tile_labels[i] == nullptr) {
+            continue;
+        }
+
+        const float x = tile_x[i];
+        const float text_x = x + TILE_STRIPE_W + TILE_PADDING;
+        const float text_w = tile_w[i] - TILE_STRIPE_W - 2 * TILE_PADDING;
+
+        pdf_stream_fill_rect(pdf, x, Y(l.tiles_t + TILE_H), tile_w[i], TILE_H, COLOR_LIGHT_BG);
+        pdf_stream_fill_rect(pdf, x, Y(l.tiles_t + TILE_H), TILE_STRIPE_W, TILE_H, accent);
+        pdf_stream_text(pdf, PDF_FONT_REGULAR, r.tile_labels[i], SIZE_TEXT, text_x, Y(l.tiles_t + 14), COLOR_MUTED, PDF_ALIGN_LEFT, text_w);
+        pdf_stream_text(pdf, PDF_FONT_BOLD, r.tile_values[i], SIZE_TILE_VALUE, text_x, Y(l.tiles_t + 32), COLOR_TEXT, PDF_ALIGN_LEFT, text_w);
+    }
+
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.section_title, SIZE_SECTION, MARGIN_L, Y(l.section_t), COLOR_TEXT, PDF_ALIGN_LEFT, CONTENT_W);
+}
+
+static void draw_following_page_header(struct pdf_doc *pdf, const Layout &l)
+{
+    const PDFReport &r = *l.report;
+
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.title, SIZE_SECTION, MARGIN_L, Y(CONT_TITLE_T), COLOR_TEXT, PDF_ALIGN_LEFT, COL_W);
+    pdf_stream_text(pdf, PDF_FONT_REGULAR, r.period, SIZE_TEXT, RIGHT_EDGE, Y(CONT_TITLE_T), COLOR_MUTED, PDF_ALIGN_RIGHT, COL_W);
+}
+
+// Header cells are bottom-aligned. A '\n' splits a header cell into two lines.
+static void draw_header_cell(struct pdf_doc *pdf, const char *cell, float header_t, float x, int align, float max_w)
+{
+    char buf[64];
+    strncpy(buf, cell, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+
+    char *second = strchr(buf, '\n');
+    if (second != nullptr) {
+        *second++ = '\0';
+    }
+
+    if (second != nullptr) {
+        pdf_stream_text(pdf, PDF_FONT_BOLD, buf, SIZE_SMALL, x, Y(header_t + HEADER_BASELINE_1), PDF_WHITE, align, max_w);
+        pdf_stream_text(pdf, PDF_FONT_BOLD, second, SIZE_SMALL, x, Y(header_t + HEADER_BASELINE_2), PDF_WHITE, align, max_w);
+    } else {
+        pdf_stream_text(pdf, PDF_FONT_BOLD, buf, SIZE_SMALL, x, Y(header_t + HEADER_BASELINE_2), PDF_WHITE, align, max_w);
+    }
+}
+
+static void draw_table_header(struct pdf_doc *pdf, const Layout &l, float table_t)
+{
+    pdf_stream_fill_rect(pdf, MARGIN_L, Y(table_t + TABLE_HEADER_H), CONTENT_W, TABLE_HEADER_H, accent);
+
+    const char *cell = l.report->table_header;
+    for (int vcol = 0; vcol < l.vcols; ++vcol) {
+        draw_header_cell(pdf, cell, table_t, l.cell_text_x(vcol), l.cell_align(vcol), l.cell_max_width(vcol));
+        cell = next_cell(cell);
+    }
+}
+
+static void draw_footer(struct pdf_doc *pdf, const Layout &l, int page)
+{
+    char page_label[48];
+    snprintf(page_label, sizeof(page_label), l.report->page_label_format, page + 1, l.pages);
+
+    const float page_label_w = pdf_text_width(pdf, PDF_FONT_REGULAR, page_label, SIZE_SMALL);
+
+    pdf_stream_line(pdf, MARGIN_L, Y(FOOTER_RULE_T), RIGHT_EDGE, Y(FOOTER_RULE_T), 0.5f, COLOR_RULE);
+    pdf_stream_text(pdf, PDF_FONT_REGULAR, l.report->footer, SIZE_SMALL, MARGIN_L, Y(FOOTER_T), COLOR_MUTED, PDF_ALIGN_LEFT, CONTENT_W - page_label_w - 20);
+    pdf_stream_text(pdf, PDF_FONT_REGULAR, page_label, SIZE_SMALL, RIGHT_EDGE, Y(FOOTER_T), COLOR_MUTED, PDF_ALIGN_RIGHT);
+}
+
+static void draw_totals(struct pdf_doc *pdf, const Layout &l, float top_t)
+{
+    const PDFReport &r = *l.report;
+    const float y = Y(top_t + TOTALS_BASELINE);
+
+    pdf_stream_line(pdf, MARGIN_L, Y(top_t), RIGHT_EDGE, Y(top_t), 1, accent);
+
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.totals_label, SIZE_SMALL, l.col_x[PDF_VCOL_NUMBER] + CELL_PADDING, y, COLOR_TEXT, PDF_ALIGN_LEFT,
+                    l.col_x[PDF_VCOL_DURATION] - l.col_x[PDF_VCOL_NUMBER] - 2 * CELL_PADDING);
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.totals_duration, SIZE_SMALL, l.cell_text_x(PDF_VCOL_DURATION), y, COLOR_TEXT, PDF_ALIGN_RIGHT, l.cell_max_width(PDF_VCOL_DURATION));
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.totals_energy, SIZE_SMALL, l.cell_text_x(PDF_VCOL_ENERGY), y, COLOR_TEXT, PDF_ALIGN_RIGHT, l.cell_max_width(PDF_VCOL_ENERGY));
+    if (r.show_cost_column) {
+        pdf_stream_text(pdf, PDF_FONT_BOLD, r.totals_cost, SIZE_SMALL, l.cell_text_x(PDF_VCOL_COST), y, COLOR_TEXT, PDF_ALIGN_RIGHT, l.cell_max_width(PDF_VCOL_COST));
+    }
+}
+
+static void draw_sub_header(struct pdf_doc *pdf, const Layout &l, const PDFSubtotalTable &table, float top_t)
+{
+    pdf_stream_fill_rect(pdf, MARGIN_L, Y(top_t + SUB_HEADER_H), CONTENT_W, SUB_HEADER_H, accent);
+
+    const char *cell = table.header;
+    for (int sub_col = 0; sub_col < l.sub_cols(); ++sub_col) {
+        float x, max_w;
+        int align;
+        l.sub_cell(sub_col, &x, &align, &max_w);
+        draw_header_cell(pdf, cell, top_t, x, align, max_w);
+        cell = next_cell(cell);
+    }
+}
+
+static void draw_note(struct pdf_doc *pdf, const Layout &l, float top_t)
+{
+    const PDFReport &r = *l.report;
+    const float note_t = top_t + NOTE_GAP;
+
+    pdf_stream_fill_rect(pdf, MARGIN_L, Y(note_t + l.note_h), CONTENT_W, l.note_h, COLOR_LIGHT_BG);
+    pdf_stream_fill_rect(pdf, MARGIN_L, Y(note_t + l.note_h), TILE_STRIPE_W, l.note_h, accent);
+    pdf_stream_text(pdf, PDF_FONT_BOLD, r.note_title, SIZE_SMALL, NOTE_TEXT_X, Y(note_t + NOTE_TITLE_BASELINE), COLOR_TEXT);
+    pdf_stream_text_wrap(pdf, PDF_FONT_REGULAR, r.note, SIZE_SMALL, NOTE_TEXT_X, Y(note_t + NOTE_TEXT_BASELINE), NOTE_TEXT_W, NOTE_LEADING, COLOR_TEXT, true);
+}
+
+// Everything of the summary on the given page, except the text of the subtotal rows.
+static void draw_summary(struct pdf_doc *pdf, const Layout &l, int page)
+{
+    const PDFReport &r = *l.report;
+
+    l.for_each_flow_item([pdf, &l, &r, page](const FlowItem &item) {
+        if (item.page > page) {
+            return false;
+        }
+        if (item.page < page) {
+            return true;
+        }
+
+        switch (item.kind) {
+            case FlowKind::Totals:
+                draw_totals(pdf, l, item.top_t);
+                break;
+
+            case FlowKind::SubTitle:
+                pdf_stream_text(pdf, PDF_FONT_BOLD, r.subtotal_tables[item.table].title, SIZE_SECTION, MARGIN_L, Y(item.top_t + SUB_TITLE_BASELINE), COLOR_TEXT, PDF_ALIGN_LEFT, CONTENT_W);
+                break;
+
+            case FlowKind::SubHeader:
+                draw_sub_header(pdf, l, r.subtotal_tables[item.table], item.top_t);
+                break;
+
+            case FlowKind::SubRow:
+                if (item.row % 2 == 1) {
+                    pdf_stream_fill_rect(pdf, MARGIN_L, Y(item.top_t + SUB_ROW_H), CONTENT_W, SUB_ROW_H, COLOR_LIGHT_BG);
+                }
+                if (item.row + 1 == r.subtotal_tables[item.table].rows) {
+                    pdf_stream_line(pdf, MARGIN_L, Y(item.top_t + SUB_ROW_H), RIGHT_EDGE, Y(item.top_t + SUB_ROW_H), 0.5f, COLOR_RULE);
+                }
+                break;
+
+            case FlowKind::Note:
+                draw_note(pdf, l, item.top_t);
+                break;
+        }
+
+        return true;
+    });
+}
+
+// Everything on a page except the text of the table rows.
+static int draw_frame(struct pdf_doc *pdf, const Layout &l, int page)
+{
+    pdf_stream_begin(pdf);
+
+    // Header bar. The logo is drawn on top of it by the image callback.
+    pdf_stream_fill_rect(pdf, 0, Y(BAR_H), PAGE_W, BAR_H, accent);
+
+    if (l.is_first(page)) {
+        draw_first_page_header(pdf, l);
+    } else {
+        draw_following_page_header(pdf, l);
+    }
+
+    if (page < l.table_pages) {
+        draw_table_header(pdf, l, l.table_t(page));
+
+        const float rows_t = l.rows_t(page);
+        const int rows = l.displayed_rows(page);
+
+        // Zebra stripes, one per charge
+        for (int i = 1; i < rows; i += 2) {
+            pdf_stream_fill_rect(pdf, MARGIN_L, Y(rows_t + (i + 1) * ROW_H), CONTENT_W, ROW_H, COLOR_LIGHT_BG);
+        }
+
+        if (l.table_rows == 0) {
+            pdf_stream_text(pdf, PDF_FONT_REGULAR, l.report->no_charges_text, SIZE_SMALL, MARGIN_L + CELL_PADDING, Y(rows_t + ROW_BASELINE_CENTER), COLOR_MUTED, PDF_ALIGN_LEFT, CONTENT_W);
+        }
+
+        if (page < l.table_pages - 1) {
+            const float rows_end_t = rows_t + rows * ROW_H;
+            pdf_stream_line(pdf, MARGIN_L, Y(rows_end_t), RIGHT_EDGE, Y(rows_end_t), 0.5f, COLOR_RULE);
+        }
+    }
+
+    if (page >= l.table_pages - 1) {
+        draw_summary(pdf, l, page);
+    }
+
+    draw_footer(pdf, l, page);
+
+    return pdf_stream_end(pdf);
+}
+
+static int draw_rows(struct pdf_doc *pdf, const Layout &l, int page, int chunk, const char *cells)
+{
+    const int first_row = chunk * PDF_TABLE_LINES_PER_OBJECT;
+    const int rows = std::min(PDF_TABLE_LINES_PER_OBJECT, l.rows_on_page(page) - first_row);
+    const float rows_t = l.rows_t(page);
+    const int first_number = l.first_row_number(page) + 1;
+
+    const char *cell_ptrs[PDF_TABLE_LINES_PER_OBJECT][PDF_COL_COUNT] = {};
+    for (int i = 0; i < rows; ++i) {
+        for (int col = 0; col < l.cells_per_row; ++col) {
+            cell_ptrs[i][col] = cells;
+            cells = next_cell(cells);
+        }
+    }
+
+    pdf_stream_begin(pdf);
+
+    // Draw all texts of one color first: Switching the color for every cell would make the stream about 20% larger.
+    // The size of the largest stream determines how much memory the PDF generation needs.
+    for (const uint32_t color : {COLOR_TEXT, COLOR_MUTED}) {
+        for (int i = 0; i < rows; ++i) {
+            const float row_t = rows_t + (first_row + i) * ROW_H;
+
+            for (int vcol = 0; vcol < l.vcols; ++vcol) {
+                const VisibleColumn &c = visible_columns[vcol];
+                const float x = l.cell_text_x(vcol);
+                const int align = l.cell_align(vcol);
+                const float max_w = l.cell_max_width(vcol);
+
+                if (c.top_cell < 0) {
+                    // Charge number
+                    if (color == COLOR_MUTED) {
+                        char number[12];
+                        snprintf(number, sizeof(number), "%d", first_number + first_row + i);
+                        pdf_stream_text(pdf, PDF_FONT_REGULAR, number, SIZE_SMALL, x, Y(row_t + ROW_BASELINE_CENTER), color, align, max_w);
+                    }
+                } else if (c.bottom_cell < 0) {
+                    if (color == COLOR_TEXT) {
+                        pdf_stream_text(pdf, PDF_FONT_REGULAR, cell_ptrs[i][c.top_cell], SIZE_SMALL, x, Y(row_t + ROW_BASELINE_CENTER), color, align, max_w);
+                    }
+                } else if (color == COLOR_TEXT) {
+                    pdf_stream_text(pdf, PDF_FONT_REGULAR, cell_ptrs[i][c.top_cell], SIZE_SMALL, x, Y(row_t + ROW_BASELINE_1), color, align, max_w);
+                } else {
+                    pdf_stream_text(pdf, PDF_FONT_REGULAR, cell_ptrs[i][c.bottom_cell], SIZE_SMALL, x, Y(row_t + ROW_BASELINE_2), color, align, max_w);
+                }
+            }
+        }
+    }
+
+    return pdf_stream_end(pdf);
+}
+
+static int draw_sub_rows(struct pdf_doc *pdf, const Layout &l, int page, int chunk)
+{
+    uint32_t first, count;
+    l.sub_rows_on_page(page, &first, &count);
+
+    const uint32_t chunk_first = first + (uint32_t)chunk * PDF_TABLE_LINES_PER_OBJECT;
+    const uint32_t chunk_end = std::min(first + count, chunk_first + PDF_TABLE_LINES_PER_OBJECT);
+
+    pdf_stream_begin(pdf);
+
+    l.for_each_flow_item([pdf, &l, page, chunk_first, chunk_end](const FlowItem &item) {
+        if (item.page > page) {
+            return false;
+        }
+        if ((item.page < page) || (item.kind != FlowKind::SubRow) || (item.sub_row < chunk_first)) {
+            return true;
+        }
+        if (item.sub_row >= chunk_end) {
+            return false;
+        }
+
+        char buf[PDF_SUBTOTAL_ROW_LEN];
+        memset(buf, 0, sizeof(buf));
+        l.report->subtotal_row(item.table, item.row, buf);
+
+        const char *cell = buf;
+        for (int sub_col = 0; sub_col < l.sub_cols(); ++sub_col) {
+            float x, max_w;
+            int align;
+            l.sub_cell(sub_col, &x, &align, &max_w);
+            pdf_stream_text(pdf, PDF_FONT_REGULAR, cell, SIZE_SMALL, x, Y(item.top_t + SUB_BASELINE), COLOR_TEXT, align, max_w);
+            cell = next_cell(cell);
+        }
+
+        return true;
+    });
+
+    return pdf_stream_end(pdf);
+}
+
+static void set_info(char *dst, size_t dst_size, const char *src)
+{
+    strncpy(dst, src != nullptr ? src : "", dst_size - 1);
+    dst[dst_size - 1] = '\0';
+}
+
 int init_pdf_generator(std::function<int(const void *data, size_t len)> &write_callback,
-                       const char *title,
-                       const char *stats,
-                       int stats_lines,
-                       const char *letterhead,
-                       int letterhead_lines,
-                       const char *table_header,
-                       uint16_t tracked_charges,
-                       Language language,
+                       const PDFReport &report,
+                       uint32_t table_rows,
                        const std::function<int(const char **)> &table_lines_cb)
 {
     struct pdf_info info;
     memset(&info, 0, sizeof(info));
-    strncpy(info.title, title, ARRAY_SIZE(info.title) - 1);
+    set_info(info.title, sizeof(info.title), report.doc_title);
+    set_info(info.author, sizeof(info.author), report.doc_author);
+    set_info(info.subject, sizeof(info.subject), report.doc_subject);
+    set_info(info.creator, sizeof(info.creator), report.doc_creator);
+    set_info(info.producer, sizeof(info.producer), report.doc_creator);
 
-    struct pdf_doc *pdf = pdf_create(PDF_A4_WIDTH, PDF_A4_HEIGHT, &info, pdf_write_buffer_size);
+    struct pdf_doc *pdf = pdf_create(PAGE_W, PAGE_H, &info, pdf_write_buffer_size);
+    if (pdf == nullptr) {
+        return -1;
+    }
+
     pdf_add_write_callback(pdf, [write_callback](const void *buf, size_t len) -> int {
         int rc = write_callback(buf, len);
-        if (rc != ESP_OK)
+        if (rc != 0) {
             return -abs(rc);
+        }
 
         return len;
     });
-    int pages_created = 0;
-    int pages_to_be_created = 0;
-    int table_lines_last_page = 0;
 
-    int table_content_placed = 0;
-    int table_lines_to_place = 0;
+    Layout layout;
+    layout.init(pdf, &report, table_rows);
 
-    table_lines_to_place = tracked_charges;
-
-    while (table_lines_to_place > 0) {
-        table_lines_last_page = table_lines_to_place;
-        int streams = get_streams_per_page(pages_to_be_created == 0, &table_lines_to_place);
-        pdf_notify_page(pdf, streams, 1);
-        ++pages_to_be_created;
+    for (int page = 0; page < layout.pages; ++page) {
+        pdf_notify_page(pdf, layout.streams_on_page(page), 1);
     }
 
-    table_lines_to_place = tracked_charges;
-
-    pdf_add_page_callback(pdf, [&table_lines_last_page, &pages_created, &table_lines_to_place](struct pdf_doc *pdf_doc, uint32_t page_num) -> int {
-        table_lines_last_page = table_lines_to_place;
-        int streams = get_streams_per_page(pages_created == 0, &table_lines_to_place);
-        pdf_append_page(pdf_doc, streams, 1);
-        ++pages_created;
+    pdf_add_page_callback(pdf, [&layout](struct pdf_doc *pdf_doc, uint32_t page_num) -> int {
+        pdf_append_page(pdf_doc, layout.streams_on_page(page_num), 1);
         return 0;
     });
 
     pdf_add_image_callback(pdf, [](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t image_num) -> int {
-        return pdf_add_png_image_data(pdf_doc, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, logo_background, logo_png, sizeof(logo_png));
+        return pdf_add_png_image_data(pdf_doc, NULL, MARGIN_L, Y((BAR_H + LOGO_H) / 2), -1, LOGO_H, logo_background, logo_png, sizeof(logo_png));
     });
 
-    pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header, language](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
-        // Logo background
-        if (stream_num == 0)
-            return pdf_add_filled_rectangle(pdf_doc, NULL, 0, PDF_A4_HEIGHT - TOP_MARGIN, PDF_A4_WIDTH, 75, 0, logo_background, 0);
-        --stream_num;
+    pdf_add_stream_callback(pdf, [&layout, &table_lines_cb](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
+        const int page = (int)page_num;
 
-        // Page number
         if (stream_num == 0) {
-            float width = 0.0f;
-            char buf[32] = {};
-            const char *page_label = language == Language::English ? "Page %ld of %d" : "Seite %ld von %d";
-            snprintf(buf, ARRAY_SIZE(buf), page_label, page_num + 1, pages_to_be_created);
-            pdf_get_font_text_width(pdf_doc, DEFAULT_FONT, buf, FONT_SIZE, &width);
-            return pdf_add_text(pdf_doc, NULL, buf, FONT_SIZE, (PDF_A4_WIDTH - width) / 2, BOTTOM_MARGIN, PDF_BLACK);
-        }
-        --stream_num;
-
-        // First page
-        if (page_num == 0) {
-            // Stats block (top right)
-            if (stream_num == 0) {
-                float offsets[2] = {0, LINE_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf_doc, NULL, stats, stats_lines, 1, FONT_SIZE, LEFT_MARGIN + table_column_offsets[TABLE_COL_ENERGY], PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * 1), PDF_BLACK, 0, LINE_HEIGHT, offsets);
-            }
-            --stream_num;
-
-            // Letter head (top left)
-            if (stream_num == 0) {
-                float offsets[2] = {0, LETTERHEAD_WIDTH};
-                return pdf_add_multiple_text_spacing(pdf_doc, NULL, letterhead, letterhead_lines, 1, FONT_SIZE, LETTERHEAD_LEFT_MARGIN, PDF_A4_HEIGHT - TOP_MARGIN - 10 - (LINE_HEIGHT * (stream_num + 1)), PDF_BLACK, 0, LINE_HEIGHT, offsets);
-            }
-            --stream_num;
+            return draw_frame(pdf_doc, layout, page);
         }
 
-        auto content_offset = PDF_A4_HEIGHT - TOP_MARGIN - 10 - (page_num == 0 ? (LINE_HEIGHT * (std::max(letterhead_lines, stats_lines) + 2)) : LINE_HEIGHT);
+        const int chunk = (int)stream_num - 1;
+        const int charge_chunks = layout.charge_chunks(page);
 
-        // Table header
-        if (stream_num == 0) {
-            return pdf_add_multiple_text_spacing(pdf_doc, NULL, table_header, 1, TABLE_COLS, FONT_SIZE, LEFT_MARGIN, content_offset, PDF_BLACK, 0, LINE_HEIGHT, table_column_offsets, false);
-        }
-        --stream_num;
-
-        { // Table lines
-            auto table_line_offset = content_offset - (LINE_HEIGHT * 1.2 * (stream_num + 1)) - LINE_HEIGHT * 0.3;
-            auto table_lines = (page_num + 1) == pages_to_be_created ? table_lines_last_page : (page_num == 0 ? TABLE_LINES_FIRST_PAGE : TABLE_LINES_PER_PAGE);
-
-            if (stream_num == 0) {
-                return pdf_add_horizontal_lines(pdf_doc, nullptr, LEFT_MARGIN, table_line_offset, PDF_A4_WIDTH - RIGHT_MARGIN, table_line_offset, 0.5, PDF_BLACK, LINE_HEIGHT * 1.2, table_lines, true);
-            }
-
-            --stream_num;
+        if (chunk < charge_chunks) {
+            const char *cells = nullptr;
+            table_lines_cb(&cells);
+            return draw_rows(pdf_doc, layout, page, chunk, cells);
         }
 
-        // Table content
-        auto table_text_offset = content_offset - (LINE_HEIGHT * 1.2 * (1 + ((int)(stream_num * TABLE_LINES_PER_OBJECT))));
-
-        auto lines = std::min(8, tracked_charges - table_content_placed);
-        table_content_placed += lines;
-
-        const char *lines_string;
-        int lines_generated = table_lines_cb(&lines_string);
-        // TODO: check if lines_generated != lines and if so handle this somehow.
-        (void) lines_generated;
-
-        return pdf_add_multiple_text_spacing(pdf_doc, NULL, lines_string, lines, TABLE_COLS, FONT_SIZE, LEFT_MARGIN, table_text_offset, PDF_BLACK, 0, LINE_HEIGHT * 1.2, table_column_offsets);
+        return draw_sub_rows(pdf_doc, layout, page, chunk - charge_chunks);
     });
 
     int rc = pdf_save_file(pdf);

@@ -134,6 +134,9 @@ struct GenerationParams {
     uint32_t electricity_price = 0;
     String display_name = "";
     String unique_device_name = "";
+    String display_type = ""; // Product name, e.g. "WARP4 Charger Pro 22kW"
+    uint32_t local_uid = 0;
+    uint8_t charger_meter_type = 0;
     uint8_t configured_users[MAX_ACTIVE_USERS] = {};
     int32_t configured_chargers[MAX_CONTROLLED_CHARGERS] = {};
     display_name_entry *display_name_cache = nullptr;
