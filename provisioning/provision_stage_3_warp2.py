@@ -779,13 +779,32 @@ class Stage3:
 
                 break
 
-            time.sleep(0.05)
+            time.sleep(0.025)
 
             duration = time.monotonic() - start
         else:
             fatal_error(f'DC fault still present after {timeout:.3f}s')
 
-        time.sleep(RELAY_SETTLE_DURATION)
+        print('Waiting for DC fault to stay cleared')
+
+        start = time.monotonic()
+        duration = -1
+        timeout = 5
+
+        while duration < timeout:
+            gpio_state = self.get_gpio_state_function()
+
+            if any(gpio_state[:3]):
+                if duration < 0:
+                    fatal_error('DC fault immediately present again')
+                else:
+                    fatal_error(f'DC fault present again after {duration:.3f}s')
+
+            time.sleep(0.025)
+
+            duration = time.monotonic() - start
+
+        print(f'DC fault stayed cleared for {timeout:.3f}s')
 
         print('Resetting DC fault state')
 
