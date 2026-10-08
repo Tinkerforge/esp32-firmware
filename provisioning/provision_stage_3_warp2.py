@@ -1231,28 +1231,7 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 03a: test Z line L1
-        print('Electrical test Z line L1')
-
-        self.test_zline('L1', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 03b: test Z loop L1
-        print('Electrical test Z loop L1')
-
-        self.test_zloop('L1', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 03c: test Uc L1
-        print('Electrical test Uc L1')
-
-        self.test_uc('L1', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 04: test voltage L2
+        # step 03: test voltage L2
         self.change_meter_state('Type2-L2')
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -1265,28 +1244,7 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 05a: test Z line L2
-        print('Electrical test Z line L2')
-
-        self.test_zline('L2', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 05b: test Z loop L2
-        print('Electrical test Z loop L2')
-
-        self.test_zloop('L2', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 05c: test Uc L2
-        print('Electrical test Uc L2')
-
-        self.test_uc('L2', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 06: test voltage L3
+        # step 04: test voltage L3
         self.change_meter_state('Type2-L3')
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -1299,28 +1257,7 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 07a: test Z line L3
-        print('Electrical test Z line L3')
-
-        self.test_zline('L3', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 07b: test Z loop L3
-        print('Electrical test Z loop L3')
-
-        self.test_zloop('L3', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 07c: test Uc L3
-        print('Electrical test Uc L3')
-
-        self.test_uc('L3', report)
-
-        self.verify_evse_not_crashed()
-
-        # step 08: test RCD positive
+        # step 05: test RCD positive
         self.change_meter_state('Type2-L1')
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -1331,10 +1268,13 @@ class Stage3:
         if not report['rcdi_positive']['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_positive"], indent=4)}')
 
+        if float(report['rcdi_positive']['results']['Id'].split(' ')[0]) < 5.4:
+            fatal_error(f'Electrical test failed (Id < 5.4 mA): {json.dumps(report["rcdi_positive"], indent=4)}')
+
         self.reset_dc_fault('C')
         self.verify_evse_not_crashed()
 
-        # step 09: test RCD negative
+        # step 06: test RCD negative
         print('Electrical test RCD negative')
 
         report['rcdi_negative'] = blackbox.bb_measure_rcdi('-')._asdict()
@@ -1342,10 +1282,91 @@ class Stage3:
         if not report['rcdi_negative']['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_negative"], indent=4)}')
 
-        self.reset_dc_fault('A')
+        if float(report['rcdi_negative']['results']['Id'].split(' ')[0]) < 5.4:
+            fatal_error(f'Electrical test failed (Id < 5.4 mA): {json.dumps(report["rcdi_negative"], indent=4)}')
+
+        self.reset_dc_fault('C')
+        self.verify_evse_not_crashed()
+
+        # step 07a: test Z line L1
+        print('Electrical test Z line L1')
+
+        self.test_zline('L1', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 07b: test Z loop L1
+        print('Electrical test Z loop L1')
+
+        self.test_zloop('L1', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 07c: test Uc L1
+        print('Electrical test Uc L1')
+
+        self.test_uc('L1', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 08a: test Z line L2
+        self.change_meter_state('Type2-L2')
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        print('Electrical test Z line L2')
+
+        self.test_zline('L2', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 08b: test Z loop L2
+        print('Electrical test Z loop L2')
+
+        self.test_zloop('L2', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 08c: test Uc L2
+        print('Electrical test Uc L2')
+
+        self.test_uc('L2', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 09a: test Z line L3
+        self.change_meter_state('Type2-L3')
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        print('Electrical test Z line L3')
+
+        self.test_zline('L3', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 09b: test Z loop L3
+        print('Electrical test Z loop L3')
+
+        self.test_zloop('L3', report)
+
+        self.verify_evse_not_crashed()
+
+        # step 09c: test Uc L3
+        print('Electrical test Uc L3')
+
+        self.test_uc('L3', report)
+
         self.verify_evse_not_crashed()
 
         # step 10: test R iso L1
+        self.change_meter_state('Type2-L1')
+        time.sleep(RELAY_SETTLE_DURATION)
+
+        self.change_cp_pe_state('A')
+        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+        if not self.check_iec_state('A'):
+            fatal_error('Charger not in IEC state A')
+
         print('Electrical test R iso L1')
 
         report['riso_L1'] = blackbox.bb_measure_riso('L1/PE', limit='250 kOhm' if is_warp2 else '1 MOhm')._asdict()
