@@ -437,6 +437,7 @@ bool TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wai
         ptr->awaited_by = this_thread;
         tasks.emplace(ptr);
 
+        // Clear notify flags before taking in case the last take timed out.
         xTaskNotifyStateClear(this_thread);
     }
 
