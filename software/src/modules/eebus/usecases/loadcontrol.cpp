@@ -50,6 +50,7 @@ LoadPowerLimitUsecase::LoadPowerLimitUsecase(const LoadPowerLimitConfig &config)
     config_(config), id_l_1(config.loadcontrol_limit_id_offset + 1), id_m_1(config.measurement_id_offset + 1), id_k_1(config.device_config_key_id_offset + 1), id_k_2(config.device_config_key_id_offset + 2), id_ec_1(config.electrical_connection_id_offset + 1), id_cc_1(config.electrical_connection_characteristic_id_offset + 1), id_cc_2(config.electrical_connection_characteristic_id_offset + 2), id_p_1(config.electrical_connection_parameter_id_offset + 1), limit_description_id(id_l_1),
     limit_measurement_description_id(id_m_1), failsafe_power_key_id(id_k_1), failsafe_duration_key_id(id_k_2)
 {
+    load_persisted_failsafe();
     schedule_once_while_alive(
         [this]() {
             // Register for heartbeat (Scenario 3)
@@ -315,6 +316,7 @@ bool LoadPowerLimitUsecase::update_failsafe(SpineOptional<int> power_limit_w, Sp
             logger.printfln("Rejected %s failsafe values: Failsafe duration of %d s is longer than %d s", name, duration->as<int>(), FAILSAFE_DURATION_MAX.as<int>());
             if (failsafe_duration != FAILSAFE_DURATION_MAX) {
                 failsafe_duration = FAILSAFE_DURATION_MAX;
+                persist_failsafe();
                 update_api();
                 notify_failsafe_subscribers();
             }
@@ -329,14 +331,51 @@ bool LoadPowerLimitUsecase::update_failsafe(SpineOptional<int> power_limit_w, Sp
 
     if (power_limit_w.has_value()) {
         failsafe_power_limit_w = power_limit_w.get();
+        failsafe_power_written = true;
     }
     if (duration.has_value()) {
         failsafe_duration = duration.get();
     }
     logger.printfln("Updated %s failsafe to %d W for %d seconds", name, failsafe_power_limit_w, failsafe_duration.as<int>());
+    persist_failsafe();
     update_api();
     notify_failsafe_subscribers();
     return true;
+}
+
+void LoadPowerLimitUsecase::load_persisted_failsafe()
+{
+    auto persisted = eebus.failsafe_config.get(config_.api_key);
+    if (persisted->get("power_set")->asBool()) {
+        const int power_w = persisted->get("power_w")->asInt();
+        // IG-LPC 3.6: The Failsafe Consumption Active Power Limit is >= 0 W
+        if (!config_.limit_is_positive || power_w >= 0) {
+            failsafe_power_limit_w = power_w;
+            failsafe_power_written = true;
+        }
+    }
+    const seconds_t duration{persisted->get("duration_s")->asUint()};
+    if (duration >= FAILSAFE_DURATION_MIN && duration <= FAILSAFE_DURATION_MAX) {
+        failsafe_duration = duration;
+    }
+    if (failsafe_power_written || duration != 0_s) {
+        logger.printfln("%s: Restored failsafe values: %d W for %d s", get_usecases_name(config_.usecase_type), failsafe_power_limit_w, failsafe_duration.as<int>());
+    }
+}
+
+void LoadPowerLimitUsecase::persist_failsafe()
+{
+    auto persisted = eebus.failsafe_config.get(config_.api_key);
+    bool changed = false;
+    if (failsafe_power_written) {
+        changed |= persisted->get("power_set")->updateBool(true);
+        changed |= persisted->get("power_w")->updateInt(failsafe_power_limit_w);
+    }
+    changed |= persisted->get("duration_s")->updateUint(failsafe_duration.as<uint32_t>());
+    if (changed) {
+        eebus.persist_failsafe_config();
+        eebus.trace_fmtln("%s: Stored failsafe values persistently", get_usecases_name(config_.usecase_type));
+    }
 }
 
 void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract_max)

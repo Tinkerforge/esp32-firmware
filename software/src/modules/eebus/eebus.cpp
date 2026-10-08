@@ -532,13 +532,30 @@ void EEBus::pre_setup()
 #endif
     });
 
+    // Failsafe values written by the Energy Guard. "power_set" is false and "duration_s" is 0 until the Energy Guard wrote them.
+    const Config failsafe_prototype = Config::Object({
+        {"power_set", Config::Bool(false)},
+        {"power_w", Config::Int32(0)},
+        {"duration_s", Config::Uint32(0)},
+    });
+    failsafe_config = ConfigRoot{Config::Object({
+        {"lpc", failsafe_prototype},
+        {"lpp", failsafe_prototype},
+    })};
+
     ship.pre_setup();
+}
+
+void EEBus::persist_failsafe_config()
+{
+    API::writeConfig(EEBUS_FAILSAFE_CONFIG_PATH, &failsafe_config);
 }
 
 void EEBus::setup()
 {
     // Restore persistent configuration and initialize name
     api.restorePersistentConfig("eebus/config", &config);
+    api.restorePersistentConfig(EEBUS_FAILSAFE_CONFIG_PATH, &failsafe_config);
     eebus_name = device_name.name.get("name")->asEphemeralCStr();
 
     // Initialize SHIP layer

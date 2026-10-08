@@ -234,6 +234,11 @@ private:
 
     void update_api() const;
 
+    /** @brief Restore the failsafe values written by the Energy Guard before the last restart (LPC 2.6.2.1, LPC-903). */
+    void load_persisted_failsafe();
+    /** @brief Store the failsafe values persistently (LPC 2.6.2.1). Only writes to flash if they changed. */
+    void persist_failsafe();
+
     // LoadControl configuration
     bool limit_active = false;
     int current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -246,6 +251,7 @@ private:
 
     // Device Configuration Data (Failsafe)
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit
     seconds_t failsafe_duration = 2_h;
     uint64_t failsafe_expiry_timer = 0;
     micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())

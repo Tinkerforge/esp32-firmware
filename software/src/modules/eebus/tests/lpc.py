@@ -26,6 +26,7 @@ other: EebusPeer | None = None  # A second Energy Guard on another device (IG-LP
 OTHER_DEVICE = "d:_i:Tinkerforge_TestEnergyGuard2"
 removed_peers: list[dict] = []
 p14a_config = None
+original_failsafe: tuple[int, int] | None = None  # (power W, duration s), restored after the suite, as they are persistent
 
 
 def p14a(tc: TestContext) -> dict | None:
@@ -52,12 +53,14 @@ def expect_nack(tc: TestContext, error_number: int, expected: int = ERROR_COMMAN
 
 
 def suite_setup(tc: TestContext):
-    global peer, lpc, removed_peers, p14a_config
+    global peer, lpc, removed_peers, p14a_config, original_failsafe
     tc.set_test_timeout(120)
 
     enable_eebus(tc)
     if "lpc" not in tc.api("eebus/usecases"):
         tc.skip("LPC not available on this device")
+    state = lpc_state(tc)
+    original_failsafe = (state["failsafe_limit_power_w"], state["failsafe_limit_duration_s"])
     removed_peers = isolate_eebus_peers(tc)
 
     try:
@@ -73,9 +76,28 @@ def suite_setup(tc: TestContext):
     lpc.setup()
 
 
+def restore_failsafe(tc: TestContext):
+    """The failsafe values are stored persistently. Write the values from before the suite back."""
+    if original_failsafe is None or lpc_state(tc)["failsafe_limit_power_w"] == original_failsafe[0] and lpc_state(tc)["failsafe_limit_duration_s"] == original_failsafe[1]:
+        return
+    time.sleep(2)  # Let the device remove the bindings of the closed peers
+    guard = start_test_peer(tc, energy_guard_layout())
+    try:
+        guard.discover()
+        guard_lpc = LpcEnergyGuard(guard)
+        guard_lpc.setup()
+        guard.send_heartbeat()
+        expect_ack(tc, guard_lpc.write_limit(0, active=False))
+        wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+        expect_ack(tc, guard_lpc.write_failsafe(*original_failsafe))
+    finally:
+        stop_test_peer(tc, guard)
+
+
 def suite_teardown(tc: TestContext):
     stop_test_peer(tc, other)
     stop_test_peer(tc, peer)
+    restore_failsafe(tc)
     restore_eebus_peers(tc, removed_peers)
     if p14a_config is not None:
         tc.api("p14a_enwg/config_update", p14a_config)
@@ -304,6 +326,55 @@ def test_leave_failsafe_with_limit(tc: TestContext):
 def test_leave_failsafe(tc: TestContext):
     """Deactivating the limit after leaving failsafe."""
     peer.heartbeat_enabled = True
+    expect_ack(tc, lpc.write_limit(0, active=False))
+    wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+    tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)
+
+
+def parse_iso_duration(value: str) -> int:
+    import re
+    m = re.fullmatch(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?", value)
+    if m is None:
+        raise AssertionError(f"Invalid ISO 8601 duration {value}")
+    d, h, mi, sec = (int(x) if x else 0 for x in m.groups())
+    return ((d * 24 + h) * 60 + mi) * 60 + sec
+
+
+def test_failsafe_values_persistent(tc: TestContext):
+    """The failsafe values written by the Energy Guard survive a restart (LPC 2.6.2.1). After the restart the device
+    is in "init" and applies the stored Failsafe Consumption Active Power Limit (LPC-901, LPC-903)."""
+    global peer, lpc
+    tc.set_test_timeout(300)
+    peer.send_heartbeat()
+    expect_ack(tc, lpc.write_failsafe(4321, 3 * 3600))
+    stop_test_peer(tc, peer)
+    peer = None
+
+    tc.reboot()
+
+    def init_with_failsafe():
+        try:
+            state = lpc_state(tc)
+        except Exception as e:
+            raise AssertionError(f"eebus/usecases not available: {e}")
+        tc.assert_eq(LPC_INIT, state["usecase_state"])
+        return state
+    state = tc.wait_for(init_with_failsafe, timeout=60, poll_delay=1)
+    tc.assert_eq(4321, state["failsafe_limit_power_w"])
+    tc.assert_eq(3 * 3600, state["failsafe_limit_duration_s"])
+    tc.assert_eq(4321, state["current_limit"])
+    tc.wait_for(lambda: expect_p14a(tc, True, 4321), timeout=20, poll_delay=1)
+
+    peer = start_test_peer(tc, energy_guard_layout())
+    peer.discover()
+    lpc = LpcEnergyGuard(peer)
+    lpc.setup()
+    values = lpc.read_failsafe()
+    tc.assert_eq(4321, values[lpc.failsafe_power_key]["scaledNumber"]["number"])
+    tc.assert_eq(3 * 3600, parse_iso_duration(values[lpc.failsafe_duration_key]["duration"]))
+
+    # Take control again for the following tests
+    peer.send_heartbeat()
     expect_ack(tc, lpc.write_limit(0, active=False))
     wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
     tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)

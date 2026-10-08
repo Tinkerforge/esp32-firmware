@@ -77,6 +77,7 @@
 #include <TFJson.h>
 
 #define EEBUS_PEER_FILE "/eebus/peers"
+#define EEBUS_FAILSAFE_CONFIG_PATH "eebus/failsafe"
 #define MAX_PEER_REMEMBERED 4 // How many ship peers configured to be remembered
 #define MAX_PEER_DISCOVERED 4 // How many ship peers can be discovered via mDNS
 
@@ -123,6 +124,14 @@ public:
     ConfigRoot state;
 
     ConfigRoot eebus_usecase_state;
+
+    /**
+     * Failsafe values of LPC and LPP written by the Energy Guard (LPC 2.6.2.1: SHOULD be stored persistently).
+     * Not part of the API, as they should not be changeable by the user once written by the Energy Guard (LPC 2.6.2.1).
+     */
+    ConfigRoot failsafe_config;
+    void persist_failsafe_config();
+
     Config charges_prototype;
     Config usecase_list;
 
