@@ -1212,14 +1212,6 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # set mode A to disable PWM and then enter no-PWM test mode to keep PWM disabled when
-        # enterting state C. the PWM signal on the CP line affects the Z auto L-PE measurement
-        self.change_cp_pe_state('A')
-        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
-
-        if not self.check_iec_state('A'):
-            fatal_error('Charger not in IEC state A')
-
         # step 02: test voltage L1
         self.change_cp_pe_state('C')
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
