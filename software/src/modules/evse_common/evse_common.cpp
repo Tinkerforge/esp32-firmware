@@ -1175,5 +1175,8 @@ void EvseCommon::notify_new_auth() {
     // Immediately send the next client update to reduce NFC check latency.
     // If a car is already connected, also request reallocation.
     // Decouple via task scheduler to catch all new auths.
-    task_scheduler.scheduleOnce([this, state](){send_cm_client_update(true, state == 1); notify_new_auth_task_in_flight = false;});
+    // Wait 300 ms for the io_scheduler to fetch the lastest data from the EVSE.
+    task_scheduler.scheduleOnce([this, state]() {
+        send_cm_client_update(true, state == 1); notify_new_auth_task_in_flight = false;
+    }, 300_ms);
 }
