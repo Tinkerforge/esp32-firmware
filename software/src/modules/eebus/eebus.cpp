@@ -54,11 +54,31 @@ static int sanitized(float x, float scale)
 #ifdef EEBUS_MODE_EVSE
 
 /**
+ * LPC Scenario 4: Report the nominal maximum power consumption of the charger (LPC-041).
+ * The charger consumes at most the configured current of its supply cable (set by the installer) on all phases it can use.
+ */
+static void update_lpc_constraints()
+{
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    if (eebus.usecases == nullptr)
+        return;
+
+    const uint32_t incoming_ma = evse_common.get_slots().get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint();
+    // Unknown phases (0) are treated as three phases
+    const uint32_t phases = evse_common.backend->phase_switching_capable() || evse_common.backend->get_phases() != 1 ? 3 : 1;
+    // 0 until the EVSE reported the supply current
+    const int power_max_w = static_cast<int>(incoming_ma / 1000 * phases * 230);
+    eebus.usecases->lpc->update_constraints(power_max_w, 0);
+#endif
+}
+
+/**
  * Update use cases based on phase configuration changes.
  * Updates EVCC electrical connection and EVCEM constraints when phases change.
  */
 static void update_usecases_from_phases(const Config *_phases_cfg)
 {
+    update_lpc_constraints();
 #if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
     if (eebus.usecases == nullptr)
         return;
@@ -115,6 +135,28 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 #endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
 }
 #endif // EEBUS_MODE_EVSE
+
+#ifdef EEBUS_MODE_EM
+/**
+ * LPC Scenario 4: An energy manager reports the Contractual Consumption Nominal Max (LPC-042), not the Power Consumption
+ * Nominal Max (LPC-041). The maximum current of the grid connection configured for the dynamic load management is the
+ * best available value. Without dynamic load management the value is unknown and not reported.
+ */
+static void update_lpc_constraints()
+{
+#if MODULE_POWER_MANAGER_AVAILABLE() && defined(EEBUS_ENABLE_LPC_USECASE)
+    if (eebus.usecases == nullptr)
+        return;
+
+    int contract_max_w = 0;
+    const Config *dynamic_load_config = api.getState("power_manager/dynamic_load_config", false);
+    if (dynamic_load_config != nullptr && dynamic_load_config->get("enabled")->asBool()) {
+        contract_max_w = static_cast<int>(dynamic_load_config->get("current_limit")->asUint() / 1000 * 3 * 230);
+    }
+    eebus.usecases->lpc->update_constraints(0, contract_max_w);
+#endif
+}
+#endif // EEBUS_MODE_EM
 
 /**
  * Update current limit based on EEBUS power limits (LPC/OPEV).
@@ -532,7 +574,8 @@ void EEBus::pre_setup()
 #endif
     });
 
-    // Failsafe values written by the Energy Guard. "power_set" is false and "duration_s" is 0 until the Energy Guard wrote them.
+    // Failsafe values written by the Energy Guard. "power_set" is false until the Energy Guard wrote a failsafe limit,
+    // the failsafe limit then follows the nominal maximum power. "duration_s" is 0 until the Energy Guard wrote a failsafe duration.
     const Config failsafe_prototype = Config::Object({
         {"power_set", Config::Bool(false)},
         {"power_w", Config::Int32(0)},
@@ -741,6 +784,12 @@ void EEBus::register_evse_events()
         return EventResult::OK;
     });
 
+    // The supply current determines the nominal maximum power of LPC
+    event.registerEvent("evse/slots", {static_cast<size_t>(CHARGING_SLOT_INCOMING_CABLE), "max_current"}, [](const Config *) {
+        update_lpc_constraints();
+        return EventResult::OK;
+    });
+
     // Charger state changes (affects EV connection status)
     event.registerEvent("evse/state", {"charger_state"}, [](const Config *state_cfg) {
         update_usecases_from_charger_state(state_cfg);
@@ -759,6 +808,13 @@ void EEBus::register_evse_events()
  */
 void EEBus::register_em_events()
 {
+#if MODULE_POWER_MANAGER_AVAILABLE() && defined(EEBUS_ENABLE_LPC_USECASE)
+    event.registerEvent("power_manager/dynamic_load_config", {}, [](const Config *) {
+        update_lpc_constraints();
+        return EventResult::OK;
+    });
+#endif
+
     // Meter value updates for MGCP usecase
     register_meter_events();
 }
@@ -876,9 +932,12 @@ void EEBus::toggle_module()
     if (config.get("enable")->asBool()) {
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
-#ifdef EEBUS_IN_EVSE_MODE
+#ifdef EEBUS_MODE_EVSE
         update_usecases_from_charger_state((const Config *)api.getState("evse/state")->get("charger_state"));
         update_usecases_from_phases((const Config *)api.getState("evse/phases_connected")->get("phases"));
+#endif
+#ifdef EEBUS_MODE_EM
+        update_lpc_constraints();
 #endif
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.enable_ship();

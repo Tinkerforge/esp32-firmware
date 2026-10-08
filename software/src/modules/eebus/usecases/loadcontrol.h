@@ -35,7 +35,8 @@ struct LoadPowerLimitConfig {
     const char *usecase_name;                                           ///< "limitationOfPowerConsumption" or "limitationOfPowerProduction"
     const char *api_key;                                                ///< "lpc" or "lpp"
     EnergyDirectionEnumType energy_direction;                           ///< consume or produce
-    ElectricalConnectionCharacteristicTypeEnumType characteristic_type; ///< powerConsumptionMax or powerProductionMax
+    ElectricalConnectionCharacteristicTypeEnumType nominal_max_type;     ///< powerConsumptionNominalMax or powerProductionNominalMax (LPC-041, LPP-041)
+    ElectricalConnectionCharacteristicTypeEnumType contractual_max_type; ///< contractualConsumptionNominalMax or contractualProductionNominalMax (LPC-042, LPP-042)
     DeviceConfigurationKeyNameEnumType failsafe_key_name;               ///< failsafeConsumptionActivePowerLimit or failsafeProductionActivePowerLimit
     bool limit_is_positive;                                             ///< true for LPC (power > 0), false for LPP (power < 0)
     // ID offsets from EVSEEntity
@@ -129,9 +130,12 @@ public:
     bool update_failsafe(SpineOptional<int> power_limit_w, SpineOptional<seconds_t> duration);
 
     /**
-     * @brief Update the constraints of the system.
-     * @param power_max Maximum power consumption the system is capable of
-     * @param power_contract_max Maximum power the contract allows
+     * @brief Update the constraints of the system (Scenario 4). A value of 0 means unknown, it is not reported.
+     *
+     * Until the Energy Guard wrote a Failsafe Active Power Limit, the failsafe limit is the nominal maximum power (LPC-021/1).
+     *
+     * @param power_max Nominal maximum power the system is capable of (LPC-041). Only for devices, not for energy managers.
+     * @param power_contract_max Nominal maximum power the contract allows (LPC-042). Only for energy managers.
      */
     void update_constraints(int power_max = 0, int power_contract_max = 0);
 
@@ -234,6 +238,8 @@ private:
 
     void update_api() const;
 
+    /** @brief The nominal maximum power used as the default failsafe limit. EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION if not known. */
+    [[nodiscard]] int nominal_max_w() const;
     /** @brief Restore the failsafe values written by the Energy Guard before the last restart (LPC 2.6.2.1, LPC-903). */
     void load_persisted_failsafe();
     /** @brief Store the failsafe values persistently (LPC 2.6.2.1). Only writes to flash if they changed. */
@@ -251,16 +257,16 @@ private:
 
     // Device Configuration Data (Failsafe)
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit
+    bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit. Otherwise it follows the nominal maximum power.
     seconds_t failsafe_duration = 2_h;
     uint64_t failsafe_expiry_timer = 0;
     micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())
     uint8_t failsafe_power_key_id;
     uint8_t failsafe_duration_key_id;
 
-    // Electrical Connection Data (Constraints)
-    int power_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    int power_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    // Electrical Connection Data (Constraints), 0 if unknown
+    int power_max_w = 0;          ///< LPC-041: Nominal maximum power of a device
+    int power_contract_max_w = 0; ///< LPC-042: Contractual nominal maximum power of an energy manager
 };
 
 #endif // defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)

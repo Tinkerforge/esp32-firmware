@@ -462,9 +462,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <FormRow label="Constraints Power Maximum" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
-                                                            <OutputFloat value={lpc.constraints_power_maximum}
-                                                                         digits={0}
-                                                                         scale={0} unit="W" small/>
+                                                            {lpc.constraints_power_maximum == 0 ?
+                                                                <InputText class="form-control-sm" value={__("eebus.content.unknown")}/> :
+                                                                <OutputFloat value={lpc.constraints_power_maximum}
+                                                                             digits={0}
+                                                                             scale={0} unit="W" small/>}
                                                         </div>
                                                     </div>
                                                 </FormRow>
@@ -541,9 +543,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <FormRow label="Constraints Power Maximum" small>
                                                     <div class="row gx-2 gy-1">
                                                         <div class="col-sm-4">
-                                                            <OutputFloat value={lpp.constraints_power_maximum}
-                                                                         digits={0}
-                                                                         scale={0} unit="W" small/>
+                                                            {lpp.constraints_power_maximum == 0 ?
+                                                                <InputText class="form-control-sm" value={__("eebus.content.unknown")}/> :
+                                                                <OutputFloat value={lpp.constraints_power_maximum}
+                                                                             digits={0}
+                                                                             scale={0} unit="W" small/>}
                                                         </div>
                                                     </div>
                                                 </FormRow>

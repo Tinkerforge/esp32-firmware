@@ -119,6 +119,46 @@ def test_limit_description(tc: TestContext):
     tc.assert_true(limit["isLimitChangeable"])
 
 
+def expect_constraints(tc: TestContext, power_max: int):
+    """A charger reports only its nominal maximum power (LPC-041), an energy manager only its contractual nominal maximum
+    power (LPC-042) (LPC 2.6.4.1). Never the wrong characteristic type powerConsumptionMax. Unknown values are not reported."""
+    characteristics = lpc.read_constraints()
+    tc.assert_false("powerConsumptionMax" in characteristics)
+    expected, other_type = "powerConsumptionNominalMax", "contractualConsumptionNominalMax"
+    if is_energy_manager(tc):
+        expected, other_type = other_type, expected
+    tc.assert_false(other_type in characteristics)
+    if power_max == 0:
+        tc.assert_eq({}, characteristics)
+        return
+    c = characteristics[expected]
+    tc.assert_eq(power_max, c["value"]["number"] * 10 ** c["value"].get("scale", 0))
+    tc.assert_eq("entity", c["characteristicContext"])
+    tc.assert_eq("W", c["unit"])
+
+
+def test_constraints(tc: TestContext):
+    """Scenario 4: The device reports its nominal maximum power as known by the API."""
+    expect_constraints(tc, lpc_state(tc)["constraints_power_maximum"])
+
+
+def test_contractual_constraint(tc: TestContext):
+    """Energy manager: The Contractual Consumption Nominal Max (LPC-042) is the grid connection limit of the
+    dynamic load management (3 phases at 230 V). Without dynamic load management it is not reported."""
+    if not is_energy_manager(tc):
+        tc.skip("Only energy managers report a contractual nominal maximum power")
+    original = tc.api("power_manager/dynamic_load_config")
+    try:
+        tc.api("power_manager/dynamic_load_config_update", original | {"enabled": True, "current_limit": 35000})
+        tc.wait_for(lambda: tc.assert_eq(35 * 3 * 230, lpc_state(tc)["constraints_power_maximum"]), timeout=3)
+        expect_constraints(tc, 35 * 3 * 230)
+        tc.api("power_manager/dynamic_load_config_update", original | {"enabled": False})
+        tc.wait_for(lambda: tc.assert_eq(0, lpc_state(tc)["constraints_power_maximum"]), timeout=3)
+        expect_constraints(tc, 0)
+    finally:
+        tc.api("power_manager/dynamic_load_config_update", original)
+
+
 def test_controlled(tc: TestContext):
     """Heartbeat followed by a deactivated limit takes control: unlimited/controlled (LPC 2.2)."""
     peer.send_heartbeat()

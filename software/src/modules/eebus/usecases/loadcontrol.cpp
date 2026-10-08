@@ -359,7 +359,7 @@ void LoadPowerLimitUsecase::load_persisted_failsafe()
         failsafe_duration = duration;
     }
     if (failsafe_power_written || duration != 0_s) {
-        logger.printfln("%s: Restored failsafe values: %d W for %d s", get_usecases_name(config_.usecase_type), failsafe_power_limit_w, failsafe_duration.as<int>());
+        logger.printfln("%s: Restored failsafe values: %s%d W for %d s", get_usecases_name(config_.usecase_type), failsafe_power_written ? "" : "Nominal maximum power, ", failsafe_power_limit_w, failsafe_duration.as<int>());
     }
 }
 
@@ -378,14 +378,38 @@ void LoadPowerLimitUsecase::persist_failsafe()
     }
 }
 
+int LoadPowerLimitUsecase::nominal_max_w() const
+{
+    if (power_max_w > 0) {
+        return power_max_w;
+    }
+    if (power_contract_max_w > 0) {
+        return power_contract_max_w;
+    }
+    return EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+}
+
 void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract_max)
 {
-    if (power_max > 0) {
-        power_max_w = power_max;
+    power_max = std::max(power_max, 0);
+    power_contract_max = std::max(power_contract_max, 0);
+    if (power_max == power_max_w && power_contract_max == power_contract_max_w) {
+        return;
     }
-    if (power_contract_max > 0) {
-        power_contract_max_w = power_contract_max;
+    power_max_w = power_max;
+    power_contract_max_w = power_contract_max;
+    logger.printfln("%s: Nominal maximum power %d W, contractual nominal maximum power %d W (0: unknown)", get_usecases_name(config_.usecase_type), power_max_w, power_contract_max_w);
+
+    // LPC-021/1: The pre-configured failsafe limit is the nominal maximum power, until the Energy Guard wrote a failsafe limit.
+    if (config_.limit_is_positive && !failsafe_power_written && failsafe_power_limit_w != nominal_max_w()) {
+        failsafe_power_limit_w = nominal_max_w();
+        if (state_ == LoadcontrolState::Init || state_ == LoadcontrolState::Failsafe) {
+            current_active_limit_w = failsafe_power_limit_w;
+        }
+        notify_failsafe_subscribers();
     }
+
+    update_api();
     auto data = EVSEEntity::get_electrical_connection_characteristic_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), data, "electricalConnectionCharacteristicListData");
 }
@@ -506,7 +530,7 @@ bool LoadPowerLimitUsecase::is_power_limited() const
         case LoadcontrolState::Init:
         case LoadcontrolState::Failsafe:
             // LPC-901: The Failsafe Active Power Limit applies. It only limits if it is below the nominal maximum power.
-            return !config_.limit_is_positive || failsafe_power_limit_w < power_max_w;
+            return !config_.limit_is_positive || failsafe_power_limit_w < nominal_max_w();
         default:
             return false;
     }
@@ -752,14 +776,20 @@ void LoadPowerLimitUsecase::unlimited_autonomous_state()
     current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
 }
 
+// The power values in the API are Uint16. Saturate instead of letting larger values wrap around (e.g. 70000 W -> 4464 W).
+static uint32_t api_power_w(int power_w)
+{
+    return static_cast<uint32_t>(std::clamp(power_w, 0, static_cast<int>(UINT16_MAX)));
+}
+
 void LoadPowerLimitUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get(config_.api_key);
     api_entry->get("usecase_state")->updateEnum(state_);
     api_entry->get("limit_active")->updateBool(limit_active);
     // For LPP, we use abs() to display the limit as positive in the UI
-    api_entry->get("current_limit")->updateUint(config_.limit_is_positive ? current_active_limit_w : abs(current_active_limit_w));
-    api_entry->get("failsafe_limit_power_w")->updateUint(failsafe_power_limit_w);
+    api_entry->get("current_limit")->updateUint(api_power_w(config_.limit_is_positive ? current_active_limit_w : abs(current_active_limit_w)));
+    api_entry->get("failsafe_limit_power_w")->updateUint(api_power_w(failsafe_power_limit_w));
     api_entry->get("failsafe_limit_duration_s")->updateUint(failsafe_duration.as<uint32_t>());
 
     if (state_ == LoadcontrolState::Limited) {
@@ -770,7 +800,7 @@ void LoadPowerLimitUsecase::update_api() const
         api_entry->get("outstanding_duration_s")->updateUint(0);
     }
 
-    api_entry->get("constraints_power_maximum")->updateUint(power_max_w);
+    api_entry->get("constraints_power_maximum")->updateUint(api_power_w(power_max_w > 0 ? power_max_w : power_contract_max_w));
 }
 
 void LoadPowerLimitUsecase::get_loadcontrol_limit_description(LoadControlLimitDescriptionListDataType *data) const
@@ -837,15 +867,31 @@ void LoadPowerLimitUsecase::get_device_configuration_description(DeviceConfigura
 
 void LoadPowerLimitUsecase::get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const
 {
-    ElectricalConnectionCharacteristicDataType power_max{};
-    power_max.electricalConnectionId = id_ec_1;
-    power_max.parameterId = id_p_1;
-    power_max.characteristicId = id_cc_1;
-    power_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
-    power_max.characteristicType = config_.characteristic_type;
-    power_max.value->number = power_max_w;
-    power_max.unit = UnitOfMeasurementEnumType::W;
-    data->electricalConnectionCharacteristicData->push_back(power_max);
+    // Values that are not known are not reported. A device reports only LPC-041, an energy manager only LPC-042 (LPC 2.6.4.1).
+    if (power_max_w > 0) {
+        ElectricalConnectionCharacteristicDataType power_max{};
+        power_max.electricalConnectionId = id_ec_1;
+        power_max.parameterId = id_p_1;
+        power_max.characteristicId = id_cc_1;
+        power_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+        power_max.characteristicType = config_.nominal_max_type;
+        power_max.value->number = power_max_w;
+        power_max.value->scale = 0;
+        power_max.unit = UnitOfMeasurementEnumType::W;
+        data->electricalConnectionCharacteristicData->push_back(power_max);
+    }
+    if (power_contract_max_w > 0) {
+        ElectricalConnectionCharacteristicDataType contract_max{};
+        contract_max.electricalConnectionId = id_ec_1;
+        contract_max.parameterId = id_p_1;
+        contract_max.characteristicId = id_cc_2;
+        contract_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+        contract_max.characteristicType = config_.contractual_max_type;
+        contract_max.value->number = power_contract_max_w;
+        contract_max.value->scale = 0;
+        contract_max.unit = UnitOfMeasurementEnumType::W;
+        data->electricalConnectionCharacteristicData->push_back(contract_max);
+    }
 }
 
 #endif // defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
@@ -861,7 +907,8 @@ const LoadPowerLimitConfig LpcUsecase::lpc_config = {
     .usecase_name = "limitationOfPowerConsumption",
     .api_key = "lpc",
     .energy_direction = EnergyDirectionEnumType::consume,
-    .characteristic_type = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax,
+    .nominal_max_type = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionNominalMax,
+    .contractual_max_type = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax,
     .failsafe_key_name = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit,
     .limit_is_positive = true,
     .loadcontrol_limit_id_offset = EVSEEntity::lpcLoadcontrolLimitIdOffset,
@@ -889,7 +936,8 @@ const LoadPowerLimitConfig LppUsecase::lpp_config = {
     .usecase_name = "limitationOfPowerProduction",
     .api_key = "lpp",
     .energy_direction = EnergyDirectionEnumType::produce,
-    .characteristic_type = ElectricalConnectionCharacteristicTypeEnumType::powerProductionMax,
+    .nominal_max_type = ElectricalConnectionCharacteristicTypeEnumType::powerProductionNominalMax,
+    .contractual_max_type = ElectricalConnectionCharacteristicTypeEnumType::contractualProductionNominalMax,
     .failsafe_key_name = DeviceConfigurationKeyNameEnumType::failsafeProductionActivePowerLimit,
     .limit_is_positive = false,
     .loadcontrol_limit_id_offset = EVSEEntity::lppLoadcontrolLimitIdOffset,
