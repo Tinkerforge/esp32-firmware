@@ -33,10 +33,15 @@
 // LoadPowerLimitUsecase - Base class for LPC and LPP usecases
 // ==============================================================================
 
+// LPC-022, LPP-022: The Failsafe Duration Minimum is between 2 and 24 hours
+static constexpr seconds_t FAILSAFE_DURATION_MIN = 2_h;
+static constexpr seconds_t FAILSAFE_DURATION_MAX = 24_h;
+
 LoadPowerLimitUsecase::~LoadPowerLimitUsecase()
 {
     task_scheduler.cancel(limit_endtime_timer);
     task_scheduler.cancel(failsafe_expiry_timer);
+    task_scheduler.cancel(init_timer);
 }
 
 // Base class constructor - initializes IDs from config offsets
@@ -49,7 +54,7 @@ LoadPowerLimitUsecase::LoadPowerLimitUsecase(const LoadPowerLimitConfig &config)
             // Register for heartbeat (Scenario 3)
             eebus.usecases->evse_heartbeat.register_usecase_for_heartbeat(this);
             eebus.usecases->evse_heartbeat.set_autosubscribe(true);
-            update_state(); // Initialize state machine
+            init_state(); // LPC-901: Restart of the Controllable System completed
             update_api();
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
@@ -97,7 +102,8 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LoadPowerLimi
     // DeviceConfiguration Feature
     NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigurationFeature = build_feature_information(FeatureTypeEnumType::DeviceConfiguration);
     deviceConfigurationFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueDescriptionListData));
-    deviceConfigurationFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueListData, true));
+    // LPC/LPP Table 21: write and partial write are mandatory. Writes only change the keys they contain.
+    deviceConfigurationFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueListData, true, true));
     features.push_back(deviceConfigurationFeature);
 
     // ElectricalConnection Feature
@@ -135,21 +141,50 @@ MessageReturn LoadPowerLimitUsecase::load_control_feature(HeaderType &header, Sp
         switch (data->last_cmd) {
             case SpineDataTypeHandler::Function::loadControlLimitListData:
                 if (data->loadcontrollimitlistdatatype.has_value() && !data->loadcontrollimitlistdatatype->loadControlLimitData->empty()) {
-                    for (LoadControlLimitDataType load_control_limit_data : data->loadcontrollimitlistdatatype->loadControlLimitData.get()) {
-                        if (load_control_limit_data.limitId == id_l_1) {
-                            bool limit_enabled = load_control_limit_data.isLimitActive.get();
-                            const int new_limit_w = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(*load_control_limit_data.value);
-                            const seconds_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
-                            logger.printfln("Received a Loadcontrol Limit for a %s usecase. Attempting to apply limit. Limit is: %d W, duration: %d s, enabled: %d", get_usecases_name(config_.usecase_type), new_limit_w, duration_s.as<int>(), limit_enabled);
-                            if (!update_limit(limit_enabled, new_limit_w, duration_s)) {
-                                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
-                                logger.printfln("Limit not accepted");
-                                return {true, true, CmdClassifierType::result};
+                    for (const LoadControlLimitDataType &load_control_limit_data : data->loadcontrollimitlistdatatype->loadControlLimitData.get()) {
+                        if (load_control_limit_data.limitId != id_l_1) {
+                            continue;
+                        }
+                        // Elements that are not part of the write keep their old value ("partial" write, LPC 3.4.1.4)
+                        LimitWrite write{};
+                        if (load_control_limit_data.isLimitActive.has_value()) {
+                            write.active = load_control_limit_data.isLimitActive.get();
+                        }
+                        if (load_control_limit_data.value.has_value()) {
+                            write.value_w = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(load_control_limit_data.value.get());
+                        }
+                        if (load_control_limit_data.timePeriod.has_value() && load_control_limit_data.timePeriod->endTime.has_value()) {
+                            write.duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
+                        }
+                        // The Energy Guard removes the duration with a partial delete of the endTime (LPC 3.4.1.4)
+                        if (SpineConnection *conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
+                            JsonArrayConst filters = conn->received_payload["filter"].as<JsonArrayConst>();
+                            for (JsonVariantConst filter : filters) {
+                                if (!filter["cmdControl"].containsKey("delete")) {
+                                    continue;
+                                }
+                                JsonVariantConst selected_limit = filter["loadControlLimitListDataSelectors"]["limitId"];
+                                if (!selected_limit.isNull() && selected_limit.as<int>() != id_l_1) {
+                                    continue;
+                                }
+                                // Deleting the whole timePeriod (e.g. eebus-go) or only its endTime removes the duration
+                                if (filter["loadControlLimitDataElements"].containsKey("timePeriod")) {
+                                    write.delete_duration = true;
+                                }
                             }
-                            logger.printfln("Limit accepted");
-                            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
+                        }
+                        const String value_str = write.value_w.has_value() ? String(write.value_w.get()) + " W" : String("value unchanged");
+                        const char *active_str = write.active.has_value() ? (write.active.get() ? "activated" : "deactivated") : "activation unchanged";
+                        const String duration_str = write.duration.has_value() ? String(write.duration->as<int>()) + " s" : String(write.delete_duration ? "removed" : "unchanged");
+                        logger.printfln("Received a %s limit: %s, %s, duration: %s", get_usecases_name(config_.usecase_type), value_str.c_str(), active_str, duration_str.c_str());
+                        if (!update_limit(write)) {
+                            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
+                            logger.printfln("Limit rejected");
                             return {true, true, CmdClassifierType::result};
                         }
+                        logger.printfln("Limit accepted");
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
+                        return {true, true, CmdClassifierType::result};
                     }
                     return {false};
                 }
@@ -185,17 +220,33 @@ MessageReturn LoadPowerLimitUsecase::deviceConfiguration_feature(HeaderType &hea
                 }
                 case CmdClassifierType::write:
                     if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
-                        auto new_config = data->deviceconfigurationkeyvaluelistdatatype.get();
-                        int new_failsafe_power = -1;
-                        seconds_t new_failsafe_duration = -1_s;
-                        for (const auto &list_entry : new_config.deviceConfigurationKeyValueData.get()) {
-                            if (list_entry.keyId == failsafe_power_key_id) {
-                                new_failsafe_power = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(*list_entry.value->scaledNumber);
-                            } else if (list_entry.keyId == failsafe_duration_key_id) {
-                                new_failsafe_duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(list_entry.value->duration.get());
+                        const auto &new_config = data->deviceconfigurationkeyvaluelistdatatype.get();
+                        SpineOptional<int> new_failsafe_power{};
+                        SpineOptional<seconds_t> new_failsafe_duration{};
+                        bool found_key = false;
+                        if (new_config.deviceConfigurationKeyValueData.has_value()) {
+                            for (const auto &list_entry : new_config.deviceConfigurationKeyValueData.get()) {
+                                if (list_entry.keyId == failsafe_power_key_id) {
+                                    found_key = true;
+                                    if (list_entry.value.has_value() && list_entry.value->scaledNumber.has_value()) {
+                                        new_failsafe_power = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(list_entry.value->scaledNumber.get());
+                                    }
+                                } else if (list_entry.keyId == failsafe_duration_key_id) {
+                                    found_key = true;
+                                    if (list_entry.value.has_value() && list_entry.value->duration.has_value()) {
+                                        new_failsafe_duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(list_entry.value->duration.get());
+                                    }
+                                }
                             }
                         }
-                        update_failsafe(new_failsafe_power, new_failsafe_duration);
+                        if (!found_key) {
+                            // The DeviceConfiguration feature might be shared with other usecases using different keys
+                            return {false};
+                        }
+                        if (!update_failsafe(new_failsafe_power, new_failsafe_duration)) {
+                            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Failsafe values not accepted");
+                            return {true, true, CmdClassifierType::result};
+                        }
                         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Configuration updated successfully");
                         return {true, true, CmdClassifierType::result};
                     }
@@ -223,21 +274,66 @@ MessageReturn LoadPowerLimitUsecase::electricalConnection_feature(const HeaderTy
     return {false};
 }
 
-void LoadPowerLimitUsecase::update_failsafe(int power_limit_w, seconds_t duration)
+// LPC 2.2, IG-LPC 2.11: In "init", "failsafe" and "unlimited/autonomous" a write on the limit is only evaluated if it follows a heartbeat within 60 seconds
+static constexpr seconds_t HEARTBEAT_WRITE_WINDOW = 60_s;
+// LPC-906: Leave "init" if no Energy Guard took control within 120 seconds
+static constexpr seconds_t INIT_TIMEOUT = 120_s;
+
+// End times are monotonic, so a wall clock change (e.g. the first NTP sync) does not change remaining durations.
+// Returns the seconds left until end, rounded up. 0 if there is no end time or it elapsed.
+static seconds_t seconds_left(micros_t end)
 {
-    if (power_limit_w > -1) {
-        failsafe_power_limit_w = power_limit_w;
+    if (end == 0_us) {
+        return 0_s;
     }
-    if (duration > -1_s) {
-        failsafe_duration = duration;
+    const int64_t left_us = (end - now_us()).as<int64_t>();
+    if (left_us <= 0) {
+        return 0_s;
     }
-    if (power_limit_w > 0 || duration > 0_s) {
-        logger.printfln("Updated failsafe to %d W for %d seconds", failsafe_power_limit_w, failsafe_duration.as<int>());
-        update_state();
-        update_api();
-        auto data = EVSEEntity::get_device_configuration_value_list_data();
-        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), data, "deviceConfigurationKeyValueListData");
+    return seconds_t{(left_us + 999999) / 1000000};
+}
+
+bool LoadPowerLimitUsecase::update_failsafe(SpineOptional<int> power_limit_w, SpineOptional<seconds_t> duration)
+{
+    const char *name = get_usecases_name(config_.usecase_type);
+    // IG-LPC 2.11: Writes on the failsafe values are only evaluated after the Energy Guard sent a heartbeat followed by a write on the limit.
+    if (!is_controlled()) {
+        logger.printfln("Rejected %s failsafe values: The Energy Guard has to send a heartbeat and a limit first", name);
+        return false;
     }
+    // IG-LPC 3.6: The Failsafe Consumption Active Power Limit is >= 0 W
+    if (power_limit_w.has_value() && config_.limit_is_positive && power_limit_w.get() < 0) {
+        logger.printfln("Rejected %s failsafe values: Failsafe limit of %d W is out of range", name, power_limit_w.get());
+        return false;
+    }
+    if (duration.has_value()) {
+        if (duration.get() > FAILSAFE_DURATION_MAX) {
+            // LPC-022/4, LPC-022/5: Reject the value and use our maximum value instead
+            logger.printfln("Rejected %s failsafe values: Failsafe duration of %d s is longer than %d s", name, duration->as<int>(), FAILSAFE_DURATION_MAX.as<int>());
+            if (failsafe_duration != FAILSAFE_DURATION_MAX) {
+                failsafe_duration = FAILSAFE_DURATION_MAX;
+                update_api();
+                notify_failsafe_subscribers();
+            }
+            return false;
+        }
+        if (duration.get() < FAILSAFE_DURATION_MIN) {
+            // IG-LPC 3.1: Values out of the permitted range are rejected
+            logger.printfln("Rejected %s failsafe values: Failsafe duration of %d s is shorter than %d s", name, duration->as<int>(), FAILSAFE_DURATION_MIN.as<int>());
+            return false;
+        }
+    }
+
+    if (power_limit_w.has_value()) {
+        failsafe_power_limit_w = power_limit_w.get();
+    }
+    if (duration.has_value()) {
+        failsafe_duration = duration.get();
+    }
+    logger.printfln("Updated %s failsafe to %d W for %d seconds", name, failsafe_power_limit_w, failsafe_duration.as<int>());
+    update_api();
+    notify_failsafe_subscribers();
+    return true;
 }
 
 void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract_max)
@@ -252,132 +348,144 @@ void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), data, "electricalConnectionCharacteristicListData");
 }
 
-bool LoadPowerLimitUsecase::update_limit(bool limit, int current_limit_w, const seconds_t duration)
+bool LoadPowerLimitUsecase::update_limit(const LimitWrite &write)
 {
-    // For LPC: limit_received when power > 0; for LPP: when power < 0
-    if (config_.limit_is_positive) {
-        limit_received = current_limit_w > 0 || limit_received;
-    } else {
-        limit_received = current_limit_w < 0 || limit_received;
-    }
-
-    // Evaluate if the limit can be applied
-    if (duration <= 0_s && !limit_active && limit_received && limit) {
-        // In case the duration is 0 (meaning until further notice) and the limit is not active, reject the limit
-        limit_active = false;
+    const char *name = get_usecases_name(config_.usecase_type);
+    // LPC 2.2, IG-LPC 2.11 and 2.14: Reject without changing the state
+    if (!is_controlled() && !heartbeat_in_write_window()) {
+        logger.printfln("Rejected %s limit: No heartbeat of the Energy Guard within the last %d seconds", name, HEARTBEAT_WRITE_WINDOW.as<int>());
         return false;
     }
-    limit_active = limit;
 
-    // For LPC: reject limit < 0; for LPP: reject limit > 0
-    if (config_.limit_is_positive) {
-        if (current_limit_w < 0) {
-            limit_active = false;
-            return false;
+    bool new_active = write.active.has_value() ? write.active.get() : limit_active;
+    const int new_value = write.value_w.has_value() ? write.value_w.get() : configured_limit;
+    // A write without duration keeps the current duration, unless it already expired
+    micros_t new_endtime = seconds_left(limit_endtime) > 0_s ? limit_endtime : 0_us;
+    if (write.duration.has_value()) {
+        if (write.duration.get() <= 0_s) {
+            // IG-LPC 2.2: A duration of 0 deactivates the limit immediately, even if the write requests to activate it.
+            // The write is accepted nevertheless (IG-LPC 2.16).
+            new_active = false;
+            new_endtime = 0_us;
+        } else {
+            new_endtime = now_us() + static_cast<micros_t>(write.duration.get());
         }
+    } else if (write.delete_duration) {
+        // LPC 3.4.1.4: The duration was removed, the limit is valid until further notice
+        new_endtime = 0_us;
+    }
+
+    // The limit has to be in the valid range: LPC >= 0 W, LPP <= 0 W
+    const bool valid = config_.limit_is_positive ? new_value >= 0 : new_value <= 0;
+    if (!valid) {
+        // LPC-003/1: Reject the limit and keep the old limit data.
+        // LPC-902, LPC-918, LPC-920: Without control so far, a limit that cannot be applied leads to "unlimited/controlled",
+        // as the communication with the Energy Guard is verified (IG-LPC 2.14).
+        logger.printfln("Rejected %s limit of %d W: Out of range", name, new_value);
+        if (!is_controlled()) {
+            unlimited_controlled_state();
+            update_api();
+            notify_limit_subscribers();
+        }
+        return false;
+    }
+
+    limit_active = new_active;
+    configured_limit = new_value;
+    limit_endtime = new_endtime;
+
+    // The duration keeps decreasing while the limit is deactivated (LPC 2.6.1.1)
+    task_scheduler.cancel(limit_endtime_timer);
+    limit_endtime_timer = 0;
+    if (limit_endtime != 0_us) {
+        const micros_t left = limit_endtime - now_us();
+        if (left <= 0_us) {
+            limit_active = false;
+            limit_endtime = 0_us;
+        } else {
+            limit_endtime_timer = task_scheduler.scheduleOnce(
+                [this]() {
+                    limit_duration_expired();
+                },
+                left.to<millis_t>());
+        }
+    }
+
+    if (limit_active) {
+        limited_state();
     } else {
-        if (current_limit_w > 0) {
-            limit_active = false;
-            return false;
-        }
+        unlimited_controlled_state();
     }
-    // If we need to add more checks to LPC limit commands, add them here.
-
-    configured_limit = current_limit_w;
-
-    if (duration > 0_s && limit_active) {
-        limit_expired = false;
-        timeval time_v{};
-        rtc.clock_synced(&time_v);
-        limit_endtime = time_v.tv_sec + duration.as<int>();
-        task_scheduler.cancel(limit_endtime_timer);
-        limit_endtime_timer = task_scheduler.scheduleOnce(
-            [this]() {
-                if (state_ == LoadcontrolState::Limited) {
-                    logger.printfln("Limit duration expired");
-                    limit_expired = true;
-                    update_state();
-                    update_api();
-                }
-            },
-            duration);
-    } else if (duration == 0_s && limit_active) {
-        // A value of 0 means the limit is valid until further notice
-    }
-    update_state();
     update_api();
-
-    LoadControlLimitListDataType data = EVSEEntity::get_load_control_limit_list_data();
-    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
+    notify_limit_subscribers();
     return true;
 }
 
-void LoadPowerLimitUsecase::update_state()
+void LoadPowerLimitUsecase::limit_duration_expired()
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
-    eebus.trace_fmtln("Updating state. Current state: %s. Heartbeat received: %d, Limit received: %d, Limit active: %d, Limit expired: %d", get_loadcontrol_state_name(state_), heartbeat_received, limit_received, limit_active, limit_expired);
-#endif
+    limit_endtime_timer = 0;
+    // LPC-007: Deactivate the limit when the duration expired. The duration MAY be removed.
+    limit_active = false;
+    limit_endtime = 0_us;
+    if (state_ == LoadcontrolState::Limited) {
+        logger.printfln("%s limit duration expired", get_usecases_name(config_.usecase_type));
+        unlimited_controlled_state();
+    }
+    update_api();
+    notify_limit_subscribers();
+}
 
+void LoadPowerLimitUsecase::notify_limit_subscribers()
+{
+    schedule_once_while_alive([this]() {
+        LoadControlLimitListDataType data = EVSEEntity::get_load_control_limit_list_data();
+        eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
+    });
+}
+
+void LoadPowerLimitUsecase::notify_failsafe_subscribers()
+{
+    schedule_once_while_alive([this]() {
+        DeviceConfigurationKeyValueListDataType data = EVSEEntity::get_device_configuration_value_list_data();
+        eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), data, "deviceConfigurationKeyValueListData");
+    });
+}
+
+bool LoadPowerLimitUsecase::heartbeat_in_write_window() const
+{
+    return last_heartbeat != 0_us && !deadline_elapsed(last_heartbeat + HEARTBEAT_WRITE_WINDOW);
+}
+
+bool LoadPowerLimitUsecase::is_power_limited() const
+{
     switch (state_) {
-        case LoadcontrolState::Startup:
-            init_state();
-            break;
-        case LoadcontrolState::Init:
-            if (heartbeat_received && limit_received && !limit_active) {
-                unlimited_controlled_state();
-            } else if (heartbeat_received && limit_received && limit_active) {
-                limited_state();
-            } else {
-                unlimited_autonomous_state();
-            }
-            break;
-        case LoadcontrolState::UnlimitedControlled:
-            if (heartbeat_received && limit_received && limit_active) {
-                limited_state();
-            } else if (!heartbeat_received) {
-                failsafe_state();
-            }
-            break;
         case LoadcontrolState::Limited:
-            if (!heartbeat_received) {
-                failsafe_state();
-            } else if (limit_expired || (limit_received && !limit_active)) {
-                unlimited_controlled_state();
-            } else if (state_ == LoadcontrolState::Limited) {
-                limited_state();
-            }
-            break;
+            return true;
+        case LoadcontrolState::Init:
         case LoadcontrolState::Failsafe:
-            if (heartbeat_received && limit_received && !limit_active) {
-                unlimited_controlled_state();
-            } else if (heartbeat_received && limit_received && limit_active) {
-                limited_state();
-            } else if (failsafe_expired) {
-                unlimited_autonomous_state();
-            }
-            break;
-        case LoadcontrolState::UnlimitedAutonomous:
-            if (heartbeat_received && limit_received && !limit_active) {
-                unlimited_controlled_state();
-            } else if (heartbeat_received && limit_received && limit_active) {
-                limited_state();
-            }
-            break;
+            // LPC-901: The Failsafe Active Power Limit applies. It only limits if it is below the nominal maximum power.
+            return !config_.limit_is_positive || failsafe_power_limit_w < power_max_w;
+        default:
+            return false;
     }
 }
 
 void LoadPowerLimitUsecase::receive_heartbeat()
 {
     heartbeat_received = true;
-    update_state();
+    last_heartbeat = now_us();
+    // A heartbeat alone does not change the state. The state changes with a following write on the limit (LPC 2.2).
     update_api();
 }
 
 void LoadPowerLimitUsecase::receive_heartbeat_timeout()
 {
     heartbeat_received = false;
-    logger.printfln("No Heartbeat received from control box. Switching to failsafe or unlimited/autonomous mode");
-    update_state();
+    if (is_controlled()) {
+        // LPC-911, LPC-912
+        logger.printfln("No heartbeat received from the Energy Guard for 120 seconds. Switching to failsafe state");
+        failsafe_state();
+    }
     update_api();
 }
 
@@ -389,13 +497,30 @@ void LoadPowerLimitUsecase::inform_spineconnection_usecase_update(SpineConnectio
 
 void LoadPowerLimitUsecase::init_state()
 {
-    limit_active = false;
-    current_active_limit_w = failsafe_power_limit_w;
     state_ = LoadcontrolState::Init;
+    limit_active = false;
+    // LPC-901: In "init" the Failsafe Active Power Limit applies
+    current_active_limit_w = failsafe_power_limit_w;
+
+    task_scheduler.cancel(init_timer);
+    init_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            init_timer = 0;
+            if (state_ == LoadcontrolState::Init) {
+                // LPC-906
+                logger.printfln("No Energy Guard took control within %d seconds. Switching to unlimited/autonomous state", INIT_TIMEOUT.as<int>());
+                unlimited_autonomous_state();
+                update_api();
+            }
+        },
+        INIT_TIMEOUT);
 }
 
 void LoadPowerLimitUsecase::unlimited_controlled_state()
 {
+    if (state_ != LoadcontrolState::UnlimitedControlled) {
+        logger.printfln("%s: Controlled by the Energy Guard, power not limited", get_usecases_name(config_.usecase_type));
+    }
     state_ = LoadcontrolState::UnlimitedControlled;
     limit_active = false;
     current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -403,13 +528,12 @@ void LoadPowerLimitUsecase::unlimited_controlled_state()
 
 void LoadPowerLimitUsecase::limited_state()
 {
-    timeval time_v{};
-    rtc.clock_synced(&time_v);
-    long long duration_left = limit_endtime - time_v.tv_sec;
-    if (state_ != LoadcontrolState::Limited) {
-        logger.printfln("Received a limit of %d W valid for %lld s", configured_limit, duration_left);
-    } else if (current_active_limit_w != configured_limit) {
-        logger.printfln("Updating limit to %d W", configured_limit);
+    if (state_ != LoadcontrolState::Limited || current_active_limit_w != configured_limit) {
+        if (limit_endtime == 0_us) {
+            logger.printfln("%s: Limiting power to %d W until further notice", get_usecases_name(config_.usecase_type), configured_limit);
+        } else {
+            logger.printfln("%s: Limiting power to %d W for %d s", get_usecases_name(config_.usecase_type), configured_limit, seconds_left(limit_endtime).as<int>());
+        }
     }
 
     state_ = LoadcontrolState::Limited;
@@ -422,18 +546,20 @@ void LoadPowerLimitUsecase::failsafe_state()
     state_ = LoadcontrolState::Failsafe;
     limit_active = false;
 
+    // LPC-901: In "failsafe state" the Failsafe Active Power Limit applies
     current_active_limit_w = failsafe_power_limit_w;
-    task_scheduler.cancel(limit_endtime_timer);
+    // The duration of the Active Power Limit keeps running (LPC 2.6.1.1). limit_endtime_timer removes it when it expires,
+    // so a later write without duration does not inherit an expired duration.
 
-    timeval time_v{};
-    rtc.clock_synced(&time_v);
-    failsafe_expiry_endtime = time_v.tv_sec + failsafe_duration.as<int>();
+    failsafe_expiry_endtime = now_us() + static_cast<micros_t>(failsafe_duration);
+    task_scheduler.cancel(failsafe_expiry_timer);
     failsafe_expiry_timer = task_scheduler.scheduleOnce(
         [this]() {
+            failsafe_expiry_timer = 0;
             if (state_ == LoadcontrolState::Failsafe) {
-                logger.printfln("Failsafe duration expired. Switching to autonomous/unlimited mode");
-                failsafe_expired = true;
-                update_state();
+                // LPC-922
+                logger.printfln("Failsafe duration expired. Switching to unlimited/autonomous state");
+                unlimited_autonomous_state();
                 update_api();
             }
         },
@@ -457,14 +583,10 @@ void LoadPowerLimitUsecase::update_api() const
     api_entry->get("failsafe_limit_power_w")->updateUint(failsafe_power_limit_w);
     api_entry->get("failsafe_limit_duration_s")->updateUint(failsafe_duration.as<uint32_t>());
 
-    timeval now{};
-    rtc.clock_synced(&now);
     if (state_ == LoadcontrolState::Limited) {
-        const long long duration_left = limit_endtime - now.tv_sec;
-        api_entry->get("outstanding_duration_s")->updateUint(duration_left > 0 ? duration_left : 0);
+        api_entry->get("outstanding_duration_s")->updateUint(seconds_left(limit_endtime).as<uint32_t>());
     } else if (state_ == LoadcontrolState::Failsafe) {
-        const long long failsafe_time_left = failsafe_expiry_endtime - now.tv_sec;
-        api_entry->get("outstanding_duration_s")->updateUint(failsafe_time_left > 0 ? failsafe_time_left : 0);
+        api_entry->get("outstanding_duration_s")->updateUint(seconds_left(failsafe_expiry_endtime).as<uint32_t>());
     } else {
         api_entry->get("outstanding_duration_s")->updateUint(0);
     }
@@ -487,18 +609,17 @@ void LoadPowerLimitUsecase::get_loadcontrol_limit_description(LoadControlLimitDe
 
 void LoadPowerLimitUsecase::get_loadcontrol_limit_list(LoadControlLimitListDataType *data) const
 {
-    timeval now{};
-    rtc.clock_synced(&now);
-    const long long duration_left = limit_endtime - now.tv_sec;
+    const seconds_t duration_left = seconds_left(limit_endtime);
 
     LoadControlLimitDataType limit_data{};
     limit_data.limitId = limit_description_id;
     limit_data.isLimitChangeable = !limit_fixed;
     limit_data.isLimitActive = limit_active;
-    if (duration_left > 0) {
-        limit_data.timePeriod->endTime = EEBUS_USECASE_HELPERS::iso_duration_to_string(seconds_t(duration_left));
+    if (duration_left > 0_s) {
+        limit_data.timePeriod->endTime = EEBUS_USECASE_HELPERS::iso_duration_to_string(duration_left);
     }
-    limit_data.value->number = current_active_limit_w;
+    // The Active Power Limit data point as written by the Energy Guard, not the currently effective limit (e.g. the failsafe limit)
+    limit_data.value->number = configured_limit;
     limit_data.value->scale = 0;
     data->loadControlLimitData->push_back(limit_data);
 }

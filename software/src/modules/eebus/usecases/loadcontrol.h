@@ -102,20 +102,31 @@ public:
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     /**
-     * @brief Update the power limit.
-     * @param limit If the limit is active or not
-     * @param current_limit_w The limit in W
-     * @param duration For how long the limit shall be active from now
-     * @return true if the processing of the limit was successful
+     * @brief A write command on the Active Power Limit.
+     *
+     * Elements that are not set keep their old value (partial write).
      */
-    bool update_limit(bool limit, int current_limit_w, seconds_t duration);
+    struct LimitWrite {
+        SpineOptional<bool> active{};      ///< isLimitActive
+        SpineOptional<int> value_w{};
+        SpineOptional<seconds_t> duration; ///< timePeriod.endTime as duration from now
+        bool delete_duration = false;      ///< The write contains a partial delete of timePeriod.endTime
+    };
 
     /**
-     * @brief Update the failsafe values.
-     * @param power_limit_w Power limit in watts. Below -1 the value is ignored
-     * @param duration Duration in seconds. Below or equal to -1 the value is ignored
+     * @brief Process a write on the Active Power Limit.
+     * @param write The written data
+     * @return true if the write was accepted (ACK), false if it was rejected (NACK)
      */
-    void update_failsafe(int power_limit_w = -1, seconds_t duration = -1_s);
+    bool update_limit(const LimitWrite &write);
+
+    /**
+     * @brief Process a write on the failsafe values.
+     * @param power_limit_w The Failsafe Active Power Limit in W, if written
+     * @param duration The Failsafe Duration Minimum, if written
+     * @return true if the write was accepted (ACK), false if it was rejected (NACK)
+     */
+    bool update_failsafe(SpineOptional<int> power_limit_w, SpineOptional<seconds_t> duration);
 
     /**
      * @brief Update the constraints of the system.
@@ -136,10 +147,24 @@ public:
     void get_device_configuration_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
     void get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const;
 
+    /**
+     * @brief Whether the Active Power Limit written by the Energy Guard is activated.
+     *
+     * This is the limit data point of the use case. It is not set in failsafe state,
+     * use is_power_limited() to check if the power has to be limited.
+     */
     [[nodiscard]] bool limit_is_active() const
     {
         return limit_active;
     }
+
+    /**
+     * @brief Whether the power currently has to be limited to get_current_limit_w().
+     *
+     * True in state "limited", and in states "init" and "failsafe" if the
+     * Failsafe Active Power Limit is below the nominal maximum power (LPC-901).
+     */
+    [[nodiscard]] bool is_power_limited() const;
 
     [[nodiscard]] int get_current_limit_w() const
     {
@@ -168,11 +193,24 @@ private:
     MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
     MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
 
-    // State handling
-    void update_state();
+    // State handling (LPC/LPP 2.3)
     LoadcontrolState state_ = LoadcontrolState::Startup;
-    uint64_t state_change_timeout_task = 0;
-    bool heartbeat_received = false;
+    bool heartbeat_received = false; ///< A heartbeat of the Energy Guard was received within the last 120 s
+    micros_t last_heartbeat = 0_us;  ///< Time of the last heartbeat of the Energy Guard, 0 if none was received yet
+    uint64_t init_timer = 0;
+
+    /** @brief True in the states "unlimited/controlled" and "limited", i.e. an Energy Guard is in control. */
+    [[nodiscard]] bool is_controlled() const
+    {
+        return state_ == LoadcontrolState::UnlimitedControlled || state_ == LoadcontrolState::Limited;
+    }
+    /** @brief True if a heartbeat of the Energy Guard was received within the last 60 seconds (LPC 2.2, IG-LPC 2.11). */
+    [[nodiscard]] bool heartbeat_in_write_window() const;
+    void limit_duration_expired();
+    /** @brief Inform subscribers about the Active Power Limit data. Deferred, so the result of a write is sent first. */
+    void notify_limit_subscribers();
+    /** @brief Inform subscribers about the failsafe values. Deferred, so the result of a write is sent first. */
+    void notify_failsafe_subscribers();
 
     void init_state();
     void unlimited_controlled_state();
@@ -183,23 +221,20 @@ private:
     void update_api() const;
 
     // LoadControl configuration
-    bool limit_received = false;
     bool limit_active = false;
     int current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     static constexpr bool limit_fixed = false;
     int limit_description_id;
     int limit_measurement_description_id;
-    time_t limit_endtime = 0;
-    bool limit_expired = false;
+    micros_t limit_endtime = 0_us; ///< End of the duration of the Active Power Limit (monotonic, now_us()), 0 if the limit has no duration
     uint64_t limit_endtime_timer = 0;
 
     // Device Configuration Data (Failsafe)
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     seconds_t failsafe_duration = 2_h;
     uint64_t failsafe_expiry_timer = 0;
-    time_t failsafe_expiry_endtime = 0;
-    bool failsafe_expired = false;
+    micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())
     uint8_t failsafe_power_key_id;
     uint8_t failsafe_duration_key_id;
 
@@ -228,21 +263,6 @@ class LpcUsecase final : public LoadPowerLimitUsecase
 {
 public:
     LpcUsecase();
-
-    /**
-     * @brief Update the limit the system is supposed to be consuming.
-     *
-     * Wrapper for base class update_limit() with LPC-specific name.
-     *
-     * @param limit Whether the limit is active
-     * @param current_limit_w The limit in watts
-     * @param duration Duration for the limit
-     * @return true if the limit was accepted
-     */
-    bool update_lpc(bool limit, int current_limit_w, seconds_t duration)
-    {
-        return update_limit(limit, current_limit_w, duration);
-    }
 
     /**
      * @brief Update the constraints.
@@ -291,21 +311,6 @@ class LppUsecase final : public LoadPowerLimitUsecase
 {
 public:
     LppUsecase();
-
-    /**
-     * @brief Update the limit the system is supposed to be producing.
-     *
-     * Wrapper for base class update_limit() with LPP-specific name.
-     *
-     * @param limit Whether the limit is active
-     * @param current_limit_w The limit in watts (negative for production)
-     * @param duration Duration for the limit
-     * @return true if the limit was accepted
-     */
-    bool update_lpp(bool limit, int current_limit_w, seconds_t duration)
-    {
-        return update_limit(limit, current_limit_w, duration);
-    }
 
     /**
      * @brief Update the constraints.

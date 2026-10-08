@@ -129,7 +129,7 @@ static void update_limit()
 
 #if MODULE_P14A_ENWG_AVAILABLE()
 #ifdef EEBUS_ENABLE_LPC_USECASE
-    bool lpc_active = eebus.usecases->limitation_of_power_consumption.limit_is_active();
+    bool lpc_active = eebus.usecases->limitation_of_power_consumption.is_power_limited();
     int lpc_limit_w = eebus.usecases->lpc->get_current_limit_w();
     p14a_enwg.set_eebus_limit(lpc_active, static_cast<uint32_t>(lpc_limit_w));
 #endif // EEBUS_ENABLE_LPC_USECASE
@@ -145,7 +145,7 @@ static void update_limit()
 
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     // OPEV (Overload Protection) takes precedence if LPC is not active
-    if (!eebus.usecases->limitation_of_power_consumption.limit_is_active() && eebus.usecases->overload_protection_by_ev_charging_current_curtailment.limit_is_active()) {
+    if (!eebus.usecases->limitation_of_power_consumption.is_power_limited() && eebus.usecases->overload_protection_by_ev_charging_current_curtailment.limit_is_active()) {
 
         auto limit_phases = eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_limit_milliamps();
 
@@ -872,6 +872,10 @@ void EEBus::toggle_module()
         usecases = nullptr;
         data_handler = nullptr;
         ship.disable_ship();
+#if MODULE_P14A_ENWG_AVAILABLE() && defined(EEBUS_ENABLE_LPC_USECASE)
+        // update_limit() does not run without usecases. Remove the last EEBUS limit, otherwise §14a would keep it forever.
+        p14a_enwg.set_eebus_limit(false, 0);
+#endif
     }
 }
 

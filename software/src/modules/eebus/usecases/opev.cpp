@@ -303,7 +303,7 @@ void OpevUsecase::update_api() const
 bool OpevUsecase::limit_changeable() const
 {
 #ifdef EEBUS_ENABLE_LPC_USECASE
-    if (eebus.usecases->limitation_of_power_consumption.limit_is_active())
+    if (eebus.usecases->limitation_of_power_consumption.is_power_limited())
         return false;
 #endif
     return limit_changeable_allowed;
