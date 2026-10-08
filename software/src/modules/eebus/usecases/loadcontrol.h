@@ -171,9 +171,10 @@ public:
         return current_active_limit_w;
     }
 
-    void receive_heartbeat() override;
-    void receive_heartbeat_timeout() override;
+    void receive_heartbeat(const FeatureAddressType &source) override;
     void inform_spineconnection_usecase_update(SpineConnection *conn) override;
+    bool validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server) override;
+    void inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server) override;
 
 protected:
     const LoadPowerLimitConfig &config_;
@@ -193,10 +194,21 @@ private:
     MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
     MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
 
+    // Energy Guard selection (IG-LPC 3.5, 3.8)
+    /** @brief True if the peer announces more than one entity with the Energy Guard of this use case. */
+    [[nodiscard]] bool has_multiple_energy_guards(SpineConnection *conn) const;
+    /** @brief True if the address is the local LoadControl or DeviceConfiguration server feature of this use case. */
+    [[nodiscard]] bool is_energy_guard_binding_target(const FeatureAddressType &server) const;
+    /** @brief Subscribe to the heartbeat of the peer entity that bound both LoadControl and DeviceConfiguration, if any. */
+    void subscribe_heartbeat_of_bound_energy_guard(SpineConnection *conn);
+    /** @brief The SPINE device bound to LoadControl or DeviceConfiguration (IG-LPC 3.5: at most one). Empty if none. */
+    [[nodiscard]] std::string bound_energy_guard_device() const;
+
     // State handling (LPC/LPP 2.3)
     LoadcontrolState state_ = LoadcontrolState::Startup;
     bool heartbeat_received = false; ///< A heartbeat of the Energy Guard was received within the last 120 s
     micros_t last_heartbeat = 0_us;  ///< Time of the last heartbeat of the Energy Guard, 0 if none was received yet
+    uint64_t heartbeat_timeout_timer = 0; ///< Expires 120 s after the last heartbeat of the Energy Guard (LPC-911, LPC-912)
     uint64_t init_timer = 0;
 
     /** @brief True in the states "unlimited/controlled" and "limited", i.e. an Energy Guard is in control. */
@@ -206,6 +218,8 @@ private:
     }
     /** @brief True if a heartbeat of the Energy Guard was received within the last 60 seconds (LPC 2.2, IG-LPC 2.11). */
     [[nodiscard]] bool heartbeat_in_write_window() const;
+    /** @brief No heartbeat of the Energy Guard for 120 seconds (LPC-911, LPC-912). */
+    void heartbeat_timed_out();
     void limit_duration_expired();
     /** @brief Inform subscribers about the Active Power Limit data. Deferred, so the result of a write is sent first. */
     void notify_limit_subscribers();

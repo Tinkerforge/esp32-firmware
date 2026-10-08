@@ -46,6 +46,20 @@ bool NodeManagementEntity::check_is_bound(FeatureAddressType &sending_feature, F
     return false;
 }
 
+std::vector<FeatureAddressType> NodeManagementEntity::get_bound_clients(const FeatureAddressType &server_feature) const
+{
+    std::vector<FeatureAddressType> clients{};
+    if (!binding_management_entry_list_.bindingManagementEntryData.has_value()) {
+        return clients;
+    }
+    for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
+        if (binding.clientAddress && binding.serverAddress && EEBUS_USECASE_HELPERS::compare_spine_addresses(binding.serverAddress.get(), server_feature)) {
+            clients.push_back(binding.clientAddress.get());
+        }
+    }
+    return clients;
+}
+
 MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.addressDestination->feature.get() != 0)
@@ -353,8 +367,25 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
             if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get()) && eebus.usecases->get_spine_connection(header.addressSource.get()) != nullptr) {
                 eebus.trace_fmtln("Binding requested but is already bound");
             } else {
+                for (EebusUsecase *uc : eebus.usecases->usecase_list) {
+                    if (!uc->validate_binding_request(binding_entry.clientAddress.get(), binding_entry.serverAddress.get())) {
+                        eebus.trace_fmtln("Binding of %s to %s rejected by usecase %s", EEBUS_USECASE_HELPERS::spine_address_to_string(binding_entry.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(binding_entry.serverAddress.get()).c_str(), get_usecases_name(uc->get_usecase_type()));
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Binding request rejected");
+                        return {true, true, CmdClassifierType::result};
+                    }
+                }
                 binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
+                const FeatureAddressType client = binding_entry.clientAddress.get();
+                const FeatureAddressType server = binding_entry.serverAddress.get();
+                // Inform the usecases after the result was sent, as they might send messages to the peer (e.g. subscriptions)
+                schedule_once_while_alive(
+                    [client, server]() {
+                        for (EebusUsecase *uc : eebus.usecases->usecase_list) {
+                            uc->inform_binding_added(client, server);
+                        }
+                    },
+                    0_ms);
             }
             EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Binding request was successful");
             return {true, true, CmdClassifierType::result};

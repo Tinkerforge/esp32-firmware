@@ -191,8 +191,10 @@ public:
      * @brief Called when a heartbeat is received.
      *
      * Override this in use cases that utilize heartbeats.
+     *
+     * @param source The DeviceDiagnosis server that sent the heartbeat. The device is not set if it is unknown.
      */
-    virtual void receive_heartbeat()
+    virtual void receive_heartbeat(const FeatureAddressType & /*source*/)
     {
     }
 
@@ -213,6 +215,30 @@ public:
      * @param conn The SpineConnection that was updated.
      */
     virtual void inform_spineconnection_usecase_update(SpineConnection *conn)
+    {
+    }
+
+    /**
+     * @brief Called before a binding request of a peer is accepted.
+     *
+     * Override this to reject bindings to features of this use case.
+     *
+     * @param client The client feature of the peer requesting the binding. The device is always set.
+     * @param server The local server feature to be bound. The device is always set.
+     * @return false if the binding has to be rejected.
+     */
+    virtual bool validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server)
+    {
+        return true;
+    }
+
+    /**
+     * @brief Called after a new binding of a peer was accepted.
+     *
+     * @param client The client feature of the peer. The device is always set.
+     * @param server The local server feature that was bound. The device is always set.
+     */
+    virtual void inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server)
     {
     }
 

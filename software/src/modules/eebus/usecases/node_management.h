@@ -56,6 +56,13 @@ public:
     bool check_is_bound(FeatureAddressType &sending_feature, FeatureAddressType &target_feature) const;
 
     /**
+     * @brief Get all clients bound to a local server feature.
+     * @param server_feature The local server feature
+     * @return The addresses of the bound client features
+     */
+    [[nodiscard]] std::vector<FeatureAddressType> get_bound_clients(const FeatureAddressType &server_feature) const;
+
+    /**
      * @brief Handles a message for the NodeManagement usecase.
      * @param header SPINE header containing commandclassifier and targeted entity info
      * @param data The actual function call data

@@ -60,6 +60,13 @@ public:
     void initialize_heartbeat_on_feature(FeatureAddressType &target, Usecases sending_usecase, bool expect_notify = true);
 
     /**
+     * @brief Read the heartbeat of a remote DeviceDiagnosis server once, without subscribing or supervising it.
+     *
+     * The reply is a sign of life of the peer like any other heartbeat.
+     */
+    void read_heartbeat_once(const FeatureAddressType &target);
+
+    /**
      * @brief Subscribe to the heartbeat of a remote use case actor.
      *
      * Looks up the DeviceDiagnosis server feature on the entity of the remote actor
@@ -171,7 +178,7 @@ private:
     void send_heartbeat_to_subs();
 
     /** @brief Notify all registered usecases of heartbeat reception */
-    void emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data);
+    void emit_heartbeat_received(const FeatureAddressType &source);
 
     /** @brief Find a heartbeat target by its address. Returns nullptr if unknown. */
     HeartbeatTarget *find_heartbeat_target(const FeatureAddressType &address);

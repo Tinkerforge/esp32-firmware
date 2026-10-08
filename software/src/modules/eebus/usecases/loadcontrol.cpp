@@ -42,6 +42,7 @@ LoadPowerLimitUsecase::~LoadPowerLimitUsecase()
     task_scheduler.cancel(limit_endtime_timer);
     task_scheduler.cancel(failsafe_expiry_timer);
     task_scheduler.cancel(init_timer);
+    task_scheduler.cancel(heartbeat_timeout_timer);
 }
 
 // Base class constructor - initializes IDs from config offsets
@@ -278,6 +279,8 @@ MessageReturn LoadPowerLimitUsecase::electricalConnection_feature(const HeaderTy
 static constexpr seconds_t HEARTBEAT_WRITE_WINDOW = 60_s;
 // LPC-906: Leave "init" if no Energy Guard took control within 120 seconds
 static constexpr seconds_t INIT_TIMEOUT = 120_s;
+// LPC-911, LPC-912: Switch to failsafe if no heartbeat of the Energy Guard was received for 120 seconds
+static constexpr seconds_t HEARTBEAT_TIMEOUT = 120_s;
 
 // End times are monotonic, so a wall clock change (e.g. the first NTP sync) does not change remaining durations.
 // Returns the seconds left until end, rounded up. 0 if there is no end time or it elapsed.
@@ -470,15 +473,42 @@ bool LoadPowerLimitUsecase::is_power_limited() const
     }
 }
 
-void LoadPowerLimitUsecase::receive_heartbeat()
+std::string LoadPowerLimitUsecase::bound_energy_guard_device() const
 {
+    for (FeatureTypeEnumType feature : {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration}) {
+        for (const FeatureAddressType &bound : eebus.usecases->node_management.get_bound_clients(get_feature_address(feature_addresses.at(feature)))) {
+            if (bound.device.has_value() && !bound.device.get().empty()) {
+                return bound.device.get();
+            }
+        }
+    }
+    return {};
+}
+
+void LoadPowerLimitUsecase::receive_heartbeat(const FeatureAddressType &source)
+{
+    // IG-LPC 3.5: Only the heartbeat of the binding partner counts. Another device must not keep the use case out of failsafe.
+    // Before any binding, every heartbeat counts: Writes are only accepted from a binding partner anyway.
+    const std::string bound_device = bound_energy_guard_device();
+    if (!bound_device.empty() && source.device.has_value() && !source.device.get().empty() && source.device.get() != bound_device) {
+        eebus.trace_fmtln("%s: Ignoring heartbeat of %s, the Energy Guard is %s", get_usecases_name(config_.usecase_type), EEBUS_USECASE_HELPERS::spine_address_to_string(source).c_str(), bound_device.c_str());
+        return;
+    }
     heartbeat_received = true;
     last_heartbeat = now_us();
+    task_scheduler.cancel(heartbeat_timeout_timer);
+    heartbeat_timeout_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            heartbeat_timeout_timer = 0;
+            heartbeat_timed_out();
+        },
+        HEARTBEAT_TIMEOUT);
     // A heartbeat alone does not change the state. The state changes with a following write on the limit (LPC 2.2).
     update_api();
 }
 
-void LoadPowerLimitUsecase::receive_heartbeat_timeout()
+// Not EebusHeartBeat's receive_heartbeat_timeout(): It is restarted by the heartbeat of any device (IG-LPC 3.5).
+void LoadPowerLimitUsecase::heartbeat_timed_out()
 {
     heartbeat_received = false;
     if (is_controlled()) {
@@ -491,8 +521,118 @@ void LoadPowerLimitUsecase::receive_heartbeat_timeout()
 
 void LoadPowerLimitUsecase::inform_spineconnection_usecase_update(SpineConnection *conn)
 {
+    // IG-LPC 3.8: With multiple Energy Guard instances, the one that binds LoadControl and DeviceConfiguration is in control.
+    // Subscribe to its heartbeat only after the bindings.
+    if (has_multiple_energy_guards(conn)) {
+        eebus.trace_fmtln("%s: Peer announces multiple Energy Guard instances. Waiting for bindings before subscribing to the heartbeat", get_usecases_name(config_.usecase_type));
+        // The SMA Sunny Home Manager 2.0 writes its first limit about 2 s after connecting, before any heartbeat, and does not retry
+        // a rejected write. Read all its heartbeats once now, so the first write follows a heartbeat (LPC 2.2, IG-LPC 2.11).
+        for (const std::vector<AddressEntityType> &entity : conn->get_use_case_actor_entities(config_.usecase_name, "EnergyGuard")) {
+            const FeatureAddressType device_diagnosis = conn->get_address_of_feature(entity, FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
+            if (device_diagnosis.feature.has_value()) {
+                eebus.usecases->evse_heartbeat.read_heartbeat_once(device_diagnosis);
+            }
+        }
+        // The bindings might already exist if they were requested before the use case data was received
+        subscribe_heartbeat_of_bound_energy_guard(conn);
+        return;
+    }
     // Scenario 3
     eebus.usecases->evse_heartbeat.subscribe_to_actor_heartbeat(conn, config_.usecase_name, "EnergyGuard", config_.usecase_type);
+}
+
+bool LoadPowerLimitUsecase::has_multiple_energy_guards(SpineConnection *conn) const
+{
+    return conn != nullptr && conn->get_use_case_actor_entities(config_.usecase_name, "EnergyGuard").size() > 1;
+}
+
+bool LoadPowerLimitUsecase::is_energy_guard_binding_target(const FeatureAddressType &server) const
+{
+    if (!server.feature.has_value() || !server.entity.has_value() || server.entity.get() != entity_address) {
+        return false;
+    }
+    if (server.device.has_value() && server.device.get() != EEBUS_USECASE_HELPERS::get_spine_device_name()) {
+        return false;
+    }
+    return server.feature.get() == feature_addresses.at(FeatureTypeEnumType::LoadControl) || server.feature.get() == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration);
+}
+
+bool LoadPowerLimitUsecase::validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server)
+{
+    if (!is_energy_guard_binding_target(server)) {
+        return true;
+    }
+    // IG-LPC 3.5: While a device is bound to LoadControl or DeviceConfiguration, no other device may bind to either.
+    // Bindings are removed when the device disconnects.
+    for (FeatureTypeEnumType feature : {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration}) {
+        for (const FeatureAddressType &bound : eebus.usecases->node_management.get_bound_clients(get_feature_address(feature_addresses.at(feature)))) {
+            if (bound.device.has_value() && client.device.has_value() && bound.device.get() != client.device.get()) {
+                logger.printfln("Rejected EEBUS binding of %s: %s is already bound by %s", EEBUS_USECASE_HELPERS::spine_address_to_string(client).c_str(), get_usecases_name(config_.usecase_type), EEBUS_USECASE_HELPERS::spine_address_to_string(bound).c_str());
+                return false;
+            }
+        }
+    }
+    SpineConnection *conn = EEBusUseCases::get_spine_connection(client);
+    if (!has_multiple_energy_guards(conn)) {
+        return true;
+    }
+    // IG-LPC 3.8: The bindings on LoadControl and DeviceConfiguration have to originate from the same entity
+    for (FeatureTypeEnumType feature : {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration}) {
+        for (const FeatureAddressType &bound : eebus.usecases->node_management.get_bound_clients(get_feature_address(feature_addresses.at(feature)))) {
+            if (EEBusUseCases::get_spine_connection(bound) == conn && bound.entity.get() != client.entity.get()) {
+                logger.printfln("Rejected EEBUS binding of %s: The Energy Guard is already bound from %s", EEBUS_USECASE_HELPERS::spine_address_to_string(client).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(bound).c_str());
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void LoadPowerLimitUsecase::inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server)
+{
+    if (!is_energy_guard_binding_target(server)) {
+        return;
+    }
+    SpineConnection *conn = EEBusUseCases::get_spine_connection(client);
+    // With a single Energy Guard instance the heartbeat was already subscribed after discovery
+    if (has_multiple_energy_guards(conn)) {
+        subscribe_heartbeat_of_bound_energy_guard(conn);
+    }
+}
+
+void LoadPowerLimitUsecase::subscribe_heartbeat_of_bound_energy_guard(SpineConnection *conn)
+{
+    if (conn == nullptr) {
+        return;
+    }
+    auto bound_clients_of_peer = [this, conn](FeatureTypeEnumType feature) {
+        std::vector<FeatureAddressType> clients{};
+        for (const FeatureAddressType &bound : eebus.usecases->node_management.get_bound_clients(get_feature_address(feature_addresses.at(feature)))) {
+            if (EEBusUseCases::get_spine_connection(bound) == conn) {
+                clients.push_back(bound);
+            }
+        }
+        return clients;
+    };
+    const std::vector<FeatureAddressType> load_control_clients = bound_clients_of_peer(FeatureTypeEnumType::LoadControl);
+    const std::vector<FeatureAddressType> device_configuration_clients = bound_clients_of_peer(FeatureTypeEnumType::DeviceConfiguration);
+
+    for (const FeatureAddressType &load_control_client : load_control_clients) {
+        for (const FeatureAddressType &device_configuration_client : device_configuration_clients) {
+            if (load_control_client.entity.get() != device_configuration_client.entity.get()) {
+                continue;
+            }
+            // Both bindings from the same entity: This is the Energy Guard instance in control
+            FeatureAddressType device_diagnosis = conn->get_address_of_feature(load_control_client.entity.get(), FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
+            if (!device_diagnosis.feature.has_value()) {
+                eebus.trace_fmtln("%s: Energy Guard bound from %s has no DeviceDiagnosis server on its entity. Cannot receive its heartbeat", get_usecases_name(config_.usecase_type), EEBUS_USECASE_HELPERS::spine_address_to_string(load_control_client).c_str());
+                return;
+            }
+            eebus.trace_fmtln("%s: Energy Guard bound from %s. Using its heartbeat", get_usecases_name(config_.usecase_type), EEBUS_USECASE_HELPERS::spine_address_to_string(load_control_client).c_str());
+            eebus.usecases->evse_heartbeat.initialize_heartbeat_on_feature(device_diagnosis, config_.usecase_type, true);
+            return;
+        }
+    }
 }
 
 void LoadPowerLimitUsecase::init_state()

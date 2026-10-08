@@ -23,7 +23,7 @@
 #include "../eebus_usecases.h"
 #include "../generated/module_dependencies.h"
 
-// LPC-911, LPC-912: Switch to failsafe if no heartbeat was received for 120 seconds.
+// No heartbeat of any peer for this long calls receive_heartbeat_timeout() (e.g. CEVC). LPC/LPP have their own timeout.
 // The heartbeatTimeout announced by the peer is not used: The CS does not have to evaluate it (LPC 3.2.2.2, Table 28).
 static constexpr seconds_t HEARTBEAT_RECEIVE_TIMEOUT = 120_s;
 
@@ -135,6 +135,11 @@ void EebusHeartBeat::initialize_heartbeat_on_feature(FeatureAddressType &target,
     }
 }
 
+void EebusHeartBeat::read_heartbeat_once(const FeatureAddressType &target)
+{
+    send_full_read(feature_addresses.at(FeatureTypeEnumType::Generic), target, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
+}
+
 bool EebusHeartBeat::is_new_heartbeat(HeartbeatTarget &target, const DeviceDiagnosisHeartbeatDataType &data)
 {
     const bool has_counter = data.heartbeatCounter.has_value();
@@ -240,7 +245,7 @@ MessageReturn EebusHeartBeat::handle_message(HeaderType &header, SpineDataTypeHa
                     target->last_received = now_us();
                 }
             }
-            emit_heartbeat_received(data->devicediagnosisheartbeatdatatype.get());
+            emit_heartbeat_received(header.addressSource.has_value() ? header.addressSource.get() : FeatureAddressType{});
             return {true, false};
         }
         default:
@@ -287,11 +292,11 @@ void EebusHeartBeat::send_heartbeat_to_subs()
 #endif
 }
 
-void EebusHeartBeat::emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType & /*heartbeat_data*/)
+void EebusHeartBeat::emit_heartbeat_received(const FeatureAddressType &source)
 {
     task_scheduler.cancel(heartbeat_received_timeout_task);
     for (EebusUsecase *uc : registered_usecases) {
-        uc->receive_heartbeat();
+        uc->receive_heartbeat(source);
     }
     heartbeat_received_timeout_task = task_scheduler.scheduleOnce(
         [this]() {
