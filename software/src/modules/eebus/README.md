@@ -15,6 +15,9 @@ rules that the code follows.
   runs. A `nullptr` result means the peer was removed in the meantime.
 - A `SpineConnection` lives inside its `ShipConnection` and dies with it. Use-case
   code must look up connections per message via `EEBusUseCases::get_spine_connection()`.
+- `EEBusUseCases` and all use cases are destroyed when EEBUS is disabled. Deferred
+  tasks of use cases that capture `this` must be scheduled with
+  `EebusUsecase::schedule_once_while_alive()` (or be cancelled in the destructor).
 
 
 ## Tasks and data flow
@@ -50,3 +53,4 @@ flowchart LR
   the socket fd and runs on the shared `httpd` task.
 - Client role: We dial out to peers (`connect_trusted_peers`). Each
   connection has its own `eebus_ws` task owned by `tf_websocket_client`.
+

@@ -44,7 +44,7 @@ LoadPowerLimitUsecase::LoadPowerLimitUsecase(const LoadPowerLimitConfig &config)
     config_(config), id_l_1(config.loadcontrol_limit_id_offset + 1), id_m_1(config.measurement_id_offset + 1), id_k_1(config.device_config_key_id_offset + 1), id_k_2(config.device_config_key_id_offset + 2), id_ec_1(config.electrical_connection_id_offset + 1), id_cc_1(config.electrical_connection_characteristic_id_offset + 1), id_cc_2(config.electrical_connection_characteristic_id_offset + 2), id_p_1(config.electrical_connection_parameter_id_offset + 1), limit_description_id(id_l_1),
     limit_measurement_description_id(id_m_1), failsafe_power_key_id(id_k_1), failsafe_duration_key_id(id_k_2)
 {
-    task_scheduler.scheduleOnce(
+    schedule_once_while_alive(
         [this]() {
             // Register for heartbeat (Scenario 3)
             eebus.usecases->evse_heartbeat.register_usecase_for_heartbeat(this);

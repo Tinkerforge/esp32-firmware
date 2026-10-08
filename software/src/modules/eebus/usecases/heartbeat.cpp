@@ -61,7 +61,7 @@ void EebusHeartBeat::initialize_heartbeat_on_feature(FeatureAddressType &target,
     heartbeat_targets.push_back(target);
     // Subscribe to heartbeat notifications from target
     if (expect_notify) {
-        task_scheduler.scheduleOnce(
+        schedule_once_while_alive(
             [=, this]() mutable {
                 const auto connection = EEBusUseCases::get_spine_connection(target);
                 if (connection == nullptr)

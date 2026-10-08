@@ -157,7 +157,7 @@ int EebusUsecase::send_spine_message(const FeatureAddressType &destination, Feat
         AwaitedAcks awaited_ack{.function = FunctionEnumType::nodeManagementSubscriptionRequestCall, .target_feature = destination, .cmd_type = CmdClassifierType::call, .msg_counter = msg_counter};
         awaited_acks.push_back(awaited_ack);
         // Clean up the awaited_ack if the usecase doesnt handle it by itself
-        task_scheduler.scheduleOnce(
+        schedule_once_while_alive(
             [this, msg_counter] {
                 for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
                     if (it->msg_counter == msg_counter) {
@@ -169,6 +169,20 @@ int EebusUsecase::send_spine_message(const FeatureAddressType &destination, Feat
             20_s);
     }
     return msg_counter;
+}
+
+uint64_t EebusUsecase::schedule_once_while_alive(std::function<void(void)> &&fn, millis_t delay)
+{
+    const uint32_t generation = EEBusUseCases::generation;
+    return task_scheduler.scheduleOnce(
+        [generation, fn = std::move(fn)]() {
+            if (eebus.usecases == nullptr || EEBusUseCases::generation != generation) {
+                eebus.trace_fmtln("Usecases: Skipped deferred task of disabled usecases");
+                return;
+            }
+            fn();
+        },
+        delay);
 }
 
 template <typename T> int EebusUsecase::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack)

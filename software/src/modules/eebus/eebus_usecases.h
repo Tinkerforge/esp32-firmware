@@ -102,6 +102,14 @@ class EEBusUseCases
 {
 public:
     EEBusUseCases();
+    ~EEBusUseCases();
+
+    /**
+     * Incremented whenever an instance is destroyed (EEBUS gets disabled).
+     * Deferred tasks of the usecases compare it with the value at scheduling time
+     * to detect that the usecase objects they captured no longer exist.
+     */
+    static uint32_t generation;
 
     /**
      * Main interface for the EEBUS UseCases. All EEBUS Messages are passed here and forwarded to the correct usecase entity.

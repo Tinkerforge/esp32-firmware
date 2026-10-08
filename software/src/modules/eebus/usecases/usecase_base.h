@@ -24,6 +24,7 @@
 #include "../spine_types.h"
 #include "config.h"
 #include "usecase_helpers.h"
+#include <functional>
 #include <map>
 #include <vector>
 
@@ -287,4 +288,10 @@ protected:
     int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
     template <typename T> int send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
+
+    /**
+     * Schedule a one-shot task that is skipped if the usecases were destroyed (EEBUS disabled) in the meantime.
+     * Use it for every deferred task that captures a usecase and is not cancelled in its destructor.
+     */
+    static uint64_t schedule_once_while_alive(std::function<void(void)> &&fn, millis_t delay = 0_ms);
 };

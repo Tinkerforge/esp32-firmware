@@ -38,6 +38,14 @@ template <typename T> void insert_vector(std::vector<T> &dest, const std::vector
 // EEBusUseCases Manager Implementation
 // ============================================================================
 
+uint32_t EEBusUseCases::generation = 0;
+
+EEBusUseCases::~EEBusUseCases()
+{
+    // Invalidate all tasks scheduled with EebusUsecase::schedule_once_while_alive() that did not run yet
+    generation++;
+}
+
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses should be consistent so all actors are under the same entity

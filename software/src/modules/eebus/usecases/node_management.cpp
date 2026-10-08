@@ -147,8 +147,8 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     }
     int msg_counter = send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
 
-    task_scheduler.scheduleOnce(
-        [this, target_feature, msg_counter]() { // This will likely cause a crash if the user connects to an EEBUS device and disables EEBUS within 10 seconds. We would
+    schedule_once_while_alive(
+        [this, target_feature, msg_counter]() {
             for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
                 if (it->function == FunctionEnumType::nodeManagementSubscriptionRequestCall && it->target_feature.device.get() == target_feature.device.get() && it->target_feature.entity.get() == target_feature.entity.get() && it->target_feature.feature.get() == target_feature.feature.get() && it->msg_counter == msg_counter) {
                     if (!it->ack_received) {

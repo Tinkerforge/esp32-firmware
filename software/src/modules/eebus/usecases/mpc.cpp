@@ -44,7 +44,7 @@
 MpcUsecase::MpcUsecase()
 {
     // Initialize with default values
-    task_scheduler.scheduleOnce(
+    schedule_once_while_alive(
         [this]() {
             update_api();
         },
