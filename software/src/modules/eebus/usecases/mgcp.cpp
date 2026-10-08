@@ -462,9 +462,7 @@ void MgcpUsecase::update_power(int total_power)
         try_activate();
     }
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -482,9 +480,7 @@ void MgcpUsecase::update_energy_feed_in(uint32_t energy_wh)
         try_activate();
     }
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -502,9 +498,7 @@ void MgcpUsecase::update_energy_consumed(uint32_t energy_wh)
         try_activate();
     }
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -515,9 +509,7 @@ void MgcpUsecase::update_current(int current_phase_1_ma, int current_phase_2_ma,
     current_phase_ma[1] = current_phase_2_ma;
     current_phase_ma[2] = current_phase_3_ma;
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -528,9 +520,7 @@ void MgcpUsecase::update_voltage(int voltage_phase_1_v, int voltage_phase_2_v, i
     voltage_phase_v[1] = voltage_phase_2_v;
     voltage_phase_v[2] = voltage_phase_3_v;
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -539,9 +529,7 @@ void MgcpUsecase::update_frequency(int freq_mhz)
 {
     frequency_mhz = freq_mhz;
 
-    // Inform subscribers of measurement changes
-    auto measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -578,6 +566,12 @@ void MgcpUsecase::try_activate()
     supported_scenarios = {1, 2, 3, 4, 5, 6, 7};
     entities_updated();
     usecase_updated();
+}
+
+void MgcpUsecase::notify_measurements()
+{
+    auto measurement_data = EVSEEntity::get_measurement_list_data();
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
 }
 
 void MgcpUsecase::update_api() const

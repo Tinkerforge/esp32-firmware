@@ -171,6 +171,34 @@ int EebusUsecase::send_spine_message(const FeatureAddressType &destination, Feat
     return msg_counter;
 }
 
+ThrottledNotify::~ThrottledNotify()
+{
+    task_scheduler.cancel(task);
+}
+
+void ThrottledNotify::request()
+{
+    if (task != 0) {
+        return;
+    }
+    // Deferred even without a pending interval, so several updates in a row (e.g. one meter update) give one notification
+    micros_t delay = 0_us;
+    if (last_sent != 0_us) {
+        const micros_t next = last_sent + static_cast<micros_t>(min_interval);
+        const micros_t now = now_us();
+        if (next > now) {
+            delay = next - now;
+        }
+    }
+    task = task_scheduler.scheduleOnce(
+        [this]() {
+            task = 0;
+            last_sent = now_us();
+            send();
+        },
+        delay.to<millis_t>());
+}
+
 uint64_t EebusUsecase::schedule_once_while_alive(std::function<void(void)> &&fn, millis_t delay)
 {
     const uint32_t generation = EEBusUseCases::generation;

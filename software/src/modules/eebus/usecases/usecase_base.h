@@ -28,6 +28,10 @@
 #include <map>
 #include <vector>
 
+// Minimum interval between two notifications of measurement data (MPC, MGCP, EVCEM). Changes are notified at most this late.
+// The MPC test specification (V1.0.2, 6.7) requires changes to be notified within 120 s.
+#define EEBUS_MEASUREMENT_NOTIFY_INTERVAL 5_s
+
 /**
  * @brief Return structure for usecase message handlers.
  *
@@ -51,6 +55,32 @@ struct MessageReturn {
 
 // Forward declaration
 class EEBusUseCases;
+
+/**
+ * @brief Coalesces and rate-limits notifications of frequently changing data, e.g. measurements.
+ *
+ * request() schedules the send function to run once, at the earliest min_interval after the last send.
+ * All requests until then result in a single notification with the data current at send time.
+ */
+class ThrottledNotify
+{
+public:
+    ThrottledNotify(millis_t min_interval, std::function<void(void)> &&send) : min_interval(min_interval), send(std::move(send))
+    {
+    }
+    ~ThrottledNotify();
+    ThrottledNotify(const ThrottledNotify &) = delete;
+    ThrottledNotify &operator=(const ThrottledNotify &) = delete;
+
+    /** @brief Request a notification. Does nothing if one is already scheduled. */
+    void request();
+
+private:
+    const millis_t min_interval;
+    const std::function<void(void)> send;
+    micros_t last_sent = 0_us;
+    uint64_t task = 0;
+};
 
 /**
  * @brief Base class for all EEBUS use cases.

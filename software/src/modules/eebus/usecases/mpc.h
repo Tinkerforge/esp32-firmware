@@ -255,6 +255,12 @@ public:
     static constexpr uint8_t id_p_7 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 17;
 
 private:
+    /** @brief Sends the measurement data right away. Use measurement_notify.request() instead. */
+    void notify_measurements();
+    ThrottledNotify measurement_notify{EEBUS_MEASUREMENT_NOTIFY_INTERVAL, [this]() {
+                                           notify_measurements();
+                                       }};
+
     // =========================================================================
     // Measurement values - Scenario 1: Monitor Power
     // =========================================================================

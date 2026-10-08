@@ -279,6 +279,12 @@ public:
     static constexpr uint8_t id_k_1 = EVSEEntity::mgcpDeviceConfigurationKeyIdOffset + 1; ///< PV curtailment limit factor
 
 private:
+    /** @brief Sends the measurement data right away. Use measurement_notify.request() instead. */
+    void notify_measurements();
+    ThrottledNotify measurement_notify{EEBUS_MEASUREMENT_NOTIFY_INTERVAL, [this]() {
+                                           notify_measurements();
+                                       }};
+
     // ========================================================================
     // Scenario 1: PV curtailment limit factor
     // ========================================================================

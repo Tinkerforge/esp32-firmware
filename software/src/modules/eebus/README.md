@@ -54,3 +54,11 @@ flowchart LR
 - Client role: We dial out to peers (`connect_trusted_peers`). Each
   connection has its own `eebus_ws` task owned by `tf_websocket_client`.
 
+
+## Notifications of frequently changing data
+
+Peers like the SMA Sunny Home Manager 2.0 are slow to process SPINE messages. Data that
+changes often (e.g. the meter values of MPC, MGCP and EVCEM, about once per second) must
+not be notified on every change. Request the notification via a `ThrottledNotify`: It
+coalesces all changes into one notification with the current data and sends at most one
+per `EEBUS_MEASUREMENT_NOTIFY_INTERVAL`.

@@ -447,6 +447,12 @@ void MpcUsecase::get_measurement_list_data(MeasurementListDataType *data) const
     }
 }
 
+void MpcUsecase::notify_measurements()
+{
+    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
+    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+}
+
 void MpcUsecase::update_api() const
 {
     // Update API state for monitoring
@@ -489,9 +495,7 @@ void MpcUsecase::update_power(int total_power, int power_phase_1, int power_phas
         usecase_updated();
     }
 
-    // Inform subscribers of measurement data
-    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -502,9 +506,7 @@ void MpcUsecase::update_energy(uint32_t energy_consumed, uint32_t energy_produce
     energy_consumed_wh = energy_consumed;
     energy_produced_wh = energy_produced;
 
-    // Inform subscribers of measurement data
-    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -515,9 +517,7 @@ void MpcUsecase::update_current(int current_phase_1, int current_phase_2, int cu
     current_phase_ma[1] = current_phase_2;
     current_phase_ma[2] = current_phase_3;
 
-    // Inform subscribers of measurement data
-    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -544,9 +544,7 @@ void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int vo
         eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_description_data, "measurementDescriptionListData");
     }
 
-    // Inform subscribers of measurement data
-    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }
@@ -555,9 +553,7 @@ void MpcUsecase::update_frequency(int frequency_millihertz)
 {
     frequency_mhz = frequency_millihertz;
 
-    // Inform subscribers of measurement data
-    MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_data, "measurementListData");
+    measurement_notify.request();
 
     update_api();
 }

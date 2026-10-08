@@ -148,6 +148,12 @@ public:
     static constexpr uint8_t id_z_7 = EVEntity::evcemElectricalconnectionParameterIdOffset + 7;
 
 private:
+    /** @brief Sends the measurement data right away. Use measurement_notify.request() instead. */
+    void notify_measurements();
+    ThrottledNotify measurement_notify{EEBUS_MEASUREMENT_NOTIFY_INTERVAL, [this]() {
+                                           notify_measurements();
+                                       }};
+
     // Current measurement data held about the current charge
     int milliamps_draw_phase[3] = {1, 1, 1}; ///< Milliamp draw per phase. Set to 1 to avoid zero values
     int power_draw_phase[3] = {1, 1, 1};     ///< Power per phase in W. Set to 1 to avoid zero values
