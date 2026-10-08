@@ -21,6 +21,7 @@
 
 #include "usecase_base.h"
 
+#include <functional>
 // Enable subscription mechanism for nodemanagement
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 
@@ -101,9 +102,10 @@ public:
      * @param sending_feature The feature that is subscribing to the target feature
      * @param target_feature The target feature to subscribe to
      * @param feature The feature type of the target feature (optional)
+     * @param on_result Called with true if the peer accepted the subscription, with false if it rejected it or did not answer in time (optional)
      * @return true if subscription request was valid and destination found (not whether target accepted)
      */
-    bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined);
+    bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined, std::function<void(bool)> on_result = nullptr);
 
     /**
      * @brief Informs that detailed discovery data has changed.

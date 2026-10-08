@@ -117,7 +117,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
     }
 }
 
-bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature)
+bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature, std::function<void(bool)> on_result)
 {
     NodeManagementSubscriptionRequestCallType subscription_request{};
     subscription_request.subscriptionRequest->clientAddress = sending_feature;
@@ -148,19 +148,26 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     int msg_counter = send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
 
     schedule_once_while_alive(
-        [this, target_feature, msg_counter]() {
+        [this, target, target_feature, msg_counter, on_result = std::move(on_result)]() {
+            bool successful = false;
             for (auto it = awaited_acks.begin(); it != awaited_acks.end(); ++it) {
-                if (it->function == FunctionEnumType::nodeManagementSubscriptionRequestCall && it->target_feature.device.get() == target_feature.device.get() && it->target_feature.entity.get() == target_feature.entity.get() && it->target_feature.feature.get() == target_feature.feature.get() && it->msg_counter == msg_counter) {
+                // The awaited ack is stored with the address of the peer's NodeManagement, not of the subscribed feature
+                if (it->function == FunctionEnumType::nodeManagementSubscriptionRequestCall && EEBUS_USECASE_HELPERS::compare_spine_addresses(it->target_feature, target) && it->msg_counter == msg_counter) {
                     if (!it->ack_received) {
                         eebus.trace_fmtln("NodeManagementUsecase: Subscription request to %s timed out", EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
                         logger.printfln("EEBUS subscription request timed out. Connection to %s may not function properly", target_feature.device.get().c_str());
                     } else if (!it->successful) {
                         eebus.trace_fmtln("NodeManagementUsecase: Subscription request to %s failed", EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
                         logger.printfln("EEBUS subscription failed. Connection to %s may not function properly", target_feature.device.get().c_str());
+                    } else {
+                        successful = true;
                     }
                     awaited_acks.erase(it);
                     break;
                 }
+            }
+            if (on_result) {
+                on_result(successful);
             }
         },
         10_s);
@@ -336,6 +343,13 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
             BindingManagementEntryDataType binding_entry;
             binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
+            // The device is optional in the binding request. If omitted, it is the device of the sender or the receiver respectively.
+            if (!binding_entry.clientAddress->device.has_value() || binding_entry.clientAddress->device.get().empty()) {
+                binding_entry.clientAddress->device = header.addressSource->device.get();
+            }
+            if (!binding_entry.serverAddress->device.has_value() || binding_entry.serverAddress->device.get().empty()) {
+                binding_entry.serverAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+            }
             if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get()) && eebus.usecases->get_spine_connection(header.addressSource.get()) != nullptr) {
                 eebus.trace_fmtln("Binding requested but is already bound");
             } else {

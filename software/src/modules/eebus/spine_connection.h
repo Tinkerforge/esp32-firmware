@@ -114,6 +114,7 @@ public:
     {
         use_case_data_received = true;
         use_case_data = data;
+        trace_use_case_data();
         inform_usecases_supported_functionalities();
     }
     void update_subscription_data(const NodeManagementSubscriptionDataType &data)
@@ -122,27 +123,58 @@ public:
         subscription_data = data;
     }
 
+    /**
+     * Check if the local feature is subscribed to the remote feature, either according to the
+     * subscription data of the peer or because we already requested the subscription on this connection.
+     */
     bool is_subscribed(FeatureAddressType local, FeatureAddressType remote);
+
+    /**
+     * Remember that we requested a subscription from local to remote on this connection, to avoid duplicate requests.
+     */
+    void mark_subscription_requested(const FeatureAddressType &local, const FeatureAddressType &remote);
 
     [[nodiscard]] bool knows_device(const std::string &device) const;
     /**
-     * Gets the address of a feature for a given role and use case.
+     * Gets the addresses of a feature implemented by the remote actor of a use case.
+     * Only features on the entity announced in the use case information of the actor are returned.
+     * If the actor announces no entity, all matching features of the device are returned.
      * @param feature The feature to get the address for.
      * @param role What role the feature should have.
      * @param use_case_name The usecase being targeted.
      * @param use_case_actor The usecase actor being targeted.
-     * @return
+     * @return The addresses of the matching features. Empty if none was found.
      */
     std::vector<FeatureAddressType> get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
 
     /**
     * Gets the address of a feature under an entity.
-    * @param entity_target
+    * @param entity_target The entity the feature has to be located on.
     * @param feature The feature to get the address for.
     * @param role What role the feature should have. Defaults to server.
-    * @return
+    * @return The address of the feature. The feature part is unset if no feature was found.
     */
     FeatureAddressType get_address_of_feature(const std::vector<AddressEntityType> &entity_target, FeatureTypeEnumType feature, RoleType role = RoleType::server);
+
+    /**
+    * Gets the addresses of all features of a type and role on any entity of the peer device.
+    * @param feature The feature to get the addresses for.
+    * @param role What role the features should have.
+    * @return The addresses of the matching features.
+    */
+    std::vector<FeatureAddressType> get_addresses_of_feature(FeatureTypeEnumType feature, RoleType role);
+
+    /**
+    * Check if the peer announced the given use case with the given actor in its use case data.
+    */
+    bool peer_supports_use_case(const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
+
+    /**
+    * Get the entities on which the peer implements the given actor of a use case, as announced in its use case data.
+    * Use case information without an entity address is ignored.
+    * @return The distinct entity addresses. Empty if the use case data was not received yet.
+    */
+    std::vector<std::vector<AddressEntityType>> get_use_case_actor_entities(const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
 
     // Subscription state
 
@@ -161,6 +193,12 @@ private:
     void eebus_active(bool active) const;
 
     std::vector<FeatureAddressType> known_addresses;
+    // Subscriptions (local client, remote server) we requested on this connection
+    std::vector<std::pair<FeatureAddressType, FeatureAddressType>> requested_subscriptions;
+    [[nodiscard]] FeatureAddressType complete_peer_feature_address(const FeatureAddressType &address) const;
+    /** The device name of the peer from its detailed discovery data or its first message. nullptr if unknown. */
+    [[nodiscard]] const std::string *get_peer_device_name() const;
+    static bool use_case_information_matches(const UseCaseInformationDataType &usecase, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
     uint16_t msg_counter_error_count = 0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
     static bool validate_header(HeaderType &header);
 
@@ -172,6 +210,7 @@ private:
     uint64_t update_api_timer = 0;
 
     void inform_usecases_supported_functionalities();
+    void trace_use_case_data() const;
     void subscribe_to_peer_node_management();
     void send_use_case_read();
 };

@@ -53,18 +53,36 @@ public:
      * This triggers a subscription to the heartbeat feature on the target.
      * If a target wants a heartbeat from us, it has to create a subscription.
      *
-     * @param target Target entity address of the heartbeat target
+     * @param target Address of the remote DeviceDiagnosis server feature providing the heartbeat
      * @param sending_usecase The usecase that is requesting the heartbeat to be sent
      * @param expect_notify If true, a subscription will be created to receive heartbeat notifications
      */
     void initialize_heartbeat_on_feature(FeatureAddressType &target, Usecases sending_usecase, bool expect_notify = true);
 
     /**
-     * @brief Update the heartbeat interval.
+     * @brief Subscribe to the heartbeat of a remote use case actor.
      *
-     * This resets the notify timer and timeout timer.
+     * Looks up the DeviceDiagnosis server feature on the entity of the remote actor
+     * (e.g. the Energy Guard for LPC/LPP) and subscribes to its heartbeat.
+     * The remote actor is not required to have a DeviceDiagnosis client feature,
+     * it may use a Generic client feature instead (LPC IG 3.3, SPINE resource spec 4.3.11.6).
      *
-     * @param interval New interval in seconds (default 30s)
+     * @param conn The SPINE connection to the peer
+     * @param use_case_name Name of the use case, e.g. "limitationOfPowerConsumption"
+     * @param use_case_actor The remote actor, e.g. "EnergyGuard"
+     * @param sending_usecase The usecase that is requesting the heartbeat
+     * @return Number of heartbeat sources found
+     */
+    size_t subscribe_to_actor_heartbeat(SpineConnection *conn, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor, Usecases sending_usecase);
+
+    /**
+     * @brief Update the interval our own heartbeat is sent to subscribers with.
+     *
+     * Restarts the periodic notify timer with the new interval. The interval is also
+     * announced as heartbeatTimeout in our heartbeat data. The timeout for heartbeats
+     * received from peers is not affected.
+     *
+     * @param interval New interval in seconds (default 30s). Must be greater than 0.
      */
     void update_heartbeat_interval(seconds_t interval = 30_s);
 
@@ -74,7 +92,12 @@ public:
      */
     [[nodiscard]] std::vector<FeatureAddressType> get_heartbeat_targets() const
     {
-        return heartbeat_targets;
+        std::vector<FeatureAddressType> addresses;
+        addresses.reserve(heartbeat_targets.size());
+        for (const HeartbeatTarget &target : heartbeat_targets) {
+            addresses.push_back(target.address);
+        }
+        return addresses;
     }
 
     [[nodiscard]] Usecases get_usecase_type() const override
@@ -121,6 +144,26 @@ public:
     }
 
 private:
+    /** @brief A remote DeviceDiagnosis server we receive heartbeats from */
+    struct HeartbeatTarget {
+        FeatureAddressType address{};
+        micros_t last_received = 0_us;    ///< Last new heartbeat (notify or reply) received from this target
+        micros_t last_read = 0_us;        ///< Last heartbeat read request sent to this target
+        bool polling = false;             ///< Subscription failed, poll the heartbeat periodically
+        bool data_received = false;       ///< last_counter and last_timestamp are valid
+        uint64_t last_counter = 0;
+        std::string last_timestamp{};
+    };
+
+    /**
+     * @brief Check if heartbeat data of a target is new.
+     *
+     * A reply to a read returns the last heartbeat again, even if the peer stopped sending heartbeats.
+     * Such a stale heartbeat must not be treated as a sign of life (IG-LPC 3.7: the timestamp has to be checked).
+     * A heartbeat is new if its counter or timestamp differ from the last one.
+     */
+    static bool is_new_heartbeat(HeartbeatTarget &target, const DeviceDiagnosisHeartbeatDataType &data);
+
     /** @brief Notify all registered usecases of heartbeat timeout */
     void emit_timeout() const;
 
@@ -130,7 +173,21 @@ private:
     /** @brief Notify all registered usecases of heartbeat reception */
     void emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data);
 
-    std::vector<FeatureAddressType> heartbeat_targets{};
+    /** @brief Find a heartbeat target by its address. Returns nullptr if unknown. */
+    HeartbeatTarget *find_heartbeat_target(const FeatureAddressType &address);
+
+    void request_heartbeat(HeartbeatTarget &target);
+
+    /**
+     * @brief Read the heartbeat of targets that do not notify us.
+     *
+     * Polls targets whose subscription failed (LPC 3.3.4) and reads the heartbeat of
+     * subscribed targets that did not send a notification for an unusually long time.
+     * Removes targets whose connection is gone.
+     */
+    void poll_heartbeats();
+
+    std::vector<HeartbeatTarget> heartbeat_targets{};
     std::vector<Usecases> usecases_enabled{};
     std::vector<EebusUsecase *> registered_usecases{};
 
@@ -139,6 +196,7 @@ private:
 
     uint64_t heartbeat_received_timeout_task = 0;
     uint64_t heartbeat_send_task = 0;
+    uint64_t heartbeat_poll_task = 0;
 
     bool autosubscribe = false;
 };

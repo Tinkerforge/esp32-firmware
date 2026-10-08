@@ -383,10 +383,8 @@ void LoadPowerLimitUsecase::receive_heartbeat_timeout()
 
 void LoadPowerLimitUsecase::inform_spineconnection_usecase_update(SpineConnection *conn)
 {
-    auto peers = conn->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::client, config_.usecase_name, "EnergyGuard");
-    for (FeatureAddressType &peer : peers) {
-        eebus.usecases->evse_heartbeat.initialize_heartbeat_on_feature(peer, config_.usecase_type, true);
-    }
+    // Scenario 3
+    eebus.usecases->evse_heartbeat.subscribe_to_actor_heartbeat(conn, config_.usecase_name, "EnergyGuard", config_.usecase_type);
 }
 
 void LoadPowerLimitUsecase::init_state()

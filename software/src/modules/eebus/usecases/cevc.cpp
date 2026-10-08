@@ -787,12 +787,9 @@ void CevcUsecase::receive_heartbeat_timeout()
 void CevcUsecase::inform_spineconnection_usecase_update(SpineConnection *conn)
 {
     // Look for Energy Broker actors that support the CEVC use case
-    // and register for heartbeat monitoring (Scenarios 5-6)
-    auto peers = conn->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::client, "coordinatedEvCharging", "EnergyBroker");
-
-    for (FeatureAddressType &peer : peers) {
-        eebus.trace_fmtln("CEVC: Found Energy Broker at %s, registering for heartbeat", EEBUS_USECASE_HELPERS::spine_address_to_string(peer).c_str());
-        eebus.usecases->evse_heartbeat.initialize_heartbeat_on_feature(peer, Usecases::CEVC, true);
+    // and subscribe to the heartbeat of their DeviceDiagnosis server (Scenarios 5-6)
+    if (eebus.usecases->evse_heartbeat.subscribe_to_actor_heartbeat(conn, "coordinatedEvCharging", "EnergyBroker", Usecases::CEVC) > 0) {
+        eebus.trace_fmtln("CEVC: Found Energy Broker, registered for heartbeat");
         energy_broker_connected = true;
         energy_broker_heartbeat_ok = true;
     }

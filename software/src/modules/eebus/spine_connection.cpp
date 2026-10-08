@@ -26,6 +26,8 @@
 #include "ship_types.h"
 #include "tools.h"
 
+#include <algorithm>
+
 SpineConnection::SpineConnection(ShipConnection *ship_conn)
 {
     ship_connection = ship_conn;
@@ -169,9 +171,29 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
             return true;
         }
     }
-    if (detailed_discovery_data_received) {
-        for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
-            if (feature_info.description->featureAddress.get().device.get() == address.device.get() && feature_info.description->featureAddress.get().feature.get() == address.feature.get() && feature_info.description->featureAddress.get().entity.get() == address.entity.get()) {
+    if (detailed_discovery_data_received && detailed_discovery_data.featureInformation.has_value()) {
+        // This is called for every connection on each lookup of a connection by address, so compare without copying addresses.
+        const std::string &wanted_device = *address.device;
+        const std::string *peer_device = nullptr;
+        bool peer_device_resolved = false;
+        for (const auto &feature_info : *detailed_discovery_data.featureInformation) {
+            if (!feature_info.description.has_value() || !feature_info.description->featureAddress.has_value()) {
+                continue;
+            }
+            const FeatureAddressType &discovered = *feature_info.description->featureAddress;
+            if (*discovered.feature != *address.feature || *discovered.entity != *address.entity) {
+                continue;
+            }
+            // The device is optional in the feature addresses of the detailed discovery. If omitted, it is the device of the peer.
+            const std::string *device = discovered.device.has_value() && !discovered.device->empty() ? &*discovered.device : nullptr;
+            if (device == nullptr) {
+                if (!peer_device_resolved) {
+                    peer_device = get_peer_device_name();
+                    peer_device_resolved = true;
+                }
+                device = peer_device;
+            }
+            if (device == nullptr ? wanted_device.empty() : *device == wanted_device) {
                 return true;
             }
         }
@@ -237,7 +259,12 @@ bool SpineConnection::knows_device(const std::string &device) const
 
 bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType remote)
 {
-    if (!subscription_data_received)
+    for (const auto &requested : requested_subscriptions) {
+        if (EEBUS_USECASE_HELPERS::compare_spine_addresses(requested.first, local) && EEBUS_USECASE_HELPERS::compare_spine_addresses(requested.second, remote)) {
+            return true;
+        }
+    }
+    if (!subscription_data_received || !subscription_data.subscriptionEntry.has_value())
         return false;
     for (const auto &subscription : subscription_data.subscriptionEntry.get()) {
         if (EEBUS_USECASE_HELPERS::compare_spine_addresses(subscription.clientAddress.get(), local) && EEBUS_USECASE_HELPERS::compare_spine_addresses(subscription.serverAddress.get(), remote)) {
@@ -246,6 +273,89 @@ bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType
     }
     return false;
 }
+
+void SpineConnection::mark_subscription_requested(const FeatureAddressType &local, const FeatureAddressType &remote)
+{
+    if (!is_subscribed(local, remote)) {
+        requested_subscriptions.emplace_back(local, remote);
+    }
+}
+
+const std::string *SpineConnection::get_peer_device_name() const
+{
+    const auto &device_information = detailed_discovery_data.deviceInformation;
+    if (device_information.has_value() && device_information->description.has_value() && device_information->description->deviceAddress.has_value() && device_information->description->deviceAddress->device.has_value()) {
+        return &*device_information->description->deviceAddress->device;
+    }
+    if (!known_addresses.empty() && known_addresses[0].device.has_value()) {
+        return &*known_addresses[0].device;
+    }
+    return nullptr;
+}
+
+FeatureAddressType SpineConnection::complete_peer_feature_address(const FeatureAddressType &address) const
+{
+    FeatureAddressType result = address;
+    if (result.device.has_value() && !result.device->empty()) {
+        return result;
+    }
+    // The device part of a feature address may be omitted in the detailed discovery.
+    // Fill it in so the address can be used as destination and for connection lookups.
+    if (const std::string *device = get_peer_device_name()) {
+        result.device = *device;
+    }
+    return result;
+}
+
+bool SpineConnection::use_case_information_matches(const UseCaseInformationDataType &usecase, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
+{
+    if (!usecase.actor.has_value() || usecase.actor.get() != use_case_actor || !usecase.useCaseSupport.has_value()) {
+        return false;
+    }
+    for (const auto &usecase_support : usecase.useCaseSupport.get()) {
+        // useCaseAvailable is optional. Only skip the use case if the peer explicitly marks it as unavailable.
+        const bool available = !usecase_support.useCaseAvailable.has_value() || usecase_support.useCaseAvailable.get();
+        if (available && usecase_support.useCaseName.has_value() && usecase_support.useCaseName.get() == use_case_name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SpineConnection::peer_supports_use_case(const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
+{
+    if (!use_case_data_received || !use_case_data.useCaseInformation.has_value()) {
+        return false;
+    }
+    for (const auto &usecase : use_case_data.useCaseInformation.get()) {
+        if (use_case_information_matches(usecase, use_case_name, use_case_actor)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<std::vector<AddressEntityType>> SpineConnection::get_use_case_actor_entities(const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
+{
+    std::vector<std::vector<AddressEntityType>> entities{};
+    if (!use_case_data_received || !use_case_data.useCaseInformation.has_value()) {
+        return entities;
+    }
+    for (const auto &usecase : use_case_data.useCaseInformation.get()) {
+        if (!use_case_information_matches(usecase, use_case_name, use_case_actor)) {
+            continue;
+        }
+        if (!usecase.address.has_value() || !usecase.address->entity.has_value() || usecase.address->entity->empty()) {
+            continue;
+        }
+        const std::vector<AddressEntityType> &entity = usecase.address->entity.get();
+        if (std::find(entities.begin(), entities.end(), entity) == entities.end()) {
+            entities.push_back(entity);
+        }
+    }
+    return entities;
+}
+
 std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
 {
     if (!detailed_discovery_data_received || !use_case_data_received) {
@@ -253,38 +363,87 @@ std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureT
         return {};
     }
     std::vector<FeatureAddressType> feature_addresses{};
-    for (auto usecase : use_case_data.useCaseInformation.get()) {
-        if (usecase.actor == use_case_actor) {
-            for (auto usecase_support : usecase.useCaseSupport.get()) {
-                if (usecase_support.useCaseAvailable.get() && usecase_support.useCaseName == use_case_name) {
-                    for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
-                        if (feature_info.description->featureType == feature && feature_info.description->role == role) {
-                            feature_addresses.push_back(feature_info.description->featureAddress.get());
-                        }
-                    }
-                }
+    auto add_unique = [&feature_addresses](const FeatureAddressType &address) {
+        for (const FeatureAddressType &existing : feature_addresses) {
+            if (EEBUS_USECASE_HELPERS::compare_spine_addresses(existing, address)) {
+                return;
+            }
+        }
+        feature_addresses.push_back(address);
+    };
+
+    if (!use_case_data.useCaseInformation.has_value()) {
+        return {};
+    }
+    for (const auto &usecase : use_case_data.useCaseInformation.get()) {
+        if (!use_case_information_matches(usecase, use_case_name, use_case_actor)) {
+            continue;
+        }
+
+        // SPINE TS 7.5.2: The use case functionality of the actor is accessible behind useCaseInformation.address.
+        // E.g. LPC IG 3.3: An actor implements its client and server features in the same entity.
+        // So only features on the actor's entity belong to this actor.
+        if (usecase.address.has_value() && usecase.address->entity.has_value() && !usecase.address->entity->empty()) {
+            const FeatureAddressType address = get_address_of_feature(usecase.address->entity.get(), feature, role);
+            if (address.feature.has_value()) {
+                add_unique(address);
+            }
+        } else {
+            // No entity given: Any entity of the device could implement the actor.
+            for (const FeatureAddressType &address : get_addresses_of_feature(feature, role)) {
+                add_unique(address);
             }
         }
     }
     return feature_addresses;
 }
+
 FeatureAddressType SpineConnection::get_address_of_feature(const std::vector<AddressEntityType> &entity_target, FeatureTypeEnumType feature, RoleType role)
 {
     if (!detailed_discovery_data_received) {
         eebus.trace_fmtln("SPINE: WARNING: Attempted to get a feature address without full discovery data");
         return {};
     }
+    if (!detailed_discovery_data.featureInformation.has_value()) {
+        return {};
+    }
 
-    for (auto entities : detailed_discovery_data.entityInformation.get()) {
-        if (entities.description->entityAddress->entity == entity_target) {
-            for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
-                if (feature_info.description->featureType == feature && feature_info.description->role == role) {
-                    return feature_info.description->featureAddress.get();
-                }
-            }
+    for (const auto &feature_info : detailed_discovery_data.featureInformation.get()) {
+        if (!feature_info.description.has_value()) {
+            continue;
+        }
+        const auto &description = feature_info.description.get();
+        if (!description.featureAddress.has_value() || !description.featureAddress->entity.has_value()) {
+            continue;
+        }
+        if (description.featureAddress->entity.get() == entity_target && description.featureType == feature && description.role == role) {
+            return complete_peer_feature_address(description.featureAddress.get());
         }
     }
     return {};
+}
+
+std::vector<FeatureAddressType> SpineConnection::get_addresses_of_feature(FeatureTypeEnumType feature, RoleType role)
+{
+    if (!detailed_discovery_data_received) {
+        eebus.trace_fmtln("SPINE: WARNING: Attempted to get a feature address without full discovery data");
+        return {};
+    }
+    if (!detailed_discovery_data.featureInformation.has_value()) {
+        return {};
+    }
+
+    std::vector<FeatureAddressType> feature_addresses{};
+    for (const auto &feature_info : detailed_discovery_data.featureInformation.get()) {
+        if (!feature_info.description.has_value()) {
+            continue;
+        }
+        const auto &description = feature_info.description.get();
+        if (description.featureAddress.has_value() && description.featureType == feature && description.role == role) {
+            feature_addresses.push_back(complete_peer_feature_address(description.featureAddress.get()));
+        }
+    }
+    return feature_addresses;
 }
 
 bool SpineConnection::validate_header(HeaderType &header)
@@ -360,4 +519,27 @@ void SpineConnection::inform_usecases_supported_functionalities()
         for (EebusUsecase *uc : eebus.usecases->usecase_list) {
             uc->inform_spineconnection_usecase_update(this);
         }
+}
+
+void SpineConnection::trace_use_case_data() const
+{
+    if (!use_case_data.useCaseInformation.has_value()) {
+        eebus.trace_fmtln("SPINE: Peer announced no use cases");
+        return;
+    }
+    for (const auto &usecase : use_case_data.useCaseInformation.get()) {
+        String names;
+        if (usecase.useCaseSupport.has_value()) {
+            for (const auto &support : usecase.useCaseSupport.get()) {
+                if (names.length() > 0) {
+                    names += ", ";
+                }
+                names += support.useCaseName.has_value() ? support.useCaseName.get().c_str() : "?";
+                if (support.useCaseAvailable.has_value() && !support.useCaseAvailable.get()) {
+                    names += " (unavailable)";
+                }
+            }
+        }
+        eebus.trace_fmtln("SPINE: Peer use cases of actor %s at %s: %s", usecase.actor.has_value() ? usecase.actor.get().c_str() : "?", usecase.address.has_value() ? EEBUS_USECASE_HELPERS::spine_address_to_string(usecase.address.get()).c_str() : "?", names.c_str());
+    }
 }
