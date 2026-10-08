@@ -64,6 +64,18 @@ class EebusTest:
 
 EEbusTestSuite = EebusTest()
 
+_initially_enabled = None
+
+
+def suite_setup(tc: TestContext):
+    global _initially_enabled
+    _initially_enabled = tc.api("eebus/config")["enable"]
+
+
+def suite_teardown(tc: TestContext):
+    if _initially_enabled is not None:
+        EEbusTestSuite.toggle_eebus(tc, _initially_enabled)
+
 add_remove_test_ski = "DEADBEEF" + "0" * 32
 
 def test_enable_eebus(tc: TestContext):

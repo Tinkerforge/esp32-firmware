@@ -13,6 +13,9 @@ _original_meter_config = None
 
 def suite_setup(tc: TestContext):
     global _original_meter_config
+    enable_eebus(tc)
+    if "mgcp" not in tc.api("eebus/usecases"):
+        tc.skip("MGCP use case not available on this device")
     _original_meter_config = tc.api("meters/0/config")
 
     # Configure meter slot 0 as API meter with Grid location
@@ -23,6 +26,7 @@ def suite_setup(tc: TestContext):
             {
                 "display_name": "MGCP Test Meter",
                 "location": METER_LOCATION_GRID,
+                "excluded": False,
                 "value_ids": METER_VALUE_IDS,
             },
         ],
@@ -36,14 +40,14 @@ def test_all_values(tc: TestContext):
     """Push meter values and verify they appear in the MGCP API state."""
 
     usecases = tc.api("eebus/usecases")
-    if "monitoring_of_grid_connection_point" not in usecases:
+    if "mgcp" not in usecases:
         tc.skip("MGCP use case not available on this device")
 
     tc.api("meters/0/update", METER_VALUES)
 
     def check_mgcp():
         usecases = tc.api("eebus/usecases")
-        mgcp = usecases["monitoring_of_grid_connection_point"]
+        mgcp = usecases["mgcp"]
 
         tc.assert_eq(6900, mgcp["total_power_w"])
 
@@ -74,7 +78,7 @@ def test_no_activation_without_power(tc: TestContext):
     """
 
     usecases = tc.api("eebus/usecases")
-    if "monitoring_of_grid_connection_point" not in usecases:
+    if "mgcp" not in usecases:
         tc.skip("MGCP use case not available on this device")
 
     tc.api(
@@ -84,6 +88,7 @@ def test_no_activation_without_power(tc: TestContext):
             {
                 "display_name": "MGCP Negative Test Meter",
                 "location": METER_LOCATION_GRID,
+                "excluded": False,
                 "value_ids": VOLTAGE_ONLY_IDS,
             },
         ],
@@ -96,7 +101,7 @@ def test_no_activation_without_power(tc: TestContext):
 
     def check_mgcp_not_activated():
         usecases = tc.api("eebus/usecases")
-        mgcp = usecases["monitoring_of_grid_connection_point"]
+        mgcp = usecases["mgcp"]
 
         tc.assert_eq(230, mgcp["voltage_phase_1_v"])
         tc.assert_eq(231, mgcp["voltage_phase_2_v"])
@@ -114,6 +119,7 @@ def suite_teardown(tc: TestContext):
     if _original_meter_config is not None:
         tc.api("meters/0/config_update", _original_meter_config)
         _original_meter_config = None
+        tc.reboot()
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ def suite_setup(tc: TestContext):
             {
                 "display_name": "MPC Test Meter",
                 "location": METER_LOCATION_CHARGER,
+                "excluded": False,
                 "value_ids": METER_VALUE_IDS,
             },
         ],
@@ -44,14 +45,14 @@ def test_all_values(tc: TestContext):
     """Push meter values and verify they appear in the MPC API state."""
 
     usecases = tc.api("eebus/usecases")
-    if "monitoring_of_power_consumption" not in usecases:
+    if "mpc" not in usecases:
         tc.skip("MPC use case not available on this device")
 
     tc.api(f"meters/{_meter_slot}/update", METER_VALUES)
 
     def check_mpc():
         usecases = tc.api("eebus/usecases")
-        mpc = usecases["monitoring_of_power_consumption"]
+        mpc = usecases["mpc"]
 
         tc.assert_eq(6900, mpc["total_power_w"])
 
@@ -89,7 +90,7 @@ def test_no_activation_without_power(tc: TestContext):
     """
 
     usecases = tc.api("eebus/usecases")
-    if "monitoring_of_power_consumption" not in usecases:
+    if "mpc" not in usecases:
         tc.skip("MPC use case not available on this device")
 
     tc.api(
@@ -99,6 +100,7 @@ def test_no_activation_without_power(tc: TestContext):
             {
                 "display_name": "MPC Negative Test Meter",
                 "location": METER_LOCATION_CHARGER,
+                "excluded": False,
                 "value_ids": VOLTAGE_ONLY_IDS,
             },
         ],
@@ -111,7 +113,7 @@ def test_no_activation_without_power(tc: TestContext):
 
     def check_mpc_not_activated():
         usecases = tc.api("eebus/usecases")
-        mpc = usecases["monitoring_of_power_consumption"]
+        mpc = usecases["mpc"]
 
         tc.assert_eq(230, mpc["voltage_phase_1_v"])
         tc.assert_eq(231, mpc["voltage_phase_2_v"])
@@ -133,6 +135,7 @@ def suite_teardown(tc: TestContext):
     if _original_meter_config is not None:
         tc.api(f"meters/{_meter_slot}/config_update", _original_meter_config)
         _original_meter_config = None
+        tc.reboot()
 
 
 if __name__ == "__main__":
