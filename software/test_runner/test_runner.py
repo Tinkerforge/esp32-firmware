@@ -21,6 +21,8 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
 from software import util
 
+from urllib.request import urlopen
+
 DEFAULT_TEST_TIMEOUT = 5 * 60
 
 def main():
@@ -43,7 +45,17 @@ def main():
 
     suite_runs: list[tuple[Path, str]] = []  # (suite_path, test_filter)
 
-    for tf in args.test_filter:
+    if len(args.test_filter) > 0:
+        test_filter = args.test_filter
+    else:
+        if args.host is None:
+            print(red("A test filter or host is required"))
+            parser.print_help()
+            sys.exit(1)
+        with urlopen(f'http://{args.host}/info/modules') as req:
+            test_filter = [f'{x}/*/*' for x in json.loads(req.read()).keys()]
+
+    for tf in test_filter:
         module_filter, suite_filter, test_filter = tf.split('/')
         paths = list(Path(__file__).parent.glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"))
         if module_filter != '*' and fnmatch.fnmatch("test_runner", module_filter):
