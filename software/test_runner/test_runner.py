@@ -27,12 +27,12 @@ DEFAULT_TEST_TIMEOUT = 5 * 60
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("test_filter", nargs='*',           help="[module]/[suite]/[test]; supports globbing. All modules of the ESP under test (see --host) are tested if test filter is empty.")
-    parser.add_argument("--junit-xml", action='store_true', help="Don't print anything except a JUnit compatible XML report when all tests are done.")
-    parser.add_argument("--host",                           help="ESP under test. Also used to determine which tests to run if no test filter is given")
-    parser.add_argument("--tty",                            help="Path to the serial device of the ESP under test.")
-    parser.add_argument("--brickd",                         help="Host of the brick daemon that controls the testbox hardware")
-    parser.add_argument("--list-tests", action='store_true' help="Skip all tests that would be executed, only print their names")
+    parser.add_argument("test_filter", nargs='*',            help="[module]/[suite]/[test]; supports globbing. All modules of the ESP under test (see --host) are tested if test filter is empty.")
+    parser.add_argument("--junit-xml", action='store_true',  help="Don't print anything except a JUnit compatible XML report when all tests are done.")
+    parser.add_argument("--host",                            help="ESP under test. Also used to determine which tests to run if no test filter is given")
+    parser.add_argument("--tty",                             help="Path to the serial device of the ESP under test.")
+    parser.add_argument("--brickd",                          help="Host of the brick daemon that controls the testbox hardware")
+    parser.add_argument("--list-tests", action='store_true', help="Skip all tests that would be executed, only print their names")
 
     args = parser.parse_args()
     quiet = args.junit_xml
