@@ -275,12 +275,6 @@ void PowerManager::setup()
         config.get("enabled")->updateBool(true);
     } else {
         config.get("enabled")->updateBool(false);
-
-        // Update phase information when PM disabled because the back-end might change state by itself.
-        task_scheduler.scheduleUncancelable([this]() {
-            this->update_phase_switcher();
-        }, 1_s, 1_s);
-
         return;
     }
 
@@ -373,7 +367,7 @@ void PowerManager::setup()
         //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i  pp mavg limit %i  pp int limit %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma, currents_phase_preproc_mavg_limit, currents_phase_preproc_interpolate_limit);
     }
 
-    // Update data from meter and phase switcher back-end, requires power filter to be set up.
+    // Update data from meter, requires power filter to be set up.
     update_data();
 
     // Check for incomplete configuration after as much as possible has been set up.
@@ -437,16 +431,6 @@ void PowerManager::setup()
         return;
     }
 
-    // If external control is enabled, assume that the last requested amount of phases
-    // is whatever the contactor is switched to at the moment, in order to preserve
-    // that across a reboot. This will still fail on a power cycle or bricklet update,
-    // which set the contactor back to single phase.
-    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
-        const uint32_t phases = phase_switcher_backend->get_phases();
-        logger.printfln("Restoring external_control to %lu", phases);
-        external_control.get("phases_wanted")->updateUint(phases);
-    }
-
     // supply_cable_max_current_ma must be set before reset
     reset_max_current_limit();
 
@@ -457,7 +441,6 @@ void PowerManager::setup()
     task_scheduler.scheduleUncancelable([this]() {
         this->update_data();
         this->update_energy();
-        this->update_phase_switcher();
     }, millis_t{PM_TASK_DELAY_MS}, millis_t{PM_TASK_DELAY_MS});
 }
 
@@ -472,7 +455,8 @@ void PowerManager::register_urls()
 
     api.addState("power_manager/external_control", &external_control);
 
-    if (((MODULE_EM_V1_AVAILABLE() && !excess_charging_enabled && phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+    if (phase_switcher_backend != nullptr
+        && ((MODULE_EM_V1_AVAILABLE() && !excess_charging_enabled && phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
             || !config.get("enabled")->asBool())
         && phase_switcher_backend->is_external_control_allowed() && phase_switcher_backend->phase_switching_capable()) {
 
@@ -519,6 +503,13 @@ void PowerManager::register_urls()
         }, 1_s, 1_s);
     }
 
+    // Update phase information even when PM is disabled because the back-end might change state by itself.
+    if (phase_switcher_backend != nullptr) {
+        task_scheduler.scheduleUncancelable([this]() {
+            low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_phases() == 3);
+        }, 500_ms);
+    }
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_on_config_applied([this]() {
         if (!config.get("enabled")->asBool()) {
@@ -538,7 +529,11 @@ void PowerManager::register_urls()
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
 {
-    if (backend->get_phase_switcher_priority() > phase_switcher_backend->get_phase_switcher_priority()) {
+    if (boot_stage > BootStage::SETUP) {
+        esp_system_abort("Must register phase switcher backend in (pre)setup");
+    }
+
+    if (phase_switcher_backend == nullptr || backend->get_phase_switcher_priority() > phase_switcher_backend->get_phase_switcher_priority()) {
         phase_switcher_backend = backend;
     }
 }
@@ -1120,11 +1115,6 @@ void PowerManager::update_energy()
     }
 }
 
-void PowerManager::update_phase_switcher()
-{
-    low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_phases() == 3);
-}
-
 void PowerManager::set_max_current_limit(int32_t limit_ma)
 {
     if (limit_ma > supply_cable_max_current_ma) {
@@ -1163,11 +1153,15 @@ uint32_t PowerManager::get_phase_switching_mode() const
 
 uint32_t PowerManager::get_phases() const
 {
+    if (phase_switcher_backend == nullptr) {
+        return 0;
+    }
+
     return phase_switcher_backend->get_phases();
 }
 
 void PowerManager::switch_phases(uint32_t phases_wanted, String &errmsg, bool log) {
-    if (!phase_switcher_backend->is_external_control_allowed()) {
+    if (phase_switcher_backend == nullptr || !phase_switcher_backend->is_external_control_allowed()) {
         const char *msg = "Ignoring external control phase change request: External control is not enabled.";
         if (log) { logger.printfln("%s", msg); }
         errmsg = msg;
