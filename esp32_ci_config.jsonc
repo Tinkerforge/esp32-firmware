@@ -4,10 +4,10 @@
     "artifacts": false,
     "nightly": false,
     "environments": {
-        "minimal":             {}/*,
+        //"minimal":             {},
         "energy_manager":      {"artifacts":true},
         "energy_manager_v2":   {"artifacts":true},
-        "smart_energy_broker": {"artifacts":true},
+        /*"smart_energy_broker": {"artifacts":true},
         "esp32_ethernet":      {"artifacts":true},
         "jenkins":             {},
         "meter_simulator":     {},
@@ -16,10 +16,10 @@
         "esp32":               {"artifacts":true},
         "kransteuerung":       {},
         "warp_with_ocpp":      {},
-        "warp":                {"artifacts":true, "nightly":true},
+        "warp":                {"artifacts":true, "nightly":true},*/
         "warp2":               {"artifacts":true, "nightly":true},
         "warp3":               {"artifacts":true, "nightly":true},
-        "warp4":               {"artifacts":true, "nightly":true},
+        "warp4":               {"artifacts":true, "nightly":true}/*,
         "eltako":              {"artifacts":true, "nightly":true}*/
     }
 }
