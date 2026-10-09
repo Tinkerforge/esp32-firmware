@@ -75,6 +75,8 @@ class TestContext:
 
     _debug_fs_enabled: bool | None = None
 
+    _args: typing.Any = None
+
     def init_testbox(self):
         if self._brickd_host is None:
             return False
@@ -708,8 +710,15 @@ class TestContext:
 
 
 def _run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
-    tc._wait_for_start()
+    if tc._args.list_tests:
+        if fn is not None:
+            tc._wait_for_start()
+            tc._notify_test_start(name)
+            tc._notify_test_skipped(reason="Listing tests")
+        return True
 
+
+    tc._wait_for_start()
     tc._notify_test_start(name)
 
     try:
@@ -741,6 +750,7 @@ def run_testsuite(l: dict[str, typing.Any]):
     parser.add_argument("--host")
     parser.add_argument("--tty")
     parser.add_argument("--brickd")
+    parser.add_argument("--list-tests", action='store_true')
     args = parser.parse_args()
 
     # l is locals() of the calling test suite script, containing test, setup and teardown functions.
@@ -761,7 +771,8 @@ def run_testsuite(l: dict[str, typing.Any]):
             open(args.fifo_out_path, 'w', buffering=1) if args.fifo_in_path else None,
             args.tty,
             args.host,
-            args.brickd
+            args.brickd,
+            _args=args
         )
 
     if not _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup):

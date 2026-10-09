@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--host")
     parser.add_argument("--tty")
     parser.add_argument("--brickd")
+    parser.add_argument("--list-tests", action='store_true')
 
     args = parser.parse_args()
     quiet = args.junit_xml
@@ -88,6 +89,9 @@ def main():
                 proc_args += ['--tty', args.tty]
             if args.brickd is not None:
                 proc_args += ['--brickd', args.brickd]
+            if args.list_tests:
+                proc_args += ['--list-tests']
+
 
             proc = subprocess.Popen(
                 proc_args,
