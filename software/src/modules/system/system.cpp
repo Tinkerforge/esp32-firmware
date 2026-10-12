@@ -28,6 +28,7 @@
 #include "generated/module_dependencies.h"
 #include "language.h"
 #include "generated/recovery_html.embedded.h"
+#include "tools/flash.h"
 #include "tools/fs.h"
 
 extern int8_t green_led_pin;
@@ -94,6 +95,23 @@ void System::factory_reset(bool restart_esp)
 #endif
 
     LittleFS.end();
+
+    const micros_t t_start = now_us();
+    size_t erased_size = 0;
+
+    esp_err_t err = erase_partition_with_delay("data", PartitionEraseType::All, &erased_size);
+
+    if (err == ESP_ERR_NOT_FOUND) {
+        err = erase_partition_with_delay("spiffs", PartitionEraseType::All, &erased_size);
+    }
+
+    if (err == ESP_OK) {
+        const uint32_t runtime_ms = (now_us() - t_start).as<uint32_t>() / 1000;
+        logger.printfln("Erased data partition in %lu.%03lus", runtime_ms / 1000, runtime_ms % 1000);
+    } else {
+        logger.printfln("Data partition not fully erased: %s (0x%x)", esp_err_to_name(err), static_cast<unsigned>(err));
+    }
+
     LittleFS.format();
 
 #if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()

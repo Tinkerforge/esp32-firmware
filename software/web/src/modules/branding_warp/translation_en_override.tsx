@@ -8,7 +8,7 @@ let x = {
     },
     "system": {
         "content": {
-            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. All tracked charges are lost. <b>This action cannot be undone!</b> The WARP Charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
+            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. All tracked charges are lost. <b>This action cannot be undone!</b> The WARP Charger will re-open the WiFi access point with the default SSID and passphrase from the manual. This process will take up to 30 seconds. Continue?</>,
             "config_reset_modal_text": <>Resets only the configuration to default values. Tracked charges will be preserved. <b>This action cannot be undone!</b> The WARP Charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
             "factory_reset_desc": "removes the configuration and all tracked charges",
             "config_reset_desc": "tracked charges will be preserved"

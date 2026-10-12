@@ -30,6 +30,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "tools/flash.h"
 #include "tools/semantic_version.h"
 #include "async_https_client.h"
 #include "generated/signature_verify.h"
@@ -70,12 +71,6 @@ public:
 class FirmwareUpdate final : public IModule
 {
 public:
-    enum class EraseType {
-        Beginning,
-        All,
-        InUse,
-    };
-
     FirmwareUpdate();
     void pre_setup() override;
     void setup() override;
@@ -84,7 +79,7 @@ public:
 
     bool vehicle_connected = false;
 
-    bool erase_other_partition(String &msg, EraseType erase_type);
+    bool erase_other_partition(String &msg, PartitionEraseType erase_type);
 
     void handle_index_data(const void *data, size_t data_len);
 

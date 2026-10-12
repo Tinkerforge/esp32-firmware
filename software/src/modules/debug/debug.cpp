@@ -876,7 +876,7 @@ bool Debug::repartition(String &errmsg, bool reboot_immediately)
     }
 
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE()
-    if (!firmware_update.erase_other_partition(errmsg, FirmwareUpdate::EraseType::Beginning)) {
+    if (!firmware_update.erase_other_partition(errmsg, PartitionEraseType::Beginning)) {
         logger.printfln("Destroying other partition failed: %s", errmsg.c_str());
         // Clear errmsg to make this error non-fatal.
         errmsg.clear();
