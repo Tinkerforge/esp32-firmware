@@ -181,7 +181,7 @@ def merge_firmware_esptool_secure():
     global otadata_offset
     global secure_boot
 
-    # Expected format of the custom_secure_boot setting: "<UID/name>,<efuses block3>,<factory MAC>"
+    # Expected format of the custom_secure_boot setting: "<UID/name>,<efuses block3>,<factory MAC>,<optional non-derived flash encryption key (efuses block1)>"
     # Example:
     # custom_secure_boot = "8555,0000123456789abcdef0123456789abcdef012345678ab00cdef012345678900,a8:03:2a:12:34:56"
 
