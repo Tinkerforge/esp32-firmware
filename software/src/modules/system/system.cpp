@@ -31,16 +31,19 @@
 #include "tools/flash.h"
 #include "tools/fs.h"
 
+#include <gcc_warnings.h>
+
 extern int8_t green_led_pin;
 
 static TaskHandle_t xTaskBuffer;
 
-void blinky(void *arg)
+[[gnu::noreturn]]
+static void blinky(void *arg)
 {
     for (;;) {
-        digitalWrite(green_led_pin, true);
+        digitalWrite(static_cast<uint8_t>(green_led_pin), true);
         delay(200);
-        digitalWrite(green_led_pin, false);
+        digitalWrite(static_cast<uint8_t>(green_led_pin), false);
         delay(200);
     }
 }
@@ -81,7 +84,7 @@ void System::factory_reset(bool restart_esp)
             "fctyrst_blink",
             2048,
             nullptr,
-            tskIDLE_PRIORITY,
+            0, // lowest priority
             &xTaskBuffer);
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
@@ -212,7 +215,7 @@ void System::register_urls()
 #if MODULE_USERS_AVAILABLE() && MODULE_CHARGE_TRACKER_AVAILABLE()
             Config *config_users = static_cast<Config *>(users.config.get("users"));
             for (size_t i = 0; i < config_users->count(); ++i) {
-                uint8_t id = config_users->get(i)->get("id")->asUint();
+                const uint8_t id = config_users->get(i)->get("id")->asUint8();
                 if (id == 0) // skip anonymous user
                     continue;
                 if (!charge_tracker.is_user_tracked(id)) {
