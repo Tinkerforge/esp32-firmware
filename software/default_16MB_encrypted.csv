@@ -1,0 +1,13 @@
+# Name,      Type, SubType,  Offset,   Size,     Flags
+# reserved,,,                0x000000, 0x001000, #  4k
+# bootloader,,,              0x001000, 0x00c000, # 48k
+# bootloader signature,,,    0x00d000, 0x001000, #  4k
+# partition table,,,         0x00e000, 0x001000, #  4k
+# unused,,,                  0x00f000, 0x001000, #  4k
+app0,        app,  ota_0,    0x010000, 0x630000, encrypted
+otadata,     data, ota,      0x640000, 0x002000, encrypted
+factorydata, data, littlefs, 0x642000, 0x00e000, encrypted
+app1,        app,  ota_1,    0x650000, 0x630000, encrypted
+# unused,,,                  0xc80000, 0x010000, # 64k
+data,        data, littlefs, 0xc90000, 0x360000, encrypted
+coredump,    data, coredump, 0xff0000, 0x010000, encrypted
