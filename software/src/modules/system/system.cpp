@@ -31,7 +31,11 @@
 #include "tools/flash.h"
 #include "tools/fs.h"
 
-#include <gcc_warnings.h>
+#if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
+#include "modules/esp32_common/secure_boot.h"
+#endif
+
+#include "gcc_warnings.h"
 
 extern int8_t green_led_pin;
 
@@ -49,7 +53,6 @@ static void blinky(void *arg)
 }
 
 #if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
-#include "modules/esp32_common/secure_boot.h"
 
 static void write_cached_secure_boot_v2_key(const std::unique_ptr<uint8_t[]> &key_cache, size_t key_length, const String &key_cache_path)
 {
