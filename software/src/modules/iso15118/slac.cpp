@@ -26,6 +26,7 @@
 #include "build.h"
 
 #include <unistd.h>
+#include <esp_random.h>
 #include <errno.h>
 #include <mbedtls/sha256.h>
 
@@ -90,8 +91,9 @@ void SLAC::generate_nid_from_nmk(void)
 
 void SLAC::generate_new_nmk_and_nid(void)
 {
+    esp_fill_random(nmk, SLAC_NMK_LENGTH);
+
     for (uint8_t i = 0; i < SLAC_NMK_LENGTH; i++) {
-        nmk[i] = static_cast<uint8_t>(random(256));
         api_state.get("nmk")->get(i)->updateUint(nmk[i]);
     }
 

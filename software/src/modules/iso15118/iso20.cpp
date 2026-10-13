@@ -22,6 +22,9 @@
 // Requirements are referenced using [V2G20-xxx] notation.
 
 #include "iso20.h"
+
+#include <esp_random.h>
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
@@ -278,9 +281,7 @@ void ISO20::handle_session_setup_req()
     // Generate new session ID if requested or session ID doesn't match
     if (all_zero || different_to_known) {
         // Generate new random session ID (8 bytes for ISO 20)
-        for (uint8_t i = 0; i < ISO20_SESSION_ID_LENGTH; i++) {
-            session_id[i] = static_cast<uint8_t>(random(256));
-        }
+        esp_fill_random(session_id, ISO20_SESSION_ID_LENGTH);
         res->ResponseCode = iso20_responseCodeType_OK_NewSessionEstablished;
     } else {
         res->ResponseCode = iso20_responseCodeType_OK_OldSessionJoined;
