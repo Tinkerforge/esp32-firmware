@@ -31,6 +31,8 @@
 #include "options.h"
 #include "generated/control_period.enum.h"
 
+#include "gcc_warnings.h"
+
 // Heating curve temperature endpoints in degrees Celsius * 10
 static constexpr int16_t HEATING_CURVE_WARM_TEMP = 200;  // 20.0°C
 static constexpr int16_t HEATING_CURVE_COLD_TEMP = -100; // -10.0°C
@@ -82,6 +84,7 @@ void Heating::pre_setup()
             case ControlPeriod::Hours8:  control_period_hours = 8;  break;
             case ControlPeriod::Hours6:  control_period_hours = 6;  break;
             case ControlPeriod::Hours4:  control_period_hours = 4;  break;
+            default: return "Unknown control period";
         }
 
         // Validate that hours don't exceed the control period
@@ -181,7 +184,7 @@ void Heating::register_urls()
         this->last_sg_ready_change = 0;
         this->update();
 
-        const millis_t timeout = millis_t((uint64_t)(override_until - now) * 1000 * 60);
+        const millis_t timeout = millis_t(static_cast<uint64_t>(override_until - now) * 1000 * 60);
         this->override_task_id = task_scheduler.scheduleOnce([this]() {
             this->sgr_blocking_override.get("override_until")->updateUint(0);
             this->last_sg_ready_change = 0;
@@ -326,7 +329,7 @@ bool Heating::get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *ou
     *out_blocking_hours = interpolate(blocking_hours_warm, blocking_hours_cold);
 
     logger.tracefln(this->trace_buffer_index, "Heating curve: avg_temp=%.1f°C, extended=%lu h, blocking=%lu h",
-                    avg_temp / 10.0f,
+                    static_cast<double>(avg_temp) / 10.0,
                     static_cast<unsigned long>(*out_extended_hours),
                     static_cast<unsigned long>(*out_blocking_hours));
 
@@ -408,7 +411,7 @@ void Heating::update_plan()
         default: plan_cheap->removeAll(); plan_expensive->removeAll(); return;
     }
 
-    const uint8_t min_block_15m = (min_hold_time + 14) / 15;
+    const uint8_t min_block_15m = static_cast<uint8_t>((min_hold_time + 14) / 15);
     const uint8_t slots_per_period = duration_hours * slots_per_hour;
     // get_cheap_1h_blocked always returns at 15-min resolution (duration_hours * 4 entries)
     const uint8_t data_slots = duration_hours * 4;
@@ -433,7 +436,7 @@ void Heating::update_plan()
     const time_t first_date_seconds = static_cast<time_t>(first_date) * 60;
     struct tm first_local;
     localtime_r(&first_date_seconds, &first_local);
-    const uint16_t first_minutes_since_midnight = first_local.tm_hour * 60 + first_local.tm_min;
+    const uint16_t first_minutes_since_midnight = static_cast<uint16_t>(first_local.tm_hour * 60 + first_local.tm_min);
     const uint16_t duration_minutes = duration_hours * 60;
 
     // Find the local-time block that contains first_date
@@ -456,7 +459,7 @@ void Heating::update_plan()
 
         if (extended) {
             std::fill_n(data, data_slots, false);
-            if (day_ahead_prices.get_cheap_1h_blocked(block_start, duration_hours, extended_hours, min_block_15m, data)) {
+            if (day_ahead_prices.get_cheap_1h_blocked(block_start, duration_hours, static_cast<uint8_t>(extended_hours), min_block_15m, data)) {
                 if (is_15min) {
                     // 1:1 mapping: data has slots_per_period entries
                     for (uint8_t i = 0; i < slots_per_period; i++) {
@@ -474,7 +477,7 @@ void Heating::update_plan()
 
         if (blocking) {
             std::fill_n(data, data_slots, false);
-            if (day_ahead_prices.get_expensive_1h_blocked(block_start, duration_hours, blocking_hours, min_block_15m, data)) {
+            if (day_ahead_prices.get_expensive_1h_blocked(block_start, duration_hours, static_cast<uint8_t>(blocking_hours), min_block_15m, data)) {
                 if (is_15min) {
                     for (uint8_t i = 0; i < slots_per_period; i++) {
                         plan_expensive->get(static_cast<uint32_t>(block_start_index + i))->updateBool(data[i]);
@@ -556,7 +559,7 @@ void Heating::update()
     }
 
     // Get values from config
-    const uint8_t min_hold_time = config.get("min_hold_time")->asUint();
+    const uint8_t min_hold_time = static_cast<uint8_t>(config.get("min_hold_time")->asUint());
     const uint32_t minutes = rtc.timestamp_minutes();
     uint32_t remaining_holding_time = 0;
     if (minutes >= last_sg_ready_change) {
@@ -572,7 +575,7 @@ void Heating::update()
             return;
         }
 
-        logger.tracefln(this->trace_buffer_index, "Minimum control holding time not reached. Current time: %limin, last change: %limin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
+        logger.tracefln(this->trace_buffer_index, "Minimum control holding time not reached. Current time: %lumin, last change: %lumin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
         return;
     }
 
@@ -614,7 +617,7 @@ void Heating::update()
     const time_t now = time(NULL);
     struct tm current_time;
     localtime_r(&now, &current_time);
-    const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
+    const uint16_t minutes_since_midnight = static_cast<uint16_t>(current_time.tm_hour * 60 + current_time.tm_min);
 
     const bool disabled = !yield_forecast && !extended && !blocking && !pv_excess_control;
     this->state.get("enabled")->updateBool(!disabled);
@@ -640,12 +643,12 @@ void Heating::update()
                 const bool active_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
                 if (sg_ready_output_1 == active_value) {
                     if ((-watt_current) > 0) {
-                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %dW, threshold: 0W (sgr1 is active).", (int)watt_current);
+                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %dW, threshold: 0W (sgr1 is active).", static_cast<int>(watt_current));
                         sg_ready1_on |= true;
                     }
                 } else {
-                    if ((-watt_current) > pv_excess_control_threshold) {
-                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %iW, threshold: %luW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
+                    if ((-watt_current) > static_cast<float>(pv_excess_control_threshold)) {
+                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %iW, threshold: %luW. (sgr1 is not active)", static_cast<int>(watt_current), pv_excess_control_threshold);
                         sg_ready1_on |= true;
                     }
                 }
@@ -694,18 +697,18 @@ void Heating::update()
             std::fill_n(data, 96, false);
 
             // start_time is the nearest time block with length duration and index for current time within the block
-            const uint32_t duration_block = (minutes_since_midnight / (duration*60)) * (duration*60);
+            const uint32_t duration_block = static_cast<uint32_t>((minutes_since_midnight / (duration*60)) * (duration*60));
             time_t midnight;
             if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
                 return;
 
-            const uint32_t start_time     = midnight/60 + duration_block;
-            const uint8_t current_index   = (minutes_since_midnight - duration_block)/15;
+            const uint32_t start_time     = static_cast<uint32_t>(midnight/60) + duration_block;
+            const uint8_t current_index   = static_cast<uint8_t>((minutes_since_midnight - duration_block)/15);
 
-            const uint8_t min_block_15m = (min_hold_time + 14) / 15; // ceil(min_hold_time / 15)
+            const uint8_t min_block_15m = static_cast<uint8_t>((min_hold_time + 14) / 15); // ceil(min_hold_time / 15)
 
             if (handle_extended) {
-                const bool data_available = day_ahead_prices.get_cheap_1h_blocked(start_time, duration, extended_hours, min_block_15m, data);
+                const bool data_available = day_ahead_prices.get_cheap_1h_blocked(static_cast<int32_t>(start_time), duration, static_cast<uint8_t>(extended_hours), min_block_15m, data);
                 if (!data_available) {
                     logger.tracefln(this->trace_buffer_index, "Cheap hours not available. Ignoring extended control.");
                 } else {
@@ -720,7 +723,7 @@ void Heating::update()
                 }
             }
             if (handle_blocking) {
-                const bool data_available = day_ahead_prices.get_expensive_1h_blocked(start_time, duration, blocking_hours, min_block_15m, data);
+                const bool data_available = day_ahead_prices.get_expensive_1h_blocked(static_cast<int32_t>(start_time), duration, static_cast<uint8_t>(blocking_hours), min_block_15m, data);
                 if (!data_available) {
                     logger.tracefln(this->trace_buffer_index, "Expensive hours not available. Ignoring blocking control.");
                 } else {
@@ -785,21 +788,21 @@ void Heating::update()
                 if ((minutes_since_midnight < DAYTIME_EXTENSION_START_MINUTES) || (minutes_since_midnight >= DAYTIME_EXTENSION_END_MINUTES)) {
                     logger.tracefln(this->trace_buffer_index,
                                     "Daytime restriction active: avg_temp=%.1f°C < 5°C, time %02d:%02d outside 09:00-18:00 window. Suppressing extended operation.",
-                                    avg_temp / 10.0f,
+                                    static_cast<double>(avg_temp) / 10.0,
                                     current_time.tm_hour,
                                     current_time.tm_min);
                     sg_ready1_on = false;
                 } else {
                     logger.tracefln(this->trace_buffer_index,
                                     "Daytime restriction: avg_temp=%.1f°C < 5°C, time %02d:%02d within 09:00-18:00 window. Extended operation allowed.",
-                                    avg_temp / 10.0f,
+                                    static_cast<double>(avg_temp) / 10.0,
                                     current_time.tm_hour,
                                     current_time.tm_min);
                 }
             } else {
                 logger.tracefln(this->trace_buffer_index,
                                 "Daytime restriction: avg_temp=%.1f°C >= 5°C threshold. No restriction applied.",
-                                avg_temp / 10.0f);
+                                static_cast<double>(avg_temp) / 10.0);
             }
         } else {
             logger.tracefln(this->trace_buffer_index, "Daytime restriction: Temperature data not available. No restriction applied.");
@@ -845,7 +848,7 @@ void Heating::update()
             logger.tracefln(this->trace_buffer_index, "Override time is over. Resetting override.");
             sgr_blocking_override.get("override_until")->updateUint(0);
         } else {
-            logger.tracefln(this->trace_buffer_index, "Override time is active. Current time: %limin, override until: %limin.", now_minutes, override_until);
+            logger.tracefln(this->trace_buffer_index, "Override time is active. Current time: %lumin, override until: %lumin.", now_minutes, override_until);
             sg_ready0_on = false;
         }
     }
