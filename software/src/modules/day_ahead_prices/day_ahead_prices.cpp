@@ -34,6 +34,8 @@
 #include "tools/string_builder.h"
 #include "options.h"
 
+#include "gcc_warnings.h"
+
 // Performance logging for dp_select_slots
 #define DP_PERFORMANCE_LOGGING 0
 
@@ -388,7 +390,7 @@ void DayAheadPrices::update_prices_sorted()
         return a.second < b.second;
     });
 
-    prices_sorted_first_date = prices.get("first_date")->asUint();
+    prices_sorted_first_date = static_cast<int32_t>(prices.get("first_date")->asUint());
     prices_sorted_available  = true;
     dp_cache_generation++;
 }
@@ -400,7 +402,7 @@ void DayAheadPrices::update_minmaxavg_price()
     }
 
     // Minimum, average, maximum today
-    const uint32_t start_today = last_update_minmaxavg / 60;
+    const uint32_t start_today = static_cast<uint32_t>(last_update_minmaxavg / 60);
     const uint32_t end_today   = start_today + 24*60 - 1;
     price_minimum_today = get_minimum_price_between(start_today, end_today);
     price_average_today = get_average_price_between(start_today, end_today);
@@ -468,7 +470,7 @@ void DayAheadPrices::update()
     }
 
     if(json_buffer == nullptr) {
-        json_buffer = (char *)calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char));
+        json_buffer = static_cast<char *>(calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char)));
     } else {
         logger.printfln("JSON Buffer was potentially not freed correctly");
     }
@@ -538,8 +540,11 @@ void DayAheadPrices::update()
                 break;
 
             // use default to prevent warnings since we dont use a body, cookies or headers here
+            case AsyncHTTPSClientError::HTTPClientSetCookieFailed:
+            case AsyncHTTPSClientError::HTTPClientSetHeaderFailed:
+            case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
             default:
-                logger.printfln("Uncovered error, this should never happen!");
+                logger.printfln("Uncovered error: %i", static_cast<int>(event->error));
                 break;
             }
 
@@ -598,6 +603,9 @@ void DayAheadPrices::update()
 
         case AsyncHTTPSClientEventType::Redirect:
             break;
+
+        default:
+            esp_system_abort("Invalid event");
         }
     });
 }
@@ -648,8 +656,8 @@ void DayAheadPrices::handle_new_data()
         const uint32_t current_minutes = rtc.timestamp_minutes();
         state.get("last_sync")->updateUint(current_minutes);
         state.get("last_check")->updateUint(current_minutes);
-        state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
-        prices.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
+        state.get("next_check")->updateUint(json_doc["next_date"].as<uint32_t>()/60);
+        prices.get("first_date")->updateUint(json_doc["first_date"].as<uint32_t>()/60);
 
         update_current_price();
         update_minmaxavg_price();
@@ -706,7 +714,7 @@ Option<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
+    const uint8_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t min = INT32_MAX;
     int32_t count = 0;
@@ -765,7 +773,7 @@ Option<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
+    const uint8_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t sum = 0;
     int32_t count = 0;
@@ -823,7 +831,7 @@ Option<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
+    const uint8_t resolution = prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t max = INT32_MIN;
     int32_t count = 0;
@@ -886,12 +894,12 @@ Option<int32_t> DayAheadPrices::get_current_price()
         return {};
     }
 
-    return (int32_t)std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0));
+    return static_cast<int32_t>(std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0)));
 }
 
 int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
 {
-    return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
+    return static_cast<int32_t>(config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint());
 }
 
 int32_t DayAheadPrices::add_below(const int32_t start_time, const int32_t price, bool *hours, const uint32_t hours_length)
@@ -910,15 +918,16 @@ int32_t DayAheadPrices::add_below(const int32_t start_time, const int32_t price,
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const int32_t start_index = (start_time - first_date) / 15;
-    if ((start_index < 0) || (start_index >= num_prices)) {
+    const int32_t start_offset = start_time - static_cast<int32_t>(first_date);
+    if ((start_offset < 0) || (static_cast<size_t>(start_offset / 15) >= num_prices)) {
         return -3;
     }
 
+    const size_t start = static_cast<size_t>(start_offset / 15);
     int32_t last_changed_index = -1;
-    for (uint8_t i = start_index; (i < num_prices) && ((i-start_index) < hours_length); i++) {
+    for (size_t i = start; (i < num_prices) && ((i - start) < hours_length); i++) {
         if (p->get(i/resolution_mul)->asInt() < price) {
-            last_changed_index = i - start_index;
+            last_changed_index = static_cast<int32_t>(i - start);
             hours[last_changed_index] = true;
         }
     }
@@ -942,15 +951,16 @@ int32_t DayAheadPrices::remove_above(const int32_t start_time, const int32_t pri
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const int32_t start_index = (start_time - first_date) / 15;
-    if ((start_index < 0) || (start_index >= num_prices)) {
+    const int32_t start_offset = start_time - static_cast<int32_t>(first_date);
+    if ((start_offset < 0) || (static_cast<size_t>(start_offset / 15) >= num_prices)) {
         return -3;
     }
 
+    const size_t start = static_cast<size_t>(start_offset / 15);
     int32_t last_changed_index = -1;
-    for (uint8_t i = start_index; (i < num_prices) && ((i-start_index) < hours_length); i++) {
+    for (size_t i = start; (i < num_prices) && ((i - start) < hours_length); i++) {
         if (p->get(i/resolution_mul)->asInt() > price) {
-            last_changed_index = i - start_index;
+            last_changed_index = static_cast<int32_t>(i - start);
             hours[last_changed_index] = false;
         }
     }
@@ -960,7 +970,7 @@ int32_t DayAheadPrices::remove_above(const int32_t start_time, const int32_t pri
 
 bool DayAheadPrices::is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m)
 {
-    bool cheap_hours[duration_15m] = {false};
+    bool cheap_hours[UINT8_MAX] = {false};
     const bool ret = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, nullptr);
     return ret && cheap_hours[0];
 }
@@ -1011,7 +1021,7 @@ bool DayAheadPrices::get_cheap_and_expensive_15m(const int32_t start_time, const
         std::fill_n(expensive_hours, duration_15m, false);
 
         int16_t expensive_count = 0;
-        for (int16_t i = prices_sorted_count-1; i >= 0; i--) {
+        for (int16_t i = static_cast<int16_t>(prices_sorted_count) - 1; i >= 0; i--) {
             auto price_index = prices_sorted[i].first;
             if (price_index >= start_index && price_index < end_index) {
                 expensive_count++;
@@ -1094,14 +1104,18 @@ bool DayAheadPrices::dp_select_slots(
         return false;
     }
 
+    if (N > DAY_AHEAD_PRICE_DP_MAX_SLOTS) {
+        return false;
+    }
+
     // For expensive selection, negate prices so we can always minimize.
-    int32_t prices_work[N];
+    int32_t prices_work[DAY_AHEAD_PRICE_DP_MAX_SLOTS];
     for (uint8_t i = 0; i < N; i++) {
         prices_work[i] = find_expensive ? -slot_prices[i] : slot_prices[i];
     }
 
     // Prefix sums for O(1) range-sum queries: prefix[i] = sum of prices_work[0..i-1]
-    int32_t prefix[N + 1];
+    int32_t prefix[DAY_AHEAD_PRICE_DP_MAX_SLOTS + 1];
     prefix[0] = 0;
     for (uint8_t i = 0; i < N; i++) {
         prefix[i + 1] = prefix[i] + prices_work[i];
@@ -1188,7 +1202,7 @@ bool DayAheadPrices::dp_select_slots(
             for (uint8_t s = prev_i; s < ci; s++) {
                 result[s] = true;
             }
-            cj -= (ci - prev_i);
+            cj = static_cast<uint8_t>(cj - (ci - prev_i));
         }
 
         ci = prev_i;
@@ -1220,16 +1234,23 @@ bool DayAheadPrices::get_cheap_and_expensive_15m_blocked(const int32_t start_tim
 
     const uint32_t first_date = prices.get("first_date")->asUint();
     const uint8_t resolution_mul = (prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15) ? 1 : 4;
-    const int32_t start_index = (start_time - first_date) / 15;
+    if (start_time < static_cast<int32_t>(first_date)) {
+        return false;
+    }
+    const int32_t start_index = (start_time - static_cast<int32_t>(first_date)) / 15;
 
     // When resolution is 60-min, run DP at hourly granularity to avoid sub-hour
     const bool use_hourly_dp = (resolution_mul == 4);
     const uint8_t dp_N = use_hourly_dp ? (duration_15m / 4) : duration_15m;
     const uint8_t dp_K = use_hourly_dp ? (amount_15m / 4) : amount_15m;
-    const uint8_t dp_B = use_hourly_dp ? ((min_block_15m + 3) / 4) : min_block_15m;  // ceil(min_block_15m / 4)
+    const uint8_t dp_B = use_hourly_dp ? static_cast<uint8_t>((min_block_15m + 3) / 4) : min_block_15m;  // ceil(min_block_15m / 4)
+
+    if (dp_N > DAY_AHEAD_PRICE_DP_MAX_SLOTS) {
+        return false;
+    }
 
     // Extract prices at the DP granularity
-    int32_t slot_prices[dp_N];
+    int32_t slot_prices[DAY_AHEAD_PRICE_DP_MAX_SLOTS];
     for (uint8_t i = 0; i < dp_N; i++) {
         int32_t raw_index = start_index + (use_hourly_dp ? (i * 4) : i);
         if (raw_index < 0 || raw_index >= static_cast<int32_t>(num_prices * resolution_mul)) {
@@ -1384,7 +1405,7 @@ void DayAheadPrices::update_calendar()
     localtime_r(&tv_now.tv_sec, &tm_now);
 
     // tm_wday: 0=Sunday, we need 0=Monday
-    int8_t wday = (tm_now.tm_wday + 6) % 7; // Mon=0, Tue=1, ..., Sun=6
+    int8_t wday = static_cast<int8_t>((tm_now.tm_wday + 6) % 7); // Mon=0, Tue=1, ..., Sun=6
 
     // Only regenerate when day-of-week changes
     if (wday == calendar_last_generated_wday) {
@@ -1398,12 +1419,12 @@ void DayAheadPrices::update_calendar()
     }
 
     // Build 2-day (192 slot) calendar price array: today + tomorrow
-    int8_t tomorrow_wday = (wday + 1) % 7;
+    int8_t tomorrow_wday = static_cast<int8_t>((wday + 1) % 7);
     int32_t cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY * 2];
     for (size_t slot = 0; slot < DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY; slot++) {
         // Calendar prices are stored in ct/100, convert to ct/1000 for combining with DAP prices
-        cal_today_tomorrow[slot] = cal_prices->get(wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
-        cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot] = cal_prices->get(tomorrow_wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
+        cal_today_tomorrow[slot] = cal_prices->get(static_cast<size_t>(wday) * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
+        cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot] = cal_prices->get(static_cast<size_t>(tomorrow_wday) * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
     }
 
     auto p = prices.get("prices");

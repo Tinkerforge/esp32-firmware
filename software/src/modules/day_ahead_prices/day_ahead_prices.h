@@ -78,7 +78,7 @@ private:
     void retry_update(millis_t delay);
     String get_api_url_with_path();
     int get_max_price_values();
-    bool time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution);
+    [[gnu::const]] bool time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution);
     void handle_new_data();
     void handle_cleanup();
 
