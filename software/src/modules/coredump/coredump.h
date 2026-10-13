@@ -38,6 +38,8 @@ public:
     void setup() override;
     void register_urls() override;
 
+    void erase_coredump();
+
 private:
     bool build_coredump_info(JsonDocument &tf_coredump_json);
 

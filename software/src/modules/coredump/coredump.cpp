@@ -275,3 +275,26 @@ void Coredump::register_urls()
         return request.endChunkedResponse();
     });
 }
+
+void Coredump::erase_coredump()
+{
+    esp_err_t err = esp_core_dump_image_erase();
+
+    if (err == ESP_OK) {
+        err = esp_core_dump_image_check();
+
+        if (err == ESP_OK) {
+            logger.printfln("Core dump still readable after erase :-?");
+            return;
+        }
+    } else {
+        logger.printfln("Core dump erase failed: %s (0x%x)", esp_err_to_name(err), static_cast<unsigned>(err));
+    }
+
+    // An erase part of a button-triggered factory reset runs during pre-init, when the state doesn't exist yet.
+    if (!this->state.is_null()) {
+        this->state.get("coredump_available")->updateBool(false);
+    }
+
+    logger.printfln("Core dump erased");
+}

@@ -126,6 +126,10 @@ void System::factory_reset(bool restart_esp)
     }
 #endif
 
+#if MODULE_COREDUMP_AVAILABLE()
+    coredump.erase_coredump();
+#endif
+
     if (restart_esp) {
         esp_restart();
     }
