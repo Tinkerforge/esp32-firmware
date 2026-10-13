@@ -27,6 +27,12 @@
 class Network final : public IModule
 {
 public:
+    static constexpr uint8_t INTERFACE_ETHERNET = 1;
+    static constexpr uint8_t INTERFACE_WIFI_STA = 2;
+    static constexpr uint8_t INTERFACE_WIFI_AP  = 4;
+    // Returned by get_default_interface() for interfaces not managed by this module, e.g. a WireGuard tunnel.
+    static constexpr uint8_t INTERFACE_OTHER    = 0xFF;
+
     Network(){}
     void pre_setup() override;
     void setup() override;
@@ -36,6 +42,8 @@ public:
     void register_urls_late();
 
     inline bool is_connected() { return connected; }
+    inline uint8_t get_connected_interfaces() { return connected_interface_mask; }
+    uint8_t get_default_interface();
 
     inline bool is_mdns_started() { return mdns_started; }
     inline const String &get_hostname() { return hostname; }
@@ -46,6 +54,7 @@ public:
     inline int8_t get_key_id() { return key_id; }
 
     int64_t on_network_connected(std::function<EventResult(const Config *)> &&callback);
+    int64_t on_connected_interfaces_changed(std::function<EventResult(const Config *)> &&callback);
 
 
 private:

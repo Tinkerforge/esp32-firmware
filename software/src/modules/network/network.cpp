@@ -20,6 +20,7 @@
 #include "network.h"
 
 #include <esp_netif.h>
+#include <lwip/netif.h>
 #include <sdkconfig.h> // For CONFIG_MDNS_TASK_STACK_SIZE
 #include <mdns.h>
 
@@ -32,10 +33,12 @@
 #include "unsafe_ports.h"
 
 #if MODULE_ETHERNET_AVAILABLE()
+#include <ETH.h>
 #include "modules/ethernet/generated/ethernet_state.enum.h"
 #endif
 
 #if MODULE_WIFI_AVAILABLE()
+#include <WiFi.h>
 #include "modules/wifi/generated/wifi_state.enum.h"
 #endif
 
@@ -100,7 +103,8 @@ void Network::pre_setup()
     }};
 
     state = Config::Object({
-        {"connected", Config::Bool(false)}
+        {"connected", Config::Bool(false)},
+        {"connected_interfaces", Config::Uint8(0)},
     });
 }
 
@@ -238,9 +242,11 @@ void Network::register_events()
 
 void Network::update_connected()
 {
-    uint8_t new_mask = (ethernet_connected ? 1 : 0)
-                     | (wifi_sta_connected ? 2 : 0)
-                     | ((wifi_ap_sta_count > 0) ? 4 : 0);
+    uint8_t new_mask = (ethernet_connected ? INTERFACE_ETHERNET : 0)
+                     | (wifi_sta_connected ? INTERFACE_WIFI_STA : 0)
+                     | ((wifi_ap_sta_count > 0) ? INTERFACE_WIFI_AP : 0);
+
+    state.get("connected_interfaces")->updateUint(new_mask);
 
     connected = (new_mask != 0);
     bool value_changed   = state.get("connected")->updateBool(connected);
@@ -287,4 +293,52 @@ void Network::update_connected()
 int64_t Network::on_network_connected(std::function<EventResult(const Config *)> &&callback)
 {
     return event.registerEvent("network/state", {"connected"}, std::move(callback));
+}
+
+int64_t Network::on_connected_interfaces_changed(std::function<EventResult(const Config *)> &&callback)
+{
+    return event.registerEvent("network/state", {"connected_interfaces"}, std::move(callback));
+}
+
+uint8_t Network::get_default_interface()
+{
+    struct ctx_t {
+        int candidates[3]; // lwIP netif indices
+        uint8_t result;
+    } ctx = {{-1, -1, -1}, 0};
+
+    // esp_netif_get_netif_impl_index() returns -1 for nullptr.
+#if MODULE_ETHERNET_AVAILABLE()
+    ctx.candidates[0] = esp_netif_get_netif_impl_index(ETH.netif());
+#endif
+#if MODULE_WIFI_AVAILABLE()
+    ctx.candidates[1] = esp_netif_get_netif_impl_index(WiFi.STA.netif());
+    ctx.candidates[2] = esp_netif_get_netif_impl_index(WiFi.AP.netif());
+#endif
+
+    esp_netif_tcpip_exec([](void *arg) -> esp_err_t {
+        ctx_t *c = static_cast<ctx_t *>(arg);
+        const struct netif *nif = netif_default;
+
+        if (nif == nullptr) {
+            c->result = 0;
+            return ESP_OK;
+        }
+
+        const int index = nif->num + 1;
+
+        if (index == c->candidates[0]) {
+            c->result = INTERFACE_ETHERNET;
+        } else if (index == c->candidates[1]) {
+            c->result = INTERFACE_WIFI_STA;
+        } else if (index == c->candidates[2]) {
+            c->result = INTERFACE_WIFI_AP;
+        } else {
+            c->result = INTERFACE_OTHER;
+        }
+
+        return ESP_OK;
+    }, &ctx);
+
+    return ctx.result;
 }
