@@ -609,7 +609,7 @@ void QCA700x::setup_netif()
         .lost_ip_event = IP_EVENT_ETH_LOST_IP,
         .if_key = "ETH_QCA",
         .if_desc = "qca",
-        .route_prio = 50,
+        .route_prio = 5, // Below all other interfaces. The PLC link is IPv6 link-local only and must not become the default route.
         .bridge_info = nullptr
     };
 
