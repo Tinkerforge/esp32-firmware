@@ -28,6 +28,14 @@
 #include "build.h"
 #include "modules/charge_manager/charge_manager_private.h"
 
+#include "gcc_warnings.h"
+
+static constexpr size_t MAX_CHART_SLOTS_15M     = 48*4; // 48 hours with 15 minute resolution
+static constexpr size_t MAX_CHART_BIN_LENGTH    = (MAX_CHART_SLOTS_15M + 7)/8;
+static constexpr size_t MAX_CHART_BASE64_LENGTH = 4 + 4*MAX_CHART_BIN_LENGTH/3;
+
+static_assert(MAX_CHART_SLOTS_15M <= UINT8_MAX, "Slot counts are passed as uint8_t");
+
 #define ECO_EXTENDED_LOGGING 1
 
 #define extended_logging(fmt, ...) \
@@ -196,30 +204,30 @@ void Eco::register_urls()
             duration_remaining_1m = std::min(park_time_duration_1m, duration_remaining_1m);
         }
 
-        const uint32_t amount_15m = amount_1m/15;
-        uint32_t duration_15m     = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
+        const uint8_t amount_15m = static_cast<uint8_t>(std::min<uint32_t>(amount_1m/15, MAX_CHART_SLOTS_15M));
+        uint8_t duration_15m     = static_cast<uint8_t>(std::min<uint32_t>((duration_remaining_1m + 14)/15, MAX_CHART_SLOTS_15M)); // Round up to 15 minutes
 
-        bool cheap_prices[48*4] = {false};
-        day_ahead_prices.get_cheap_15m(current_time_1m, duration_15m, amount_15m, cheap_prices);
+        bool cheap_prices[MAX_CHART_SLOTS_15M] = {false};
+        day_ahead_prices.get_cheap_15m(static_cast<int32_t>(current_time_1m), duration_15m, amount_15m, cheap_prices);
 
         if (config.get("charge_below")->asBool()) {
-            int32_t new_length = day_ahead_prices.add_below(current_time_1m, config.get("charge_below_threshold")->asInt()*1000, cheap_prices, 48*4);
+            int32_t new_length = day_ahead_prices.add_below(static_cast<int32_t>(current_time_1m), config.get("charge_below_threshold")->asInt()*1000, cheap_prices, MAX_CHART_SLOTS_15M);
             if (new_length > 0) {
-                duration_15m = std::max((uint32_t)new_length, duration_15m);
+                duration_15m = std::max(static_cast<uint8_t>(new_length), duration_15m);
             }
         }
 
         if (config.get("block_above")->asBool()) {
-            day_ahead_prices.remove_above(current_time_1m, config.get("block_above_threshold")->asInt()*1000, cheap_prices, 48*4);
+            day_ahead_prices.remove_above(static_cast<int32_t>(current_time_1m), config.get("block_above_threshold")->asInt()*1000, cheap_prices, MAX_CHART_SLOTS_15M);
         }
 
-        const uint32_t duration_uint8 = (duration_15m + 7)/8;
-        char cheap_prices_bin[duration_uint8] = {0};
+        const size_t duration_uint8 = (duration_15m + 7u)/8;
+        uint8_t cheap_prices_bin[MAX_CHART_BIN_LENGTH] = {0};
 
         for (size_t i = 0; i < duration_15m; i++) {
-            cheap_prices_bin[i/8] |= (cheap_prices[i] ? 1 : 0) << (i % 8);
+            cheap_prices_bin[i/8] |= static_cast<uint8_t>((cheap_prices[i] ? 1 : 0) << (i % 8));
         }
-        return request.send_bytes(200, cheap_prices_bin, duration_uint8);
+        return request.send_bytes(200, reinterpret_cast<const char *>(cheap_prices_bin), duration_uint8);
     });
 
     task_scheduler.scheduleWallClock([this]() {
@@ -231,13 +239,13 @@ void Eco::register_urls()
 std::pair<uint8_t, uint32_t> Eco::get_end_time_1m(const Departure departure, const uint32_t desired_amount_1m, const uint32_t time_1m, const time_t save_time_1s)
 {
     // Currently we assume that the amount is in hours, later we may add support for kWh
-    const uint32_t save_time_midnight_1m = get_localtime_midnight_in_utc(save_time_1s) / 60;
+    const uint32_t save_time_midnight_1m = static_cast<uint32_t>(get_localtime_midnight_in_utc(save_time_1s) / 60);
 
     time_t midnight_1s;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight_1s)) {
         return std::make_pair(1, 0);
     }
-    const uint32_t today_midnight_1m  = midnight_1s / 60;
+    const uint32_t today_midnight_1m  = static_cast<uint32_t>(midnight_1s / 60);
 
     const uint32_t add_1m             = (((departure == Departure::Today) || (departure == Departure::Daily)) ? 0 : 24*60) + time_1m;
           uint32_t end_time_1m        = (departure == Departure::Daily) ? (today_midnight_1m + add_1m) : (save_time_midnight_1m + add_1m);
@@ -270,7 +278,7 @@ std::pair<uint8_t, uint32_t> Eco::get_end_time_1m(const Departure departure, con
 void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart_input, const uint8_t chart_input_length, const bool use_default_chart)
 {
     // 48 hours with 15 minute resolution is the theortical maximum
-    bool chart[48*4] = {false};
+    bool chart[MAX_CHART_SLOTS_15M] = {false};
     if (chart_input != nullptr) {
         for (uint8_t i = 0; i < chart_input_length; i++) {
             chart[i] = chart_input[i];
@@ -287,7 +295,7 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart_in
             charge_plan.get("departure")->asEnum<Departure>(),
             amount_1m,
             charge_plan.get("time")->asUint(),
-            ((time_t)current_time_1m)*60
+            static_cast<time_t>(current_time_1m)*60
         );
         if (end_time_1m.first == 0) {
             uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
@@ -295,39 +303,39 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart_in
                 const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
                 duration_remaining_1m = std::min(park_time_duration_1m, duration_remaining_1m);
             }
-            const uint32_t duration_15m = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
-            const uint32_t amount_15m   = amount_1m/15;
-            day_ahead_prices.get_cheap_15m(current_time_1m, duration_15m, amount_15m, chart);
+            const uint8_t duration_15m = static_cast<uint8_t>(std::min<uint32_t>((duration_remaining_1m + 14)/15, MAX_CHART_SLOTS_15M)); // Round up to 15 minutes
+            const uint8_t amount_15m   = static_cast<uint8_t>(std::min<uint32_t>(amount_1m/15, MAX_CHART_SLOTS_15M));
+            day_ahead_prices.get_cheap_15m(static_cast<int32_t>(current_time_1m), duration_15m, amount_15m, chart);
 
             chart_length = duration_15m;
         }
     }
 
     if (config.get("charge_below")->asBool()) {
-        int32_t new_length = day_ahead_prices.add_below(current_time_1m, config.get("charge_below_threshold")->asInt()*1000, chart, 48*4);
+        int32_t new_length = day_ahead_prices.add_below(static_cast<int32_t>(current_time_1m), config.get("charge_below_threshold")->asInt()*1000, chart, MAX_CHART_SLOTS_15M);
         if (new_length > 0) {
-            chart_length = std::max((uint8_t)new_length, chart_length);
+            chart_length = std::max(static_cast<uint8_t>(new_length), chart_length);
         }
     }
 
     if (config.get("block_above")->asBool()) {
-        day_ahead_prices.remove_above(current_time_1m, config.get("block_above_threshold")->asInt()*1000, chart, chart_length);
+        day_ahead_prices.remove_above(static_cast<int32_t>(current_time_1m), config.get("block_above_threshold")->asInt()*1000, chart, chart_length);
     }
 
 
-    const size_t chart_bin_length    = (chart_length + 7)/8;
+    const size_t chart_bin_length    = (chart_length + 7u)/8;
     const size_t chart_base64_length = 4 + 4*chart_bin_length/3;
 
-    char chart_base64[chart_base64_length + 1] = {0};
+    char chart_base64[MAX_CHART_BASE64_LENGTH + 1] = {0};
     if (chart_length != 0) {
-        char chart_bin[chart_bin_length] = {0};
+        uint8_t chart_bin[MAX_CHART_BIN_LENGTH] = {0};
 
         for (size_t i = 0; i < chart_length; i++) {
-            chart_bin[i/8] |= (chart[i] ? 1 : 0) << (i % 8);
+            chart_bin[i/8] |= static_cast<uint8_t>((chart[i] ? 1 : 0) << (i % 8));
         }
 
         size_t chart_base64_written = 0;
-        mbedtls_base64_encode((unsigned char *)chart_base64, chart_base64_length, &chart_base64_written, (const unsigned char *)chart_bin, chart_bin_length);
+        mbedtls_base64_encode(reinterpret_cast<unsigned char *>(chart_base64), chart_base64_length, &chart_base64_written, chart_bin, chart_bin_length);
     }
 
     if(charger_id == 255) {
@@ -352,7 +360,7 @@ void Eco::update()
 #endif
 
     // 48 hours with 15 minute resolution is the theortical maximum
-    bool cheap_hours[48*4] = {false};
+    bool cheap_hours[MAX_CHART_SLOTS_15M] = {false};
     bool decision_is_done = false;
 
     // Update eco charger state once per minute, independent of the eco charge decision
@@ -509,10 +517,10 @@ void Eco::update()
             }
 
             // Check if the current day ahead price slot is cheap
-            const uint32_t amount_remaining_15m   = (desired_amount_1m/15) - (charged_amount_1m/15); // Round down to 15 minutes
-            const uint32_t duration_remaining_15m = (duration_remaining_1m + 14)/15;                 // Round up to 15 minutes
+            const uint8_t amount_remaining_15m   = static_cast<uint8_t>(std::min<uint32_t>((desired_amount_1m/15) - (charged_amount_1m/15), MAX_CHART_SLOTS_15M)); // Round down to 15 minutes
+            const uint8_t duration_remaining_15m = static_cast<uint8_t>(std::min<uint32_t>((duration_remaining_1m + 14)/15, MAX_CHART_SLOTS_15M));                 // Round up to 15 minutes
 
-            const bool ret = day_ahead_prices.get_cheap_15m(current_time_1m, duration_remaining_15m, amount_remaining_15m, cheap_hours);
+            const bool ret = day_ahead_prices.get_cheap_15m(static_cast<int32_t>(current_time_1m), duration_remaining_15m, amount_remaining_15m, cheap_hours);
 
             if (!decision_is_done) {
                 // Make sure to always stay consistant for full 15 minute slots
