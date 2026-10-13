@@ -966,10 +966,11 @@ void Mqtt::register_events()
         }
 
         if (connected->asBool()) {
-            esp_mqtt_client_start(client);
+            if (esp_mqtt_client_start(client) == ESP_OK) {
 #if MODULE_DEBUG_AVAILABLE()
-            debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
+                debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
+            }
         }
         else {
 #if MODULE_DEBUG_AVAILABLE()
@@ -1041,10 +1042,11 @@ void Mqtt::reconfigure()
 
     // Start the client immediately if the network is already up.
     if (network.is_connected()) {
-        esp_mqtt_client_start(client);
+        if (esp_mqtt_client_start(client) == ESP_OK) {
 #if MODULE_DEBUG_AVAILABLE()
-        debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
+            debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
+        }
         initial_network_event_seen = true;
     }
 }
