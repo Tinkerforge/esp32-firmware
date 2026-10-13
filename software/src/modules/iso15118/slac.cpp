@@ -826,8 +826,26 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
 
 void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &ind)
 {
-    iso15118.trace("SLAC: VS_HOST_ACTION.IND: PLC stack restarted (action=%u, version=%u.%u)",
-                   ind.maction, ind.major_version, ind.minor_version);
+    const char *name;
+    switch (ind.maction) {
+        case 0x00: name = "Start device";                   break;
+        case 0x01: name = "Store firmware";                 break;
+        case 0x02: name = "Store parameters";               break;
+        case 0x03: name = "Update host";                    break;
+        case 0x04: name = "Config memory";                  break;
+        case 0x05: name = "Restore defaults";               break;
+        case 0x06: name = "Store parameters without reset"; break;
+        case 0x08: name = "Firmware started";               break;
+        case 0x09: name = "Ready to join AVLN";             break;
+        case 0x0A: name = "AVLN joined";                    break;
+        case 0x0B: name = "AVLN disconnected";              break;
+        case 0x0F: name = "NEK rotation start";             break;
+        case 0x10: name = "NEK rotation done";              break;
+        default:   name = "Unknown";                        break;
+    }
+
+    iso15118.trace("SLAC: VS_HOST_ACTION.IND: %s (action=0x%02x, version=%u.%u)",
+                   name, ind.maction, ind.major_version, ind.minor_version);
 }
 
 void SLAC::handle_vs_module_operation_confirmation(const uint8_t *data, size_t length)

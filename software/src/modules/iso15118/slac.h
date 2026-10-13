@@ -393,6 +393,15 @@ struct [[gnu::packed]] CM_QualcommHostActionIndication {
     //   0x03 = Update Host (both firmware and parameters ready for upload)
     //   0x04 = Config Memory (bootloader waiting for SDRAM configuration)
     //   0x05 = Restore Defaults (factory defaults restored)
+    //   0x06 = Store Parameters without reset
+    //   0x00-0x06 are repeated every 500ms until the host answers with VS_HOST_ACTION.RSP. Link status notifications (QCA7000/QCA7005 in SLAC configuration, sent once, no response required):
+    //   0x09 = Ready to join AVLN
+    //   0x0A = AVLN joined
+    //   0x0B = AVLN disconnected
+    // Not publicly documented, sent once, no response required. Names are best guesses based on observed behavior:
+    //   0x08 = Firmware started (only seen once after modem power-up, always followed by 0x09)
+    //   0x0F = NEK rotation start (pair with 0x10 once per hour, timer restarts with each CM_SET_KEY
+    //   0x10 = NEK rotation done   the HomePlug AV CCo has to change the NEK at least once per hour)
     uint8_t maction;       // Action code (see above)
     uint8_t major_version; // Firmware major version
     uint8_t minor_version; // Firmware minor version
