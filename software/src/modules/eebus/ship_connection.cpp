@@ -338,7 +338,11 @@ void ShipConnection::send_string(const char *str, const size_t length, const int
     eebus.trace_strln(str, length);
 #endif
 
-    char *buffer = static_cast<char *>(ps_malloc(length + 1));
+    char *buffer = static_cast<char *>(malloc_psram(length + 1));
+    if (buffer == nullptr) {
+        eebus.trace_fmtln("send_string: PSRAM allocation failed, dropping message (len %zu)", length + 1);
+        return;
+    }
 
     buffer[0] = static_cast<char>(msg_classifier);
     memcpy(buffer + 1, str, length);
