@@ -19,8 +19,6 @@
 
 #include "esp32_brick.h"
 
-#include <Arduino.h>
-
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
@@ -42,14 +40,14 @@
 
 #include "gcc_warnings.h"
 
-#define GREEN_LED 4
-#define BLUE_LED 32
-#define BUTTON 0
+static constexpr gpio_num_t GREEN_LED = GPIO_NUM_4;
+static constexpr gpio_num_t BLUE_LED  = GPIO_NUM_32;
+static constexpr gpio_num_t BUTTON    = GPIO_NUM_0;
 
 TF_HAL hal;
-extern int8_t blue_led_pin;
-extern int8_t green_led_pin;
-extern int8_t button_pin;
+extern gpio_num_t blue_led_pin;
+extern gpio_num_t green_led_pin;
+extern gpio_num_t button_pin;
 
 #if TF_LOCAL_ENABLE != 0
 
@@ -85,21 +83,21 @@ void ESP32Brick::setup()
     tf_hal_set_local(&hal, &local);
 #endif
 
-    pinMode(GREEN_LED, OUTPUT);
-    pinMode(BLUE_LED, OUTPUT);
-    pinMode(BUTTON, INPUT);
+    configure_gpio(GREEN_LED, GPIO_MODE_OUTPUT);
+    configure_gpio(BLUE_LED, GPIO_MODE_OUTPUT);
+    configure_gpio(BUTTON, GPIO_MODE_INPUT);
 
-    digitalWrite(GREEN_LED, HIGH);
+    gpio_set_level(GREEN_LED, 1);
 
     green_led_pin = GREEN_LED;
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
     // LED is on during boot and low-active. Switch it off on first execution by setting the pin high.
-    task_scheduler.scheduleUncancelable([led_pin_high = true, led_pin = static_cast<uint8_t>(blue_led_pin)]() mutable {
+    task_scheduler.scheduleUncancelable([led_pin_high = true, led_pin = blue_led_pin]() mutable {
         const bool high = led_pin_high;
         led_pin_high = !high;
-        digitalWrite(led_pin, high);
+        gpio_set_level(led_pin, high);
     }, 998_ms);
 
 
@@ -108,10 +106,10 @@ void ESP32Brick::setup()
     task_scheduler.scheduleUncancelable([last_btn_change = 0_us]() mutable {
         static bool last_btn_value = true; // Button is low-active.
 
-        bool btn = digitalRead(BUTTON);
+        bool btn = gpio_get_level(BUTTON) != 0;
 
         if (btn != last_btn_value) {
-            digitalWrite(GREEN_LED, btn);
+            gpio_set_level(GREEN_LED, btn);
             last_btn_change = now_us();
             last_btn_value = btn;
         }

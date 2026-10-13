@@ -37,7 +37,7 @@
 
 #include "gcc_warnings.h"
 
-extern int8_t green_led_pin;
+extern gpio_num_t green_led_pin;
 
 static TaskHandle_t xTaskBuffer;
 
@@ -45,10 +45,10 @@ static TaskHandle_t xTaskBuffer;
 static void blinky(void *arg)
 {
     for (;;) {
-        digitalWrite(static_cast<uint8_t>(green_led_pin), true);
-        delay(200);
-        digitalWrite(static_cast<uint8_t>(green_led_pin), false);
-        delay(200);
+        gpio_set_level(green_led_pin, 1);
+        vTaskDelay_ms(200);
+        gpio_set_level(green_led_pin, 0);
+        vTaskDelay_ms(200);
     }
 }
 
@@ -82,7 +82,7 @@ void System::factory_reset(bool restart_esp)
 
     logger.printfln("Starting factory reset");
 
-    if (green_led_pin >= 0)
+    if (green_led_pin != GPIO_NUM_NC)
         xTaskCreate(blinky,
             "fctyrst_blink",
             2048,

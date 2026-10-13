@@ -69,9 +69,9 @@ static bool is_module_loop_overridden(const IModule *imodule) {
 extern TF_HAL hal;
 
 // initialized by board module
-int8_t blue_led_pin = -1;
-int8_t green_led_pin = -1;
-int8_t button_pin = -1;
+gpio_num_t blue_led_pin  = GPIO_NUM_NC;
+gpio_num_t green_led_pin = GPIO_NUM_NC;
+gpio_num_t button_pin    = GPIO_NUM_NC;
 
 ConfigRoot modules;
 

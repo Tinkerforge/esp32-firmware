@@ -25,9 +25,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "bindings/hal_common.h"
+#include "tools.h"
 
 extern TF_HAL hal;
-extern int8_t green_led_pin;
+extern gpio_num_t green_led_pin;
 static TaskHandle_t xTaskBuffer;
 
 // setting PWM properties
@@ -38,10 +39,10 @@ const int resolution = 8;
 static void blinky(void *arg)
 {
     for (;;) {
-        digitalWrite(green_led_pin, true);
-        delay(200);
-        digitalWrite(green_led_pin, false);
-        delay(200);
+        gpio_set_level(green_led_pin, 1);
+        vTaskDelay_ms(200);
+        gpio_set_level(green_led_pin, 0);
+        vTaskDelay_ms(200);
     }
 }
 
@@ -63,7 +64,7 @@ void HiddenProxy::start_proxy()
         return;
     blinky_running = true;
 
-    if (green_led_pin >= 0)
+    if (green_led_pin != GPIO_NUM_NC)
         xTaskCreate(blinky,
             "proxy_blink",
             2048,
@@ -93,7 +94,7 @@ void HiddenProxy::stop_proxy()
         return;
     blinky_running = false;
 
-    if (green_led_pin >= 0)
+    if (green_led_pin != GPIO_NUM_NC)
         vTaskDelete(xTaskBuffer);
 
     auto detach_net = [this]() {

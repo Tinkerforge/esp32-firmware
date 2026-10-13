@@ -28,6 +28,7 @@
 #include <functional>
 #include <memory> // for std::unique_ptr
 #include <esp_log.h>
+#include <driver/gpio.h>
 #include <driver/i2c.h>
 #include <TFTools/Micros.h>
 #include <TFTools/Option.h>
@@ -52,8 +53,10 @@ inline bool running_in_main_task()
 
 void ensure_running_in_main_task(std::function<void(void)> &&fn);
 
-void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write);
-void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
+void configure_gpio(gpio_num_t pin, gpio_mode_t mode);
+
+void led_blink(gpio_num_t led_pin, int interval, int blinks_per_interval, int off_time_ms, std::function<void(gpio_num_t, uint32_t)> led_write);
+void led_blink(gpio_num_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum(const void *data, size_t len);
 

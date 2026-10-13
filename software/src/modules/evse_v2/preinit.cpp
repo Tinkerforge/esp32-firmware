@@ -35,8 +35,8 @@ static constexpr micros_t BUTTON_MAX_PRESS_THRES = 30_s;
 
 extern TF_HAL hal;
 
-extern int8_t blue_led_pin;
-extern int8_t green_led_pin;
+extern gpio_num_t blue_led_pin;
+extern gpio_num_t green_led_pin;
 
 void evse_v2_button_recovery_handler()
 {

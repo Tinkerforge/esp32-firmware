@@ -137,14 +137,30 @@ void set_main_task_handle()
     mainTaskHandle = xTaskGetCurrentTaskHandle();
 }
 
-void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms)
+void configure_gpio(gpio_num_t pin, gpio_mode_t mode)
 {
-    led_blink(led_pin, interval_ms, blinks_per_interval, off_time_ms, digitalWrite);
+    const gpio_config_t conf = {
+        .pin_bit_mask = 1ULL << pin,
+        .mode         = mode,
+        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_DISABLE,
+    };
+
+    esp_err_t err = gpio_config(&conf);
+    if (err != ESP_OK) {
+        logger.printfln("Configuring GPIO %i failed: %s (0x%lX)", pin, esp_err_to_name(err), static_cast<uint32_t>(err));
+    }
 }
 
-void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write)
+void led_blink(gpio_num_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms)
 {
-    if (led_pin < 0)
+    led_blink(led_pin, interval_ms, blinks_per_interval, off_time_ms, gpio_set_level);
+}
+
+void led_blink(gpio_num_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms, std::function<void(gpio_num_t, uint32_t)> led_write)
+{
+    if (led_pin == GPIO_NUM_NC)
         return;
 
     int t_in_second = now_us().to<millis_t>().as<int64_t>() % interval_ms;
