@@ -42,6 +42,8 @@
 
 #endif
 
+#include "gcc_warnings.h"
+
 #define GREEN_LED 2
 #define BLUE_LED_WARP_ESP32_ETHERNET_BRICK 2
 #define BLUE_LED_ESP32_ETHERNET_BRICK 15
@@ -69,7 +71,7 @@ static void check_for_factory_reset()
 {
 #if (OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()) && MODULE_SYSTEM_AVAILABLE()
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
-    digitalWrite(green_led_pin, false);
+    digitalWrite(static_cast<uint8_t>(green_led_pin), false);
 
     // Check if ethernet clock seems to be enabled.
     // If it's on, a low pin level can be seen, usually already on the first or second poll.
@@ -95,7 +97,7 @@ static void check_for_factory_reset()
         // Flash LED for 8 seconds while waiting for button press.
         bool button_pressed = false;
         for (uint32_t i = 0; i < (WEM_FACTORY_RESET_WAIT_TIME*10); i++) {
-            digitalWrite(blue_led_pin, i % 4 == 0 ? false : true);
+            digitalWrite(static_cast<uint8_t>(blue_led_pin), i % 4 == 0 ? false : true);
             delay(100); // 8 * 10 * 100ms = 8s
             if (!digitalRead(BUTTON)) {
                 button_pressed = true;
@@ -105,7 +107,7 @@ static void check_for_factory_reset()
         // Blink LED quickly while the button has to stay pressed for almost 8 seconds.
         if (button_pressed) {
             for (uint32_t i = 0; i < 100; i++) {
-                digitalWrite(blue_led_pin, i % 2);
+                digitalWrite(static_cast<uint8_t>(blue_led_pin), i % 2);
                 delay(75); // 100 * 75ms = 7.5s
                 if (digitalRead(BUTTON)) {
                     button_pressed = false;
@@ -115,7 +117,7 @@ static void check_for_factory_reset()
             // If the button is still pressed, perform factory reset.
             if (button_pressed) {
                 // Perform factory reset, switch on blue LED to show success.
-                digitalWrite(blue_led_pin, false);
+                digitalWrite(static_cast<uint8_t>(blue_led_pin), false);
                 system_.factory_reset();
             } else {
                 // Factory reset aborted, switch off blue LED.
@@ -123,7 +125,7 @@ static void check_for_factory_reset()
             }
         }
     }
-    digitalWrite(blue_led_pin, blue_led_off);
+    digitalWrite(static_cast<uint8_t>(blue_led_pin), blue_led_off);
 #endif
 }
 
@@ -151,7 +153,7 @@ void ESP32EthernetBrick::pre_init()
 {
     // Initialize buttons
     button_pin = BUTTON;
-    pinMode(button_pin, INPUT);
+    pinMode(static_cast<uint8_t>(button_pin), INPUT);
 
     // Initialize LEDs
 #if MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
@@ -166,10 +168,10 @@ void ESP32EthernetBrick::pre_init()
         blue_led_pin = BLUE_LED_ESP32_ETHERNET_BRICK;
 
         green_led_pin = GREEN_LED;
-        pinMode(green_led_pin, OUTPUT);
+        pinMode(static_cast<uint8_t>(green_led_pin), OUTPUT);
 #endif
 
-    pinMode(blue_led_pin, OUTPUT);
+    pinMode(static_cast<uint8_t>(blue_led_pin), OUTPUT);
 }
 
 void ESP32EthernetBrick::setup()

@@ -40,6 +40,8 @@
 
 #endif
 
+#include "gcc_warnings.h"
+
 #define GREEN_LED 4
 #define BLUE_LED 32
 #define BUTTON 0
