@@ -25,6 +25,8 @@
 #include "generated/module_dependencies.h"
 #include "generated/p14a_enwg_source.enum.h"
 
+#include "gcc_warnings.h"
+
 void P14aEnwg::pre_setup()
 {
 #if MODULE_EM_V1_AVAILABLE()
@@ -171,7 +173,7 @@ void P14aEnwg::check_evse_shutdown_input()
         return;
     }
 
-    uint8_t shutdown_input = gpio_cfg->get("shutdown_input")->asUint();
+    uint8_t shutdown_input = gpio_cfg->get("shutdown_input")->asUint8();
 
     // Old values 3 and 4 are the §14a 4200W limit options:
     // 3 = limit to 4200W on open, 4 = limit to 4200W on close.
@@ -195,10 +197,10 @@ void P14aEnwg::check_evse_shutdown_input()
     }
 
     // Reset the EVSE shutdown input to "not configured" since p14a_enwg now handles it.
-    uint8_t input_val  = gpio_cfg->get("input")->asUint();
-    uint8_t output_val = gpio_cfg->get("output")->asUint();
+    uint8_t input_val  = gpio_cfg->get("input")->asUint8();
+    uint8_t output_val = gpio_cfg->get("output")->asUint8();
     api.callCommand("evse/gpio_configuration_update", Config::ConfUpdateObject{{
-        {"shutdown_input", (uint8_t)0},
+        {"shutdown_input", static_cast<uint8_t>(0)},
         {"input",          input_val},
         {"output",         output_val}
     }});
@@ -206,6 +208,9 @@ void P14aEnwg::check_evse_shutdown_input()
 #endif
 }
 
+// Without EM support this function only returns false.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
 bool P14aEnwg::get_em_input()
 {
 #if MODULE_EM_COMMON_AVAILABLE()
@@ -221,6 +226,7 @@ bool P14aEnwg::get_em_input()
 #endif
     return false;
 }
+#pragma GCC diagnostic pop
 
 void P14aEnwg::check_inputs()
 {
@@ -297,6 +303,9 @@ void P14aEnwg::update()
         case P14aEnwgSource::API:
             active = control.get("active")->asBool();
             limit_w = control.get("limit_w")->asUint();
+            break;
+
+        default:
             break;
     }
 
