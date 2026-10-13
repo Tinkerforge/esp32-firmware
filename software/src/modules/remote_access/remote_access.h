@@ -129,6 +129,8 @@ private:
     bool management_auth_failed = false;
     std::atomic<bool> charge_log_sending = false;
     micros_t last_mgmt_alive = 0_us;
+    uint8_t connected_interfaces = 0;
+    uint8_t route_interface = 0;
     uint64_t task_id = 0;
     uint64_t management_task_id = 0;
     uint64_t timeout_task_id = 0;

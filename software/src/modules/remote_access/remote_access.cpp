@@ -1046,10 +1046,56 @@ void RemoteAccess::register_urls()
     }
 }
 
+static constexpr uint8_t UPLINK_INTERFACES = Network::INTERFACE_ETHERNET | Network::INTERFACE_WIFI_STA;
+
+static const char *interface_name(uint8_t interface)
+{
+    switch (interface) {
+        case 0:                           return "none";
+        case Network::INTERFACE_ETHERNET: return "Ethernet";
+        case Network::INTERFACE_WIFI_STA: return "WiFi";
+        case Network::INTERFACE_WIFI_AP:  return "WiFi AP";
+        default:                          return "other";
+    }
+}
+
 void RemoteAccess::register_events()
 {
-    network.on_network_connected([this](const Config */*connected*/) {
-        this->apply_config();
+    // my.warp-charger.com identifies a device's tunnel by its source address and doesn't support WireGuard roaming.
+    // Reconnect only if the interface used to reach it changed or reconnected.
+    // Other interfaces (e.g. a client joining the WiFi AP) must not tear down the connection.
+    network.on_connected_interfaces_changed([this](const Config *interfaces_cfg) {
+        const uint8_t interfaces = interfaces_cfg->asUint8();
+        const uint8_t added = interfaces & ~this->connected_interfaces;
+        this->connected_interfaces = interfaces;
+
+        if (!config.get("enable")->asBool()) {
+            return EventResult::OK;
+        }
+
+        const bool running = this->task_id != 0;
+        const bool uplink  = (interfaces & UPLINK_INTERFACES) != 0;
+
+        // Start if an uplink became available, stop if none is left.
+        if (running != uplink) {
+            this->apply_config();
+            return EventResult::OK;
+        }
+
+        if (!running) {
+            return EventResult::OK;
+        }
+
+        const uint8_t new_route_interface = network.get_default_interface();
+
+        if (new_route_interface != this->route_interface) {
+            logger.printfln("Default interface changed from %s to %s, reconnecting", interface_name(this->route_interface), interface_name(new_route_interface));
+            this->apply_config();
+        } else if ((added & new_route_interface) != 0) {
+            logger.printfln("%s reconnected, reconnecting", interface_name(new_route_interface));
+            this->apply_config();
+        }
+
         return EventResult::OK;
     });
 }
@@ -1072,6 +1118,8 @@ void RemoteAccess::start_timeout_task()
 
 void RemoteAccess::apply_config()
 {
+    this->route_interface = network.get_default_interface();
+
     // Cancel periodic resolve task if running.
     if (this->task_id) {
         task_scheduler.cancel(this->task_id);
@@ -1100,7 +1148,7 @@ void RemoteAccess::apply_config()
     this->management_request_failed = false;
     this->management_request_done = false;
 
-    if (config.get("enable")->asBool() && network.is_connected()) {
+    if (config.get("enable")->asBool() && (network.get_connected_interfaces() & UPLINK_INTERFACES) != 0) {
         // Start periodic resolve_management task.
         const millis_t random_delay = millis_t{esp_random() % 4096};
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
