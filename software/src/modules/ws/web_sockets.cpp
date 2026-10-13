@@ -447,46 +447,76 @@ void WebSockets::pingActiveClients()
 // Called by HTTP thread.
 void WebSockets::checkActiveClients()
 {
-    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] == -1)
-            continue;
+    int dead_fds[MAX_WEB_SOCKET_CLIENTS];
+    size_t dead_count = 0;
 
-        if (deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
-            this->keepAliveCloseDead_HTTPThread(keep_alive_fds[i]);
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            if (keep_alive_fds[i] == -1) {
+                continue;
+            }
+
+            if (deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
+                dead_fds[dead_count++] = keep_alive_fds[i];
+                keep_alive_fds[i] = -1;
+                keep_alive_last_pong[i] = 0_us;
+            }
         }
+    }
+
+    // Call close outside of lock to prevent up to 1s blocking because of SO_LINGER.
+    // Outside of the HTTP-Thread the fds are only read, which is OK while the dead fd closes.
+    for (size_t i = 0; i < dead_count; ++i) {
+        this->keepAliveCloseDead_HTTPThread(dead_fds[i]);
     }
 }
 
 // Called by HTTP thread.
 void WebSockets::closeLRUClient_HTTPThread()
 {
-    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] == -1)
-            return; //Found free slot
+    int fd_to_close = -1;
 
-        const httpd_ws_client_info_t type = httpd_ws_get_fd_info(httpd, keep_alive_fds[i]);
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        int idx_to_close = -1;
 
-        if  (type != HTTPD_WS_CLIENT_WEBSOCKET) {
-            // Found non-websocket fd.
-            // Probably was a websocket, was then closed
-            // and re-opened as non-websocket-fd.
-            logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i reused for HTTP, type %u", keep_alive_fds[i], static_cast<unsigned>(type));
-            this->keepAliveCloseDead_HTTPThread(keep_alive_fds[i]);
-            return;
+        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            if (keep_alive_fds[i] == -1) {
+                return; //Found free slot
+            }
+
+            const httpd_ws_client_info_t type = httpd_ws_get_fd_info(httpd, keep_alive_fds[i]);
+
+            if  (type != HTTPD_WS_CLIENT_WEBSOCKET) {
+                // Found non-websocket fd.
+                // Probably was a websocket, was then closed
+                // and re-opened as non-websocket-fd.
+                logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i reused for HTTP, type %u", keep_alive_fds[i], static_cast<unsigned>(type));
+                idx_to_close = i;
+                break;
+            }
         }
+
+        if (idx_to_close == -1) {
+            idx_to_close = 0;
+            for (int i = 1; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+                if (keep_alive_last_pong[i] < keep_alive_last_pong[idx_to_close]) {
+                    idx_to_close = i;
+                }
+            }
+
+            logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i", keep_alive_fds[idx_to_close]);
+        }
+
+        fd_to_close = keep_alive_fds[idx_to_close];
+        keep_alive_fds[idx_to_close] = -1;
+        keep_alive_last_pong[idx_to_close] = 0_us;
     }
 
-    auto min_fd_idx = 0;
-    for (int i = 1; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_last_pong[i] < keep_alive_last_pong[min_fd_idx]) {
-            min_fd_idx = i;
-        }
-    }
-
-    logger.tracefln(server.get_trace_buffer_index(), "closeLRUC fd %i", keep_alive_fds[min_fd_idx]);
-    this->keepAliveCloseDead_HTTPThread(keep_alive_fds[min_fd_idx]);
+    // Call close outside of lock to prevent up to 1s blocking because of SO_LINGER.
+    // Outside of the HTTP-Thread the fds are only read, which is OK while the dead fd closes.
+    this->keepAliveCloseDead_HTTPThread(fd_to_close);
 }
 
 // Called by HTTP thread.
