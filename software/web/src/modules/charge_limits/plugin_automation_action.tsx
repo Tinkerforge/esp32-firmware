@@ -28,8 +28,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import { Collapse } from "react-bootstrap";
-import { MeterLocation } from "../meters/generated/meter_location.enum";
-import { MeterValueID } from "../meters/generated/meter_value_id";
+import { get_ev_soc_meter } from "./main";
 import * as options from "../../options";
 
 export type ChargeLimitsAutomationAction = [
@@ -94,7 +93,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
         ["10", __("charge_limits.automation.h12")],
     ];
 
-    let ev_has_soc = false;
+    const ev_has_soc = !!get_ev_soc_meter();
     let soc_items: [string, string][] = [];
     if (options.PRODUCT_ID_IS_WARP4) {
         soc_items = [
@@ -102,21 +101,6 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
             ["0",  __("charge_limits.automation.unlimited")],
             ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),
         ];
-
-        for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
-            try {
-                const meter_config = API.get_unchecked(`meters/${i}/config`);
-                if (meter_config[1]?.location !== MeterLocation.Vehicle)
-                    continue;
-                const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
-                if (Array.isArray(value_ids) && value_ids.indexOf(MeterValueID.StateOfCharge) >= 0) {
-                    ev_has_soc = true;
-                    break;
-                }
-            } catch {
-                continue;
-            }
-        }
     }
 
     const meter_entry = API.hasFeature("meter") ? [

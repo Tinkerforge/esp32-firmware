@@ -30,7 +30,43 @@ import { ItemModal } from "ts/components/item_modal";
 import { useState } from "preact/hooks";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { MeterValueID } from "../meters/generated/meter_value_id";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import * as options from "../../options";
+
+// Returns the slot and SoC value index of the first vehicle meter that can provide a SoC, or null.
+export function get_ev_soc_meter(): {slot: number, soc_idx: number} {
+    if (!options.PRODUCT_ID_IS_WARP4) {
+        return null;
+    }
+
+    for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
+        try {
+            const meter_config = API.get_unchecked(`meters/${i}/config`);
+            if (meter_config[1]?.location !== MeterLocation.Vehicle) {
+                continue;
+            }
+
+            // The ISO 15118 meter can only provide a SoC if the charger has a built-in energy meter (i.e. not a WARP4 Smart).
+            if (meter_config[0] === MeterClassID.ISO15118 && !API.hasFeature("meter")) {
+                continue;
+            }
+
+            const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
+            if (!Array.isArray(value_ids)) {
+                continue;
+            }
+
+            const soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge);
+            if (soc_idx >= 0) {
+                return {slot: i, soc_idx: soc_idx};
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    return null;
+}
 
 export function CustomLimitModal(props: {show: boolean, onHide: () => void, onSubmit: (custom_limit: number) => void}) {
     const [customLimit, setCustomLimit] = useState(0);
@@ -225,25 +261,12 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
         let soc_row = <></>;
 
         if (options.PRODUCT_ID_IS_WARP4) {
-            let ev_soc = -1;
             // TODO: cache this!
-            for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
-                try {
-                    const meter_config = API.get_unchecked(`meters/${i}/config`);
-                    if (meter_config[1]?.location !== MeterLocation.Vehicle)
-                        continue;
-                    const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
-                    let ev_soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge)
-                    if (ev_soc_idx >= 0) {
-                        ev_soc = API.get_unchecked(`meters/${i}/values`)[ev_soc_idx];
-                        break;
-                    }
-                } catch {
-                    continue;
-                }
-            }
+            const ev_soc_meter = get_ev_soc_meter();
 
-            if (ev_soc != -1) {
+            if (ev_soc_meter) {
+                const ev_soc = API.get_unchecked(`meters/${ev_soc_meter.slot}/values`)[ev_soc_meter.soc_idx];
+
                 let soc_items: [string, string][] = [
                     ["0", __("charge_limits.content.unlimited")],
                     ...Array.from({length: 19}, (_, i) => [(10 + i * 5).toString(), (10 + i * 5) + " %"] as [string, string]),

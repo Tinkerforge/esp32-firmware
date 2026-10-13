@@ -30,10 +30,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { Switch } from "../../ts/components/switch";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
-import { CustomLimitModal } from "modules/charge_limits/main";
-import { MeterLocation } from "../meters/generated/meter_location.enum";
-import { MeterValueID } from "../meters/generated/meter_value_id";
-import * as options from "../../options";
+import { CustomLimitModal, get_ev_soc_meter } from "modules/charge_limits/main";
 
 export function EVSESettingsNavbar() {
     return <NavbarItem name="evse_settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
@@ -283,26 +280,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                     {has_meter ? energy_settings : <></>}
 
                     {(() => {
-                        if (!options.PRODUCT_ID_IS_WARP4)
-                            return <></>;
-
-                        let ev_has_soc = false;
-                        for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
-                            try {
-                                const meter_config = API.get_unchecked(`meters/${i}/config`);
-                                if (meter_config[1]?.location !== MeterLocation.Vehicle)
-                                    continue;
-                                const value_ids = API.get_unchecked(`meters/${i}/value_ids`);
-                                if (Array.isArray(value_ids) && value_ids.indexOf(MeterValueID.StateOfCharge) >= 0) {
-                                    ev_has_soc = true;
-                                    break;
-                                }
-                            } catch {
-                                continue;
-                            }
-                        }
-
-                        if (!ev_has_soc)
+                        if (!get_ev_soc_meter())
                             return <></>;
 
                         return <FormRow label={__("charge_limits.content.soc_target")} label_muted={__("charge_limits.content.soc_target_muted")}>
