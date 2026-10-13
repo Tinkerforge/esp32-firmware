@@ -35,6 +35,8 @@
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
 
+#include "gcc_warnings.h"
+
 static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
 
@@ -56,12 +58,21 @@ static void static_flash_data_done_callback(struct TF_WARPFrontPanel *warp_front
     fp->flash_data_done_callback();
 }
 
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                         warp_front_panel_bricklet_firmware_bin_length,
                                         "front_panel",
                                         OPTIONS_PRODUCT_NAME() " Front Panel",
                                         "Front Panel",
                                         [this](){this->setup_bricklet();}) {}
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
 void FrontPanel::pre_setup()
 {
@@ -255,7 +266,7 @@ void FrontPanel::register_urls()
     }, true);
 
     api.addCommand("front_panel/blank", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
-        for (size_t i = 0; i < 6; i++) {
+        for (uint8_t i = 0; i < 6; i++) {
             update_front_page_empty_tile(i, TileType::Empty, 0);
         }
     }, true);
@@ -272,7 +283,7 @@ void FrontPanel::pre_reboot()
     }
 
     size_t tile_count = config.get("tiles")->count();
-    for (size_t i = 0; i < tile_count; ++i) {
+    for (uint8_t i = 0; i < tile_count; ++i) {
         if (i == 1) {
             io_scheduler.hal_call([&]() {
                 return tf_warp_front_panel_set_display_front_page_icon(
@@ -296,7 +307,7 @@ void FrontPanel::pre_reboot()
         return tf_warp_front_panel_set_status_bar(
             &device,
             static_cast<std::underlying_type<EthernetState>::type>(EthernetState::NotConfigured),
-            -127 |  (static_cast<std::underlying_type<WifiState>::type>(WifiState::NotConfigured) << 16),
+            static_cast<uint32_t>(static_cast<std::underlying_type<WifiState>::type>(WifiState::NotConfigured) << 16), // RSSI -127 + 127 = 0
             0, 0, 0
         );
     });
@@ -387,16 +398,16 @@ void FrontPanel::update_status_bar()
     if (rtc.clock_synced(&tv_now)) {
         struct tm tm;
         localtime_r(&tv_now.tv_sec, &tm);
-        hours   = tm.tm_hour;
-        minutes = tm.tm_min;
-        seconds = tm.tm_sec;
+        hours   = static_cast<uint8_t>(tm.tm_hour);
+        minutes = static_cast<uint8_t>(tm.tm_min);
+        seconds = static_cast<uint8_t>(tm.tm_sec);
     }
 
     int result = io_scheduler.hal_call([&]() {
         return tf_warp_front_panel_set_status_bar(
             &device,
             static_cast<std::underlying_type<EthernetState>::type>(ethernet_state),
-            (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16),
+            static_cast<uint32_t>((wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16)),
             hours,
             minutes,
             seconds
@@ -460,7 +471,7 @@ int FrontPanel::update_front_page_charger(const uint8_t index, const TileType ty
         const auto *charger = charge_manager.get_charger_state(param);
 
         if (charger->power_total_count > 0) {
-            const int32_t watt = charger->power_total_sum / charger->power_total_count;
+            const int32_t watt = static_cast<int32_t>(charger->power_total_sum / static_cast<float>(charger->power_total_count));
             str2 = watt_value_to_display_string(watt);
         }
     }
@@ -487,7 +498,7 @@ int FrontPanel::update_front_page_charge_management(const uint8_t index, const T
         str1 = "WB " + String(charger_count) + "x";
 
         // ma*0.23 = W
-        const int32_t watt = charge_manager.get_allocated_currents()->pv*0.23;
+        const int32_t watt = static_cast<int32_t>(charge_manager.get_allocated_currents()->pv*0.23);
         str2 = watt_value_to_display_string(watt);
     }
 #endif
@@ -513,17 +524,16 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
     float watt = 0;
     MeterValueAvailability meter_availability = meters.get_power(param, &watt);
     if (meter_availability == MeterValueAvailability::Fresh) {
+        // Different str1 here if no energy is flowing?
         if (watt > 0) {
             icon_index = SPRITE_ICON_ENERGY_IMPORT;
-        } else if (watt == 0) {
-            // Different str1 here if no energy is flowing?
         } else if (watt < 0) {
             icon_index = SPRITE_ICON_ENERGY_EXPORT;
             watt = -watt;
             str1 = get_i18n_string("FeedIn", "Einsp.");
         }
 
-        str2 = watt_value_to_display_string(watt);
+        str2 = watt_value_to_display_string(static_cast<int32_t>(watt));
     }
 #endif
 
@@ -557,6 +567,8 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
         case DAPType::AveragePriveTomorrow:
             str1 = get_i18n_string("Tmrw", "Morgen");
             price = day_ahead_prices.get_average_price_tomorrow();
+            break;
+        default:
             break;
     }
 
@@ -669,6 +681,8 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
                 str2 = get_i18n_string("On", "Ein");
                 icon_index = SPRITE_ICON_HEATING_HOT;
                 break;
+            default:
+                break;
         }
     }
 #endif
@@ -690,7 +704,7 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
 void FrontPanel::update_front_page()
 {
     auto tiles = config.get("tiles");
-    for (size_t i = 0; i < tiles->count(); ++i) {
+    for (uint8_t i = 0; i < tiles->count(); ++i) {
         auto tile = tiles->get(i);
         TileType type = tile->getTag<TileType>();
 
@@ -701,13 +715,13 @@ void FrontPanel::update_front_page()
                 result = update_front_page_empty_tile(i, type, 0);
                 break;
             case TileType::Charger:
-                result = update_front_page_charger(i, type, tile->get()->asUint());
+                result = update_front_page_charger(i, type, static_cast<uint8_t>(tile->get()->asUint()));
                 break;
             case TileType::ChargeManagement:
                 result = update_front_page_charge_management(i, type, 0);
                 break;
             case TileType::Meter:
-                result = update_front_page_meter(i, type, tile->get()->asUint());
+                result = update_front_page_meter(i, type, static_cast<uint8_t>(tile->get()->asUint()));
                 break;
             case TileType::DayAheadPrices:
                 result = update_front_page_day_ahead_prices(i, type, tile->get()->asEnum<DAPType>());
@@ -748,7 +762,7 @@ void FrontPanel::update_led()
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
-        const float current = charge_manager.get_allocated_currents()->pv; // mA
+        const int current = charge_manager.get_allocated_currents()->pv; // mA
         if (current > 100) {
             set_led(LEDPattern::Breathing, LEDColor::Green);
             return;
@@ -777,10 +791,10 @@ String FrontPanel::watt_value_to_display_string(const int32_t w)
     if (w < 10000) {
         return String(w) + " W";
     } else if (w < (1000*1000)) {
-        uint32_t kw = w / 1000;
+        int32_t kw = w / 1000;
         return String(kw) + " kW";
     } else if (w < (1000*1000*1000)) {
-        uint32_t mw = w / (1000*1000);
+        int32_t mw = w / (1000*1000);
         return String(mw) + " MW";
     } else {
         return String(">1GW");
