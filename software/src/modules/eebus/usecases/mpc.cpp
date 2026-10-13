@@ -73,8 +73,10 @@ MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandle
                     case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
                         response["electricalConnectionParameterDescriptionListData"] = EVSEEntity::get_electrical_connection_parameter_description_list_data();
                         return {true, true, CmdClassifierType::reply};
-                    default:;
+                    default:
+                        break;
                 }
+                break;
             case FeatureTypeEnumType::Measurement:
                 switch (data->last_cmd) {
                     case SpineDataTypeHandler::Function::measurementDescriptionListData:
@@ -86,9 +88,12 @@ MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandle
                     case SpineDataTypeHandler::Function::measurementListData:
                         response["measurementListData"] = EVSEEntity::get_measurement_list_data();
                         return {true, true, CmdClassifierType::reply};
-                    default:;
+                    default:
+                        break;
                 }
-            default:;
+                break;
+            default:
+                break;
         }
     }
     return {false};

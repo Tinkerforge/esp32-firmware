@@ -29,6 +29,8 @@
 #include "opev.h"
 #include "usecase_helpers.h"
 
+#include <cmath>
+
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -325,7 +327,7 @@ MessageReturn OpevUsecase::write_load_control_limit_list_data(HeaderType &header
     bool limit_enabled = false;
 
     for (const auto &limit_data : data->loadControlLimitData.get()) {
-        int limit_value_milliamps = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
+        int limit_value_milliamps = static_cast<int>(std::lround(EEBUS_USECASE_HELPERS::scaled_numbertype_to_float(limit_data.value.get()) * 1000.0f));
 
         switch (limit_data.limitId.get()) {
             case id_x_1:

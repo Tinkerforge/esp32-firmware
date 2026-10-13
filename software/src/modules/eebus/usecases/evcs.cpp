@@ -235,6 +235,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                     }
                     default:;
                 }
+                break;
             }
             default:;
         }

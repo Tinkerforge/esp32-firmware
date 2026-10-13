@@ -200,7 +200,7 @@ static void update_limit()
             return;
         }
 
-        limit_mA = limit_phases[0] * 1000 / 230 / static_cast<int>(phases);
+        limit_mA = limit_phases[0];
     }
 #endif // EEBUS_ENABLE_OPEV_USECASE
     // Clamp to safe operating range (6A - 32A)
