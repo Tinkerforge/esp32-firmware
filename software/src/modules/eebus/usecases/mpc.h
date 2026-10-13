@@ -213,7 +213,7 @@ public:
     static constexpr uint8_t id_ec_1 = EVSEEntity::lpcElectricalConnectionIdOffset + 1;         // Linked to LPC usecase electrical connection description
     static constexpr uint8_t id_m_1 = EVSEEntity::lpcMeasurementIdOffset + 1;                   // Linked to LPC usecase measurement description
     static constexpr uint8_t id_p_1 = EVSEEntity::lpcElectricalConnectionParameterIdOffset + 1; // Linked to LPC usecase electrical connection parameter description
-#elifdef EEBUS_ENABLE_LPP_USECASE
+#elif defined(EEBUS_ENABLE_LPP_USECASE)
     static constexpr uint8_t id_ec_1 = EVSEEntity::lppElectricalConnectionIdOffset + 1;         // Linked to LPP usecase electrical connection description
     static constexpr uint8_t id_m_1 = EVSEEntity::lppMeasurementIdOffset + 1;                   // Linked to LPP usecase measurement description
     static constexpr uint8_t id_p_1 = EVSEEntity::lppElectricalConnectionParameterIdOffset + 1; // Linked to LPP usecase electrical connection parameter description

@@ -88,7 +88,7 @@ NodeManagementDetailedDiscoveryEntityInformationType LoadPowerLimitUsecase::get_
 {
 #ifdef EEBUS_MODE_EVSE
     return build_entity_info(EntityTypeEnumType::EVSE, "Controllable System");
-#elifdef EEBUS_MODE_EM
+#elif defined(EEBUS_MODE_EM)
     return build_entity_info(EntityTypeEnumType::CEM, "Controllable System");
 #else
     return {};

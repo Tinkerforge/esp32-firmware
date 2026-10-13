@@ -257,7 +257,7 @@ public:
     /// ElectricalConnection IDs (linked to LPC/LPP if available)
 #ifdef EEBUS_ENABLE_LPC_USECASE
     static constexpr uint8_t id_ec_1 = LpcUsecase::id_ec_1;
-#elifdef EEBUS_ENABLE_LPP_USECASE
+#elif defined(EEBUS_ENABLE_LPP_USECASE)
     static constexpr uint8_t id_ec_1 = LppUsecase::id_ec_1;
 #else
     static constexpr uint8_t id_ec_1 = EVSEEntity::mgcpElectricalConnectionIdOffset + 1;
