@@ -24,6 +24,8 @@
 #include "eebus.h"
 #include "generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+
 void ShipNode::as_json(StringBuilder *sb)
 {
     size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length() + txt_brand.length() + txt_model.length() + txt_type.length();
@@ -198,8 +200,8 @@ void ShipPeerHandler::initialize_from_config()
         size_t start = 0;
         int end = ip_list.indexOf(';');
         while (end != ip_list.lastIndexOf(';')) {
-            node->ip_address.push_back(ip_list.substring(start, end));
-            start = end + 1;
+            node->ip_address.push_back(ip_list.substring(start, static_cast<unsigned int>(end)));
+            start = static_cast<size_t>(end) + 1;
             end = ip_list.indexOf(';', start);
         }
         if (start < ip_list.length()) {

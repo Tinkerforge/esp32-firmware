@@ -29,6 +29,10 @@
 #include "event_log_prefix.h"
 #include "usecase_helpers.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // EVCC - EV Commissioning and Configuration Use Case
 // Spec: EEBus_UC_TS_EVCommissioningAndConfiguration_V1.0.1.pdf
@@ -289,9 +293,9 @@ void EvccUsecase::update_api() const
     api_entry->get("communication_standard")->updateString(communication_standard);
     api_entry->get("asymmetric_charging_supported")->updateBool(asymmetric_supported);
     api_entry->get("mac_address")->updateString(mac_address);
-    api_entry->get("minimum_power")->updateUint(min_power_draw);
-    api_entry->get("maximum_power")->updateUint(max_power_draw);
-    api_entry->get("standby_power")->updateUint(standby_power);
+    api_entry->get("minimum_power")->updateUint(static_cast<uint32_t>(min_power_draw));
+    api_entry->get("maximum_power")->updateUint(static_cast<uint32_t>(max_power_draw));
+    api_entry->get("standby_power")->updateUint(static_cast<uint32_t>(standby_power));
     api_entry->get("standby_mode")->updateBool(standby_mode);
 }
 

@@ -29,6 +29,10 @@
 #include "loadcontrol.h"
 #include "usecase_helpers.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // LoadPowerLimitUsecase - Base class for LPC and LPP usecases
 // ==============================================================================
@@ -531,6 +535,9 @@ bool LoadPowerLimitUsecase::is_power_limited() const
         case LoadcontrolState::Failsafe:
             // LPC-901: The Failsafe Active Power Limit applies. It only limits if it is below the nominal maximum power.
             return !config_.limit_is_positive || failsafe_power_limit_w < nominal_max_w();
+        case LoadcontrolState::Startup:
+        case LoadcontrolState::UnlimitedControlled:
+        case LoadcontrolState::UnlimitedAutonomous:
         default:
             return false;
     }
@@ -609,20 +616,20 @@ bool LoadPowerLimitUsecase::has_multiple_energy_guards(SpineConnection *conn) co
     return conn != nullptr && conn->get_use_case_actor_entities(config_.usecase_name, "EnergyGuard").size() > 1;
 }
 
-bool LoadPowerLimitUsecase::is_energy_guard_binding_target(const FeatureAddressType &server) const
+bool LoadPowerLimitUsecase::is_energy_guard_binding_target(const FeatureAddressType &server_address) const
 {
-    if (!server.feature.has_value() || !server.entity.has_value() || server.entity.get() != entity_address) {
+    if (!server_address.feature.has_value() || !server_address.entity.has_value() || server_address.entity.get() != entity_address) {
         return false;
     }
-    if (server.device.has_value() && server.device.get() != EEBUS_USECASE_HELPERS::get_spine_device_name()) {
+    if (server_address.device.has_value() && server_address.device.get() != EEBUS_USECASE_HELPERS::get_spine_device_name()) {
         return false;
     }
-    return server.feature.get() == feature_addresses.at(FeatureTypeEnumType::LoadControl) || server.feature.get() == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration);
+    return server_address.feature.get() == feature_addresses.at(FeatureTypeEnumType::LoadControl) || server_address.feature.get() == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration);
 }
 
-bool LoadPowerLimitUsecase::validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server)
+bool LoadPowerLimitUsecase::validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server_address)
 {
-    if (!is_energy_guard_binding_target(server)) {
+    if (!is_energy_guard_binding_target(server_address)) {
         return true;
     }
     // IG-LPC 3.5: While a device is bound to LoadControl or DeviceConfiguration, no other device may bind to either.
@@ -651,9 +658,9 @@ bool LoadPowerLimitUsecase::validate_binding_request(const FeatureAddressType &c
     return true;
 }
 
-void LoadPowerLimitUsecase::inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server)
+void LoadPowerLimitUsecase::inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server_address)
 {
-    if (!is_energy_guard_binding_target(server)) {
+    if (!is_energy_guard_binding_target(server_address)) {
         return;
     }
     SpineConnection *conn = EEBusUseCases::get_spine_connection(client);
@@ -779,7 +786,7 @@ void LoadPowerLimitUsecase::unlimited_autonomous_state()
 // The power values in the API are Uint16. Saturate instead of letting larger values wrap around (e.g. 70000 W -> 4464 W).
 static uint32_t api_power_w(int power_w)
 {
-    return static_cast<uint32_t>(std::clamp(power_w, 0, static_cast<int>(UINT16_MAX)));
+    return static_cast<uint32_t>(std::clamp<int>(power_w, 0, UINT16_MAX));
 }
 
 void LoadPowerLimitUsecase::update_api() const

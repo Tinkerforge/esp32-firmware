@@ -24,6 +24,10 @@
 #include "../generated/module_dependencies.h"
 #include "event_log_prefix.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 NodeManagementEntity::NodeManagementEntity()
 {
     subscription_data.subscriptionEntry.emplace();
@@ -339,7 +343,7 @@ MessageReturn NodeManagementEntity::handle_subscription(HeaderType &header, Spin
         std::sort(to_delete_indices.rbegin(), to_delete_indices.rend()); // sort descending
         for (size_t i : to_delete_indices) {
             if (i < subscription_data.subscriptionEntry.get().size()) {
-                subscription_data.subscriptionEntry.get().erase(subscription_data.subscriptionEntry.get().begin() + i);
+                subscription_data.subscriptionEntry.get().erase(subscription_data.subscriptionEntry.get().begin() + static_cast<ptrdiff_t>(i));
             }
         }
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed Subscriptions successfully");
@@ -374,15 +378,15 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
                         return {true, true, CmdClassifierType::result};
                     }
                 }
-                binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
+                binding_entry.bindingId = static_cast<BindingIdType>(binding_management_entry_list_.bindingManagementEntryData->size());
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
                 const FeatureAddressType client = binding_entry.clientAddress.get();
-                const FeatureAddressType server = binding_entry.serverAddress.get();
+                const FeatureAddressType server_address = binding_entry.serverAddress.get();
                 // Inform the usecases after the result was sent, as they might send messages to the peer (e.g. subscriptions)
                 schedule_once_while_alive(
-                    [client, server]() {
+                    [client, server_address]() {
                         for (EebusUsecase *uc : eebus.usecases->usecase_list) {
-                            uc->inform_binding_added(client, server);
+                            uc->inform_binding_added(client, server_address);
                         }
                     },
                     0_ms);
@@ -444,7 +448,7 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
         std::sort(to_delete_indices.rbegin(), to_delete_indices.rend());
         for (size_t i : to_delete_indices) {
             if (i < binding_management_entry_list_.bindingManagementEntryData.get().size()) {
-                binding_management_entry_list_.bindingManagementEntryData.get().erase(binding_management_entry_list_.bindingManagementEntryData.get().begin() + i);
+                binding_management_entry_list_.bindingManagementEntryData.get().erase(binding_management_entry_list_.bindingManagementEntryData.get().begin() + static_cast<ptrdiff_t>(i));
             }
         }
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed bindings successfully");
@@ -552,7 +556,7 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
         }
     }
     if (error_count > 0) {
-        eebus.trace_fmtln("EEBUS: Errors while informing subscribers of %s: %d sent, %d errors", function_name, sent_count, error_count);
+        eebus.trace_fmtln("EEBUS: Errors while informing subscribers of %s: %zu sent, %zu errors", function_name, sent_count, error_count);
     }
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
     else if (sent_count > 0) {

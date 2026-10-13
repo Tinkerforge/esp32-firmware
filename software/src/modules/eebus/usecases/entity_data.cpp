@@ -21,6 +21,10 @@
 #include "../eebus.h"
 #include "../eebus_usecases.h"
 
+#include "gcc_warnings.h"
+// Many getters are trivial if the corresponding use case is disabled.
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
+
 extern EEBus eebus;
 
 // ============================================================================

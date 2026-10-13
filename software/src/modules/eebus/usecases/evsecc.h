@@ -90,7 +90,7 @@ public:
 private:
     // Server Data
     DeviceDiagnosisOperatingStateEnumType operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
-    std::string last_error_message;
+    std::string last_error_message{};
 
     void update_api() const;
 };

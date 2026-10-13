@@ -26,33 +26,35 @@
 #include "spine_connection.h"
 #include "tools.h"
 
-void ShipConnection::set_state(ShipConnectionState state)
+#include "gcc_warnings.h"
+
+void ShipConnection::set_state(ShipConnectionState new_state)
 {
     // Ignore same-state transitions, they would spam the log (especially in Done)
-    if (state == this->state) {
+    if (new_state == this->state) {
         return;
     }
     ShipConnectionState old_state = this->state;
-    eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)", get_ship_connection_state_name(old_state), static_cast<std::underlying_type<ShipConnectionState>::type>(old_state), get_ship_connection_state_name(state), static_cast<std::underlying_type<ShipConnectionState>::type>(state));
+    eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)", get_ship_connection_state_name(old_state), static_cast<std::underlying_type<ShipConnectionState>::type>(old_state), get_ship_connection_state_name(new_state), static_cast<std::underlying_type<ShipConnectionState>::type>(new_state));
     this->previous_state = old_state;
-    this->state = state;
+    this->state = new_state;
 }
 
-void ShipConnection::set_and_schedule_state(ShipConnectionState state)
+void ShipConnection::set_and_schedule_state(ShipConnectionState new_state)
 {
-    set_state(state);
+    set_state(new_state);
     schedule_state_machine_next_step();
 }
 
-void ShipConnection::set_and_schedule_state(ShipConnectionState state, millis_t delay_ms)
+void ShipConnection::set_and_schedule_state(ShipConnectionState new_state, millis_t delay_ms)
 {
     if (closing_scheduled) {
         return;
     }
     reschedule_task(
         state_machine_task,
-        [this, state]() {
-            this->set_and_schedule_state(state);
+        [this, new_state]() {
+            this->set_and_schedule_state(new_state);
         },
         delay_ms);
 }
@@ -237,6 +239,8 @@ void ShipConnection::state_cme_init_start()
                 SHIP_CONNECTION_CMI_TIMEOUT);
             break;
         }
+        default:
+            break;
     }
 }
 
@@ -331,7 +335,8 @@ void ShipConnection::state_sme_hello()
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
         }
-        case ConnectionHelloPhase::Type::Unknown: {
+        case ConnectionHelloPhase::Type::Unknown:
+        default: {
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
         }
@@ -459,7 +464,8 @@ void ShipConnection::state_sme_hello_ready_listen()
             break;
         }
         case ConnectionHelloPhase::Type::Aborted:
-        case ConnectionHelloPhase::Type::Unknown: {
+        case ConnectionHelloPhase::Type::Unknown:
+        default: {
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
         }
@@ -533,7 +539,8 @@ void ShipConnection::state_sme_hello_pending_listen()
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
         }
-        case ConnectionHelloPhase::Type::Unknown: {
+        case ConnectionHelloPhase::Type::Unknown:
+        default: {
             // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 6.
             set_and_schedule_state(ShipConnectionState::SmeHelloAbort);
             break;
@@ -560,7 +567,7 @@ void ShipConnection::state_sme_hello_pending_timeout()
                 hello_timer_expiry = 3;
                 set_and_schedule_state(ShipConnectionState::SmeHelloPendingTimeout);
             },
-            millis_t(waiting_time));
+            millis_t(static_cast<int64_t>(waiting_time)));
         set_state(this->previous_state);
     } else {
         // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 1.
@@ -646,7 +653,7 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
 
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 {
-    eebus.trace_fmtln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    eebus.trace_fmtln("state_sme_protocol_handshake_server_listen_proposal: %d (len %zu)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
 
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_PROPOSAL"
     auto handshake = ProtocolHandshakeType();
@@ -671,7 +678,8 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
             break;
         }
         case ProtocolHandshake::Type::Select:
-        case ProtocolHandshake::Type::Unknown: {
+        case ProtocolHandshake::Type::Unknown:
+        default: {
             sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
             break;
         }
@@ -721,7 +729,8 @@ void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
             break;
         }
         case ProtocolHandshake::Type::AnnounceMax:
-        case ProtocolHandshake::Type::Unknown: {
+        case ProtocolHandshake::Type::Unknown:
+        default: {
             sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
             break;
         }
@@ -804,7 +813,7 @@ void ShipConnection::state_sme_pin_ask_ok()
 
 void ShipConnection::state_sme_access_method_request()
 {
-    eebus.trace_fmtln("state_sme_access_method_request: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    eebus.trace_fmtln("state_sme_access_method_request: %d (len %zu)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
     auto protocol_state = get_protocol_state();
     if (protocol_state == ProtocolState::AccessMethodsRequest) {
         to_json_access_methods_type();
@@ -816,10 +825,10 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
-void ShipConnection::update_config_state(NodeState state) const
+void ShipConnection::update_config_state(NodeState node_state) const
 {
-    task_scheduler.scheduleOnce([this, state]() {
-        peer_node->state = state;
+    task_scheduler.scheduleOnce([this, node_state]() {
+        peer_node->state = node_state;
         eebus.update_peers_state();
     });
 }
@@ -923,6 +932,9 @@ void ShipConnection::state_done()
             schedule_close(0_ms, "SHIP Connection closed by peer request.");
             break;
         }
+        case ProtocolState::ConnectionHello:
+        case ProtocolState::None:
+        case ProtocolState::Unknown:
         default:
             break;
     }
@@ -968,6 +980,8 @@ void ShipConnection::common_procedure_enable_data_exchange()
 bool ShipConnection::is_listening_state(ShipConnectionState s)
 {
     // States that consume the content of message_incoming
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (s) {
         case ShipConnectionState::CmiClientEvaluate:
         case ShipConnectionState::CmiServerEvaluate:
@@ -982,4 +996,5 @@ bool ShipConnection::is_listening_state(ShipConnectionState s)
         default:
             return false;
     }
+#pragma GCC diagnostic pop
 }

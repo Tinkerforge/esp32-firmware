@@ -29,6 +29,10 @@
 #include "opev.h"
 #include "usecase_helpers.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 extern EEBus eebus;
 
 // ==============================================================================

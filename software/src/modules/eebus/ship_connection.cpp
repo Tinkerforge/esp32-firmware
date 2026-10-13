@@ -25,7 +25,10 @@
 #include "ship_types.h"
 #include "spine_connection.h"
 #include "tools.h"
+#include "tools/freertos.h"
 #include <utility>
+
+#include "gcc_warnings.h"
 
 // Out-of-line destructor: unique_ptr_any<SpineConnection> needs complete SpineConnection type
 // for DeleterAny.
@@ -56,81 +59,82 @@ void ShipConnection::cancel_task(uint64_t &task_id)
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     const tf_websocket_event_data_t *data = static_cast<tf_websocket_event_data_t *>(event_data);
-    Ship::RxEvent event;
-    event.role = ShipConnection::Role::Client;
-    event.ws_handle = data->client;
+    Ship::RxEvent rx_event;
+    rx_event.role = ShipConnection::Role::Client;
+    rx_event.ws_handle = data->client;
 
     switch (event_id) {
         case WEBSOCKET_EVENT_DATA: {
-            if (data->data_len == 0) {
+            if (data->data_len <= 0) {
                 return;
             }
+            const size_t data_len = static_cast<size_t>(data->data_len);
             // Accept both binary and text frames. Text is allowed after CMI
-            ws_transport_opcodes_t opcode = (ws_transport_opcodes_t)(data->op_code & ~WS_TRANSPORT_OPCODES_FIN);
+            ws_transport_opcodes_t opcode = static_cast<ws_transport_opcodes_t>(data->op_code & ~WS_TRANSPORT_OPCODES_FIN);
             if (opcode == WS_TRANSPORT_OPCODES_CLOSE) {
                 uint16_t close_code = 0;
                 String close_reason;
-                if (data->data_len >= 2) {
-                    close_code = ((uint8_t)data->data_ptr[0] << 8) | (uint8_t)data->data_ptr[1];
-                    if (data->data_len > 2) {
-                        close_reason = String(data->data_ptr + 2, data->data_len - 2);
+                if (data_len >= 2) {
+                    close_code = static_cast<uint16_t>((static_cast<uint8_t>(data->data_ptr[0]) << 8) | static_cast<uint8_t>(data->data_ptr[1]));
+                    if (data_len > 2) {
+                        close_reason = String(data->data_ptr + 2, data_len - 2);
                     }
                 }
                 eebus.trace_fmtln("ShipConnection: Received WebSocket close frame from peer. Code: %u, Reason: %s", close_code, close_reason.c_str());
-                event.type = Ship::RxEvent::Type::Disconnected;
-                event.reason = "Peer closed WebSocket connection";
+                rx_event.type = Ship::RxEvent::Type::Disconnected;
+                rx_event.reason = "Peer closed WebSocket connection";
                 break;
             }
             if (opcode != WS_TRANSPORT_OPCODES_BINARY && opcode != WS_TRANSPORT_OPCODES_TEXT) {
                 eebus.trace_fmtln("ShipConnection: Received unexpected opcode 0x%02x from peer", data->op_code);
                 return;
             }
-            event.type = Ship::RxEvent::Type::Frame;
+            rx_event.type = Ship::RxEvent::Type::Frame;
             const bool last_chunk = (data->payload_offset + data->data_len >= data->payload_len);
-            event.fin = data->fin && last_chunk;
-            event.data_len = data->data_len;
-            event.data.reset(static_cast<uint8_t *>(malloc_psram(data->data_len)));
-            if (!event.data) {
-                eebus.trace_fmtln("websocket_event_handler: PSRAM allocation failed, dropping frame (len %d)", data->data_len);
+            rx_event.fin = data->fin && last_chunk;
+            rx_event.data_len = data_len;
+            rx_event.data.reset(static_cast<uint8_t *>(malloc_psram(data_len)));
+            if (!rx_event.data) {
+                eebus.trace_fmtln("websocket_event_handler: PSRAM allocation failed, dropping frame (len %zu)", data_len);
                 return;
             }
-            memcpy(event.data.get(), data->data_ptr, data->data_len);
+            memcpy(rx_event.data.get(), data->data_ptr, data_len);
             break;
         }
         case WEBSOCKET_EVENT_DISCONNECTED:
-            event.type = Ship::RxEvent::Type::Disconnected;
-            event.reason = "WebSocket disconnected";
+            rx_event.type = Ship::RxEvent::Type::Disconnected;
+            rx_event.reason = "WebSocket disconnected";
             break;
         case WEBSOCKET_EVENT_CONNECTED:
-            event.type = Ship::RxEvent::Type::ClientConnected;
+            rx_event.type = Ship::RxEvent::Type::ClientConnected;
             break;
         default:
             return; // Ignore other events for now
     }
-    eebus.ship.push_rx_event(std::move(event));
+    eebus.ship.push_rx_event(std::move(rx_event));
 }
 
-ShipConnection::ShipConnection(int ws_fd, ShipNode *node) : ws_fd(ws_fd)
+ShipConnection::ShipConnection(int fd, ShipNode *node) :
+    message_incoming(make_unique_psram<Message>()),
+    message_outgoing(make_unique_psram<Message>()),
+    ws_fd(fd),
+    role(Role::Server),
+    peer_node(node)
 {
-    role = Role::Server;
-    peer_node = node;
-    message_incoming = make_unique_psram<Message>();
-    message_outgoing = make_unique_psram<Message>();
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as server", peer_node->node_name().c_str());
     state_machine_next_step();
 }
 
-ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, ShipNode *node)
+ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, ShipNode *node) :
+    message_incoming(make_unique_psram<Message>()),
+    message_outgoing(make_unique_psram<Message>()),
+    role(Role::Client),
+    peer_node(node)
 {
-    peer_node = node;
-    role = Role::Client;
-    message_incoming = make_unique_psram<Message>();
-    message_outgoing = make_unique_psram<Message>();
-
     ws_server = tf_websocket_client_init(&ws_config);
     eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_node->node_name().c_str());
 
-    tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
+    tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, static_cast<void *>(ws_server));
     // NOTE: Do NOT call tf_websocket_client_start() here.
     // The caller must first add this ShipConnection to ship_connections,
     // then call start_client() so that websocket_event_handler can find us.
@@ -245,7 +249,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
                     debug.deregister_task(ws_task);
                 }
 #endif
-                tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
+                tf_websocket_client_close(ws_server, pdMS_TO_TICKS_nowarn(SHIP_CONNECTION_WS_TIMEOUT_MS));
                 tf_websocket_client_destroy(ws_server);
                 // Destroy the external transport that we own (not managed by tf_websocket_client)
                 if (ext_transport != nullptr) {
@@ -293,7 +297,7 @@ void ShipConnection::send_raw(const char *payload, const size_t payload_len, con
             schedule_close(0_ms, "Failed to send message");
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server, payload, payload_len, pdMS_TO_TICKS(SHIP_CONNECTION_WS_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, payload, static_cast<int>(payload_len), pdMS_TO_TICKS_nowarn(SHIP_CONNECTION_WS_TIMEOUT_MS));
     }
 }
 
@@ -318,7 +322,7 @@ void ShipConnection::send_current_outgoing_message()
         return;
     }
     if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
-        eebus.trace_fmtln("Error: Message being sent exceeds maximum buffer size of %d bytes: %d bytes", SHIP_CONNECTION_MAX_BUFFER_SIZE, message_outgoing->length);
+        eebus.trace_fmtln("Error: Message being sent exceeds maximum buffer size of %d bytes: %zu bytes", SHIP_CONNECTION_MAX_BUFFER_SIZE, message_outgoing->length);
         logger.printfln("an error occurred while sending a message. Check tracelog for details.");
         return;
     }
@@ -327,10 +331,10 @@ void ShipConnection::send_current_outgoing_message()
     send_raw(reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, "send_current_outgoing_message");
 }
 
-void ShipConnection::send_string(const char *str, const int length, const int msg_classifier)
+void ShipConnection::send_string(const char *str, const size_t length, const int msg_classifier)
 {
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
-    eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
+    eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %zu:", msg_classifier, length);
     eebus.trace_strln(str, length);
 #endif
 
@@ -354,7 +358,7 @@ void ShipConnection::send_data_message(JsonVariant payload)
         String data_to_send = data.type_to_json();
         send_string(data_to_send.c_str(), data_to_send.length(), 2);
     } else {
-        eebus.trace_fmtln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
+        eebus.trace_fmtln("send_data_message: Connection not in done state. Actual State: %d", static_cast<int>(state));
     }
 }
 
@@ -385,17 +389,17 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
     const size_t buf_len = message_incoming->length - 1;
 
     // Find first " in the string, use that as a start point
-    const char *key_start = (const char *)memchr(buf, '"', buf_len);
+    const char *key_start = static_cast<const char *>(memchr(buf, '"', buf_len));
     if (!key_start)
         return ProtocolState::Unknown;
     key_start++;
 
     // find second " in the string. That should signal the end of the first json key
-    const char *key_end = (const char *)memchr(key_start, '"', buf_len - (key_start - buf));
+    const char *key_end = static_cast<const char *>(memchr(key_start, '"', buf_len - static_cast<size_t>(key_start - buf)));
     if (!key_end)
         return ProtocolState::Unknown;
 
-    const size_t key_len = (key_end - key_start);
+    const size_t key_len = static_cast<size_t>(key_end - key_start);
 
 #define KEY_IS(literal) (key_len == (sizeof(literal) - 1) && memcmp(key_start, literal, key_len) == 0)
 

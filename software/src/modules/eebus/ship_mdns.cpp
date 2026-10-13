@@ -30,6 +30,8 @@
 #include "tools.h"
 #include "tools/net.h"
 
+#include "gcc_warnings.h"
+
 void Ship::setup_mdns()
 {
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
@@ -164,7 +166,7 @@ void Ship::check_mdns_results()
         String dns_name;
         uint16_t port;
 
-        for (int i = 0; i < current->txt_count; i++) {
+        for (size_t i = 0; i < current->txt_count; i++) {
             mdns_txt_item_t *txt = &current->txt[i];
             if (txt->key == NULL || txt->value == NULL) {
                 continue;

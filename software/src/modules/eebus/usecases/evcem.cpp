@@ -30,6 +30,10 @@
 
 #include <array>
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // EVCEM - EV Charging Electricity Measurement Use Case
 // Spec: EEBus_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf
@@ -425,13 +429,13 @@ void EvcemUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("evcem");
     api_entry->get("active")->updateBool(entity_active);
-    api_entry->get("amps_phase_1")->updateUint(milliamps_draw_phase[0]);
-    api_entry->get("amps_phase_2")->updateUint(milliamps_draw_phase[1]);
-    api_entry->get("amps_phase_3")->updateUint(milliamps_draw_phase[2]);
-    api_entry->get("power_phase_1")->updateUint(power_draw_phase[0]);
-    api_entry->get("power_phase_2")->updateUint(power_draw_phase[1]);
-    api_entry->get("power_phase_3")->updateUint(power_draw_phase[2]);
-    api_entry->get("charged_wh")->updateUint(power_charged_wh);
+    api_entry->get("amps_phase_1")->updateUint(static_cast<uint32_t>(milliamps_draw_phase[0]));
+    api_entry->get("amps_phase_2")->updateUint(static_cast<uint32_t>(milliamps_draw_phase[1]));
+    api_entry->get("amps_phase_3")->updateUint(static_cast<uint32_t>(milliamps_draw_phase[2]));
+    api_entry->get("power_phase_1")->updateUint(static_cast<uint32_t>(power_draw_phase[0]));
+    api_entry->get("power_phase_2")->updateUint(static_cast<uint32_t>(power_draw_phase[1]));
+    api_entry->get("power_phase_3")->updateUint(static_cast<uint32_t>(power_draw_phase[2]));
+    api_entry->get("charged_wh")->updateUint(static_cast<uint32_t>(power_charged_wh));
     api_entry->get("charged_valuesource_measured")->updateBool(power_charged_measured);
 }
 

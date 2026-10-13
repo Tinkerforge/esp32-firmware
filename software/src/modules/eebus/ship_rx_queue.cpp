@@ -19,6 +19,8 @@
 
 #include "ship_rx_queue.h"
 
+#include "gcc_warnings.h"
+
 ShipRxQueue::PushResult ShipRxQueue::push(RxEvent &&event)
 {
     std::lock_guard<std::mutex> lock{mutex};

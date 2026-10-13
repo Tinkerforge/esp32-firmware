@@ -22,6 +22,8 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+
 [[gnu::noinline]]
 static bool fill_ship_cert(mbedtls_x509write_cert *mbed_cert)
 {

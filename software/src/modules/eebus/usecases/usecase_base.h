@@ -319,7 +319,7 @@ protected:
 
     NodeManagementDetailedDiscoveryFeatureInformationType build_feature_information(FeatureTypeEnumType feature_type, RoleType role = RoleType::server) const;
 
-    FunctionPropertyType build_function_property(FunctionEnumType function, bool write = false, bool partial_write = false) const;
+    [[gnu::const]] FunctionPropertyType build_function_property(FunctionEnumType function, bool write = false, bool partial_write = false) const;
 
     struct AwaitedAcks {
         FunctionEnumType function;

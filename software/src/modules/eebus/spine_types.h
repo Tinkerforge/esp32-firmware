@@ -4454,7 +4454,7 @@ public:
 
     Function last_cmd;
 
-    Type type_from_function(Function function);
+    [[gnu::const]] static Type type_from_function(Function function);
     static Function function_from_string(const String function_name);
     Function handle_cmd(JsonObjectConst obj);
     static String function_to_string(Function function);

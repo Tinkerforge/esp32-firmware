@@ -101,16 +101,16 @@ public:
     esp_transport_handle_t ext_transport = nullptr; ///< Owned external transport, destroyed on close
     Role role;
     ShipNode *peer_node; // Non-owning, owned by ShipPeerHandler (see there for lifetime rules)
-    unique_ptr_any<SpineConnection> spine; // Shall only be initialized after SHIP connection has been established
+    unique_ptr_any<SpineConnection> spine{}; // Shall only be initialized after SHIP connection has been established
     bool connection_established = false;
     bool closing_scheduled = false;
 
     /**
      * New ShipConnection where we act as a Server
-     * @param ws_fd The socket fd of the incoming websocket connection
+     * @param fd The socket fd of the incoming websocket connection
      * @param node The ShipNode representing the peer we are connected to
      */
-    ShipConnection(int ws_fd, ShipNode *node);
+    ShipConnection(int fd, ShipNode *node);
     /**
      * New ShipConnection where we act as a Client
      * @param ws_config The WebSocket server handle to connect to
@@ -151,7 +151,7 @@ public:
 
     void send_current_outgoing_message();
 
-    void send_string(const char *str, int length, int msg_classifier = 1);
+    void send_string(const char *str, size_t length, int msg_classifier = 1);
 
     void send_data_message(JsonVariant payload);
 
@@ -160,11 +160,11 @@ public:
     ProtocolState get_protocol_state();
 
     // State machine functions
-    void set_state(ShipConnectionState state);
+    void set_state(ShipConnectionState new_state);
 
-    void set_and_schedule_state(ShipConnectionState state);
+    void set_and_schedule_state(ShipConnectionState new_state);
 
-    void set_and_schedule_state(ShipConnectionState state, millis_t delay_ms);
+    void set_and_schedule_state(ShipConnectionState new_state, millis_t delay_ms);
 
     void state_machine_next_step();
 
@@ -248,7 +248,7 @@ public:
 
     void state_sme_access_method_request();
 
-    void update_config_state(NodeState state) const;
+    void update_config_state(NodeState node_state) const;
 
     void state_done();
 
@@ -419,5 +419,5 @@ public:
     bool incoming_message_pending = false;
 
     // Returns true for states whose handler reads and processes message_incoming
-    static bool is_listening_state(ShipConnectionState s);
+    [[gnu::const]] static bool is_listening_state(ShipConnectionState s);
 };

@@ -43,7 +43,7 @@ public:
 
     using RxEvent = ShipRxQueue::RxEvent;
 
-    bool push_rx_event(RxEvent &&event);
+    bool push_rx_event(RxEvent &&rx_event);
 
     bool ws_send(int fd, const char *payload, size_t payload_len);
     void ws_close(int fd);
@@ -81,9 +81,9 @@ private:
     void close_all_but_most_recent(const ShipNode *node);
 
     void drain_rx_events();
-    void process_rx_event(RxEvent &event);
-    void handle_connected(const RxEvent &event);
-    ShipConnection *find_connection(const RxEvent &event);
+    void process_rx_event(RxEvent &rx_event);
+    void handle_connected(const RxEvent &rx_event);
+    ShipConnection *find_connection(const RxEvent &rx_event);
 
     ShipRxQueue rx_queue;
 

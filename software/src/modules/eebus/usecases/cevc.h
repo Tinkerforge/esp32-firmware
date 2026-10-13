@@ -288,25 +288,25 @@ private:
     int optimal_energy_wh = 0;                             ///< Optimal energy wanted
     int maximum_energy_wh = 0;                             ///< Maximum storable energy
     time_t target_departure_time = 0;                      ///< Target departure time
-    std::vector<ChargingDemandSlot> charging_demand_slots; ///< Detailed demand slots
+    std::vector<ChargingDemandSlot> charging_demand_slots{}; ///< Detailed demand slots
 
     // =========================================================================
     // Internal state - Power constraints (EV -> Broker, Scenario 2)
     // =========================================================================
     int max_power_constraint_w = 22000;                      ///< Maximum power constraint
-    std::vector<PowerConstraintSlot> power_constraint_slots; ///< Detailed constraint slots
+    std::vector<PowerConstraintSlot> power_constraint_slots{}; ///< Detailed constraint slots
 
     // =========================================================================
     // Internal state - Charging plan (Broker -> EV, Scenario 4)
     // =========================================================================
     time_t charging_plan_start_time = 0;                  ///< Start time of received plan
-    std::vector<ChargingPlanSlot> received_charging_plan; ///< Received charging plan
+    std::vector<ChargingPlanSlot> received_charging_plan{}; ///< Received charging plan
     bool charging_plan_valid = false;                     ///< Whether the plan is valid/active
 
     // =========================================================================
     // Internal state - Incentives (Broker -> EV, Scenario 3)
     // =========================================================================
-    std::vector<IncentiveSlotEntry> received_incentives;         ///< Received incentive table
+    std::vector<IncentiveSlotEntry> received_incentives{};         ///< Received incentive table
     bool incentives_valid = false;                               ///< Whether incentives are valid
     CurrencyEnumType incentive_currency = CurrencyEnumType::EUR; ///< Currency for incentives
 

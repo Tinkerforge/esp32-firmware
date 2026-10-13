@@ -27,6 +27,8 @@
 #include <chrono>
 #include <utility>
 
+#include "gcc_warnings.h"
+
 // clang-format on
 
 template <typename T> void insert_vector(std::vector<T> &dest, const std::vector<T> &src)

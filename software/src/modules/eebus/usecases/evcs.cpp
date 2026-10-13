@@ -29,6 +29,10 @@
 
 #include <cmath>
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // EVCS - EV Charging Summary Use Case
 // Spec: EEBus_UC_TS_EVChargingSummary_V1.0.1.pdf
@@ -143,9 +147,9 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                                         // Adjust for scale: if scale=-2, value is already in cents
                                         int scale = cost.cost->scale.has_value() ? cost.cost->scale.get() : 0;
                                         if (scale == -2) {
-                                            cost_eur_cent = cost_value;
+                                            cost_eur_cent = static_cast<uint32_t>(cost_value);
                                         } else if (scale == 0) {
-                                            cost_eur_cent = cost_value * 100; // Convert EUR to cents
+                                            cost_eur_cent = static_cast<uint32_t>(cost_value * 100); // Convert EUR to cents
                                         } else {
                                             cost_eur_cent = static_cast<uint32_t>(cost_value * std::pow(10.0, -scale - 2));
                                         }
@@ -208,15 +212,15 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                             }
 
                             // Store bill entry
-                            bill_entries[array_idx].id = bill_id;
+                            bill_entries[array_idx].id = static_cast<uint8_t>(bill_id);
                             bill_entries[array_idx].start_time = start_time;
                             bill_entries[array_idx].end_time = end_time;
-                            bill_entries[array_idx].energy_wh = energy_wh;
+                            bill_entries[array_idx].energy_wh = static_cast<uint16_t>(energy_wh);
                             bill_entries[array_idx].cost_eur_cent = cost_eur_cent;
-                            bill_entries[array_idx].grid_energy_percent = grid_energy_percent;
-                            bill_entries[array_idx].grid_cost_percent = grid_cost_percent;
-                            bill_entries[array_idx].self_produced_energy_percent = self_produced_energy_percent;
-                            bill_entries[array_idx].self_produced_cost_percent = self_produced_cost_percent;
+                            bill_entries[array_idx].grid_energy_percent = static_cast<uint8_t>(grid_energy_percent);
+                            bill_entries[array_idx].grid_cost_percent = static_cast<uint8_t>(grid_cost_percent);
+                            bill_entries[array_idx].self_produced_energy_percent = static_cast<uint8_t>(self_produced_energy_percent);
+                            bill_entries[array_idx].self_produced_cost_percent = static_cast<uint8_t>(self_produced_cost_percent);
                         }
 
                         // Update API state
@@ -261,15 +265,15 @@ void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time
     }
     int array_ref = id - 1;
 
-    bill_entries[array_ref].id = id;
+    bill_entries[array_ref].id = static_cast<uint8_t>(id);
     bill_entries[array_ref].start_time = start_time;
     bill_entries[array_ref].end_time = end_time;
-    bill_entries[array_ref].energy_wh = energy_wh;
+    bill_entries[array_ref].energy_wh = static_cast<uint16_t>(energy_wh);
     bill_entries[array_ref].cost_eur_cent = cost_eur_cent;
-    bill_entries[array_ref].grid_energy_percent = grid_energy_percent;
-    bill_entries[array_ref].grid_cost_percent = grid_cost_percent;
-    bill_entries[array_ref].self_produced_energy_percent = self_produced_energy_percent;
-    bill_entries[array_ref].self_produced_cost_percent = self_produced_cost_percent;
+    bill_entries[array_ref].grid_energy_percent = static_cast<uint8_t>(grid_energy_percent);
+    bill_entries[array_ref].grid_cost_percent = static_cast<uint8_t>(grid_cost_percent);
+    bill_entries[array_ref].self_produced_energy_percent = static_cast<uint8_t>(self_produced_energy_percent);
+    bill_entries[array_ref].self_produced_cost_percent = static_cast<uint8_t>(self_produced_cost_percent);
 
     BillListDataType bill_list_data = EVSEEntity::get_bill_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Bill), bill_list_data, "billListData");
@@ -335,7 +339,7 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
         total_value.value->scale = 0; // Total value = number * 10^scale
         BillCostType total_cost;
         total_cost.costType = BillCostTypeEnumType::absolutePrice;
-        total_cost.cost->number = entry.cost_eur_cent;
+        total_cost.cost->number = static_cast<int>(entry.cost_eur_cent);
         total_cost.currency = CurrencyEnumType::EUR;
         total_cost.cost->scale = -2; // Cost in cents: value * 10^-2 = EUR
         billData.total->value->push_back(total_value);
@@ -386,8 +390,8 @@ void EvcsUsecase::update_api() const
         uint32_t charged_kwh = bill_entry.energy_wh;
         api_bill_entry->get("charged_kwh")->updateFloat(static_cast<float>(charged_kwh) / 1000.0f);
         api_bill_entry->get("cost")->updateFloat(static_cast<float>(bill_entry.cost_eur_cent) / 100.0f);
-        api_bill_entry->get("start_time")->updateUint(bill_entry.start_time);
-        api_bill_entry->get("duration")->updateUint(bill_entry.end_time - bill_entry.start_time);
+        api_bill_entry->get("start_time")->updateUint(static_cast<uint32_t>(bill_entry.start_time));
+        api_bill_entry->get("duration")->updateUint(static_cast<uint32_t>(bill_entry.end_time - bill_entry.start_time));
 
         api_bill_entry->get("percent_self_produced_energy")->updateUint(bill_entry.self_produced_energy_percent);
         api_bill_entry->get("percent_self_produced_cost")->updateUint(bill_entry.self_produced_cost_percent);

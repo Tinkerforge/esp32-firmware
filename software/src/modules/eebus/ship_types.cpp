@@ -26,8 +26,13 @@
 #include "ship_connection.h"
 #include "tools.h"
 
+#include "gcc_warnings.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnamespaces"
 namespace SHIP_TYPES
 {
+#pragma GCC diagnostic pop
 DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length)
 {
     doc.clear();
@@ -35,7 +40,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     if (eebus_json_compatibility_mode) {
         incoming_data_str = EEBUSJsonToJson(incoming_data_str);
     }
-    int nesting_limit = 20;
+    uint8_t nesting_limit = 20;
     DeserializationError error = deserializeJson(doc, incoming_data_str, DeserializationOption::NestingLimit(nesting_limit));
     if (error) {
         eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s; Error occurred when parsing JSON Doc: ", error.c_str());
@@ -74,20 +79,20 @@ String ShipMessageDataType::type_to_json()
 
     size_t required_size = payload.memoryUsage() + 128; // Payload size + header size + some slack as recommended by arduinojson assistant.
     // We also just assume the psram has enough space for this.
-    BasicJsonDocument<ArduinoJsonPsramAllocator> doc(required_size);
+    BasicJsonDocument<ArduinoJsonPsramAllocator> out_doc(required_size);
 #ifdef EEBUS_TRACE_SUPER_VERBOSE
-    logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size * 3 + 64);
+    logger.printfln("Create ship doc with size %zu. Total ShipMessageDataType::type_to_json() usage: %zu", required_size, required_size * 3 + 64);
 #endif
 
-    doc["data"]["header"]["protocolId"] = protocol_id;
-    bool payload_loaded = doc["data"]["payload"].set(payload);
+    out_doc["data"]["header"]["protocolId"] = protocol_id;
+    bool payload_loaded = out_doc["data"]["payload"].set(payload);
     if (!payload_loaded) {
         eebus.trace_fmtln("J2T ShipMessageData Error: Payload invalid");
         return "";
     }
 
     if (extension_id_valid || extension_binary_valid || extension_string_valid) {
-        JsonObject data_extension = doc["data"].createNestedObject("extension");
+        JsonObject data_extension = out_doc["data"].createNestedObject("extension");
         if (extension_id_valid) {
             data_extension["extensionId"] = extension_id;
         }
@@ -108,7 +113,7 @@ String ShipMessageDataType::type_to_json()
         JsonArray dataArr = destination_doc.createNestedArray("data");
         JsonObject headerWrapper = dataArr.createNestedObject();
         JsonArray headerOut = headerWrapper.createNestedArray("header");
-        JsonObjectConst srcHeader = doc["data"]["header"].as<JsonObjectConst>();
+        JsonObjectConst srcHeader = out_doc["data"]["header"].as<JsonObjectConst>();
         if (!srcHeader.isNull()) {
             for (JsonPairConst kv : srcHeader) {
                 JsonObject single = headerOut.createNestedObject();
@@ -119,7 +124,7 @@ String ShipMessageDataType::type_to_json()
         JsonObject payloadOut = payloadWrapper.createNestedObject("payload");
 
         // Process datagram recursively
-        JsonArrayConst datagramSrc = doc["data"]["payload"]["datagram"].as<JsonArrayConst>();
+        JsonArrayConst datagramSrc = out_doc["data"]["payload"]["datagram"].as<JsonArrayConst>();
         if (!datagramSrc.isNull()) {
             JsonArray datagramOut = payloadOut.createNestedArray("datagram");
 
@@ -153,8 +158,8 @@ String ShipMessageDataType::type_to_json()
         return message_outgoing_data;
     } else {
         String message_outgoing_data;
-        message_outgoing_data.reserve(measureJson(doc) + 1);
-        serializeJson(doc, message_outgoing_data);
+        message_outgoing_data.reserve(measureJson(out_doc) + 1);
+        serializeJson(out_doc, message_outgoing_data);
         return message_outgoing_data;
     }
 }

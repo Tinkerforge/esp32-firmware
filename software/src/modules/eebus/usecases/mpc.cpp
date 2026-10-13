@@ -29,6 +29,10 @@
 
 #include <array>
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // MPC - Monitoring of Power Consumption Use Case
 // Spec: EEBus_UC_TS_MonitoringOfPowerConsumption_V1.0.0.pdf
@@ -153,7 +157,7 @@ void MpcUsecase::get_electricalConnection_parameter_description_list_data(Electr
         ElectricalConnectionPhaseNameEnumType::b,
         ElectricalConnectionPhaseNameEnumType::c,
     }};
-    for (int i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 3; i++) {
         ElectricalConnectionParameterDescriptionDataType a_description_data{};
         a_description_data.electricalConnectionId = id_ec_1;
         a_description_data.parameterId = power_phase_ids[i].first;
@@ -191,7 +195,7 @@ void MpcUsecase::get_electricalConnection_parameter_description_list_data(Electr
         {id_p_5_3, id_m_5_3},
     }};
 
-    for (int i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 3; i++) {
         ElectricalConnectionParameterDescriptionDataType a_description_data{};
         a_description_data.electricalConnectionId = id_ec_1;
         a_description_data.parameterId = current_phase_ids[i].first;
@@ -462,8 +466,8 @@ void MpcUsecase::update_api() const
     api_entry->get("power_phase_1_w")->updateInt(power_phase_w[0]);
     api_entry->get("power_phase_2_w")->updateInt(power_phase_w[1]);
     api_entry->get("power_phase_3_w")->updateInt(power_phase_w[2]);
-    api_entry->get("energy_consumed_wh")->updateInt(energy_consumed_wh);
-    api_entry->get("energy_produced_wh")->updateInt(energy_produced_wh);
+    api_entry->get("energy_consumed_wh")->updateInt(static_cast<int32_t>(energy_consumed_wh));
+    api_entry->get("energy_produced_wh")->updateInt(static_cast<int32_t>(energy_produced_wh));
     api_entry->get("current_phase_1_ma")->updateInt(current_phase_ma[0]);
     api_entry->get("current_phase_2_ma")->updateInt(current_phase_ma[1]);
     api_entry->get("current_phase_3_ma")->updateInt(current_phase_ma[2]);

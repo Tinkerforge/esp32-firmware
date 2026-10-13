@@ -126,7 +126,7 @@ public:
         return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Generic}; // Generic is the client feature needed for reads
     }
 
-    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] [[gnu::const]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     /**

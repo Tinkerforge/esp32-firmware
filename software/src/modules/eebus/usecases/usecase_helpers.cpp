@@ -21,10 +21,15 @@
 #include "../eebus.h"
 #include <cmath>
 
+#include "gcc_warnings.h"
+
 extern EEBus eebus;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnamespaces"
 namespace EEBUS_USECASE_HELPERS
 {
+#pragma GCC diagnostic pop
 
 std::string get_spine_device_name()
 {
@@ -57,6 +62,8 @@ String get_result_error_number_string(const int error_number)
             return "RestrictedFunctionExchangeCombinationNotSupported";
         case ResultErrorNumber::BindingRequired:
             return "BindingRequired";
+        default:
+            break;
     }
     return "UnknownError";
 }

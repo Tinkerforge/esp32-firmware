@@ -28,6 +28,10 @@
 #include "evsecc.h"
 #include "usecase_helpers.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // EVSECC - EVSE Commissioning and Configuration Use Case
 // Spec: EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.1.pdf

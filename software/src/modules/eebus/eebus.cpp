@@ -32,6 +32,8 @@
 
 #include "tools/malloc.h"
 
+#include "gcc_warnings.h"
+
 // Out-of-line constructor and destructor: unique_ptr_any<EEBusUseCases> and unique_ptr_any<SpineDataTypeHandler>
 // need complete types for their deleters.
 EEBus::EEBus()
@@ -94,14 +96,15 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
     // Calculate power limits based on phase support
     const int milliamps_min = 6000;
     int min_power = milliamps_min / 1000 * (supports_1p ? 1 : 3) * 230;
-    int max_power = (std::min(incoming, outgoing) / 1000) * (supports_3p ? 3 : 1) * 230;
+    const int milliamps_max = static_cast<int>(std::min(incoming, outgoing));
+    int max_power = (milliamps_max / 1000) * (supports_3p ? 3 : 1) * 230;
 
     // Update usecases with calculated limits
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     eebus.usecases->evcc->update_electrical_connection(min_power, max_power);
 #endif
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-    eebus.usecases->evcem->update_constraints(milliamps_min, std::min(incoming, outgoing), 100, min_power, max_power, 1000, 0, 1000000, 10);
+    eebus.usecases->evcem->update_constraints(milliamps_min, milliamps_max, 100, min_power, max_power, 1000, 0, 1000000, 10);
 #endif
 #endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
 }
@@ -197,7 +200,7 @@ static void update_limit()
             return;
         }
 
-        limit_mA = limit_phases[0] * 1000 / 230 / phases;
+        limit_mA = limit_phases[0] * 1000 / 230 / static_cast<int>(phases);
     }
 #endif // EEBUS_ENABLE_OPEV_USECASE
     // Clamp to safe operating range (6A - 32A)
@@ -288,7 +291,7 @@ static void run_eebus_usecase_tests()
 
         default: // Continuous updates for EVCEM and MPC/MGCP
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-            eebus.usecases->ev_charging_electricity_measurement.update_measurements(1234, 5678, 9000, 1000, 2000, 3000, dev_test_iteration * 10);
+            eebus.usecases->ev_charging_electricity_measurement.update_measurements(1234, 5678, 9000, 1000, 2000, 3000, static_cast<int>(dev_test_iteration * 10));
 #endif
 #ifdef EEBUS_ENABLE_MPC_USECASE
             // Simulate energy accumulation
@@ -302,7 +305,7 @@ static void run_eebus_usecase_tests()
             }
 
             // Simulate frequency drift
-            eebus.usecases->mpc->update_frequency(49000 + (dev_test_iteration % 20) * 100);
+            eebus.usecases->mpc->update_frequency(49000 + static_cast<int>(dev_test_iteration % 20) * 100);
 #endif
 #ifdef EEBUS_ENABLE_MGCP_USECASE
             // Simulate energy accumulation
@@ -402,8 +405,8 @@ void EEBus::pre_setup()
 
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}, {"persistent", Config::Bool(true)}}), [this](Config &add_peer, ConfigSource source) -> String {
-                              if (add_peer.get("ski")->asString().isEmpty()) {
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}, {"persistent", Config::Bool(true)}}), [this](Config &add_peer_cfg, ConfigSource source) -> String {
+                              if (add_peer_cfg.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
                               }
                               if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
@@ -414,8 +417,8 @@ void EEBus::pre_setup()
 
     add_peer.set_permit_null_updates(false);
 
-    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 40)}}), [this](Config &remove_peer, ConfigSource source) -> String {
-                                 if (remove_peer.get("ski")->asString().isEmpty()) {
+    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 40)}}), [this](Config &remove_peer_cfg, ConfigSource source) -> String {
+                                 if (remove_peer_cfg.get("ski")->asString().isEmpty()) {
                                      return "Can't remove peer. Ski is missing.";
                                  }
                                  return "";
@@ -833,7 +836,7 @@ void EEBus::register_meter_events()
     // Determine which meter slot to use based on mode
     uint8_t meter_slot;
 #ifdef EEBUS_MODE_EVSE
-    meter_slot = evse_common.get_charger_meter();
+    meter_slot = static_cast<uint8_t>(evse_common.get_charger_meter());
 #else
     // Find the first meter with location=Grid
     bool found = false;
@@ -898,7 +901,7 @@ void EEBus::register_meter_events()
             // Update MPC usecase (power consumption monitoring)
 #ifdef EEBUS_ENABLE_MPC_USECASE
             eebus.usecases->mpc->update_power(v.total_power, v.powers[0], v.powers[1], v.powers[2]);
-            eebus.usecases->mpc->update_energy(v.energy_import, v.energy_export);
+            eebus.usecases->mpc->update_energy(static_cast<uint32_t>(v.energy_import), static_cast<uint32_t>(v.energy_export));
             eebus.usecases->mpc->update_current(v.currents[0], v.currents[1], v.currents[2]);
             eebus.usecases->mpc->update_voltage(v.voltages[0], v.voltages[1], v.voltages[2], v.phase_voltages[0], v.phase_voltages[1], v.phase_voltages[2]);
             eebus.usecases->mpc->update_frequency(v.frequency);
@@ -911,8 +914,8 @@ void EEBus::register_meter_events()
 #ifdef EEBUS_ENABLE_MGCP_USECASE
             // Note: MGCP uses load/passive sign convention (negative = feed-in)
             eebus.usecases->monitoring_of_grid_connection_point.update_power(v.total_power);
-            eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(v.energy_export);
-            eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(v.energy_import);
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(static_cast<uint32_t>(v.energy_export));
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(static_cast<uint32_t>(v.energy_import));
             eebus.usecases->monitoring_of_grid_connection_point.update_current(v.currents[0], v.currents[1], v.currents[2]);
             eebus.usecases->monitoring_of_grid_connection_point.update_voltage(v.voltages[0], v.voltages[1], v.voltages[2]);
             eebus.usecases->monitoring_of_grid_connection_point.update_frequency(v.frequency);
@@ -933,8 +936,8 @@ void EEBus::toggle_module()
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
 #ifdef EEBUS_MODE_EVSE
-        update_usecases_from_charger_state((const Config *)api.getState("evse/state")->get("charger_state"));
-        update_usecases_from_phases((const Config *)api.getState("evse/phases_connected")->get("phases"));
+        update_usecases_from_charger_state(static_cast<const Config *>(api.getState("evse/state")->get("charger_state")));
+        update_usecases_from_phases(static_cast<const Config *>(api.getState("evse/phases_connected")->get("phases")));
 #endif
 #ifdef EEBUS_MODE_EM
         update_lpc_constraints();
@@ -968,7 +971,7 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 {
     for (size_t i = 0; i < state.get("connections")->count(); i++) {
         if (state.get("connections")->get(i)->get("ski")->asString() == ski) {
-            return i;
+            return static_cast<int>(i);
         }
     }
     return -1;

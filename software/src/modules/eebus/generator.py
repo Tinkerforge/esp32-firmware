@@ -345,9 +345,13 @@ inline void convertFromJson(const JsonVariantConst &src, E &dst) { String s = sr
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnamespaces"
 namespace ArduinoJson
 {
+#pragma GCC diagnostic pop
 template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
@@ -1198,7 +1202,7 @@ class SpineDataTypeHandler {{
         
         Function last_cmd;
         
-        Type type_from_function(Function function);
+        [[gnu::const]] static Type type_from_function(Function function);
         static Function function_from_string(const String function_name);
         Function handle_cmd(JsonObjectConst obj);
         static String function_to_string(Function function);
@@ -1251,7 +1255,8 @@ class SpineDataTypeHandler {{
         return f"""
 SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTypeHandler::Function function) {{
     switch(function) {{{function_to_type_mapping}
-    default:    
+    case SpineDataTypeHandler::Function::None:
+    default:
         return SpineDataTypeHandler::Type::None;
     }}
     return SpineDataTypeHandler::Type::None;

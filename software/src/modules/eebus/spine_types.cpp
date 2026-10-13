@@ -4,8 +4,13 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnamespaces"
 namespace ArduinoJson
 {
+#pragma GCC diagnostic pop
 template <typename T> void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
     JsonArray array = dst.to<JsonArray>();
@@ -3114,6 +3119,7 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::TimeSeriesDescriptionListDataType;
         case SpineDataTypeHandler::Function::timeSeriesConstraintsListData:
             return SpineDataTypeHandler::Type::TimeSeriesConstraintsListDataType;
+        case SpineDataTypeHandler::Function::None:
         default:
             return SpineDataTypeHandler::Type::None;
     }

@@ -23,6 +23,8 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+
 void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connection_hello)
 {
     incoming_json_doc.clear();
@@ -39,7 +41,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
         // Parse all fields, overwriting the optional ones if present
         for (JsonObject obj : incoming_json_doc["connectionHello"].as<JsonArray>()) {
             if (obj.containsKey("phase")) {
-                connection_hello->phase = static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
+                connection_hello->phase = ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str());
             } else if (obj.containsKey("waiting")) {
                 connection_hello->waiting = obj["waiting"].as<uint32_t>();
                 connection_hello->waiting_valid = true;
@@ -102,7 +104,7 @@ bool ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
 
     for (JsonObject obj : handshake_array) {
         if (obj.containsKey("handshakeType")) {
-            handshake_type->handshakeType = static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
+            handshake_type->handshakeType = ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str());
         } else if (obj.containsKey("version")) {
             for (JsonObject version : obj["version"].as<JsonArray>()) {
                 if (version.containsKey("major")) {
@@ -113,7 +115,7 @@ bool ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
             }
         }
     }
-    eebus.trace_fmtln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld", static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType), handshake_type->version_major, handshake_type->version_minor);
+    eebus.trace_fmtln("J2T ProtocolHandshakeType Type: handshakeType %d, version %lu.%lu", static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType), handshake_type->version_major, handshake_type->version_minor);
     return true;
 }
 

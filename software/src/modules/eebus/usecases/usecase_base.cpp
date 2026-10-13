@@ -22,6 +22,8 @@
 #include "../eebus_usecases.h"
 #include "../generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+
 extern EEBus eebus;
 
 void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function)

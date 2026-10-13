@@ -177,8 +177,8 @@ public:
 
     void receive_heartbeat(const FeatureAddressType &source) override;
     void inform_spineconnection_usecase_update(SpineConnection *conn) override;
-    bool validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server) override;
-    void inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server) override;
+    bool validate_binding_request(const FeatureAddressType &client, const FeatureAddressType &server_address) override;
+    void inform_binding_added(const FeatureAddressType &client, const FeatureAddressType &server_address) override;
 
 protected:
     const LoadPowerLimitConfig &config_;
@@ -202,7 +202,7 @@ private:
     /** @brief True if the peer announces more than one entity with the Energy Guard of this use case. */
     [[nodiscard]] bool has_multiple_energy_guards(SpineConnection *conn) const;
     /** @brief True if the address is the local LoadControl or DeviceConfiguration server feature of this use case. */
-    [[nodiscard]] bool is_energy_guard_binding_target(const FeatureAddressType &server) const;
+    [[nodiscard]] bool is_energy_guard_binding_target(const FeatureAddressType &server_address) const;
     /** @brief Subscribe to the heartbeat of the peer entity that bound both LoadControl and DeviceConfiguration, if any. */
     void subscribe_heartbeat_of_bound_energy_guard(SpineConnection *conn);
     /** @brief The SPINE device bound to LoadControl or DeviceConfiguration (IG-LPC 3.5: at most one). Empty if none. */
@@ -261,8 +261,8 @@ private:
     seconds_t failsafe_duration = 2_h;
     uint64_t failsafe_expiry_timer = 0;
     micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())
-    uint8_t failsafe_power_key_id;
-    uint8_t failsafe_duration_key_id;
+    uint16_t failsafe_power_key_id;
+    uint16_t failsafe_duration_key_id;
 
     // Electrical Connection Data (Constraints), 0 if unknown
     int power_max_w = 0;          ///< LPC-041: Nominal maximum power of a device

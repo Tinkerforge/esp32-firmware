@@ -90,12 +90,12 @@ public:
     /**
     * The Payload of the last received SPINE datagram.
     */
-    JsonVariant received_payload;
+    JsonVariant received_payload{};
 
     /**
     * The response datagram to be retrieved by the SPINE Connection and sent back to the peer.
     */
-    JsonVariant response_datagram;
+    JsonVariant response_datagram{};
 
     void update_detailed_discovery_data(const NodeManagementDetailedDiscoveryDataType &data)
     {
@@ -187,14 +187,14 @@ private:
     bool use_case_data_received = false;
     bool subscription_data_received = false;
     bool initial_peer_discovery_started = false;
-    uint32_t initial_peer_discovery_timer = 0;
+    uint64_t initial_peer_discovery_timer = 0;
     void initial_peer_discovery();
 
     void eebus_active(bool active) const;
 
-    std::vector<FeatureAddressType> known_addresses;
+    std::vector<FeatureAddressType> known_addresses{};
     // Subscriptions (local client, remote server) we requested on this connection
-    std::vector<std::pair<FeatureAddressType, FeatureAddressType>> requested_subscriptions;
+    std::vector<std::pair<FeatureAddressType, FeatureAddressType>> requested_subscriptions{};
     [[nodiscard]] FeatureAddressType complete_peer_feature_address(const FeatureAddressType &address) const;
     /** The device name of the peer from its detailed discovery data or its first message. nullptr if unknown. */
     [[nodiscard]] const std::string *get_peer_device_name() const;

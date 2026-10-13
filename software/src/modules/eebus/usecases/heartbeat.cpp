@@ -23,6 +23,10 @@
 #include "../eebus_usecases.h"
 #include "../generated/module_dependencies.h"
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // No heartbeat of any peer for this long calls receive_heartbeat_timeout() (e.g. CEVC). LPC/LPP have their own timeout.
 // The heartbeatTimeout announced by the peer is not used: The CS does not have to evaluate it (LPC 3.2.2.2, Table 28).
 static constexpr seconds_t HEARTBEAT_RECEIVE_TIMEOUT = 120_s;
@@ -200,8 +204,8 @@ size_t EebusHeartBeat::subscribe_to_actor_heartbeat(SpineConnection *conn, const
         eebus.trace_fmtln("EebusHeartBeat: Peer announces %s of %s, but no heartbeat source was found", use_case_actor.c_str(), use_case_name.c_str());
     }
 
-    for (FeatureAddressType &server : servers) {
-        initialize_heartbeat_on_feature(server, sending_usecase, true);
+    for (FeatureAddressType &server_address : servers) {
+        initialize_heartbeat_on_feature(server_address, sending_usecase, true);
     }
     return servers.size();
 }

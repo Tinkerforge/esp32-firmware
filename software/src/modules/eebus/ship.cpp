@@ -31,6 +31,8 @@
 #include "tools/hexdump.h"
 #include "tools/net.h"
 
+#include "gcc_warnings.h"
+
 static const char cert_begin[] = "-----BEGIN CERTIFICATE-----";
 
 // Don't inline, keep buffers from hogging the stack.
@@ -128,7 +130,7 @@ static String extract_peer_ski_from_tls(httpd_handle_t httpd, int sockfd)
 #ifdef EEBUS_SHIP_AUTOCONNECT
 static esp_err_t eebus_client_crt_bundle_attach(void *conf)
 {
-    mbedtls_ssl_config *ssl_conf = (mbedtls_ssl_config *)conf;
+    mbedtls_ssl_config *ssl_conf = static_cast<mbedtls_ssl_config *>(conf);
     mbedtls_ssl_conf_authmode(ssl_conf, MBEDTLS_SSL_VERIFY_NONE);
     return ESP_OK; // Don't chain to real bundle — we don't need CA certs
 }
@@ -249,40 +251,40 @@ void Ship::setup_wss()
         }
 
         const int fd = ws_client->getFd();
-        RxEvent event;
-        event.type = RxEvent::Type::Connected;
-        event.role = ShipConnection::Role::Server;
-        event.fd = fd;
-        event.peer_ip = tf_peer_address_of_sockfd(fd).toString();
+        RxEvent rx_event;
+        rx_event.type = RxEvent::Type::Connected;
+        rx_event.role = ShipConnection::Role::Server;
+        rx_event.fd = fd;
+        rx_event.peer_ip = tf_peer_address_of_sockfd(fd).toString();
         // The TLS session is only guaranteed to be accessible on the httpd task.
-        event.tls_ski = extract_peer_ski_from_tls(web_sockets.get_httpd_handle(), fd);
-        push_rx_event(std::move(event));
+        rx_event.tls_ski = extract_peer_ski_from_tls(web_sockets.get_httpd_handle(), fd);
+        push_rx_event(std::move(rx_event));
         return true;
     });
 
     web_sockets.onDisconnect_HTTPThread([this](WebSocketsClient *client, bool /*clean_close*/) {
-        RxEvent event;
-        event.type = RxEvent::Type::Disconnected;
-        event.role = ShipConnection::Role::Server;
-        event.fd = client->getFd();
-        event.reason = "Websocket disconnected";
-        push_rx_event(std::move(event));
+        RxEvent rx_event;
+        rx_event.type = RxEvent::Type::Disconnected;
+        rx_event.role = ShipConnection::Role::Server;
+        rx_event.fd = client->getFd();
+        rx_event.reason = "Websocket disconnected";
+        push_rx_event(std::move(rx_event));
     });
 
     web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
-        RxEvent event;
-        event.type = RxEvent::Type::Frame;
-        event.role = ShipConnection::Role::Server;
-        event.fd = client->getFd();
-        event.fin = ws_pkt->final;
-        event.data_len = ws_pkt->len;
-        event.data.reset(static_cast<uint8_t *>(malloc_psram(ws_pkt->len)));
-        if (!event.data) {
+        RxEvent rx_event;
+        rx_event.type = RxEvent::Type::Frame;
+        rx_event.role = ShipConnection::Role::Server;
+        rx_event.fd = client->getFd();
+        rx_event.fin = ws_pkt->final;
+        rx_event.data_len = ws_pkt->len;
+        rx_event.data.reset(static_cast<uint8_t *>(malloc_psram(ws_pkt->len)));
+        if (!rx_event.data) {
             eebus.trace_fmtln("onBinaryDataReceived: PSRAM allocation failed, dropping frame (len %zu)", ws_pkt->len);
             return;
         }
-        memcpy(event.data.get(), ws_pkt->payload, ws_pkt->len);
-        push_rx_event(std::move(event));
+        memcpy(rx_event.data.get(), ws_pkt->payload, ws_pkt->len);
+        push_rx_event(std::move(rx_event));
     });
 
     web_sockets.start("/ship/", "/eebus/ws", "ship", SHIP_PORT);
@@ -292,9 +294,9 @@ void Ship::setup_wss()
 }
 
 // Callable from any task
-bool Ship::push_rx_event(RxEvent &&event)
+bool Ship::push_rx_event(RxEvent &&rx_event)
 {
-    switch (rx_queue.push(std::move(event))) {
+    switch (rx_queue.push(std::move(rx_event))) {
         case ShipRxQueue::PushResult::PushedToEmpty:
             task_scheduler.scheduleOnce([this]() {
                 drain_rx_events();
@@ -302,91 +304,94 @@ bool Ship::push_rx_event(RxEvent &&event)
             [[fallthrough]];
         case ShipRxQueue::PushResult::Pushed:
             return true;
+        case ShipRxQueue::PushResult::Dropped:
         default:
-            eebus.trace_fmtln("push_rx_event: queue full, dropping event (type %u, len %zu)", static_cast<unsigned>(event.type), event.data_len);
+            eebus.trace_fmtln("push_rx_event: queue full, dropping event (type %u, len %zu)", static_cast<unsigned>(rx_event.type), rx_event.data_len);
             return false;
     }
 }
 
 void Ship::drain_rx_events()
 {
-    RxEvent event;
-    while (rx_queue.pop(&event)) {
-        process_rx_event(event);
+    RxEvent rx_event;
+    while (rx_queue.pop(&rx_event)) {
+        process_rx_event(rx_event);
     }
 }
 
-ShipConnection *Ship::find_connection(const RxEvent &event)
+ShipConnection *Ship::find_connection(const RxEvent &rx_event)
 {
     for (const auto &conn : ship_connections) {
-        if (conn->closing_scheduled || conn->role != event.role) {
+        if (conn->closing_scheduled || conn->role != rx_event.role) {
             continue;
         }
-        if (event.role == ShipConnection::Role::Server ? conn->ws_fd == event.fd : conn->ws_server == event.ws_handle) {
+        if (rx_event.role == ShipConnection::Role::Server ? conn->ws_fd == rx_event.fd : conn->ws_server == rx_event.ws_handle) {
             return conn.get();
         }
     }
     return nullptr;
 }
 
-void Ship::process_rx_event(RxEvent &event)
+void Ship::process_rx_event(RxEvent &rx_event)
 {
-    if (event.type == RxEvent::Type::Connected) {
-        handle_connected(event);
+    if (rx_event.type == RxEvent::Type::Connected) {
+        handle_connected(rx_event);
         return;
     }
 
-    ShipConnection *conn = find_connection(event);
+    ShipConnection *conn = find_connection(rx_event);
     if (conn == nullptr) {
-        eebus.trace_fmtln("process_rx_event: no connection for event (type %u)", static_cast<unsigned>(event.type));
+        eebus.trace_fmtln("process_rx_event: no connection for event (type %u)", static_cast<unsigned>(rx_event.type));
         return;
     }
 
-    switch (event.type) {
+    switch (rx_event.type) {
         case RxEvent::Type::Frame:
-            conn->process_frame(event.data.get(), event.data_len, event.fin);
+            conn->process_frame(rx_event.data.get(), rx_event.data_len, rx_event.fin);
             break;
         case RxEvent::Type::Disconnected:
             conn->ws_fd = -1; // Socket is already gone, don't close it again.
-            conn->schedule_close(0_ms, event.reason);
+            conn->schedule_close(0_ms, rx_event.reason);
             break;
         case RxEvent::Type::ClientConnected:
             conn->start_client_confirm();
             // SHIP v1.1.0 12.2.3: check for duplicates right after the TLS connection is established
             resolve_duplicate_connections(conn->peer_node);
             break;
+        case RxEvent::Type::None:
+        case RxEvent::Type::Connected: // Handled above
         default:
             break;
     }
 }
 
-void Ship::handle_connected(const RxEvent &event)
+void Ship::handle_connected(const RxEvent &rx_event)
 {
     if (!is_enabled || !eebus.is_enabled()) {
-        ws_close(event.fd);
+        ws_close(rx_event.fd);
         return;
     }
 
     // The SKI from the TLS client certificate is the only reliable peer identity
     // (multiple SHIP peers may share one host IP). SHIP 9.1 requires client certificates.
-    if (event.tls_ski.isEmpty()) {
-        eebus.trace_fmtln("Rejecting incoming SHIP connection from %s: no SKI from TLS client cert", event.peer_ip.c_str());
-        logger.printfln("Rejected SHIP connection from %s: no TLS client certificate", event.peer_ip.c_str());
-        ws_close(event.fd);
+    if (rx_event.tls_ski.isEmpty()) {
+        eebus.trace_fmtln("Rejecting incoming SHIP connection from %s: no SKI from TLS client cert", rx_event.peer_ip.c_str());
+        logger.printfln("Rejected SHIP connection from %s: no TLS client certificate", rx_event.peer_ip.c_str());
+        ws_close(rx_event.fd);
         return;
     }
 
-    if (peer_handler.get_peer_by_ski(event.tls_ski) != nullptr) {
-        eebus.trace_fmtln("Incoming SHIP connection from %s identified by TLS cert SKI %s", event.peer_ip.c_str(), event.tls_ski.c_str());
+    if (peer_handler.get_peer_by_ski(rx_event.tls_ski) != nullptr) {
+        eebus.trace_fmtln("Incoming SHIP connection from %s identified by TLS cert SKI %s", rx_event.peer_ip.c_str(), rx_event.tls_ski.c_str());
     } else {
-        eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", event.peer_ip.c_str(), event.tls_ski.c_str());
+        eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", rx_event.peer_ip.c_str(), rx_event.tls_ski.c_str());
     }
-    ShipNode *node = peer_handler.get_or_create_by_ski(event.tls_ski);
-    peer_handler.update_ip_by_ski(event.tls_ski, event.peer_ip, true);
+    ShipNode *node = peer_handler.get_or_create_by_ski(rx_event.tls_ski);
+    peer_handler.update_ip_by_ski(rx_event.tls_ski, rx_event.peer_ip, true);
 
     node->state = NodeState::Connected;
-    eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", event.peer_ip.c_str(), node->txt_ski.c_str());
-    ship_connections.push_back(make_unique_psram<ShipConnection>(event.fd, node));
+    eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", rx_event.peer_ip.c_str(), node->txt_ski.c_str());
+    ship_connections.push_back(make_unique_psram<ShipConnection>(rx_event.fd, node));
     logger.printfln("New SHIP Client connected from %s", node->node_name().c_str());
 
     // SHIP v1.1.0 12.2.3: check for duplicates right after the peer is identified
@@ -442,21 +447,21 @@ void Ship::resolve_duplicate_connections(const ShipNode *node)
             if (!is_enabled || !eebus.is_enabled()) {
                 return;
             }
-            const ShipNode *node = peer_handler.get_peer_by_ski(ski);
-            if (node == nullptr) {
+            const ShipNode *peer = peer_handler.get_peer_by_ski(ski);
+            if (peer == nullptr) {
                 return; // The peer was removed in the meantime.
             }
             size_t remaining = 0;
             for (const auto &conn : ship_connections) {
-                if (!conn->closing_scheduled && conn->peer_node == node) {
+                if (!conn->closing_scheduled && conn->peer_node == peer) {
                     remaining++;
                 }
             }
             if (remaining < 2) {
                 return; // The peer resolved the duplicate in time.
             }
-            eebus.trace_fmtln("SHIP 12.2.3: Bigger-SKI peer %s did not resolve duplicate connections within 3s, closing older connections", node->node_name().c_str());
-            close_all_but_most_recent(node);
+            eebus.trace_fmtln("SHIP 12.2.3: Bigger-SKI peer %s did not resolve duplicate connections within 3s, closing older connections", peer->node_name().c_str());
+            close_all_but_most_recent(peer);
         }, 3_s);
     }
 }

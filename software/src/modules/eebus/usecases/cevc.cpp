@@ -31,6 +31,10 @@
 #include <ctime>
 #include <string>
 
+#include "gcc_warnings.h"
+// SPINE message dispatch switches over large enums and only handles the relevant values.
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
 // ==============================================================================
 // CEVC - Coordinated EV Charging Use Case
 // Spec: EEBus_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
@@ -417,7 +421,7 @@ MessageReturn CevcUsecase::write_time_series_list(HeaderType &header, SpineOptio
         if (!received_charging_plan.empty()) {
             charging_plan_valid = true;
             plan_updated = true;
-            eebus.trace_fmtln("CEVC: Received charging plan with %d slots", received_charging_plan.size());
+            eebus.trace_fmtln("CEVC: Received charging plan with %zu slots", received_charging_plan.size());
         }
     }
 
@@ -675,7 +679,7 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
 
     if (!received_incentives.empty()) {
         incentives_valid = true;
-        eebus.trace_fmtln("CEVC: Updated incentive table (%d updated, %d new, total %d slots)", updated_slots, new_slots, received_incentives.size());
+        eebus.trace_fmtln("CEVC: Updated incentive table (%d updated, %d new, total %zu slots)", updated_slots, new_slots, received_incentives.size());
         notify_subscribers_incentives();
         update_api_state();
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
@@ -763,7 +767,7 @@ void CevcUsecase::update_api_state() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("cevc");
     api_entry->get("has_charging_plan")->updateBool(has_charging_plan());
-    api_entry->get("charging_plan_start_time")->updateUint(charging_plan_start_time);
+    api_entry->get("charging_plan_start_time")->updateUint(static_cast<uint32_t>(charging_plan_start_time));
     api_entry->get("target_power_w")->updateInt(get_target_power_w());
     api_entry->get("has_incentives")->updateBool(has_incentives());
     api_entry->get("energy_broker_connected")->updateBool(energy_broker_connected);

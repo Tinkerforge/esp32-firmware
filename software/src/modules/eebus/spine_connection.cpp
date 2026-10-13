@@ -28,6 +28,8 @@
 
 #include <algorithm>
 
+#include "gcc_warnings.h"
+
 SpineConnection::SpineConnection(ShipConnection *ship_conn)
 {
     ship_connection = ship_conn;
