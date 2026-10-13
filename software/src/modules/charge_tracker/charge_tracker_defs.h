@@ -18,7 +18,6 @@
  */
 #pragma once
 #include <cstdint>
-#include <Arduino.h>
 
 #include "language.h"
 #include "modules/users/users.h"

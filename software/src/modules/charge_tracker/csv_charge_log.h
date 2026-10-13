@@ -20,7 +20,6 @@
 #pragma once
 
 #include <functional>
-#include <Arduino.h>
 
 #include "config.h"
 #include "language.h"

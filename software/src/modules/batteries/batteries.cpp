@@ -19,8 +19,6 @@
 
 #include "batteries.h"
 
-#include <Arduino.h>
-
 #include "options.h"
 #include "battery_class_none.h"
 #include "event_log_prefix.h"

@@ -19,8 +19,6 @@
 
 #include "tutorial_phase_5.h"
 
-#include <Arduino.h>
-
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "bindings/hal_common.h"

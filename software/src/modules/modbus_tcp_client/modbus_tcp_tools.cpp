@@ -19,8 +19,6 @@
 
 #include "modbus_tcp_tools.h"
 
-#include <Arduino.h>
-
 #include "tools.h"
 
 #include "gcc_warnings.h"

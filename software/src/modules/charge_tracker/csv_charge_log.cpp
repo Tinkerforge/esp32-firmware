@@ -29,7 +29,6 @@
 #include <vector>
 #include <mutex>
 #include <cstring>
-#include <Arduino.h>
 
 #define EVENT_LOG_PREFIX "csv_charge_log"
 #define MAX_ACCUMULATED 2048
