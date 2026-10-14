@@ -761,7 +761,7 @@ class Stage3:
         self.try_action('03B', lambda device: device.set_beep(2400, volume, beep_duration))
         time.sleep(beep_duration / 1000)
 
-    def reset_dc_fault(self, cp_pe_state):
+    def reset_dc_fault(self, cp_pe_state, stay_cleared_timeout=0):
         print('Waiting for DC fault to clear')
 
         start = time.monotonic()
@@ -783,28 +783,28 @@ class Stage3:
 
             duration = time.monotonic() - start
         else:
-            fatal_error(f'DC fault still present after {timeout:.3f}s')
+            fatal_error(f'DC fault still present after {timeout}s')
 
-        print('Waiting for DC fault to stay cleared')
+        if stay_cleared_timeout > 0:
+            print('Waiting for DC fault to stay cleared')
 
-        start = time.monotonic()
-        duration = -1
-        timeout = 5
+            start = time.monotonic()
+            duration = -1
 
-        while duration < timeout:
-            gpio_state = self.get_gpio_state_function()
+            while duration < stay_cleared_timeout:
+                gpio_state = self.get_gpio_state_function()
 
-            if any(gpio_state[:3]):
-                if duration < 0:
-                    fatal_error('DC fault immediately present again')
-                else:
-                    fatal_error(f'DC fault present again after {duration:.3f}s')
+                if any(gpio_state[:3]):
+                    if duration < 0:
+                        fatal_error('DC fault immediately present again')
+                    else:
+                        fatal_error(f'DC fault present again after {duration:.3f}s')
 
-            time.sleep(0.025)
+                time.sleep(0.025)
 
-            duration = time.monotonic() - start
+                duration = time.monotonic() - start
 
-        print(f'DC fault stayed cleared for {timeout:.3f}s')
+            print(f'DC fault stayed cleared for {stay_cleared_timeout}s')
 
         print('Resetting DC fault state')
 
@@ -997,7 +997,7 @@ class Stage3:
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
 
-    def retry_test(self, base_key, test, max_tries, report):
+    def retry_ztest(self, base_key, test, max_tries, report):
         try_count = 0
 
         while True:
@@ -1025,7 +1025,8 @@ class Stage3:
             time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
             if not self.check_iec_state('A'):
-                fatal_error('Charger not in IEC state A')
+                # assume the electrical test triggered a DC fault
+                self.reset_dc_fault('A', stay_cleared_timeout=5)
 
             time.sleep(10)
 
@@ -1036,10 +1037,10 @@ class Stage3:
                 fatal_error('Charger not in IEC state C')
 
     def test_zline(self, phase, report):
-        self.retry_test(f'zline_{phase}', lambda: blackbox.bb_measure_zline()._asdict(), 3, report)
+        self.retry_ztest(f'zline_{phase}', lambda: blackbox.bb_measure_zline()._asdict(), 3, report)
 
     def test_zloop(self, phase, report):
-        self.retry_test(f'zloop_{phase}', lambda: blackbox.bb_measure_zloop()._asdict(), 3, report)
+        self.retry_ztest(f'zloop_{phase}', lambda: blackbox.bb_measure_zloop()._asdict(), 3, report)
 
     def test_uc(self, phase, report):
         key = f'uc_{phase}'
