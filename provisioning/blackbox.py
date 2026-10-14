@@ -92,7 +92,7 @@ METREL_RESULTS = {
 
 CallResult = namedtuple('CallResult', 'success response')
 DeviceInfo = namedtuple('DeviceInfo', 'product_name model_name firmware_version serial_number calibration_date')
-TestResult = namedtuple('TestResult', 'try_count max_tries passed parameters limits results')
+TestResult = namedtuple('TestResult', 'passed aborted parameters limits results')
 
 
 class BlackboxException(Exception):
@@ -208,66 +208,60 @@ def bb_get_device_info():
     return DeviceInfo(product_name, model_name, firmware_version, serial_number, calibration_date)
 
 
-def bb_start_test(suffix, max_tries=1):
+def bb_start_test(suffix):
     result = bb_call('BB; START_SINGLETEST ' + suffix)
 
     if not result.success:
         raise BlackboxException(f'ST failed: {result.response}')
 
-    try_count = 0
+    passed = None
+    aborted = False
+    parameters = {}
+    limits = {}
+    results = {}
 
-    while True:
-        try_count += 1
+    for response in result.response:
+        kind, suffix = response.removeprefix('BB; ST; ').split(' ', 1)
 
-        passed = None
-        parameters = {}
-        limits = {}
-        results = {}
-
-        for response in result.response:
-            kind, suffix = response.removeprefix('BB; ST; ').split(' ', 1)
-
-            if kind == 'START':
-                pass
-            elif kind == 'STATUS':
-                if suffix == '= pass':
-                    passed = True
-                elif suffix == '= fail':
-                    passed = False
-                elif suffix == '= empty':
-                    pass
-                elif suffix == '= cancel':
-                    pass
-                else:
-                    raise BlackboxException(f'ST response malformed: {result.response}')
+        if kind == 'START':
+            pass
+        elif kind == 'STATUS':
+            if suffix == '= pass':
+                passed = True
+            elif suffix == '= fail':
+                passed = False
+            elif suffix == '= empty':
+                passed = False
+                aborted = True
+            elif suffix == '= cancel':
+                passed = False
+                aborted = True
+            elif suffix == '= none':
+                passed = False
+                aborted = True
             else:
-                if '=' in suffix:
-                    key, value = suffix.split(' = ', 1)
-                    value = value.split(';')[0]  # FIXME: drop tail
-                else:
-                    key = suffix
-                    value = None
+                raise BlackboxException(f'ST response with unknown STATUS {suffix}: {result.response}')
+        else:
+            if '=' in suffix:
+                key, value = suffix.split(' = ', 1)
+                value = value.split(';')[0]  # FIXME: drop tail
+            else:
+                key = suffix
+                value = None
 
-                if kind == 'PARAMETER':
-                    parameters[METREL_PARAMETERS[key]] = value
-                elif kind == 'LIMIT':
-                    limits[METREL_LIMITS[key]] = value
-                elif kind == 'RESULT':
-                    results[METREL_RESULTS[key]] = value
-                else:
-                    raise BlackboxException(f'ST response malformed: {result.response}')
+            if kind == 'PARAMETER':
+                parameters[METREL_PARAMETERS[key]] = value
+            elif kind == 'LIMIT':
+                limits[METREL_LIMITS[key]] = value
+            elif kind == 'RESULT':
+                results[METREL_RESULTS[key]] = value
+            else:
+                raise BlackboxException(f'ST response with unknown part {kind}: {result.response}')
 
-        if passed != None:
-            break
+    if passed == None:
+        raise BlackboxException(f'ST response without STATUS: {result.response}')
 
-        if try_count < max_tries:
-            debug(f'ST response with empty or cancel status, retrying: {result.response}')
-            time.sleep(5)
-            continue
-
-        raise BlackboxException(f'ST response with empty or cancel status after {try_count} {"try" if try_count == 1 else "tries"}: {result.response}')
-
-    return TestResult(try_count, max_tries, passed, parameters, limits, results)
+    return TestResult(passed, aborted, parameters, limits, results)
 
 
 def bb_measure_voltage():
@@ -283,8 +277,8 @@ def bb_measure_zline():
     return bb_start_test('17; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
 
 
-def bb_measure_zloop(max_tries=1):
-    return bb_start_test('15; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT', max_tries=max_tries)
+def bb_measure_zloop():
+    return bb_start_test('15; P108 = B; P28 = 6 A; P029 = 0.035 s; P31 = 1; P242 = TN/TT')
 
 
 def bb_measure_uc():

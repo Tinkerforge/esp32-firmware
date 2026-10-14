@@ -997,22 +997,49 @@ class Stage3:
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
 
-    def test_zline(self, phase, report):
-        key = f'zline_{phase}'
-        report[key] = blackbox.bb_measure_zline()._asdict()
+    def retry_test(self, base_key, test, max_tries, report):
+        try_count = 0
 
-        if not report[key]['passed']:
-            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+        while True:
+            key = base_key
+
+            if try_count > 0:
+                key += f'_retry_{try_count}'
+
+            try_count += 1
+
+            report[key] = test()
+
+            if report[key]['passed']:
+                return
+
+            if not report[key]['aborted']:
+                fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
+
+            if try_count >= max_tries:
+                fatal_error('Electrical test was aborted too many times')
+
+            print(yellow(f'WARNING: Electrical test was aborted, trying again in 10 seconds: {json.dumps(report[key], indent=4)}'))
+
+            self.change_cp_pe_state('A')
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            if not self.check_iec_state('A'):
+                fatal_error('Charger not in IEC state A')
+
+            time.sleep(10)
+
+            self.change_cp_pe_state('C')
+            time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
+
+            if not self.check_iec_state('C'):
+                fatal_error('Charger not in IEC state C')
+
+    def test_zline(self, phase, report):
+        self.retry_test(f'zline_{phase}', lambda: blackbox.bb_measure_zline()._asdict(), 3, report)
 
     def test_zloop(self, phase, report):
-        key = f'zloop_{phase}'
-        report[key] = blackbox.bb_measure_zloop(max_tries=5)._asdict()
-
-        if not report[key]['passed']:
-            fatal_error(f'Electrical test failed: {json.dumps(report[key], indent=4)}')
-
-        if report[key]['try_count'] > 1:
-            print(yellow(f'WARNING: Electrical test required {report[key]['try_count']} tries to pass'))
+        self.retry_test(f'zloop_{phase}', lambda: blackbox.bb_measure_zloop()._asdict(), 3, report)
 
     def test_uc(self, phase, report):
         key = f'uc_{phase}'
