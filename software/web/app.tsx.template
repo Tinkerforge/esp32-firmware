@@ -56,6 +56,8 @@ interface AppState {
     sidebar_open: boolean;
     username: string;
     password: string;
+    display_name: string;
+    display_type: string;
 }
 
 function get_sub_page() {
@@ -127,6 +129,8 @@ export class App extends Component<AppProps, AppState> {
             sidebar_open: false,
             username: "",
             password: "",
+            display_name: null,
+            display_type: null,
         } as any;
 
         this.navbar_group_refs = {
@@ -170,6 +174,14 @@ export class App extends Component<AppProps, AppState> {
 
     setup_login() {
         this.setState({visible: true, mode: "login", sub_page: "login"});
+
+        util.download("/login_info", true)
+            .then(blob => blob.text())
+            .then(text => {
+                let info = JSON.parse(text);
+                this.setState({display_name: info.display_name, display_type: info.display_type});
+            })
+            .catch(() => {});
 
         let form = document.getElementById('main_login_form') as HTMLFormElement;
         let finish_login = () => {
@@ -228,6 +240,12 @@ export class App extends Component<AppProps, AppState> {
         const menu_button_width = 68; // px
         const under_construction_width = options.UNDER_CONSTRUCTION ? 42 : 0; // px
         const under_construction_margin = options.UNDER_CONSTRUCTION ? "0.75" : "0"; // rem
+        const login_device_type = this.state.display_type ? this.state.display_type : options.PRODUCT_NAME;
+        const login_device = this.state.display_name ? `${login_device_type} (${this.state.display_name})` : login_device_type;
+
+        if ((this.state.mode == "login") && this.state.display_name) {
+            document.title = this.state.display_name + " - " + __("main.title");
+        }
 
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0"} hidden={util.is_native_median_app()}>
@@ -296,6 +314,9 @@ export class App extends Component<AppProps, AppState> {
 
                             <SubPage name="login">
                                 <PageHeader title={__("main.content_login")} />
+                                <FormRow label={__("main.login_device")}>
+                                    <InputText value={login_device} />
+                                </FormRow>
                                 <form id="main_login_form">
                                     <FormRow label={__("main.login_username")}>
                                         <InputText

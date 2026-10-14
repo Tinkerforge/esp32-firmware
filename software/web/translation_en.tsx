@@ -8,6 +8,7 @@ let x = {
         "title": `${options.PRODUCT_NAME} Web Interface`,
         "navbar_login": "Sign In",
         "content_login": "Sign In",
+        "login_device": "Device",
         "login_username": "Username",
         "login_password": "Password",
         "login_button": "Sign In",

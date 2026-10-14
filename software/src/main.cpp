@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <esp_task.h>
+#include <TFJson.h>
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
@@ -204,6 +205,34 @@ static void register_default_urls() {
             }
 
             return request.send_plain(200, "Not logged in");
+        } else if (request.uri() == "/login_info") {
+            // Show on login page which device this is.
+            String display_name;
+            String display_type;
+
+            (void)task_scheduler.await([&display_name, &display_type]() {
+                const Config *info_display_name = api.getState("info/display_name", false);
+                const Config *info_name         = api.getState("info/name", false);
+
+                if (info_display_name != nullptr) {
+                    display_name = info_display_name->get("display_name")->asString();
+                }
+
+                if (info_name != nullptr) {
+                    display_type = info_name->get("display_type")->asString();
+                }
+            });
+
+            char buf[768];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberString("display_name", display_name.c_str());
+            json.addMemberString("display_type", display_type.c_str());
+            json.endObject();
+            json.end();
+
+            return request.send_json(200, json);
         } else {
             return request.requestAuthentication();
         }

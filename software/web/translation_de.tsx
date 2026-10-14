@@ -8,6 +8,7 @@ let x = {
         "title": `${options.PRODUCT_NAME} Webinterface`,
         "navbar_login": "Anmeldung",
         "content_login": "Anmeldung",
+        "login_device": "Gerät",
         "login_username": "Benutzername",
         "login_password": "Passwort",
         "login_button": "Anmelden",
