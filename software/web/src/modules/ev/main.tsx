@@ -186,7 +186,7 @@ function EvFormContent(props: {
         </FormRow>
         <FormRow label={__("ev.content.add_ev_efficiency")} label_muted={__("ev.content.add_ev_efficiency_desc")}>
             <InputFloat
-                value={props.ev.charging_efficiency * 100}
+                value={Math.round(props.ev.charging_efficiency * 100)}
                 onValue={(v) => props.onEvChange({charging_efficiency: v / 100})}
                 digits={0}
                 min={50}
