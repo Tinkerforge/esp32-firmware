@@ -15,8 +15,10 @@ let x = {
 
             "debug": "Debug client",
             "expert_warning": "This is a tool for advanced users. It allows to debug and explore the Modbus/TCP communication of other Modbus/TCP devices. The debug client is not required for normal operation.",
-            "meter": "Meter",
-            "meter_none": "No meter",
+            "known_device": "Known device",
+            "known_device_none": "No device",
+            "meter_prefix": "Energy meter: ",
+            "battery_prefix": "Battery storage: ",
             "host": "Hostname or IP address",
             "port": "Port",
             "port_muted": "typically 502",

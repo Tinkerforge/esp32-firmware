@@ -15,8 +15,10 @@ let x = {
 
             "debug": "Debug-Client",
             "expert_warning": "Dies ist ein Werkzeug für fortgeschrittene Benutzer. Es dient dem Debuggen und Explorieren der Modbus/TCP-Kommunikation mit anderen Modbus/TCP-Geräten. Es ist nicht notwendig den Debug-Client für den normalen Betrieb zu verwenden.",
-            "meter": "Stromzähler",
-            "meter_none": "Kein Stromzähler",
+            "known_device": "Bekanntes Gerät",
+            "known_device_none": "Kein Gerät",
+            "meter_prefix": "Stromzähler: ",
+            "battery_prefix": "Batteriespeicher: ",
             "host": "Hostname oder IP-Adresse",
             "port": "Port",
             "port_muted": "typischerweise 502",

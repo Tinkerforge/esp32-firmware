@@ -44,6 +44,13 @@ import { MeterConfig } from "../meters/types";
 //#if MODULE_METERS_MODBUS_TCP_AVAILABLE
 import { MeterModbusTCPTableID } from "../meters_modbus_tcp/generated/meter_modbus_tcp_table_id.enum";
 //#endif
+//#if MODULE_BATTERIES_AVAILABLE
+import { BatteryClassID } from "../batteries/generated/battery_class_id.enum";
+import { BatteryConfig } from "../batteries/types";
+//#endif
+//#if MODULE_BATTERIES_MODBUS_TCP_AVAILABLE
+import { BatteryModbusTCPTableID } from "../batteries_modbus_tcp/generated/battery_modbus_tcp_table_id.enum";
+//#endif
 
 export function ModbusTCPDebugNavbar() {
     return (
@@ -55,11 +62,14 @@ export function ModbusTCPDebugNavbar() {
 interface ModbusTCPDebugToolState {
 //#if MODULE_METERS_AVAILABLE
     meter_configs: {[meter_slot: number]: MeterConfig};
-    meter_slot: number;
-    meter_host: string;
-    meter_port: number;
-    meter_device_address: number;
 //#endif
+//#if MODULE_BATTERIES_AVAILABLE
+    battery_configs: {[battery_slot: number]: BatteryConfig};
+//#endif
+    known_device_slot: number;
+    known_device_host: string;
+    known_device_port: number;
+    known_device_device_address: number;
     was_validated: boolean;
     custom_host: string;
     custom_port: number;
@@ -101,11 +111,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
         this.state = {
 //#if MODULE_METERS_AVAILABLE
             meter_configs: {},
-            meter_slot: -1,
-            meter_host: "",
-            meter_port: 502,
-            meter_device_address: 1,
 //#endif
+//#if MODULE_BATTERIES_AVAILABLE
+            battery_configs: {},
+//#endif
+            known_device_slot: -1,
+            known_device_host: "",
+            known_device_port: 502,
+            known_device_device_address: 1,
             was_validated: false,
             custom_host: "",
             custom_port: 502,
@@ -131,6 +144,21 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     meter_configs: {
                         ...prevState.meter_configs,
                         [meter_slot]: config
+                    }
+                }));
+            });
+        }
+//#endif
+
+//#if MODULE_BATTERIES_AVAILABLE
+        for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
+            util.addApiEventListener_unchecked(`batteries/${battery_slot}/config`, () => {
+                let config = API.get_unchecked(`batteries/${battery_slot}/config`);
+
+                this.setState((prevState) => ({
+                    battery_configs: {
+                        ...prevState.battery_configs,
+                        [battery_slot]: config
                     }
                 }));
             });
@@ -373,17 +401,27 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
     render() {
         let start_address_offset = this.state.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
-//#if MODULE_METERS_AVAILABLE
-        let meter_items: [string, string][] = [["-1", __("modbus_tcp_debug.content.meter_none")]];
+        let known_device_items: [string, string][] = [["-1", __("modbus_tcp_debug.content.known_device_none")]];
 
+//#if MODULE_METERS_AVAILABLE
         for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             if (util.hasValue(this.state.meter_configs[meter_slot])) {
                 let meter_config = this.state.meter_configs[meter_slot];
 
                 if (meter_config[0] == MeterClassID.SunSpec
                  || meter_config[0] == MeterClassID.ModbusTCP) {
-                    meter_items.push([meter_slot.toString(), meter_config[1].display_name]);
+                    known_device_items.push([meter_slot.toString(), __("modbus_tcp_debug.content.meter_prefix") + meter_config[1].display_name]);
                 }
+            }
+        }
+//#endif
+
+//#if MODULE_BATTERIES_AVAILABLE
+        for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
+            if (util.hasValue(this.state.battery_configs[battery_slot])) {
+                let battery_config = this.state.battery_configs[battery_slot];
+
+                known_device_items.push([(options.METERS_MAX_SLOTS + battery_slot).toString(), __("modbus_tcp_debug.content.battery_prefix") + battery_config[1].display_name]);
             }
         }
 //#endif
@@ -580,15 +618,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         let result = "<unknown>";
 
-//#if MODULE_METERS_AVAILABLE
-                        let host = this.state.meter_slot >= 0 ? this.state.meter_host : this.state.custom_host;
-                        let port = this.state.meter_slot >= 0 ? this.state.meter_port : this.state.custom_port;
-                        let device_address = this.state.meter_slot >= 0 ? this.state.meter_device_address : this.state.custom_device_address;
-//#else
-                        let host = this.state.custom_host;
-                        let port = this.state.custom_port;
-                        let device_address = this.state.custom_device_address;
-//#endif
+                        let host = this.state.known_device_slot >= 0 ? this.state.known_device_host : this.state.custom_host;
+                        let port = this.state.known_device_slot >= 0 ? this.state.known_device_port : this.state.custom_port;
+                        let device_address = this.state.known_device_slot >= 0 ? this.state.known_device_device_address : this.state.custom_device_address;
 
                         try {
                             result = await (await util.put("/modbus_tcp_debug/transact", {
@@ -613,76 +645,96 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     });
                 }}>
             <Alert variant="warning"> {__("modbus_tcp_debug.content.expert_warning")}</Alert>
-{/*#if MODULE_METERS_AVAILABLE*/}
-            <FormRow label={__("modbus_tcp_debug.content.meter")}>
+            <FormRow label={__("modbus_tcp_debug.content.known_device")}>
                 <InputSelect
                     required
                     disabled={this.state.waiting}
-                    items={meter_items}
-                    value={util.hasValue(this.state.meter_slot) ? this.state.meter_slot.toString() : "-1"}
+                    items={known_device_items}
+                    value={util.hasValue(this.state.known_device_slot) ? this.state.known_device_slot.toString() : "-1"}
                     onValue={(v) => {
-                        let meter_slot = parseInt(v);
-                        let meter_host = "";
-                        let meter_port = 502;
-                        let meter_device_address = 1;
+                        let known_device_slot = parseInt(v);
+                        let known_device_host = "";
+                        let known_device_port = 502;
+                        let known_device_device_address = 1;
 
-                        if (meter_slot >= 0) {
-                            let meter_config = this.state.meter_configs[meter_slot];
+//#if MODULE_METERS_AVAILABLE
+                        if (known_device_slot >= 0 && known_device_slot < options.METERS_MAX_SLOTS) {
+                            let meter_config = this.state.meter_configs[known_device_slot];
 
                             if (meter_config[0] == MeterClassID.SunSpec) {
-                                meter_host = meter_config[1].host;
-                                meter_port = meter_config[1].port;
-                                meter_device_address = meter_config[1].device_address;
+                                known_device_host = meter_config[1].host;
+                                known_device_port = meter_config[1].port;
+                                known_device_device_address = meter_config[1].device_address;
                             }
 //#if MODULE_METERS_MODBUS_TCP_AVAILABLE
                             else if (meter_config[0] == MeterClassID.ModbusTCP && meter_config[1].table[0] != MeterModbusTCPTableID.None) {
-                                meter_host = meter_config[1].host;
-                                meter_port = meter_config[1].port;
+                                known_device_host = meter_config[1].host;
+                                known_device_port = meter_config[1].port;
 
                                 if (meter_config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
-                                    meter_device_address = meter_config[1].table[1].device_address;
+                                    known_device_device_address = meter_config[1].table[1].device_address;
                                 }
                                 else {
-                                    meter_device_address = 1;
+                                    known_device_device_address = 1;
                                 }
                             }
 //#endif
                         }
+//#endif
+
+//#if MODULE_BATTERIES_AVAILABLE
+                        if (known_device_slot >= options.METERS_MAX_SLOTS) {
+                            let battery_config = this.state.battery_configs[known_device_slot - options.METERS_MAX_SLOTS];
+
+//#if MODULE_BATTERIES_MODBUS_TCP_AVAILABLE
+                            if (battery_config[0] == BatteryClassID.ModbusTCP && battery_config[1].table[0] != BatteryModbusTCPTableID.None) {
+                                known_device_host = battery_config[1].host;
+                                known_device_port = battery_config[1].port;
+                                known_device_device_address = battery_config[1].table[1].device_address;
+                            }
+                            else
+//#endif
+                            if (battery_config[0] == BatteryClassID.SunSpec) {
+                                known_device_host = battery_config[1].host;
+                                known_device_port = battery_config[1].port;
+                                known_device_device_address = battery_config[1].device_address;
+                            }
+                        }
+//#endif
 
                         this.setState({
-                            meter_slot: meter_slot,
-                            meter_host: meter_host,
-                            meter_port: meter_port,
-                            meter_device_address: meter_device_address,
+                            known_device_slot: known_device_slot,
+                            known_device_host: known_device_host,
+                            known_device_port: known_device_port,
+                            known_device_device_address: known_device_device_address,
                         });
                     }} />
             </FormRow>
-{/*#endif*/}
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     required
                     maxLength={64}
-                    disabled={this.state.waiting || this.state.meter_slot >= 0}
-                    value={this.state.meter_slot >= 0 ? this.state.meter_host : this.state.custom_host}
-                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_host: v}) : undefined} />
+                    disabled={this.state.waiting || this.state.known_device_slot >= 0}
+                    value={this.state.known_device_slot >= 0 ? this.state.known_device_host : this.state.custom_host}
+                    onValue={(v) => this.state.known_device_slot < 0 ? this.setState({custom_host: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
                 <InputNumber
                     required
-                    disabled={this.state.waiting || this.state.meter_slot >= 0}
+                    disabled={this.state.waiting || this.state.known_device_slot >= 0}
                     min={1}
                     max={65535}
-                    value={this.state.meter_slot >= 0 ? this.state.meter_port : this.state.custom_port}
-                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_port: v}) : undefined} />
+                    value={this.state.known_device_slot >= 0 ? this.state.known_device_port : this.state.custom_port}
+                    onValue={(v) => this.state.known_device_slot < 0 ? this.setState({custom_port: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.device_address")}>
                 <InputNumber
                     required
-                    disabled={this.state.waiting || this.state.meter_slot >= 0}
+                    disabled={this.state.waiting || this.state.known_device_slot >= 0}
                     min={0}
                     max={255}
-                    value={this.state.meter_slot >= 0 ? this.state.meter_device_address : this.state.custom_device_address}
-                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_device_address: v}) : undefined} />
+                    value={this.state.known_device_slot >= 0 ? this.state.known_device_device_address : this.state.custom_device_address}
+                    onValue={(v) => this.state.known_device_slot < 0 ? this.setState({custom_device_address: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.function_code")}>
                 <InputSelect
