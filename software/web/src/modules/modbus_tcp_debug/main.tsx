@@ -421,7 +421,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             if (util.hasValue(this.state.battery_configs[battery_slot])) {
                 let battery_config = this.state.battery_configs[battery_slot];
 
-                known_device_items.push([(options.METERS_MAX_SLOTS + battery_slot).toString(), __("modbus_tcp_debug.content.battery_prefix") + battery_config[1].display_name]);
+                if ((battery_config[0] == BatteryClassID.ModbusTCP) || (battery_config[0] == BatteryClassID.SunSpec)) {
+                    known_device_items.push([(options.METERS_MAX_SLOTS + battery_slot).toString(), __("modbus_tcp_debug.content.battery_prefix") + battery_config[1].display_name]);
+                }
             }
         }
 //#endif
