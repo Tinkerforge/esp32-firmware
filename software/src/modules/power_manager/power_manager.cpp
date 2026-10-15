@@ -63,74 +63,79 @@ void PowerManager::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enabled", Config::Bool(false)},
-        {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
-        {"excess_charging_enable", Config::Bool(false)},
-        {"default_mode", Config::Enum(ConfigChargeMode::Default)},
-        {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
-        {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
-        {"battery_mode", Config::Enum(BatteryPriority::PreferChargers)}, // FIXME: for API stability reasons this member cannot be renamed to battery_priority
-        {"battery_target_soc", Config::Uint8(0)},
-        {"battery_inverted", Config::Bool(false)},
-        {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
-        {"target_power_from_grid", Config::Int32(0)}, // in watt
-        {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
-        {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
+        {"phase_switching_mode",     Config::Uint8(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MAX)},
+        {"excess_charging_enable",   Config::Bool(false)},
+        {"default_mode",             Config::Enum(ConfigChargeMode::Default)},
+        {"meter_slot_grid_power",    Config::Uint8(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), OPTIONS_METERS_MAX_SLOTS() - 1)},
+        {"meter_slot_battery_power", Config::Uint8(METER_SLOT_BATTERY_NO_BATTERY, METER_SLOT_BATTERY_NO_BATTERY)},
+        {"battery_mode",             Config::Enum(BatteryPriority::PreferChargers)}, // FIXME: for API stability reasons this member cannot be renamed to battery_priority
+        {"battery_target_soc",       Config::Uint8(0)},
+        {"battery_inverted",         Config::Bool(false)},
+        {"battery_deadzone",         Config::Uint16( 100)}, // in watt
+        {"target_power_from_grid",   Config::Int32(    0)}, // in watt
+        {"guaranteed_power",         Config::Uint16(1380)}, // in watt
+        {"cloud_filter_mode",        Config::Uint8(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_STRONG)},
     }), [](const Config &cfg, ConfigSource source) -> String {
         const bool excess_charging_enable = cfg.get("excess_charging_enable")->asBool();
 
-        if (cfg.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_EXTERNAL_CONTROL && excess_charging_enable) {
+        if (cfg.get("phase_switching_mode")->asUint8() == PHASE_SWITCHING_EXTERNAL_CONTROL && excess_charging_enable) {
             return "Can't enable excess charging when external control is enabled for phase switching.";
         }
 
         if (excess_charging_enable) {
-            const uint32_t slot_grid    = cfg.get("meter_slot_grid_power"   )->asUint();
-            const uint32_t slot_battery = cfg.get("meter_slot_battery_power")->asUint();
+            const uint8_t slot_grid    = cfg.get("meter_slot_grid_power"   )->asUint8();
+            const uint8_t slot_battery = cfg.get("meter_slot_battery_power")->asUint8();
 
             if (slot_grid == slot_battery) {
                 return "Grid and battery storage cannot use the same power meter";
             }
         }
 
-        return "";
+        return {};
     }};
 
     dynamic_load_config = ConfigRoot{Config::Object({
         {"enabled",                  Config::Bool(false)},
-        {"meter_slot_grid_currents", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
-        {"current_limit",            Config::Uint(    0, 0, 524287)}, // mA, maximum is 524 A
-        {"largest_consumer_current", Config::Uint(32000, 0, 524287)}, // mA, maximum is 524 A
-        {"safety_margin_pct",        Config::Uint(    0, 0,     50)}, // percent
+        {"meter_slot_grid_currents", Config::Uint8(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), OPTIONS_METERS_MAX_SLOTS() - 1)},
+        {"current_limit",            Config::Uint32(    0)}, // mA, maximum is 524 A to prevent 32 bit overflows, checked in validator
+        {"largest_consumer_current", Config::Uint32(32000)}, // mA, maximum is 524 A to prevent 32 bit overflows, checked in validator
+        {"safety_margin_pct",        Config::Uint8( 0, 50)}, // percent
     }), [](const Config &cfg, ConfigSource source) -> String {
         if (cfg.get("enabled")->asBool()) {
-            uint32_t current_limit_ma            = cfg.get("current_limit")->asUint();
-            uint32_t largest_consumer_current_ma = cfg.get("largest_consumer_current")->asUint();
+            // Check here so that the config can be saved with invalid currents when dynamic load management is disabled.
 
-            // Check here so that the config can be saved with an invalid current_limit when dynamic load management is disabled.
+            const uint32_t current_limit_ma            = cfg.get("current_limit"           )->asUint32();
+            const uint32_t largest_consumer_current_ma = cfg.get("largest_consumer_current")->asUint32();
+
             if (current_limit_ma < 16000) {
-                return "Invalid current limit. Must be at least 16A.";
+                return "Invalid grid current limit. Must be at least 16A.";
             }
+
+            if (current_limit_ma > 524287) {
+                return "Invalid grid current limit. Must be at most 524A.";
+            }
+
             if (largest_consumer_current_ma > current_limit_ma) {
-                return "Largest consumer current cannot be above current limit.";
+                return "Largest consumer current cannot be above grid current limit.";
             }
         }
 
-        return "";
+        return {};
     }};
 
     // Runtime config
     external_control = Config::Object({
-        {"phases_wanted", Config::Uint(0, 0, 3)},
+        {"phases_wanted", Config::Uint8(0, 3)},
     });
     external_control_update = ConfigRoot{
         external_control,
         [](Config &conf, ConfigSource source) -> String {
-            auto phases = conf.get("phases_wanted")->asUint();
+            const uint8_t phases = conf.get("phases_wanted")->asUint8();
             if (phases != 1 && phases != 3)
                 return "Invalid value for phases_wanted! Only 1 or 3 are allowed.";
-            return "";
+            return {};
         }
     };
-
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
@@ -140,7 +145,7 @@ void PowerManager::pre_setup()
         }),
         [this](const Config *cfg) {
             const String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
-                {"phases_wanted", cfg->get("phases_wanted")->asUint()}
+                {"phases_wanted", cfg->get("phases_wanted")->asUint8()}
             }});
             if (!err.isEmpty()) {
                 logger.printfln("Automation couldn't set external_control_update: %s", err.c_str());
@@ -165,11 +170,11 @@ void PowerManager::pre_setup()
     automation.register_action(
         AutomationActionID::PMBlockCharge,
         Config::Object({
-            {"slot", Config::Uint(0, 0, 3)},
+            {"slot", Config::Uint8(0, 3)},
             {"block", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
-            this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
+            this->charging_blocked.pin[cfg->get("slot")->asUint8()] = static_cast<uint8_t>(cfg->get("block")->asBool());
         });
 #endif
 
@@ -292,16 +297,16 @@ void PowerManager::setup()
 
     // Cache config for energy update
     excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
-    meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
-    target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
-    meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint();
+    meter_slot_power            = config.get("meter_slot_grid_power" )->asUint8();
+    target_power_from_grid_w    = config.get("target_power_from_grid")->asInt32(); // watt
+    meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint8();
     battery_priority            = config.get("battery_mode")->asEnum<BatteryPriority>(); // FIXME: for API stability reasons this member cannot be renamed to battery_priority
     battery_target_soc          = config.get("battery_target_soc")->asUint8();
     battery_inverted            = config.get("battery_inverted")->asBool();
-    battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
-    phase_switching_mode        = config.get("phase_switching_mode")->asUint();
+    battery_deadzone_w          = config.get("battery_deadzone")->asUint16(); // watt
+    phase_switching_mode        = config.get("phase_switching_mode")->asUint8();
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
-    meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
+    meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint8();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.get_maximum_available_current()); // milliampere
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
@@ -314,7 +319,7 @@ void PowerManager::setup()
 
     // Prepare value count for mavg filters
     size_t power_mavg_span_s;
-    switch (config.get("cloud_filter_mode")->asUint()) {
+    switch (config.get("cloud_filter_mode")->asUint8()) {
         default:
         case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
         case CLOUD_FILTER_LIGHT:  power_mavg_span_s = 120; break;
@@ -339,12 +344,12 @@ void PowerManager::setup()
 
     // Calculate constants and set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
-        int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit")->asUint());
-        int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint());
-        int32_t safety_margin_pct           = static_cast<int32_t>(dynamic_load_config.get("safety_margin_pct")->asUint());
+        const int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit"           )->asUint32());
+        const int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint32());
+        const int32_t safety_margin_pct           = static_cast<int32_t>(dynamic_load_config.get("safety_margin_pct"       )->asUint8());
 
-        int32_t circuit_breaker_trip_point_ma = current_limit_ma * 7 / 5; // limit + 40%
-        int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
+        const int32_t circuit_breaker_trip_point_ma = current_limit_ma * 7 / 5; // limit + 40%
+        const int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
         target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
 
         phase_current_max_increase_ma = target_phase_current_ma / 2; // Cap maximum ramp-up for safety. Might not be necessary.
@@ -377,7 +382,7 @@ void PowerManager::setup()
 #if MODULE_METERS_AVAILABLE()
     float unused_power;
     if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
-        meter_slot_power = UINT32_MAX;
+        meter_slot_power = std::numeric_limits<decltype(meter_slot_power)>::max();
     } else {
         power_meter_available = true;
     }
@@ -480,7 +485,7 @@ void PowerManager::register_urls()
 #endif
 
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](Language /*language*/, String &errmsg) {
-            this->switch_phases(external_control_update.get("phases_wanted")->asUint(), errmsg, true);
+            this->switch_phases(external_control_update.get("phases_wanted")->asUint8(), errmsg, true);
         }, true);
 
         task_scheduler.scheduleUncancelable([this](){
@@ -1143,12 +1148,12 @@ ConfigChargeMode PowerManager::get_default_charge_mode() const
 
 uint32_t PowerManager::get_guaranteed_power_w() const
 {
-    return config.get("guaranteed_power")->asUint();
+    return config.get("guaranteed_power")->asUint16();
 }
 
 uint32_t PowerManager::get_phase_switching_mode() const
 {
-    return get_enabled() ? config.get("phase_switching_mode")->asUint() : PHASE_SWITCHING_EXTERNAL_CONTROL;
+    return get_enabled() ? config.get("phase_switching_mode")->asUint8() : PHASE_SWITCHING_EXTERNAL_CONTROL;
 }
 
 uint32_t PowerManager::get_phases() const
@@ -1168,7 +1173,7 @@ void PowerManager::switch_phases(uint32_t phases_wanted, String &errmsg, bool lo
         return;
     }
 
-    uint32_t phases_last = this->external_control.get("phases_wanted")->asUint();
+    const uint32_t phases_last = this->external_control.get("phases_wanted")->asUint8();
 
     switch (phase_switcher_backend->get_phase_switching_state()) {
         case PhaseSwitcherBackend::SwitchingState::Error: {
