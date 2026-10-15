@@ -26,11 +26,17 @@ firmware_basename = metadata['firmware_basename']
 split_esptool_ota = metadata['split_esptool_ota']
 secure_boot = metadata['secure_boot']
 
-if sys.platform == 'win32':
-    def symlink(src, dst):
+
+def symlink(src, dst):
+    try:
+        os.unlink(dst)
+    except FileNotFoundError:
+        pass
+
+    if sys.platform == 'win32':
         shutil.copy2(os.path.join('build', src), dst)
-else:
-    symlink = os.symlink
+    else:
+        os.symlink(src, dst)
 
 
 def add_post_action_elf(title, action):
