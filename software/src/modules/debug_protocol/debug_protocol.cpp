@@ -71,7 +71,7 @@ void DebugProtocol::register_urls()
     });
 
     // TODO: Make this an API command?
-    server.on("/debug_protocol/continue", HTTP_GET, [this](WebServerRequest request) {
+    server.on("/debug_protocol/keep_alive", HTTP_GET, [this](WebServerRequest request) {
         debug_keep_alive_until = now_us() + debug_keep_alive_interval;
 
         return request.send_plain(200);

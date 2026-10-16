@@ -1,4 +1,4 @@
-/*export interface test {
+/*export interface test_start {
     slot: number;
     host: string;
     port: number;
@@ -6,7 +6,7 @@
     cookie: number;
 }*/
 
-export interface test_continue {
+export interface test_keep_alive {
     cookie: number;
 }
 

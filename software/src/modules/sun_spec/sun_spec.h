@@ -74,8 +74,8 @@ private:
     void scan_flush_log();
     [[gnu::format(__printf__, 2, 3)]] void scan_printfln(const char *fmt, ...);
 
-    ConfigRoot scan_config;
-    ConfigRoot scan_continue_config;
+    ConfigRoot scan_start_config;
+    ConfigRoot scan_keep_alive_config;
     ConfigRoot scan_abort_config;
 
     struct Scan {

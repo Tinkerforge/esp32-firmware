@@ -161,7 +161,7 @@ static const char *get_model_name(uint16_t model_id)
 
 void SunSpec::pre_setup()
 {
-    scan_config = ConfigRoot{Config::Object({
+    scan_start_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"device_address_first", Config::Uint8(1)},
@@ -169,19 +169,19 @@ void SunSpec::pre_setup()
         {"cookie", Config::Uint32(0)},
     })};
 
-    scan_continue_config = ConfigRoot{Config::Object({
+    scan_keep_alive_config = ConfigRoot{Config::Object({
         {"cookie", Config::Uint32(0)},
     })};
 
-    scan_abort_config = scan_continue_config;
+    scan_abort_config = scan_keep_alive_config;
 }
 
 void SunSpec::register_urls()
 {
-    api.addCommand("sun_spec/scan", &scan_config, {}, [this](Language language, String &errmsg) {
+    api.addCommand("sun_spec/scan_start", &scan_start_config, {}, [this](Language language, String &errmsg) {
         if (scan != nullptr) {
             errmsg = language == Language::English
-                     ? "Another scan is already in progress, please try again later!"
+                     ? "Another search is already in progress, please try again later!"
                      : "Eine andere Suche läuft bereits, bitte später noch einmal versuchen!";
             return;
         }
@@ -189,11 +189,11 @@ void SunSpec::register_urls()
         scan = new_psram_or_dram<Scan>();
 
         scan->language             = language;
-        scan->host                 = scan_config.get("host")->asString();
-        scan->port                 = scan_config.get("port")->asUint16();
-        scan->device_address_first = scan_config.get("device_address_first")->asUint8();
-        scan->device_address_last  = scan_config.get("device_address_last")->asUint8();
-        scan->cookie               = scan_config.get("cookie")->asUint();
+        scan->host                 = scan_start_config.get("host")->asString();
+        scan->port                 = scan_start_config.get("port")->asUint16();
+        scan->device_address_first = scan_start_config.get("device_address_first")->asUint8();
+        scan->device_address_last  = scan_start_config.get("device_address_last")->asUint8();
+        scan->cookie               = scan_start_config.get("cookie")->asUint();
 
         if (scan->device_address_last < scan->device_address_first) {
             scan->device_address_last = scan->device_address_first;
@@ -203,19 +203,19 @@ void SunSpec::register_urls()
         scan->last_keep_alive = now_us();
 
         scan_printfln(scan->language == Language::English
-                      ? "Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]"
+                      ? "Starting search [" OPTIONS_PRODUCT_NAME() ", version: %s]"
                       : "Beginne Suche [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
     }, true);
 
-    api.addCommand("sun_spec/scan_continue", &scan_continue_config, {}, [this](Language language, String &errmsg) {
+    api.addCommand("sun_spec/scan_keep_alive", &scan_keep_alive_config, {}, [this](Language language, String &errmsg) {
         if (scan == nullptr) {
             return;
         }
 
-        uint32_t cookie = scan_continue_config.get("cookie")->asUint();
+        uint32_t cookie = scan_keep_alive_config.get("cookie")->asUint();
 
         if (cookie != scan->cookie) {
-            errmsg = language == Language::English ? "Cannot continue another scan" : "Kann keine andere Suche fortsetzen";
+            errmsg = language == Language::English ? "Cannot keep another search alive" : "Kann keine andere Suche aufrechterhalten";
             return;
         }
 
@@ -252,8 +252,8 @@ void SunSpec::loop()
 
     if (!scan->abort && deadline_elapsed(scan->last_keep_alive + 10_s)) {
         const char *message = scan->language == Language::English
-                              ? "Aborting scan because no continue call was received for more than 10 seconds"
-                              : "Breche Suche ab, da für mehr als 10 Sekunden kein Fortsetzen-Aufruf empfangen wurde";
+                              ? "Aborting search because no keep-alive call was received for more than 10 seconds"
+                              : "Breche Suche ab, da für mehr als 10 Sekunden kein Aufrechterhalten-Aufruf empfangen wurde";
 
         logger.printfln("%s", message);
         scan_printfln("%s", message);

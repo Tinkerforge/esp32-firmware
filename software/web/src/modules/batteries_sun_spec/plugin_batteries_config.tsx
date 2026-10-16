@@ -59,7 +59,7 @@ export type SunSpecBatteriesState = {
     testing: boolean,
 }
 
-const TEST_CONTINUE_INTERVAL = 3000; // milliseconds
+const TEST_KEEP_ALIVE_INTERVAL = 3000; // milliseconds
 const TEST_LOG_INTERVAL = 250; // milliseconds
 
 interface TestRunnerProps {
@@ -86,7 +86,7 @@ interface TestRunnerState {
 }
 
 class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
-    continue_timer: number = undefined;
+    keep_alive_timer: number = undefined;
     log_timer: number = undefined;
     pending_log: string = '';
 
@@ -123,9 +123,9 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                 return;
             }
 
-            if (this.continue_timer !== undefined) {
-                clearInterval(this.continue_timer);
-                this.continue_timer = undefined;
+            if (this.keep_alive_timer !== undefined) {
+                clearInterval(this.keep_alive_timer);
+                this.keep_alive_timer = undefined;
             }
 
             if (this.log_timer !== undefined) {
@@ -176,7 +176,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         await this.stop_test();
     }
 
-    async test_continue() {
+    async test_keep_alive() {
         if (!this.state.running) {
             return;
         }
@@ -184,14 +184,14 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         let result;
 
         try {
-            result = await (await util.put('/batteries_sun_spec/test_continue', {cookie: this.state.cookie}, true)).text();
+            result = await (await util.put('/batteries_sun_spec/test_keep_alive', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
         }
 
         if (result.length > 0) {
-            this.update_log(__("batteries_sun_spec.content.test_continue_error") + ": " + result + "\n");
+            this.update_log(__("batteries_sun_spec.content.test_keep_alive_error") + ": " + result + "\n");
         }
     }
 
@@ -211,7 +211,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             let result;
 
             try {
-                result = await (await util.put('/batteries_sun_spec/test', {
+                result = await (await util.put('/batteries_sun_spec/test_start', {
                     slot: this.props.slot,
                     host: this.props.host,
                     port: this.props.port,
@@ -237,7 +237,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                 return;
             }
 
-            this.continue_timer = window.setInterval(async () => {await this.test_continue()}, TEST_CONTINUE_INTERVAL);
+            this.keep_alive_timer = window.setInterval(async () => {await this.test_keep_alive()}, TEST_KEEP_ALIVE_INTERVAL);
             this.log_timer = window.setInterval(() => this.update_log(), TEST_LOG_INTERVAL);
         });
     }

@@ -31,7 +31,7 @@ let x = {
             "testing": "test running",
             "testing_warning": <><p>Due to the running test the mode of this battery storage can differ from the global battery control mode.</p></>,
             "test_start_error": "Error while starting test",
-            "test_continue_error": "Error while keeping test running",
+            "test_keep_alive_error": "Error while keeping test running",
             "test_stop_error": "Error while stopping test"
         },
         "script": {

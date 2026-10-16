@@ -31,7 +31,7 @@ let x = {
             "testing": "Test läuft",
             "testing_warning": <><p>Durch den laufenden Test kann der Modus dieses Batteriespeichers vom globalen Modus der Batteriesteuerung abweichen.</p></>,
             "test_start_error": "Fehler beim Starten des Tests",
-            "test_continue_error": "Fehler beim Fortsetzen des Tests",
+            "test_keep_alive_error": "Fehler beim Aufrechterhalten des Tests",
             "test_stop_error": "Fehler beim Stoppen des Tests"
         },
         "script": {

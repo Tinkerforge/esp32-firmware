@@ -151,11 +151,11 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }, false);
     }
 
-    debugTimeout: number;
+    debug_keep_alive_timer: number;
 
-    async resetDebugWd() {
+    async debug_keep_alive() {
         try {
-            await util.download("/debug_protocol/continue", true);
+            await util.download("/debug_protocol/keep_alive", true);
         }
         catch{
             this.setState({debug_running: false, debug_status: __("component.debug_logger.starting_debug_failed")(this.props.name)});
@@ -190,14 +190,14 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             return;
         }
 
-        this.debugTimeout = window.setInterval(this.resetDebugWd, 60000);
+        this.debug_keep_alive_timer = window.setInterval(this.debug_keep_alive, 60000);
 
         this.setState({debug_status: __("component.debug_logger.debug_running")});
     }
 
     async debug_stop() {
         this.setState({debug_running: false});
-        window.clearInterval(this.debugTimeout);
+        window.clearInterval(this.debug_keep_alive_timer);
 
         try {
             await util.download("/debug_protocol/stop", true);

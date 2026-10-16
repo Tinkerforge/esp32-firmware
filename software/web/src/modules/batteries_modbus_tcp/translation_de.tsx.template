@@ -157,7 +157,7 @@ let x = {
                                               <p>Wenn es also z.B. nicht möglich ist für den Modus "Laden blockieren", das Laden alleine zu blockieren und gleichzeitig das Entladen normal zu belassen, sondern Laden und Entladen nur zusammen blockiert werden können, dann sollte der effektive Modus in diesem Fall auf "Blockieren" gesetzt werden.</p></>,
 
             "test_start_error": "Fehler beim Starten des Tests",
-            "test_continue_error": "Fehler beim Fortsetzen des Tests",
+            "test_keep_alive_error": "Fehler beim Aufrechterhalten des Tests",
             "test_stop_error": "Fehler beim Stoppen des Tests"
         },
         "script": {

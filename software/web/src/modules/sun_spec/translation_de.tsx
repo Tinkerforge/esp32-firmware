@@ -6,7 +6,7 @@ let x = {
         "content": {
             "scan_title": "Gerätesuche",
             "scan_title_muted": "erste Geräteadresse, letzte Geräteadresse",
-            "scan": "Suche starten",
+            "scan_start": "Suche starten",
             "scan_abort": "Suche abbrechen",
             "scan_error": /*FFN*/() => {
                 let result = [<>Während der Gerätesuche ist ein Fehler aufgetreten.</>];
@@ -18,7 +18,7 @@ let x = {
                 return <>{result}</>;
             }/*NF*/,
             "scan_start_error": "Fehler beim Starten der Suche",
-            "scan_continue_error": "Fehler beim Fortsetzen der Suche",
+            "scan_keep_alive_error": "Fehler beim Aufrechterhalten der Suche",
             "scan_abort_error": "Fehler beim Abbrechen der Suche",
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",

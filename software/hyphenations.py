@@ -1635,6 +1635,7 @@ de_hyph = [
     "Ener-gief-luss",
     "über-nom-men",
     "Be-kann-tes",
+    "Auf-recht-er-hal-ten",
 ]
 
 en_hyph = [

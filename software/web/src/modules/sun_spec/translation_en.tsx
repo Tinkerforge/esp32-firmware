@@ -6,7 +6,7 @@ let x = {
         "content": {
             "scan_title": "Device search",
             "scan_title_muted": "first device address, last device address",
-            "scan": "Start search",
+            "scan_start": "Start search",
             "scan_abort": "Abort search",
             "scan_error": /*FFN*/() => {
                 let result = [<>An error occurred during the device search.</>];
@@ -17,12 +17,12 @@ let x = {
 
                 return <>{result}</>;
             }/*NF*/,
-            "scan_start_error": "Error while starting scan",
-            "scan_continue_error": "Error while keeping scan running",
-            "scan_abort_error": "Error while aborting scan",
-            "scan_results": "Discovered devices",
+            "scan_start_error": "Error while starting search",
+            "scan_keep_alive_error": "Error while keeping search running",
+            "scan_abort_error": "Error while aborting search",
+            "scan_results": "Found devices",
             "scan_log": "Log",
-            "scan_log_file": "SunSpec-scan-log",
+            "scan_log_file": "SunSpec-search-log",
 
             "scan_result_device_address": "Device address",
             "scan_result_serial_number": "Serial number",

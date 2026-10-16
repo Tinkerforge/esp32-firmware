@@ -1,4 +1,4 @@
-export interface scan {
+export interface scan_start {
     host: string;
     port: number;
     device_address_first: number;
@@ -6,7 +6,7 @@ export interface scan {
     cookie: number;
 }
 
-export interface scan_continue {
+export interface scan_keep_alive {
     cookie: number;
 }
 

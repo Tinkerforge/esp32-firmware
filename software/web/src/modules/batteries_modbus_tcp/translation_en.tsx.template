@@ -157,7 +157,7 @@ let x = {
                                               <p>For example, if it is not possible for the mode "block charge" to block the charging alone while leaving the discharging as normal at the same time, but charging and discharging can only be blocked together, then the effective mode should be configured as "block" in this case.</p></>,
 
             "test_start_error": "Error while starting test",
-            "test_continue_error": "Error while keeping test running",
+            "test_keep_alive_error": "Error while keeping test running",
             "test_stop_error": "Error while stopping test"
         },
         "script": {

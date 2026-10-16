@@ -150,7 +150,7 @@ void BatteriesModbusTCP::pre_setup()
 
     batteries.register_battery_generator(get_class(), this);
 
-    test_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
+    test_start_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint8(1)},
         {"repeat_interval", Config::Uint16(60)},
         {"mode", Config::Enum(BatteryMode::Block)},
@@ -163,36 +163,36 @@ void BatteriesModbusTCP::pre_setup()
         )},
     })});
 
-    get_battery_modbus_tcp_test_table_prototypes(&test_table_prototypes);
+    get_battery_modbus_tcp_test_start_table_prototypes(&test_start_table_prototypes);
 
-    test_config = ConfigRoot{Config::Object({
+    test_start_config = ConfigRoot{Config::Object({
         {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS() - 1)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"table", Config::Union<BatteryModbusTCPTableID>(*Config::Null(),
             BatteryModbusTCPTableID::None,
-            test_table_prototypes.data(),
-            static_cast<uint8_t>(test_table_prototypes.size())
+            test_start_table_prototypes.data(),
+            static_cast<uint8_t>(test_start_table_prototypes.size())
         )},
         {"cookie", Config::Uint32(0)},
     })};
 
-    test_continue_config = ConfigRoot{Config::Object({
+    test_keep_alive_config = ConfigRoot{Config::Object({
         {"cookie", Config::Uint32(0)},
     })};
 
-    test_stop_config = test_continue_config;
+    test_stop_config = test_keep_alive_config;
 }
 
 void BatteriesModbusTCP::register_urls()
 {
-    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](Language language, String &errmsg) {
-        BatteryModbusTCPTableID table_id = test_config.get("table")->getTag<BatteryModbusTCPTableID>();
-        Config *table_config = static_cast<Config *>(test_config.get("table")->get());
+    api.addCommand("batteries_modbus_tcp/test_start", &test_start_config, {}, [this](Language language, String &errmsg) {
+        BatteryModbusTCPTableID table_id = test_start_config.get("table")->getTag<BatteryModbusTCPTableID>();
+        Config *table_config = static_cast<Config *>(test_start_config.get("table")->get());
 
         defer {
             // When done parsing the test command, drop Strings and Array items from config to free memory
-            test_config.get("host")->clearString();
+            test_start_config.get("host")->clearString();
 
             if (table_id == BatteryModbusTCPTableID::Custom) {
                 table_config->get("register_blocks")->removeAll();
@@ -209,10 +209,10 @@ void BatteriesModbusTCP::register_urls()
         test = new Test;
         test->language = language;
         test->last_keep_alive = now_us();
-        test->slot = test_config.get("slot")->asUint();
-        test->host = test_config.get("host")->asString();
-        test->port = static_cast<uint16_t>(test_config.get("port")->asUint());
-        test->cookie = test_config.get("cookie")->asUint();
+        test->slot = test_start_config.get("slot")->asUint();
+        test->host = test_start_config.get("host")->asString();
+        test->port = static_cast<uint16_t>(test_start_config.get("port")->asUint());
+        test->cookie = test_start_config.get("cookie")->asUint();
         test->state = TestState::Start;
         test->table_id = table_id;
 
@@ -252,15 +252,15 @@ void BatteriesModbusTCP::register_urls()
                       Batteries::get_battery_mode_display_name(test->mode, language));
     }, true);
 
-    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language language, String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_keep_alive", &test_keep_alive_config, {}, [this](Language language, String &errmsg) {
         if (test == nullptr) {
             return;
         }
 
-        uint32_t cookie = test_continue_config.get("cookie")->asUint();
+        uint32_t cookie = test_keep_alive_config.get("cookie")->asUint();
 
         if (cookie != test->cookie) {
-            errmsg = language == Language::English ? "Cannot continue another test" : "Kann keinen anderen Test fortsetzen";
+            errmsg = language == Language::English ? "Cannot keep another test alive" : "Kann keinen anderen Test aufrechterhalten";
             return;
         }
 
@@ -297,8 +297,8 @@ void BatteriesModbusTCP::loop()
 
     if (!test->stop && deadline_elapsed(test->last_keep_alive + 10_s)) {
         const char *message = test->language == Language::English
-                              ? "Stopping test because no continue call was received for more than 10 seconds"
-                              : "Stoppe Test, da für mehr als 10 Sekunden kein Fortsetzen-Aufruf empfangen wurde";
+                              ? "Stopping test because no keep-alive call was received for more than 10 seconds"
+                              : "Stoppe Test, da für mehr als 10 Sekunden kein Aufrechterhalten-Aufruf empfangen wurde";
 
         logger.printfln("%s", message);
         test_printfln("%s", message);

@@ -22,18 +22,16 @@ import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren, VNode } from "preact";
 import { __, translate_unchecked, removeUnicodeHacks } from "../../ts/translation";
 import { InputText } from "../../ts/components/input_text";
-import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { Switch } from "../../ts/components/switch";
 import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { Download, Plus } from 'react-feather';
 import { DiscoveryResultGroup, DiscoveryResultItem, DiscoveryResultItemProps } from "../../ts/components/discovery_result";
 
-const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
+const SCAN_KEEP_ALIVE_INTERVAL = 3000; // milliseconds
 const SCAN_LOG_INTERVAL = 250; // milliseconds
 
 export interface SunSpecScanResult {
@@ -70,7 +68,7 @@ interface SunSpecScannerState {
 }
 
 export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScannerState> {
-    continue_timer: number = undefined;
+    keep_alive_timer: number = undefined;
     log_timer: number = undefined;
     pending_log: string = '';
 
@@ -172,9 +170,9 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                 return;
             }
 
-            if (this.continue_timer !== undefined) {
-                clearInterval(this.continue_timer);
-                this.continue_timer = undefined;
+            if (this.keep_alive_timer !== undefined) {
+                clearInterval(this.keep_alive_timer);
+                this.keep_alive_timer = undefined;
             }
 
             if (this.log_timer !== undefined) {
@@ -254,7 +252,7 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
         </DiscoveryResultItem>;
     }
 
-    async scan_continue() {
+    async scan_keep_alive() {
         if (!this.state.running) {
             return;
         }
@@ -262,14 +260,14 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
         let result;
 
         try {
-            result = await (await util.put('/sun_spec/scan_continue', {cookie: this.state.cookie}, true)).text();
+            result = await (await util.put('/sun_spec/scan_keep_alive', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
         }
 
         if (result.length > 0) {
-            this.update_log(__("sun_spec.content.scan_continue_error") + ": " + result + "\n");
+            this.update_log(__("sun_spec.content.scan_keep_alive_error") + ": " + result + "\n");
         }
     }
 
@@ -320,7 +318,7 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                                 let result;
 
                                 try {
-                                    result = await (await util.put('/sun_spec/scan', {
+                                    result = await (await util.put('/sun_spec/scan_start', {
                                         host: this.props.host,
                                         port: this.props.port,
                                         device_address_first: this.state.device_address_first,
@@ -339,12 +337,12 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                                     return;
                                 }
 
-                                this.continue_timer = window.setInterval(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
+                                this.keep_alive_timer = window.setInterval(async () => {await this.scan_keep_alive()}, SCAN_KEEP_ALIVE_INTERVAL);
                                 this.log_timer = window.setInterval(() => this.update_log(), SCAN_LOG_INTERVAL);
                             });
                         }}
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port)}>
-                    {__("sun_spec.content.scan")}
+                    {__("sun_spec.content.scan_start")}
                 </Button> :
                 <Button key="scan_abort"
                         variant="primary"

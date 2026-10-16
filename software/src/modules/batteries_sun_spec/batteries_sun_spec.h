@@ -79,8 +79,8 @@ private:
     Config state_prototype;
     //Config errors_prototype;
 
-    ConfigRoot test_config;
-    ConfigRoot test_continue_config;
+    ConfigRoot test_start_config;
+    ConfigRoot test_keep_alive_config;
     ConfigRoot test_stop_config;
 
     struct Test {
