@@ -51,16 +51,23 @@ def main():
             print(red("A test filter or host is required"))
             parser.print_help()
             sys.exit(1)
-        try:
-            with urlopen(f'http://{args.host}/info/modules') as req:
-                modules = json.loads(req.read()).keys()
-        except HTTPError as e:
-            if e.code != 404:
+        for retry in range(10):
+            try:
+                with urlopen(f'http://{args.host}/info/modules', timeout=1) as req:
+                    modules = json.loads(req.read()).keys()
+                    break
+            except HTTPError as e:
+                if e.code != 404:
+                    raise
+                with urlopen(f'http://{args.host}/debug_report') as req:
+                    dbg = json.loads(req.read())
+                    # minimal does not have the HTTP module -> no API available.
+                    modules = dbg["info/modules"].keys() if not dbg['env'] in 'minimal' else []
+                    break
+            except Exception:
+                if retry < 9:
+                    continue
                 raise
-            with urlopen(f'http://{args.host}/debug_report') as req:
-                dbg = json.loads(req.read())
-                # minimal does not have the HTTP module -> no API available.
-                modules = dbg["info/modules"].keys() if not dbg['env'] in 'minimal' else []
 
         test_filter = [f'{x}/*/*' for x in modules]
 
