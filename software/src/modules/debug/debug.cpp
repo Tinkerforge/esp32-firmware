@@ -1190,7 +1190,9 @@ void Debug::register_events()
     }
 
     register_task(TCPIP_THREAD_NAME,TCPIP_THREAD_STACKSIZE);
+#if MODULE_WIFI_AVAILABLE()
     register_task("wifi",           6656, ExpectPresent); // stack size observed at runtime from task creation
+#endif
     register_task("sys_evt",        ESP_TASKD_EVENT_STACK); // created in WiFiGeneric.cpp
     register_task("arduino_events", 4096); // stack size from NetworkEvents.cpp
 
