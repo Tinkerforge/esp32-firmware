@@ -45,9 +45,12 @@ def test_http_connectivity(tc: TestContext):
     requests.get(f'https://{https_authority}/reboot', verify=False)
     time.sleep(10)
 
+    schema, empty, host, *rest = http_redirect_response.headers['Location'].split('/')
+    location = "/".join([schema, empty, host.lower(), *rest])
+
     # Check that HTTP redirects to HTTPS while HTTP is off.
     tc.assert_eq(307, http_redirect_response.status_code)
-    tc.assert_eq(f'https://{https_authority}/redirect_test?foo=bar', http_redirect_response.headers['Location'])
+    tc.assert_eq(f'https://{https_authority.lower()}/redirect_test?foo=bar', location)
     tc.assert_eq(200, redirected_index_response.status_code)
     tc.assert_eq('https', redirected_index_response.url.split(':', 1)[0])
     tc.assert_eq(1, len(redirected_index_response.history))
