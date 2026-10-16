@@ -66,6 +66,7 @@ def main():
                     break
             except Exception:
                 if retry < 9:
+                    time.sleep(1)
                     continue
                 raise
 
