@@ -22,6 +22,8 @@
 #include "generated/module_dependencies.h"
 #include "tools.h"
 
+#include "options.h"
+
 // This is here so I stop commiting changes meant for debugging
 #ifndef CHARGE_LIMITS_TIME_MODIFIER
 # define CHARGE_LIMITS_TIME_MODIFIER 60

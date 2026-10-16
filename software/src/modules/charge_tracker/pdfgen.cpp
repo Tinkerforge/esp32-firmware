@@ -92,6 +92,8 @@
  * y    curveto.
  */
 
+#include "pdfgen.h"
+
 #if defined(_MSC_VER)
 #define _CRT_SECURE_NO_WARNINGS 1 // Drop the MSVC complaints about snprintf
 #define _USE_MATH_DEFINES
@@ -123,13 +125,27 @@ typedef SSIZE_T ssize_t;
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-
 #include <memory>
 #include <string>
 #include <vector>
 #include <functional>
 
-#include "pdfgen.h"
+#if defined(_MSC_VER)
+#define inline __inline
+#define snprintf _snprintf
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#ifdef stat
+#undef stat
+#endif
+#define stat _stat
+#define SKIP_ATTRIBUTE
+#else
+#include <strings.h> // strcasecmp
+#endif
+
+#include <arpa/inet.h>
+
 #include "options.h"
 
 #if OPTIONS_PRODUCT_ID_IS_WARP()
@@ -156,22 +172,6 @@ typedef SSIZE_T ssize_t;
 #define PDF_RGB_R(c) (float)((((c) >> 16) & 0xff) / 255.0)
 #define PDF_RGB_G(c) (float)((((c) >> 8) & 0xff) / 255.0)
 #define PDF_RGB_B(c) (float)((((c) >> 0) & 0xff) / 255.0)
-
-#if defined(_MSC_VER)
-#define inline __inline
-#define snprintf _snprintf
-#define strcasecmp _stricmp
-#define strncasecmp _strnicmp
-#ifdef stat
-#undef stat
-#endif
-#define stat _stat
-#define SKIP_ATTRIBUTE
-#else
-#include <strings.h> // strcasecmp
-#endif
-
-#include <arpa/inet.h>
 
 #define min(a,b) \
    ({ __typeof__ (a) _a = (a); \

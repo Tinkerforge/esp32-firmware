@@ -25,9 +25,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools.h"
 #include "matchTopicFilter.h"
+
+#include "options.h"
 
 // MQTT over WSS takes ~ 3.4k only for the connection
 // + ~ 1.2k for publishing/subscribing.

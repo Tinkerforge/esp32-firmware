@@ -23,12 +23,12 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "meter_modbus_tcp.h"
 #include "generated/meter_modbus_tcp_specs.h"
 #include "modules/meters/generated/meter_value_id.h"
 #include "modules/modbus_tcp_client/generated/modbus_register_address_mode.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersModbusTCP::pre_setup()

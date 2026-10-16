@@ -30,11 +30,11 @@
 
 #include "event_log_prefix.h"
 #include "build.h"
-#include "options.h"
 #include "tools/printf.h"
 #include "tools/net.h"
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 // result line: {"ssid":"%s","bssid":"%s","rssi":%d,"channel":%d,"encryption":%d}

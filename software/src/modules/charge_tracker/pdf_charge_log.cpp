@@ -25,12 +25,13 @@
 #include <math.h>
 #include <algorithm>
 
+#include "pdfgen.h"
+
+#include "options.h"
+
 #define CHARGE_TRACKER_PDF_LOGO_WARP 0
 #define CHARGE_TRACKER_PDF_LOGO_ELTAKO 1
 #define CHARGE_TRACKER_PDF_LOGO_SEB 2
-
-#include "pdfgen.h"
-#include "options.h"
 
 #if OPTIONS_CHARGE_TRACKER_PDF_LOGO() == CHARGE_TRACKER_PDF_LOGO_WARP
     static constexpr uint32_t logo_background = 0xFF545454;

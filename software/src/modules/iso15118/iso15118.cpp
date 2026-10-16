@@ -205,15 +205,14 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-
 #include "tools/hexdump.h"
 #include "tools/printf.h"
-
 #include "qca700x.h"
 #include "esp_mac.h"
 #include "esp_netif.h"
 #include "bindings/bricklet_evse_v2.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 // RFC 4648 Base32 alphabet: A-Z (0-25), 2-7 (26-31)

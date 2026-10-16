@@ -24,10 +24,10 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "model_parser_160.h"
 #include "model_parser_714.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type)

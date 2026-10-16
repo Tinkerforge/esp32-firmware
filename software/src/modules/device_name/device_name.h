@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+
 #include "options.h"
 
 class DeviceName final : public IModule
@@ -40,3 +41,5 @@ public:
     ConfigRoot name;
     ConfigRoot display_name;
 };
+
+#include "options_end.h"

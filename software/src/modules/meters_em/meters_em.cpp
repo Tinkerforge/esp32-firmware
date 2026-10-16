@@ -21,9 +21,9 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "modules/meters/generated/meter_location.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersEM::pre_setup()

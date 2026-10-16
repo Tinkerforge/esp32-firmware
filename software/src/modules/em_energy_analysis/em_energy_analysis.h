@@ -26,13 +26,14 @@
 #include "chunked_response.h"
 #include "config.h"
 #include "module.h"
-#include "options.h"
 #include "modules/em_common/structs.h"
 
+#include "options.h"
+
 #if OPTIONS_METERS_MAX_SLOTS() > 7
-#define METERS_MAX_SLOTS_RECORDED 7
+constexpr size_t METERS_MAX_SLOTS_RECORDED = 7;
 #else
-#define METERS_MAX_SLOTS_RECORDED OPTIONS_METERS_MAX_SLOTS()
+constexpr size_t METERS_MAX_SLOTS_RECORDED = OPTIONS_METERS_MAX_SLOTS();
 #endif
 
 class EMEnergyAnalysis final : public IModule
@@ -85,3 +86,5 @@ private:
     // Cached EM data
     const EMAllDataCommon *all_data_common;
 };
+
+#include "options_end.h"

@@ -17,20 +17,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "csv_charge_log"
+
 #include "csv_charge_log.h"
-#include "charge_tracker.h"
-#include "pdfgen.h" // for pdf_utf8_to_pdfencoding
-#include "generated/module_dependencies.h"
-#include "tools/string_builder.h"
-#include "tools/malloc.h"
-#include "event_log_prefix.h"
+
 #include <LittleFS.h>
 #include <cmath>
 #include <vector>
 #include <mutex>
 #include <cstring>
 
-#define EVENT_LOG_PREFIX "csv_charge_log"
+#include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
+#include "charge_tracker.h"
+#include "pdfgen.h" // for pdf_utf8_to_pdfencoding
+#include "tools/string_builder.h"
+#include "tools/malloc.h"
+
+#include "options.h"
+
 #define MAX_ACCUMULATED 2048
 
 bool CSVGenerationParams::parse_request(std::unique_ptr<char[]> &buf, StaticJsonDocument<256> &doc, WebServerRequest &request) {

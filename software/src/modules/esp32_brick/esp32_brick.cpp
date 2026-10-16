@@ -22,11 +22,9 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools.h"
 #include "tools/bricklets.h"
 #include "hal_espidf_esp32_brick/hal_espidf_esp32_brick.h"
-
 #include "bindings/errors.h"
 
 #if TF_LOCAL_ENABLE != 0
@@ -38,6 +36,7 @@
 
 #endif
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr gpio_num_t GREEN_LED = GPIO_NUM_4;

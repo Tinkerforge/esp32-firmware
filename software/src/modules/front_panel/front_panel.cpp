@@ -22,7 +22,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "language.h"
 #include "bindings/errors.h"
 #include "tools.h"
@@ -35,6 +34,7 @@
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr auto UPDATE_INTERVAL = 1_s;

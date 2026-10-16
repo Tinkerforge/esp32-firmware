@@ -21,8 +21,9 @@
 
 #include "device_module.h"
 #include "bindings/bricklet_nfc.h"
-#include "options.h"
 #include "modules/nfc/nfc.h"
+
+#include "options.h"
 
 class NFCBricklet final : public DeviceModule<TF_NFC,
                                               tf_nfc_create,
@@ -45,3 +46,5 @@ public:
 private:
     void check_state();
 };
+
+#include "options_end.h"

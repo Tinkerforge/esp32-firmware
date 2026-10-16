@@ -34,13 +34,13 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools/tf_websocket_client.h"
 #include "tools/bricklets.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
-
 #include "generated/mvid_to_measurand.h"
+
+#include "options.h"
 
 struct PlatformMeterCache {
     std::unique_ptr<MeterValueID[]> value_ids = nullptr;

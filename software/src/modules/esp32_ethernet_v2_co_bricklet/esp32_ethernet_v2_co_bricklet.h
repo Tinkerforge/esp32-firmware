@@ -23,9 +23,6 @@
 #include "build.h"
 #include "bindings/bricklet_warp_esp32_ethernet_v2_co.h"
 #include "modules/rtc/rtc.h"
-#include "options.h"
-
-#include "generated/module_available.h"
 
 class ESP32EthernetV2CoBricklet final : public DeviceModule<TF_WARPESP32EthernetV2Co,
                                               tf_warp_esp32_ethernet_v2_co_create,
@@ -57,5 +54,3 @@ private:
     int16_t temperature_staging = 0;
     bool temperature_valid = false;
 };
-
-#include "generated/module_available_end.h"

@@ -24,11 +24,11 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "meter_sun_spec.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "generated/dc_port_type.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersSunSpec::pre_setup()

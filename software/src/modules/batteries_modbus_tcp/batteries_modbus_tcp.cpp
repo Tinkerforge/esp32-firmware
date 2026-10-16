@@ -30,6 +30,7 @@
 #include "modules/modbus_tcp_client/generated/modbus_register_address_mode.enum.h"
 #include "tools/printf.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #define trace(fmt, ...) \

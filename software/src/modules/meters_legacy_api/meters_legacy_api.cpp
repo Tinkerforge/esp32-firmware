@@ -25,9 +25,9 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "tools.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static const MeterValueID legacy_all_ids[METER_ALL_VALUES_RESETTABLE_MAX_COUNT] = {

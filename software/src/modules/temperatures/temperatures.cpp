@@ -26,8 +26,8 @@
 #include "generated/module_dependencies.h"
 #include "tools.h"
 #include "tools/string_builder.h"
-#include "options.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr auto CHECK_INTERVAL = 6_h;    // Update every 6 hours

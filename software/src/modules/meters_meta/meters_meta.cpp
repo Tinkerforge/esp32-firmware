@@ -20,9 +20,9 @@
 #include "meters_meta.h"
 
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "modules/meters/generated/meter_location.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersMeta::pre_setup()

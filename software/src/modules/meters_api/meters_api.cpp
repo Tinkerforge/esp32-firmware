@@ -20,10 +20,10 @@
 #include "meters_api.h"
 
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "meter_api.h"
 #include "modules/meters/generated/meter_location.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersAPI::pre_setup()

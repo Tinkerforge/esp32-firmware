@@ -39,9 +39,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools/printf.h"
 #include "tools/himem_mapper.h"
+
+#include "options.h"
 
 struct deflate_outbuf {
     char outbuf[1274]; // 1390 (conservative optimal WireGuard MTU) - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)

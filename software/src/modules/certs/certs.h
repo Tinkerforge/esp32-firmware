@@ -23,6 +23,7 @@
 
 #include "module.h"
 #include "config.h"
+
 #include "options.h"
 
 #define MAX_CERT_ID (OPTIONS_CERTS_MAX_CERTS() - 1)
@@ -48,3 +49,5 @@ private:
     ConfigRoot add;
     ConfigRoot remove;
 };
+
+#include "options_end.h"

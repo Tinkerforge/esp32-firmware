@@ -18,22 +18,20 @@
  */
 #include "day_ahead_prices.h"
 
-#include "generated/price_source.enum.h"
-#include "generated/region.enum.h"
-#include "generated/resolution.enum.h"
-
 #include <math.h>
 #include <time.h>
 #include <lwip/inet.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-
 #include "tools.h"
 #include "tools/malloc.h"
 #include "tools/string_builder.h"
-#include "options.h"
+#include "generated/price_source.enum.h"
+#include "generated/region.enum.h"
+#include "generated/resolution.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 // Performance logging for dp_select_slots

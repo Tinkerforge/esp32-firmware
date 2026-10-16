@@ -25,10 +25,9 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
-
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #if !BUILD_IS_SIGNED()

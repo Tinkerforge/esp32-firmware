@@ -28,6 +28,7 @@
 #include "generated/module_dependencies.h"
 #include "tools/printf.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #define trace(fmt, ...) \

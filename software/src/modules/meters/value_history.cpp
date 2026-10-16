@@ -20,10 +20,10 @@
 #include "value_history.h"
 
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 #ifdef __GNUC__
 // The code is this file contains several casts to a type defined by a macro, which may result in useless casts.

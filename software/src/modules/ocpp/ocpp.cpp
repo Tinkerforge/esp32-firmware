@@ -25,10 +25,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools/fs.h"
-
 #include "ocpp/Configuration.h"
+
+#include "options.h"
 
 static void reset_state(Config *state) {
     state->get("charge_point_state")->updateUint(0);

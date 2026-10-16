@@ -25,10 +25,9 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
-
 #include "generated/ove_r37_state.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static bool ove_r37_check_password(const String &password)

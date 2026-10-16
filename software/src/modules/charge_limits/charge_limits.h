@@ -21,12 +21,13 @@
 
 #include "module.h"
 #include "config.h"
-#include "options.h"
 #include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
+
+#include "options.h"
 
 class ChargeLimits final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -79,4 +80,5 @@ private:
 #endif
 };
 
+#include "options_end.h"
 #include "generated/module_available_end.h"

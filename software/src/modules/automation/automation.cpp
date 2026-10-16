@@ -22,8 +22,9 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "tools.h"
+
+#include "options.h"
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
 #include "modules/cm_networking/cm_networking_defs.h"

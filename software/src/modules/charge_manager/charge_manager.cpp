@@ -25,25 +25,24 @@
 #include <freertos/task.h>
 #include <time.h>
 #include <LittleFS.h>
-
-#include "TFTools/Micros.h"
-#include "bindings/base58.h"
+#include <TFTools/Micros.h>
+#include <TFJson.h>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "current_allocator.h"
+#include "bindings/base58.h"
 #include "build.h"
 #include "modules/cm_networking/generated/cm_auth_feedback.enum.h"
-#include "options.h"
 #include "tools.h"
 #include "tools/malloc.h"
 #include "tools/hexdump.h"
 #include "generated/cm_phase_rotation.enum.h"
 #include "modules/cm_networking/generated/client_error.enum.h"
 #include "modules/cm_networking/cm_networking_defs.h"
-#include <TFJson.h>
-
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
+
+#include "options.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 

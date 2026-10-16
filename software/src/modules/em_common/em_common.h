@@ -22,11 +22,11 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "generated/module_available.h"
-#include "structs.h"
-
 #include "config.h"
 #include "module.h"
+#include "structs.h"
+
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"

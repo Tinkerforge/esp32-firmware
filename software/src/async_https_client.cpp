@@ -19,13 +19,14 @@
 
 #define EVENT_LOG_PREFIX "async_https_clnt"
 
-#include <esp_tls.h>
-
 #include "async_https_client.h"
+
+#include <esp_tls.h>
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "build.h"
+
 #include "options.h"
 
 static constexpr micros_t ASYNC_HTTPS_CLIENT_TIMEOUT = 15_s;

@@ -22,9 +22,9 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "modules/meters/generated/meter_location.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void MetersEVSEV2::pre_setup()

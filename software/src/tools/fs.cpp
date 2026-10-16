@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "fs.h"
+
 #include <SPIFFS.h>
 #include <esp_spiffs.h>
 #include <LittleFS.h>
@@ -24,13 +26,11 @@
 #include <sys/stat.h>
 #include <esp_partition.h>
 
-#include "fs.h"
-
 #include "event_log_prefix.h"
 #include "main_dependencies.h" // for logger
-#include "options.h"
 #include "tools.h" // for LogSilencer
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr const char *DATA_MOUNTPOINT = "/data";

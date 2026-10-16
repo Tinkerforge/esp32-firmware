@@ -18,6 +18,7 @@ src/modules.cpp
 src/build.h
 src/build.cpp
 src/options.h
+src/options_end.h
 src/main_available.h
 src/main_available_end.h
 src/main_dependencies.h

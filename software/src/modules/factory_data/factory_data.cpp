@@ -25,6 +25,7 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static const char *validate_nfc_tags(Config *nfc_tags)

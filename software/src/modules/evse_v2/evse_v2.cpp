@@ -21,12 +21,13 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "bindings/errors.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 #include "generated/evse_v2_bricklet_firmware_bin.embedded.h"
 #include "modules/meters/meter_defs.h"
+
+#include "options.h"
 
 extern EVSEV2 evse_v2;
 

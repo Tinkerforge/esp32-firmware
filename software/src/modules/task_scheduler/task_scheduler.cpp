@@ -27,6 +27,7 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+
 #include "options.h"
 
 // Shared between all TaskScheduler instances so that task IDs stay globally unique.

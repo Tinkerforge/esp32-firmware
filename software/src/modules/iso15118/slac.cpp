@@ -21,17 +21,17 @@
 
 #include "slac.h"
 
-#include "event_log_prefix.h"
-#include "generated/module_dependencies.h"
-#include "build.h"
-
 #include <unistd.h>
 #include <esp_random.h>
 #include <errno.h>
 #include <mbedtls/sha256.h>
 
+#include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
+#include "build.h"
 #include "qca700x.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 extern const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH]  = {0x00, 0xB0, 0x52, 0x00, 0x00, 0x01};

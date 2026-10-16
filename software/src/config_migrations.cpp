@@ -29,10 +29,11 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "config.h"
 #include "digest_auth.h"
 #include "tools/fs.h"
+
+#include "options.h"
 
 struct ConfigMigration {
     int major, minor, patch;

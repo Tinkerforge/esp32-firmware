@@ -25,10 +25,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools/printf.h"
 #include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #define MAX_READ_CHUNK_SIZE 125U

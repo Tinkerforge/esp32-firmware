@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+
 #include "options.h"
 
 class HTTPChunkedResponse final : public IBaseChunkedResponse

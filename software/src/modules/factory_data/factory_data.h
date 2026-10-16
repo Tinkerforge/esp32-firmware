@@ -21,12 +21,13 @@
 
 #include "module.h"
 #include "config.h"
-#include "options.h"
 #include "generated/sku_product.enum.h"
 #include "generated/sku_model.enum.h"
 #include "generated/sku_material.enum.h"
 #include "generated/sku_type2.enum.h"
 #include "generated/sku_engraving.enum.h"
+
+#include "options.h"
 
 #define FACTORY_DATA_SKU_STR_MAX_LEN 18 // WARP4-XX-XX-XXXX-X
 
@@ -80,3 +81,5 @@ private:
     ConfigRoot write_config;
 #endif
 };
+
+#include "options_end.h"

@@ -23,21 +23,22 @@
 
 #include "module.h"
 #include "config.h"
-#include "options.h"
 #include "imeter.h"
 #include "imeter_generator.h"
 #include "generated/meter_location.enum.h"
 #include "meter_value_availability.h"
 #include "value_history.h"
 #include "generated/meter_value_id.h"
-#include "generated/module_available.h"
 #include "tools.h"
-
 #include "modules/web_server/web_server.h"
+
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
+
+#include "options.h"
 
 #define METERS_MAX_FILTER_VALUES 7
 
@@ -245,4 +246,5 @@ inline uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t va
     return meters_find_id_index(value_ids, value_id_count, {id});
 }
 
+#include "options_end.h"
 #include "generated/module_available_end.h"

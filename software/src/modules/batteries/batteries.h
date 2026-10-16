@@ -22,11 +22,12 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "options.h"
 #include "ibattery.h"
 #include "ibattery_generator.h"
 #include "module.h"
 #include "language.h"
+
+#include "options.h"
 
 class Batteries final : public IModule
 {
@@ -79,3 +80,5 @@ private:
 
     std::vector<std::tuple<BatteryClassID, IBatteryGenerator *>> generators;
 };
+
+#include "options_end.h"

@@ -26,7 +26,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools.h"
 #include "tools/bricklets.h"
 #include "hal_espidf_esp32_ethernet_brick/hal_espidf_esp32_ethernet_brick.h"
@@ -41,6 +40,7 @@
 
 #endif
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()

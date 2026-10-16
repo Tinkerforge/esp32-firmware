@@ -36,14 +36,13 @@
 #include <lwip/tcpip.h>
 
 #include "event_log_prefix.h"
-
 #include "build.h"
-#include "options.h"
 #include "tools/freertos.h"
 #include "tools/malloc.h"
 #include "tools/net.h"
 #include "tools/printf.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 constexpr size_t EMAC_TASK_STACK_SIZE = 2560;

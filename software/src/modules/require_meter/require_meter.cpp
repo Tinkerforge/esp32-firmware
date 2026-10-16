@@ -21,9 +21,10 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "tools.h"
 #include "modules/meters/meter_value_availability.h"
+
+#include "options.h"
 
 // FIXME: maybe make this timeout shorter if meter is not API and not SDM62v1. in
 //        those cases we should have fast changing values available

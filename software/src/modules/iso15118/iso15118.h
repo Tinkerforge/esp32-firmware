@@ -21,7 +21,6 @@
 
 #include "module.h"
 #include "config.h"
-#include "options.h"
 #include "lwip/sockets.h"  // For struct pollfd
 #include "qca700x.h"
 #include "slac.h"
@@ -33,6 +32,8 @@
 #include "debug_mode.h"
 #include "pib_manager.h"
 #include "bindings/bricklet_evse_v2.h"
+
+#include "options.h"
 
 // If defined, the iso15118 module logs verbose, per-message protocol decode dumps
 // (DIN70121 / ISO15118-2 / ISO15118-20 / SLAC / SDP) to the "iso15118" tracelog via trace_iso().
@@ -222,3 +223,5 @@ public:
     uint8_t evseid_din[16];
     uint16_t evseid_din_len;
 };
+
+#include "options_end.h"

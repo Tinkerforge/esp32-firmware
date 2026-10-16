@@ -49,12 +49,12 @@
 #include "bindings/base58.h"
 #include "build.h"
 #include "event_log_prefix.h"
-#include "options.h"
 #include "tools.h" // for defer{}
 #include "tools/fs.h"
 #include "tools/malloc.h"
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr uint32_t LAST_BASE58_UID_NUM = OPTIONS_ESP32_COMMON_LAST_BASE58_UID_NUM();

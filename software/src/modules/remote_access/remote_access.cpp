@@ -36,16 +36,16 @@
 #include <sodium.h>
 #include <ctype.h>
 
+#include "event_log_prefix.h"
 #include "build.h"
-#include "options.h"
 #include "esp_tls.h"
 #include "esp_tls_errors.h"
-#include "event_log_prefix.h"
 #include "language.h"
 #include "tools.h"
 #include "tools/dns.h"
 #include "tools/net.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);

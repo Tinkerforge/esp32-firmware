@@ -21,13 +21,15 @@
 
 #include "module.h"
 #include "config.h"
-#include "options.h"
 #include "bindings/bricklet_nfc.h"
+
 #include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
+
+#include "options.h"
 
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
@@ -127,4 +129,5 @@ public:
     tag_info_t *new_tags = nullptr;
 };
 
+#include "options_end.h"
 #include "generated/module_available_end.h"

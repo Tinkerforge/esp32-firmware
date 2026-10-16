@@ -25,9 +25,10 @@
 #include <TFTools/Micros.h>
 #include <WString.h>
 
-#include "options.h"
 #include "tools/ringbuffer.h"
 #include "tools/malloc.h"
+
+#include "options.h"
 
 // How many hours to keep the coarse history for
 #define HISTORY_HOURS 48
@@ -110,3 +111,5 @@ public:
 
     size_t chars_per_value = -1;
 };
+
+#include "options_end.h"

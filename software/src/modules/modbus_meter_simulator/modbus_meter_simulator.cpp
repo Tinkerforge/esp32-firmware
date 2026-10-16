@@ -25,10 +25,10 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 #include "bindings/hal_common.h"
 #include "modules/meters/meter_defs.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 extern TF_HAL hal;

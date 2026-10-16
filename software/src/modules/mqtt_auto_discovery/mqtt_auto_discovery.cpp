@@ -30,8 +30,9 @@
 #include "modules/meters/generated/meter_class_id.enum.h"
 #include "generated/module_dependencies.h"
 #include "language.h"
-#include "options.h"
 #include "tools/string_builder.h"
+
+#include "options.h"
 
 void MqttAutoDiscovery::pre_setup()
 {

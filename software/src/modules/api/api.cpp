@@ -25,7 +25,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 #include "config_migrations.h"
@@ -34,6 +33,7 @@
 #include "tools/malloc.h"
 #include "tools/memory.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 extern TF_HAL hal;

@@ -19,16 +19,16 @@
 
 #define TRACE_LOG_PREFIX "charge_manager"
 
+#include "power_manager.h"
+
 #include <type_traits>
 
-#include "power_manager.h"
-#include "generated/module_dependencies.h"
-
 #include "event_log_prefix.h"
-#include "options.h"
+#include "generated/module_dependencies.h"
 #include "tools/printf.h"
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #define ENABLE_PM_TRACE 1

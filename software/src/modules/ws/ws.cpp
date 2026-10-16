@@ -24,8 +24,8 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "cool_string.h"
-#include "options.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static const char *prefix = "{\"topic\":\"";

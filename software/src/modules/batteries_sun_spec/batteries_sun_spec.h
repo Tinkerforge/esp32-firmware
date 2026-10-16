@@ -28,6 +28,8 @@
 #include "modules/batteries/ibattery_generator.h"
 #include "modules/sun_spec/sun_spec_resolver.h"
 
+#include "options.h"
+
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #include "gcc_warnings.h"
@@ -120,3 +122,5 @@ private:
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+#include "options_end.h"

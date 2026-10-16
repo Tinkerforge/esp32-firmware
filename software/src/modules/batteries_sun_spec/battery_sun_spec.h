@@ -24,11 +24,12 @@
 #include <TFModbusTCPClientPool.h>
 
 #include "config.h"
-#include "options.h"
 #include "language.h"
 #include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/sun_spec/sun_spec_resolver.h"
+
+#include "options.h"
 
 /*
 
@@ -172,3 +173,5 @@ private:
     SunSpecResolver *resolver = nullptr;
     micros_t last_connect = 0_us;
 };
+
+#include "options_end.h"

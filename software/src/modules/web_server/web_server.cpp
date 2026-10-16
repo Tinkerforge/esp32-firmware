@@ -30,9 +30,8 @@
 #include "tools/memory.h"
 #include "tools/net.h"
 #include "tools/tristate_bool.h"
-#include "options.h"
-
 #include "sdkconfig.h"
+
 #ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
 #define CONFIG_ESP_HTTPS_SERVER_ENABLE 0
 #endif
@@ -43,9 +42,13 @@
 #define HTTPS_AVAILABLE() 0
 #endif
 
+#include "options.h"
+
 #if OPTIONS_WEB_SERVER_HTTPS_ENABLED() && !HTTPS_AVAILABLE()
 #error "HTTPS selected in options but is not available"
 #endif
+
+#include "options_end.h"
 
 #if HTTPS_AVAILABLE()
 #include <esp_https_server.h>

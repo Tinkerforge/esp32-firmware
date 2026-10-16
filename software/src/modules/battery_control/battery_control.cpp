@@ -20,13 +20,14 @@
 #define TRACE_LOG_PREFIX nullptr
 
 #include "battery_control.h"
-#include "generated/module_dependencies.h"
 
 #include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
 #include "tools.h"
 #include "tools/malloc.h"
 #include "tools/string_builder.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static_assert(OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE() < 256, "OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE must be below 256 to fit into an uint8_t");

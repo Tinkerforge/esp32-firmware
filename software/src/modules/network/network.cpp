@@ -28,7 +28,6 @@
 #include "generated/module_dependencies.h"
 #include "tools/string_builder.h"
 #include "build.h"
-#include "options.h"
 
 #include "unsafe_ports.h"
 
@@ -41,6 +40,8 @@
 #include <WiFi.h>
 #include "modules/wifi/generated/wifi_state.enum.h"
 #endif
+
+#include "options.h"
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1

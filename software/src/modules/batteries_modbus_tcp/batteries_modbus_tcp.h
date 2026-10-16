@@ -30,6 +30,8 @@
 #include "generated/kostal_plenticore_g3_variant.enum.h"
 #include "modules/batteries/ibattery_generator.h"
 
+#include "options.h"
+
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #include "gcc_warnings.h"
@@ -128,3 +130,5 @@ private:
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+#include "options_end.h"

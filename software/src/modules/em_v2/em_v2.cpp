@@ -23,10 +23,10 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "tools.h"
 #include "generated/warp_energy_manager_v2_bricklet_firmware_bin.embedded.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static constexpr auto EM_TASK_DELAY = 250_ms;

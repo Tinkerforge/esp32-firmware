@@ -24,7 +24,6 @@
 #include <TFModbusTCPClientPool.h>
 
 #include "config.h"
-#include "options.h"
 #include "language.h"
 #include "generated/battery_modbus_tcp_table_id.enum.h"
 #include "generated/kostal_plenticore_plus_g2_variant.enum.h"
@@ -32,6 +31,8 @@
 #include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/modbus_tcp_client/generated/modbus_function_code.enum.h"
+
+#include "options.h"
 
 class BatteryModbusTCP final : protected GenericTCPClientPoolConnector, public IBattery
 {
@@ -151,3 +152,5 @@ private:
         KostalPlenticoreG3Variant kostal_plenticore_g3_variant;
     };
 };
+
+#include "options_end.h"

@@ -28,9 +28,9 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "build.h"
-#include "options.h"
 #include "generated/control_period.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 // Heating curve temperature endpoints in degrees Celsius * 10

@@ -31,7 +31,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "language.h"
-#include "options.h"
 #include "tools/freertos.h"
 #include "tools/malloc.h"
 #include "tools/fs.h"
@@ -46,6 +45,8 @@
 #include "modules/users/users.h"
 #include "modules/meters/meter_defs.h"
 #include "build.h"
+
+#include "options.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
 

@@ -20,8 +20,8 @@
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "options.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static const size_t options_hostname_prefix_length = constexpr_strlen(OPTIONS_HOSTNAME_PREFIX());

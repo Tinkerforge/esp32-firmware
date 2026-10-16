@@ -28,7 +28,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "tools.h"
-#include "options.h"
 #include "build.h"
 #include "modules/esp32_common/secure_boot.h"
 #include "rollback_timing.h"
@@ -38,6 +37,7 @@
 #include "generated/check_state.enum.h"
 #include "generated/install_origin.enum.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};

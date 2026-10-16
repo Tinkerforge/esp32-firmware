@@ -20,16 +20,17 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFTools/Micros.h>
 
 #include "config.h"
 #include "module.h"
-#include "options.h"
-#include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
 #include "generated/rule_action.enum.h"
 #include "generated/rule_condition.enum.h"
 #include "generated/schedule_rule_condition.enum.h"
 #include "modules/batteries/generated/battery_mode.enum.h"
+
+#include "options.h"
 
 #define BC_SCHEDULE_CHEAP_POS      (0)
 #define BC_SCHEDULE_CHEAP_MASK     (1 << BC_SCHEDULE_CHEAP_POS)
@@ -124,3 +125,5 @@ private:
 
     battery_control_data *data = nullptr;
 };
+
+#include "options_end.h"

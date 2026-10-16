@@ -19,10 +19,11 @@
 
 #include "batteries.h"
 
-#include "options.h"
 #include "battery_class_none.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+
+#include "options.h"
 
 static BatteryGeneratorNone battery_generator_none;
 
