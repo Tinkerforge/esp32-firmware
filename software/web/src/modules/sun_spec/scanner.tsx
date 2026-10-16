@@ -274,7 +274,7 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
     render() {
         return <>
             <FormRow label={__("sun_spec.content.scan_title")} label_muted={__("sun_spec.content.scan_title_muted")}>
-                <div class="row mb-3">
+                <div class="row mb-3 gx-2">
                     <div class="col-sm-6">
                         <InputNumber
                             required
