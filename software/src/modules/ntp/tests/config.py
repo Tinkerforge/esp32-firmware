@@ -8,8 +8,6 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 
 
-_original_config = None
-
 
 def make_config(
     enable=True,
@@ -29,13 +27,7 @@ def make_config(
 
 
 def suite_setup(tc: TestContext):
-    global _original_config
-    _original_config = tc.api("ntp/config")
-
-
-def suite_teardown(tc: TestContext):
-    if _original_config is not None:
-        tc.api("ntp/config_update", _original_config)
+    tc.restore_before_suite_teardown('ntp/config')
 
 
 def test_read_config(tc: TestContext):
@@ -66,8 +58,7 @@ def test_reject_bad_timezone(tc: TestContext):
 
 
 def test_accept_valid_timezone_change(tc: TestContext):
-    assert _original_config is not None
-    orig_tz = _original_config.get("timezone", "Europe/Berlin")
+    orig_tz = tc.api("ntp/config/timezone")
     new_tz = "America/New_York" if orig_tz != "America/New_York" else "Asia/Tokyo"
 
     config = tc.api("ntp/config")
