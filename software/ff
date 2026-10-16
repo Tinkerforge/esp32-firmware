@@ -17,6 +17,8 @@ parser.add_argument("-S", "--no-serial", action="store_true")
 parser.add_argument("-s", "--serial-only", action="store_true")
 parser.add_argument("-e", "--erase", action="store_true")
 parser.add_argument("-r", "--reboot", action="store_true")
+parser.add_argument("--factory-reset", action="store_true")
+parser.add_argument("--exit-on-network-connected", action="store_true")
 args = parser.parse_args()
 
 def get_latest_fw(fw_type=''):
@@ -67,7 +69,12 @@ if not args.serial_only:
 
     print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
-    subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after hard-reset write-flash 0x1000 {}".format(port, firmware), shell=True)
+    after_flash = 'no-reset-stub' if args.factory_reset else 'hard-reset'
+
+    subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after {} write-flash 0x1000 {}".format(port, after_flash, firmware), shell=True)
+
+    if args.factory_reset:
+        subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after hard-reset erase-region 0xc90000 8192".format(port), shell=True)
 
 if args.reboot:
     subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 run".format(port), shell=True)
@@ -86,6 +93,9 @@ if not args.no_serial:
                     if data.find(b'\x00\xc0\xc0\x01\x08\x04\x00') >= 0:
                         print("ff: Firmware upload detected. Exiting.", file=sys.stderr, flush=True)
                         sys.exit(1)
+
+                    if args.exit_on_network_connected and b"Network connected" in data:
+                        sys.exit(0)
 
                     sys.stdout.buffer.write(data)
                     sys.stdout.flush()
