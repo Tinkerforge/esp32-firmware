@@ -71,9 +71,15 @@ void Temperatures::pre_setup()
             tomorrow_avg = INT16_MAX;
 
             if (source != ConfigSource::File) {
-                task_scheduler.scheduleOnce([this]() {
-                    this->update();
-                });
+                if (https_client.is_busy()) {
+                    // We are currently downloading temperatures. Discard the download for the old config.
+                    update_after_abort = true;
+                    https_client.abort_async();
+                } else {
+                    task_scheduler.scheduleOnce([this]() {
+                        this->update();
+                    });
+                }
             }
         }
 
@@ -327,10 +333,20 @@ void Temperatures::update()
 
         case AsyncHTTPSClientEventType::Aborted:
             if (download_state == TEMPERATURES_DOWNLOAD_STATE_PENDING) {
-                logger.printfln("Update check aborted");
+                if (!update_after_abort) {
+                    logger.printfln("Update check aborted");
+                }
                 download_state = TEMPERATURES_DOWNLOAD_STATE_ABORTED;
             }
             handle_cleanup();
+
+            if (update_after_abort) {
+                update_after_abort = false;
+
+                task_scheduler.scheduleOnce([this]() {
+                    this->update();
+                });
+            }
 
             break;
 

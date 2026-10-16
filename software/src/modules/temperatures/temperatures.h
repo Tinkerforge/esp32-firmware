@@ -81,6 +81,7 @@ private:
     uint64_t task_id = 0;
 
     TemperaturesDownloadState download_state = TEMPERATURES_DOWNLOAD_STATE_OK;
+    bool update_after_abort = false;
 
     int16_t today_min    = INT16_MAX;
     int16_t today_max    = INT16_MIN;
