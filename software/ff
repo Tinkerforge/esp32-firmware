@@ -74,7 +74,7 @@ if not args.serial_only:
     subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after {} write-flash 0x1000 {}".format(port, after_flash, firmware), shell=True)
 
     if args.factory_reset:
-        subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after hard-reset erase-region 0xc90000 8192".format(port), shell=True)
+        subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 --before default-reset --after hard-reset erase-region --force 0xc90000 8192".format(port), shell=True)
 
 if args.reboot:
     subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 run".format(port), shell=True)
