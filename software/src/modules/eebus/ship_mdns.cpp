@@ -24,17 +24,18 @@
 #include <utility>
 #include <vector>
 
-#include "eebus.h"
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
+#include "eebus.h"
 #include "tools.h"
 #include "tools/net.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 void Ship::setup_mdns()
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("setup_mdns() start");
 #endif
     if (!network.is_mdns_started()) {
@@ -84,7 +85,7 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE);
     mdns_service_txt_item_set("_ship", "_tcp", "cat", EEBUS_DEVICE_CATEGORY); // [SRIP-220/23]
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("setup_mdns() done");
 #endif
 }
@@ -248,7 +249,7 @@ void Ship::discover_ship_peers()
     }
     update_discovery_state(ShipDiscoveryState::Scanning);
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("discover_ship_peers start");
 #endif
     if (!network.is_mdns_started()) {

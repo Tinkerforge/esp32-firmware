@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include <functional>
+
 #include "usecase_base.h"
 
-#include <functional>
 // Enable subscription mechanism for nodemanagement
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 

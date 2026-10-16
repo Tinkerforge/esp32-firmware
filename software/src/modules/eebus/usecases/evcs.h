@@ -21,7 +21,11 @@
 
 #include "usecase_base.h"
 
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_EVCS_USECASE()
 
 /**
  * @brief The EV Charging Summary (EVCS) use case.
@@ -115,4 +119,6 @@ private:
     void update_api() const;
 };
 
-#endif // EEBUS_ENABLE_EVCS_USECASE
+#endif // EEBUS_ENABLE_EVCS_USECASE()
+
+#include "../eebus_config_end.h"

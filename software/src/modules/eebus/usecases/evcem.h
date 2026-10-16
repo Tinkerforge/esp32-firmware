@@ -22,10 +22,14 @@
 #include "entity_data.h"
 #include "usecase_base.h"
 
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_EVCEM_USECASE()
 
 // Forward declaration for EVCC reference
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
 class EvccUsecase;
 #endif
 
@@ -189,4 +193,6 @@ private:
     void updateSupportedScenarios();
 };
 
-#endif // EEBUS_ENABLE_EVCEM_USECASE
+#endif // EEBUS_ENABLE_EVCEM_USECASE()
+
+#include "../eebus_config_end.h"

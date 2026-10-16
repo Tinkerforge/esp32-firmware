@@ -21,8 +21,13 @@
 
 #include "entity_data.h"
 #include "usecase_base.h"
+#include "../generated/loadcontrol_state.enum.h"
 
-#if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_LPC_USECASE() || EEBUS_ENABLE_LPP_USECASE()
 
 /**
  * @brief Configuration struct for LoadPowerLimitUsecase parameterization.
@@ -269,9 +274,9 @@ private:
     int power_contract_max_w = 0; ///< LPC-042: Contractual nominal maximum power of an energy manager
 };
 
-#endif // defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
+#endif // EEBUS_ENABLE_LPC_USECASE() || EEBUS_ENABLE_LPP_USECASE()
 
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
 
 /**
  * @brief The LPC (Limitation of Power Consumption) use case.
@@ -317,9 +322,9 @@ private:
     static const LoadPowerLimitConfig lpc_config;
 };
 
-#endif // EEBUS_ENABLE_LPC_USECASE
+#endif // EEBUS_ENABLE_LPC_USECASE()
 
-#ifdef EEBUS_ENABLE_LPP_USECASE
+#if EEBUS_ENABLE_LPP_USECASE()
 
 /**
  * @brief The LPP (Limitation of Power Production) use case.
@@ -365,4 +370,6 @@ private:
     static const LoadPowerLimitConfig lpp_config;
 };
 
-#endif // EEBUS_ENABLE_LPP_USECASE
+#endif // EEBUS_ENABLE_LPC_USECASE() || EEBUS_ENABLE_LPP_USECASE()
+
+#include "../eebus_config_end.h"

@@ -18,8 +18,10 @@
  */
 
 #include "usecase_helpers.h"
-#include "../eebus.h"
+
 #include <cmath>
+
+#include "../eebus.h"
 
 #include "gcc_warnings.h"
 

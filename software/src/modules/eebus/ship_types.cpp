@@ -80,7 +80,7 @@ String ShipMessageDataType::type_to_json()
     size_t required_size = payload.memoryUsage() + 128; // Payload size + header size + some slack as recommended by arduinojson assistant.
     // We also just assume the psram has enough space for this.
     BasicJsonDocument<ArduinoJsonPsramAllocator> out_doc(required_size);
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     logger.printfln("Create ship doc with size %zu. Total ShipMessageDataType::type_to_json() usage: %zu", required_size, required_size * 3 + 64);
 #endif
 

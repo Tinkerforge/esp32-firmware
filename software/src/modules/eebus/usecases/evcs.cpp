@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
-#include "../eebus_usecases.h"
-
-#ifdef EEBUS_ENABLE_EVCS_USECASE
-
-#include "../generated/module_dependencies.h"
-#include "entity_data.h"
 #include "evcs.h"
 
 #include <cmath>
+
+#include "entity_data.h"
+#include "../eebus_usecases.h"
+
+#include "../generated/module_dependencies.h"
+#include "../eebus_config.h"
+
+#if EEBUS_ENABLE_EVCS_USECASE()
 
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
@@ -399,4 +399,4 @@ void EvcsUsecase::update_api() const
     }
 }
 
-#endif // EEBUS_ENABLE_EVCS_USECASE
+#endif // EEBUS_ENABLE_EVCS_USECASE()

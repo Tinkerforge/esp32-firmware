@@ -18,6 +18,9 @@
  */
 #include "eebus.h"
 
+#include <LittleFS.h>
+#include <TFJson.h>
+
 #include "build.h"
 #include "eebus_usecases.h"
 #include "event_log_prefix.h"
@@ -27,11 +30,9 @@
 #include "generated/ship_discovery_state.enum.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "ship.h"
-#include <LittleFS.h>
-#include <TFJson.h>
-
 #include "tools/malloc.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 // Out-of-line constructor and destructor: unique_ptr_any<EEBusUseCases> and unique_ptr_any<SpineDataTypeHandler>
@@ -53,7 +54,7 @@ static int sanitized(float x, float scale)
 // ============================================================================
 // EVSE-specific helper functions (only compiled for EVSE builds)
 // ============================================================================
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
 
 /**
  * LPC Scenario 4: Report the nominal maximum power consumption of the charger (LPC-041).
@@ -61,7 +62,7 @@ static int sanitized(float x, float scale)
  */
 static void update_lpc_constraints()
 {
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     if (eebus.usecases == nullptr)
         return;
 
@@ -81,7 +82,7 @@ static void update_lpc_constraints()
 static void update_usecases_from_phases(const Config *_phases_cfg)
 {
     update_lpc_constraints();
-#if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
+#if EEBUS_ENABLE_EVCC_USECASE() || EEBUS_ENABLE_EVSECC_USECASE()
     if (eebus.usecases == nullptr)
         return;
 
@@ -100,13 +101,13 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
     int max_power = (milliamps_max / 1000) * (supports_3p ? 3 : 1) * 230;
 
     // Update usecases with calculated limits
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
     eebus.usecases->evcc->update_electrical_connection(min_power, max_power);
 #endif
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
     eebus.usecases->evcem->update_constraints(milliamps_min, milliamps_max, 100, min_power, max_power, 1000, 0, 1000000, 10);
 #endif
-#endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
+#endif // EEBUS_ENABLE_EVCC_USECASE() || EEBUS_ENABLE_EVSECC_USECASE()
 }
 
 /**
@@ -115,7 +116,7 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
  */
 static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 {
-#if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
+#if EEBUS_ENABLE_EVCC_USECASE() || EEBUS_ENABLE_EVSECC_USECASE()
     if (eebus.usecases == nullptr)
         return;
 
@@ -126,20 +127,20 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
     // will be set to faulted, which per spec [EVSECC-020] means "the EV may no
     // longer be able to follow the charging plan correctly"
 
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
     eebus.usecases->evcc->ev_connected_state(ev_connected);
     eebus.usecases->evcc->update_device_config("iec61851");
 #endif
 
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
     bool is_failure = (charger_state == CHARGER_STATE_ERROR);
     eebus.usecases->evsecc->update_operating_state(is_failure);
 #endif
-#endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
+#endif // EEBUS_ENABLE_EVCC_USECASE() || EEBUS_ENABLE_EVSECC_USECASE()
 }
-#endif // EEBUS_MODE_EVSE
+#endif // EEBUS_MODE_EVSE()
 
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
 /**
  * LPC Scenario 4: An energy manager reports the Contractual Consumption Nominal Max (LPC-042), not the Power Consumption
  * Nominal Max (LPC-041). The maximum current of the grid connection configured for the dynamic load management is the
@@ -147,7 +148,7 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
  */
 static void update_lpc_constraints()
 {
-#if MODULE_POWER_MANAGER_AVAILABLE() && defined(EEBUS_ENABLE_LPC_USECASE)
+#if MODULE_POWER_MANAGER_AVAILABLE() && EEBUS_ENABLE_LPC_USECASE()
     if (eebus.usecases == nullptr)
         return;
 
@@ -159,7 +160,7 @@ static void update_lpc_constraints()
     eebus.usecases->lpc->update_constraints(0, contract_max_w);
 #endif
 }
-#endif // EEBUS_MODE_EM
+#endif // EEBUS_MODE_EM()
 
 /**
  * Update current limit based on EEBUS power limits (LPC/OPEV).
@@ -173,11 +174,11 @@ static void update_limit()
         return;
 
 #if MODULE_P14A_ENWG_AVAILABLE()
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     bool lpc_active = eebus.usecases->limitation_of_power_consumption.is_power_limited();
     int lpc_limit_w = eebus.usecases->lpc->get_current_limit_w();
     p14a_enwg.set_eebus_limit(lpc_active, static_cast<uint32_t>(lpc_limit_w));
-#endif // EEBUS_ENABLE_LPC_USECASE
+#endif // EEBUS_ENABLE_LPC_USECASE()
 #endif // MODULE_P14A_ENWG_AVAILABLE()
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
@@ -188,7 +189,7 @@ static void update_limit()
     // Start with maximum current
     int limit_mA = 32000;
 
-#ifdef EEBUS_ENABLE_OPEV_USECASE
+#if EEBUS_ENABLE_OPEV_USECASE()
     // OPEV (Overload Protection) takes precedence if LPC is not active
     if (!eebus.usecases->limitation_of_power_consumption.is_power_limited() && eebus.usecases->overload_protection_by_ev_charging_current_curtailment.limit_is_active()) {
 
@@ -202,7 +203,7 @@ static void update_limit()
 
         limit_mA = limit_phases[0];
     }
-#endif // EEBUS_ENABLE_OPEV_USECASE
+#endif // EEBUS_ENABLE_OPEV_USECASE()
     // Clamp to safe operating range (6A - 32A)
     limit_mA = std::min(limit_mA, 32000);
     limit_mA = std::max(limit_mA, 6000);
@@ -212,9 +213,9 @@ static void update_limit()
 }
 
 // ============================================================================
-// Development testing code (only compiled when EEBUS_DEV_TEST_ENABLE is defined)
+// Development testing code (only compiled when EEBUS_DEV_TEST_ENABLE is enabled)
 // ============================================================================
-#ifdef EEBUS_DEV_TEST_ENABLE
+#if EEBUS_DEV_TEST_ENABLE()
 
 static size_t dev_test_iteration = 0;
 
@@ -227,14 +228,14 @@ static void run_eebus_usecase_tests()
 {
     switch (dev_test_iteration) {
         case 0: // EVSECC: Simulate error state
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
             logger.printfln("Test [0]: Simulating EVSECC error state");
             eebus.usecases->evse_commissioning_and_configuration.update_operating_state(true, "Test error: Will be cleared in 30 seconds");
 #endif
             break;
 
         case 1: // EVCS: Populate charging summary
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#if EEBUS_ENABLE_EVCS_USECASE()
             logger.printfln("Test [1]: Adding charging summary entries");
             eebus.usecases->charging_summary.update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
             eebus.usecases->charging_summary.update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
@@ -242,7 +243,7 @@ static void run_eebus_usecase_tests()
             break;
 
         case 2: // EVCC: Full EV connection scenario
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
             logger.printfln("Test [2]: Simulating EV connection with full data");
             eebus.usecases->ev_commissioning_and_configuration.ev_connected_state(true);
             eebus.usecases->ev_commissioning_and_configuration.update_device_config("iso15118-2ed1", true);
@@ -254,7 +255,7 @@ static void run_eebus_usecase_tests()
             break;
 
         case 3: // EVSECC: Clear error state
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
             logger.printfln("Test [3]: Clearing EVSECC error state");
             eebus.usecases->evse_commissioning_and_configuration.update_operating_state(false);
 #endif
@@ -264,7 +265,7 @@ static void run_eebus_usecase_tests()
             break;
 
         case 5: // MPC: Initial measurements
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
             logger.printfln("Test [5]: MPC initial measurements");
             eebus.usecases->mpc->update_constraints(0, 22000, 100, 0, 16000, 10, 0, 1000000, 10, 0, 400, 1, 10, 100, 1);
             eebus.usecases->mpc->update_power(6500, 2200, -150, 4450); // Phase 2 negative = feed-in
@@ -276,7 +277,7 @@ static void run_eebus_usecase_tests()
             break;
 
         case 6: // MGCP: Initial measurements
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
             logger.printfln("Test [6]: MGCP initial measurements");
             eebus.usecases->monitoring_of_grid_connection_point.update_constraints(-22000, 22000, 0, 32000, 1000000, 180, 260, 45000, 55000);
             eebus.usecases->monitoring_of_grid_connection_point.update_pv_curtailment_limit_factor(85.5f);
@@ -290,10 +291,10 @@ static void run_eebus_usecase_tests()
             break;
 
         default: // Continuous updates for EVCEM and MPC/MGCP
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
             eebus.usecases->ev_charging_electricity_measurement.update_measurements(1234, 5678, 9000, 1000, 2000, 3000, static_cast<int>(dev_test_iteration * 10));
 #endif
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
             // Simulate energy accumulation
             eebus.usecases->mpc->update_energy(150000 + (dev_test_iteration * 100), 25000 + (dev_test_iteration * 50));
 
@@ -307,7 +308,7 @@ static void run_eebus_usecase_tests()
             // Simulate frequency drift
             eebus.usecases->mpc->update_frequency(49000 + static_cast<int>(dev_test_iteration % 20) * 100);
 #endif
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
             // Simulate energy accumulation
             eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(123456 + (dev_test_iteration * 150));
             eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(654321 + (dev_test_iteration * 75));
@@ -317,7 +318,7 @@ static void run_eebus_usecase_tests()
     dev_test_iteration++;
 }
 
-#endif // EEBUS_DEV_TEST_ENABLE
+#endif // EEBUS_DEV_TEST_ENABLE()
 
 static constexpr MeterValueID mvids[] = {
     MeterValueID::CurrentL1ImExDiff,
@@ -392,7 +393,7 @@ void EEBus::pre_setup()
 
     config = ConfigRoot{Config::Object({
                             {"enable", Config::Bool(false)},
-                            {"peers", Config::Array({config_peers_prototype}, &config_peers_prototype, 0, MAX_PEER_REMEMBERED, Config::type_id<Config::ConfObject>())},
+                            {"peers", Config::Array({config_peers_prototype}, &config_peers_prototype, 0, EEBUS_MAX_PEER_REMEMBERED, Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &update, ConfigSource source) -> String {
                             if (source != ConfigSource::File) {
@@ -409,7 +410,7 @@ void EEBus::pre_setup()
                               if (add_peer_cfg.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
                               }
-                              if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
+                              if (config.get("peers")->count() == EEBUS_MAX_PEER_REMEMBERED) {
                                   return "Can't add peer. Already have the maximum number of peers.";
                               }
                               return "";
@@ -426,7 +427,7 @@ void EEBus::pre_setup()
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
-        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, MAX_PEER_REMEMBERED + MAX_PEER_DISCOVERED, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
+        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, EEBUS_MAX_PEER_REMEMBERED + EEBUS_MAX_PEER_DISCOVERED, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
     });
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy
@@ -435,7 +436,7 @@ void EEBus::pre_setup()
     eebus_usecase_state = Config::Object({
         {"commands_received", Config::Uint16(0)},
         {"commands_sent", Config::Uint16(0)},
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#if EEBUS_ENABLE_EVCS_USECASE()
         {"evcs",
          Config::Array(
              {// Read/Write
@@ -446,7 +447,7 @@ void EEBus::pre_setup()
              8,
              Config::type_id<Config::ConfObject>())},
 #endif
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
         {"lpc",
          Config::Object({
              // Usecase Limitation of power consumption
@@ -459,7 +460,7 @@ void EEBus::pre_setup()
              {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
 #endif
-#ifdef EEBUS_ENABLE_LPP_USECASE
+#if EEBUS_ENABLE_LPP_USECASE()
         {"lpp",
          Config::Object({
              // Usecase Limitation of power production
@@ -472,7 +473,7 @@ void EEBus::pre_setup()
              {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
 #endif
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
         {"evcc",
          Config::Object({{"ev_connected", Config::Bool(false)},
                          {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
@@ -483,14 +484,14 @@ void EEBus::pre_setup()
                          {"standby_power", Config::Uint16(0)},
                          {"standby_mode", Config::Bool(false)}})},
 #endif
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
         {"evsecc",
          Config::Object({
              {"evse_failure", Config::Bool(false)},
              {"evse_failure_description", Config::Str("", 0, 64)},
          })},
 #endif
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
         {"evcem",
          Config::Object({
              {"active", Config::Bool(false)},
@@ -505,7 +506,7 @@ void EEBus::pre_setup()
              {"charged_valuesource_measured", Config::Bool(false)},
          })},
 #endif
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
         {"mpc",
          Config::Object({
              {"active", Config::Bool(false)},
@@ -528,7 +529,7 @@ void EEBus::pre_setup()
              {"frequency_mhz", Config::Int32(EEBUS_NO_VALUE)},
          })},
 #endif
-#ifdef EEBUS_ENABLE_CEVC_USECASE
+#if EEBUS_ENABLE_CEVC_USECASE()
         {"cevc",
          Config::Object({
              {"has_charging_plan", Config::Bool(false)},
@@ -539,7 +540,7 @@ void EEBus::pre_setup()
              {"energy_broker_heartbeat_ok", Config::Bool(false)},
          })},
 #endif
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
         {"mgcp",
          Config::Object({
              {"active", Config::Bool(false)},
@@ -563,7 +564,7 @@ void EEBus::pre_setup()
              {"frequency_mhz", Config::Int32(EEBUS_NO_VALUE)},
          })},
 #endif
-#ifdef EEBUS_ENABLE_OPEV_USECASE
+#if EEBUS_ENABLE_OPEV_USECASE()
         {"opev",
          Config::Object({
              // Usecase Overload Protection by EV Charging Current Curtailment
@@ -609,12 +610,12 @@ void EEBus::setup()
     update_peers_config();
 
     initialized = true;
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("EEBUS initialized");
 #endif
 
     // Schedule development tests if enabled
-#ifdef EEBUS_DEV_TEST_ENABLE
+#if EEBUS_DEV_TEST_ENABLE()
     task_scheduler.scheduleUncancelable(
         []() {
             if (eebus.is_enabled()) {
@@ -765,16 +766,16 @@ void EEBus::register_events()
     // toggle_module will register URI handlers and cannot be started during the setup stage.
     toggle_module();
 
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
     register_evse_events();
 #endif
 
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
     register_em_events();
 #endif
 }
 
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
 /**
  * Register EVSE-specific events for meter integration and state updates.
  * Called by register_events() when compiled for EVSE mode.
@@ -802,16 +803,16 @@ void EEBus::register_evse_events()
     // Meter value updates for EVCEM and MPC usecases
     register_meter_events();
 }
-#endif // EEBUS_MODE_EVSE
+#endif // EEBUS_MODE_EVSE()
 
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
 /**
  * Register Energy Manager specific events.
  * Called by register_events() when compiled for EM mode.
  */
 void EEBus::register_em_events()
 {
-#if MODULE_POWER_MANAGER_AVAILABLE() && defined(EEBUS_ENABLE_LPC_USECASE)
+#if MODULE_POWER_MANAGER_AVAILABLE() && EEBUS_ENABLE_LPC_USECASE()
     event.registerEvent("power_manager/dynamic_load_config", {}, [](const Config *) {
         update_lpc_constraints();
         return EventResult::OK;
@@ -821,7 +822,7 @@ void EEBus::register_em_events()
     // Meter value updates for MGCP usecase
     register_meter_events();
 }
-#endif // EEBUS_MODE_EM
+#endif // EEBUS_MODE_EM()
 
 /**
  * Register meter value events for continuous measurement updates.
@@ -835,7 +836,7 @@ void EEBus::register_meter_events()
 {
     // Determine which meter slot to use based on mode
     uint8_t meter_slot;
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
     meter_slot = static_cast<uint8_t>(evse_common.get_charger_meter());
 #else
     // Find the first meter with location=Grid
@@ -887,19 +888,19 @@ void EEBus::register_meter_events()
             v.frequency = sanitized(floats.frequency, 1000.0f);         // Hz -> mHz
             v.total_power = sanitized(floats.total_power, 1.0f);        // W (no scale)
 
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
             // Calculate charged energy for current session (EVSE mode only)
             bool charging = (charge_tracker.current_charge.get("user_id")->asInt16() != -1);
             float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
             int charged_wh = !charging ? EEBUS_NO_VALUE : sanitized(floats.energy_import - meter_start, 1000.0f);
 
             // Update EVCEM usecase (EV charging measurements)
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
             eebus.usecases->evcem->update_measurements(v.currents[0], v.currents[1], v.currents[2], v.powers[0], v.powers[1], v.powers[2], charged_wh);
 #endif
 
             // Update MPC usecase (power consumption monitoring)
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
             eebus.usecases->mpc->update_power(v.total_power, v.powers[0], v.powers[1], v.powers[2]);
             eebus.usecases->mpc->update_energy(static_cast<uint32_t>(v.energy_import), static_cast<uint32_t>(v.energy_export));
             eebus.usecases->mpc->update_current(v.currents[0], v.currents[1], v.currents[2]);
@@ -907,11 +908,11 @@ void EEBus::register_meter_events()
             eebus.usecases->mpc->update_frequency(v.frequency);
 #endif
             (void)charged_wh; // Suppress unused warning
-#endif                        // EEBUS_MODE_EVSE
+#endif // EEBUS_MODE_EVSE()
 
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
             // Update MGCP usecase (grid connection point monitoring) in EM mode
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
             // Note: MGCP uses load/passive sign convention (negative = feed-in)
             eebus.usecases->monitoring_of_grid_connection_point.update_power(v.total_power);
             eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(static_cast<uint32_t>(v.energy_export));
@@ -920,7 +921,7 @@ void EEBus::register_meter_events()
             eebus.usecases->monitoring_of_grid_connection_point.update_voltage(v.voltages[0], v.voltages[1], v.voltages[2]);
             eebus.usecases->monitoring_of_grid_connection_point.update_frequency(v.frequency);
 #endif
-#endif // EEBUS_MODE_EM
+#endif // EEBUS_MODE_EM()
 
             return EventResult::OK;
         });
@@ -935,11 +936,11 @@ void EEBus::toggle_module()
     if (config.get("enable")->asBool()) {
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
         update_usecases_from_charger_state(static_cast<const Config *>(api.getState("evse/state")->get("charger_state")));
         update_usecases_from_phases(static_cast<const Config *>(api.getState("evse/phases_connected")->get("phases")));
 #endif
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
         update_lpc_constraints();
 #endif
         data_handler = make_unique_psram<SpineDataTypeHandler>();
@@ -1088,7 +1089,7 @@ void EEBus::sync_persistent_peer_to_config(const ShipNode *node)
 
     if (!found) {
         // Add new peer to config
-        if (config.get("peers")->count() < MAX_PEER_REMEMBERED) {
+        if (config.get("peers")->count() < EEBUS_MAX_PEER_REMEMBERED) {
             auto new_peer = config.get("peers")->add();
             new_peer->get("ip")->updateString(node->ip_address_as_string());
             new_peer->get("port")->updateUint(node->port);
@@ -1103,7 +1104,7 @@ void EEBus::sync_persistent_peer_to_config(const ShipNode *node)
             new_peer->get("model_type")->updateString(node->txt_type);
             api.writeConfig("eebus/config", &config);
         } else {
-            logger.printfln("Cannot add peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
+            logger.printfln("Cannot add peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), EEBUS_MAX_PEER_REMEMBERED);
         }
     }
 }

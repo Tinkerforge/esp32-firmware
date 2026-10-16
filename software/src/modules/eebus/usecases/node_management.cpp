@@ -24,6 +24,7 @@
 #include "../generated/module_dependencies.h"
 #include "event_log_prefix.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -72,7 +73,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
     data->function_to_string(data->last_cmd);
     switch (data->last_cmd) {
         case SpineDataTypeHandler::Function::nodeManagementUseCaseData:
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData with a %s command", cmd_classifier.c_str());
 #endif
             switch (header.cmdClassifier.get()) {
@@ -91,7 +92,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
                     return {true, false};
             }
         case SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData:
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData with a %s command", cmd_classifier.c_str());
 #endif
             switch (header.cmdClassifier.get()) {
@@ -100,7 +101,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
                     return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::reply:
                 case CmdClassifierType::notify:
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
 #endif
                     if (const auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
@@ -126,7 +127,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
         case SpineDataTypeHandler::Function::nodeManagementBindingData:
         case SpineDataTypeHandler::Function::nodeManagementBindingRequestCall:
         case SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall:
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("NodeManagementUsecase: Binding handling");
 #endif
             return handle_binding(header, data, response);
@@ -151,13 +152,13 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     target.feature = 0;
     target.entity = {0};
     target.device = target_feature.device;
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("NodeManagementUsecase: subscribe_to_feature");
 #endif
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
     JsonObject dst = message.to<JsonObject>();
     if (dst["nodeManagementSubscriptionRequestCall"].set(subscription_request)) {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_fmtln("NodeManagementUsecase: Built subscription request message successfully");
 #endif
     } else {
@@ -223,16 +224,16 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
-    node_management_detailed_data.specificationVersionList->specificationVersion->emplace_back(SUPPORTED_SPINE_VERSION);
+    node_management_detailed_data.specificationVersionList->specificationVersion->emplace_back(EEBUS_SUPPORTED_SPINE_VERSION);
 
     node_management_detailed_data.deviceInformation->description->description = std::string(OPTIONS_PRODUCT_NAME()) + " by " + OPTIONS_MANUFACTURER_FULL();
     node_management_detailed_data.deviceInformation->description->label = OPTIONS_PRODUCT_NAME();
     node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation;
 #endif
-#ifdef EEBUS_MODE_EM
+#if EEBUS_MODE_EM()
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::EnergyManagementSystem;
 #endif
     for (EebusUsecase *uc : usecase_interface->usecase_list) {
@@ -558,7 +559,7 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     if (error_count > 0) {
         eebus.trace_fmtln("EEBUS: Errors while informing subscribers of %s: %zu sent, %zu errors", function_name, sent_count, error_count);
     }
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     else if (sent_count > 0) {
         eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s", sent_count, function_name);
     }

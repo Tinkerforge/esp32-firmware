@@ -23,7 +23,11 @@
 #include "entity_data.h"
 #include "usecase_base.h"
 
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_EVCC_USECASE()
 
 /**
  * @brief The EV Commissioning and Configuration (EVCC) use case.
@@ -216,4 +220,6 @@ private:
     bool standby_mode = false;
 };
 
-#endif // EEBUS_ENABLE_EVCC_USECASE
+#endif // EEBUS_ENABLE_EVCC_USECASE()
+
+#include "../eebus_config_end.h"

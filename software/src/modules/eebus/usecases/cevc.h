@@ -19,12 +19,16 @@
 
 #pragma once
 
+#include <vector>
+
 #include "entity_data.h"
 #include "usecase_base.h"
 
-#include <vector>
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
 
-#ifdef EEBUS_ENABLE_CEVC_USECASE
+#if EEBUS_ENABLE_CEVC_USECASE()
 
 /**
  * @brief Coordinated EV Charging (CEVC) usecase.
@@ -324,4 +328,6 @@ private:
     void invalidate_broker_data();
 };
 
-#endif // EEBUS_ENABLE_CEVC_USECASE
+#endif // EEBUS_ENABLE_CEVC_USECASE()
+
+#include "../eebus_config_end.h"

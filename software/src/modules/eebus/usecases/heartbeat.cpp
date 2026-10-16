@@ -175,7 +175,7 @@ void EebusHeartBeat::poll_heartbeats()
             if (!it->polling) {
                 eebus.trace_fmtln("EebusHeartBeat: No recent heartbeat notification from %s. Reading heartbeat", EEBUS_USECASE_HELPERS::spine_address_to_string(it->address).c_str());
             }
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             else {
                 eebus.trace_fmtln("EebusHeartBeat: Polling heartbeat from %s", EEBUS_USECASE_HELPERS::spine_address_to_string(it->address).c_str());
             }
@@ -232,7 +232,7 @@ MessageReturn EebusHeartBeat::handle_message(HeaderType &header, SpineDataTypeHa
     }
     switch (header.cmdClassifier.get()) {
         case CmdClassifierType::read:
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("EebusHeartBeat: Command identified as DeviceDiagnosisHeartbeatData with a read command");
 #endif
             response["deviceDiagnosisHeartbeatData"] = read_heartbeat();
@@ -286,7 +286,7 @@ void EebusHeartBeat::emit_timeout() const
 void EebusHeartBeat::send_heartbeat_to_subs()
 {
     DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
     if (subs > 0) {
         eebus.trace_fmtln("heartbeat_sent to %d subscribers", subs);

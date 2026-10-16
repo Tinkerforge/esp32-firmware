@@ -20,16 +20,20 @@
 #pragma once
 
 #include "entity_data.h"
-#include "evcem.h" // Required for EvcemUsecase ID references
 #include "usecase_base.h"
+#include "evcem.h" // Required for EvcemUsecase ID references
 
-#ifdef EEBUS_ENABLE_OPEV_USECASE
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_OPEV_USECASE()
 
 // Dependency checks
-#ifndef EEBUS_ENABLE_EVCC_USECASE
+#if !EEBUS_ENABLE_EVCC_USECASE()
 #error "OPEV Usecase requires EVCC Usecase to be enabled"
 #endif
-#ifndef EEBUS_ENABLE_EVCEM_USECASE
+#if !EEBUS_ENABLE_EVCEM_USECASE()
 #error "OPEV Usecase requires EVCEM Usecase to be enabled"
 #endif
 
@@ -223,3 +227,5 @@ private:
 };
 
 #endif // EEBUS_ENABLE_OPEV_USECASE
+
+#include "../eebus_config_end.h"

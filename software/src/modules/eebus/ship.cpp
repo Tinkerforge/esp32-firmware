@@ -127,7 +127,7 @@ static String extract_peer_ski_from_tls(httpd_handle_t httpd, int sockfd)
     return String{ski_hex, ski_len};
 }
 
-#ifdef EEBUS_SHIP_AUTOCONNECT
+#if EEBUS_SHIP_AUTOCONNECT()
 static esp_err_t eebus_client_crt_bundle_attach(void *conf)
 {
     mbedtls_ssl_config *ssl_conf = static_cast<mbedtls_ssl_config *>(conf);
@@ -222,7 +222,7 @@ void Ship::setup_wss()
         return;
     }
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("setup_wss_server start");
 #endif
     if (!cert.is_loaded()) {
@@ -503,7 +503,7 @@ void Ship::ws_close(int fd)
 
 void Ship::connect_trusted_peers()
 {
-#ifdef EEBUS_SHIP_AUTOCONNECT
+#if EEBUS_SHIP_AUTOCONNECT()
     if (!is_enabled || !eebus.is_enabled()) {
         return;
     }
@@ -515,7 +515,7 @@ void Ship::connect_trusted_peers()
     }
 
     const auto &peers = peer_handler.get_peers();
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("connect_trusted_peers start, %zu peers known", peers.size());
 #endif
     int trusted_peer_count = 0;

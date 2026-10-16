@@ -32,68 +32,36 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 */
 
 #pragma once
+
 #include "config.h"
 #include "generated/loadcontrol_state.enum.h"
 #include "generated/usecases.enum.h"
 #include "spine_connection.h"
 #include "spine_types.h"
 
-// Configuration related to the LPC usecases
-// Disable if subscription functionalities shall not be used
-#define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
-// The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
-#define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
-// Enable LPC heartbeat
-#define EEBUS_LPC_ENABLE_HEARTBEAT true
-#define EEBUS_LPC_HEARTBEAT_INTERVAL 30_s // Must be more than 10 seconds and less or equal to 60 seconds
-
 using LPCState = LoadcontrolState;
 using LPPState = LoadcontrolState;
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
-// Include all usecase headers - these contain the class declarations that were previously in this file
 #include "usecases/entity_data.h"
 #include "usecases/heartbeat.h"
 #include "usecases/node_management.h"
 #include "usecases/usecase_base.h"
 #include "usecases/usecase_helpers.h"
-
-#ifdef EEBUS_ENABLE_EVCS_USECASE
 #include "usecases/evcs.h"
-#endif
-
-#ifdef EEBUS_ENABLE_EVCC_USECASE
 #include "usecases/evcc.h"
-#endif
-
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
 #include "usecases/evcem.h"
-#endif
-
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
 #include "usecases/evsecc.h"
-#endif
-
-#if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
 #include "usecases/loadcontrol.h"
-#endif
-
-#ifdef EEBUS_ENABLE_CEVC_USECASE
 #include "usecases/cevc.h"
-#endif
-
-#ifdef EEBUS_ENABLE_MPC_USECASE
 #include "usecases/mpc.h"
-#endif
-
-#ifdef EEBUS_ENABLE_MGCP_USECASE
 #include "usecases/mgcp.h"
-#endif
-
-#ifdef EEBUS_ENABLE_OPEV_USECASE
 #include "usecases/opev.h"
-#endif
+
+#include "generated/module_available.h"
+#include "eebus_config.h"
+#include "generated/module_available_end.h"
 
 /**
  * The central Interface for EEBus UseCases.
@@ -154,43 +122,43 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE};           // The response document to be filled with the response data
 
     NodeManagementEntity node_management{};
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
     EvseccUsecase evse_commissioning_and_configuration{};
     EvseccUsecase *evsecc = &evse_commissioning_and_configuration;
 #endif
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#if EEBUS_ENABLE_EVCS_USECASE()
     EvcsUsecase charging_summary{};
     EvcsUsecase *evcs = &charging_summary;
 #endif
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     LpcUsecase limitation_of_power_consumption{};
     LpcUsecase *lpc = &limitation_of_power_consumption;
 #endif
-#ifdef EEBUS_ENABLE_LPP_USECASE
+#if EEBUS_ENABLE_LPP_USECASE()
     LppUsecase limitation_of_power_production{};
     LppUsecase *lpp = &limitation_of_power_production;
 #endif
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
     MpcUsecase monitoring_of_power_consumption{};
     MpcUsecase *mpc = &monitoring_of_power_consumption;
 #endif
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
     EvccUsecase ev_commissioning_and_configuration{};
     EvccUsecase *evcc = &ev_commissioning_and_configuration;
 #endif
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
     EvcemUsecase ev_charging_electricity_measurement{};
     EvcemUsecase *evcem = &ev_charging_electricity_measurement;
 #endif
-#ifdef EEBUS_ENABLE_CEVC_USECASE
+#if EEBUS_ENABLE_CEVC_USECASE()
     CevcUsecase coordinate_ev_charging{};
     CevcUsecase *cevc = &coordinate_ev_charging;
 #endif
-#ifdef EEBUS_ENABLE_OPEV_USECASE
+#if EEBUS_ENABLE_OPEV_USECASE()
     OpevUsecase overload_protection_by_ev_charging_current_curtailment{};
     OpevUsecase *opev = &overload_protection_by_ev_charging_current_curtailment;
 #endif
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
     MgcpUsecase monitoring_of_grid_connection_point{};
     MgcpUsecase *mgcp = &monitoring_of_grid_connection_point;
 #endif
@@ -207,3 +175,5 @@ private:
     uint16_t eebus_commands_received = 0;
     uint16_t eebus_responses_sent = 0;
 };
+
+#include "eebus_config_end.h"

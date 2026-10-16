@@ -174,7 +174,7 @@ void ShipConnection::process_frame(const uint8_t *data, const size_t len, const 
         eebus.trace_fmtln("ShipConnection process_frame: payload too short: %zu", len);
         return;
     }
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     if (state != ShipConnectionState::Done) {
         eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment", peer_node->node_name().c_str());
     }
@@ -309,7 +309,7 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 
 void ShipConnection::send_current_outgoing_message()
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("Sending Websocket message");
 #endif
 
@@ -333,7 +333,7 @@ void ShipConnection::send_current_outgoing_message()
 
 void ShipConnection::send_string(const char *str, const size_t length, const int msg_classifier)
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %zu:", msg_classifier, length);
     eebus.trace_strln(str, length);
 #endif
@@ -439,7 +439,7 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 
 void ShipConnection::log_message(const String &state_prefix, Message *msg)
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %d)", state_prefix.c_str(), static_cast<int>(msg->data[0]), msg->length);
     eebus.trace_strln(reinterpret_cast<const char *>(&msg->data[1]), msg->length - 1);
 #endif

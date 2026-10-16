@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
+#include "loadcontrol.h"
+
+#include "event_log_prefix.h"
+#include "entity_data.h"
+#include "usecase_helpers.h"
 #include "../eebus_usecases.h"
 
-#if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
-
 #include "../generated/module_dependencies.h"
-#include "entity_data.h"
-#include "event_log_prefix.h"
-#include "loadcontrol.h"
-#include "usecase_helpers.h"
+#include "../eebus_config.h"
+
+#if EEBUS_ENABLE_LPC_USECASE() || EEBUS_ENABLE_LPP_USECASE()
 
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
@@ -86,9 +86,9 @@ MessageReturn LoadPowerLimitUsecase::handle_message(HeaderType &header, SpineDat
 
 NodeManagementDetailedDiscoveryEntityInformationType LoadPowerLimitUsecase::get_detailed_discovery_entity_information() const
 {
-#ifdef EEBUS_MODE_EVSE
+#if EEBUS_MODE_EVSE()
     return build_entity_info(EntityTypeEnumType::EVSE, "Controllable System");
-#elif defined(EEBUS_MODE_EM)
+#elif EEBUS_MODE_EM()
     return build_entity_info(EntityTypeEnumType::CEM, "Controllable System");
 #else
     return {};
@@ -906,7 +906,7 @@ void LoadPowerLimitUsecase::get_electrical_connection_characteristic(ElectricalC
 // =============================================================================
 // LpcUsecase - Thin wrapper around LoadPowerLimitUsecase
 // =============================================================================
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
 
 // Static configuration for LPC (Limitation of Power Consumption)
 const LoadPowerLimitConfig LpcUsecase::lpc_config = {
@@ -930,12 +930,12 @@ LpcUsecase::LpcUsecase() : LoadPowerLimitUsecase(lpc_config)
 {
 }
 
-#endif // EEBUS_ENABLE_LPC_USECASE
+#endif // EEBUS_ENABLE_LPC_USECASE()
 
 // =============================================================================
 // LppUsecase - Thin wrapper around LoadPowerLimitUsecase
 // =============================================================================
-#ifdef EEBUS_ENABLE_LPP_USECASE
+#if EEBUS_ENABLE_LPP_USECASE()
 
 // Static configuration for LPP (Limitation of Power Production)
 const LoadPowerLimitConfig LppUsecase::lpp_config = {
@@ -959,4 +959,4 @@ LppUsecase::LppUsecase() : LoadPowerLimitUsecase(lpp_config)
 {
 }
 
-#endif // EEBUS_ENABLE_LPP_USECASE
+#endif // EEBUS_ENABLE_LPC_USECASE() || EEBUS_ENABLE_LPP_USECASE()

@@ -866,7 +866,7 @@ void ShipConnection::state_done()
     auto protocol_state = get_protocol_state();
 
     // protocol_state logged only for non-Data states to reduce noise
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
 #else
     if (protocol_state != ProtocolState::Data) {
@@ -898,13 +898,13 @@ void ShipConnection::state_done()
             // SHIP 13.4.4.3: Peer's pin state received. We already sent ours
             // during the initial SmePinCheckInit transition, so just consume
             // this message without replying to avoid an infinite ping-pong loop.
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("SHIP: Received peer pin state in Done state (no reply needed)");
 #endif
             break;
         }
         case ProtocolState::AccessMethodsRequest: {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
             eebus.trace_fmtln("AccessMethodsRequest received");
 #endif
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
@@ -938,7 +938,7 @@ void ShipConnection::state_done()
         default:
             break;
     }
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("SHIP: After state done state: %s", get_ship_connection_state_name(state));
 #else
     if (state != ShipConnectionState::Done) {

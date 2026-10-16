@@ -17,17 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
+#include "evsecc.h"
+
+#include "entity_data.h"
+#include "usecase_helpers.h"
 #include "../eebus_usecases.h"
 
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
-
 #include "../generated/module_dependencies.h"
-#include "entity_data.h"
-#include "evsecc.h"
-#include "usecase_helpers.h"
+#include "../eebus_config.h"
 
+#if EEBUS_ENABLE_EVSECC_USECASE()
+
+#include "options.h"
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -133,4 +134,4 @@ void EvseccUsecase::update_api() const
     api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }
 
-#endif // EEBUS_ENABLE_EVSECC_USECASE
+#endif // EEBUS_ENABLE_EVSECC_USECASE()

@@ -22,19 +22,24 @@
 #include "entity_data.h"
 #include "usecase_base.h"
 
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_MPC_USECASE()
+
 // Forward declarations for conditional compilation
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
 class LpcUsecase;
 #endif
-#ifdef EEBUS_ENABLE_LPP_USECASE
+
+#if EEBUS_ENABLE_LPP_USECASE()
 class LppUsecase;
 #endif
 
-#ifdef EEBUS_ENABLE_MGCP_USECASE
-#warning  "EEBUS MPC and MGCP usecase enabled at the same time. This is know to cause issues with EEBUS communication and is therefore not recommended"
+#if EEBUS_ENABLE_MGCP_USECASE()
+#warning "EEBUS MPC and MGCP usecase enabled at the same time. This is know to cause issues with EEBUS communication and is therefore not recommended"
 #endif
-
-#ifdef EEBUS_ENABLE_MPC_USECASE
 
 /**
  * @brief Monitoring of Power Consumption (MPC) usecase.
@@ -209,11 +214,11 @@ public:
     // IDs as used in Monitoring of Power Consumption V1.0.0 3.2.2.2
     // Linked IDs are described in the spec for the LPC usecase
     // =========================================================================
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     static constexpr uint8_t id_ec_1 = EVSEEntity::lpcElectricalConnectionIdOffset + 1;         // Linked to LPC usecase electrical connection description
     static constexpr uint8_t id_m_1 = EVSEEntity::lpcMeasurementIdOffset + 1;                   // Linked to LPC usecase measurement description
     static constexpr uint8_t id_p_1 = EVSEEntity::lpcElectricalConnectionParameterIdOffset + 1; // Linked to LPC usecase electrical connection parameter description
-#elif defined(EEBUS_ENABLE_LPP_USECASE)
+#elif EEBUS_ENABLE_LPP_USECASE()
     static constexpr uint8_t id_ec_1 = EVSEEntity::lppElectricalConnectionIdOffset + 1;         // Linked to LPP usecase electrical connection description
     static constexpr uint8_t id_m_1 = EVSEEntity::lppMeasurementIdOffset + 1;                   // Linked to LPP usecase measurement description
     static constexpr uint8_t id_p_1 = EVSEEntity::lppElectricalConnectionParameterIdOffset + 1; // Linked to LPP usecase electrical connection parameter description
@@ -334,4 +339,6 @@ private:
 
 };
 
-#endif // EEBUS_ENABLE_MPC_USECASE
+#endif // EEBUS_ENABLE_MPC_USECASE()
+
+#include "../eebus_config_end.h"

@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
-#include "../eebus_usecases.h"
-
-#ifdef EEBUS_ENABLE_MPC_USECASE
-
-#include "../generated/module_dependencies.h"
 #include "mpc.h"
-#include "usecase_helpers.h"
 
 #include <array>
+
+#include "usecase_helpers.h"
+#include "../eebus_usecases.h"
+
+#include "../generated/module_dependencies.h"
+#include "../eebus_config.h"
+
+#if EEBUS_ENABLE_MPC_USECASE()
 
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
@@ -631,4 +631,4 @@ void MpcUsecase::update_constraints(int power_min, int power_max, int power_step
     update_api();
 }
 
-#endif // EEBUS_ENABLE_MPC_USECASE
+#endif // EEBUS_ENABLE_MPC_USECASE()

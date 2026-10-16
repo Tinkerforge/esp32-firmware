@@ -17,19 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Disable autoformat as it moves eebus.h below eebus_usecases.h which causes linker errors
-// clang-format off
-#include "eebus.h"
 #include "eebus_usecases.h"
-#include "event_log_prefix.h"
-#include "generated/module_dependencies.h"
-#include "ship_types.h"
+
 #include <chrono>
 #include <utility>
 
-#include "gcc_warnings.h"
+#include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
+#include "eebus.h"
+#include "ship_types.h"
 
-// clang-format on
+#include "gcc_warnings.h"
 
 template <typename T> void insert_vector(std::vector<T> &dest, const std::vector<T> &src)
 {
@@ -58,27 +56,27 @@ EEBusUseCases::EEBusUseCases()
     // EVSE Actors
     usecase_list.push_back(&evse_heartbeat);
     evse_heartbeat.set_entity_address(EVSEEntity::entity_address);
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#if EEBUS_ENABLE_EVCS_USECASE()
     usecase_list.push_back(&charging_summary);
     charging_summary.set_entity_address(EVSEEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     usecase_list.push_back(&limitation_of_power_consumption);
     limitation_of_power_consumption.set_entity_address(EVSEEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_MPC_USECASE
+#if EEBUS_ENABLE_MPC_USECASE()
     usecase_list.push_back(&monitoring_of_power_consumption);
     monitoring_of_power_consumption.set_entity_address(EVSEEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_LPP_USECASE
+#if EEBUS_ENABLE_LPP_USECASE()
     usecase_list.push_back(&limitation_of_power_production);
     limitation_of_power_production.set_entity_address(EVSEEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#if EEBUS_ENABLE_EVSECC_USECASE()
     usecase_list.push_back(&evse_commissioning_and_configuration);
     evse_commissioning_and_configuration.set_entity_address(EVSEEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_MGCP_USECASE
+#if EEBUS_ENABLE_MGCP_USECASE()
     usecase_list.push_back(&monitoring_of_grid_connection_point);
     monitoring_of_grid_connection_point.set_entity_address(EVSEEntity::entity_address);
 #endif
@@ -87,19 +85,19 @@ EEBusUseCases::EEBusUseCases()
     usecase_list.push_back(&ev_heartbeat);
     ev_heartbeat.set_entity_address(EVEntity::entity_address);
     ev_heartbeat.set_active(false);
-#ifdef EEBUS_ENABLE_EVCC_USECASE
+#if EEBUS_ENABLE_EVCC_USECASE()
     usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_CEVC_USECASE
+#if EEBUS_ENABLE_CEVC_USECASE()
     usecase_list.push_back(&coordinate_ev_charging);
     coordinate_ev_charging.set_entity_address({1, 1});
 #endif
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
     usecase_list.push_back(&ev_charging_electricity_measurement);
     ev_charging_electricity_measurement.set_entity_address(EVEntity::entity_address);
 #endif
-#ifdef EEBUS_ENABLE_OPEV_USECASE
+#if EEBUS_ENABLE_OPEV_USECASE()
     usecase_list.push_back(&overload_protection_by_ev_charging_current_curtailment);
     overload_protection_by_ev_charging_current_curtailment.set_entity_address(EVEntity::entity_address);
 #endif
@@ -149,7 +147,7 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     // If its a result, send it to all usecases under this entity.
     // The usecase can figure out if it is relevant for it or not.
     if (data->last_cmd == SpineDataTypeHandler::Function::resultData) {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_fmtln("Usecases: Received resultData, no further processing");
 #endif
         ResultDataType result_data = data->resultdatatype.get();
@@ -174,13 +172,13 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
             send_response = entity->handle_message(header, data, responseObj);
             if (send_response.is_handled) {
                 found_dest_entity = true;
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
                 eebus.trace_fmtln("Usecases: Found entity: %s", get_usecases_name(entity->get_usecase_type()));
 #endif
             } else {
                 // This is not an error. Multiple usecases share an entity address, so every
                 // usecase that doesn't handle this particular message ends up here.
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
                 eebus.trace_fmtln("Usecases: Entity %s could not handle the message", get_usecases_name(entity->get_usecase_type()));
 #endif
             }
@@ -198,7 +196,7 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     }
     // Do we need to send a response
     if (send_response.send_response) {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_fmtln("Usecases: Sending response");
 #endif
         if (header.ackRequest.has_value() && header.ackRequest.get() && send_response.cmd_classifier != CmdClassifierType::result && header.cmdClassifier != CmdClassifierType::read) {
@@ -213,7 +211,7 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
         if (header.ackRequest.has_value() && header.ackRequest.get()) {
             eebus.trace_fmtln("Usecases: ERROR: Header requested an ack, but no response was generated");
         }
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
 #endif
     }

@@ -76,7 +76,7 @@ SpineConnection::~SpineConnection()
 }
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("SPINE: Processing datagram:");
     eebus.trace_jsonln(datagram);
 #endif
@@ -98,7 +98,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {
         eebus.trace_fmtln("SPINE: No function found for the received payload");
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_jsonln(received_payload);
 #endif
         return false;
@@ -119,7 +119,7 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
         }
     }
     eebus.trace_fmtln("SPINE: Sending %s %s to %s", convertToString(cmd_classifier).c_str(), function_name, EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_jsonln(payload);
 #endif
 
@@ -128,7 +128,7 @@ int SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType c
     HeaderType header{};
     header.ackRequest = require_ack;
     header.cmdClassifier = cmd_classifier;
-    header.specificationVersion = SUPPORTED_SPINE_VERSION;
+    header.specificationVersion = EEBUS_SUPPORTED_SPINE_VERSION;
     header.addressSource = sender;
     if (header.addressSource->device.isNull()) {
         header.addressSource->device = EEBUS_USECASE_HELPERS::get_spine_device_name();

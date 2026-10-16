@@ -17,19 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
-#include "../eebus_usecases.h"
-
-#ifdef EEBUS_ENABLE_OPEV_USECASE
-
-#include "../generated/module_dependencies.h"
-#include "entity_data.h"
-#include "event_log_prefix.h"
 #include "opev.h"
-#include "usecase_helpers.h"
 
 #include <cmath>
+
+#include "event_log_prefix.h"
+#include "entity_data.h"
+#include "usecase_helpers.h"
+#include "../eebus_usecases.h"
+
+#include "../generated/module_dependencies.h"
+#include "../eebus_config.h"
+
+#if EEBUS_ENABLE_OPEV_USECASE()
 
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
@@ -195,7 +195,7 @@ void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType 
 
 void OpevUsecase::get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data)
 {
-#ifndef EEBUS_ENABLE_EVCC_USECASE
+#if !EEBUS_ENABLE_EVCC_USECASE()
     struct Entrydata {
         uint8_t param_id;
         uint8_t measure_id;
@@ -221,7 +221,7 @@ void OpevUsecase::get_electrical_connection_parameter_description_list_data(Elec
 
 void OpevUsecase::get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const
 {
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#if EEBUS_ENABLE_EVCEM_USECASE()
     constexpr std::array<uint8_t, 3> ids_used{{
         EvcemUsecase::id_z_1,
         EvcemUsecase::id_z_2,
@@ -308,7 +308,7 @@ void OpevUsecase::update_api() const
 
 bool OpevUsecase::limit_changeable() const
 {
-#ifdef EEBUS_ENABLE_LPC_USECASE
+#if EEBUS_ENABLE_LPC_USECASE()
     if (eebus.usecases->limitation_of_power_consumption.is_power_limited())
         return false;
 #endif
@@ -361,4 +361,4 @@ MessageReturn OpevUsecase::write_load_control_limit_list_data(HeaderType &header
     return {true, false, CmdClassifierType::reply};
 }
 
-#endif // EEBUS_ENABLE_OPEV_USECASE
+#endif // EEBUS_ENABLE_OPEV_USECASE()

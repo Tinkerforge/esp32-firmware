@@ -17,18 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Include eebus.h first to get the EEBUS_MODE_* macros (which define EEBUS_ENABLE_* in eebus_usecases.h)
-#include "../eebus.h"
-#include "../eebus_usecases.h"
-
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
-
-#include "../generated/module_dependencies.h"
-#include "entity_data.h"
 #include "evcem.h"
-#include "usecase_helpers.h"
 
 #include <array>
+
+#include "entity_data.h"
+#include "usecase_helpers.h"
+#include "../eebus_usecases.h"
+
+#include "../generated/module_dependencies.h"
+#include "../eebus_config.h"
+
+#if EEBUS_ENABLE_EVCEM_USECASE()
 
 #include "gcc_warnings.h"
 // SPINE message dispatch switches over large enums and only handles the relevant values.
@@ -439,4 +439,4 @@ void EvcemUsecase::update_api() const
     api_entry->get("charged_valuesource_measured")->updateBool(power_charged_measured);
 }
 
-#endif // EEBUS_ENABLE_EVCEM_USECASE
+#endif // EEBUS_ENABLE_EVCEM_USECASE()

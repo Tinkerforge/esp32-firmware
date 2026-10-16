@@ -19,14 +19,15 @@
 
 #pragma once
 
+#include <functional>
+#include <map>
+#include <vector>
+
 #include "../generated/usecases.enum.h"
 #include "../spine_connection.h"
 #include "../spine_types.h"
 #include "config.h"
 #include "usecase_helpers.h"
-#include <functional>
-#include <map>
-#include <vector>
 
 // Minimum interval between two notifications of measurement data (MPC, MGCP, EVCEM). Changes are notified at most this late.
 // The MPC test specification (V1.0.2, 6.7) requires changes to be notified within 120 s.

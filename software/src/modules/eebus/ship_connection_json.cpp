@@ -51,7 +51,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
             }
         }
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
         eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'", static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase), connection_hello->waiting, connection_hello->waiting_valid, connection_hello->prolongation_request, connection_hello->prolongation_request_valid);
 #endif
     }
@@ -79,14 +79,14 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("T2J ConnectionHello json: %s", &message_outgoing->data[1]);
 #endif
 }
 
 bool ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshake_type)
 {
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
 #endif
     incoming_json_doc.clear();
@@ -144,7 +144,7 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
 #endif
 }
@@ -166,7 +166,7 @@ void ShipConnection::to_json_access_methods_type()
     size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-#ifdef EEBUS_TRACE_SUPER_VERBOSE
+#if EEBUS_TRACE_SUPER_VERBOSE()
     eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", &message_outgoing->data[1]);
 #endif
 }

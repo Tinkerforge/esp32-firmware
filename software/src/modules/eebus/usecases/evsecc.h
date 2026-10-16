@@ -23,7 +23,11 @@
 #include "entity_data.h"
 #include "usecase_base.h"
 
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#include "../generated/module_available.h"
+#include "../eebus_config.h"
+#include "../generated/module_available_end.h"
+
+#if EEBUS_ENABLE_EVSECC_USECASE()
 
 /**
  * @brief The EVSE Commissioning and Configuration (EVSECC) use case.
@@ -95,4 +99,6 @@ private:
     void update_api() const;
 };
 
-#endif // EEBUS_ENABLE_EVSECC_USECASE
+#endif // EEBUS_ENABLE_EVSECC_USECASE()
+
+#include "../eebus_config_end.h"
