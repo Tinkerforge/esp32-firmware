@@ -440,7 +440,7 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 void ShipConnection::log_message(const String &state_prefix, Message *msg)
 {
 #if EEBUS_TRACE_SUPER_VERBOSE()
-    eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %d)", state_prefix.c_str(), static_cast<int>(msg->data[0]), msg->length);
+    eebus.trace_fmtln("SHIP: flag(%s) Message (%d) (len %zu)", state_prefix.c_str(), static_cast<int>(msg->data[0]), msg->length);
     eebus.trace_strln(reinterpret_cast<const char *>(&msg->data[1]), msg->length - 1);
 #endif
 }

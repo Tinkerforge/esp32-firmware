@@ -52,7 +52,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
         }
 
 #if EEBUS_TRACE_SUPER_VERBOSE()
-        eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'", static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase), connection_hello->waiting, connection_hello->waiting_valid, connection_hello->prolongation_request, connection_hello->prolongation_request_valid);
+        eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %lu(%d), prolongation_request %d(%d)'", static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase), connection_hello->waiting, connection_hello->waiting_valid, connection_hello->prolongation_request, connection_hello->prolongation_request_valid);
 #endif
     }
 }

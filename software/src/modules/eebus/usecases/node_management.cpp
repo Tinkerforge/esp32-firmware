@@ -561,7 +561,7 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     }
 #if EEBUS_TRACE_SUPER_VERBOSE()
     else if (sent_count > 0) {
-        eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s", sent_count, function_name);
+        eebus.trace_fmtln("EEBUS: Informed %zu subscribers of %s", sent_count, function_name);
     }
 #endif
     return sent_count;
