@@ -73,6 +73,12 @@ void NTP::setup()
     esp_netif_init();
 
     apply_config();
+
+    task_scheduler.scheduleUncancelable([this]() {
+        if (deadline_elapsed(this->sync_expires_at)) {
+            this->set_synced(false);
+        }
+    }, 1_h, 1_h);
 }
 
 void NTP::register_events()
@@ -161,30 +167,28 @@ void NTP::register_urls()
 }
 
 void NTP::time_synced_NTPThread() {
-    micros_t now = now_us();
+    const micros_t now = now_us();
 
-    if (sync_expires_at == 0_us) {
-        uint32_t now_u32 = now.to<millis_t>().as<uint32_t>();
+    // Don't changestate in the TCP/IP task, it needs to be "serialized" with apply_config().
+    task_scheduler.scheduleOnce([this, now]() {
+        this->time_synced(now);
+    });
+}
 
-        task_scheduler.scheduleOnce([this, now_u32]() {
-            this->set_synced(true);
-
-            uint32_t secs = now_u32 / 1000;
-            uint32_t ms   = now_u32 % 1000;
-            // Don't log in TCP/IP task: Deadlocks the event lock
-            logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
-        });
-
-        task_scheduler.scheduleUncancelable([this]() {
-            if (deadline_elapsed(this->sync_expires_at)) {
-                this->set_synced(false);
-            }
-        }, 1_h, 1_h);
-    } else {
-        task_scheduler.scheduleOnce([this]() {
-            this->set_synced(true);
-        });
+void NTP::time_synced(micros_t synced_at)
+{
+    // A sync that was already in flight when NTP got disabled must not mark the time as synced.
+    if (!config.get("enable")->asBool()) {
+        return;
     }
 
-    sync_expires_at = now + 25_h;
+    if (sync_expires_at == 0_us) {
+        uint32_t synced_at_u32 = synced_at.to<millis_t>().as<uint32_t>();
+        uint32_t secs = synced_at_u32 / 1000;
+        uint32_t ms   = synced_at_u32 % 1000;
+        logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
+    }
+
+    set_synced(true);
+    sync_expires_at = synced_at + 25_h;
 }

@@ -50,4 +50,5 @@ public:
 
 private:
     void apply_config();
+    void time_synced(micros_t synced_at);
 };
