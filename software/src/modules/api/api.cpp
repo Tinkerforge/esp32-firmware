@@ -806,6 +806,8 @@ void API::register_urls()
             json._addRaw("\n ", 2);
             json.addMemberString("firmware", build_filename_str());
             json._addRaw("\n ", 2);
+            json.addMemberString("env", build_environment_name());
+            json._addRaw("\n ", 2);
             json.addMemberString("build_info", build_info_str());
             json._addRaw("\n ", 2);
 

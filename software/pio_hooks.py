@@ -1255,6 +1255,7 @@ def main():
     build_lines.append('const char *build_version_full_str();')
     build_lines.append('constexpr size_t build_version_full_str_len = {};'.format(len(version_full_str)))
     build_lines.append('const char *build_version_full_str_upper();')
+    build_lines.append('const char *build_environment_name();')
     build_lines.append('const char *build_info_str();')
     build_lines.append('const char *build_filename_str();')
     build_lines.append('const char *build_commit_id_str();')
@@ -1289,6 +1290,7 @@ def main():
     build_lines.append('const char *build_timestamp_hex_str() {{ return "{:x}"; }}'.format(build_timestamp))
     build_lines.append('const char *build_version_full_str() {{ return "{}"; }}'.format(version_full_str))
     build_lines.append('const char *build_version_full_str_upper() {{ return "{}"; }}'.format(version_full_str.upper()))
+    build_lines.append('const char *build_environment_name() {{ return "{}"; }}'.format(env['PIOENV']))
 
     main_branch_info = ""
     if branch_name not in ["master", "main"]:
