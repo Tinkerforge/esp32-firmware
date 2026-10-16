@@ -997,16 +997,22 @@ class Stage3:
     def test_zauto(self, phase, report):
         self.test_zauto_relaxed(phase, report)
 
-    def retry_ztest(self, base_key, test, max_tries, report):
+    def shift_report_item(self, report, key):
+        if key not in report:
+            return
+
+        self.shift_report_item(report, f'{key}_prev')
+
+        report[f'{key}_prev'] = report[key]
+        del report[key]
+
+    def retry_ztest(self, key, test, max_tries, report):
         try_count = 0
 
         while True:
-            key = base_key
-
-            if try_count > 0:
-                key += f'_retry_{try_count}'
-
             try_count += 1
+
+            self.shift_report_item(report, key)
 
             report[key] = test()
 
