@@ -775,6 +775,9 @@ def run_testsuite(l: dict[str, typing.Any]):
             _args=args
         )
 
+    if len(suite.tests) == 0:
+        return
+
     if not _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup):
         _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
         return
