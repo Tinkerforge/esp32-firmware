@@ -69,16 +69,16 @@ public:
 
     // The following functions are intentionally not implemented.
     // They are just here for IDE auto-completion to pick them up
-    [[gnu::format(__printf__, 2, 3)]] size_t vprintfln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 0)]] size_t vprintfln(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] size_t  printfln(const char *fmt, ...);
-    [[gnu::format(__printf__, 2, 3)]] size_t vprintfln_continue(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 0)]] size_t vprintfln_continue(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] size_t  printfln_continue(const char *fmt, ...);
 
     [[gnu::format(__printf__, 2, 3)]] size_t printfln_debug(const char *fmt, ...);
 
-    [[gnu::format(__printf__, 3, 4)]] size_t vtracefln(size_t trace_buf_idx, const char *fmt, ...);
+    [[gnu::format(__printf__, 3, 0)]] size_t vtracefln(size_t trace_buf_idx, const char *fmt, va_list args);
     [[gnu::format(__printf__, 3, 4)]] size_t  tracefln(size_t trace_buf_idx, const char *fmt, ...);
-    [[gnu::format(__printf__, 3, 4)]] size_t vtracefln_continue(size_t trace_buf_idx, const char *fmt, ...);
+    [[gnu::format(__printf__, 3, 0)]] size_t vtracefln_continue(size_t trace_buf_idx, const char *fmt, va_list args);
     [[gnu::format(__printf__, 3, 4)]] size_t  tracefln_continue(size_t trace_buf_idx, const char *fmt, ...);
 
     [[gnu::format(__printf__, 3, 4)]] size_t tracefln_debug(size_t trace_buf_idx, const char *fmt, ...);
