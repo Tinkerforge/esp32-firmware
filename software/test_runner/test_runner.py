@@ -35,13 +35,11 @@ def main():
     parser.add_argument("--list-tests", action='store_true', help="Skip all tests that would be executed, only print their names")
 
     args = parser.parse_args()
-    quiet = args.junit_xml
 
     result = []
 
-    def tprint(*args, **kwargs):
-        if not quiet:
-            print(*args, **kwargs, flush=True)
+    def tprint(*a, **kwargs):
+        print(*a, **kwargs, flush=True, file=sys.stdout if not args.junit_xml else sys.stderr)
 
     suite_runs: list[tuple[Path, str]] = []  # (suite_path, test_filter)
 
@@ -308,7 +306,7 @@ def main():
         #     print("\n\n\n")
 
     if args.junit_xml:
-        print(to_xml_report_string(result))
+        print(to_xml_report_string(result), file=sys.stdout)
 
 if __name__ == '__main__':
     main()
