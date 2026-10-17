@@ -143,6 +143,8 @@ private:
     ConfigRoot dynamic_load_config;
     ConfigRoot external_control;
     ConfigRoot external_control_update;
+    ConfigRoot battery_mode;
+    ConfigRoot battery_mode_update;
 
     uint32_t config_error_flags = 0;
 
