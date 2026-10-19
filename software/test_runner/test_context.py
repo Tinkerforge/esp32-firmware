@@ -224,12 +224,15 @@ class TestContext:
         time.sleep(pre_reboot_delay)
 
         # Wait for the host to be responsive
-        for retry in range(30):
+
+        BOOTUP_TIMEOUT = 30
+
+        for retry in range(BOOTUP_TIMEOUT):
             try:
                 self.api('info/version', timeout=1)
                 break
             except Exception as e:
-                if retry < 29:
+                if retry < BOOTUP_TIMEOUT - 1:
                     time.sleep(1)
                     continue
                 raise

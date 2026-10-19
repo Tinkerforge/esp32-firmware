@@ -51,7 +51,10 @@ def main():
             print(red("A test filter or host is required"))
             parser.print_help()
             sys.exit(1)
-        for retry in range(30):
+
+        BOOTUP_TIMEOUT = 30
+
+        for retry in range(BOOTUP_TIMEOUT):
             try:
                 with urlopen(f'http://{args.host}/info/modules', timeout=1) as req:
                     modules = json.loads(req.read()).keys()
@@ -65,7 +68,7 @@ def main():
                     modules = dbg["info/modules"].keys() if not dbg['env'] in 'minimal' else []
                     break
             except Exception:
-                if retry < 9:
+                if retry < BOOTUP_TIMEOUT - 1:
                     time.sleep(1)
                     continue
                 raise
