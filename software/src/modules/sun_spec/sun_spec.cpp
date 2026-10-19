@@ -203,8 +203,9 @@ void SunSpec::register_urls()
         scan->last_keep_alive = now_us();
 
         scan_printfln(scan->language == Language::English
-                      ? "Starting search [" OPTIONS_PRODUCT_NAME() ", version: %s]"
-                      : "Beginne Suche [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
+                      ? "Starting search [%s, version: %s]"
+                      : "Beginne Suche [%s, version: %s]",
+                      OPTIONS_PRODUCT_NAME(), build_version_full_str());
     }, true);
 
     api.addCommand("sun_spec/scan_keep_alive", &scan_keep_alive_config, {}, [this](Language language, String &errmsg) {
