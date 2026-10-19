@@ -1209,7 +1209,12 @@ void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8
 
 void RemoteAccess::management_auth_fail()
 {
+    if (this->management_auth_failed) {
+        return;
+    }
+
     this->management_auth_failed = true;
+    this->management_request_failed = true;
     logger.printfln("Management authentication failed (401) - not reconnecting");
     config.get("enable")->updateBool(false);
     api.writeConfig("remote_access/config", &config);
@@ -1229,14 +1234,11 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                 switch (event->error) {
                     case AsyncHTTPSClientError::HTTPStatusError: {
                         if (strstr(url.c_str(), "/management") != nullptr) {
-                            if (!this->management_request_failed) {
+                            if (event->error_http_status == 401) {
+                                this->management_auth_fail();
+                            } else if (!this->management_request_failed) {
                                 this->management_request_failed = true;
-
-                                if (event->error_http_status == 401) {
-                                    this->management_auth_fail();
-                                } else {
-                                    logger.printfln("Management request failed with HTTP-Error-Code %i", event->error_http_status);
-                                }
+                                logger.printfln("Management request failed with HTTP-Error-Code %i", event->error_http_status);
                             }
                         } else {
                             char err_buf[64];
@@ -1274,16 +1276,14 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                     case AsyncHTTPSClientError::HTTPClientError:
                     default:
                         if (strstr(url.c_str(), "/management") != nullptr) {
-                            if (!this->management_request_failed) {
+                            if (event->error == AsyncHTTPSClientError::HTTPClientError && event->error_http_client == ESP_ERR_NOT_SUPPORTED) {
+                                // A 401 without a supported authentication header can emit HTTPError
+                                // before returning ESP_ERR_NOT_SUPPORTED. Handle it even if that
+                                // earlier event or a previous request already set management_request_failed.
+                                this->management_auth_fail();
+                            } else if (!this->management_request_failed) {
                                 this->management_request_failed = true;
-
-                                if (event->error == AsyncHTTPSClientError::HTTPClientError && event->error_http_client == ESP_ERR_NOT_SUPPORTED) {
-                                    // This specific error is returned by the ESP HTTP client if a 401 error has a chunked body and no authentication header.
-                                    // It's a 401 either way, so treat it as such.
-                                    this->management_auth_fail();
-                                } else {
-                                    logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), static_cast<uint8_t>(event->error));
-                                }
+                                logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), static_cast<uint8_t>(event->error));
                             }
                         } else {
                             char err_buf[128];

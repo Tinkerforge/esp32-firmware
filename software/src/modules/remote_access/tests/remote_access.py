@@ -825,8 +825,6 @@ def test_enable_triggers_management_request(tc: TestContext) -> None:
 
 
 def test_auth_failure_disables_module(tc: TestContext) -> None:
-    tc.skip("This test is currently broken")
-
     """A 401 response from the relay should disable remote access."""
     tc.set_test_timeout(60)
 
