@@ -10,6 +10,7 @@ import json
 import os
 import re
 import io
+import ssl
 import socket
 import subprocess
 import tempfile
@@ -76,6 +77,8 @@ class TestContext:
     _debug_fs_enabled: bool | None = None
 
     _args: typing.Any = None
+
+    api_schema_port_list: list[tuple[str, int]] = field(default_factory= lambda: [('http', 80), ('https', 443)])
 
     def init_testbox(self):
         if self._brickd_host is None:
@@ -173,24 +176,43 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
-    def http_request(self, method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'], path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False):
+    def http_request(self, method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'], path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False, schema_port: tuple[str, int] = None, verify_cert: bool = False):
         if self._esp_host is None:
             self.skip("ESP Host not passed. Can't send HTTP requests")
 
         if isinstance(payload, str):
             payload = payload.encode('utf-8')
 
-        req = Request(f'http://{self._esp_host}{path}', data=payload, method=method, headers=headers)
+        if not verify_cert:
+            old_default_context = ssl._create_default_https_context
+            ssl._create_default_https_context = ssl._create_unverified_context
+
         try:
-            with urlopen(req, timeout=timeout) as resp:
-                result = resp.read()
-                if parse:
-                    return json.loads(result)
-                else:
-                    return result
-        except HTTPError as e:
-            e.msg += ":" + e.read().decode('utf-8')
-            raise
+            if schema_port is not None:
+                schema_list = [schema_port]
+            else:
+                schema_list = self.api_schema_port_list
+
+            exc = None
+            for schema, port in schema_list:
+                req = Request(f'{schema}://{self._esp_host}:{port}{path}', data=payload, method=method, headers=headers)
+                try:
+                    with urlopen(req, timeout=timeout) as resp:
+                        result = resp.read()
+                        if parse:
+                            return json.loads(result)
+                        else:
+                            return result
+                except HTTPError as e:
+                    e.msg += ":" + e.read().decode('utf-8')
+                    exc = e
+                except Exception as e:
+                    exc = e
+
+            raise exc
+        finally:
+            if not verify_cert:
+                ssl._create_default_https_context = old_default_context
 
     def factory_reset(self):
         if self._serial_port:
