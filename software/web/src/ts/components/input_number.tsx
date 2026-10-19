@@ -95,7 +95,7 @@ export function InputNumber(props: InputNumberProps) {
         {props.onValue && !props.readonly ? <>
         <Button variant="primary"
                 disabled={props.value == props.min || props.disabled || props.readonly}
-                className="px-1"
+                className="px-1 py-0"
                 style="margin-right: .125rem !important;"
                 onClick={() => {
                     if (util.hasValue(props.value) && !isNaN(props.value)) {
@@ -111,7 +111,7 @@ export function InputNumber(props: InputNumberProps) {
         </Button>
         <Button variant="primary"
                 disabled={props.value == props.max || props.disabled || props.readonly}
-                className="px-1"
+                className="px-1 py-0"
                 onClick={() => {
                     if (util.hasValue(props.value) && !isNaN(props.value)) {
                         props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));

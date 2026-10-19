@@ -94,7 +94,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
             {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
             <Button variant="primary"
                     disabled={!props.checked || props.value == props.min || props.disabled}
-                    className="px-1"
+                    className="px-1 py-0"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
                         if (!props.checked || props.disabled) {
@@ -114,7 +114,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
             </Button>
             <Button variant="primary"
                     disabled={!props.checked || props.value == props.max || props.disabled}
-                    className="px-1"
+                    className="px-1 py-0"
                     onClick={() => {
                         if (!props.checked || props.disabled) {
                             return;
