@@ -441,6 +441,8 @@ retry_fetch_headers:
                     }
 
                     last_status_code = status_code;
+                } else {
+                    logger.tracefln(runtime_data->trace_buffer_index, "Request returned status code %i again", status_code);
                 }
 
                 needs_flush = true;
@@ -503,9 +505,6 @@ retry_fetch_headers:
         } while (0);
 
         if (needs_flush) {
-            int flush_len = -1;
-            int flush_ret = esp_http_client_flush_response(http_client, &flush_len);
-
             int read_len = 0;
             int reads = 0;
             for (;;) {
@@ -517,7 +516,7 @@ retry_fetch_headers:
                 reads++;
             }
 
-            logger.tracefln(runtime_data->trace_buffer_index, "Flushed %i, returned %i. Discarded %i with %i call(s).", flush_len, flush_ret, read_len, reads);
+            logger.tracefln(runtime_data->trace_buffer_index, "Discarded %i with %i call(s).", read_len, reads);
         }
 
         if (needs_long_delay) {
