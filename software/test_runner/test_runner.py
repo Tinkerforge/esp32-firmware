@@ -51,7 +51,7 @@ def main():
             print(red("A test filter or host is required"))
             parser.print_help()
             sys.exit(1)
-        for retry in range(10):
+        for retry in range(30):
             try:
                 with urlopen(f'http://{args.host}/info/modules', timeout=1) as req:
                     modules = json.loads(req.read()).keys()
