@@ -202,21 +202,15 @@ class TestContext:
         time.sleep(pre_reboot_delay)
 
         # Wait for the host to be responsive
-        for i in range(30, 0, -1):
+        for retry in range(30):
             try:
                 self.api('info/version', timeout=1)
                 break
-            except URLError as e:
-                errtype = type(e.reason)
-                if errtype is TimeoutError:
-                    # ESP's interface not up yet
-                    pass
-                elif errtype is ConnectionRefusedError:
-                    # ESP's interface up but web server not running yet
-                    if i > 1:
-                        time.sleep(1)
-                else:
-                    raise e
+            except Exception as e:
+                if retry < 29:
+                    time.sleep(1)
+                    continue
+                raise
 
     def reboot(self):
         # Fast reboot via esptool, if serial port available
