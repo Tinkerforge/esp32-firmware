@@ -62,9 +62,9 @@ def test_http_connectivity(tc: TestContext):
     # Check that HTTP redirects to HTTPS while HTTP is off.
     tc.assert_eq(307, http_redirect_response.status_code)
     if https_port == 443:
-        tc.assert_eq(f'https://{tc._esp_host}/redirect_test?foo=bar', location)
+        tc.assert_eq(f'https://{tc._esp_host.lower()}/redirect_test?foo=bar', location)
     else:
-        tc.assert_eq(f'https://{tc._esp_host}:{https_port}/redirect_test?foo=bar', location)
+        tc.assert_eq(f'https://{tc._esp_host.lower()}:{https_port}/redirect_test?foo=bar', location)
     tc.assert_eq(200, redirected_index_response.status_code)
     tc.assert_eq('https', redirected_index_response.url.split(':', 1)[0])
     tc.assert_eq(1, len(redirected_index_response.history))
