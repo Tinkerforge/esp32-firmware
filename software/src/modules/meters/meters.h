@@ -191,6 +191,16 @@ private:
         ValueHistory power_history;
     };
 
+    struct generator_t {
+        MeterClassID meter_class_id;
+        IMeterGenerator *generator;
+    };
+
+    struct generators_t {
+        size_t count;
+        generator_t gs[];
+    };
+
     IMeterGenerator *get_generator_for_class(MeterClassID meter_class);
     IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors);
 
@@ -203,7 +213,7 @@ private:
 
     bool meters_feature_declared = false;
 
-    std::vector<std::tuple<MeterClassID, IMeterGenerator *>> generators;
+    generators_t *generators = nullptr;
 
     size_t history_chars_per_value;
     micros_t last_live_update = 0_us;
@@ -214,9 +224,9 @@ private:
     micros_t begin_this_interval = 0_us;
     micros_t end_this_interval = 0_us;
 
-    int samples_last_interval = 0;
     micros_t begin_last_interval = 0_us;
     micros_t end_last_interval = 0_us;
+    int samples_last_interval = 0;
 
     // For reproducable screenshots, the ScreenshotDataFaker injects values into the power_history of the first meter.
 #ifdef OPTIONS_SCREENSHOT_DATA_FAKER_PRO
