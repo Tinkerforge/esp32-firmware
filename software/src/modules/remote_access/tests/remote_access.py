@@ -948,7 +948,7 @@ def test_states_initially_disconnected(tc: TestContext) -> None:
     tc.assert_eq(STATE_DISCONNECTED, state[0]["state"])
     tc.assert_eq(255, state[0]["user"])
     tc.assert_eq(255, state[0]["connection"])
-    
+
     for i in range(1, NUM_CONNECTION_SLOTS):
         tc.assert_eq(STATE_DISCONNECTED, state[i]["state"])
         tc.assert_eq(255, state[i]["user"])
