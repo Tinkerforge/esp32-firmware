@@ -312,7 +312,7 @@ void SunSpec::loop()
 
     case ScanState::Done: {
             scan_printfln(scan->language == Language::English
-                          ? (scan->abort ? "Scan aborted" : "Scan finished")
+                          ? (scan->abort ? "Search aborted" : "Search finished")
                           : (scan->abort ? "Suche abgebrochen" : "Suche abgeschlossen"));
             scan_flush_log();
 
