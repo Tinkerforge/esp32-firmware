@@ -140,7 +140,17 @@ def main():
                     break
                 except OSError as e:
                     if e.errno == errno.ENXIO:
-                        if time.monotonic() - start > 10:
+                        # Test script either is not ready yet or it crashed.
+                        crashed = time.monotonic() - start > 10
+
+                        if not crashed:
+                            try:
+                                rc = proc.wait(0.1)
+                                crashed = True
+                            except subprocess.TimeoutExpired:
+                                pass
+
+                        if crashed:
                             print(red("test script crashed"))
                             try:
                                 print(os.read(stdout, 10000).decode('utf-8'))
@@ -152,7 +162,6 @@ def main():
                                 pass
                             atexit.unregister(os.killpg)
                             sys.exit(1)
-                        time.sleep(0.1)
                     else:
                         raise
 
