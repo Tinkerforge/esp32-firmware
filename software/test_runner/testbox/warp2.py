@@ -88,125 +88,67 @@ class WARP2TestBox(TestBox):
 
     ## API
     def set_button_pressed(self, pressed: bool):
-        try:
-            self.A.set_selected_value(0, not pressed)
-        except Exception as e:
-            print(e)
+        self.A.set_selected_value(0, not pressed)
 
     def is_button_pressed(self):
-        try:
-            return not self.A.get_value()[0]
-        except Exception as e:
-            print(e)
-            return False
+        return not self.A.get_value()[0]
 
     def set_cp(self, cp: CP):
-        try:
-            self.A.set_value([self.A.get_value()[0], *self.cp_relays[cp]])
-        except Exception as e:
-            print(e)
+        self.A.set_value([self.A.get_value()[0], *self.cp_relays[cp]])
 
     def get_cp(self):
-        try:
-            r = self.A.get_value()[1:]
-            for k, v in self.cp_relays.items():
-                if r == v:
-                    return k
-        except Exception as e:
-            print(e)
-
-        return 'D'
+        r = self.A.get_value()[1:]
+        for k, v in self.cp_relays.items():
+            if r == v:
+                return k
+        raise Exception("unexpected state of CP relays. should not be reachable!")
 
     def connect_meter(self, m: Meter):
-        try:
-            self.B.set_value(self.meter_relays[m])
-        except Exception as e:
-            print(e)
+        self.B.set_value(self.meter_relays[m])
 
     def get_meter_connected(self):
-        try:
-            r = self.B.get_value()
-            for k, v in self.meter_relays.items():
-                if r == v:
-                    return k
-        except Exception as e:
-            print(e)
-
-        return 'none'
+        r = self.B.get_value()
+        for k, v in self.meter_relays.items():
+            if r == v:
+                return k
 
     def set_gpio_shutdown_closed(self, val: bool):
-        try:
-            self.D.set_selected_value(0, val)
-        except Exception as e:
-            print(e)
+        self.D.set_selected_value(0, val)
 
     def is_gpio_shutdown_closed(self):
-        try:
-            return self.D.get_value()[0]
-        except Exception as e:
-            print(e)
-            return False
+        return self.D.get_value()[0]
 
     def set_gpio_input_closed(self, val: bool):
-        try:
-            self.D.set_selected_value(1, val)
-        except Exception as e:
-            print(e)
+        self.D.set_selected_value(1, val)
 
     def is_gpio_input_closed(self):
-        try:
-            return self.D.get_value()[1]
-        except Exception as e:
-            print(e)
-            return False
+        return self.D.get_value()[1]
 
     def is_gpio_output_closed(self):
-        try:
-            return not self.E.get_value()[0]
-        except Exception as e:
-            print(e)
-            return False
+        return not self.E.get_value()[0]
 
     def is_contactor_closed(self, contactor: int = 0):
-        try:
-            if isinstance(self.G, BrickletIndustrialDualACIn):
-                return self.G.get_value()[0]
-            return self.G.get_energy_data()[0] / 100 > 10
-        except Exception as e:
-            print(e)
-            return False
+        if isinstance(self.G, BrickletIndustrialDualACIn):
+            return self.G.get_value()[0]
+        return self.G.get_energy_data()[0] / 100 > 10
 
     def set_dc_faulted(self, fault: bool, clear_after_s: int = 0):
-        try:
-            if clear_after_s != 0:
-                self.D.set_monoflop(2, fault, int(clear_after_s * 1000))
-            else:
-                self.D.set_selected_value(2, fault)
-        except Exception as e:
-            print(e)
+        if clear_after_s != 0:
+            self.D.set_monoflop(2, fault, int(clear_after_s * 1000))
+        else:
+            self.D.set_selected_value(2, fault)
 
     def is_dc_fauled(self):
-        try:
-            return self.D.get_value()[2]
-        except Exception as e:
-            print(e)
-            return False
+        return self.D.get_value()[2]
 
     def set_diode_faulted(self, fault: bool, clear_after_s: int = 0):
-        try:
-            if clear_after_s != 0:
-                self.D.set_monoflop(3, fault, int(clear_after_s * 1000))
-            else:
-                self.D.set_selected_value(3, fault)
-        except Exception as e:
-            print(e)
+        if clear_after_s != 0:
+            self.D.set_monoflop(3, fault, int(clear_after_s * 1000))
+        else:
+            self.D.set_selected_value(3, fault)
 
     def is_diode_fauled(self):
-        try:
-            return self.D.get_value()[3]
-        except Exception as e:
-            print(e)
-            return False
+        return self.D.get_value()[3]
 
     def get_gpio_index(self, gpio: TestBox.GPIO):
         d = {
