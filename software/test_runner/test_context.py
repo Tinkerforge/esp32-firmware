@@ -209,7 +209,7 @@ class TestContext:
                     exc = e
                 except TimeoutError as e:
                     # A bare TimeoutError (not wrapped in URLError) means the request was sent completely and only the response timed out.
-                    # Don't re-send with in case of non-GET.
+                    # Don't re-send with other schema in case of non-GET.
                     if method != 'GET':
                         raise
                     exc = e
