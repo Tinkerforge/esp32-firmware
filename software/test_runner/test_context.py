@@ -15,6 +15,7 @@ import socket
 import subprocess
 import tempfile
 import time
+import random
 from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
@@ -770,6 +771,7 @@ def run_testsuite(l: dict[str, typing.Any]):
     parser.add_argument("--tty")
     parser.add_argument("--brickd")
     parser.add_argument("--list-tests", action='store_true')
+    parser.add_argument("--no-shuffle", action='store_true')
     args = parser.parse_args()
 
     # l is locals() of the calling test suite script, containing test, setup and teardown functions.
@@ -796,6 +798,9 @@ def run_testsuite(l: dict[str, typing.Any]):
 
     if len(suite.tests) == 0:
         return
+
+    if not args.no_shuffle:
+        random.shuffle(suite.tests)
 
     if not _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup):
         _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
