@@ -21,7 +21,7 @@ let x = {
             "scan_keep_alive_error": "Error while keeping search running",
             "scan_abort_error": "Error while aborting search",
             "scan_results": "Found devices",
-            "scan_log": "Log",
+            "scan_log": "Download log",
             "scan_log_file": "SunSpec-search-log",
 
             "scan_result_device_address": "Device address",
