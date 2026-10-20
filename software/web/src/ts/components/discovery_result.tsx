@@ -34,11 +34,12 @@ export interface DiscoveryResultItemProps {
 }
 
 export function DiscoveryResultItem(props: DiscoveryResultItemProps) {
+    let children = toChildArray(props.children);
+
     return <ListGroupItem key={props.key} className="p-2">
         <div class="row">
             <div class="col">
-                <div class="mb-2">{props.title}</div>
-                {props.children}
+                {children.length > 0 ? <><div class="mb-2">{props.title}</div>{children}</> : props.title}
             </div>
             <div class="col-auto">
                 {props.error ? <div class="d-flex align-items-center h-100">{props.error}</div>

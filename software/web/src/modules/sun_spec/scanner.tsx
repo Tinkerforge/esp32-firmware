@@ -240,7 +240,8 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
 
         let selectable = this.props.on_is_model_supported(result.model_id) && preferred_model_id === null;
 
-        return <DiscoveryResultItem
+        return (
+            <DiscoveryResultItem
                 key={result.model_id}
                 title={<h5>{result.display_name}</h5>}
                 labelAdd={<Plus />}
@@ -249,7 +250,7 @@ export class SunSpecScanner extends Component<SunSpecScannerProps, SunSpecScanne
                 <div>{__("sun_spec.content.scan_result_device_address")}: {result.device_address}</div>
                 <div>{__("sun_spec.content.scan_result_serial_number")}: {result.serial_number}</div>
                 <div>{__("sun_spec.content.scan_result_model_id")}: {translate_unchecked(`sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</div>
-        </DiscoveryResultItem>;
+            </DiscoveryResultItem>);
     }
 
     async keep_alive() {
