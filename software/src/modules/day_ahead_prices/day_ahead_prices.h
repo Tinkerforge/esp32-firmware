@@ -99,6 +99,7 @@ private:
     uint64_t task_id = 0;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
+    bool update_after_abort = false;
 
     time_t last_update_minmaxavg;
     Option<int32_t> price_minimum_today;

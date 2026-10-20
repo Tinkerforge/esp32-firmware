@@ -103,9 +103,15 @@ void DayAheadPrices::pre_setup()
             raw_prices_count = 0;
 
             if (source != ConfigSource::File) {
-                task_scheduler.scheduleOnce([this]() {
-                    this->update();
-                });
+                if (https_client.is_busy()) {
+                    // We are currently downloading prices. Discard the download for the old config.
+                    update_after_abort = true;
+                    https_client.abort_async();
+                } else {
+                    task_scheduler.scheduleOnce([this]() {
+                        this->update();
+                    });
+                }
             }
         } else if (enable_calendar_changed) {
             // Only calendar toggle changed: rebuild prices from raw data without full re-download
@@ -573,10 +579,20 @@ void DayAheadPrices::update()
 
         case AsyncHTTPSClientEventType::Aborted:
             if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
-                logger.printfln("Update check aborted");
+                if (!update_after_abort) {
+                    logger.printfln("Update check aborted");
+                }
                 download_state = DAP_DOWNLOAD_STATE_ABORTED;
             }
             handle_cleanup();
+
+            if (update_after_abort) {
+                update_after_abort = false;
+
+                task_scheduler.scheduleOnce([this]() {
+                    this->update();
+                });
+            }
 
             break;
 
