@@ -51,6 +51,10 @@ extern inline void tf_ip4addr_ntoa(const ip4_addr_t *addr, char buf[INET_ADDRSTR
     ip4addr_ntoa_r(addr, buf, buflen);
 }
 
+extern inline bool tf_ip4addr_aton(const char *buf, ip4_addr_t *addr) {
+    return ip4addr_aton(buf, addr) == 1;
+}
+
 extern inline void tf_ip4addr_ntoa(const ip_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(&addr->u_addr.ip4, buf, buflen);
 }

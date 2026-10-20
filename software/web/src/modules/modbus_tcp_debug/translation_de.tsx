@@ -21,7 +21,6 @@ let x = {
             "battery_prefix": "Batteriespeicher: ",
             "host": "Hostname oder IP-Adresse",
             "port": "Port",
-            "port_muted": "typischerweise 502",
             "device_address": "Geräteadresse",
             "function_code": "Funktionscode",
             "function_code_read_coils": "1 – Coils lesen",

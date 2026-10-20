@@ -51,6 +51,7 @@ import { BatteryConfig } from "../batteries/types";
 //#if MODULE_BATTERIES_MODBUS_TCP_AVAILABLE
 import { BatteryModbusTCPTableID } from "../batteries_modbus_tcp/generated/battery_modbus_tcp_table_id.enum";
 //#endif
+import { PortScanner, PortScanResult } from "../port_scanner/scanner";
 
 export function ModbusTCPDebugNavbar() {
     return (
@@ -713,6 +714,11 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         });
                     }} />
             </FormRow>
+            {this.state.known_device_slot < 0 ?
+                <PortScanner ip4_first="192.168.178.2" ip4_last="192.168.178.254" port={502} on_result_selected={(result: PortScanResult) => {
+                    this.setState({custom_host: result.ip4, custom_port: result.port});
+                }} />
+                : undefined}
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     required
@@ -721,7 +727,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     value={this.state.known_device_slot >= 0 ? this.state.known_device_host : this.state.custom_host}
                     onValue={(v) => this.state.known_device_slot < 0 ? this.setState({custom_host: v}) : undefined} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
+            <FormRow label={__("modbus_tcp_debug.content.port")}>
                 <InputNumber
                     required
                     disabled={this.state.waiting || this.state.known_device_slot >= 0}
