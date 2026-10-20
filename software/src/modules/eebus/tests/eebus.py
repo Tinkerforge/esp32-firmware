@@ -78,8 +78,22 @@ def suite_teardown(tc: TestContext):
 
 add_remove_test_ski = "DEADBEEF" + "0" * 32
 
+
+def setup(tc: TestContext):
+    EEbusTestSuite.update_config(tc)
+    if not EEbusTestSuite.is_enabled():
+        EEbusTestSuite.toggle_eebus(tc, True)
+
+
+def teardown(tc: TestContext):
+    EEbusTestSuite.update_config(tc)
+    if EEbusTestSuite.is_enabled() and EEbusTestSuite.peer_in_config(add_remove_test_ski):
+        EEbusTestSuite.remove_peer(tc, add_remove_test_ski)
+
+
 def test_enable_eebus(tc: TestContext):
     """Test that EEBUS module can be enabled."""
+    EEbusTestSuite.toggle_eebus(tc, False)
     EEbusTestSuite.toggle_eebus(tc, True)
     tc.assert_eq(True, EEbusTestSuite.is_enabled())
 
@@ -96,7 +110,8 @@ def test_add_peer(tc: TestContext):
 
 def test_remove_peer(tc: TestContext):
     """Test removing a peer from EEBUS."""
-    # Ensure our peer is not in the list
+    EEbusTestSuite.add_peer(tc, add_remove_test_ski, "192.168.1.101")
+    tc.assert_true(EEbusTestSuite.peer_in_config(add_remove_test_ski))
     EEbusTestSuite.remove_peer(tc, add_remove_test_ski)
     tc.assert_eq(False, EEbusTestSuite.peer_in_config(add_remove_test_ski))
 

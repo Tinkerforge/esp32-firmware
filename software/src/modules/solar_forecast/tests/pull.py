@@ -5,6 +5,8 @@
 # configures it to pull from local server.
 
 import json
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
@@ -187,6 +189,75 @@ def test_pull_server_error(tc: TestContext):
         tc.assert_eq(0, len(forecast.get('forecast', [])))
 
     tc.wait_for(check_error)
+
+
+def _serve_slow_stale_then_new(server: TestHTTPSServer, stale: list[int], new: list[int]) -> threading.Event:
+    """The first request is answered after 3 s with the stale forecast, all others right away with the new one."""
+    first_request = threading.Event()
+
+    def respond(method: str, path: str, body: bytes) -> tuple[int, str]:
+        if not first_request.is_set():
+            first_request.set()
+            time.sleep(3)  # Keep the first download running while the config changes
+            return 200, _make_solar_api_response(stale, place="stale")
+        return 200, _make_solar_api_response(new, place="new")
+
+    server.set_response_fn(respond)
+    return first_request
+
+
+def _expect_new_forecast(tc: TestContext, new: list[int]):
+    def check():
+        tc.assert_eq(new, tc.api('solar_forecast/planes/0/forecast').get('forecast'))
+        tc.assert_eq("new", tc.api('solar_forecast/planes/0/state').get('place'))
+
+    tc.wait_for(check, timeout=15, poll_delay=0.5)
+
+    # The response of the first download must not overwrite the new forecast
+    time.sleep(4)
+    check()
+
+
+def test_config_change_during_download(tc: TestContext):
+    """A module config change while a download is running discards the running download and downloads again."""
+    _skip_if_needed(tc)
+
+    stale = make_forecast(FORECAST_COUNT, base_wh=100, amplitude=50)
+    new = make_forecast(FORECAST_COUNT, base_wh=900, amplitude=50)
+    first_request = _serve_slow_stale_then_new(_get_server(), stale, new)
+    _trigger_refetch(tc)
+    tc.assert_true(first_request.wait(timeout=10))
+
+    config = tc.api('solar_forecast/config')
+    config['enable'] = False
+    tc.api('solar_forecast/config_update', config)
+    config['enable'] = True
+    tc.api('solar_forecast/config_update', config)
+
+    _expect_new_forecast(tc, new)
+
+
+def test_plane_config_change_during_download(tc: TestContext):
+    """A plane config change while the forecast of this plane is downloaded discards the running download and
+    downloads again."""
+    _skip_if_needed(tc)
+
+    stale = make_forecast(FORECAST_COUNT, base_wh=100, amplitude=50)
+    new = make_forecast(FORECAST_COUNT, base_wh=900, amplitude=50)
+    first_request = _serve_slow_stale_then_new(_get_server(), stale, new)
+    _trigger_refetch(tc)
+    tc.assert_true(first_request.wait(timeout=10))
+
+    plane_cfg = tc.api('solar_forecast/planes/0/config')
+    original_wp = plane_cfg['wp']
+    try:
+        plane_cfg['wp'] = original_wp + 1000
+        tc.api('solar_forecast/planes/0/config_update', plane_cfg)
+
+        _expect_new_forecast(tc, new)
+    finally:
+        plane_cfg['wp'] = original_wp
+        tc.api('solar_forecast/planes/0/config_update', plane_cfg)
 
 
 def suite_teardown(tc: TestContext):

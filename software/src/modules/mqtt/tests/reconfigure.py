@@ -94,15 +94,24 @@ def test_disable_and_reenable(tc: TestContext) -> None:
 
 
 def test_state_publishes_after_enable(tc: TestContext) -> None:
-    ensure_mqtt_connected(tc, _make_test_config())
+    prefix = f"{_PREFIX}_after_enable"
+    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=3)
+    wait_mqtt_state(tc, CONN_NOT_CONFIGURED)
 
     helper = _get_helper()
     helper.clear_messages()
-    helper.subscribe(f"{_PREFIX}/#")
+    helper.subscribe(f"{prefix}/#")
     time.sleep(1)
 
-    msg = helper.wait_for_any_message(f"{_PREFIX}/", timeout=15)
+    tc.api("mqtt/config_update", _make_test_config(global_topic_prefix=prefix), timeout=3)
+    wait_mqtt_state(tc, CONN_CONNECTED)
+
+    msg = helper.wait_for_any_message(f"{prefix}/", timeout=15)
     tc.assert_(msg is not None)
+
+    # Restore
+    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
+    wait_mqtt_state(tc, CONN_CONNECTED)
 
 
 def test_change_topic_prefix(tc: TestContext) -> None:

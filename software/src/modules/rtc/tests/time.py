@@ -65,6 +65,34 @@ def test_weekday_matches_date(tc: TestContext) -> None:
     tc.assert_eq(expected_weekday, t["weekday"])
 
 
+def _set_device_time(tc: TestContext, dt: datetime.datetime) -> None:
+    tc.api(
+        "rtc/time_update",
+        {
+            "year": dt.year,
+            "month": dt.month,
+            "day": dt.day,
+            "hour": dt.hour,
+            "minute": dt.minute,
+            "second": dt.second,
+            "weekday": (dt.weekday() + 1) % 7,  # Firmware convention: 0=Sunday
+        },
+    )
+
+
+def _utc_now() -> datetime.datetime:
+    # rtc/time is in UTC
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+
+
+def _wait_for_correct_time(tc: TestContext) -> None:
+    def check() -> None:
+        device = _time_to_datetime(tc.api("rtc/time"))
+        tc.assert_le(5.0, abs((device - _utc_now()).total_seconds()))
+
+    tc.wait_for(check, timeout=60, poll_delay=1)
+
+
 # Set time via API
 def test_set_time_via_api(tc: TestContext) -> None:
     """Disable NTP, reboot to clear quality deadline, set a known time, verify it takes effect."""
@@ -106,11 +134,15 @@ def test_set_time_via_api(tc: TestContext) -> None:
 
         tc.wait_for(check)
     finally:
+        _set_device_time(tc, _utc_now())
+
         # Re-enable NTP
         if ntp_was_enabled and _has_ntp(tc):
             cfg = tc.api("ntp/config")
             cfg["enable"] = True
             tc.api("ntp/config_update", cfg)
+
+        _wait_for_correct_time(tc)
 
 
 # Rejection of invalid timestamps

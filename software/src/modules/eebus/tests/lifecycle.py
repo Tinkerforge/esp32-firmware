@@ -5,6 +5,7 @@
 # the destroyed objects, neither after disabling nor after enabling EEBUS again.
 
 import time
+from urllib.error import HTTPError
 
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
@@ -25,11 +26,24 @@ def suite_setup(tc: TestContext):
     removed_peers = isolate_eebus_peers(tc)
 
 
+def setup(tc: TestContext):
+    if not tc.api("eebus/config")["enable"]:
+        set_eebus_enabled(tc, True)
+        time.sleep(2)
+
+
+def teardown(tc: TestContext):
+    for ski in peer_skis:
+        try:
+            tc.api("eebus/remove", {"ski": ski})
+        except HTTPError:
+            pass  # Not trusted anymore
+    peer_skis.clear()
+
+
 def suite_teardown(tc: TestContext):
     set_eebus_enabled(tc, True)
     time.sleep(2)
-    for ski in peer_skis:
-        tc.api("eebus/remove", {"ski": ski})
     restore_eebus_peers(tc, removed_peers)
 
 

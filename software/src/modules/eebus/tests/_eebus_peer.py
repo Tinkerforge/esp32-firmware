@@ -519,6 +519,10 @@ class EebusPeer:
             t.join(timeout=3)
         self._threads.clear()
 
+    def is_connected(self) -> bool:
+        """False if the remote closed the connection or the receive loop ended (e.g. because the device rebooted)."""
+        return self.ship is not None and not self.closed_by_remote and len(self._threads) > 0 and all(t.is_alive() for t in self._threads)
+
     # -- addresses --
 
     def local(self, entity: list[int], feature: int) -> dict:

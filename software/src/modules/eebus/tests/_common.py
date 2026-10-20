@@ -134,6 +134,22 @@ def restore_eebus_peers(tc, removed: list[dict]):
         })
 
 
+def configure_api_meter(tc, slot: int, display_name: str, location: int, value_ids: list):
+    """Configures the meter slot as API meter with the given value IDs and reboots, so that the
+    use cases start with this meter and without values of a previous test. Enables EEBUS."""
+    tc.api(f"meters/{slot}/config_update", [
+        METER_CLASS_API,
+        {
+            "display_name": display_name,
+            "location": location,
+            "excluded": False,
+            "value_ids": value_ids,
+        },
+    ])
+    tc.reboot()
+    enable_eebus(tc)
+
+
 def start_test_peer(tc, layout=None, **kwargs):
     """Creates an EEBUS test peer, registers it as trusted peer of the device and connects to the device."""
     from software.src.modules.eebus.tests._eebus_peer import EebusPeer

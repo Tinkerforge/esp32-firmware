@@ -16,7 +16,9 @@ def suite_setup(tc: TestContext):
     config['enable_calendar'] = True
     tc.api('day_ahead_prices/config_update', config)
 
-    # Clear any leftover spot prices
+
+def setup(tc: TestContext):
+    # Clear spot prices of a previous test (e.g. test_push_plus_calendar)
     tc.api('day_ahead_prices/prices_update', {
         'first_date': midnight_today_minutes(),
         'resolution': 0,

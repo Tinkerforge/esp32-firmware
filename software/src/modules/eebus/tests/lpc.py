@@ -6,7 +6,8 @@
 # announces the Energy Guard actor, binds to LoadControl and DeviceConfiguration and writes limits.
 # Other trusted EEBUS peers are removed during the suite and restored afterwards.
 #
-# The tests depend on each other and run in order.
+# Every test starts with a connected and bound Energy Guard that controls the device without a limit
+# ("unlimited/controlled") and with the failsafe values BASE_FAILSAFE, see setup().
 
 import time
 from urllib.error import HTTPError
@@ -22,8 +23,8 @@ from software.src.modules.eebus.tests._eebus_peer import (
 
 peer: EebusPeer | None = None
 lpc: LpcEnergyGuard | None = None
-other: EebusPeer | None = None  # A second Energy Guard on another device (IG-LPC 3.5)
-OTHER_DEVICE = "d:_i:Tinkerforge_TestEnergyGuard2"
+OTHER_DEVICE = "d:_i:Tinkerforge_TestEnergyGuard2"  # A second Energy Guard on another device (IG-LPC 3.5)
+BASE_FAILSAFE = (5000, 2 * 3600)  # (power W, duration s)
 removed_peers: list[dict] = []
 p14a_config = None
 original_failsafe: tuple[int, int] | None = None  # (power W, duration s), restored after the suite, as they are persistent
@@ -52,8 +53,41 @@ def expect_nack(tc: TestContext, error_number: int, expected: int = ERROR_COMMAN
     tc.assert_eq(expected, error_number)
 
 
+def connect_guard(tc: TestContext):
+    global peer, lpc
+    peer = start_test_peer(tc, energy_guard_layout())
+    peer.discover()
+    lpc = LpcEnergyGuard(peer)
+    lpc.setup()
+
+
+def stop_guard(tc: TestContext, guard: EebusPeer | None):
+    if guard is None:
+        return
+    try:
+        stop_test_peer(tc, guard)
+    except HTTPError:
+        pass  # Already removed, e.g. by a reboot
+    time.sleep(2)  # Let the device remove the bindings of the closed peer
+
+
+def disconnect_guard(tc: TestContext):
+    global peer, lpc
+    stop_guard(tc, peer)
+    peer = None
+    lpc = None
+
+
+def take_control(tc: TestContext, guard_lpc: LpcEnergyGuard):
+    """Heartbeat followed by a deactivated limit without duration: unlimited/controlled (LPC 2.2), also from failsafe."""
+    guard_lpc.peer.send_heartbeat()
+    expect_ack(tc, guard_lpc.write_limit(0, active=False, duration="PT0S"))
+    wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+    tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)
+
+
 def suite_setup(tc: TestContext):
-    global peer, lpc, removed_peers, p14a_config, original_failsafe
+    global removed_peers, p14a_config, original_failsafe
     tc.set_test_timeout(120)
 
     enable_eebus(tc)
@@ -70,33 +104,38 @@ def suite_setup(tc: TestContext):
     if p14a_config is not None:
         tc.api("p14a_enwg/config_update", p14a_config | {"enable": True, "source": [P14A_SOURCE_EEBUS, None], "limit_charger": True})
 
-    peer = start_test_peer(tc, energy_guard_layout())
-    peer.discover()
-    lpc = LpcEnergyGuard(peer)
-    lpc.setup()
+
+def setup(tc: TestContext):
+    if not tc.api("eebus/config")["enable"]:
+        set_eebus_enabled(tc, True)
+        time.sleep(2)
+    if peer is None or not peer.is_connected():
+        disconnect_guard(tc)
+        connect_guard(tc)
+    peer.heartbeat_enabled = True
+    take_control(tc, lpc)
+    state = lpc_state(tc)
+    if (state["failsafe_limit_power_w"], state["failsafe_limit_duration_s"]) != BASE_FAILSAFE:
+        expect_ack(tc, lpc.write_failsafe(*BASE_FAILSAFE))
 
 
 def restore_failsafe(tc: TestContext):
     """The failsafe values are stored persistently. Write the values from before the suite back."""
     if original_failsafe is None or lpc_state(tc)["failsafe_limit_power_w"] == original_failsafe[0] and lpc_state(tc)["failsafe_limit_duration_s"] == original_failsafe[1]:
         return
-    time.sleep(2)  # Let the device remove the bindings of the closed peers
     guard = start_test_peer(tc, energy_guard_layout())
     try:
         guard.discover()
         guard_lpc = LpcEnergyGuard(guard)
         guard_lpc.setup()
-        guard.send_heartbeat()
-        expect_ack(tc, guard_lpc.write_limit(0, active=False))
-        wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+        take_control(tc, guard_lpc)
         expect_ack(tc, guard_lpc.write_failsafe(*original_failsafe))
     finally:
         stop_test_peer(tc, guard)
 
 
 def suite_teardown(tc: TestContext):
-    stop_test_peer(tc, other)
-    stop_test_peer(tc, peer)
+    disconnect_guard(tc)
     restore_failsafe(tc)
     restore_eebus_peers(tc, removed_peers)
     if p14a_config is not None:
@@ -160,50 +199,69 @@ def test_contractual_constraint(tc: TestContext):
 
 
 def test_controlled(tc: TestContext):
-    """Heartbeat followed by a deactivated limit takes control: unlimited/controlled (LPC 2.2)."""
+    """Heartbeat followed by a deactivated limit takes control: init -> unlimited/controlled (LPC 2.2)."""
+    disconnect_guard(tc)
+    # Restart the use cases: "init", no Energy Guard took control so far
+    set_eebus_enabled(tc, False)
+    time.sleep(1)
+    set_eebus_enabled(tc, True)
+    time.sleep(2)
+    wait_for_lpc_state(tc, LPC_INIT)
+
+    connect_guard(tc)
+    tc.assert_eq(LPC_INIT, lpc_state(tc)["usecase_state"])
     peer.send_heartbeat()
     expect_ack(tc, lpc.write_limit(0, active=False))
     wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
     tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)
 
 
-def test_second_energy_guard_rejected(tc: TestContext):
-    """IG-LPC 3.5: While an Energy Guard is bound, another device can neither bind to LoadControl or DeviceConfiguration,
-    nor write limits. The other device stays connected for test_heartbeat_loss."""
-    global other
-    other = start_test_peer(tc, energy_guard_layout(), device=OTHER_DEVICE, heartbeat_interval=10)
+def start_other_guard(tc: TestContext, **kwargs) -> tuple[EebusPeer, LpcEnergyGuard]:
+    """A second Energy Guard on another device that does not bind (IG-LPC 3.5)."""
+    other = start_test_peer(tc, energy_guard_layout(), device=OTHER_DEVICE, **kwargs)
     other.discover()
     other_lpc = LpcEnergyGuard(other)
     other_lpc.find_servers()
-    # The device subscribes to the heartbeat of every Energy Guard. test_heartbeat_loss needs these heartbeats.
-    other.wait_for_heartbeat_subscription()
-    expect_nack(tc, other.bind(other_lpc.lc_client, other_lpc.lc_server, "LoadControl"))
-    expect_nack(tc, other.bind(other_lpc.dc_client, other_lpc.dc_server, "DeviceConfiguration"))
     other_lpc.limit_id = lpc.limit_id
-    other.send_heartbeat()
-    expect_nack(tc, other_lpc.write_limit(1000, active=True), ERROR_BINDING_REQUIRED)
-    tc.assert_eq(LPC_UNLIMITED_CONTROLLED, lpc_state(tc)["usecase_state"])
-    # The bound Energy Guard can still bind (again) and write
-    expect_ack(tc, peer.bind(lpc.lc_client, lpc.lc_server, "LoadControl"))
-    peer.send_heartbeat()
-    expect_ack(tc, lpc.write_limit(0, active=False))
+    # The device subscribes to the heartbeat of every Energy Guard
+    other.wait_for_heartbeat_subscription()
+    return other, other_lpc
+
+
+def test_second_energy_guard_rejected(tc: TestContext):
+    """IG-LPC 3.5: While an Energy Guard is bound, another device can neither bind to LoadControl or DeviceConfiguration,
+    nor write limits."""
+    other, other_lpc = start_other_guard(tc)
+    try:
+        expect_nack(tc, other.bind(other_lpc.lc_client, other_lpc.lc_server, "LoadControl"))
+        expect_nack(tc, other.bind(other_lpc.dc_client, other_lpc.dc_server, "DeviceConfiguration"))
+        other.send_heartbeat()
+        expect_nack(tc, other_lpc.write_limit(1000, active=True), ERROR_BINDING_REQUIRED)
+        tc.assert_eq(LPC_UNLIMITED_CONTROLLED, lpc_state(tc)["usecase_state"])
+        # The bound Energy Guard can still bind (again) and write
+        expect_ack(tc, peer.bind(lpc.lc_client, lpc.lc_server, "LoadControl"))
+        peer.send_heartbeat()
+        expect_ack(tc, lpc.write_limit(4200, active=True))
+        wait_for_lpc_state(tc, LPC_LIMITED)
+    finally:
+        stop_guard(tc, other)
 
 
 def test_failsafe_values(tc: TestContext):
     """Failsafe values are accepted in range and reported back (LPC-021, LPC-022)."""
     since = len(peer.messages)
-    expect_ack(tc, lpc.write_failsafe(5000, 2 * 3600))
+    expect_ack(tc, lpc.write_failsafe(5500, 3 * 3600))
     state = lpc_state(tc)
-    tc.assert_eq(5000, state["failsafe_limit_power_w"])
-    tc.assert_eq(7200, state["failsafe_limit_duration_s"])
+    tc.assert_eq(5500, state["failsafe_limit_power_w"])
+    tc.assert_eq(3 * 3600, state["failsafe_limit_duration_s"])
     peer.wait_for(lambda m: m.classifier == "notify" and m.function == "deviceConfigurationKeyValueListData", since=since, what="failsafe notify")
-    tc.assert_eq(5000, lpc.read_failsafe()[lpc.failsafe_power_key]["scaledNumber"]["number"])
+    tc.assert_eq(5500, lpc.read_failsafe()[lpc.failsafe_power_key]["scaledNumber"]["number"])
 
 
 def test_failsafe_duration_below_min(tc: TestContext):
     """A failsafe duration below 2 h is rejected and ignored (IG-LPC 3.1)."""
     expect_nack(tc, lpc.write_failsafe(duration=3600))
-    tc.assert_eq(7200, lpc_state(tc)["failsafe_limit_duration_s"])
+    tc.assert_eq(BASE_FAILSAFE[1], lpc_state(tc)["failsafe_limit_duration_s"])
 
 
 def test_failsafe_duration_above_max(tc: TestContext):
@@ -217,7 +275,7 @@ def test_failsafe_duration_above_max(tc: TestContext):
 def test_failsafe_power_negative(tc: TestContext):
     """A negative failsafe consumption limit is rejected (IG-LPC 3.6)."""
     expect_nack(tc, lpc.write_failsafe(power=-100))
-    tc.assert_eq(5000, lpc_state(tc)["failsafe_limit_power_w"])
+    tc.assert_eq(BASE_FAILSAFE[0], lpc_state(tc)["failsafe_limit_power_w"])
 
 
 def test_limit(tc: TestContext):
@@ -236,8 +294,16 @@ def test_limit(tc: TestContext):
     tc.wait_for(lambda: expect_p14a(tc, True, 4200), timeout=3)
 
 
+def write_active_limit(tc: TestContext, value: int, **kwargs) -> dict:
+    expect_ack(tc, lpc.write_limit(value, active=True, **kwargs))
+    state = wait_for_lpc_state(tc, LPC_LIMITED)
+    tc.assert_eq(value, state["current_limit"])
+    return state
+
+
 def test_duration_zero(tc: TestContext):
     """An activated limit with duration PT0S deactivates the limit and is acknowledged (IG-LPC 2.2, 2.16)."""
+    write_active_limit(tc, 4200, duration=300)
     expect_ack(tc, lpc.write_limit(4200, active=True, duration="PT0S"))
     state = wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
     tc.assert_false(state["limit_active"])
@@ -246,16 +312,13 @@ def test_duration_zero(tc: TestContext):
 
 def test_no_duration(tc: TestContext):
     """An active limit without duration is valid until further notice."""
-    expect_ack(tc, lpc.write_limit(4300, active=True))
-    state = wait_for_lpc_state(tc, LPC_LIMITED)
-    tc.assert_eq(4300, state["current_limit"])
+    state = write_active_limit(tc, 4300)
     tc.assert_eq(0, state["outstanding_duration_s"])
 
 
 def test_delete_duration(tc: TestContext):
     """A partial delete of the timePeriod removes the duration (LPC 3.4.1.4)."""
-    expect_ack(tc, lpc.write_limit(4400, active=True, duration=600))
-    tc.assert_gt(580, wait_for_lpc_state(tc, LPC_LIMITED)["outstanding_duration_s"])
+    tc.assert_gt(580, write_active_limit(tc, 4400, duration=600)["outstanding_duration_s"])
     expect_ack(tc, lpc.write_limit(4500, active=True, delete_duration=True))
     state = wait_for_lpc_state(tc, LPC_LIMITED)
     tc.assert_eq(4500, state["current_limit"])
@@ -264,6 +327,7 @@ def test_delete_duration(tc: TestContext):
 
 def test_partial_write_value_only(tc: TestContext):
     """A partial write that only contains the value keeps the activation state."""
+    write_active_limit(tc, 4400)
     expect_ack(tc, lpc.write_limit(4600))
     state = wait_for_lpc_state(tc, LPC_LIMITED)
     tc.assert_true(state["limit_active"])
@@ -272,6 +336,7 @@ def test_partial_write_value_only(tc: TestContext):
 
 def test_negative_limit(tc: TestContext):
     """A negative consumption limit is rejected and the old limit is kept (LPC-003/1)."""
+    write_active_limit(tc, 4600)
     expect_nack(tc, lpc.write_limit(-100, active=True, duration=300))
     state = wait_for_lpc_state(tc, LPC_LIMITED)
     tc.assert_eq(4600, state["current_limit"])
@@ -279,12 +344,14 @@ def test_negative_limit(tc: TestContext):
 
 def test_unknown_limit_id(tc: TestContext):
     """A write on an unknown limitId is rejected."""
+    write_active_limit(tc, 4600)
     expect_nack(tc, lpc.write_limit(1000, active=True, limit_id=99))
     tc.assert_eq(4600, lpc_state(tc)["current_limit"])
 
 
 def test_write_without_binding(tc: TestContext):
     """A write from a feature without binding is rejected with BindingRequired."""
+    write_active_limit(tc, 4600)
     unbound = peer.local([1], 4)
     error = peer.write(unbound, lpc.lc_server, "loadControlLimitListData", {"loadControlLimitData": [{"limitId": lpc.limit_id, "isLimitActive": False}]})
     expect_nack(tc, error, ERROR_BINDING_REQUIRED)
@@ -293,8 +360,7 @@ def test_write_without_binding(tc: TestContext):
 
 def test_limit_duration_expires(tc: TestContext):
     """When the duration expires the limit is deactivated and the state is unlimited/controlled."""
-    expect_ack(tc, lpc.write_limit(4600, active=True, duration=10))
-    wait_for_lpc_state(tc, LPC_LIMITED)
+    write_active_limit(tc, 4600, duration=10)
     since = len(peer.messages)
     state = wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED, timeout=20)
     tc.assert_false(state["limit_active"])
@@ -303,58 +369,58 @@ def test_limit_duration_expires(tc: TestContext):
     tc.assert_false(limit["isLimitActive"])
 
 
-def test_heartbeat_loss(tc: TestContext):
-    """Without heartbeat for 120 s the device enters failsafe and applies the failsafe limit (LPC 2.2, IG-LPC 3.7).
-    The device polls the heartbeat while no notifications arrive; the unchanged (stale) heartbeat must not count.
-    The heartbeat of the other, unbound Energy Guard must not count either (IG-LPC 3.5)."""
-    global other
+def test_failsafe(tc: TestContext):
+    """The failsafe state from entering it to leaving it. One test, as entering failsafe takes 120 s.
+
+    1. Without heartbeat for 120 s the device enters failsafe and applies the failsafe limit (LPC 2.2, IG-LPC 3.7).
+       The device polls the heartbeat while no notifications arrive; the unchanged (stale) heartbeat must not count.
+       The heartbeat of another, unbound Energy Guard must not count either (IG-LPC 3.5).
+    2. In failsafe a write without a heartbeat within 60 s is rejected and the state is kept (IG-LPC 2.14).
+    3. Failsafe values are only evaluated after heartbeat and limit (IG-LPC 2.11).
+    4. A heartbeat alone does not leave failsafe.
+    5. Heartbeat followed by an activated limit without duration leaves failsafe to "limited" (LPC-919).
+       The duration of the limit before failsafe expired during failsafe and must not deactivate the new limit.
+    6. Deactivating the limit after leaving failsafe."""
     tc.set_test_timeout(300)
-    tc.assert_true(other is not None and not other.closed_by_remote)
-    peer.send_heartbeat()
-    # The duration of this limit expires during failsafe (failsafe after 120 s), see test_leave_failsafe_with_limit
-    expect_ack(tc, lpc.write_limit(4200, active=True, duration=125))
-    peer.heartbeat_enabled = False
-    t0 = time.monotonic()
-    since = len(peer.messages)
+    other, _ = start_other_guard(tc, heartbeat_interval=10)
+    try:
+        # 1. Heartbeat loss
+        peer.send_heartbeat()
+        # The duration of this limit expires during failsafe (failsafe after 120 s), see 5.
+        expect_ack(tc, lpc.write_limit(4200, active=True, duration=125))
+        peer.heartbeat_enabled = False
+        t0 = time.monotonic()
+        since = len(peer.messages)
 
-    time.sleep(max(0, t0 + 100 - time.monotonic()))
-    tc.assert_eq(LPC_LIMITED, lpc_state(tc)["usecase_state"])
-    # IG-LPC 3.7: After 75 s without notification the device reads the heartbeat
-    tc.assert_true(peer.received("read", "deviceDiagnosisHeartbeatData", since))
+        time.sleep(max(0, t0 + 100 - time.monotonic()))
+        tc.assert_eq(LPC_LIMITED, lpc_state(tc)["usecase_state"])
+        # IG-LPC 3.7: After 75 s without notification the device reads the heartbeat
+        tc.assert_true(peer.received("read", "deviceDiagnosisHeartbeatData", since))
 
-    time.sleep(max(0, t0 + 125 - time.monotonic()))
-    state = wait_for_lpc_state(tc, LPC_FAILSAFE, timeout=10)
-    tc.assert_eq(5000, state["current_limit"])
-    tc.wait_for(lambda: expect_p14a(tc, True, 5000), timeout=3)
-    # The other Energy Guard sent heartbeats to the device all the time
-    tc.assert_true(len(other.heartbeat_subscribers()) > 0)
-    tc.assert_true(other.heartbeat_counter > 5)
-    stop_test_peer(tc, other)
-    other = None
+        time.sleep(max(0, t0 + 125 - time.monotonic()))
+        state = wait_for_lpc_state(tc, LPC_FAILSAFE, timeout=10)
+        tc.assert_eq(BASE_FAILSAFE[0], state["current_limit"])
+        tc.wait_for(lambda: expect_p14a(tc, True, BASE_FAILSAFE[0]), timeout=3)
+        # The other Energy Guard sent heartbeats to the device all the time
+        tc.assert_true(len(other.heartbeat_subscribers()) > 0)
+        tc.assert_true(other.heartbeat_counter > 5)
+    finally:
+        stop_guard(tc, other)
 
-
-def test_failsafe_write_without_heartbeat(tc: TestContext):
-    """In failsafe a write without a heartbeat within 60 s is rejected and the state is kept (IG-LPC 2.14)."""
+    # 2. Write without heartbeat
     expect_nack(tc, lpc.write_limit(0, active=False))
     wait_for_lpc_state(tc, LPC_FAILSAFE)
 
-
-def test_failsafe_values_in_failsafe(tc: TestContext):
-    """Failsafe values are only evaluated after heartbeat and limit (IG-LPC 2.11)."""
+    # 3. Failsafe values in failsafe
     expect_nack(tc, lpc.write_failsafe(power=6000))
-    tc.assert_eq(5000, lpc_state(tc)["failsafe_limit_power_w"])
+    tc.assert_eq(BASE_FAILSAFE[0], lpc_state(tc)["failsafe_limit_power_w"])
 
-
-def test_heartbeat_alone_keeps_failsafe(tc: TestContext):
-    """A heartbeat alone does not leave failsafe."""
+    # 4. Heartbeat alone
     peer.send_heartbeat()
     time.sleep(2)
     tc.assert_eq(LPC_FAILSAFE, lpc_state(tc)["usecase_state"])
 
-
-def test_leave_failsafe_with_limit(tc: TestContext):
-    """Heartbeat followed by an activated limit without duration leaves failsafe to "limited" (LPC-919).
-    The duration of the limit before failsafe expired during failsafe and must not deactivate the new limit."""
+    # 5. Leave failsafe with a limit
     peer.send_heartbeat()
     expect_ack(tc, lpc.write_limit(4300, active=True))
     state = wait_for_lpc_state(tc, LPC_LIMITED)
@@ -362,9 +428,7 @@ def test_leave_failsafe_with_limit(tc: TestContext):
     tc.assert_eq(0, state["outstanding_duration_s"])
     tc.wait_for(lambda: expect_p14a(tc, True, 4300), timeout=3)
 
-
-def test_leave_failsafe(tc: TestContext):
-    """Deactivating the limit after leaving failsafe."""
+    # 6. Deactivate the limit
     peer.heartbeat_enabled = True
     expect_ack(tc, lpc.write_limit(0, active=False))
     wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
@@ -383,12 +447,10 @@ def parse_iso_duration(value: str) -> int:
 def test_failsafe_values_persistent(tc: TestContext):
     """The failsafe values written by the Energy Guard survive a restart (LPC 2.6.2.1). After the restart the device
     is in "init" and applies the stored Failsafe Consumption Active Power Limit (LPC-901, LPC-903)."""
-    global peer, lpc
     tc.set_test_timeout(300)
     peer.send_heartbeat()
     expect_ack(tc, lpc.write_failsafe(4321, 3 * 3600))
-    stop_test_peer(tc, peer)
-    peer = None
+    disconnect_guard(tc)
 
     tc.reboot()
 
@@ -405,48 +467,38 @@ def test_failsafe_values_persistent(tc: TestContext):
     tc.assert_eq(4321, state["current_limit"])
     tc.wait_for(lambda: expect_p14a(tc, True, 4321), timeout=20, poll_delay=1)
 
-    peer = start_test_peer(tc, energy_guard_layout())
-    peer.discover()
-    lpc = LpcEnergyGuard(peer)
-    lpc.setup()
+    connect_guard(tc)
     values = lpc.read_failsafe()
     tc.assert_eq(4321, values[lpc.failsafe_power_key]["scaledNumber"]["number"])
     tc.assert_eq(3 * 3600, parse_iso_duration(values[lpc.failsafe_duration_key]["duration"]))
 
-    # Take control again for the following tests
-    peer.send_heartbeat()
-    expect_ack(tc, lpc.write_limit(0, active=False))
-    wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
-    tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)
-
 
 def test_disable_eebus_removes_limit(tc: TestContext):
-    """Disabling EEBUS removes an active EEBUS limit from §14a. Runs last, as it disconnects the peer."""
+    """Disabling EEBUS removes an active EEBUS limit from §14a."""
     if p14a_config is None:
         tc.skip("p14a_enwg not available")
-    expect_ack(tc, lpc.write_limit(4400, active=True))
-    wait_for_lpc_state(tc, LPC_LIMITED)
+    write_active_limit(tc, 4400)
     tc.wait_for(lambda: expect_p14a(tc, True, 4400), timeout=3)
     set_eebus_enabled(tc, False)
     try:
         tc.wait_for(lambda: expect_p14a(tc, False), timeout=5)
     finally:
         set_eebus_enabled(tc, True)
-        time.sleep(2)
+        # Disabling EEBUS closed the connection
+        disconnect_guard(tc)
 
 
 def test_other_energy_guard_binds_after_disconnect(tc: TestContext):
     """IG-LPC 3.5: The bindings of an Energy Guard end with its connection. Then another device can bind."""
+    disconnect_guard(tc)
     new_guard = start_test_peer(tc, energy_guard_layout(), device=OTHER_DEVICE)
     try:
         new_guard.discover()
         new_lpc = LpcEnergyGuard(new_guard)
         new_lpc.setup()
-        new_guard.send_heartbeat()
-        expect_ack(tc, new_lpc.write_limit(0, active=False))
-        wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+        take_control(tc, new_lpc)
     finally:
-        stop_test_peer(tc, new_guard)
+        stop_guard(tc, new_guard)
 
 
 if __name__ == "__main__":

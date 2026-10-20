@@ -22,32 +22,15 @@ def suite_setup(tc: TestContext):
         tc.skip("evse/meter_config not available; MPC requires EVSE mode")
 
     _original_meter_config = tc.api(f"meters/{_meter_slot}/config")
-
-    # Configure the charger meter slot as an API meter
-    tc.api(
-        f"meters/{_meter_slot}/config_update",
-        [
-            METER_CLASS_API,
-            {
-                "display_name": "MPC Test Meter",
-                "location": METER_LOCATION_CHARGER,
-                "excluded": False,
-                "value_ids": METER_VALUE_IDS,
-            },
-        ],
-    )
-
-    tc.reboot()
     enable_eebus(tc)
+    if "mpc" not in tc.api("eebus/usecases"):
+        tc.skip("MPC use case not available on this device")
 
 
 def test_all_values(tc: TestContext):
     """Push meter values and verify they appear in the MPC API state."""
 
-    usecases = tc.api("eebus/usecases")
-    if "mpc" not in usecases:
-        tc.skip("MPC use case not available on this device")
-
+    configure_api_meter(tc, _meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, METER_VALUE_IDS)
     tc.api(f"meters/{_meter_slot}/update", METER_VALUES)
 
     def check_mpc():
@@ -89,26 +72,7 @@ def test_no_activation_without_power(tc: TestContext):
     After reboot only push voltage values and verify MPC did *not* activate.
     """
 
-    usecases = tc.api("eebus/usecases")
-    if "mpc" not in usecases:
-        tc.skip("MPC use case not available on this device")
-
-    tc.api(
-        f"meters/{_meter_slot}/config_update",
-        [
-            METER_CLASS_API,
-            {
-                "display_name": "MPC Negative Test Meter",
-                "location": METER_LOCATION_CHARGER,
-                "excluded": False,
-                "value_ids": VOLTAGE_ONLY_IDS,
-            },
-        ],
-    )
-
-    tc.reboot()
-    enable_eebus(tc)
-
+    configure_api_meter(tc, _meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, VOLTAGE_ONLY_IDS)
     tc.api(f"meters/{_meter_slot}/update", VOLTAGE_ONLY_VALUES)
 
     def check_mpc_not_activated():

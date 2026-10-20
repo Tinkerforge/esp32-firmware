@@ -37,6 +37,9 @@ def _wait_p14a_active(tc: TestContext, active: bool) -> None:
 
 
 def _set_rules(tc: TestContext) -> None:
+    tc.api("automation/config_update", {"tasks": []})
+    tc.wait_for(lambda: tc.assert_eq([], _last_run(tc)))
+
     tc.api("automation/config_update", {"tasks": [
         {
             "trigger": [_TRIGGER_P14A_ENWG, {"active": True}],
@@ -50,7 +53,6 @@ def _set_rules(tc: TestContext) -> None:
         },
     ]})
 
-    # apply_config resets all last_run timestamps to 0.
     tc.wait_for(lambda: tc.assert_eq([0, 0], _last_run(tc)))
 
 

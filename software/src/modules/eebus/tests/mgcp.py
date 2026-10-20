@@ -18,31 +18,11 @@ def suite_setup(tc: TestContext):
         tc.skip("MGCP use case not available on this device")
     _original_meter_config = tc.api("meters/0/config")
 
-    # Configure meter slot 0 as API meter with Grid location
-    tc.api(
-        "meters/0/config_update",
-        [
-            METER_CLASS_API,
-            {
-                "display_name": "MGCP Test Meter",
-                "location": METER_LOCATION_GRID,
-                "excluded": False,
-                "value_ids": METER_VALUE_IDS,
-            },
-        ],
-    )
-
-    tc.reboot()
-    enable_eebus(tc)
-
 
 def test_all_values(tc: TestContext):
     """Push meter values and verify they appear in the MGCP API state."""
 
-    usecases = tc.api("eebus/usecases")
-    if "mgcp" not in usecases:
-        tc.skip("MGCP use case not available on this device")
-
+    configure_api_meter(tc, 0, "MGCP Test Meter", METER_LOCATION_GRID, METER_VALUE_IDS)
     tc.api("meters/0/update", METER_VALUES)
 
     def check_mgcp():
@@ -77,26 +57,7 @@ def test_no_activation_without_power(tc: TestContext):
     MGCP requires power + energy_feed_in + energy_consumed to activate.
     """
 
-    usecases = tc.api("eebus/usecases")
-    if "mgcp" not in usecases:
-        tc.skip("MGCP use case not available on this device")
-
-    tc.api(
-        "meters/0/config_update",
-        [
-            METER_CLASS_API,
-            {
-                "display_name": "MGCP Negative Test Meter",
-                "location": METER_LOCATION_GRID,
-                "excluded": False,
-                "value_ids": VOLTAGE_ONLY_IDS,
-            },
-        ],
-    )
-
-    tc.reboot()
-    enable_eebus(tc)
-
+    configure_api_meter(tc, 0, "MGCP Test Meter", METER_LOCATION_GRID, VOLTAGE_ONLY_IDS)
     tc.api("meters/0/update", VOLTAGE_ONLY_VALUES)
 
     def check_mgcp_not_activated():

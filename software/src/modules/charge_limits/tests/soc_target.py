@@ -92,6 +92,9 @@ def suite_teardown(tc: TestContext):
     if saved_config is not None:
         tc.api("charge_limits/default_limits_update", saved_config)
 
+    if tc.device_type().is_warp(4):
+        tc.api("charge_limits/override_soc", {"soc_pct": 0})
+
 
 if __name__ == "__main__":
     run_testsuite(locals())

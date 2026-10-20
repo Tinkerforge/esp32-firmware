@@ -5,6 +5,7 @@
 # configures it to pull from local server.
 
 import json
+import threading
 import time
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
@@ -31,6 +32,19 @@ def _get_server() -> TestHTTPSServer:
     return _server
 
 
+def _base_config(tc: TestContext, **overrides) -> dict:
+    config = tc.api('day_ahead_prices/config')
+    config['enable'] = False
+    config['source'] = 0 # SpotMarket (pull)
+    config['api_url'] = _get_server().url
+    config['cert_id'] = _CERT_ID
+    config['region'] = 0 # DE
+    config['resolution'] = 0 # Min15
+    config['enable_calendar'] = False
+    config.update(overrides)
+    return config
+
+
 def suite_setup(tc: TestContext):
     global _server, _original_config
 
@@ -41,26 +55,16 @@ def suite_setup(tc: TestContext):
     # Zero out calendar
     tc.api('day_ahead_prices/calendar', {'prices': [0] * SLOTS_TOTAL})
 
-    # Configure device
-    config = tc.api('day_ahead_prices/config')
-    config['enable'] = True
-    config['source'] = 0 # SpotMarket (pull)
-    config['api_url'] = _server.url
-    config['cert_id'] = _CERT_ID
-    config['region'] = 0 # DE
-    config['resolution'] = 0 # Min15
-    config['enable_calendar'] = False
-    tc.api('day_ahead_prices/config_update', config)
+
+def setup(tc: TestContext):
+    tc.api('day_ahead_prices/config_update', _base_config(tc))
 
 
 def _trigger_refetch(tc: TestContext):
     # Disable and re-enable the module to force a re-fetch
     # (clears prices, last_sync, last_check).
-    config = tc.api('day_ahead_prices/config')
-    config['enable'] = False
-    tc.api('day_ahead_prices/config_update', config)
-    config['enable'] = True
-    tc.api('day_ahead_prices/config_update', config)
+    tc.api('day_ahead_prices/config_update', _base_config(tc, enable=False))
+    tc.api('day_ahead_prices/config_update', _base_config(tc, enable=True))
 
 
 def test_pull_15min(tc: TestContext):
@@ -95,11 +99,7 @@ def test_pull_60min(tc: TestContext):
 
     server = _get_server()
     _set_prices(server, first_date_seconds, prices, next_date_seconds)
-
-    # Switch to 60-min resolution (also triggers re-fetch)
-    config = tc.api('day_ahead_prices/config')
-    config['resolution'] = 1 # Min60
-    tc.api('day_ahead_prices/config_update', config)
+    tc.api('day_ahead_prices/config_update', _base_config(tc, enable=True, resolution=1)) # Min60
 
     def check():
         state = tc.api('day_ahead_prices/prices')
@@ -215,6 +215,43 @@ def test_pull_invalid_json(tc: TestContext):
         tc.assert_eq(prices, p.get('prices'))
 
     tc.wait_for(check_recovery)
+
+
+def test_config_change_during_download(tc: TestContext):
+    """ A config change while a download is running discards the running download and downloads again."""
+
+    first_date_minutes = midnight_today_minutes()
+    first_date_seconds = first_date_minutes * 60
+    next_date_seconds = first_date_seconds + 7 * 86400
+    stale_prices = make_prices(48, base_price=1000, amplitude=500)
+    new_prices = make_prices(48, base_price=9000, amplitude=500)
+
+    def payload(prices: list[int]) -> str:
+        return json.dumps({"first_date": first_date_seconds, "prices": prices, "next_date": next_date_seconds}, separators=(",", ":"))
+
+    first_request = threading.Event()
+
+    def respond(method: str, path: str, body: bytes) -> tuple[int, str]:
+        if not first_request.is_set():
+            first_request.set()
+            time.sleep(3)  # Keep the first download running while the config changes
+            return 200, payload(stale_prices)
+        return 200, payload(new_prices)
+
+    server = _get_server()
+    server.set_response_fn(respond)
+    tc.api('day_ahead_prices/config_update', _base_config(tc, enable=True))
+    tc.assert_true(first_request.wait(timeout=10))
+    _trigger_refetch(tc)
+
+    def check():
+        tc.assert_eq(new_prices, tc.api('day_ahead_prices/prices').get('prices'))
+
+    tc.wait_for(check, timeout=15, poll_delay=0.5)
+
+    # The response of the first download must not overwrite the new prices
+    time.sleep(4)
+    check()
 
 
 def suite_teardown(tc: TestContext):

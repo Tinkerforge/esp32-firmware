@@ -522,9 +522,6 @@ def _compare_with_device(
     B = case.min_block_15m
     ilp_B = B if is_15min else (math.ceil(B / 4) if B > 0 else 0)
 
-    # Snapshot the current plan so we can detect when it changes.
-    old_plan = tc.api("heating/plan")
-
     # Configure DAP push mode.
     dap_config = tc.api("day_ahead_prices/config")
     resolution_enum = 0 if case.price_resolution == 15 else 1
@@ -561,17 +558,21 @@ def _compare_with_device(
     heating_config["blocking_hours_cold"] = 0
     tc.api("heating/config_update", heating_config)
 
-    # Wait for the plan to change.
-    def plan_changed():
+    # The config update schedules a plan update right away. Wait until the plan covers the new prices and
+    # is stable. A plan that was calculated in between (e.g. by the periodic update after the price update,
+    # but with the heating config of the previous test) is replaced by then.
+    def plan_ready():
         try:
             plan = tc.api("heating/plan")
+            time.sleep(1)
+            plan_again = tc.api("heating/plan")
         except Exception as e:
             raise AssertionError(f"Failed to read plan: {e}") from e
-        if plan == old_plan:
-            raise AssertionError("Plan has not changed yet")
+        tc.assert_eq(len(prices), len(plan.get("cheap", [])))
+        tc.assert_eq(plan, plan_again)
         return plan
 
-    plan = tc.wait_for(plan_changed, poll_delay=1)
+    plan = tc.wait_for(plan_ready, poll_delay=0.5)
 
     dev_cheap = plan.get("cheap", [])
     dev_expensive = plan.get("expensive", [])

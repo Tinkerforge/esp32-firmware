@@ -138,14 +138,15 @@ def test_tls_connect(tc: TestContext) -> None:
 
 
 def test_tls_state_publishes(tc: TestContext) -> None:
-    ensure_mqtt_connected(tc, _make_tls_config())
-
+    prefix = f"{_PREFIX}_state"
     helper = _get_tls_helper()
     helper.clear_messages()
-    helper.subscribe(f"{_PREFIX}/#")
+    helper.subscribe(f"{prefix}/#")
     time.sleep(1)
 
-    msg = helper.wait_for_any_message(f"{_PREFIX}/", timeout=15)
+    ensure_mqtt_connected(tc, _make_tls_config(global_topic_prefix=prefix))
+
+    msg = helper.wait_for_any_message(f"{prefix}/", timeout=15)
     tc.assert_(msg is not None)
 
 
@@ -180,19 +181,20 @@ def test_tls_no_cert(tc: TestContext) -> None:
 
 # Switching between plain and TLS
 def test_switch_plain_to_tls(tc: TestContext) -> None:
-    ensure_mqtt_connected(tc, _make_plain_config())
+    prefix = f"{_PREFIX}_switch"
+    ensure_mqtt_connected(tc, _make_plain_config(global_topic_prefix=prefix))
+
+    helper = _get_tls_helper()
+    helper.clear_messages()
+    helper.subscribe(f"{prefix}/#")
+    time.sleep(1)
 
     # Now switch to TLS
-    tc.api("mqtt/config_update", _make_tls_config(), timeout=5)
+    tc.api("mqtt/config_update", _make_tls_config(global_topic_prefix=prefix), timeout=5)
     wait_mqtt_state(tc, CONN_CONNECTED)
 
     # Verify messages arrive through the TLS broker
-    helper = _get_tls_helper()
-    helper.clear_messages()
-    helper.subscribe(f"{_PREFIX}/#")
-    time.sleep(1)
-
-    msg = helper.wait_for_any_message(f"{_PREFIX}/", timeout=15)
+    msg = helper.wait_for_any_message(f"{prefix}/", timeout=15)
     tc.assert_(msg is not None)
 
 
