@@ -66,6 +66,20 @@ void SolarForecast::pre_setup()
             return "HTTPS required for Solar Forecast API URL";
         }
 
+        // A new server or a re-enabled module should not wait for the back-off of an error that happened with the old configuration.
+        if ((update.get("enable")->asBool()                 != config.get("enable")->asBool()) ||
+            (update.get("source")->asEnum<ForecastSource>() != config.get("source")->asEnum<ForecastSource>()) ||
+            (update.get("api_url")->asString()              != config.get("api_url")->asString()) ||
+            (update.get("cert_id")->asInt()                 != config.get("cert_id")->asInt())) {
+            next_sync_forced = 0;
+
+            if (source != ConfigSource::File && https_client.is_busy()) {
+                // We are currently downloading a forecast. Discard the download for the old config.
+                update_after_abort = true;
+                https_client.abort_async();
+            }
+        }
+
         this->next_update();
         return "";
     }};
@@ -114,6 +128,12 @@ void SolarForecast::pre_setup()
             p.state.get("place")->updateString("Unknown");
             p.forecast.get("first_date")->updateUint(0);
             p.forecast.get("forecast")->removeAll();
+
+            if (source != ConfigSource::File && this->https_client.is_busy() && this->plane_current == &p) {
+                // We are currently downloading the forecast of this plane. Discard the download for the old config.
+                this->update_after_abort = true;
+                this->https_client.abort_async();
+            }
 
             this->update_cached_wh_state();
             this->next_update();
@@ -601,12 +621,23 @@ void SolarForecast::update()
 
         case AsyncHTTPSClientEventType::Aborted:
             if (download_state == SF_DOWNLOAD_STATE_PENDING) {
-                logger.printfln("Update check aborted, next solar forecast API call will be in 30 minutes");
-                next_sync_forced = rtc.timestamp_minutes() + 30;
+                if (!update_after_abort) {
+                    logger.printfln("Update check aborted, next solar forecast API call will be in 30 minutes");
+                    next_sync_forced = rtc.timestamp_minutes() + 30;
+                }
                 download_state = SF_DOWNLOAD_STATE_ABORTED;
             }
 
             handle_cleanup();
+
+            if (update_after_abort) {
+                update_after_abort = false;
+
+                task_scheduler.scheduleOnce([this]() {
+                    this->update();
+                });
+            }
+
             next_update();
             break;
 

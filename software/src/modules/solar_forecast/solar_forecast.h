@@ -95,7 +95,7 @@ private:
     ConfigRoot debug_forecast_update;
 #endif
 
-    SolarForecastPlane *plane_current;
+    SolarForecastPlane *plane_current = nullptr;
 
     uint64_t task_id = 0;
 
@@ -106,5 +106,6 @@ private:
     AsyncHTTPSClient https_client;
 
     SFDownloadState download_state = SF_DOWNLOAD_STATE_OK;
+    bool update_after_abort = false;
     SolarForecastPlane *planes = nullptr;
 };
