@@ -281,7 +281,7 @@ class TestContext:
 
     def assert_ne(self, expected, actual):
         if not (actual != expected):
-            raise AssertionError(f"Expected{actual=} to not be equal to {expected=}\n" + self._get_callee())
+            raise AssertionError(f"Expected {actual=} to not be equal to {expected=}\n" + self._get_callee())
 
         return actual
 
