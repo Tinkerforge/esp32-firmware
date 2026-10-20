@@ -147,6 +147,39 @@ class WARP3TestBox(TestBox):
 
         return not self.E.get_value()[contactor]
 
+    def get_gpio_index(self, gpio: TestBox.GPIO):
+        d = {
+            TestBox.GPIO.DC_X30: 0,
+            TestBox.GPIO.DC_X6: 1,
+            TestBox.GPIO.DC_FAULT: 2,
+            TestBox.GPIO.DC_PROTECTOR_TEST: 3,
+            TestBox.GPIO.EVSE_STATUS_LED: 4,
+            TestBox.GPIO.BUTTON: 5,
+            TestBox.GPIO.LED_RED: 6,
+            TestBox.GPIO.LED_BLUE: 7,
+            TestBox.GPIO.LED_GREEN: 8,
+            TestBox.GPIO.CP_PWM: 9,
+            TestBox.GPIO.PHASE_SWITCH: 10,
+            TestBox.GPIO.CONTACTOR: 11,
+            TestBox.GPIO.CONTACTOR_CHECK_L2_L3: 12,
+            TestBox.GPIO.CONTACTOR_CHECK_L1_N: 13,
+            TestBox.GPIO.PE_CHECK: 14,
+            TestBox.GPIO.CURRENT_CONFIGURATION_1: 15,
+            TestBox.GPIO.CP_DISCONNECT: 16,
+            TestBox.GPIO.CURRENT_CONFIGURATION_0: 17,
+            TestBox.GPIO.SHUTDOWN_INPUT: 18,
+            TestBox.GPIO.VERSION_DETECT: 19,
+            TestBox.GPIO.UNUSED_0: 20,
+            TestBox.GPIO.UNUSED_1: 21,
+            TestBox.GPIO.UNUSED_2: 22,
+            TestBox.GPIO.UNUSED_3: 23,
+        }
+
+        if gpio not in d:
+            self.tc.skip(f"EVSE does not support {gpio=}")
+
+        return d[gpio]
+
     def reset(self):
         # TODO why is this not called
         self.set_cp('A')

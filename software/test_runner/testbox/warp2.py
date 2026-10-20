@@ -208,6 +208,39 @@ class WARP2TestBox(TestBox):
             print(e)
             return False
 
+    def get_gpio_index(self, gpio: TestBox.GPIO):
+        d = {
+            TestBox.GPIO.CURRENT_CONFIGURATION_0: 0,
+            TestBox.GPIO.MOTOR_FAULT: 1,
+            TestBox.GPIO.DC_FAULT: 2,
+            TestBox.GPIO.CURRENT_CONFIGURATION_1: 3,
+            TestBox.GPIO.DC_PROTECTOR_TEST: 4,
+            TestBox.GPIO.SHUTDOWN_INPUT: 5,
+            TestBox.GPIO.BUTTON: 6,
+            TestBox.GPIO.CP_PWM: 7,
+            TestBox.GPIO.MOTOR_INPUT_SWITCH: 8,
+            TestBox.GPIO.CONTACTOR: 9,
+            TestBox.GPIO.GP_OUTPUT: 10,
+            TestBox.GPIO.CP_DISCONNECT: 11,
+            TestBox.GPIO.MOTOR_ENABLE: 12,
+            TestBox.GPIO.MOTOR_PHASE: 13,
+            TestBox.GPIO.CONTACTOR_CHECK_PRE: 14,
+            TestBox.GPIO.CONTACTOR_CHECK_POST: 15,
+            TestBox.GPIO.GP_INPUT: 16,
+            TestBox.GPIO.DC_X6: 17,
+            TestBox.GPIO.DC_X30: 18,
+            TestBox.GPIO.LED_BLUE: 19,
+            TestBox.GPIO.UNUSED_0: 20,
+            TestBox.GPIO.UNUSED_1: 21,
+            TestBox.GPIO.UNUSED_2: 22,
+            TestBox.GPIO.UNUSED_3: 23
+        }
+
+        if gpio not in d:
+            self.tc.skip(f"EVSE does not support {gpio=}")
+
+        return d[gpio]
+
     def reset(self):
         self.set_cp('A')
         self.connect_meter('real')
