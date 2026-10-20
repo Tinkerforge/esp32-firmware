@@ -44,8 +44,9 @@ interface AsyncModalState extends AsyncModalParams {
 }
 
 export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
-    constructor(props?: AsyncModalProps, state?: AsyncModalState) {
-        super(props, state);
+    constructor() {
+        super();
+
         this.params = {
             title: () => "",
             body: () => "",

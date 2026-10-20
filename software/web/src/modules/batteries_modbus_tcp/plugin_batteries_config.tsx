@@ -82,8 +82,8 @@ function get_total_values_count(table: RegisterTable) {
 }
 
 class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState> {
-    constructor(props: RegisterEditorProps) {
-        super(props);
+    constructor() {
+        super();
 
         this.state = {
             register_block: {

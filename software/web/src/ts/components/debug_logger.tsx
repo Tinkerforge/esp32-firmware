@@ -129,8 +129,8 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
     debug_protocol_lines: Array<string> = [];
     debug_suffix: string = '';
 
-    constructor(props: any) {
-        super(props);
+    constructor() {
+        super();
 
         this.state = {
             debug_running: false,

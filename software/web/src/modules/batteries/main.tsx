@@ -163,8 +163,8 @@ function get_column_action(action: number) {
 }
 
 class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
-    constructor(props: RulesEditorProps) {
-        super(props);
+    constructor() {
+        super();
 
         this.state = {
             add_rule_config: null,

@@ -69,8 +69,8 @@ interface RegisterEditorState {
 }
 
 class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState> {
-    constructor(props: RegisterEditorProps) {
-        super(props);
+    constructor() {
+        super();
 
         this.state = {
             register: {
