@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 else:
     tc_type = Any
 
+
 class TestBox(Protocol):
     tc: tc_type = None
 

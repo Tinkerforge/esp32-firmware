@@ -78,7 +78,7 @@ class TestContext:
 
     _args: typing.Any = None
 
-    api_schema_port_list: list[tuple[str, int]] = field(default_factory= lambda: [('http', 80), ('https', 443)])
+    api_schema_port_list: list[tuple[str, int]] = field(default_factory=lambda: [('http', 80), ('https', 443)])
 
     def init_testbox(self):
         if self._brickd_host is None:
