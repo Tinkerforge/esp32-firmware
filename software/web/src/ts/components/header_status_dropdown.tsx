@@ -55,17 +55,25 @@ function StatusEntryItem({ entry }: { entry: StatusEntry }) {
         <Dropdown.Item
             as={entry.href ? "a" : "div"}
             href={entry.href}
-            className="d-flex align-items-center gap-2"
+            className="d-flex align-items-start gap-2"
+            style={{whiteSpace: "normal"}}
         >
             <span class={`rounded-circle ${variant_to_bg_class(entry.variant)}`}
-                  style="width: 8px; height: 8px; flex-shrink: 0;"></span>
-            <span class="flex-grow-1">{entry.label}</span>
-            {entry.icon && (
-                <span class="d-flex align-items-center" style="flex-shrink: 0;">{entry.icon}</span>
-            )}
-            {entry.detail && (
-                <span class="small text-secondary">{entry.detail}</span>
-            )}
+                  style="width: 8px; height: 8px; flex-shrink: 0; margin-top: calc(0.75em - 4px);"></span>
+            <div class="d-flex flex-wrap align-items-center justify-content-between column-gap-3 flex-grow-1" style={{minWidth: 0}}>
+                <span>{entry.label}</span>
+                {(entry.icon || entry.detail) && (
+                    <span class="d-flex align-items-center gap-2 ms-auto text-end"
+                          style={{minWidth: 0, overflowWrap: "anywhere"}}>
+                        {entry.icon && (
+                            <span class="d-flex align-items-center" style="flex-shrink: 0;">{entry.icon}</span>
+                        )}
+                        {entry.detail && (
+                            <span class="small text-secondary">{entry.detail}</span>
+                        )}
+                    </span>
+                )}
+            </div>
         </Dropdown.Item>
     );
 }
@@ -136,7 +144,7 @@ export function HeaderStatusDropdown(props: HeaderStatusDropdownProps) {
                 )}
             </Dropdown.Toggle>
 
-            <Dropdown.Menu renderOnMount style={{minWidth: "180px", zIndex: 1030}}>
+            <Dropdown.Menu renderOnMount style={{width: "max-content", minWidth: "180px", maxWidth: "100vw", zIndex: 1030}}>
                 {enabled_entries.map((entry, i) => (
                     <StatusEntryItem key={i} entry={entry} />
                 ))}
