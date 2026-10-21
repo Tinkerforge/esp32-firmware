@@ -17,7 +17,7 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 from software.src.modules.eebus.tests._common import *
 from software.src.modules.eebus.tests._eebus_peer import (
-    EebusPeer, LpcEnergyGuard, energy_guard_layout, as_list,
+    EebusPeer, LpcEnergyGuard, energy_guard_layout,
     ERROR_NO_ERROR, ERROR_COMMAND_REJECTED, ERROR_BINDING_REQUIRED,
 )
 
@@ -80,9 +80,12 @@ def disconnect_guard(tc: TestContext):
 
 def take_control(tc: TestContext, guard_lpc: LpcEnergyGuard):
     """Heartbeat followed by a deactivated limit without duration: unlimited/controlled (LPC 2.2), also from failsafe."""
+    since = len(guard_lpc.peer.messages)
     guard_lpc.peer.send_heartbeat()
     expect_ack(tc, guard_lpc.write_limit(0, active=False, duration="PT0S"))
     wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED)
+    # The API state and write acknowledgement can precede the asynchronous notification.
+    guard_lpc.wait_for_limit_notify(active=False, value=0, since=since)
     tc.wait_for(lambda: expect_p14a(tc, False), timeout=3)
 
 
@@ -286,8 +289,7 @@ def test_limit(tc: TestContext):
     tc.assert_true(state["limit_active"])
     tc.assert_eq(4200, state["current_limit"])
     tc.assert_gt(280, state["outstanding_duration_s"])
-    notify = peer.wait_for(lambda m: m.classifier == "notify" and m.function == "loadControlLimitListData", since=since, what="limit notify")
-    limit = [d for d in as_list(notify.data.get("loadControlLimitData")) if d.get("limitId") == lpc.limit_id][0]
+    limit = lpc.wait_for_limit_notify(active=True, value=4200, since=since)
     tc.assert_true(limit["isLimitActive"])
     tc.assert_eq(4200, limit["value"]["number"])
     tc.assert_true("endTime" in limit.get("timePeriod", {}))
@@ -360,12 +362,14 @@ def test_write_without_binding(tc: TestContext):
 
 def test_limit_duration_expires(tc: TestContext):
     """When the duration expires the limit is deactivated and the state is unlimited/controlled."""
-    write_active_limit(tc, 4600, duration=10)
     since = len(peer.messages)
+    write_active_limit(tc, 4600, duration=10)
+    # Observe activation before waiting for expiry. Neither an ACK nor the API state
+    # guarantees that the activation notification has arrived yet.
+    lpc.wait_for_limit_notify(active=True, value=4600, since=since)
     state = wait_for_lpc_state(tc, LPC_UNLIMITED_CONTROLLED, timeout=20)
     tc.assert_false(state["limit_active"])
-    notify = peer.wait_for(lambda m: m.classifier == "notify" and m.function == "loadControlLimitListData", since=since, what="limit notify")
-    limit = [d for d in as_list(notify.data.get("loadControlLimitData")) if d.get("limitId") == lpc.limit_id][0]
+    limit = lpc.wait_for_limit_notify(active=False, value=4600, since=since)
     tc.assert_false(limit["isLimitActive"])
 
 

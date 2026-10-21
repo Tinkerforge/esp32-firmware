@@ -965,6 +965,21 @@ class LpcEnergyGuard:
                 return d
         raise PeerError(f"limit {self.limit_id} missing in {data}")
 
+    def wait_for_limit_notify(self, *, active: bool, value: int, since: int, timeout: float = 10) -> dict:
+        """Wait for the requested limit, ignoring notifications still in flight from earlier writes."""
+        def matches(d: dict) -> bool:
+            number = d.get("value", {})
+            return (d.get("limitId") == self.limit_id and d.get("isLimitActive") == active
+                    and number.get("number") is not None
+                    and number["number"] * 10 ** number.get("scale", 0) == value)
+
+        notify = self.peer.wait_for(
+            lambda m: m.classifier == "notify" and m.function == "loadControlLimitListData"
+                      and m.source == self.lc_server
+                      and any(matches(d) for d in as_list(m.data.get("loadControlLimitData"))),
+            since=since, timeout=timeout, what=f"limit {self.limit_id} notify ({active=}, {value=})")
+        return next(d for d in as_list(notify.data.get("loadControlLimitData")) if matches(d))
+
     def read_constraints(self) -> dict:
         """Scenario 4: Returns the characteristics of the remote by characteristicType."""
         data = self.peer.read(self.ec_client, self.ec_server, "electricalConnectionCharacteristicListData")
