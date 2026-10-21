@@ -97,7 +97,6 @@ private:
     const TableSpec *table = nullptr;
 
     bool read_allowed = false;
-    bool values_declared = false;
     size_t read_index = 0;
     size_t max_register_count = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
 
