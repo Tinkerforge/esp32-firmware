@@ -219,8 +219,7 @@ def test_tls_trigger(tc: TestContext) -> None:
     tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
-    _get_tls_helper().publish("tls/trig", "go")
-    assert_in_event_log(tc, marker)
+    publish_until_in_event_log(tc, _get_tls_helper(), "tls/trig", "go", marker)
 
 
 def test_tls_action(tc: TestContext) -> None:

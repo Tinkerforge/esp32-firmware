@@ -200,8 +200,7 @@ def test_mqtt_trigger_print(tc: TestContext) -> None:
     tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
-    _get_helper().publish("trig/close", "on")
-    assert_in_event_log(tc, marker)
+    publish_until_in_event_log(tc, _get_helper(), "trig/close", "on", marker)
 
 
 def test_mqtt_trigger_with_prefix(tc: TestContext) -> None:
@@ -217,8 +216,7 @@ def test_mqtt_trigger_with_prefix(tc: TestContext) -> None:
     tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
-    _get_helper().publish(f"{_PREFIX}/automation_trigger/trig/pfx", "go")
-    assert_in_event_log(tc, marker)
+    publish_until_in_event_log(tc, _get_helper(), f"{_PREFIX}/automation_trigger/trig/pfx", "go", marker)
 
 
 def test_add_trigger_live(tc: TestContext) -> None:
@@ -237,8 +235,7 @@ def test_add_trigger_live(tc: TestContext) -> None:
     tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
-    _get_helper().publish("trig/live", "fire")
-    assert_in_event_log(tc, marker)
+    publish_until_in_event_log(tc, _get_helper(), "trig/live", "fire", marker)
 
 
 def test_remove_trigger_live(tc: TestContext) -> None:
@@ -255,8 +252,7 @@ def test_remove_trigger_live(tc: TestContext) -> None:
     time.sleep(2)
 
     # Verify trigger works
-    _get_helper().publish("trig/remove", "bang")
-    assert_in_event_log(tc, marker_a)
+    publish_until_in_event_log(tc, _get_helper(), "trig/remove", "bang", marker_a)
 
     # Remove all triggers
     tc.api("automation/config_update", {"tasks": []}, timeout=MQTT_API_TIMEOUT)
@@ -285,8 +281,7 @@ def test_change_trigger_topic(tc: TestContext) -> None:
     helper = _get_helper()
 
     # Verify test/a works
-    helper.publish("trig/a", "x")
-    assert_in_event_log(tc, marker_a)
+    publish_until_in_event_log(tc, helper, "trig/a", "x", marker_a)
 
     # Change to test/b
     marker_b = f"MQT13b_{int(time.time())}"
@@ -303,8 +298,7 @@ def test_change_trigger_topic(tc: TestContext) -> None:
     assert_not_in_event_log(tc, marker_b)
 
     # test/b should fire
-    helper.publish("trig/b", "x")
-    assert_in_event_log(tc, marker_b)
+    publish_until_in_event_log(tc, helper, "trig/b", "x", marker_b)
 
 
 def test_mqtt_action_publishes(tc: TestContext) -> None:
@@ -378,8 +372,7 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
 
     # Verify on old prefix
     helper = _get_helper()
-    helper.publish(f"{old_prefix}/automation_trigger/pfxtest", "go")
-    assert_in_event_log(tc, marker_old)
+    publish_until_in_event_log(tc, helper, f"{old_prefix}/automation_trigger/pfxtest", "go", marker_old)
 
     # Change prefix and update the action marker
     marker_new = f"MQT16n_{int(time.time())}"
@@ -399,8 +392,7 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
     assert_not_in_event_log(tc, marker_new)
 
     # New prefix should fire
-    helper.publish(f"{new_prefix}/automation_trigger/pfxtest", "go")
-    assert_in_event_log(tc, marker_new)
+    publish_until_in_event_log(tc, helper, f"{new_prefix}/automation_trigger/pfxtest", "go", marker_new)
 
     # Restore
     ensure_mqtt_connected(tc, _make_test_config())
@@ -421,8 +413,7 @@ def test_disable_stops_triggers(tc: TestContext) -> None:
 
     # Verify trigger works
     helper = _get_helper()
-    helper.publish("trig/disable", "x")
-    assert_in_event_log(tc, marker_a)
+    publish_until_in_event_log(tc, helper, "trig/disable", "x", marker_a)
 
     # Disable MQTT
     tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=MQTT_API_TIMEOUT)

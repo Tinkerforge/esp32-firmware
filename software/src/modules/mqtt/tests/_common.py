@@ -310,6 +310,19 @@ def assert_in_event_log(tc: TestContext, marker: str, *, timeout: float = 10) ->
     tc.wait_for(_check, timeout=timeout)
 
 
+def publish_until_in_event_log(tc: TestContext, helper: MqttHelper, topic: str, payload: str, marker: str, *, timeout: float = 30) -> None:
+    """Publish until *marker* appears in the device event log.
+
+    The device subscribes to automation trigger topics asynchronously after a config update.
+    A single non-retained message published before the subscription reaches the broker is lost."""
+
+    def _check() -> None:
+        helper.publish(topic, payload)
+        assert_in_event_log(tc, marker, timeout=2)
+
+    tc.wait_for(_check, timeout=timeout)
+
+
 def assert_not_in_event_log(tc: TestContext, marker: str) -> None:
     """Assert that *marker* does NOT appear in the device event log."""
     log = tc.http_request("GET", "/event_log", timeout=MQTT_API_TIMEOUT)
