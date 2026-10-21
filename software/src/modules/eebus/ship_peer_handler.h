@@ -47,6 +47,7 @@ struct ShipNode {
     // Removed by the user but still referenced by closing connections.
     // Invisible to lookups; erased when the last connection is gone.
     bool pending_removal = false;
+    uint8_t missed_scans = 0;
 
     void as_json(StringBuilder *sb);
     [[nodiscard]] String ip_address_as_string() const;
@@ -68,6 +69,11 @@ struct ShipNode {
 class ShipPeerHandler
 {
 public:
+    enum class Source : uint8_t {
+        MdnsDiscovery,
+        Explicit,
+    };
+
     const std::vector<unique_ptr_any<ShipNode>> &get_peers()
     {
         return peers;
@@ -75,20 +81,25 @@ public:
 
     // Returns nullptr for unknown, empty or pending_removal SKIs
     ShipNode *get_peer_by_ski(const String &ski);
-    // Get existing peer or create a new one. Never returns nullptr.
-    // Must not be called with an empty SKI.
-    ShipNode *get_or_create_by_ski(const String &ski);
+    // Get existing peer or create a new one. Must not be called with an empty SKI.
+    // Returns nullptr if the peer limit is reached and no peer can be evicted.
+    // Creating a peer may erase other nodes: Don't hold other ShipNode pointers across this call.
+    ShipNode *get_or_create_by_ski(const String &ski, Source source, bool persistent = false);
 
     // Tombstone the node; erases it immediately if no connection references it
     void mark_for_removal(ShipNode *node);
     void erase_node(const ShipNode *node);
 
     void update_ip_by_ski(const String &ski, const String &ip, bool force_front = false);
+    void age_peers(const std::vector<String> &seen_skis);
 
     void initialize_from_config();
 
 private:
-    ShipNode *new_peer_from_ski(const String &ski);
+    ShipNode *new_peer_from_ski(const String &ski, Source source, bool persistent);
+    static bool is_referenced(const ShipNode *node);
+    [[nodiscard]] size_t count_peers(bool persistent) const;
+    ShipNode *find_eviction_candidate(Source source);
 
     std::vector<unique_ptr_any<ShipNode>> peers{};
 };

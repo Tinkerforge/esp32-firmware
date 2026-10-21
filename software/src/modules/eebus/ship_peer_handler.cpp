@@ -22,6 +22,7 @@
 #include <algorithm>
 
 #include "eebus.h"
+#include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 
 #include "gcc_warnings.h"
@@ -110,13 +111,21 @@ void ShipPeerHandler::mark_for_removal(ShipNode *node)
         return;
     }
     node->pending_removal = true;
-    for (const auto &conn : eebus.ship.ship_connections) {
-        if (conn->peer_node == node) {
-            // Still referenced: Ship::remove erases it when the last connection is gone
-            return;
-        }
+    if (is_referenced(node)) {
+        // Still referenced: Ship::remove erases it when the last connection is gone
+        return;
     }
     erase_node(node);
+}
+
+bool ShipPeerHandler::is_referenced(const ShipNode *node)
+{
+    for (const auto &conn : eebus.ship.ship_connections) {
+        if (conn->peer_node == node) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ShipPeerHandler::erase_node(const ShipNode *node)
@@ -130,11 +139,14 @@ void ShipPeerHandler::erase_node(const ShipNode *node)
                 peers.end());
 }
 
-ShipNode *ShipPeerHandler::get_or_create_by_ski(const String &ski)
+ShipNode *ShipPeerHandler::get_or_create_by_ski(const String &ski, const Source source, const bool persistent)
 {
+    if (ski.isEmpty()) {
+        return nullptr;
+    }
     if (auto *peer = get_peer_by_ski(ski))
         return peer;
-    return new_peer_from_ski(ski);
+    return new_peer_from_ski(ski, source, persistent);
 }
 
 void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, const bool force_front)
@@ -144,7 +156,10 @@ void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, cons
     if (ski.isEmpty() || ip.isEmpty() || ip == "0.0.0.0") {
         return;
     }
-    auto *peer = get_or_create_by_ski(ski);
+    auto *peer = get_peer_by_ski(ski);
+    if (peer == nullptr) {
+        return;
+    }
     if (!peer->contains_ip(ip)) {
         if (force_front) {
             peer->ip_address.insert(peer->ip_address.begin(), ip);
@@ -159,12 +174,86 @@ void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, cons
     }
 }
 
-ShipNode *ShipPeerHandler::new_peer_from_ski(const String &ski)
+size_t ShipPeerHandler::count_peers(const bool persistent) const
 {
+    size_t count = 0;
+    for (const auto &n : peers) {
+        if (!n->pending_removal && n->persistent == persistent) {
+            count++;
+        }
+    }
+    return count;
+}
+
+ShipNode *ShipPeerHandler::find_eviction_candidate(const Source source)
+{
+    // Prefer the peer missing in the most mDNS scans, then the oldest one
+    ShipNode *candidate = nullptr;
+    for (const auto &n : peers) {
+        if (n->persistent || n->trusted || n->pending_removal) {
+            continue;
+        }
+        if (source == Source::MdnsDiscovery && n->missed_scans == 0) {
+            continue;
+        }
+        if (is_referenced(n.get())) {
+            continue;
+        }
+        if (candidate == nullptr || n->missed_scans > candidate->missed_scans) {
+            candidate = n.get();
+        }
+    }
+    return candidate;
+}
+
+ShipNode *ShipPeerHandler::new_peer_from_ski(const String &ski, const Source source, const bool persistent)
+{
+    if (persistent && count_peers(true) >= EEBUS_MAX_PEER_REMEMBERED) {
+        eebus.trace_fmtln("Cannot add persistent peer %s: limit of %d persistent peers reached", ski.c_str(), EEBUS_MAX_PEER_REMEMBERED);
+        return nullptr;
+    }
+
+    // Non-persistent peers may use the slots not taken by persistent peers.
+    // Tombstoned nodes still occupy memory until their last connection is gone.
+    while (peers.size() >= EEBUS_MAX_PEERS) {
+        ShipNode *candidate = find_eviction_candidate(source);
+        if (candidate == nullptr) {
+            eebus.trace_fmtln("Cannot add peer %s: limit of %d peers reached and no peer can be evicted", ski.c_str(), EEBUS_MAX_PEERS);
+            return nullptr;
+        }
+        eebus.trace_fmtln("Peer limit reached, evicting peer %s (missed %u scans) for new peer %s", candidate->node_name().c_str(), static_cast<unsigned>(candidate->missed_scans), ski.c_str());
+        erase_node(candidate);
+    }
+
     unique_ptr_any<ShipNode> node = make_unique_psram<ShipNode>();
     node->txt_ski = ski;
+    node->persistent = persistent;
     peers.push_back(std::move(node));
     return peers.back().get();
+}
+
+void ShipPeerHandler::age_peers(const std::vector<String> &seen_skis)
+{
+    std::vector<const ShipNode *> stale;
+    for (const auto &n : peers) {
+        const bool seen = std::ranges::any_of(seen_skis, [&n](const String &ski) {
+            return n->txt_ski.equalsIgnoreCase(ski);
+        });
+        if (seen || is_referenced(n.get())) {
+            n->missed_scans = 0;
+            continue;
+        }
+        if (n->missed_scans < UINT8_MAX) {
+            n->missed_scans++;
+        }
+        if (!n->persistent && !n->trusted && !n->pending_removal && n->missed_scans >= EEBUS_PEER_MAX_MISSED_SCANS) {
+            stale.push_back(n.get());
+        }
+    }
+    for (const ShipNode *node : stale) {
+        eebus.trace_fmtln("Peer %s not seen in %u mDNS scans, forgetting it", node->node_name().c_str(), static_cast<unsigned>(node->missed_scans));
+        erase_node(node);
+    }
 }
 
 void ShipPeerHandler::initialize_from_config()
@@ -181,7 +270,11 @@ void ShipPeerHandler::initialize_from_config()
         if (get_peer_by_ski(ski) != nullptr) {
             continue;
         }
-        ShipNode *node = new_peer_from_ski(ski);
+        ShipNode *node = new_peer_from_ski(ski, Source::Explicit, true);
+        if (node == nullptr) {
+            logger.printfln("Cannot load EEBUS peer %s from config: Too many peers", ski.c_str());
+            continue;
+        }
         node->trusted = peer->get("trusted")->asBool();
         node->port = static_cast<uint16_t>(peer->get("port")->asUint());
         node->state = NodeState::LoadedFromConfig;
@@ -193,8 +286,6 @@ void ShipPeerHandler::initialize_from_config()
         node->txt_brand = peer->get("model_brand")->asString();
         node->txt_model = peer->get("model_model")->asString();
         node->txt_type = peer->get("model_type")->asString();
-
-        node->persistent = true;
 
         String ip_list = peer->get("ip")->asString();
         size_t start = 0;

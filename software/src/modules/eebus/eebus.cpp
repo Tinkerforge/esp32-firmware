@@ -427,7 +427,7 @@ void EEBus::pre_setup()
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
-        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, EEBUS_MAX_PEER_REMEMBERED + EEBUS_MAX_PEER_DISCOVERED, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
+        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, EEBUS_MAX_PEERS, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
     });
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy
@@ -658,8 +658,13 @@ void EEBus::register_urls()
                 return;
             }
             String ski = add_peer.get("ski")->asString();
+            const bool persistent = add_peer.get("persistent")->asBool() || add_peer.get("trusted")->asBool();
 
-            ShipNode *peer = ship.peer_handler.get_or_create_by_ski(ski);
+            ShipNode *peer = ship.peer_handler.get_or_create_by_ski(ski, ShipPeerHandler::Source::Explicit, persistent);
+            if (peer == nullptr) {
+                errmsg = "Can't add peer. Already have the maximum number of peers.";
+                return;
+            }
             peer->persistent = add_peer.get("persistent")->asBool();
 
             String ip = add_peer.get("ip")->asString();
@@ -982,26 +987,37 @@ void EEBus::update_peers_state()
 {
     task_scheduler.scheduleOnce(
         [this]() {
-            // Update state API with all peers (both persistent and discovered)
+            // Update state API with all peers (both persistent and discovered).
+            // Persistent peers first, so that they are always shown if the array is full.
             state.get("peers")->removeAll();
-            for (const auto &node : ship.peer_handler.get_peers()) {
-                if (node->pending_removal) {
-                    continue;
+            for (const bool persistent : {true, false}) {
+                for (const auto &node : ship.peer_handler.get_peers()) {
+                    if (node->pending_removal || node->persistent != persistent) {
+                        continue;
+                    }
+                    if (state.get("peers")->count() >= EEBUS_MAX_PEERS) {
+                        static micros_t next_overflow_log = 0_us;
+                        if (deadline_elapsed(next_overflow_log)) {
+                            eebus.trace_fmtln("Too many peers for state, showing only the first %d peers", EEBUS_MAX_PEERS);
+                            next_overflow_log = now_us() + 60_s;
+                        }
+                        return;
+                    }
+                    auto peer = state.get("peers")->add();
+                    peer->get("ip")->updateString(node->ip_address_as_string());
+                    peer->get("port")->updateUint(node->port);
+                    peer->get("trusted")->updateBool(node->trusted);
+                    peer->get("dns_name")->updateString(node->dns_name);
+                    peer->get("id")->updateString(node->txt_id);
+                    peer->get("wss_path")->updateString(node->txt_wss_path);
+                    peer->get("ski")->updateString(node->txt_ski);
+                    peer->get("autoregister")->updateBool(node->txt_autoregister);
+                    peer->get("model_brand")->updateString(node->txt_brand);
+                    peer->get("model_model")->updateString(node->txt_model);
+                    peer->get("model_type")->updateString(node->txt_type);
+                    peer->get("state")->updateEnum(node->state);
+                    peer->get("persistent")->updateBool(node->persistent);
                 }
-                auto peer = state.get("peers")->add();
-                peer->get("ip")->updateString(node->ip_address_as_string());
-                peer->get("port")->updateUint(node->port);
-                peer->get("trusted")->updateBool(node->trusted);
-                peer->get("dns_name")->updateString(node->dns_name);
-                peer->get("id")->updateString(node->txt_id);
-                peer->get("wss_path")->updateString(node->txt_wss_path);
-                peer->get("ski")->updateString(node->txt_ski);
-                peer->get("autoregister")->updateBool(node->txt_autoregister);
-                peer->get("model_brand")->updateString(node->txt_brand);
-                peer->get("model_model")->updateString(node->txt_model);
-                peer->get("model_type")->updateString(node->txt_type);
-                peer->get("state")->updateEnum(node->state);
-                peer->get("persistent")->updateBool(node->persistent);
             }
         },
         0_s);

@@ -143,7 +143,37 @@ void Ship::check_mdns_results()
         }
     }
 
+    // Refresh known peers before admitting any new ones.
+    // A peer returning after a missed scan must not be evicted just because its result appears later.
+    for (mdns_result_t *result = results; result != nullptr; result = result->next) {
+        const char *ski = nullptr;
+        bool has_version = false;
+        bool has_id = false;
+        bool has_path = false;
+        for (size_t i = 0; i < result->txt_count; ++i) {
+            const mdns_txt_item_t &txt = result->txt[i];
+            if (txt.key == nullptr || txt.value == nullptr) {
+                continue;
+            }
+            if (strcmp(txt.key, "ski") == 0) {
+                ski = txt.value;
+            } else if (strcmp(txt.key, "txtvers") == 0) {
+                has_version = txt.value[0] != '\0';
+            } else if (strcmp(txt.key, "id") == 0) {
+                has_id = txt.value[0] != '\0';
+            } else if (strcmp(txt.key, "path") == 0) {
+                has_path = txt.value[0] != '\0';
+            }
+        }
+        if (ski != nullptr && has_version && has_id && has_path) {
+            if (auto *peer = peer_handler.get_peer_by_ski(ski)) {
+                peer->missed_scans = 0;
+            }
+        }
+    }
+
     mdns_result_t *current = results;
+    std::vector<String> seen_skis;
     while (current) {
         std::vector<String> ip_addresses{};
         if (current->hostname != nullptr) {
@@ -207,7 +237,13 @@ void Ship::check_mdns_results()
         // Match by SKI only: the SKI is the authoritative peer identity, not the IP.
         // A new SKI on a known IP is treated as a new peer; an IP may legitimately
         // be shared between several peers.
-        auto *peer = peer_handler.get_or_create_by_ski(txt_ski);
+        auto *peer = peer_handler.get_or_create_by_ski(txt_ski, ShipPeerHandler::Source::MdnsDiscovery);
+        if (peer == nullptr) {
+            eebus.trace_fmtln("Ignoring discovered peer %s: peer limit reached", dns_name.isEmpty() ? txt_ski.c_str() : dns_name.c_str());
+            current = current->next;
+            continue;
+        }
+        seen_skis.push_back(txt_ski);
         peer->txt_vers = txt_vers;
         peer->txt_id = txt_id;
         peer->txt_wss_path = txt_wss_path;
@@ -228,6 +264,7 @@ void Ship::check_mdns_results()
     }
 
     mdns_query_results_free(results);
+    peer_handler.age_peers(seen_skis);
     update_discovery_state(ShipDiscoveryState::ScanDone);
     eebus.update_peers_state();
     connect_trusted_peers();
@@ -268,4 +305,3 @@ void Ship::discover_ship_peers()
         update_discovery_state(ShipDiscoveryState::Error);
     }
 }
-

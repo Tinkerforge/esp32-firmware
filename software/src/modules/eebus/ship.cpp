@@ -386,7 +386,13 @@ void Ship::handle_connected(const RxEvent &rx_event)
     } else {
         eebus.trace_fmtln("New incoming SHIP connection from %s with unknown SKI %s (from TLS cert)", rx_event.peer_ip.c_str(), rx_event.tls_ski.c_str());
     }
-    ShipNode *node = peer_handler.get_or_create_by_ski(rx_event.tls_ski);
+    ShipNode *node = peer_handler.get_or_create_by_ski(rx_event.tls_ski, ShipPeerHandler::Source::Explicit);
+    if (node == nullptr) {
+        eebus.trace_fmtln("Rejecting incoming SHIP connection from %s with SKI %s: peer limit reached", rx_event.peer_ip.c_str(), rx_event.tls_ski.c_str());
+        logger.printfln("Rejected SHIP connection from %s: Too many EEBUS peers", rx_event.peer_ip.c_str());
+        ws_close(rx_event.fd);
+        return;
+    }
     peer_handler.update_ip_by_ski(rx_event.tls_ski, rx_event.peer_ip, true);
 
     node->state = NodeState::Connected;

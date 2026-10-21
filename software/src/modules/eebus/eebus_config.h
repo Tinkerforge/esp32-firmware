@@ -96,7 +96,9 @@
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define EEBUS_FAILSAFE_CONFIG_PATH "eebus/failsafe"
 #define EEBUS_MAX_PEER_REMEMBERED 4 // How many ship peers configured to be remembered
-#define EEBUS_MAX_PEER_DISCOVERED 4 // How many ship peers can be discovered via mDNS
+#define EEBUS_MAX_PEER_DISCOVERED 4 // How many ship peers can be discovered via mDNS (plus unused remembered slots)
+#define EEBUS_MAX_PEERS (EEBUS_MAX_PEER_REMEMBERED + EEBUS_MAX_PEER_DISCOVERED) // Total number of ship peers kept in memory
+#define EEBUS_PEER_MAX_MISSED_SCANS 3 // Non-persistent peers not seen in this many consecutive mDNS scans are forgotten
 
 #define EEBUS_SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 #define EEBUS_NO_VALUE INT32_MIN
