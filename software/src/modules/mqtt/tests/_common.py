@@ -295,30 +295,36 @@ def ensure_mqtt_connected(tc: TestContext, config: dict | None = None) -> None:
     wait_mqtt_state(tc, CONN_CONNECTED, after_connection_start=previous_start)
 
 
-def assert_in_event_log(tc: TestContext, marker: str, *, timeout: float = 10) -> None:
-    """Wait for *marker* to appear in the device event log."""
+def event_log_count(tc: TestContext, marker: str) -> int:
+    log = tc.http_request("GET", "/event_log", timeout=MQTT_API_TIMEOUT)
+    if isinstance(log, bytes):
+        log = log.decode("utf-8", errors="replace")
+    return log.count(marker)
+
+
+def assert_in_event_log(tc: TestContext, marker: str, *, timeout: float = 10, count: int = 1) -> None:
+    """Wait for *marker* to appear in the device event log at least *count* times."""
 
     def _check() -> None:
         try:
-            log = tc.http_request("GET", "/event_log", timeout=MQTT_API_TIMEOUT)
+            found = event_log_count(tc, marker)
         except (TimeoutError, OSError):
             raise AssertionError("Device not reachable yet")
-        if isinstance(log, bytes):
-            log = log.decode("utf-8", errors="replace")
-        tc.assert_(marker in log)
+        tc.assert_ge(count, found)
 
     tc.wait_for(_check, timeout=timeout)
 
 
-def publish_until_in_event_log(tc: TestContext, helper: MqttHelper, topic: str, payload: str, marker: str, *, timeout: float = 30) -> None:
-    """Publish until *marker* appears in the device event log.
+def publish_until_in_event_log(tc: TestContext, helper: MqttHelper, topic: str, payload: str, marker: str, *, timeout: float = 30, count: int = 1) -> None:
+    """Publish until *marker* appears in the device event log at least *count* times.
 
     The device subscribes to automation trigger topics asynchronously after a config update.
-    A single non-retained message published before the subscription reaches the broker is lost."""
+    A single non-retained message published before the subscription reaches the broker is lost.
+    Messages published by earlier iterations can still be in flight when this returns."""
 
     def _check() -> None:
         helper.publish(topic, payload)
-        assert_in_event_log(tc, marker, timeout=2)
+        assert_in_event_log(tc, marker, timeout=2, count=count)
 
     tc.wait_for(_check, timeout=timeout)
 

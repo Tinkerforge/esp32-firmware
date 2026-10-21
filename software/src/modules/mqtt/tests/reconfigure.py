@@ -360,39 +360,34 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
 
     ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=old_prefix))
 
-    marker_old = f"MQT16o_{int(time.time())}"
+    marker = f"MQT16_{int(time.time())}"
     task = make_task(
         trigger=make_mqtt_trigger(
             "pfxtest", payload="go", retain=True, use_prefix=True
         ),
-        action=make_print_action(marker_old),
+        action=make_print_action(marker),
     )
     tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # Verify on old prefix
     helper = _get_helper()
-    publish_until_in_event_log(tc, helper, f"{old_prefix}/automation_trigger/pfxtest", "go", marker_old)
+    publish_until_in_event_log(tc, helper, f"{old_prefix}/automation_trigger/pfxtest", "go", marker)
 
-    # Change prefix and update the action marker
-    marker_new = f"MQT16n_{int(time.time())}"
-    task = make_task(
-        trigger=make_mqtt_trigger(
-            "pfxtest", payload="go", retain=True, use_prefix=True
-        ),
-        action=make_print_action(marker_new),
-    )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
+    # Change only the prefix: the MQTT reconfiguration itself must rebuild the trigger subscription.
+    # Old prefix messages from above that are still in flight can't fire after this,
+    # as the device matches the trigger topic against the current prefix.
     ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=new_prefix))
     time.sleep(2)
+    runs = event_log_count(tc, marker)
 
     # Old prefix should no longer fire
     helper.publish(f"{old_prefix}/automation_trigger/pfxtest", "go")
     time.sleep(3)
-    assert_not_in_event_log(tc, marker_new)
+    tc.assert_eq(runs, event_log_count(tc, marker))
 
     # New prefix should fire
-    publish_until_in_event_log(tc, helper, f"{new_prefix}/automation_trigger/pfxtest", "go", marker_new)
+    publish_until_in_event_log(tc, helper, f"{new_prefix}/automation_trigger/pfxtest", "go", marker, count=runs + 1)
 
     # Restore
     ensure_mqtt_connected(tc, _make_test_config())
