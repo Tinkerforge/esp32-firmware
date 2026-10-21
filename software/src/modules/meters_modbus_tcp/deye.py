@@ -687,12 +687,12 @@ specs = [
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'PV Average Voltage [0.1 V]',
+                'name': 'PV Average Voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'PV Total Current [0.1 A]',
+                'name': 'PV Total Current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

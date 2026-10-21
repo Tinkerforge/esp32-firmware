@@ -280,12 +280,12 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Average PV Voltage [0.1 V]',
+                'name': 'Average PV Voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Total PV Current [0.1 A]',
+                'name': 'Total PV Current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -533,12 +533,12 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Average PV Voltage [0.1 V]',
+                'name': 'Average PV Voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Total PV Current [0.1 A]',
+                'name': 'Total PV Current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

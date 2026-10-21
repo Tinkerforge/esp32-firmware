@@ -282,7 +282,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Battery current signed [0.1 A]',
+                'name': 'Battery current signed [A]',
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -422,12 +422,12 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Average DC voltage [0.1 V]',
+                'name': 'Average DC voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Total DC current [0.1 A]',
+                'name': 'Total DC current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

@@ -170,7 +170,7 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Total power signed [0.1 W]',
+                'name': 'Total power signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -259,12 +259,12 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Battery current signed [0.1 A]',
+                'name': 'Battery current signed [A]',
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Battery power signed [0.1 W]',
+                'name': 'Battery power signed [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -284,7 +284,7 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Total load power signed [0.1 W]',
+                'name': 'Total load power signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -388,12 +388,12 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Average PV voltage [0.1 V]',
+                'name': 'Average PV voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Total PV current [0.1 A]',
+                'name': 'Total PV current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

@@ -252,7 +252,7 @@ monophase_values = [
         'scale_factor': 0.001
     },
     {
-        'name': 'L1+L2+L3 total active energy - perpetual count [Wh]',
+        'name': 'L1+L2+L3 total active energy - perpetual count [kWh]',
         'value_id': 'EnergyActiveLSumImportResettable',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -264,7 +264,7 @@ monophase_values = [
         'scale_factor': 0.001
     },
     {
-        'name': 'L1+L2+L3 total active returned energy - perpetual count [Wh]',
+        'name': 'L1+L2+L3 total active returned energy - perpetual count [kWh]',
         'value_id': 'EnergyActiveLSumExportResettable',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },

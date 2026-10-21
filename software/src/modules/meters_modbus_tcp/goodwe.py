@@ -505,12 +505,12 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Battery Voltage Avg [0.1 V]',
+                'name': 'Battery Voltage Avg [V]',
                 'value_id': 'VoltageDC',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Battery Current Sum [0.1 A]',
+                'name': 'Battery Current Sum [A]',
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -947,12 +947,12 @@ specs = [
                 'value_type': 'U32BE',
             },
             {
-                'name': 'Average PV Voltage [0.1 V]',
+                'name': 'Average PV Voltage [V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Total PV Current [0.1 A]',
+                'name': 'Total PV Current [A]',
                 'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
