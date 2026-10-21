@@ -16,16 +16,34 @@ import datetime
 import tinkerforge_util as tfutil
 import test_runner.parttool as parttool
 
-def find_gdb():
-    path = shutil.which("xtensa-esp32-elf-gdb")
+def find_xtensa_tool(name):
+    tool = f"xtensa-esp32-elf-{name}"
+
+    path = shutil.which(tool)
     if path is not None:
         return [path]
 
     path = shutil.which("pio")
     if path is not None:
-        return [path, "pkg", "exec", "xtensa-esp32-elf-gdb", "--"]
+        return [path, "pkg", "exec", tool, "--"]
 
     return None
+
+def strip_xtensa_property_tables(elf_path, stripped_path):
+    # .xt.prop and .xt.lit are only needed by the linker.
+    # With -mtext-section-literals, they cause gdb to disassemble most functions as data.
+    objcopy = find_xtensa_tool("objcopy")
+    if objcopy is None:
+        print("Can't find xtensa-esp32-elf-objcopy or pio. Disassembly might show code as data.")
+        return elf_path
+
+    try:
+        subprocess.check_call(objcopy + ["-R", ".xt.prop", "-R", ".xt.lit", elf_path, stripped_path])
+    except (subprocess.CalledProcessError, OSError) as e:
+        print(f"Could not strip Xtensa property tables ({e}). Disassembly might show code as data.")
+        return elf_path
+
+    return stripped_path
 
 PREFIX = b"___tf_coredump_info_start___"
 SUFFIX = b"___tf_coredump_info_end___"
@@ -226,6 +244,7 @@ def get_tf_coredump_data(coredump_path: str):
         return (tf_core_dump_data, extra_data)
 
 core_dump_path = os.path.join(tempfile.gettempdir(), "tf_coredump.elf")
+stripped_firmware_path = os.path.join(tempfile.gettempdir(), "tf_coredump_firmware.elf")
 
 def get_core_dump_from_debug_report(path):
     with open(path, 'r', encoding='utf-8') as file:
@@ -269,7 +288,7 @@ def download_core_dump(port):
     esptool('--port', port, '--chip', 'esp32', '--baud', '921600', 'read-flash', core_dump_offset, core_dump_size, core_dump_path)
 
 if __name__ == '__main__':
-    gdb = find_gdb()
+    gdb = find_xtensa_tool("gdb")
     if gdb is None:
         print("Can't find xtensa-esp32-elf-gdb or pio.")
         print("Make sure that one of them is available in your $PATH.")
@@ -384,6 +403,8 @@ if __name__ == '__main__':
                         f"{firmware_path} {core_dump_path}")
 
         if firmware_path:
+            firmware_path = strip_xtensa_property_tables(firmware_path, stripped_firmware_path)
+
             time_of_crash = "unknown time"
             try:
                 gdb_timestamp_output = subprocess.check_output(gdb + ["-q", "--batch", "-ex", "p tf_coredump_timestamp", firmware_path, core_dump_path])
@@ -419,3 +440,6 @@ if __name__ == '__main__':
     finally:
         if os.path.exists(core_dump_path):
             os.remove(core_dump_path)
+
+        if os.path.exists(stripped_firmware_path):
+            os.remove(stripped_firmware_path)
