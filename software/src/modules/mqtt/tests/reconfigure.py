@@ -61,8 +61,8 @@ def suite_setup(tc: TestContext) -> None:
     # Suppress noisy amqtt logging
     logging.getLogger("amqtt").setLevel(logging.WARNING)
 
-    _original_mqtt_config = tc.api("mqtt/config")
-    _original_automation_config = tc.api("automation/config")
+    _original_mqtt_config = tc.api("mqtt/config", timeout=MQTT_API_TIMEOUT)
+    _original_automation_config = tc.api("automation/config", timeout=MQTT_API_TIMEOUT)
 
     _broker_host = tc.get_local_ip()
     _broker_port = tc.find_free_port(1883)
@@ -76,26 +76,24 @@ def suite_setup(tc: TestContext) -> None:
 
 
 def test_disable_mqtt(tc: TestContext) -> None:
-    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=3)
+    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=MQTT_API_TIMEOUT)
     wait_mqtt_state(tc, CONN_NOT_CONFIGURED)
 
 
 def test_enable_mqtt(tc: TestContext) -> None:
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_disable_and_reenable(tc: TestContext) -> None:
-    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=3)
+    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=MQTT_API_TIMEOUT)
     wait_mqtt_state(tc, CONN_NOT_CONFIGURED)
 
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_state_publishes_after_enable(tc: TestContext) -> None:
     prefix = f"{_PREFIX}_after_enable"
-    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=3)
+    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=MQTT_API_TIMEOUT)
     wait_mqtt_state(tc, CONN_NOT_CONFIGURED)
 
     helper = _get_helper()
@@ -103,15 +101,13 @@ def test_state_publishes_after_enable(tc: TestContext) -> None:
     helper.subscribe(f"{prefix}/#")
     time.sleep(1)
 
-    tc.api("mqtt/config_update", _make_test_config(global_topic_prefix=prefix), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=prefix))
 
     msg = helper.wait_for_any_message(f"{prefix}/", timeout=15)
     tc.assert_(msg is not None)
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_change_topic_prefix(tc: TestContext) -> None:
@@ -123,8 +119,7 @@ def test_change_topic_prefix(tc: TestContext) -> None:
     helper.subscribe(f"{_PREFIX}/#")
     helper.subscribe(f"{new_prefix}/#")
 
-    tc.api("mqtt/config_update", _make_test_config(global_topic_prefix=new_prefix), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=new_prefix))
 
     msg = helper.wait_for_any_message(f"{new_prefix}/", timeout=15)
     tc.assert_(msg is not None)
@@ -136,14 +131,13 @@ def test_change_topic_prefix(tc: TestContext) -> None:
     tc.assert_eq(0, len(old_msgs))
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_wrong_broker_port(tc: TestContext) -> None:
     ensure_mqtt_connected(tc, _make_test_config())
 
-    tc.api("mqtt/config_update", _make_test_config(broker_port=_broker_port + 100), timeout=3)
+    tc.api("mqtt/config_update", _make_test_config(broker_port=_broker_port + 100), timeout=MQTT_API_TIMEOUT)
 
     def _check_disconnected() -> None:
         try:
@@ -157,19 +151,16 @@ def test_wrong_broker_port(tc: TestContext) -> None:
     tc.wait_for(_check_disconnected, timeout=60)
 
     # Restore correct port
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_change_client_name(tc: TestContext) -> None:
     ensure_mqtt_connected(tc, _make_test_config())
 
-    tc.api("mqtt/config_update", _make_test_config(client_name="test-renamed"), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config(client_name="test-renamed"))
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_change_interval(tc: TestContext) -> None:
@@ -182,8 +173,7 @@ def test_change_interval(tc: TestContext) -> None:
     msgs_fast = len(helper.get_messages())
 
     # Change to interval=10
-    tc.api("mqtt/config_update", _make_test_config(interval=10), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config(interval=10))
 
     # Wait for initial burst to complete, then measure
     time.sleep(5)
@@ -194,8 +184,7 @@ def test_change_interval(tc: TestContext) -> None:
     tc.assert_gt(msgs_slow, msgs_fast)
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_mqtt_trigger_print(tc: TestContext) -> None:
@@ -208,7 +197,7 @@ def test_mqtt_trigger_print(tc: TestContext) -> None:
         ),
         action=make_print_action(marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     _get_helper().publish("trig/close", "on")
@@ -225,7 +214,7 @@ def test_mqtt_trigger_with_prefix(tc: TestContext) -> None:
         ),
         action=make_print_action(marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     _get_helper().publish(f"{_PREFIX}/automation_trigger/trig/pfx", "go")
@@ -235,7 +224,7 @@ def test_mqtt_trigger_with_prefix(tc: TestContext) -> None:
 def test_add_trigger_live(tc: TestContext) -> None:
     ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=_PREFIX))
 
-    tc.api("automation/config_update", {"tasks": []}, timeout=3)
+    tc.api("automation/config_update", {"tasks": []}, timeout=MQTT_API_TIMEOUT)
     time.sleep(1)
 
     marker = f"MQT11_{int(time.time())}"
@@ -245,7 +234,7 @@ def test_add_trigger_live(tc: TestContext) -> None:
         ),
         action=make_print_action(marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     _get_helper().publish("trig/live", "fire")
@@ -262,7 +251,7 @@ def test_remove_trigger_live(tc: TestContext) -> None:
         ),
         action=make_print_action(marker_a),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # Verify trigger works
@@ -270,7 +259,7 @@ def test_remove_trigger_live(tc: TestContext) -> None:
     assert_in_event_log(tc, marker_a)
 
     # Remove all triggers
-    tc.api("automation/config_update", {"tasks": []}, timeout=3)
+    tc.api("automation/config_update", {"tasks": []}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # Use a new marker so we can distinguish old from new
@@ -290,7 +279,7 @@ def test_change_trigger_topic(tc: TestContext) -> None:
         trigger=make_mqtt_trigger("trig/a", payload="x", retain=True, use_prefix=False),
         action=make_print_action(marker_a),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     helper = _get_helper()
@@ -305,7 +294,7 @@ def test_change_trigger_topic(tc: TestContext) -> None:
         trigger=make_mqtt_trigger("trig/b", payload="x", retain=True, use_prefix=False),
         action=make_print_action(marker_b),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # test/a should no longer fire (marker_b must not appear after publishing on test/a)
@@ -328,7 +317,7 @@ def test_mqtt_action_publishes(tc: TestContext) -> None:
         trigger=make_http_trigger("test_mqtt_action"),
         action=make_mqtt_action(action_topic, marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     helper = _get_helper()
@@ -355,7 +344,7 @@ def test_mqtt_action_with_prefix(tc: TestContext) -> None:
         trigger=make_http_trigger("test_pfx_action"),
         action=make_mqtt_action(action_suffix, marker, use_prefix=True),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     helper = _get_helper()
@@ -384,7 +373,7 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
         ),
         action=make_print_action(marker_old),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # Verify on old prefix
@@ -400,9 +389,8 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
         ),
         action=make_print_action(marker_new),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
-    tc.api("mqtt/config_update", _make_test_config(global_topic_prefix=new_prefix), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
+    ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=new_prefix))
     time.sleep(2)
 
     # Old prefix should no longer fire
@@ -415,8 +403,7 @@ def test_prefix_change_rebuilds_triggers(tc: TestContext) -> None:
     assert_in_event_log(tc, marker_new)
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_disable_stops_triggers(tc: TestContext) -> None:
@@ -429,7 +416,7 @@ def test_disable_stops_triggers(tc: TestContext) -> None:
         ),
         action=make_print_action(marker_a),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     # Verify trigger works
@@ -438,7 +425,7 @@ def test_disable_stops_triggers(tc: TestContext) -> None:
     assert_in_event_log(tc, marker_a)
 
     # Disable MQTT
-    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=3)
+    tc.api("mqtt/config_update", _make_test_config(enable_mqtt=False), timeout=MQTT_API_TIMEOUT)
     wait_mqtt_state(tc, CONN_NOT_CONFIGURED)
     time.sleep(1)
 
@@ -450,7 +437,7 @@ def test_disable_stops_triggers(tc: TestContext) -> None:
         ),
         action=make_print_action(marker_b),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(1)
 
     helper.publish("trig/disable", "x")
@@ -459,8 +446,7 @@ def test_disable_stops_triggers(tc: TestContext) -> None:
     assert_not_in_event_log(tc, marker_b)
 
     # Re-enable for subsequent tests
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def test_state_on_new_prefix(tc: TestContext) -> None:
@@ -478,8 +464,7 @@ def test_state_on_new_prefix(tc: TestContext) -> None:
     tc.assert_(msg is not None)
 
     # Change prefix
-    tc.api("mqtt/config_update", _make_test_config(global_topic_prefix=new_prefix), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config(global_topic_prefix=new_prefix))
 
     helper.clear_messages()
     msg = helper.wait_for_any_message(f"{new_prefix}/", timeout=15)
@@ -491,8 +476,7 @@ def test_state_on_new_prefix(tc: TestContext) -> None:
     tc.assert_eq(0, len(old_msgs))
 
     # Restore
-    tc.api("mqtt/config_update", _make_test_config(), timeout=3)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_test_config())
 
 
 def suite_teardown(tc: TestContext) -> None:
@@ -507,7 +491,7 @@ def suite_teardown(tc: TestContext) -> None:
     for _ in range(5):
         try:
             if _original_automation_config is not None:
-                tc.api("automation/config_update", {"tasks": _original_automation_config.get("tasks", [])}, timeout=3)
+                tc.api("automation/config_update", {"tasks": _original_automation_config.get("tasks", [])}, timeout=MQTT_API_TIMEOUT)
             break
         except (TimeoutError, OSError):
             time.sleep(2)
@@ -517,7 +501,7 @@ def suite_teardown(tc: TestContext) -> None:
             # Does not restore the original password...
             if _original_mqtt_config is not None:
                 restore = dict(_original_mqtt_config)
-                tc.api("mqtt/config_update", restore, timeout=3)
+                tc.api("mqtt/config_update", restore, timeout=MQTT_API_TIMEOUT)
             break
         except (TimeoutError, OSError):
             time.sleep(2)

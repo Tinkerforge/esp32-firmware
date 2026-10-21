@@ -95,8 +95,8 @@ def suite_setup(tc: TestContext) -> None:
 
     logging.getLogger("amqtt").setLevel(logging.WARNING)
 
-    _original_mqtt_config = tc.api("mqtt/config")
-    _original_automation_config = tc.api("automation/config")
+    _original_mqtt_config = tc.api("mqtt/config", timeout=MQTT_API_TIMEOUT)
+    _original_automation_config = tc.api("automation/config", timeout=MQTT_API_TIMEOUT)
 
     _broker_host = tc.get_local_ip()
 
@@ -123,7 +123,7 @@ def suite_setup(tc: TestContext) -> None:
     _plain_broker.start()
 
     # Upload broker CA cert to the device
-    tc.api("certs/add", {"id": _CERT_ID, "name": "mqtt-tls-test", "cert": _cert_pem})
+    tc.api("certs/add", {"id": _CERT_ID, "name": "mqtt-tls-test", "cert": _cert_pem}, timeout=MQTT_API_TIMEOUT)
 
     # Start test helper client (connects to TLS broker)
     _tls_helper = MqttHelper(_broker_host, _tls_port)
@@ -133,8 +133,7 @@ def suite_setup(tc: TestContext) -> None:
 
 # Bbasic TLS connectivity
 def test_tls_connect(tc: TestContext) -> None:
-    tc.api("mqtt/config_update", _make_tls_config(), timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_tls_config())
 
 
 def test_tls_state_publishes(tc: TestContext) -> None:
@@ -157,26 +156,25 @@ def test_tls_wrong_cert(tc: TestContext) -> None:
     tc.api(
         "certs/add",
         {"id": wrong_cert_id, "name": "mqtt-tls-wrong", "cert": wrong_cert_pem},
+        timeout=MQTT_API_TIMEOUT,
     )
 
     try:
-        tc.api("mqtt/config_update", _make_tls_config(cert_id=wrong_cert_id), timeout=5)
+        tc.api("mqtt/config_update", _make_tls_config(cert_id=wrong_cert_id), timeout=MQTT_API_TIMEOUT)
         wait_mqtt_disconnected(tc)
     finally:
         # Restore working config and clean up
-        tc.api("mqtt/config_update", _make_tls_config(), timeout=5)
-        wait_mqtt_state(tc, CONN_CONNECTED)
-        tc.api("certs/remove", {"id": wrong_cert_id})
+        ensure_mqtt_connected(tc, _make_tls_config())
+        tc.api("certs/remove", {"id": wrong_cert_id}, timeout=MQTT_API_TIMEOUT)
 
 
 def test_tls_no_cert(tc: TestContext) -> None:
     """Connection needs to fail when using the built-in CA bundle (cert_id=-1)."""
-    tc.api("mqtt/config_update", _make_tls_config(cert_id=-1), timeout=5)
+    tc.api("mqtt/config_update", _make_tls_config(cert_id=-1), timeout=MQTT_API_TIMEOUT)
     wait_mqtt_disconnected(tc)
 
     # Restore
-    tc.api("mqtt/config_update", _make_tls_config(), timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_tls_config())
 
 
 # Switching between plain and TLS
@@ -190,8 +188,7 @@ def test_switch_plain_to_tls(tc: TestContext) -> None:
     time.sleep(1)
 
     # Now switch to TLS
-    tc.api("mqtt/config_update", _make_tls_config(global_topic_prefix=prefix), timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_tls_config(global_topic_prefix=prefix))
 
     # Verify messages arrive through the TLS broker
     msg = helper.wait_for_any_message(f"{prefix}/", timeout=15)
@@ -202,12 +199,10 @@ def test_switch_tls_to_plain(tc: TestContext) -> None:
     ensure_mqtt_connected(tc, _make_tls_config())
 
     # Switch to plain
-    tc.api("mqtt/config_update", _make_plain_config(), timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_plain_config())
 
     # Switch back to TLS for subsequent tests
-    tc.api("mqtt/config_update", _make_tls_config(), timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    ensure_mqtt_connected(tc, _make_tls_config())
 
 
 # Automation triggers and actions over TLS
@@ -221,7 +216,7 @@ def test_tls_trigger(tc: TestContext) -> None:
         ),
         action=make_print_action(marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     _get_tls_helper().publish("tls/trig", "go")
@@ -238,7 +233,7 @@ def test_tls_action(tc: TestContext) -> None:
         trigger=make_http_trigger("test_tls_action"),
         action=make_mqtt_action(action_topic, marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=3)
+    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
     time.sleep(2)
 
     helper = _get_tls_helper()
@@ -268,7 +263,7 @@ def suite_teardown(tc: TestContext) -> None:
                 tc.api(
                     "automation/config_update",
                     {"tasks": _original_automation_config.get("tasks", [])},
-                    timeout=3,
+                    timeout=MQTT_API_TIMEOUT,
                 )
             break
         except (TimeoutError, OSError):
@@ -278,7 +273,7 @@ def suite_teardown(tc: TestContext) -> None:
         try:
             if _original_mqtt_config is not None:
                 restore = dict(_original_mqtt_config)
-                tc.api("mqtt/config_update", restore, timeout=3)
+                tc.api("mqtt/config_update", restore, timeout=MQTT_API_TIMEOUT)
             break
         except (TimeoutError, OSError):
             time.sleep(2)
@@ -286,7 +281,7 @@ def suite_teardown(tc: TestContext) -> None:
     # Remove the uploaded cert from the device
     for _ in range(5):
         try:
-            tc.api("certs/remove", {"id": _CERT_ID})
+            tc.api("certs/remove", {"id": _CERT_ID}, timeout=MQTT_API_TIMEOUT)
             break
         except (TimeoutError, OSError):
             time.sleep(2)

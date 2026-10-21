@@ -21,6 +21,8 @@ CONN_NOT_CONNECTED = 1
 CONN_CONNECTED = 2
 CONN_ERROR = 3
 
+MQTT_API_TIMEOUT = 15
+
 # Automation type IDs
 TRIGGER_MQTT = 3
 TRIGGER_HTTP = 18
@@ -255,13 +257,15 @@ def make_task(trigger: list, action: list, delay: int = 0) -> dict:
     }
 
 
-def wait_mqtt_state(tc: TestContext, expected: int, *, timeout: float = 20) -> None:
+def wait_mqtt_state(tc: TestContext, expected: int, *, timeout: float = 20, after_connection_start: int | None = None) -> None:
     def _check() -> None:
         try:
             state = tc.api("mqtt/state", timeout=5)
         except (TimeoutError, OSError):
             raise AssertionError("Device not reachable yet")
         tc.assert_eq(expected, state["connection_state"])
+        if after_connection_start is not None:
+            tc.assert_(state["connection_start"] != after_connection_start)
 
     tc.wait_for(_check, timeout=timeout)
 
@@ -282,16 +286,23 @@ def wait_mqtt_disconnected(tc: TestContext, *, timeout: float = 60) -> None:
 
 
 def ensure_mqtt_connected(tc: TestContext, config: dict | None = None) -> None:
-    if config:
-        tc.api("mqtt/config_update", config, timeout=5)
-    wait_mqtt_state(tc, CONN_CONNECTED)
+    previous_start = None
+    if config is not None:
+        previous_start = tc.api("mqtt/state", timeout=MQTT_API_TIMEOUT)["connection_start"]
+        tc.api("mqtt/config_update", config, timeout=MQTT_API_TIMEOUT)
+    # Reconfiguration is deferred. "Connected" alone can still describe the old
+    # client, just before it is stopped and replaced with the new one.
+    wait_mqtt_state(tc, CONN_CONNECTED, after_connection_start=previous_start)
 
 
 def assert_in_event_log(tc: TestContext, marker: str, *, timeout: float = 10) -> None:
     """Wait for *marker* to appear in the device event log."""
 
     def _check() -> None:
-        log = tc.http_request("GET", "/event_log", timeout=5)
+        try:
+            log = tc.http_request("GET", "/event_log", timeout=MQTT_API_TIMEOUT)
+        except (TimeoutError, OSError):
+            raise AssertionError("Device not reachable yet")
         if isinstance(log, bytes):
             log = log.decode("utf-8", errors="replace")
         tc.assert_(marker in log)
@@ -301,11 +312,11 @@ def assert_in_event_log(tc: TestContext, marker: str, *, timeout: float = 10) ->
 
 def assert_not_in_event_log(tc: TestContext, marker: str) -> None:
     """Assert that *marker* does NOT appear in the device event log."""
-    log = tc.http_request("GET", "/event_log", timeout=5)
+    log = tc.http_request("GET", "/event_log", timeout=MQTT_API_TIMEOUT)
     if isinstance(log, bytes):
         log = log.decode("utf-8", errors="replace")
     tc.assert_false(marker in log)
 
 
 def send_trigger(tc: TestContext, suffix: str) -> None:
-    tc.http_request("GET", f"/automation_trigger/{suffix}")
+    tc.http_request("GET", f"/automation_trigger/{suffix}", timeout=MQTT_API_TIMEOUT)
