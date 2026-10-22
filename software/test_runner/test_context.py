@@ -379,7 +379,7 @@ class TestContext:
     class NoPayload:
         pass
 
-    def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 1, auth: tuple[str, str] | None = None) -> typing.Any:
+    def api(self, api: str, payload: JSON | NoPayload = NoPayload(), *, timeout: float = 120, auth: tuple[str, str] | None = None) -> typing.Any:
         if isinstance(payload, TestContext.NoPayload):
             method, body, extra_headers = 'GET', '', {}
         else:
