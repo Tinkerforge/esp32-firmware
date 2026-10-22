@@ -68,6 +68,7 @@ static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
     {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
     {{0x00, 0x76, 0xB6}, EVCCVendor::Ford},
     {{0x9C, 0x36, 0xF8}, EVCCVendor::Hyundai},
+    {{0xC0, 0xDC, 0xAB}, EVCCVendor::LGInnotek},    // OBC seen in Dacia Spring
     {{0xAC, 0x96, 0x5B}, EVCCVendor::LucidMotors},
     {{0x3C, 0xCE, 0x15}, EVCCVendor::MercedesBenz},
     {{0x8C, 0x14, 0x7D}, EVCCVendor::Nio},
