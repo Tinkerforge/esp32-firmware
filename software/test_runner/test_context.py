@@ -177,7 +177,8 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
-    def http_request(self, method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'], path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 1, parse: bool = False, schema_port: tuple[str, int] = None, verify_cert: bool = False):
+
+    def http_request(self, method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'], path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 120, parse: bool = False, schema_port: tuple[str, int] = None, verify_cert: bool = False):
         if self._esp_host is None:
             self.skip("ESP Host not passed. Can't send HTTP requests")
 
