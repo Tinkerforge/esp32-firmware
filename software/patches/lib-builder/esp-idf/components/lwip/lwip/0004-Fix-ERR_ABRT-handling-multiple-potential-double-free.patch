@@ -1,0 +1,151 @@
+From bc876a9348d6db66038193022867ed738eccf005 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Olaf=20L=C3=BCke?= <olaf@tinkerforge.com>
+Date: Wed, 21 Oct 2026 16:50:57 +0200
+Subject: [PATCH] Fix ERR_ABRT handling: multiple potential double frees and a
+ leak
+
+---
+ src/api/api_msg.c | 54 ++++++++++++++++++++++++++++++++++-------------
+ src/core/tcp_in.c |  5 +++++
+ 2 files changed, 44 insertions(+), 15 deletions(-)
+
+diff --git a/src/api/api_msg.c b/src/api/api_msg.c
+index 0f4a71ba..6e28cd0d 100644
+--- a/src/api/api_msg.c
++++ b/src/api/api_msg.c
+@@ -382,7 +382,11 @@ poll_tcp(void *arg, struct tcp_pcb *pcb)
+       conn->current_msg->msg.sd.polls_left--;
+     }
+ #endif /* !LWIP_SO_SNDTIMEO && !LWIP_SO_LINGER */
+-    lwip_netconn_do_close_internal(conn  WRITE_DELAYED);
++    /* tcp_abort() was called: the pcb is gone. Do not return ERR_ABRT for a
++       close that only finished the handshake (pcb still in FIN_WAIT). */
++    if (lwip_netconn_do_close_internal(conn  WRITE_DELAYED) == ERR_ABRT) {
++      return ERR_ABRT;
++    }
+   }
+   /* @todo: implement connect timeout here? */
+ 
+@@ -419,7 +423,10 @@ sent_tcp(void *arg, struct tcp_pcb *pcb, u16_t len)
+     if (conn->state == NETCONN_WRITE) {
+       lwip_netconn_do_writemore(conn  WRITE_DELAYED);
+     } else if (conn->state == NETCONN_CLOSE) {
+-      lwip_netconn_do_close_internal(conn  WRITE_DELAYED);
++      /* See poll_tcp(): ERR_ABRT only if this call freed the pcb. */
++      if (lwip_netconn_do_close_internal(conn  WRITE_DELAYED) == ERR_ABRT) {
++        return ERR_ABRT;
++      }
+     }
+ 
+     /* If the queued byte- or pbuf-count drops below the configured low-water limit,
+@@ -971,6 +978,9 @@ lwip_netconn_do_close_internal(struct netconn *conn  WRITE_DELAYED_PARAM)
+   err_t err;
+   u8_t shut, shut_rx, shut_tx, shut_close;
+   u8_t close_finished = 0;
++  /* Set only when tcp_abort() freed the pcb. Callbacks must return ERR_ABRT
++     in that case, and must not return it when the pcb is still alive. */
++  u8_t pcb_aborted = 0;
+   struct tcp_pcb *tpcb;
+ #if LWIP_SO_LINGER
+   u8_t linger_wait_required = 0;
+@@ -1032,6 +1042,7 @@ lwip_netconn_do_close_internal(struct netconn *conn  WRITE_DELAYED_PARAM)
+         /* data left but linger prevents waiting */
+         tcp_abort(tpcb);
+         tpcb = NULL;
++        pcb_aborted = 1;
+       } else if (conn->linger > 0) {
+         /* data left and linger says we should wait */
+         if (netconn_is_nonblocking(conn)) {
+@@ -1043,6 +1054,7 @@ lwip_netconn_do_close_internal(struct netconn *conn  WRITE_DELAYED_PARAM)
+              calls to this function through poll_tcp */
+           tcp_abort(tpcb);
+           tpcb = NULL;
++          pcb_aborted = 1;
+         } else {
+           /* data left -> need to wait for ACK after successful close */
+           linger_wait_required = 1;
+@@ -1098,6 +1110,8 @@ lwip_netconn_do_close_internal(struct netconn *conn  WRITE_DELAYED_PARAM)
+         if (shut_close) {
+           /* in this case, we want to RST the connection */
+           tcp_abort(tpcb);
++          tpcb = NULL;
++          pcb_aborted = 1;
+           err = ERR_OK;
+         }
+       }
+@@ -1134,7 +1148,9 @@ lwip_netconn_do_close_internal(struct netconn *conn  WRITE_DELAYED_PARAM)
+       /* wake up the application task */
+       sys_sem_signal(op_completed_sem);
+     }
+-    return ERR_OK;
++    /* close() itself succeeded either way. ERR_ABRT is only for the TCP
++       callback that invoked us, so tcp_input/tcp_slowtmr stop using the pcb. */
++    return pcb_aborted ? ERR_ABRT : ERR_OK;
+   }
+   if (!close_finished) {
+     /* Closing failed and we want to wait: restore some of the callbacks */
+@@ -1235,12 +1251,16 @@ lwip_netconn_do_delconn(void *m)
+           msg->msg.sd.shut = NETCONN_SHUT_RDWR;
+           msg->conn->current_msg = msg;
+ #if LWIP_TCPIP_CORE_LOCKING
+-          if (lwip_netconn_do_close_internal(msg->conn, 0) != ERR_OK) {
+-            LWIP_ASSERT("state!", msg->conn->state == NETCONN_CLOSE);
+-            UNLOCK_TCPIP_CORE();
+-            sys_arch_sem_wait(LWIP_API_MSG_SEM(msg), 0);
+-            LOCK_TCPIP_CORE();
+-            LWIP_ASSERT("state!", msg->conn->state == NETCONN_NONE);
++          {
++            err_t close_err = lwip_netconn_do_close_internal(msg->conn, 0);
++            /* ERR_ABRT means tcp_abort() already finished the close. */
++            if ((close_err != ERR_OK) && (close_err != ERR_ABRT)) {
++              LWIP_ASSERT("state!", msg->conn->state == NETCONN_CLOSE);
++              UNLOCK_TCPIP_CORE();
++              sys_arch_sem_wait(LWIP_API_MSG_SEM(msg), 0);
++              LOCK_TCPIP_CORE();
++              LWIP_ASSERT("state!", msg->conn->state == NETCONN_NONE);
++            }
+           }
+ #else /* LWIP_TCPIP_CORE_LOCKING */
+           lwip_netconn_do_close_internal(msg->conn);
+@@ -2065,12 +2085,16 @@ lwip_netconn_do_close(void *m)
+       msg->conn->state = NETCONN_CLOSE;
+       msg->conn->current_msg = msg;
+ #if LWIP_TCPIP_CORE_LOCKING
+-      if (lwip_netconn_do_close_internal(msg->conn, 0) != ERR_OK) {
+-        LWIP_ASSERT("state!", msg->conn->state == NETCONN_CLOSE);
+-        UNLOCK_TCPIP_CORE();
+-        sys_arch_sem_wait(LWIP_API_MSG_SEM(msg), 0);
+-        LOCK_TCPIP_CORE();
+-        LWIP_ASSERT("state!", msg->conn->state == NETCONN_NONE);
++      {
++        err_t close_err = lwip_netconn_do_close_internal(msg->conn, 0);
++        /* ERR_ABRT means tcp_abort() already finished the close. */
++        if ((close_err != ERR_OK) && (close_err != ERR_ABRT)) {
++          LWIP_ASSERT("state!", msg->conn->state == NETCONN_CLOSE);
++          UNLOCK_TCPIP_CORE();
++          sys_arch_sem_wait(LWIP_API_MSG_SEM(msg), 0);
++          LOCK_TCPIP_CORE();
++          LWIP_ASSERT("state!", msg->conn->state == NETCONN_NONE);
++        }
+       }
+ #else /* LWIP_TCPIP_CORE_LOCKING */
+       lwip_netconn_do_close_internal(msg->conn);
+diff --git a/src/core/tcp_in.c b/src/core/tcp_in.c
+index fbbd34ce..f19f4edb 100644
+--- a/src/core/tcp_in.c
++++ b/src/core/tcp_in.c
+@@ -478,6 +478,11 @@ tcp_input(struct pbuf *p, struct netif *inp)
+ #endif
+             TCP_EVENT_SENT(pcb, (u16_t)acked16, err);
+             if (err == ERR_ABRT) {
++              /* sent callback does not take ownership of recv_data */
++              if (recv_data != NULL) {
++                pbuf_free(recv_data);
++                recv_data = NULL;
++              }
+               goto aborted;
+             }
+           }
+-- 
+2.47.3
+
