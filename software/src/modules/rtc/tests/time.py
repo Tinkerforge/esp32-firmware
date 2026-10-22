@@ -10,10 +10,10 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 
 
-_original_ntp_config: dict | None = None
+original_ntp_config: dict | None = None
 
 
-def _time_to_datetime(t: dict) -> datetime.datetime:
+def time_to_datetime(t: dict) -> datetime.datetime:
     return datetime.datetime(
         year=t["year"],
         month=t["month"],
@@ -25,7 +25,7 @@ def _time_to_datetime(t: dict) -> datetime.datetime:
 
 
 # Devices without RTC report year 0 until NTP synced, give NTP some time
-def _wait_for_valid_time(tc: TestContext) -> dict:
+def wait_for_valid_time(tc: TestContext) -> dict:
     def check() -> dict:
         t = tc.api("rtc/time")
         tc.assert_ne(0, t["year"])
@@ -34,7 +34,7 @@ def _wait_for_valid_time(tc: TestContext) -> dict:
     return tc.wait_for(check, timeout=30, poll_delay=0.5)
 
 
-def _has_ntp(tc: TestContext) -> bool:
+def has_ntp(tc: TestContext) -> bool:
     try:
         tc.api("ntp/config")
         return True
@@ -43,29 +43,29 @@ def _has_ntp(tc: TestContext) -> bool:
 
 
 def suite_setup(tc: TestContext) -> None:
-    global _original_ntp_config
-    if _has_ntp(tc):
-        _original_ntp_config = tc.api("ntp/config")
+    global original_ntp_config
+    if has_ntp(tc):
+        original_ntp_config = tc.api("ntp/config")
 
 
 # Time consistency
 def test_time_progresses(tc: TestContext) -> None:
-    t1 = _time_to_datetime(_wait_for_valid_time(tc))
+    t1 = time_to_datetime(wait_for_valid_time(tc))
     time.sleep(1.5)
-    t2 = _time_to_datetime(tc.api("rtc/time"))
+    t2 = time_to_datetime(tc.api("rtc/time"))
     tc.assert_gt(t1, t2)  # t2 > t1
 
 
 def test_weekday_matches_date(tc: TestContext) -> None:
-    t = _wait_for_valid_time(tc)
-    dt = _time_to_datetime(t)
+    t = wait_for_valid_time(tc)
+    dt = time_to_datetime(t)
     # Firmware convention: 0=Sunday
     # Python weekday(): 0=Monday
     expected_weekday = (dt.weekday() + 1) % 7
     tc.assert_eq(expected_weekday, t["weekday"])
 
 
-def _set_device_time(tc: TestContext, dt: datetime.datetime) -> None:
+def set_device_time(tc: TestContext, dt: datetime.datetime) -> None:
     tc.api(
         "rtc/time_update",
         {
@@ -80,15 +80,15 @@ def _set_device_time(tc: TestContext, dt: datetime.datetime) -> None:
     )
 
 
-def _utc_now() -> datetime.datetime:
+def utc_now() -> datetime.datetime:
     # rtc/time is in UTC
     return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
-def _wait_for_correct_time(tc: TestContext) -> None:
+def wait_for_correct_time(tc: TestContext) -> None:
     def check() -> None:
-        device = _time_to_datetime(tc.api("rtc/time"))
-        tc.assert_le(5.0, abs((device - _utc_now()).total_seconds()))
+        device = time_to_datetime(tc.api("rtc/time"))
+        tc.assert_le(5.0, abs((device - utc_now()).total_seconds()))
 
     tc.wait_for(check, timeout=60, poll_delay=1)
 
@@ -98,7 +98,7 @@ def test_set_time_via_api(tc: TestContext) -> None:
     """Disable NTP, reboot to clear quality deadline, set a known time, verify it takes effect."""
     ntp_was_enabled = False
 
-    if _has_ntp(tc):
+    if has_ntp(tc):
         ntp_cfg = tc.api("ntp/config")
         ntp_was_enabled = bool(ntp_cfg.get("enable", False))
         if ntp_was_enabled:
@@ -134,20 +134,20 @@ def test_set_time_via_api(tc: TestContext) -> None:
 
         tc.wait_for(check)
     finally:
-        _set_device_time(tc, _utc_now())
+        set_device_time(tc, utc_now())
 
         # Re-enable NTP
-        if ntp_was_enabled and _has_ntp(tc):
+        if ntp_was_enabled and has_ntp(tc):
             cfg = tc.api("ntp/config")
             cfg["enable"] = True
             tc.api("ntp/config_update", cfg)
 
-        _wait_for_correct_time(tc)
+        wait_for_correct_time(tc)
 
 
 # Rejection of invalid timestamps
 def test_reject_zero_time(tc: TestContext) -> None:
-    before = _time_to_datetime(_wait_for_valid_time(tc))
+    before = time_to_datetime(wait_for_valid_time(tc))
 
     try:
         tc.api(
@@ -165,7 +165,7 @@ def test_reject_zero_time(tc: TestContext) -> None:
     except HTTPError:
         pass
 
-    after = _time_to_datetime(tc.api("rtc/time"))
+    after = time_to_datetime(tc.api("rtc/time"))
 
     tc.assert_gt(datetime.datetime(2020, 1, 1), after)
 
@@ -174,7 +174,7 @@ def test_reject_zero_time(tc: TestContext) -> None:
 
 
 def test_reject_ancient_time(tc: TestContext) -> None:
-    before = _time_to_datetime(_wait_for_valid_time(tc))
+    before = time_to_datetime(wait_for_valid_time(tc))
 
     try:
         tc.api(
@@ -192,7 +192,7 @@ def test_reject_ancient_time(tc: TestContext) -> None:
     except HTTPError:
         pass
 
-    after = _time_to_datetime(tc.api("rtc/time"))
+    after = time_to_datetime(tc.api("rtc/time"))
 
     tc.assert_gt(datetime.datetime(2020, 1, 1), after)
 
@@ -201,8 +201,8 @@ def test_reject_ancient_time(tc: TestContext) -> None:
 
 
 def suite_teardown(tc: TestContext) -> None:
-    if _original_ntp_config is not None:
-        tc.api("ntp/config_update", _original_ntp_config)
+    if original_ntp_config is not None:
+        tc.api("ntp/config_update", original_ntp_config)
 
 
 if __name__ == "__main__":

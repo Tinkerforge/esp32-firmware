@@ -8,15 +8,15 @@ from software.test_runner.test_context import run_testsuite, TestContext
 from software.src.modules.eebus.tests._common import *
 
 
-_original_meter_config = None
+original_meter_config = None
 
 
 def suite_setup(tc: TestContext):
-    global _original_meter_config
+    global original_meter_config
     enable_eebus(tc)
     if "mgcp" not in tc.api("eebus/usecases"):
         tc.skip("MGCP use case not available on this device")
-    _original_meter_config = tc.api("meters/0/config")
+    original_meter_config = tc.api("meters/0/config")
 
 
 def test_all_values(tc: TestContext):
@@ -76,10 +76,10 @@ def test_no_activation_without_power(tc: TestContext):
 
 
 def suite_teardown(tc: TestContext):
-    global _original_meter_config
-    if _original_meter_config is not None:
-        tc.api("meters/0/config_update", _original_meter_config)
-        _original_meter_config = None
+    global original_meter_config
+    if original_meter_config is not None:
+        tc.api("meters/0/config_update", original_meter_config)
+        original_meter_config = None
         tc.reboot()
 
 

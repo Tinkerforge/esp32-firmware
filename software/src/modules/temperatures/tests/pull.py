@@ -10,43 +10,43 @@ tfutil.create_parent_module(__file__, 'software')
 from software.test_runner.test_context import run_testsuite, TestContext, TestHTTPSServer
 from software.src.modules.temperatures.tests._common import make_temperatures, midnight_today_minutes, TEMP_COUNT
 
-_CERT_ID = 6
+CERT_ID = 6
 
 
-def _set_temperatures(server: TestHTTPSServer, first_date_seconds: int, temperatures: list[int]):
+def set_temperatures(server: TestHTTPSServer, first_date_seconds: int, temperatures: list[int]):
     payload = {
         "first_date": first_date_seconds,
         "temperatures": temperatures,
     }
     server.set_response(json.dumps(payload, separators=(",", ":")))
 
-_server: TestHTTPSServer | None = None
-_original_config: dict | None = None
+https_server: TestHTTPSServer | None = None
+original_config: dict | None = None
 
-def _get_server() -> TestHTTPSServer:
-    assert _server is not None, "suite_setup must run before tests"
-    return _server
+def get_server() -> TestHTTPSServer:
+    assert https_server is not None, "suite_setup must run before tests"
+    return https_server
 
 
 def suite_setup(tc: TestContext):
-    global _server, _original_config
+    global https_server, original_config
 
-    _original_config = tc.api('temperatures/config')
+    original_config = tc.api('temperatures/config')
 
-    _server = tc.create_test_https_server(_CERT_ID, 'temp-pull-test')
+    https_server = tc.create_test_https_server(CERT_ID, 'temp-pull-test')
 
     # Configure device for pull mode
     config = tc.api('temperatures/config')
     config['enable'] = True
     config['source'] = 0 # WeatherService (pull)
-    config['api_url'] = _server.url
-    config['cert_id'] = _CERT_ID
+    config['api_url'] = https_server.url
+    config['cert_id'] = CERT_ID
     config['lat'] = 518846 # 51.8846
     config['long'] = 86251 # 8.6251
     tc.api('temperatures/config_update', config)
 
 
-def _trigger_refetch(tc: TestContext):
+def trigger_refetch(tc: TestContext):
     config = tc.api('temperatures/config')
     config['enable'] = False
     tc.api('temperatures/config_update', config)
@@ -60,9 +60,9 @@ def test_pull(tc: TestContext):
     first_date_seconds = first_date_minutes * 60
     temps = make_temperatures(count, base_temp=120, amplitude=80)
 
-    server = _get_server()
-    _set_temperatures(server, first_date_seconds, temps)
-    _trigger_refetch(tc)
+    server = get_server()
+    set_temperatures(server, first_date_seconds, temps)
+    trigger_refetch(tc)
 
     def check():
         state = tc.api('temperatures/temperatures')
@@ -76,9 +76,9 @@ def test_pull(tc: TestContext):
 def test_pull_server_error(tc: TestContext):
     """Server returns HTTP 500. DUT should set last_check but not last_sync, temperatures stay empty."""
 
-    server = _get_server()
+    server = get_server()
     server.set_response('{"error":"internal server error"}', status=500)
-    _trigger_refetch(tc)
+    trigger_refetch(tc)
 
     # After the failed fetch: last_check > 0 but last_sync == 0, no temperatures
     def check_error():
@@ -95,8 +95,8 @@ def test_pull_server_error(tc: TestContext):
     first_date_seconds = first_date_minutes * 60
     temps = make_temperatures(TEMP_COUNT, base_temp=80, amplitude=60)
 
-    _set_temperatures(server, first_date_seconds, temps)
-    _trigger_refetch(tc)
+    set_temperatures(server, first_date_seconds, temps)
+    trigger_refetch(tc)
 
     def check_recovery():
         state = tc.api('temperatures/state')
@@ -111,9 +111,9 @@ def test_pull_server_error(tc: TestContext):
 def test_pull_invalid_json(tc: TestContext):
     """Server returns HTTP 200 with garbage body. DUT should fail to parse, temperatures stay empty."""
 
-    server = _get_server()
+    server = get_server()
     server.set_response('this is not valid json at all', status=200)
-    _trigger_refetch(tc)
+    trigger_refetch(tc)
 
     # After the failed parse: last_check > 0 but last_sync == 0, no temperatures
     def check_error():
@@ -130,8 +130,8 @@ def test_pull_invalid_json(tc: TestContext):
     first_date_seconds = first_date_minutes * 60
     temps = make_temperatures(TEMP_COUNT, base_temp=200, amplitude=100)
 
-    _set_temperatures(server, first_date_seconds, temps)
-    _trigger_refetch(tc)
+    set_temperatures(server, first_date_seconds, temps)
+    trigger_refetch(tc)
 
     def check_recovery():
         state = tc.api('temperatures/state')
@@ -144,19 +144,19 @@ def test_pull_invalid_json(tc: TestContext):
 
 
 def suite_teardown(tc: TestContext):
-    global _server
+    global https_server
 
     # Stop HTTPS server
-    if _server is not None:
-        _server.stop()
-        _server = None
+    if https_server is not None:
+        https_server.stop()
+        https_server = None
 
     # Remove test cert from the device
-    tc.api('certs/remove', {'id': _CERT_ID})
+    tc.api('certs/remove', {'id': CERT_ID})
 
     # Restore original config
-    if _original_config is not None:
-        tc.api('temperatures/config_update', _original_config)
+    if original_config is not None:
+        tc.api('temperatures/config_update', original_config)
 
 if __name__ == '__main__':
     run_testsuite(locals())

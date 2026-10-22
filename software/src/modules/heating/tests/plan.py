@@ -19,7 +19,7 @@ from software.test_runner.test_context import run_testsuite, TestContext
 
 
 # ILP reference solver
-def _ilp_select_slots(
+def ilp_select_slots(
     slot_prices: list, N: int, K: int, B: int, find_expensive: bool = False
 ) -> Optional[list]:
     """Solve the slot selection problem as an Integer Linear Program.
@@ -153,7 +153,7 @@ def _ilp_select_slots(
 
 
 # Validation helpers
-def _get_runs(selection: list) -> list:
+def get_runs(selection: list) -> list:
     """Get contiguous runs as (value, length) pairs."""
     if not selection:
         return []
@@ -171,7 +171,7 @@ def _get_runs(selection: list) -> list:
     return runs
 
 
-def _validate_solution(
+def validate_solution(
     selection: list, N: int, K: int, B: int, label: str = ""
 ) -> list:
     """Validate that a solution satisfies all constraints. Returns list of errors."""
@@ -186,7 +186,7 @@ def _validate_solution(
     if actual_k != K:
         errors.append(f"{prefix}K mismatch: got {actual_k}, expected {K}")
 
-    runs = _get_runs(selection)
+    runs = get_runs(selection)
     for value, length in runs:
         if length < B:
             kind = "active" if value else "inactive"
@@ -197,24 +197,24 @@ def _validate_solution(
     return errors
 
 
-def _compute_cost(selection: list, prices: list) -> int:
+def compute_cost(selection: list, prices: list) -> int:
     return sum(p for s, p in zip(selection, prices) if s)
 
 
 # Price pattern generators
-def _make_flat(count: int, price: int = 5000) -> list:
+def make_flat(count: int, price: int = 5000) -> list:
     return [price] * count
 
 
-def _make_ascending(count: int, base: int = 1000, step: int = 100) -> list:
+def make_ascending(count: int, base: int = 1000, step: int = 100) -> list:
     return [base + i * step for i in range(count)]
 
 
-def _make_descending(count: int, base: int = 10000, step: int = 100) -> list:
+def make_descending(count: int, base: int = 10000, step: int = 100) -> list:
     return [base - i * step for i in range(count)]
 
 
-def _make_sawtooth(
+def make_sawtooth(
     count: int, period: int = 8, low: int = 1000, high: int = 9000
 ) -> list:
     prices = []
@@ -225,23 +225,23 @@ def _make_sawtooth(
     return prices
 
 
-def _make_sine(count: int, base: int = 5000, amplitude: int = 3000) -> list:
+def make_sine(count: int, base: int = 5000, amplitude: int = 3000) -> list:
     return [
         int(base + amplitude * math.sin(2 * math.pi * i / count)) for i in range(count)
     ]
 
 
-def _make_random(count: int, low: int = 500, high: int = 15000, seed: int = 42) -> list:
+def make_random(count: int, low: int = 500, high: int = 15000, seed: int = 42) -> list:
     rng = random.Random(seed)
     return [rng.randint(low, high) for _ in range(count)]
 
 
-def _make_two_plateaus(count: int, low: int = 2000, high: int = 8000) -> list:
+def make_two_plateaus(count: int, low: int = 2000, high: int = 8000) -> list:
     mid = count // 2
     return [low] * mid + [high] * (count - mid)
 
 
-def _make_realistic_de(count: int) -> list:
+def make_realistic_de(count: int) -> list:
     hourly_pattern = [
         3200,
         2800,
@@ -283,12 +283,12 @@ def _make_realistic_de(count: int) -> list:
     return prices[:count]
 
 
-def _make_negative_prices(count: int) -> list:
-    base_pattern = _make_sine(count, base=2000, amplitude=4000)
+def make_negative_prices(count: int) -> list:
+    base_pattern = make_sine(count, base=2000, amplitude=4000)
     return [max(p, -2000) for p in base_pattern]
 
 
-def _make_spiky(
+def make_spiky(
     count: int,
     base: int = 3000,
     spike: int = 25000,
@@ -303,22 +303,22 @@ def _make_spiky(
     return prices
 
 
-_PATTERN_GENERATORS = {
-    "flat": _make_flat,
-    "ascending": _make_ascending,
-    "descending": _make_descending,
-    "sawtooth": _make_sawtooth,
-    "sine": _make_sine,
-    "random": _make_random,
-    "two_plateaus": _make_two_plateaus,
-    "realistic_de": _make_realistic_de,
-    "negative": _make_negative_prices,
-    "spiky": _make_spiky,
+PATTERN_GENERATORS = {
+    "flat": make_flat,
+    "ascending": make_ascending,
+    "descending": make_descending,
+    "sawtooth": make_sawtooth,
+    "sine": make_sine,
+    "random": make_random,
+    "two_plateaus": make_two_plateaus,
+    "realistic_de": make_realistic_de,
+    "negative": make_negative_prices,
+    "spiky": make_spiky,
 }
 
 
-def _generate_prices(pattern_name: str, count: int, seed: int = 42) -> list:
-    gen = _PATTERN_GENERATORS[pattern_name]
+def generate_prices(pattern_name: str, count: int, seed: int = 42) -> list:
+    gen = PATTERN_GENERATORS[pattern_name]
     if pattern_name == "random":
         return gen(count, seed=seed)
     return gen(count)
@@ -326,12 +326,12 @@ def _generate_prices(pattern_name: str, count: int, seed: int = 42) -> list:
 
 # Test case definition
 @dataclass
-class _TestCase:
+class TestCase:
     extended_hours: int
     blocking_hours: int
     control_period: int  # enum: 0=24h, 1=12h, 2=8h, 3=6h, 4=4h
     min_hold_time: int  # minutes (10-60)
-    price_pattern: str  # key into _PATTERN_GENERATORS
+    price_pattern: str  # key into PATTERN_GENERATORS
     price_resolution: int = 15  # 15 or 60 minutes
     price_hours: int = 48  # hours of price data
     extended: bool = True
@@ -348,7 +348,7 @@ class _TestCase:
 
 
 # Block computation
-def _get_control_period_blocks(
+def get_control_period_blocks(
     duration_hours: int,
     first_date: int,
     resolution_minutes: int,
@@ -381,7 +381,7 @@ def _get_control_period_blocks(
 
 
 # Test data generation
-def _generate_test_data(case: _TestCase, tz_offset_minutes: int = 0):
+def generate_test_data(case: TestCase, tz_offset_minutes: int = 0):
     """Generate prices and first_date for a test case.
 
     Returns (prices, first_date) where first_date is aligned to local midnight
@@ -389,7 +389,7 @@ def _generate_test_data(case: _TestCase, tz_offset_minutes: int = 0):
     """
     slots_per_hour = 60 // case.price_resolution
     count = case.price_hours * slots_per_hour
-    prices = _generate_prices(case.price_pattern, count, seed=case.pattern_seed)
+    prices = generate_prices(case.price_pattern, count, seed=case.pattern_seed)
 
     now = time.time()
     local_midnight_utc = (
@@ -401,17 +401,17 @@ def _generate_test_data(case: _TestCase, tz_offset_minutes: int = 0):
 
 
 # Module state + suite setup/teardown
-_tz_offset_minutes = 0
-_original_heating_config = None
-_original_dap_config = None
+device_tz_offset_minutes = 0
+original_heating_config = None
+original_dap_config = None
 
 
 def suite_setup(tc: TestContext):
-    global _tz_offset_minutes, _original_heating_config, _original_dap_config
+    global device_tz_offset_minutes, original_heating_config, original_dap_config
 
     # Save original configs for teardown restoration.
-    _original_heating_config = tc.api("heating/config")
-    _original_dap_config = tc.api("day_ahead_prices/config")
+    original_heating_config = tc.api("heating/config")
+    original_dap_config = tc.api("day_ahead_prices/config")
 
     # Detect timezone offset from the device's NTP config.
     ntp_config = tc.api("ntp/config")
@@ -424,15 +424,15 @@ def suite_setup(tc: TestContext):
         now_dt = datetime.now(tz)
         utc_offset = now_dt.utcoffset()
         if utc_offset is not None:
-            _tz_offset_minutes = int(utc_offset.total_seconds()) // 60
+            device_tz_offset_minutes = int(utc_offset.total_seconds()) // 60
     except ImportError:
         # Fallback: assume CET for Europe/Berlin-like timezones.
         if "Berlin" in tz_name or "Europe" in tz_name:
-            _tz_offset_minutes = 60
+            device_tz_offset_minutes = 60
 
 
-def _run_and_validate_reference(
-    tc: TestContext, case: _TestCase, prices: list, first_date: int
+def run_and_validate_reference(
+    tc: TestContext, case: TestCase, prices: list, first_date: int
 ):
     """Run ILP reference solver per block and validate solutions.
 
@@ -443,12 +443,12 @@ def _run_and_validate_reference(
     B = case.min_block_15m
     ilp_B = B if is_15min else (math.ceil(B / 4) if B > 0 else 0)
 
-    blocks = _get_control_period_blocks(
+    blocks = get_control_period_blocks(
         case.duration_hours,
         first_date,
         case.price_resolution,
         N_prices,
-        _tz_offset_minutes,
+        device_tz_offset_minutes,
     )
 
     cheap_plan = [False] * N_prices
@@ -468,11 +468,11 @@ def _run_and_validate_reference(
 
         # Solve and validate cheap (extended)
         if case.extended and K_cheap > 0:
-            result = _ilp_select_slots(
+            result = ilp_select_slots(
                 block_prices, N, K_cheap, ilp_B, find_expensive=False
             )
             if result is not None:
-                for err in _validate_solution(
+                for err in validate_solution(
                     result, N, K_cheap, ilp_B, f"ref_cheap block@{block_start_idx}"
                 ):
                     tc.fail(err)
@@ -488,11 +488,11 @@ def _run_and_validate_reference(
 
         # Solve and validate expensive (blocking)
         if case.blocking and K_expensive > 0:
-            result = _ilp_select_slots(
+            result = ilp_select_slots(
                 block_prices, N, K_expensive, ilp_B, find_expensive=True
             )
             if result is not None:
-                for err in _validate_solution(
+                for err in validate_solution(
                     result, N, K_expensive, ilp_B, f"ref_exp block@{block_start_idx}"
                 ):
                     tc.fail(err)
@@ -509,9 +509,9 @@ def _run_and_validate_reference(
     return cheap_plan, expensive_plan
 
 
-def _compare_with_device(
+def compare_with_device(
     tc: TestContext,
-    case: _TestCase,
+    case: TestCase,
     prices: list,
     first_date: int,
     ref_cheap: list,
@@ -581,12 +581,12 @@ def _compare_with_device(
     tc.assert_eq(len(prices), len(dev_expensive))
 
     # Validate device solution and compare costs per block.
-    blocks = _get_control_period_blocks(
+    blocks = get_control_period_blocks(
         case.duration_hours,
         first_date,
         case.price_resolution,
         len(prices),
-        _tz_offset_minutes,
+        device_tz_offset_minutes,
     )
 
     for block_start_idx, slots_per_period in blocks:
@@ -618,7 +618,7 @@ def _compare_with_device(
 
         # Validate device solution constraints.
         if case.extended and sum(dev_block_cheap) > 0:
-            for err in _validate_solution(
+            for err in validate_solution(
                 dev_block_cheap,
                 val_N,
                 val_K_cheap,
@@ -628,7 +628,7 @@ def _compare_with_device(
                 tc.fail(err)
 
         if case.blocking and sum(dev_block_exp) > 0:
-            for err in _validate_solution(
+            for err in validate_solution(
                 dev_block_exp,
                 val_N,
                 val_K_exp,
@@ -646,31 +646,31 @@ def _compare_with_device(
         # Compare costs: device must be no worse than ILP.
         # For cheap: device cost <= ILP cost (lower is better).
         if case.extended and sum(dev_block_cheap) == sum(ref_block_cheap):
-            dev_cost = _compute_cost(dev_block_cheap, block_prices)
-            ref_cost = _compute_cost(ref_block_cheap, block_prices)
+            dev_cost = compute_cost(dev_block_cheap, block_prices)
+            ref_cost = compute_cost(ref_block_cheap, block_prices)
             tc.assert_le(ref_cost, dev_cost)
 
         # For expensive: device cost >= ILP cost (higher is better).
         if case.blocking and sum(dev_block_exp) == sum(ref_block_exp):
-            dev_cost = _compute_cost(dev_block_exp, block_prices)
-            ref_cost = _compute_cost(ref_block_exp, block_prices)
+            dev_cost = compute_cost(dev_block_exp, block_prices)
+            ref_cost = compute_cost(ref_block_exp, block_prices)
             tc.assert_ge(ref_cost, dev_cost)
 
 
-def _run_test(tc: TestContext, case: _TestCase):
-    prices, first_date = _generate_test_data(case, _tz_offset_minutes)
+def run_test(tc: TestContext, case: TestCase):
+    prices, first_date = generate_test_data(case, device_tz_offset_minutes)
 
-    ref_cheap, ref_expensive = _run_and_validate_reference(tc, case, prices, first_date)
+    ref_cheap, ref_expensive = run_and_validate_reference(tc, case, prices, first_date)
 
     if tc._esp_host is not None:
-        _compare_with_device(tc, case, prices, first_date, ref_cheap, ref_expensive)
+        compare_with_device(tc, case, prices, first_date, ref_cheap, ref_expensive)
 
 
 # cp values: 0=24h, 1=12h, 2=8h, 3=6h, 4=4h
-def _case(tc, ext_h, blk_h, cp, mht, pattern, **kwargs):
-    _run_test(
+def run_case(tc, ext_h, blk_h, cp, mht, pattern, **kwargs):
+    run_test(
         tc,
-        _TestCase(
+        TestCase(
             extended_hours=ext_h,
             blocking_hours=blk_h,
             control_period=cp,
@@ -683,161 +683,161 @@ def _case(tc, ext_h, blk_h, cp, mht, pattern, **kwargs):
 
 # Basic functionality
 def test_basic_24h_30min(tc: TestContext):
-    _case(tc, 3, 2, 0, 30, "sine")
+    run_case(tc, 3, 2, 0, 30, "sine")
 
 
 def test_basic_12h_45min(tc: TestContext):
-    _case(tc, 1, 1, 1, 45, "sine")
+    run_case(tc, 1, 1, 1, 45, "sine")
 
 
 def test_basic_8h_15min(tc: TestContext):
-    _case(tc, 2, 1, 2, 15, "sine")
+    run_case(tc, 2, 1, 2, 15, "sine")
 
 
 def test_basic_6h_30min(tc: TestContext):
-    _case(tc, 1, 1, 3, 30, "sine")
+    run_case(tc, 1, 1, 3, 30, "sine")
 
 
 def test_basic_4h_10min(tc: TestContext):
-    _case(tc, 1, 1, 4, 10, "sine")
+    run_case(tc, 1, 1, 4, 10, "sine")
 
 
 # Varying hold times
 def test_hold_10min(tc: TestContext):
-    _case(tc, 3, 2, 0, 10, "random", pattern_seed=100)
+    run_case(tc, 3, 2, 0, 10, "random", pattern_seed=100)
 
 
 def test_hold_15min(tc: TestContext):
-    _case(tc, 3, 2, 0, 15, "random", pattern_seed=101)
+    run_case(tc, 3, 2, 0, 15, "random", pattern_seed=101)
 
 
 def test_hold_20min(tc: TestContext):
-    _case(tc, 3, 2, 0, 20, "random", pattern_seed=102)
+    run_case(tc, 3, 2, 0, 20, "random", pattern_seed=102)
 
 
 def test_hold_30min(tc: TestContext):
-    _case(tc, 3, 2, 0, 30, "random", pattern_seed=103)
+    run_case(tc, 3, 2, 0, 30, "random", pattern_seed=103)
 
 
 def test_hold_45min(tc: TestContext):
-    _case(tc, 3, 2, 0, 45, "random", pattern_seed=104)
+    run_case(tc, 3, 2, 0, 45, "random", pattern_seed=104)
 
 
 def test_hold_60min(tc: TestContext):
-    _case(tc, 3, 2, 0, 60, "random", pattern_seed=105)
+    run_case(tc, 3, 2, 0, 60, "random", pattern_seed=105)
 
 
 # Price patterns
 def test_pattern_flat(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "flat")
+    run_case(tc, 4, 3, 0, 30, "flat")
 
 
 def test_pattern_ascending(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "ascending")
+    run_case(tc, 4, 3, 0, 30, "ascending")
 
 
 def test_pattern_descending(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "descending")
+    run_case(tc, 4, 3, 0, 30, "descending")
 
 
 def test_pattern_sawtooth(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "sawtooth")
+    run_case(tc, 4, 3, 0, 30, "sawtooth")
 
 
 def test_pattern_sine(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "sine")
+    run_case(tc, 4, 3, 0, 30, "sine")
 
 
 def test_pattern_random(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "random")
+    run_case(tc, 4, 3, 0, 30, "random")
 
 
 def test_pattern_two_plateaus(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "two_plateaus")
+    run_case(tc, 4, 3, 0, 30, "two_plateaus")
 
 
 def test_pattern_realistic_de(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "realistic_de")
+    run_case(tc, 4, 3, 0, 30, "realistic_de")
 
 
 def test_pattern_negative(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "negative")
+    run_case(tc, 4, 3, 0, 30, "negative")
 
 
 def test_pattern_spiky(tc: TestContext):
-    _case(tc, 4, 3, 0, 30, "spiky")
+    run_case(tc, 4, 3, 0, 30, "spiky")
 
 
 # Edge cases: select all / none
 def test_select_all_24h(tc: TestContext):
-    _case(tc, 24, 0, 0, 15, "sine", blocking=False)
+    run_case(tc, 24, 0, 0, 15, "sine", blocking=False)
 
 
 def test_block_all_24h(tc: TestContext):
-    _case(tc, 0, 24, 0, 15, "sine", extended=False)
+    run_case(tc, 0, 24, 0, 15, "sine", extended=False)
 
 
 def test_full_coverage(tc: TestContext):
-    _case(tc, 6, 6, 1, 30, "sine")
+    run_case(tc, 6, 6, 1, 30, "sine")
 
 
 # Tight feasibility
 # 4h period, 1h ext, hold=60 => K=4, B=4, N=16, N-K=12 => feasible
 def test_tight_feasible(tc: TestContext):
-    _case(tc, 1, 0, 4, 60, "random", blocking=False, pattern_seed=200)
+    run_case(tc, 1, 0, 4, 60, "random", blocking=False, pattern_seed=200)
 
 
 # 6h period, 1h ext, hold=60 => K=4, B=4, N=24, N-K=20 => feasible
 def test_tight_6h(tc: TestContext):
-    _case(tc, 1, 0, 3, 60, "random", blocking=False, pattern_seed=201)
+    run_case(tc, 1, 0, 3, 60, "random", blocking=False, pattern_seed=201)
 
 
 # Large K relative to N
 def test_large_k_ext(tc: TestContext):
-    _case(tc, 10, 2, 1, 30, "realistic_de")
+    run_case(tc, 10, 2, 1, 30, "realistic_de")
 
 
 def test_large_k_blk(tc: TestContext):
-    _case(tc, 2, 10, 1, 30, "realistic_de")
+    run_case(tc, 2, 10, 1, 30, "realistic_de")
 
 
 # Symmetric
 def test_symmetric(tc: TestContext):
-    _case(tc, 6, 6, 0, 30, "sine")
+    run_case(tc, 6, 6, 0, 30, "sine")
 
 
 # Only one mode
 def test_only_extended(tc: TestContext):
-    _case(tc, 4, 0, 0, 30, "sawtooth", blocking=False)
+    run_case(tc, 4, 0, 0, 30, "sawtooth", blocking=False)
 
 
 def test_only_blocking(tc: TestContext):
-    _case(tc, 0, 4, 0, 30, "sawtooth", extended=False)
+    run_case(tc, 0, 4, 0, 30, "sawtooth", extended=False)
 
 
 # Flat prices (all equivalent cost)
 def test_flat_prices(tc: TestContext):
-    _case(tc, 3, 2, 0, 30, "flat")
+    run_case(tc, 3, 2, 0, 30, "flat")
 
 
 # 60-minute resolution
 def test_60min_basic(tc: TestContext):
-    _case(tc, 3, 2, 0, 30, "sine", price_resolution=60)
+    run_case(tc, 3, 2, 0, 30, "sine", price_resolution=60)
 
 
 def test_60min_random(tc: TestContext):
-    _case(tc, 4, 3, 1, 45, "random", price_resolution=60, pattern_seed=300)
+    run_case(tc, 4, 3, 1, 45, "random", price_resolution=60, pattern_seed=300)
 
 
 def test_60min_realistic(tc: TestContext):
-    _case(tc, 6, 3, 0, 30, "realistic_de", price_resolution=60)
+    run_case(tc, 6, 3, 0, 30, "realistic_de", price_resolution=60)
 
 
 def suite_teardown(tc: TestContext):
-    if _original_heating_config is not None:
-        tc.api("heating/config_update", _original_heating_config)
-    if _original_dap_config is not None:
-        tc.api("day_ahead_prices/config_update", _original_dap_config)
+    if original_heating_config is not None:
+        tc.api("heating/config_update", original_heating_config)
+    if original_dap_config is not None:
+        tc.api("day_ahead_prices/config_update", original_dap_config)
 
 
 if __name__ == "__main__":

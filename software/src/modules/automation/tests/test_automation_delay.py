@@ -110,12 +110,12 @@ def ensure_temperatures_push_mode(host):
         time.sleep(1)
 
 
-_temp_counter = [300]
+temp_counter = [300]
 
 
 def next_temp():
-    _temp_counter[0] += 10
-    return _temp_counter[0]
+    temp_counter[0] += 10
+    return temp_counter[0]
 
 
 def push_temperatures(host, value_c10):

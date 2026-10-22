@@ -7,11 +7,11 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 
 
-_original_config: dict | None = None
-_SLOT_P14A_ENWG = 16
+original_config: dict | None = None
+SLOT_P14A_ENWG = 16
 
 
-def _make_api_config(
+def make_api_config(
     enable: bool = True,
     limit_charger: bool = False,
     limit_charge_manager: bool = False,
@@ -28,17 +28,17 @@ def _make_api_config(
     }
 
 
-def _set_control(tc: TestContext, active: bool, limit_w: int) -> None:
+def set_control(tc: TestContext, active: bool, limit_w: int) -> None:
     tc.api("p14a_enwg/control_update", {"active": active, "limit_w": limit_w})
 
 
 def suite_setup(tc: TestContext) -> None:
-    global _original_config
-    _original_config = tc.api("p14a_enwg/config")
+    global original_config
+    original_config = tc.api("p14a_enwg/config")
 
 
 def test_switch_to_api_source(tc: TestContext) -> None:
-    cfg = _make_api_config(enable=True)
+    cfg = make_api_config(enable=True)
     tc.api("p14a_enwg/config_update", cfg)
 
     readback = tc.api("p14a_enwg/config")
@@ -47,112 +47,112 @@ def test_switch_to_api_source(tc: TestContext) -> None:
 
 
 def test_disable_module(tc: TestContext) -> None:
-    cfg = _make_api_config(enable=False)
+    cfg = make_api_config(enable=False)
     tc.api("p14a_enwg/config_update", cfg)
 
     readback = tc.api("p14a_enwg/config")
     tc.assert_false(readback["enable"])
 
     # When disabled, state should be inactive.
-    def _check_inactive() -> None:
+    def check_inactive() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
         tc.assert_eq(0, state["limit_w"])
 
-    tc.wait_for(_check_inactive)
+    tc.wait_for(check_inactive)
 
 
 def test_re_enable_module(tc: TestContext) -> None:
     # Disable first.
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=False))
-    _set_control(tc, False, 0)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=False))
+    set_control(tc, False, 0)
 
     # Re-enable.
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
     readback = tc.api("p14a_enwg/config")
     tc.assert_true(readback["enable"])
 
 
 def test_activate_via_control(tc: TestContext) -> None:
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
-    _set_control(tc, True, 4200)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
+    set_control(tc, True, 4200)
 
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_true(state["active"])
         tc.assert_eq(4200, state["limit_w"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def test_deactivate_via_control(tc: TestContext) -> None:
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
-    _set_control(tc, True, 4200)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
+    set_control(tc, True, 4200)
 
-    def _active() -> None:
+    def check_active() -> None:
         tc.assert_true(tc.api("p14a_enwg/state")["active"])
 
-    tc.wait_for(_active)
+    tc.wait_for(check_active)
 
-    _set_control(tc, False, 0)
+    set_control(tc, False, 0)
 
-    def _inactive() -> None:
+    def check_inactive() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
         tc.assert_eq(0, state["limit_w"])
 
-    tc.wait_for(_inactive)
+    tc.wait_for(check_inactive)
 
 
 def test_change_limit_while_active(tc: TestContext) -> None:
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
-    _set_control(tc, True, 3000)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
+    set_control(tc, True, 3000)
 
-    def _check_3000() -> None:
+    def check_3000() -> None:
         tc.assert_eq(3000, tc.api("p14a_enwg/state")["limit_w"])
 
-    tc.wait_for(_check_3000)
+    tc.wait_for(check_3000)
 
-    _set_control(tc, True, 5000)
+    set_control(tc, True, 5000)
 
-    def _check_5000() -> None:
+    def check_5000() -> None:
         tc.assert_eq(5000, tc.api("p14a_enwg/state")["limit_w"])
 
-    tc.wait_for(_check_5000)
+    tc.wait_for(check_5000)
 
 
 def test_state_limit_zero_when_inactive(tc: TestContext) -> None:
     """Even if control.limit_w > 0, state.limit_w should be 0 when not active."""
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
-    _set_control(tc, False, 9999)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
+    set_control(tc, False, 9999)
 
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
         tc.assert_eq(0, state["limit_w"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def test_control_ignored_when_source_is_eebus(tc: TestContext) -> None:
     """When source is EEBus, control_update should not affect state."""
-    cfg = _make_api_config(enable=True)
+    cfg = make_api_config(enable=True)
     cfg["source"] = [1, None]  # EEBus
     tc.api("p14a_enwg/config_update", cfg)
 
     # Activate via control, should be ignored.
-    _set_control(tc, True, 4200)
+    set_control(tc, True, 4200)
 
     # State should remain inactive (EEBus has no external trigger here).
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
         tc.assert_eq(0, state["limit_w"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True))
-    _set_control(tc, False, 0)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True))
+    set_control(tc, False, 0)
 
 
 def test_slot_default_when_not_active(tc: TestContext) -> None:
@@ -160,14 +160,14 @@ def test_slot_default_when_not_active(tc: TestContext) -> None:
     if not tc.device_type().is_warp([2, 3, 4]):
         tc.skip("Not available on this device")
 
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True, limit_charger=True))
-    _set_control(tc, False, 0)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True, limit_charger=True))
+    set_control(tc, False, 0)
 
-    def _check() -> None:
+    def check() -> None:
         slots = tc.api("evse/slots")
-        tc.assert_eq(32000, slots[_SLOT_P14A_ENWG]["max_current"])
+        tc.assert_eq(32000, slots[SLOT_P14A_ENWG]["max_current"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def test_slot_limited_when_active(tc: TestContext) -> None:
@@ -175,19 +175,19 @@ def test_slot_limited_when_active(tc: TestContext) -> None:
     if not tc.device_type().is_warp([2, 3, 4]):
         tc.skip("Not available on this device")
 
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True, limit_charger=True))
-    _set_control(tc, True, 4200)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True, limit_charger=True))
+    set_control(tc, True, 4200)
 
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_true(state["active"])
 
         slots = tc.api("evse/slots")
-        current = slots[_SLOT_P14A_ENWG]["max_current"]
+        current = slots[SLOT_P14A_ENWG]["max_current"]
         tc.assert_ge(6000, current)
         tc.assert_le(32000, current)
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def test_slot_unrestricted_without_limit_charger(tc: TestContext) -> None:
@@ -196,18 +196,18 @@ def test_slot_unrestricted_without_limit_charger(tc: TestContext) -> None:
         tc.skip("Not available on this device")
 
     tc.api(
-        "p14a_enwg/config_update", _make_api_config(enable=True, limit_charger=False)
+        "p14a_enwg/config_update", make_api_config(enable=True, limit_charger=False)
     )
-    _set_control(tc, True, 4200)
+    set_control(tc, True, 4200)
 
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_true(state["active"])
 
         slots = tc.api("evse/slots")
-        tc.assert_eq(32000, slots[_SLOT_P14A_ENWG]["max_current"])
+        tc.assert_eq(32000, slots[SLOT_P14A_ENWG]["max_current"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def test_slot_recovers_on_deactivate(tc: TestContext) -> None:
@@ -215,44 +215,44 @@ def test_slot_recovers_on_deactivate(tc: TestContext) -> None:
     if not tc.device_type().is_warp([2, 3, 4]):
         tc.skip("Not available on this device")
 
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=True, limit_charger=True))
-    _set_control(tc, True, 4200)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=True, limit_charger=True))
+    set_control(tc, True, 4200)
 
     # Wait for limit to be applied.
-    def _limited() -> None:
+    def check_limited() -> None:
         slots = tc.api("evse/slots")
-        tc.assert_ne(32000, slots[_SLOT_P14A_ENWG]["max_current"])
+        tc.assert_ne(32000, slots[SLOT_P14A_ENWG]["max_current"])
 
-    tc.wait_for(_limited)
+    tc.wait_for(check_limited)
 
     # Deactivate.
-    _set_control(tc, False, 0)
+    set_control(tc, False, 0)
 
-    def _recovered() -> None:
+    def check_recovered() -> None:
         slots = tc.api("evse/slots")
-        tc.assert_eq(32000, slots[_SLOT_P14A_ENWG]["max_current"])
+        tc.assert_eq(32000, slots[SLOT_P14A_ENWG]["max_current"])
 
-    tc.wait_for(_recovered)
+    tc.wait_for(check_recovered)
 
 
 def test_disabled_ignores_control(tc: TestContext) -> None:
-    tc.api("p14a_enwg/config_update", _make_api_config(enable=False))
-    _set_control(tc, True, 4200)
+    tc.api("p14a_enwg/config_update", make_api_config(enable=False))
+    set_control(tc, True, 4200)
 
-    def _check() -> None:
+    def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
         tc.assert_eq(0, state["limit_w"])
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
-    _set_control(tc, False, 0)
+    set_control(tc, False, 0)
 
 
 def suite_teardown(tc: TestContext) -> None:
-    _set_control(tc, False, 0)
-    if _original_config is not None:
-        tc.api("p14a_enwg/config_update", _original_config)
+    set_control(tc, False, 0)
+    if original_config is not None:
+        tc.api("p14a_enwg/config_update", original_config)
 
 
 if __name__ == "__main__":

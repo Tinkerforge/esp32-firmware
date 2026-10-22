@@ -7,21 +7,21 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 from software.src.modules.eebus.tests._common import *
 
-_original_meter_config = None
-_meter_slot = 0
+original_meter_config = None
+meter_slot = 0
 
 
 def suite_setup(tc: TestContext):
-    global _original_meter_config, _meter_slot
+    global original_meter_config, meter_slot
 
     # Look up the charger meter slot from EVSE config
     try:
         evse_meter_config = tc.api("evse/meter_config")
-        _meter_slot = evse_meter_config.get("slot", 0)
+        meter_slot = evse_meter_config.get("slot", 0)
     except Exception:
         tc.skip("evse/meter_config not available; MPC requires EVSE mode")
 
-    _original_meter_config = tc.api(f"meters/{_meter_slot}/config")
+    original_meter_config = tc.api(f"meters/{meter_slot}/config")
     enable_eebus(tc)
     if "mpc" not in tc.api("eebus/usecases"):
         tc.skip("MPC use case not available on this device")
@@ -30,8 +30,8 @@ def suite_setup(tc: TestContext):
 def test_all_values(tc: TestContext):
     """Push meter values and verify they appear in the MPC API state."""
 
-    configure_api_meter(tc, _meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, METER_VALUE_IDS)
-    tc.api(f"meters/{_meter_slot}/update", METER_VALUES)
+    configure_api_meter(tc, meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, METER_VALUE_IDS)
+    tc.api(f"meters/{meter_slot}/update", METER_VALUES)
 
     def check_mpc():
         usecases = tc.api("eebus/usecases")
@@ -72,8 +72,8 @@ def test_no_activation_without_power(tc: TestContext):
     After reboot only push voltage values and verify MPC did *not* activate.
     """
 
-    configure_api_meter(tc, _meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, VOLTAGE_ONLY_IDS)
-    tc.api(f"meters/{_meter_slot}/update", VOLTAGE_ONLY_VALUES)
+    configure_api_meter(tc, meter_slot, "MPC Test Meter", METER_LOCATION_CHARGER, VOLTAGE_ONLY_IDS)
+    tc.api(f"meters/{meter_slot}/update", VOLTAGE_ONLY_VALUES)
 
     def check_mpc_not_activated():
         usecases = tc.api("eebus/usecases")
@@ -95,10 +95,10 @@ def test_no_activation_without_power(tc: TestContext):
 
 
 def suite_teardown(tc: TestContext):
-    global _original_meter_config
-    if _original_meter_config is not None:
-        tc.api(f"meters/{_meter_slot}/config_update", _original_meter_config)
-        _original_meter_config = None
+    global original_meter_config
+    if original_meter_config is not None:
+        tc.api(f"meters/{meter_slot}/config_update", original_meter_config)
+        original_meter_config = None
         tc.reboot()
 
 

@@ -205,7 +205,7 @@ class ShipClient:
         self.ws = None
         self.remote_ski: str | None = None
         self.pending_data: list[dict] = []  # data messages received during the handshake
-        self._send_lock = threading.Lock()
+        self.send_lock = threading.Lock()
 
     def connect(self, timeout: float = 30):
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -229,13 +229,13 @@ class ShipClient:
         except Exception:
             self.remote_ski = None
 
-        self._handshake(timeout)
+        self.handshake(timeout)
 
     # -- raw messages --
 
     def send(self, msg_type: int, obj: dict | None):
         payload = bytes([msg_type]) + (b"\x00" if obj is None else json.dumps(obj, separators=(",", ":")).encode())
-        with self._send_lock:
+        with self.send_lock:
             self.ws.send(payload)
 
     def send_control(self, key: str, value: dict):
@@ -258,7 +258,7 @@ class ShipClient:
 
     # -- handshake --
 
-    def _recv_control(self, deadline: float, key: str) -> dict:
+    def recv_control(self, deadline: float, key: str) -> dict:
         while True:
             left = deadline - time.monotonic()
             if left <= 0:
@@ -277,11 +277,11 @@ class ShipClient:
                 return msg[key]
             self.log(f"SHIP: ignoring {msg} while waiting for {key}")
 
-    def _handshake(self, timeout: float):
+    def handshake(self, timeout: float):
         deadline = time.monotonic() + timeout
 
         # CMI (SHIP 13.4.3)
-        with self._send_lock:
+        with self.send_lock:
             self.ws.send(b"\x00\x00")
         msg_type, msg = self.recv(timeout)
         if msg_type != SHIP_MSG_INIT or msg["cmi"] != b"\x00":
@@ -290,7 +290,7 @@ class ShipClient:
         # Hello (SHIP 13.4.4.1)
         self.send_control("connectionHello", {"phase": "ready", "waiting": 60000})
         while True:
-            hello = self._recv_control(time.monotonic() + 65, "connectionHello")
+            hello = self.recv_control(time.monotonic() + 65, "connectionHello")
             phase = hello.get("phase")
             if phase == "ready":
                 break
@@ -302,14 +302,14 @@ class ShipClient:
         # Protocol handshake (SHIP 13.4.4.2)
         announce = {"handshakeType": "announceMax", "version": {"major": 1, "minor": 0}, "formats": {"format": ["JSON-UTF8"]}}
         self.send_control("messageProtocolHandshake", announce)
-        selected = self._recv_control(deadline, "messageProtocolHandshake")
+        selected = self.recv_control(deadline, "messageProtocolHandshake")
         if selected.get("handshakeType") != "select":
             raise PeerError(f"SHIP: expected protocol handshake select, got {selected}")
         self.send_control("messageProtocolHandshake", {"handshakeType": "select", "version": selected.get("version", {"major": 1, "minor": 0}), "formats": {"format": ["JSON-UTF8"]}})
 
         # PIN verification (SHIP 13.4.4.3): Send our state right away, the WARP as server waits for our next message.
         self.send_control("connectionPinState", {"pinState": "none"})
-        pin = self._recv_control(deadline, "connectionPinState")
+        pin = self.recv_control(deadline, "connectionPinState")
         if pin.get("pinState") not in ("none", "pinOk"):
             raise PeerError(f"SHIP: PIN required by peer: {pin}")
 
@@ -475,7 +475,7 @@ class EebusPeer:
         self.answer_heartbeat_reads = True  # reads return the last heartbeat (stale while the heartbeat is stopped)
         self.accept_subscriptions = True  # subscriptions of the remote on our features
         self.heartbeat_counter = 0
-        self._heartbeat = {"timestamp": utc_timestamp(), "heartbeatCounter": 0, "heartbeatTimeout": "PT2M"}
+        self.heartbeat = {"timestamp": utc_timestamp(), "heartbeatCounter": 0, "heartbeatTimeout": "PT2M"}
 
         self.ship: ShipClient | None = None
         self.messages: list[Msg] = []  # all received SPINE messages
@@ -487,10 +487,10 @@ class EebusPeer:
         self.remote_entities: list[dict] = []
         self.remote_use_cases: list[dict] = []
 
-        self._msg_counter = 0
-        self._cv = threading.Condition()
-        self._stop = threading.Event()
-        self._threads: list[threading.Thread] = []
+        self.msg_counter = 0
+        self.cv = threading.Condition()
+        self.stop = threading.Event()
+        self.threads: list[threading.Thread] = []
         self.closed_by_remote = False
 
     # -- setup --
@@ -502,26 +502,26 @@ class EebusPeer:
     def connect(self, timeout: float = 30):
         self.ship = ShipClient(self.host, self.port, self.identity, f"Tinkerforge-TestPeer-{self.identity.ski[:8]}", self.log)
         self.ship.connect(timeout)
-        self._stop.clear()
-        for target in (self._rx_loop, self._heartbeat_loop):
+        self.stop.clear()
+        for target in (self.rx_loop, self.heartbeat_loop):
             t = threading.Thread(target=target, daemon=True)
             t.start()
-            self._threads.append(t)
+            self.threads.append(t)
         for data in self.ship.pending_data:
-            self._handle_data(data)
+            self.handle_data(data)
         self.ship.pending_data.clear()
 
     def close(self):
-        self._stop.set()
+        self.stop.set()
         if self.ship is not None:
             self.ship.close()
-        for t in self._threads:
+        for t in self.threads:
             t.join(timeout=3)
-        self._threads.clear()
+        self.threads.clear()
 
     def is_connected(self) -> bool:
         """False if the remote closed the connection or the receive loop ended (e.g. because the device rebooted)."""
-        return self.ship is not None and not self.closed_by_remote and len(self._threads) > 0 and all(t.is_alive() for t in self._threads)
+        return self.ship is not None and not self.closed_by_remote and len(self.threads) > 0 and all(t.is_alive() for t in self.threads)
 
     # -- addresses --
 
@@ -547,13 +547,13 @@ class EebusPeer:
 
     # -- sending --
 
-    def _next_counter(self) -> int:
-        with self._cv:
-            self._msg_counter += 1
-            return self._msg_counter
+    def next_counter(self) -> int:
+        with self.cv:
+            self.msg_counter += 1
+            return self.msg_counter
 
     def send(self, src: dict, dst: dict, classifier: str, cmd: dict, *, ack: bool = False, ref: int | None = None) -> int:
-        counter = self._next_counter()
+        counter = self.next_counter()
         header: dict[str, Any] = {"specificationVersion": SPINE_SPEC_VERSION, "addressSource": src, "addressDestination": dst, "msgCounter": counter}
         if ref is not None:
             header["msgCounterReference"] = ref
@@ -598,7 +598,7 @@ class EebusPeer:
 
     def wait_for(self, predicate: Callable[[Msg], bool], *, timeout: float = 10, since: int = 0, what: str = "message") -> Msg:
         deadline = time.monotonic() + timeout
-        with self._cv:
+        with self.cv:
             idx = since
             while True:
                 while idx < len(self.messages):
@@ -609,43 +609,43 @@ class EebusPeer:
                 left = deadline - time.monotonic()
                 if left <= 0:
                     raise PeerError(f"Timeout after {timeout} s waiting for {what}")
-                self._cv.wait(left)
+                self.cv.wait(left)
 
     def wait_until(self, condition: Callable[[], bool], *, timeout: float = 10, what: str = "condition"):
         deadline = time.monotonic() + timeout
-        with self._cv:
+        with self.cv:
             while not condition():
                 left = deadline - time.monotonic()
                 if left <= 0:
                     raise PeerError(f"Timeout after {timeout} s waiting for {what}")
-                self._cv.wait(left)
+                self.cv.wait(left)
 
     def received(self, classifier: str | None = None, function: str | None = None, since: int = 0) -> list[Msg]:
-        with self._cv:
+        with self.cv:
             return [m for m in self.messages[since:] if (classifier is None or m.classifier == classifier) and (function is None or m.function == function)]
 
     # -- receiving --
 
-    def _rx_loop(self):
-        while not self._stop.is_set():
+    def rx_loop(self):
+        while not self.stop.is_set():
             try:
                 msg_type, msg = self.ship.recv(0.5)
             except TimeoutError:
                 continue
             except ConnectionClosed:
-                if not self._stop.is_set():
+                if not self.stop.is_set():
                     self.log("SHIP: connection closed by remote")
                     self.closed_by_remote = True
-                with self._cv:
-                    self._cv.notify_all()
+                with self.cv:
+                    self.cv.notify_all()
                 return
             except Exception as e:
-                if not self._stop.is_set():
+                if not self.stop.is_set():
                     self.log(f"SHIP: receive error: {e!r}")
                 return
             try:
                 if msg_type == SHIP_MSG_DATA:
-                    self._handle_data(msg)
+                    self.handle_data(msg)
                 elif msg_type == SHIP_MSG_CONTROL:
                     if msg and "accessMethodsRequest" in msg:
                         self.ship.send_control("accessMethods", {"id": self.ship.ship_id})
@@ -658,7 +658,7 @@ class EebusPeer:
             except Exception as e:
                 self.log(f"SPINE: error handling {msg}: {e!r}")
 
-    def _handle_data(self, msg: dict):
+    def handle_data(self, msg: dict):
         datagram = (msg.get("data", {}).get("payload", {}) or {}).get("datagram", {})
         header = datagram.get("header", {})
         cmds = as_list((datagram.get("payload", {}) or {}).get("cmd"))
@@ -666,46 +666,46 @@ class EebusPeer:
             m = Msg(time.monotonic(), header, cmd if isinstance(cmd, dict) else {})
             if self.verbose:
                 self.log(f"SPINE RX #{header.get('msgCounter')} {m}")
-            self._dispatch(m)
-            with self._cv:
+            self.dispatch(m)
+            with self.cv:
                 self.messages.append(m)
-                self._cv.notify_all()
+                self.cv.notify_all()
 
-    def _answer(self, m: Msg, classifier: str, cmd: dict):
+    def answer(self, m: Msg, classifier: str, cmd: dict):
         src = {"device": self.device, "entity": m.destination.get("entity"), "feature": m.destination.get("feature")}
         self.send(src, m.source, classifier, cmd, ref=m.header.get("msgCounter"))
 
-    def _result(self, m: Msg, error_number: int, description: str | None = None):
+    def result(self, m: Msg, error_number: int, description: str | None = None):
         data: dict[str, Any] = {"errorNumber": error_number}
         if description:
             data["description"] = description
-        self._answer(m, "result", {"resultData": data})
+        self.answer(m, "result", {"resultData": data})
 
-    def _dispatch(self, m: Msg):
+    def dispatch(self, m: Msg):
         if self.remote_device is None and m.source.get("device"):
             self.remote_device = m.source["device"]
 
         classifier, function = m.classifier, m.function
         if classifier == "read":
-            reply = self._read_reply(m)
+            reply = self.read_reply(m)
             if reply is None:
-                self._result(m, ERROR_COMMAND_NOT_SUPPORTED, f"{function} not supported")
+                self.result(m, ERROR_COMMAND_NOT_SUPPORTED, f"{function} not supported")
             elif reply is not False:
-                self._answer(m, "reply", {function: reply})
+                self.answer(m, "reply", {function: reply})
             return
 
         if classifier == "call":
-            self._result(m, *self._handle_call(m))
+            self.result(m, *self.handle_call(m))
             return
 
         if classifier == "write":
-            self._result(m, ERROR_COMMAND_NOT_SUPPORTED, "no writable functions")
+            self.result(m, ERROR_COMMAND_NOT_SUPPORTED, "no writable functions")
             return
 
         if classifier in ("reply", "notify") and m.header.get("ackRequest"):
-            self._result(m, ERROR_NO_ERROR)
+            self.result(m, ERROR_NO_ERROR)
 
-    def _read_reply(self, m: Msg) -> Any:
+    def read_reply(self, m: Msg) -> Any:
         """Returns the reply data, None for "not supported", False for "do not answer"."""
         feature = self.local_feature(m.destination)
         if feature is None or m.function not in feature.functions:
@@ -718,7 +718,7 @@ class EebusPeer:
             return self.heartbeat_data() if self.answer_heartbeat_reads else False
         return None
 
-    def _handle_call(self, m: Msg) -> tuple[int, str | None]:
+    def handle_call(self, m: Msg) -> tuple[int, str | None]:
         data = m.data or {}
         if m.function == "nodeManagementSubscriptionRequestCall":
             req = data.get("subscriptionRequest", {})
@@ -726,24 +726,24 @@ class EebusPeer:
                 return ERROR_COMMAND_REJECTED, "subscriptions disabled by test"
             if self.local_feature(req.get("serverAddress", {})) is None:
                 return ERROR_GENERAL, "unknown server feature"
-            with self._cv:
+            with self.cv:
                 self.subscriptions.append(req)
-                self._cv.notify_all()
+                self.cv.notify_all()
             self.log(f"SPINE: {addr_str(req.get('clientAddress'))} subscribed to {addr_str(req.get('serverAddress'))} ({req.get('serverFeatureType')})")
             return ERROR_NO_ERROR, None
         if m.function == "nodeManagementSubscriptionDeleteCall":
             req = data.get("subscriptionDelete", {})
-            with self._cv:
+            with self.cv:
                 self.subscriptions = [s for s in self.subscriptions if not (same_feature(s.get("clientAddress"), req.get("clientAddress")) and same_feature(s.get("serverAddress"), req.get("serverAddress")))]
             return ERROR_NO_ERROR, None
         if m.function == "nodeManagementBindingRequestCall":
-            with self._cv:
+            with self.cv:
                 self.bindings.append(data.get("bindingRequest", {}))
-                self._cv.notify_all()
+                self.cv.notify_all()
             return ERROR_NO_ERROR, None
         if m.function == "nodeManagementBindingDeleteCall":
             req = data.get("bindingDelete", {})
-            with self._cv:
+            with self.cv:
                 self.bindings = [b for b in self.bindings if not (same_feature(b.get("clientAddress"), req.get("clientAddress")) and same_feature(b.get("serverAddress"), req.get("serverAddress")))]
             return ERROR_NO_ERROR, None
         return ERROR_COMMAND_NOT_SUPPORTED, f"{m.function} not supported"
@@ -784,24 +784,24 @@ class EebusPeer:
 
     def heartbeat_data(self) -> dict:
         """The last heartbeat. Like eebus-go, reads return unchanged data while the heartbeat is stopped."""
-        return dict(self._heartbeat)
+        return dict(self.heartbeat)
 
     # -- heartbeat --
 
     def heartbeat_subscribers(self) -> list[dict]:
-        with self._cv:
+        with self.cv:
             return [s for s in self.subscriptions if (f := self.local_feature(s.get("serverAddress", {}))) is not None and f.type == "DeviceDiagnosis"]
 
     def send_heartbeat(self):
         """Increments the heartbeat counter and notifies all heartbeat subscribers."""
         self.heartbeat_counter += 1
-        self._heartbeat = {"timestamp": utc_timestamp(), "heartbeatCounter": self.heartbeat_counter, "heartbeatTimeout": "PT2M"}
+        self.heartbeat = {"timestamp": utc_timestamp(), "heartbeatCounter": self.heartbeat_counter, "heartbeatTimeout": "PT2M"}
         for sub in self.heartbeat_subscribers():
             server = sub["serverAddress"]
             self.send(self.local(server["entity"], server["feature"]), sub["clientAddress"], "notify", {"deviceDiagnosisHeartbeatData": self.heartbeat_data()})
 
-    def _heartbeat_loop(self):
-        while not self._stop.wait(self.heartbeat_interval):
+    def heartbeat_loop(self):
+        while not self.stop.wait(self.heartbeat_interval):
             if self.heartbeat_enabled and not self.closed_by_remote:
                 try:
                     self.send_heartbeat()

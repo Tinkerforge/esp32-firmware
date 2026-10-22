@@ -51,20 +51,20 @@ def test_override_soc_updates_active_limits(tc: TestContext):
 
     tc.api("charge_limits/override_soc", {"soc_pct": 75})
 
-    def _check_set():
+    def check_set():
         active = tc.api("charge_limits/active_limits")
         tc.assert_eq(75, active["soc_pct"])
 
-    tc.wait_for(_check_set)
+    tc.wait_for(check_set)
 
     # Disable by setting to 0
     tc.api("charge_limits/override_soc", {"soc_pct": 0})
 
-    def _check_reset():
+    def check_reset():
         active = tc.api("charge_limits/active_limits")
         tc.assert_eq(0, active["soc_pct"])
 
-    tc.wait_for(_check_reset)
+    tc.wait_for(check_reset)
 
 
 def test_state_has_soc_fields(tc: TestContext):
@@ -82,10 +82,10 @@ def test_override_soc_updates_state(tc: TestContext):
 
     tc.api("charge_limits/override_soc", {"soc_pct": 90})
 
-    def _check():
+    def check():
         tc.assert_eq(90, tc.api("charge_limits/state/target_soc_pct"))
 
-    tc.wait_for(_check)
+    tc.wait_for(check)
 
 
 def suite_teardown(tc: TestContext):

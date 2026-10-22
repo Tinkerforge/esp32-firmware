@@ -118,12 +118,12 @@ def ensure_temperatures_push_mode(host):
         time.sleep(1)
 
 
-_temp_counter = [500]
+temp_counter = [500]
 
 
 def next_temp():
-    _temp_counter[0] += 10
-    return _temp_counter[0]
+    temp_counter[0] += 10
+    return temp_counter[0]
 
 
 def push_temperatures(host, value_c10):
@@ -149,12 +149,12 @@ def ensure_dap_push_mode(host):
         time.sleep(1)
 
 
-_dap_offset = [0]
+dap_offset = [0]
 
 
 def push_dap_prices(host, current_price_ct1000):
     """Push DAP prices with the given price for the current hour."""
-    _dap_offset[0] += 1
+    dap_offset[0] += 1
     now = int(time.time())
     midnight = now - now % 86400
     first_date = midnight // 60
@@ -162,7 +162,7 @@ def push_dap_prices(host, current_price_ct1000):
     prices = [5000] * 24
     current_hour = (now - midnight) // 3600
     if 0 <= current_hour < 24:
-        prices[current_hour] = current_price_ct1000 + _dap_offset[0]
+        prices[current_hour] = current_price_ct1000 + dap_offset[0]
     status, body = put_json(host, "day_ahead_prices/prices_update", {
         "first_date": first_date,
         "resolution": 1,

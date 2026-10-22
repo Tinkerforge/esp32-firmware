@@ -212,13 +212,13 @@ class TestFailure(Exception):
 
 
 # We need unique prices each push to trigger change detection.
-_price_offset = [0]
+price_offset = [0]
 
 
 def next_price_offset():
     """Return a small incrementing offset to ensure price values change."""
-    _price_offset[0] += 1
-    return _price_offset[0]
+    price_offset[0] += 1
+    return price_offset[0]
 
 
 # ---------------------------------------------------------------------------

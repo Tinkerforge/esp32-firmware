@@ -150,7 +150,7 @@ def reset_all_outputs(host):
 
 
 # Fields in heating config that cause it to claim SG Ready outputs.
-_HEATING_SGR_FIELDS = [
+HEATING_SGR_FIELDS = [
     "pv_excess_control", "yield_forecast", "p14enwg",
     "blocking", "extended",
 ]
@@ -168,12 +168,12 @@ def disable_heating_sgr_control(host, verbose):
         return None  # No heating module present
 
     # Check if any SG Ready-controlling feature is enabled
-    active = [f for f in _HEATING_SGR_FIELDS if config.get(f, False)]
+    active = [f for f in HEATING_SGR_FIELDS if config.get(f, False)]
     if not active:
         return None  # Nothing to disable
 
     original = dict(config)
-    for field in _HEATING_SGR_FIELDS:
+    for field in HEATING_SGR_FIELDS:
         config[field] = False
 
     status, body = put_json(host, "heating/config_update", config)
@@ -266,13 +266,13 @@ class TestFailure(Exception):
 
 
 # Unique temperature per test to avoid change-detection suppression.
-_temp_counter = [200]
+temp_counter = [200]
 
 
 def next_temp():
     """Return a unique temperature value for each call."""
-    _temp_counter[0] += 10
-    return _temp_counter[0]
+    temp_counter[0] += 10
+    return temp_counter[0]
 
 
 # ---------------------------------------------------------------------------
