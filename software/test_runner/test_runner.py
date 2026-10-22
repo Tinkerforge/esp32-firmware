@@ -244,7 +244,7 @@ def main():
                                 start = time.monotonic()
                                 if not meta_test:
                                     tprint(f"{now} Started {payload["testname"]}", end=" ")
-                                    jcase = JTestCase(payload["testname"], timestamp=now, classname=suite_name)
+                                    jcase = JTestCase(payload["testname"], timestamp=now, classname=module_name)
                                     jsuite.test_cases.append(jcase)
                                 else:
                                     tprint(gray(f"{now} Started {payload["testname"]}", bold=False), end=" ")
