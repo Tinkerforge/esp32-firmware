@@ -1,9 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
-import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 let x = {
     "evse": {
         "status": {
@@ -214,20 +212,20 @@ let x = {
             "button_configuration_stop_charging": "Ladestop",
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
             "button_configuration_charge_mode": "Lademodus anfordern",
-            "charge_mode_explainer": /*FFN*/ (has_rgb_led: boolean, supported_charge_modes: readonly ConfigChargeMode[]) => {
+            "charge_mode_explainer": /*FFN*/ (has_rgb_led: boolean, mode_names: readonly string[]) => {
                 let colors = {2: ["Rot", "Cyan"], 4: ["Rot", "Grün", "Gelb", "Cyan"]};
                 let c: string[] = [];
                 let header = "Beim ersten Taster-Druck wird der aktuelle Lademodus angezeigt. Weiteres Drücken innerhalb von 10 Sekunden wechselt den Lademodus für den nächsten oder laufenden Ladevorgang.";
 
-                if (supported_charge_modes.length == 2 || supported_charge_modes.length == 4)
-                    c = colors[supported_charge_modes.length];
+                if (mode_names.length == 2 || mode_names.length == 4)
+                    c = colors[mode_names.length];
                 else
                     return <>{header}</>;
 
                 return <>
                     {header}
                     <ul>
-                        {supported_charge_modes.map((m, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {__("cm_networking.status.mode_by_index")(m)}</li>)}
+                        {mode_names.map((name, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {name}</li>)}
                     </ul>
                 </>}/*NF*/,
 
@@ -316,8 +314,7 @@ let x = {
             }/*NF*/,
             "charge_mode_switch": "Fordere Lademodus an",
             "charge_mode": "Lademodus",
-            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
-                let mode_str = __("cm_networking.status.mode_by_index")(mode);
+            "charge_mode_switch_action_text": /*FFN*/(mode_str: string) => {
                 return <>fordere Lademodus <b>{mode_str} an</b>.</>
             }/*NF*/
         },

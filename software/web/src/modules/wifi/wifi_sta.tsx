@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
@@ -303,6 +305,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     }
 
     eap_peap_ttls(state: Readonly<WifiSTAState & STAConfig>) {
+//#if MODULE_CERTS_AVAILABLE
         const certs_config = API.get("certs/state");
         const cert_items: [string, string][] = [
             ["-1", __("wifi.content.eap_cert_placeholder")],
@@ -314,6 +317,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             cert_items.push([cert.id.toString(), cert.name]);
             key_items.push([cert.id.toString(), cert.name]);
         }
+//#endif
 
         let tag_correct = state.wpa_eap_config[0] == EapConfigID.PEAP_TTLS;
         let cfg: EapConfigPEAPTTLS[1] = tag_correct ? (state.wpa_eap_config[1] as EapConfigPEAPTTLS[1]) : {
@@ -352,6 +356,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     value={cfg.identity}
                     onValue={(v) => update_config({identity: v})}/>
             </FormRow>
+{/*#if MODULE_CERTS_AVAILABLE*/}
 
             <FormRow label={__("wifi.content.eap_ca_cert")} label_muted={__("wifi.content.optional_eap_cert_muted")(false)}>
                 <InputSelect
@@ -373,9 +378,11 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     value={cfg.client_key_id.toString()}
                     onValue={(v) => update_config({client_key_id: parseInt(v)})}/>
             </FormRow>
+{/*#endif*/}
         </>
     }
 
+//#if MODULE_CERTS_AVAILABLE
     eap_tls(state: Readonly<WifiSTAState & STAConfig>) {
         const certs_config = API.get("certs/state");
         const cert_items: [string, string][] = [
@@ -431,6 +438,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             </FormRow>
         </>
     }
+//#endif
 
     bssid_to_string = (bssid?: number[]) => bssid?.map((x)=> (x < 16 ? '0' : '') + x.toString(16).toUpperCase()).join(":");
     string_to_bssid = (s: string) => s.split(':').map(x => parseInt(x, 16));
@@ -610,7 +618,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         <InputSelect
                             items={[
                                 ["0", __("wifi.content.wpa_personal")],
+//#if MODULE_CERTS_AVAILABLE
                                 ["1", __("wifi.content.eap_tls")],
+//#endif
                                 ["2", __("wifi.content.eap_peap_ttls")],
                             ]}
                             value={state.wpa_eap_config[0].toString()}
@@ -657,11 +667,13 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         </div>
                     </Collapse>
 
+{/*#if MODULE_CERTS_AVAILABLE*/}
                     <Collapse in={state.wpa_eap_config[0] === EapConfigID.TLS}>
                         <div>
                             {this.eap_tls(state)}
                         </div>
                     </Collapse>
+{/*#endif*/}
 
                     <Collapse in={state.wpa_eap_config[0] === EapConfigID.None}>
                         <div>

@@ -18,6 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
@@ -220,8 +222,9 @@ export type EVSEChargeModeAutomationAction = [
     },
 ];
 
+//#if MODULE_CM_NETWORKING_AVAILABLE
 function get_pm_charge_mode_switch_table_children(action: EVSEChargeModeAutomationAction) {
-    return __("evse.automation.charge_mode_switch_action_text")(action[1].mode);
+    return __("evse.automation.charge_mode_switch_action_text")(__("cm_networking.status.mode_by_index")(action[1].mode));
 }
 
 function get_pm_charge_mode_switch_edit_children(action: EVSEChargeModeAutomationAction, on_action: (action: AutomationAction) => void) {
@@ -248,6 +251,7 @@ function new_pm_charge_mode_switch_config(): AutomationAction {
         },
     ];
 }
+//#endif
 //#endregion
 
 export function pre_init() {
@@ -266,6 +270,7 @@ export function pre_init() {
             get_edit_children: get_led_edit_children,
             get_table_children: get_led_table_children,
         },
+//#if MODULE_CM_NETWORKING_AVAILABLE
         [AutomationActionID.EVSEChargeMode]: {
             name: () => __("evse.automation.charge_mode_switch"),
             new_config: new_pm_charge_mode_switch_config,
@@ -273,6 +278,7 @@ export function pre_init() {
             get_table_children: get_pm_charge_mode_switch_table_children,
             get_edit_children: get_pm_charge_mode_switch_edit_children,
         },
+//#endif
     };
 }
 

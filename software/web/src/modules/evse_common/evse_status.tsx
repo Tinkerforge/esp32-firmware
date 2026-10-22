@@ -31,7 +31,9 @@ import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { useId } from "preact/hooks";
+//#if MODULE_CM_NETWORKING_AVAILABLE
 import { ChargeModeButtons } from "modules/cm_networking/charge_mode_buttons";
+//#endif
 
 interface EVSEStatusState {
     hidden: boolean;
@@ -173,6 +175,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                 {__("evse.status.start_charging")}
             </Button>
 
+//#if MODULE_CM_NETWORKING_AVAILABLE
         let show_buttons = API.get("evse/management_enabled").enabled
 //#if MODULE_CHARGE_MANAGER_AVAILABLE
                          && (!API.get("charge_manager/config").enable_charge_manager || API.get("charge_manager/config").chargers.length != 1)
@@ -187,6 +190,9 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                     modeEnabled={false}
                 />
             </FormRow>
+//#else
+        let charge_mode_buttons: undefined = undefined;
+//#endif
 
         return <StatusSection name="evse">
                 {charge_mode_buttons}

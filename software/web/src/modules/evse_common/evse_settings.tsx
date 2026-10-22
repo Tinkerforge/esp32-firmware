@@ -18,9 +18,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "generated/module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, Component } from "preact";
+import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
@@ -30,7 +32,9 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { Switch } from "../../ts/components/switch";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
+//#if MODULE_CHARGE_LIMITS_AVAILABLE
 import { CustomLimitModal, get_ev_soc_meter } from "modules/charge_limits/main";
+//#endif
 
 export function EVSESettingsNavbar() {
     return <NavbarItem name="evse_settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
@@ -45,7 +49,9 @@ interface EVSESettingsState {
     phases_connected: API.getType["evse/phases_connected"];
     boost_mode: API.getType["evse/boost_mode"];
     auto_start_charging: API.getType["evse/auto_start_charging"];
+//#if MODULE_REQUIRE_METER_AVAILABLE
     require_meter_enabled: API.getType["require_meter/config"];
+//#endif
     led_configuration: API.getType["evse/led_configuration"];
     phase_switch_wait_time: API.getType["evse/phase_switch_wait_time"];
     energy_meter_display_backlight: API.getType["evse/energy_meter_display_backlight"];
@@ -57,11 +63,19 @@ interface EVSESettingsState {
     show_custom_energy_modal: boolean;
 }
 
+//#if MODULE_CHARGE_LIMITS_AVAILABLE
+type EVSESettingsTopic = "charge_limits/default_limits";
+const EVSE_SETTINGS_TOPIC: EVSESettingsTopic = "charge_limits/default_limits";
 type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
+//#else
+type EVSESettingsTopic = null;
+const EVSE_SETTINGS_TOPIC: EVSESettingsTopic = null;
+type ChargeLimitsConfig = {};
+//#endif
 
-export class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, EVSESettingsState> {
+export class EVSESettings extends ConfigComponent<EVSESettingsTopic, {}, EVSESettingsState> {
     constructor() {
-        super("charge_limits/default_limits",
+        super(EVSE_SETTINGS_TOPIC,
               () => __("evse.script.save_failed"));
 
         util.addApiEventListener('evse/gpio_configuration', () => {
@@ -101,9 +115,11 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             this.setState({evse_uptime: API.get("evse/low_level_state").uptime});
         });
 
+//#if MODULE_REQUIRE_METER_AVAILABLE
         util.addApiEventListener("require_meter/config", () => {
             this.setState({require_meter_enabled: API.get("require_meter/config")});
         });
+//#endif
 
         util.addApiEventListener("evse/led_configuration", () => {
             this.setState({led_configuration: API.get("evse/led_configuration")});
@@ -127,11 +143,15 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         });
     }
 
-    override async sendSave(topic: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
+    override async sendSave(topic: EVSESettingsTopic, cfg: EVSESettingsState & ChargeLimitsConfig) {
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, () => __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, () => __("evse.script.save_failed"));
+//#if MODULE_REQUIRE_METER_AVAILABLE
         await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, () => __("evse.script.save_failed"));
-        await API.save('evse/led_configuration', this.state.led_configuration, () => __("evse.script.save_failed"));
+//#endif
+        if (API.hasModule("evse_led")) {
+            await API.save('evse/led_configuration', this.state.led_configuration, () => __("evse.script.save_failed"));
+        }
 
         if (this.state.is_evse_v2) {
             await API.save('evse/button_configuration', {"button": this.state.button_cfg.button}, () => __("evse.script.save_failed"));
@@ -153,6 +173,15 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         super.sendSave(topic, cfg);
     }
 
+    charge_mode_explainer(): ComponentChildren {
+//#if MODULE_CM_NETWORKING_AVAILABLE
+        const mode_names = API.get("evse/supported_charge_modes").map(m => __("cm_networking.status.mode_by_index")(m));
+        return __("evse.content.charge_mode_explainer")(this.state.is_evse_v3, mode_names);
+//#else
+        return undefined;
+//#endif
+    }
+
     render(props: {}, s: EVSESettingsState & ChargeLimitsConfig) {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return <SubPage name="evse_settings" />;
@@ -166,7 +195,9 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             phases_connected,
             boost_mode,
             auto_start_charging,
+//#if MODULE_REQUIRE_METER_AVAILABLE
             require_meter_enabled,
+//#endif
             led_configuration,
             phase_switch_wait_time,
             energy_meter_display_backlight,
@@ -179,6 +210,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             disable_three_phase_entry = (p[0] && !p[1] && !p[2]);
         }
 
+//#if MODULE_CHARGE_LIMITS_AVAILABLE
         let energy_items: [string, string][] = [
             ["0", __("charge_limits.content.unlimited")],
             ["5000", util.toLocaleFixed(5, 0) + " kWh"],
@@ -217,7 +249,9 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                 onHide={() => this.setState({show_custom_energy_modal: false})}
                 onSubmit={limit => this.setState({energy_wh: limit})}/>
         </FormRow>;
+//#endif
 
+//#if MODULE_REQUIRE_METER_AVAILABLE
         const require_meter = <FormRow label={__("evse.content.meter_monitoring")}>
                                         <Switch desc={__("evse.content.meter_monitoring_desc")}
                                             checked={require_meter_enabled.config == 2}
@@ -225,6 +259,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                                 this.setState({require_meter_enabled: {config: require_meter_enabled.config == 2 ? 1 : 2}});
                                             }}/>
                                     </FormRow>;
+//#endif
 
         return <SubPage name="evse_settings">
                 <ConfigForm id="evse_settings_config_form" title={__("evse.content.evse_settings" )} isDirty={this.isDirty()} onSave={this.save} onDirtyChange={this.setDirty}>
@@ -246,11 +281,13 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         />
                     </FormRow>
 
-                    <FormRow label={__("evse.content.enable_led_api")}>
-                        <Switch onClick={async () => this.setState({led_configuration: {enable_api: !led_configuration.enable_api}})}
-                                checked={led_configuration.enable_api}
-                                desc={__("evse.content.enable_led_api_desc")}/>
-                    </FormRow>
+                    {!API.hasModule("evse_led") ? undefined :
+                        <FormRow label={__("evse.content.enable_led_api")}>
+                            <Switch onClick={async () => this.setState({led_configuration: {enable_api: !led_configuration.enable_api}})}
+                                    checked={led_configuration.enable_api}
+                                    desc={__("evse.content.enable_led_api_desc")}/>
+                        </FormRow>
+                    }
 
                     <FormRow label={__("evse.content.boost_mode_desc")} help={__("evse.content.boost_mode_desc_help")}>
                         <Switch desc={__("evse.content.boost_mode")}
@@ -258,8 +295,11 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                 onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
                     </FormRow>
 
+{/*#if MODULE_REQUIRE_METER_AVAILABLE*/}
                     {require_meter_enabled.config != 0 ? require_meter : <></>}
+{/*#endif*/}
 
+{/*#if MODULE_CHARGE_LIMITS_AVAILABLE*/}
                     <FormRow label={__("charge_limits.content.duration")} label_muted={__("charge_limits.content.duration_muted")}>
                         <InputSelect items={[
                             ["0", __("charge_limits.content.unlimited")],
@@ -292,16 +332,19 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                             onValue={(v) => this.setState({soc_pct: Number(v)})}/>
                         </FormRow>;
                     })()}
+{/*#endif*/}
 
                     {!this.state.is_evse_v2 ? undefined :
                         <>
-                        <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")} help={button_cfg.button != 4 ? undefined : __("evse.content.charge_mode_explainer")(this.state.is_evse_v3, API.get("evse/supported_charge_modes"))}>
+                        <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")} help={button_cfg.button != 4 ? undefined : this.charge_mode_explainer()}>
                             <InputSelect items={[
                                             ["0",__("evse.content.button_configuration_disabled")],
                                             ["1",__("evse.content.button_configuration_start_charging")],
                                             ["2",__("evse.content.button_configuration_stop_charging")],
                                             ["3",__("evse.content.button_configuration_start_and_stop_charging")],
+//#if MODULE_CM_NETWORKING_AVAILABLE
                                             ["4",__("evse.content.button_configuration_charge_mode")],
+//#endif
                                         ]}
                                     value={button_cfg.button}
                                     onValue={async (v) => {

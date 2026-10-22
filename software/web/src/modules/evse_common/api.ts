@@ -1,4 +1,8 @@
+//#include "generated/module_available.inc"
+
+//#if MODULE_CM_NETWORKING_AVAILABLE
 import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
+//#endif
 //APIPath:evse/
 
 interface Slot {
@@ -191,10 +195,12 @@ export interface meter_config {
     slot: number;
 }
 
+//#if MODULE_CM_NETWORKING_AVAILABLE
 export interface charge_mode {
     mode: ConfigChargeMode;
 }
 export type supported_charge_modes = ConfigChargeMode[];
+//#endif
 
 export interface phase_switch_wait_time {
     time: number;

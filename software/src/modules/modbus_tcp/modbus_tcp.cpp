@@ -32,6 +32,11 @@
 #include "tools/hexdump.h"
 #include "tools/printf.h"
 
+#if !MODULE_NFC_AVAILABLE()
+// Keep the register layout independent of the NFC module.
+#define NFC_TAG_ID_LENGTH 10
+#endif
+
 // MODBUS TABLE CHANGELOG
 // 1 - Initial release
 // 2 - Add coils 1000, 1001
@@ -200,6 +205,7 @@ static inline uint16_t swapBytes(uint16_t x) {
 
 #define REQUIRE(x) if(!cache->has_feature_##x) break
 
+#if MODULE_NFC_AVAILABLE()
 static uint8_t hex_digit_to_byte(char digit)
 {
     if (digit >= '0' && digit <= '9')
@@ -211,6 +217,7 @@ static uint8_t hex_digit_to_byte(char digit)
 
     return 0xFF;
 }
+#endif
 
 Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInputRegisterCtx *ctx) {
     ModbusTCP::TwoRegs val{0};

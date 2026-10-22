@@ -1,9 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
-import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 let x = {
     "evse": {
         "status": {
@@ -214,20 +212,20 @@ let x = {
             "button_configuration_stop_charging": "Stop charging",
             "button_configuration_start_and_stop_charging": "Start or stop charging",
             "button_configuration_charge_mode": "Request charge mode",
-            "charge_mode_explainer": /*FFN*/ (has_rgb_led: boolean, supported_charge_modes: readonly ConfigChargeMode[]) => {
+            "charge_mode_explainer": /*FFN*/ (has_rgb_led: boolean, mode_names: readonly string[]) => {
                 let colors = {2: ["red", "cyan"], 4: ["red", "green", "yellow", "cyan"]};
                 let c: string[] = [];
                 let header = "At the first push of the button, the current charge mode is shown. Further pushes in the next 10 seconds change the charge mode for the next or current charge.";
 
-                if (supported_charge_modes.length == 2 || supported_charge_modes.length == 4)
-                        c = colors[supported_charge_modes.length];
+                if (mode_names.length == 2 || mode_names.length == 4)
+                        c = colors[mode_names.length];
                     else
                         return <>{header}</>;
 
                     return <>
                         {header}
                         <ul>
-                            {supported_charge_modes.map((m, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {__("cm_networking.status.mode_by_index")(m)}</li>)}
+                            {mode_names.map((name, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {name}</li>)}
                         </ul>
                     </>}/*NF*/,
 
@@ -317,8 +315,7 @@ let x = {
             }/*NF*/,
             "charge_mode_switch": "Request charge mode",
             "charge_mode": "Charge mode",
-            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
-                let mode_str = __("cm_networking.status.mode_by_index")(mode);
+            "charge_mode_switch_action_text": /*FFN*/(mode_str: string) => {
                 return <>request charge mode <b>{mode_str}</b>.</>
             }/*NF*/
         },
