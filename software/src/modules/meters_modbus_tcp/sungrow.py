@@ -512,14 +512,14 @@ specs = [
             #        handling this would be to read the device type register 5000 and keep a
             #        database of how many MPPT certain device types support
             {
-                'name': 'Average MPPT Voltage [0.1 V]',
+                'name': 'Average MPPT Voltage [V]',
                 'value_id': 'VoltagePVAvg',
-                'start_number': 'START_NUMBER_VIRTUAL',
+                'calculate': True,
             },
             {
-                'name': 'Total MPPT Current [0.1 A]',
+                'name': 'Total MPPT Current [A]',
                 'value_id': 'CurrentPVSumExport',
-                'start_number': 'START_NUMBER_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'Total DC Power [W]',

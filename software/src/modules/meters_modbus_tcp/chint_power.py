@@ -480,12 +480,12 @@ specs = [
             {
                 'name': 'Average PV voltage [V]',
                 'value_id': 'VoltagePVAvg',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'Total PV current [A]',
                 'value_id': 'CurrentPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV1 power [0.01 kW]',

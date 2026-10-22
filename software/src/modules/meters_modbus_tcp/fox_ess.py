@@ -306,17 +306,17 @@ specs = [
             {
                 'name': 'PV Voltage Average [V]',
                 'value_id': 'VoltagePVAvg',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Current Total [A]',
                 'value_id': 'CurrentPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Power Total [W]',
                 'value_id': 'PowerPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
         ],
     },
@@ -1001,12 +1001,12 @@ specs = [
             {
                 'name': 'PV Voltage Average [V]',
                 'value_id': 'VoltagePVAvg',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Current Total [A]',
                 'value_id': 'CurrentPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Power Total [W]',

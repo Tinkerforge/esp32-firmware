@@ -1,6 +1,7 @@
 import sys
 import collections
 from copy import deepcopy
+import re
 import tinkerforge_util as tfutil
 
 import sungrow
@@ -190,6 +191,8 @@ specs_h.append('namespace DefaultDeviceAddress {')
 specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
 specs_h.append('}')
 
+calculations = {}
+
 for spec in specs:
     alias = spec.get('alias')
 
@@ -228,8 +231,13 @@ for spec in specs:
         value_index = []
         f32_negative_max_as_nan = 'true' if spec.get('f32_negative_max_as_nan', False) else 'false'
         current_index = 0
+        pv_voltage_values = []
+        pv_current_values = []
+        pv_power_values = []
 
-        for value in spec['values']:
+        for i, value in enumerate(spec['values']):
+            value['_index'] = i
+
             variants_value = value.get('variants')
 
             if variants_value != None and variant_spec not in variants_value:
@@ -241,15 +249,42 @@ for spec in specs:
 
             value_names.append(value['name'])
 
-            start_number = value.get('start_number')
+            calculate = value.get('calculate', False)
 
-            if start_number != None:
-                if start_number == 'START_NUMBER_VIRTUAL':
-                    start_address = 'START_ADDRESS_VIRTUAL'
+            if calculate:
+                if value['value_id'] == 'VoltagePVAvg':
+                    if len(pv_voltage_values) == 0:
+                        print(f'Error: Value {spec_name.space} / {value["name"]} has no VoltagePV* values before it')
+                        sys.exit(1)
+
+                    calculations.setdefault(spec_name, []).append((value, pv_voltage_values))
+                elif value['value_id'] == 'CurrentPVSumExport':
+                    if len(pv_voltage_values) == 0:
+                        print(f'Error: Value {spec_name.space} / {value["name"]} has no CurrentPV*Export values before it')
+                        sys.exit(1)
+
+                    calculations.setdefault(spec_name, []).append((value, pv_current_values))
+                elif value['value_id'] == 'PowerPVSumExport':
+                    if len(pv_voltage_values) == 0:
+                        print(f'Error: Value {spec_name.space} / {value["name"]} has no PowerPV*Export values before it')
+                        sys.exit(1)
+
+                    calculations.setdefault(spec_name, []).append((value, pv_power_values))
                 else:
-                    start_address = start_number - 1
+                    print(f'Error: Value {spec_name.space} / {value["name"]} cannot be calculated')
+                    sys.exit(1)
+
+                start_address = 'START_ADDRESS_VIRTUAL'
             else:
-                start_address = value['start_address']
+                start_number = value.get('start_number')
+
+                if start_number != None:
+                    if start_number == 'START_NUMBER_VIRTUAL':
+                        start_address = 'START_ADDRESS_VIRTUAL'
+                    else:
+                        start_address = start_number - 1
+                else:
+                    start_address = value['start_address']
 
             if start_address != 'START_ADDRESS_VIRTUAL':
                 if start_address < 0 or start_address > 65535:
@@ -257,9 +292,11 @@ for spec in specs:
                     sys.exit(1)
 
                 address_name_words = ''.join([x for x in value['name'].split('|', 1)[-1].split('[')[0] if (x >= 'A' and x <= 'Z') or (x >= 'a' and x <= 'z') or (x >= '0' and x <= '9') or x == '_' or x == ' ']).split(' ')
-                address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
+                address_name = ' '.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
-                value_addresses.append(f'    {address_name} = {start_address},')
+                value['_address_name'] = address_name
+
+                value_addresses.append(f'    {address_name.replace(" ", "")} = {start_address},')
 
             value_specs.append('    {\n'
                               f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
@@ -283,6 +320,13 @@ for spec in specs:
                 value_ids.append(f'    MeterValueID::{value["value_id"]},')
                 value_index.append(f'    {current_index},')
                 current_index += 1
+
+            if re.match(r'VoltagePV\d+', value['value_id']) != None:
+                pv_voltage_values.append(value)
+            elif re.match(r'CurrentPV\d+Export', value['value_id']) != None:
+                pv_current_values.append(value)
+            elif re.match(r'PowerPV\d+Export', value['value_id']) != None:
+                pv_power_values.append(value)
 
         specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
                        f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'
@@ -503,6 +547,71 @@ for group, value in virtual_meters.items():
 
 util.write_generated_file('generated/meter_modbus_tcp_is.inc', is_inc)
 util.write_generated_file('generated/meter_modbus_tcp_is.cpp', is_cpp)
+
+calculate_structs_inc = '// WARNING: This file is generated.\n'
+calculate_values_inc = '// WARNING: This file is generated.\n\n'
+
+for spec_name, values in calculations.items():
+    calculate_structs_inc += '\nstruct {'
+
+    for value in values:
+        calculate_structs_inc += f'\n    // {value[0]["name"]}\n'
+
+        for input_ in value[1]:
+            calculate_structs_inc += f'    float {input_["_address_name"].lower().replace(" ", "_")};\n'
+
+    calculate_structs_inc += f'}} {spec_name.under};\n'
+
+    calculate_values_inc += f'else if (is_{spec_name.under}_meter()) {{'
+
+    for value in values:
+        calculate_values_inc += f'\n    // {value[0]["name"]}\n'
+
+        for i, input_ in enumerate(value[1]):
+            calculate_values_inc += f'    {"else " if i != 0 else ""}if (register_start_address == {spec_name.camel}Address::{input_["_address_name"].replace(" ", "")}) {{\n'
+            calculate_values_inc += f'        {spec_name.under}.{input_["_address_name"].lower().replace(" ", "_")} = value;\n'
+
+            if i == len(value[1]) - 1:
+                if value[0]['value_id'] == 'VoltagePVAvg':
+                    calculate_values_inc += '\n        float voltage_sum = 0.0f;\n'
+                    calculate_values_inc += '        float voltage_count = 0.0f;\n'
+
+                    for input__ in value[1]:
+                        calculate_values_inc += f'\n        if (!is_exactly_zero({spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")})) {{\n'
+                        calculate_values_inc += f'            voltage_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
+                        calculate_values_inc +=  '            ++voltage_count;\n'
+                        calculate_values_inc +=  '        }\n'
+
+                    calculate_values_inc += '\n        float voltage_avg = voltage_sum / voltage_count;\n\n'
+
+                    read_index_offset = value[0]['_index'] - input__['_index']
+
+                    calculate_values_inc += f'        meters.update_value(slot, table->index[read_index + {read_index_offset}], voltage_avg);\n'
+                elif value[0]['value_id'] == 'CurrentPVSumExport':
+                    calculate_values_inc += '\n        float current_sum = 0.0f;\n\n'
+
+                    for input__ in value[1]:
+                        calculate_values_inc += f'        current_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
+
+                    read_index_offset = value[0]['_index'] - input__['_index']
+
+                    calculate_values_inc += f'\n        meters.update_value(slot, table->index[read_index + {read_index_offset}], current_sum);\n'
+                elif value[0]['value_id'] == 'PowerPVSumExport':
+                    calculate_values_inc += '\n        float power_sum = 0.0f;\n\n'
+
+                    for input__ in value[1]:
+                        calculate_values_inc += f'        power_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
+
+                    read_index_offset = value[0]['_index'] - input__['_index']
+
+                    calculate_values_inc += f'\n        meters.update_value(slot, table->index[read_index + {read_index_offset}], power_sum);\n'
+
+            calculate_values_inc += '    }\n'
+
+    calculate_values_inc += '}\n'
+
+util.write_generated_file('generated/meter_modbus_tcp_calculate_structs.inc', calculate_structs_inc)
+util.write_generated_file('generated/meter_modbus_tcp_calculate_values.inc', calculate_values_inc)
 
 table_ids_items_rpl = ', '.join([f'[MeterModbusTCPTableID.{table_id.camel}.toString(), __("meters_modbus_tcp.content.table_{table_id.under}")]' for table_id in table_ids])
 
