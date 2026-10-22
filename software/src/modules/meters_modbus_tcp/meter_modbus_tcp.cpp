@@ -2881,6 +2881,65 @@ bool MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], power_sum);
         }
     }
+    else if (is_chint_power_hybrid_inverter_pv_meter()) {
+        if (register_start_address == ChintPowerHybridInverterPVAddress::PV1Voltage) {
+            chint_power_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV2Voltage) {
+            chint_power_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV3Voltage) {
+            chint_power_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV4Voltage) {
+            chint_power_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV1Current) {
+            chint_power_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV2Current) {
+            chint_power_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV3Current) {
+            chint_power_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == ChintPowerHybridInverterPVAddress::PV4Current) {
+            chint_power_hybrid_inverter.pv4_current = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(chint_power_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += chint_power_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(chint_power_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += chint_power_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(chint_power_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += chint_power_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(chint_power_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += chint_power_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = chint_power_hybrid_inverter.pv1_current
+                              + chint_power_hybrid_inverter.pv2_current
+                              + chint_power_hybrid_inverter.pv3_current
+                              + chint_power_hybrid_inverter.pv4_current;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+        }
+    }
 
     if (table->index[read_index] != VALUE_INDEX_META && table->index[read_index] != VALUE_INDEX_DEBUG) {
         meters.update_value(slot, table->index[read_index], value);

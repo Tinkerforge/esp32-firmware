@@ -1,0 +1,520 @@
+display_names = [
+    ('Chint Power Hybrid Inverter', {
+        'en': 'Chint Power hybrid inverter',
+        'de': 'Chint Power Hybrid-Wechselrichter',
+    }),
+]
+
+table_prototypes = [
+    ('Chint Power Hybrid Inverter', ['device_address', 'virtual_meter']),
+]
+
+default_device_addresses = [
+    ('Chint Power Hybrid Inverter', 1),
+]
+
+specs = [
+    {
+        'name': 'Chint Power Hybrid Inverter',
+        'virtual_meter': ('Chint Power Hybrid Inverter', 'Inverter'),
+        'fixed_location': 'Inverter',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Inverter voltage L1 [0.1 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 0x082C,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Inverter voltage L2 [0.1 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 0x082D,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Inverter voltage L3 [0.1 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 0x082E,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Inverter current L1 [0.01 A]',
+                'value_id': 'CurrentL1ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x082F,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Inverter current L2 [0.01 A]',
+                'value_id': 'CurrentL2ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x0830,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Inverter current L3 [0.01 A]',
+                'value_id': 'CurrentL3ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x0831,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Inverter active power L1 [0.01 kW]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 0x0832,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter active power L2 [0.01 kW]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 0x0833,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter active power L3 [0.01 kW]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 0x0834,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter power factor L1',
+                'value_id': 'PowerFactorL1Directional',  # FIXME: sign?
+                'start_address': 0x0838,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Inverter power factor L2',
+                'value_id': 'PowerFactorL2Directional',  # FIXME: sign?
+                'start_address': 0x0839,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Inverter power factor L3',
+                'value_id': 'PowerFactorL3Directional',  # FIXME: sign?
+                'start_address': 0x083A,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Inverter apparent power L1 [0.01 kVA]',
+                'value_id': 'PowerApparentL1ImExDiff',
+                'start_address': 0x083B,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter apparent power L2 [0.01 kVA]',
+                'value_id': 'PowerApparentL2ImExDiff',
+                'start_address': 0x083C,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter apparent power L3 [0.01 kVA]',
+                'value_id': 'PowerApparentL3ImExDiff',
+                'start_address': 0x083D,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Inverter active power [0.01 kW]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 0x083E,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Ambient temperature [0.1 °C]',
+                'value_id': 'TemperatureAmbient',
+                'start_address': 0x0866,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'AC side IGBT temperature  [0.1 °C]',
+                'value_id': 'TemperatureHeatSink',
+                'start_address': 0x0867,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Control board temperature [0.1 °C]',
+                'value_id': 'TemperatureCabinet',
+                'start_address': 0x086A,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Inverter reactive power L1 [0.01 kvar]',
+                'value_id': 'PowerReactiveL1IndCapDiff',  # FIXME: sign?
+                'start_address': 0x089D,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Inverter reactive power L2 [0.01 kvar]',
+                'value_id': 'PowerReactiveL2IndCapDiff',  # FIXME: sign?
+                'start_address': 0x089E,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Inverter reactive power L3 [0.01 kvar]',
+                'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: sign?
+                'start_address': 0x089F,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Inverter reactive power [0.01 kvar]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
+                'start_address': 0x089F,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Inverter power factor',
+                'value_id': 'PowerFactorLSumDirectional',  # FIXME: sign?
+                'start_address': 0x08A1,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Inverter apparent power [0.01 kVA]',
+                'value_id': 'PowerApparentLSumImExDiff',
+                'start_address': 0x08A2,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Total yield [kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 0x08E0,
+                'value_type': 'U32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Chint Power Hybrid Inverter Grid',
+        'virtual_meter': ('Chint Power Hybrid Inverter', 'Grid'),
+        'fixed_location': 'Grid',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Grid active power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 0x0700,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+            {
+                'name': 'Grid current L1 [0.01 A]',
+                'value_id': 'CurrentL1ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x081B,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Grid current L2 [0.01 A]',
+                'value_id': 'CurrentL2ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x081C,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Grid current L3 [0.01 A]',
+                'value_id': 'CurrentL3ImExDiff',  # FIXME: ImExSum?
+                'start_address': 0x081D,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Grid voltage L1 [0.1 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 0x0823,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Grid voltage L2 [0.1 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 0x0824,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Grid voltage L3 [0.1 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 0x0825,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Grid active power L1 [0.01 kW]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 0x0829,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Grid active power L2 [0.01 kW]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 0x082A,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Grid active power L3 [0.01 kW]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 0x082B,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Grid frequency [0.01 Hz]',
+                'value_id': 'FrequencyLAvg',
+                'start_address': 0x0864,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total grid consumption [kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 0x08E7,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Total grid feed-in [kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 0x08EE,
+                'value_type': 'U32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Chint Power Hybrid Inverter Battery',
+        'virtual_meter': ('Chint Power Hybrid Inverter', 'Battery'),
+        'fixed_location': 'Battery',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Battery SOC [%]',
+                'value_id': 'StateOfCharge',
+                'start_address': 0x0603,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Battery side IGBT temperature  [0.1 °C]',
+                'value_id': 'TemperatureHeatSink',
+                'start_address': 0x0869,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery voltage [0.1 V]',
+                'value_id': 'VoltageDC',
+                'start_address': 0x086E,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery current [0.01 A]',
+                'value_id': 'CurrentDCChaDisDiff',
+                'start_address': 0x086F,
+                'value_type': 'S16',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Battery power [0.01 kW]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 0x0870,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+            },
+            {
+                'name': 'Battery Temperature [0.1 °C]',
+                'value_id': 'Temperature',
+                'start_address': 0x0894,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Total charging energy [kWh]',
+                'value_id': 'EnergyDCCharge',
+                'start_address': 0x08D2,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Total discharging energy [kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 0x08D9,
+                'value_type': 'U32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Chint Power Hybrid Inverter Load',
+        'virtual_meter': ('Chint Power Hybrid Inverter', 'Load'),
+        'fixed_location': 'Load',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Load active power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 0x0706,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Load active power L1 [0.01 kW]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 0x084A,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Load active power L2 [0.01 kW]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 0x084B,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Load active power L3 [0.01 kW]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 0x084C,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'Total load consumption [kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 0x08F5,
+                'value_type': 'U32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Chint Power Hybrid Inverter PV',
+        'virtual_meter': ('Chint Power Hybrid Inverter', 'PV'),
+        'fixed_location': 'PV',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'PV power [0.1 W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 0x0708,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'PV side IGBT temperature  [0.1 °C]',
+                'value_id': 'TemperatureHeatSink',
+                'start_address': 0x0868,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 voltage [0.1 V]',
+                'value_id': 'VoltagePV1',
+                'start_address': 0x0874,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV2 voltage [0.1 V]',
+                'value_id': 'VoltagePV2',
+                'start_address': 0x0875,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV3 voltage [0.1 V]',
+                'value_id': 'VoltagePV3',
+                'start_address': 0x0876,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV4 voltage [0.1 V]',
+                'value_id': 'VoltagePV4',
+                'start_address': 0x0877,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 current [0.01 A]',
+                'value_id': 'CurrentPV1Export',
+                'start_address': 0x0878,
+                'value_type': 'S16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'PV2 current [0.01 A]',
+                'value_id': 'CurrentPV2Export',
+                'start_address': 0x0879,
+                'value_type': 'S16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'PV3 current [0.01 A]',
+                'value_id': 'CurrentPV3Export',
+                'start_address': 0x087A,
+                'value_type': 'S16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'PV4 current [0.01 A]',
+                'value_id': 'CurrentPV4Export',
+                'start_address': 0x087B,
+                'value_type': 'S16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Average PV voltage [V]',
+                'value_id': 'VoltagePVAvg',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV current [A]',
+                'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV1 power [0.01 kW]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 0x087C,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'PV2 power [0.01 kW]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 0x087D,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'PV3 power [0.01 kW]',
+                'value_id': 'PowerPV3Export',
+                'start_address': 0x087E,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+            {
+                'name': 'PV4 power [0.01 kW]',
+                'value_id': 'PowerPV4Export',
+                'start_address': 0x087F,
+                'value_type': 'S16',
+                'scale_factor': 10.0,
+            },
+        ],
+    },
+]

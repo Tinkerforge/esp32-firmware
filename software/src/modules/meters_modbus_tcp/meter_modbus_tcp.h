@@ -561,6 +561,19 @@ private:
             float pv3_current;
             float pv3_power;
         } qcells_string_inverter;
+
+        // Chint Power hybrid inverter
+        struct {
+            ChintPowerHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv2_voltage;
+            float pv3_voltage;
+            float pv4_voltage;
+            float pv1_current;
+            float pv2_current;
+            float pv3_current;
+            float pv4_current;
+        } chint_power_hybrid_inverter;
     };
 };
 
