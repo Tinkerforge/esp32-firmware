@@ -214,7 +214,6 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 0x0700,
                 'value_type': 'S32BE',
-                'scale_factor': -1.0,
             },
             {
                 'name': 'Grid current L1 [0.01 A]',
