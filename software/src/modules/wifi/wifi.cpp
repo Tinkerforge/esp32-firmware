@@ -28,6 +28,10 @@
 #include <lwip/inet.h>
 #include <lwip/tcpip.h>
 
+#if MODULE_ETHERNET_AVAILABLE()
+#include <ETH.h>
+#endif
+
 #include "event_log_prefix.h"
 #include "build.h"
 #include "tools/printf.h"
@@ -55,6 +59,7 @@ void Wifi::pre_setup()
     ap_config = ConfigRoot{Config::Object({
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
+        {"share_ethernet", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("", 8, 64)}, // Blank passphrase will be replaced with default passphrase in setup. | FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
@@ -83,8 +88,17 @@ void Wifi::pre_setup()
         if (is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
             return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
 
-        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+        if (!update.get("share_ethernet")->asBool() && gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+
+        if (update.get("share_ethernet")->asBool()) {
+#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
+            if (!update.get("enable_ap")->asBool() || update.get("ap_fallback_only")->asBool())
+                return "Ethernet sharing requires the WiFi AP to be always enabled.";
+#else
+            return "Ethernet sharing requires Ethernet and ESP-IDF libraries built with IPv4 forwarding and NAPT support.";
+#endif
+        }
 
         if (!update.get("enable_ap")->asBool()) {
             bool other = sta_config.get("enable_sta")->asBool();
@@ -104,6 +118,7 @@ void Wifi::pre_setup()
             const bool is_reenabled = (runtime_ap != nullptr) && update.get("enable_ap")->asBool()        &&
                 (update.get("enable_ap")->asBool()        != ap_config.get("enable_ap")->asBool())        &&
                 (update.get("ap_fallback_only")->asBool() == ap_config.get("ap_fallback_only")->asBool()) &&
+                (update.get("share_ethernet")->asBool()   == ap_config.get("share_ethernet")->asBool())   &&
                 (update.get("ssid")->asString()           == ap_config.get("ssid")->asString())           &&
                 (update.get("hide_ssid")->asBool()        == ap_config.get("hide_ssid")->asBool())        &&
                 (update.get("passphrase")->asString()     == ap_config.get("passphrase")->asString())     &&
@@ -422,9 +437,11 @@ void Wifi::apply_soft_ap_config_and_start()
                    runtime_ap->channel,
                    runtime_ap->hide_ssid);
 
-    if (!WiFi.softAPConfig(ip, {runtime_ap->gateway.addr}, subnet)) {
+    if (!WiFi.softAPConfig(ip, runtime_ap->share_ethernet ? ip : IPAddress{runtime_ap->gateway.addr}, subnet)) {
         logger.printfln("softAPConfig failed");
     }
+
+    update_ap_ethernet_sharing();
 
     WiFi.setSleep(false);
 
@@ -437,6 +454,46 @@ void Wifi::apply_soft_ap_config_and_start()
     }
 
     logger.printfln("Soft AP started");
+}
+
+void Wifi::update_ap_ethernet_sharing()
+{
+#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
+    if (!runtime_ap || !WiFi.AP.started())
+        return;
+
+    const IPAddress ip{runtime_ap->ip_ssid_passphrase};
+    const IPAddress subnet{tf_ip4addr_cidr2mask(runtime_ap->subnet_cidr).addr};
+    const bool enable = runtime_ap->share_ethernet && ap_config.get("share_ethernet")->asBool() && ap_config.get("enable_ap")->asBool()
+        && ETH.hasIP() && ETH.isDefault() && ETH.gatewayIP() != IPAddress(0,0,0,0)
+        && !is_in_subnet(ip, subnet, ETH.localIP())
+        && !is_in_subnet(ip, ETH.subnetMask(), ETH.localIP());
+
+    if (enable) {
+        IPAddress dns = ETH.dnsIP();
+        if (static_cast<uint32_t>(dns) == 0)
+            dns = ETH.dnsIP(1);
+
+        if (!runtime_ap->ethernet_shared || runtime_ap->shared_dns.addr != static_cast<uint32_t>(dns)) {
+            // On AP interfaces the fifth argument is the DNS server offered by DHCP.
+            // Keep DHCP's default lease range by leaving the fourth argument zero.
+            if (!WiFi.AP.config(ip, ip, subnet, static_cast<uint32_t>(0), dns)) {
+                logger.printfln("Configuring DHCP for Ethernet sharing failed");
+                return;
+            }
+            runtime_ap->shared_dns.addr = static_cast<uint32_t>(dns);
+        }
+    }
+
+    if (enable != runtime_ap->ethernet_shared) {
+        if (!WiFi.AP.enableNAPT(enable)) {
+            logger.printfln("%s Ethernet sharing failed", enable ? "Enabling" : "Disabling");
+            return;
+        }
+        runtime_ap->ethernet_shared = enable;
+        logger.printfln("Ethernet sharing %s", enable ? "enabled" : "disabled");
+    }
+#endif
 }
 
 void Wifi::apply_ap_config(bool defer_start)
@@ -466,6 +523,7 @@ void Wifi::apply_ap_config(bool defer_start)
         new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet);
 
         new_runtime->ap_fallback_only = ap_config.get("ap_fallback_only")->asBool();
+        new_runtime->share_ethernet   = ap_config.get("share_ethernet"  )->asBool();
         new_runtime->hide_ssid        = ap_config.get("hide_ssid"       )->asBool();
         new_runtime->channel          = ap_config.get("channel"         )->asUint() & 0xF;
 
@@ -478,12 +536,18 @@ void Wifi::apply_ap_config(bool defer_start)
         memcpy(new_runtime->ip_ssid_passphrase + new_runtime->passphrase_offset, pass.c_str(), pass_len_term);
 
         new_runtime->soft_ap_running   = false;
+        new_runtime->ethernet_shared   = false;
+        new_runtime->shared_dns.addr   = 0;
         new_runtime->scan_start_time_s = 0;
         new_runtime->stop_soft_ap_runs = 0;
 
         const bool was_disabled = (runtime_ap == nullptr);
 
         if (runtime_ap && runtime_ap->soft_ap_running) {
+#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
+            if (runtime_ap->ethernet_shared)
+                WiFi.AP.enableNAPT(false);
+#endif
             WiFi.softAPdisconnect(true);
         }
 
@@ -1246,6 +1310,13 @@ void Wifi::start_sta_connection()
 void Wifi::setup()
 {
     initialized = true;
+
+#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
+    api.addFeature("wifi_ap_ethernet_sharing");
+    task_scheduler.scheduleUncancelable([this]() {
+        update_ap_ethernet_sharing();
+    }, 1_s, 1_s);
+#endif
 
     if (!api.restorePersistentConfig("wifi/sta_config", &sta_config, API::SavedDefaultConfig::Keep)) {
 #ifdef DEFAULT_WIFI_STA_ENABLE
