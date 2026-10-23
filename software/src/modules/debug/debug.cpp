@@ -1218,17 +1218,21 @@ void Debug::register_events()
 
 void Debug::task_scheduler_idle_call()
 {
-    micros_t start = now_us();
-    if (CHECK_PSRAM && check_psram_next) {
-        psram_heap_valid = heap_caps_check_integrity(MALLOC_CAP_SPIRAM, integrity_check_print_errors);
-        check_psram_next = false;
+    uint32_t check_caps;
+    if (check_heap_next == 0) {
+        check_caps = MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT;
+        check_heap_next = 1;
+    } else if (check_heap_next == 1) {
+        check_caps = MALLOC_CAP_IRAM;
+        check_heap_next = CHECK_PSRAM ? 2 : 0;
     } else {
-        internal_heap_valid = heap_caps_check_integrity(MALLOC_CAP_INTERNAL, integrity_check_print_errors);
-        if (CHECK_PSRAM) {
-            check_psram_next = true;
-        }
+        check_caps = MALLOC_CAP_SPIRAM;
+        check_heap_next = 0;
     }
-    uint32_t runtime = (now_us() - start).as<uint32_t>();
+
+    const micros_t start = now_us();
+    const bool heap_valid = heap_caps_check_integrity(check_caps, integrity_check_print_errors);
+    const uint32_t runtime = (now_us() - start).as<uint32_t>();
 
     integrity_check_runs++;
     integrity_check_runtime_sum += runtime;
@@ -1237,7 +1241,7 @@ void Debug::task_scheduler_idle_call()
         integrity_check_runtime_max = runtime;
     }
 
-    if (!(internal_heap_valid & psram_heap_valid)) {
+    if (!heap_valid) {
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }

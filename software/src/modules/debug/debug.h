@@ -86,9 +86,7 @@ private:
     uint32_t integrity_check_runtime_sum = 0;
     uint32_t integrity_check_runtime_max = 0;
     bool     integrity_check_print_errors = true;
-    bool     internal_heap_valid = true;
-    bool     psram_heap_valid = true;
-    bool     check_psram_next = false;
+    uint8_t  check_heap_next = 0;
     uint8_t  lwip_sockets_hwm = 0;
 
     struct TaskAccounting {
