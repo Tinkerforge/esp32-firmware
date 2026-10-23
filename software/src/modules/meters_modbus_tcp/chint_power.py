@@ -43,24 +43,24 @@ specs = [
             },
             {
                 'name': 'Inverter current L1 [0.01 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 0x082F,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Inverter current L2 [0.01 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 0x0830,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Inverter current L3 [0.01 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 0x0831,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Inverter active power L1 [0.01 kW]',
@@ -217,24 +217,24 @@ specs = [
             },
             {
                 'name': 'Grid current L1 [0.01 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 0x081B,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Grid current L2 [0.01 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 0x081C,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Grid current L3 [0.01 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: ImExSum?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 0x081D,
                 'value_type': 'S16',
-                'scale_factor': -0.01,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Grid voltage L1 [0.1 V]',
