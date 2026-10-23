@@ -95,8 +95,8 @@ def suite_setup(tc: TestContext) -> None:
 
     logging.getLogger("amqtt").setLevel(logging.WARNING)
 
-    original_mqtt_config = tc.api("mqtt/config", timeout=MQTT_API_TIMEOUT)
-    original_automation_config = tc.api("automation/config", timeout=MQTT_API_TIMEOUT)
+    original_mqtt_config = tc.api("mqtt/config")
+    original_automation_config = tc.api("automation/config")
 
     broker_host = tc.get_local_ip()
 
@@ -123,7 +123,7 @@ def suite_setup(tc: TestContext) -> None:
     plain_broker.start()
 
     # Upload broker CA cert to the device
-    tc.api("certs/add", {"id": CERT_ID, "name": "mqtt-tls-test", "cert": cert_pem}, timeout=MQTT_API_TIMEOUT)
+    tc.api("certs/add", {"id": CERT_ID, "name": "mqtt-tls-test", "cert": cert_pem})
 
     # Start test helper client (connects to TLS broker)
     tls_helper = MqttHelper(broker_host, tls_port)
@@ -153,24 +153,20 @@ def test_tls_wrong_cert(tc: TestContext) -> None:
     # Generate a *different* self-signed cert and upload it
     wrong_cert_id = CERT_ID + 1
     wrong_cert_pem, _ = tc.generate_self_signed_cert(broker_host)
-    tc.api(
-        "certs/add",
-        {"id": wrong_cert_id, "name": "mqtt-tls-wrong", "cert": wrong_cert_pem},
-        timeout=MQTT_API_TIMEOUT,
-    )
+    tc.api("certs/add", {"id": wrong_cert_id, "name": "mqtt-tls-wrong", "cert": wrong_cert_pem})
 
     try:
-        tc.api("mqtt/config_update", make_tls_config(cert_id=wrong_cert_id), timeout=MQTT_API_TIMEOUT)
+        tc.api("mqtt/config_update", make_tls_config(cert_id=wrong_cert_id))
         wait_mqtt_disconnected(tc)
     finally:
         # Restore working config and clean up
         ensure_mqtt_connected(tc, make_tls_config())
-        tc.api("certs/remove", {"id": wrong_cert_id}, timeout=MQTT_API_TIMEOUT)
+        tc.api("certs/remove", {"id": wrong_cert_id})
 
 
 def test_tls_no_cert(tc: TestContext) -> None:
     """Connection needs to fail when using the built-in CA bundle (cert_id=-1)."""
-    tc.api("mqtt/config_update", make_tls_config(cert_id=-1), timeout=MQTT_API_TIMEOUT)
+    tc.api("mqtt/config_update", make_tls_config(cert_id=-1))
     wait_mqtt_disconnected(tc)
 
     # Restore
@@ -216,7 +212,7 @@ def test_tls_trigger(tc: TestContext) -> None:
         ),
         action=make_print_action(marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
+    tc.api("automation/config_update", {"tasks": [task]})
     time.sleep(2)
 
     publish_until_in_event_log(tc, get_tls_helper(), "tls/trig", "go", marker)
@@ -232,7 +228,7 @@ def test_tls_action(tc: TestContext) -> None:
         trigger=make_http_trigger("test_tls_action"),
         action=make_mqtt_action(action_topic, marker),
     )
-    tc.api("automation/config_update", {"tasks": [task]}, timeout=MQTT_API_TIMEOUT)
+    tc.api("automation/config_update", {"tasks": [task]})
     time.sleep(2)
 
     helper = get_tls_helper()
@@ -259,11 +255,7 @@ def suite_teardown(tc: TestContext) -> None:
     for _ in range(5):
         try:
             if original_automation_config is not None:
-                tc.api(
-                    "automation/config_update",
-                    {"tasks": original_automation_config.get("tasks", [])},
-                    timeout=MQTT_API_TIMEOUT,
-                )
+                tc.api("automation/config_update", {"tasks": original_automation_config.get("tasks", [])})
             break
         except (TimeoutError, OSError):
             time.sleep(2)
@@ -272,7 +264,7 @@ def suite_teardown(tc: TestContext) -> None:
         try:
             if original_mqtt_config is not None:
                 restore = dict(original_mqtt_config)
-                tc.api("mqtt/config_update", restore, timeout=MQTT_API_TIMEOUT)
+                tc.api("mqtt/config_update", restore)
             break
         except (TimeoutError, OSError):
             time.sleep(2)
@@ -280,7 +272,7 @@ def suite_teardown(tc: TestContext) -> None:
     # Remove the uploaded cert from the device
     for _ in range(5):
         try:
-            tc.api("certs/remove", {"id": CERT_ID}, timeout=MQTT_API_TIMEOUT)
+            tc.api("certs/remove", {"id": CERT_ID})
             break
         except (TimeoutError, OSError):
             time.sleep(2)

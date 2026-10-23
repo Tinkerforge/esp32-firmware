@@ -298,7 +298,6 @@ CHARGER_NAMES_FILE = "/charge_manager/all_charger_names"
 
 CHARGE_RECORDS_DIR = "/charge-records"
 
-PDF_TIMEOUT_S = 120
 MAX_CHARGES_PDF_TIMEOUT_S = 15 * 60
 MAX_CHARGES_TEST_TIMEOUT_S = 30 * 60
 
@@ -614,7 +613,7 @@ def wait_for_device(tc: TestContext):
 
 def delete_path(tc: TestContext, path: str):
     try:
-        tc.http_request('DELETE', f"/debug/fs{path}", timeout=10)
+        tc.http_request('DELETE', f"/debug/fs{path}")
     except HTTPError as e:
         if e.code != 404:
             raise
@@ -645,7 +644,7 @@ def upload_charger_names(tc: TestContext, names: dict[int, str]):
 
 
 def request_pdf(tc: TestContext, lang: Language, *, start_min=0, end_min=0, filter_empty=True, user_filter=-2, device_filter=-2,
-                letterhead=DEFAULT_LETTERHEAD, timeout=PDF_TIMEOUT_S) -> bytes:
+                letterhead=DEFAULT_LETTERHEAD, timeout: float | None = None) -> bytes:
     payload = {
         "api_not_final_acked": True,
         "language": 1 if lang == 'en' else 0,
@@ -658,7 +657,8 @@ def request_pdf(tc: TestContext, lang: Language, *, start_min=0, end_min=0, filt
         "filter_empty_charges": filter_empty,
         "current_timestamp_min": int(time.time() // 60),
     }
-    return tc.http_request('PUT', '/charge_tracker/pdf', json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=timeout)
+    kwargs = {} if timeout is None else {"timeout": timeout}
+    return tc.http_request('PUT', '/charge_tracker/pdf', json.dumps(payload), headers={"Content-Type": "application/json"}, **kwargs)
 
 
 def set_electricity_price(tc: TestContext, price: int):
@@ -1052,7 +1052,7 @@ def request_csv(tc: TestContext, lang: Language) -> list[list[str]]:
         "csv_delimiter": 1,  # RFC 4180: UTF-8, comma separated
         "filter_empty_charges": False,
     }
-    data = tc.http_request('PUT', '/charge_tracker/csv', json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=PDF_TIMEOUT_S)
+    data = tc.http_request('PUT', '/charge_tracker/csv', json.dumps(payload), headers={"Content-Type": "application/json"})
     return list(csv.reader(io.StringIO(data.decode('utf-8-sig'))))
 
 

@@ -37,7 +37,7 @@ def test_push_single_plane(tc: TestContext):
         'forecast': forecast,
     }
 
-    tc.api('solar_forecast/planes/0/forecast_update', payload, timeout=10)
+    tc.api('solar_forecast/planes/0/forecast_update', payload)
 
     result = tc.api('solar_forecast/planes/0/forecast')
     tc.assert_eq(first_date, result.get('first_date'))
@@ -72,7 +72,7 @@ def test_push_auto_enables_plane(tc: TestContext):
         'forecast': forecast,
     }
 
-    tc.api('solar_forecast/planes/1/forecast_update', payload, timeout=10)
+    tc.api('solar_forecast/planes/1/forecast_update', payload)
 
     # Verify plane got auto-enabled
     plane_cfg = tc.api('solar_forecast/planes/1/config')
@@ -94,7 +94,7 @@ def test_push_updates_state(tc: TestContext):
         'forecast': forecast,
     }
 
-    tc.api('solar_forecast/planes/0/forecast_update', payload, timeout=10)
+    tc.api('solar_forecast/planes/0/forecast_update', payload)
 
     state = tc.api('solar_forecast/planes/0/state')
     tc.assert_gt(0, state.get('last_sync'))
@@ -111,7 +111,7 @@ def test_push_daylight_saving_time(tc: TestContext):
         'forecast': forecast,
     }
 
-    tc.api('solar_forecast/planes/0/forecast_update', payload, timeout=10)
+    tc.api('solar_forecast/planes/0/forecast_update', payload)
 
     result = tc.api('solar_forecast/planes/0/forecast')
     tc.assert_eq(first_date, result.get('first_date'))
