@@ -64,9 +64,6 @@ class WARP3TestBox(TestBox):
         'none': (True, True),
     })
 
-    duty_cycle_ringbuf = []
-    value_ringbuf = []
-
     ## API
     def set_diode_faulted(self, fault: bool, clear_after_s: int = 0):
         if clear_after_s != 0:
@@ -181,7 +178,6 @@ class WARP3TestBox(TestBox):
         return d[gpio]
 
     def reset(self):
-        # TODO why is this not called
         self.set_cp('A')
         self.connect_meter('real')
         self.set_gpio_shutdown_closed(False)
