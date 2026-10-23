@@ -67,6 +67,7 @@ export interface ap_config {
     enable_ap: boolean;
     ap_fallback_only: boolean;
     share_ethernet: boolean;
+    ethernet_passthrough: boolean;
     ssid: string;
     hide_ssid: boolean;
     passphrase: string;

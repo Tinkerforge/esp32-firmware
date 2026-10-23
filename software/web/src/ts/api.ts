@@ -238,6 +238,7 @@ export type feature =
     "button_configuration" |
     "ethernet" |
     "wifi_ap_ethernet_sharing" |
+    "wifi_ap_ethernet_passthrough" |
     "meters" |
     "nfc" |
     "phase_switch" |

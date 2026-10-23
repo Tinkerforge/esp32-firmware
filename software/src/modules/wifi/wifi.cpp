@@ -30,6 +30,7 @@
 
 #if MODULE_ETHERNET_AVAILABLE()
 #include <ETH.h>
+#include "ethernet_passthrough.h"
 #endif
 
 #include "event_log_prefix.h"
@@ -60,6 +61,7 @@ void Wifi::pre_setup()
         {"enable_ap", Config::Bool(true)},
         {"ap_fallback_only", Config::Bool(false)},
         {"share_ethernet", Config::Bool(false)},
+        {"ethernet_passthrough", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("", 8, 64)}, // Blank passphrase will be replaced with default passphrase in setup. | FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
@@ -88,8 +90,19 @@ void Wifi::pre_setup()
         if (is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
             return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
 
-        if (!update.get("share_ethernet")->asBool() && gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+        if (!update.get("share_ethernet")->asBool() && !update.get("ethernet_passthrough")->asBool() && gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+
+        if (update.get("ethernet_passthrough")->asBool()) {
+#if MODULE_ETHERNET_AVAILABLE()
+            if (update.get("share_ethernet")->asBool())
+                return "Ethernet passthrough and NAT sharing are mutually exclusive.";
+            if (!update.get("enable_ap")->asBool() || update.get("ap_fallback_only")->asBool())
+                return "Ethernet passthrough requires the WiFi AP to be always enabled.";
+#else
+            return "Ethernet passthrough requires Ethernet support.";
+#endif
+        }
 
         if (update.get("share_ethernet")->asBool()) {
 #if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
@@ -119,6 +132,7 @@ void Wifi::pre_setup()
                 (update.get("enable_ap")->asBool()        != ap_config.get("enable_ap")->asBool())        &&
                 (update.get("ap_fallback_only")->asBool() == ap_config.get("ap_fallback_only")->asBool()) &&
                 (update.get("share_ethernet")->asBool()   == ap_config.get("share_ethernet")->asBool())   &&
+                (update.get("ethernet_passthrough")->asBool() == ap_config.get("ethernet_passthrough")->asBool()) &&
                 (update.get("ssid")->asString()           == ap_config.get("ssid")->asString())           &&
                 (update.get("hide_ssid")->asBool()        == ap_config.get("hide_ssid")->asBool())        &&
                 (update.get("passphrase")->asString()     == ap_config.get("passphrase")->asString())     &&
@@ -437,7 +451,8 @@ void Wifi::apply_soft_ap_config_and_start()
                    runtime_ap->channel,
                    runtime_ap->hide_ssid);
 
-    if (!WiFi.softAPConfig(ip, runtime_ap->share_ethernet ? ip : IPAddress{runtime_ap->gateway.addr}, subnet)) {
+    if (!runtime_ap->ethernet_passthrough
+        && !WiFi.softAPConfig(ip, runtime_ap->share_ethernet ? ip : IPAddress{runtime_ap->gateway.addr}, subnet)) {
         logger.printfln("softAPConfig failed");
     }
 
@@ -458,6 +473,35 @@ void Wifi::apply_soft_ap_config_and_start()
 
 void Wifi::update_ap_ethernet_sharing()
 {
+#if MODULE_ETHERNET_AVAILABLE()
+    if (runtime_ap && runtime_ap->ethernet_passthrough && WiFi.AP.started()) {
+        const String management_ip = ETH.localIP().toString();
+        memcpy(runtime_ap->ip_ssid_passphrase, management_ip.c_str(), management_ip.length() + 1);
+        if (!ap_config.get("enable_ap")->asBool()) {
+            ethernet_passthrough::stop();
+            runtime_ap->passthrough_active = false;
+            return;
+        }
+        // DHCP may have been restarted by an AP start event. Never compete with
+        // the upstream LAN's DHCP server, including while Ethernet is offline.
+        const esp_err_t dhcp_error = esp_netif_dhcps_stop(WiFi.AP.netif());
+        esp_netif_ip_info_t no_ip{};
+        if ((dhcp_error != ESP_OK && dhcp_error != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED)
+            || (WiFi.AP.localIP() != IPAddress(0,0,0,0) && esp_netif_set_ip_info(WiFi.AP.netif(), &no_ip) != ESP_OK)) {
+            ethernet_passthrough::stop();
+            runtime_ap->passthrough_active = false;
+            logger.printfln("Disabling AP DHCP/address for Ethernet passthrough failed");
+            return;
+        }
+        const bool active = ethernet_passthrough::start(ETH.netif(), WiFi.AP.netif());
+        if (!runtime_ap->passthrough_attempted || active != runtime_ap->passthrough_active) {
+            runtime_ap->passthrough_attempted = true;
+            runtime_ap->passthrough_active = active;
+            logger.printfln("Ethernet passthrough %s", active ? "enabled" : "unavailable");
+        }
+        return;
+    }
+#endif
 #if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
     if (!runtime_ap || !WiFi.AP.started())
         return;
@@ -505,7 +549,7 @@ void Wifi::apply_ap_config(bool defer_start)
         const String &ssid = ap_config.get("ssid"      )->asString();
         const String &pass = ap_config.get("passphrase")->asString();
 
-        const size_t ip_len_term   = ip.length()   + 1;
+        const size_t ip_len_term   = ap_config.get("ethernet_passthrough")->asBool() ? 16 : ip.length() + 1;
         const size_t ssid_len_term = ssid.length() + 1;
         const size_t pass_len_term = pass.length() + 1;
 
@@ -523,11 +567,15 @@ void Wifi::apply_ap_config(bool defer_start)
         new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet);
 
         new_runtime->ap_fallback_only = ap_config.get("ap_fallback_only")->asBool();
+        new_runtime->ethernet_passthrough = ap_config.get("ethernet_passthrough")->asBool();
+        new_runtime->passthrough_active = false;
+        new_runtime->passthrough_attempted = false;
         new_runtime->share_ethernet   = ap_config.get("share_ethernet"  )->asBool();
         new_runtime->hide_ssid        = ap_config.get("hide_ssid"       )->asBool();
         new_runtime->channel          = ap_config.get("channel"         )->asUint() & 0xF;
 
-        memcpy(new_runtime->ip_ssid_passphrase, ip.c_str(), ip_len_term);
+        memset(new_runtime->ip_ssid_passphrase, 0, ip_len_term);
+        memcpy(new_runtime->ip_ssid_passphrase, ip.c_str(), ip.length() + 1);
 
         new_runtime->ssid_offset = static_cast<uint8_t>(ip_len_term);
         memcpy(new_runtime->ip_ssid_passphrase + new_runtime->ssid_offset, ssid.c_str(), ssid_len_term);
@@ -543,6 +591,13 @@ void Wifi::apply_ap_config(bool defer_start)
 
         const bool was_disabled = (runtime_ap == nullptr);
 
+#if MODULE_ETHERNET_AVAILABLE()
+        if (!ethernet_passthrough::stop()) {
+            free(new_runtime);
+            logger.printfln("Stopping Ethernet passthrough failed; keeping the current AP running");
+            return;
+        }
+#endif
         if (runtime_ap && runtime_ap->soft_ap_running) {
 #if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
             if (runtime_ap->ethernet_shared)
@@ -793,6 +848,8 @@ void Wifi::register_ap_event_handlers()
             task_scheduler.scheduleOnce([this]() {
                 auto ap_sta_count = state.get("ap_sta_count");
                 ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
+                if (runtime_ap && runtime_ap->ethernet_passthrough)
+                    update_ap_ethernet_sharing();
             });
 
         },
@@ -817,6 +874,8 @@ void Wifi::register_ap_event_handlers()
                 else {
                     ap_sta_count->updateUint(ap_sta_count_value - 1);
                 }
+                if (runtime_ap && runtime_ap->ethernet_passthrough)
+                    update_ap_ethernet_sharing();
             });
         },
         ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
@@ -1311,11 +1370,15 @@ void Wifi::setup()
 {
     initialized = true;
 
-#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
-    api.addFeature("wifi_ap_ethernet_sharing");
+#if MODULE_ETHERNET_AVAILABLE()
+    api.addFeature("wifi_ap_ethernet_passthrough");
     task_scheduler.scheduleUncancelable([this]() {
         update_ap_ethernet_sharing();
     }, 1_s, 1_s);
+#endif
+
+#if MODULE_ETHERNET_AVAILABLE() && defined(CONFIG_LWIP_IP_FORWARD) && defined(CONFIG_LWIP_IPV4_NAPT)
+    api.addFeature("wifi_ap_ethernet_sharing");
 #endif
 
     if (!api.restorePersistentConfig("wifi/sta_config", &sta_config, API::SavedDefaultConfig::Keep)) {

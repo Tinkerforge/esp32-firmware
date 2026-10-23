@@ -94,6 +94,9 @@ private:
         bool soft_ap_running  : 1;
         bool share_ethernet   : 1;
         bool ethernet_shared : 1;
+        bool ethernet_passthrough : 1;
+        bool passthrough_active : 1;
+        bool passthrough_attempted : 1;
 
         char ip_ssid_passphrase[];
     };

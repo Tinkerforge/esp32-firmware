@@ -1,4 +1,9 @@
 de_hyph = [
+    'se-pa-ra-tes',
+    'Stan-dard-schnitt-stel-le',
+    'Durch-lei-tung',
+    'Ge-rä-te-ver-wal-tung',
+    'Netz-werk-schlei-fen',
     'abge-brochen',
     'Abge-schlossen',
     'ab-ge-schlos-sen',
@@ -1647,6 +1652,9 @@ de_hyph = [
 ]
 
 en_hyph = [
+    'Pass-through',
+    'pass-through',
+    'mul-ti-cast',
     "Acti-vating",
     "alter-native",
     "Alter-native",

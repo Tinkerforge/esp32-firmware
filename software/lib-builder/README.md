@@ -99,35 +99,12 @@ uv run pio run -e warp
 
 ### Ethernet sharing on the WiFi access point
 
-The WiFi AP setting `share_ethernet` uses ESP-IDF's IPv4 NAPT support. It
-defaults to false. The Ethernet and secure defconfigs enable
-`CONFIG_LWIP_IP_FORWARD` and `CONFIG_LWIP_IPV4_NAPT`; the ESP32 Brick without
-Ethernet keeps forwarding disabled. Per-interface DNS keeps Ethernet's DNS
-separate from a simultaneous WiFi station connection. Apply the lwIP patches
-as described above:
-patch 0005 keeps forwarding disabled unless a NAPT interface is active.
-
-For WARP4, build with `defconfig.esp32secure` and point `platform_packages` in
-`warp4.ini` at the resulting libraries, using the same `symlink://` syntax as
-in "Test built libs" above. Build the firmware with `uv run pio run -e warp4`.
-Changing a defconfig does not modify the currently pinned precompiled packages.
-Until updated packages are published, a local library build is required; the
-web interface disables sharing when the compiled libraries lack NAPT support.
-
-In the web interface, select **Network > WiFi Access Point**, set the access
-point to **Enabled**, then enable **Share Ethernet internet**. Sharing requires
-Ethernet to have an IPv4 address and gateway and to be the default interface.
-The AP and Ethernet subnets must not overlap. DHCP clients receive the AP's
-address as their gateway and Ethernet's IPv4 DNS server. Reconnect clients after
-changing sharing settings or the Ethernet DNS server so they renew their leases.
-Ethernet link loss disables NAPT; reconnecting enables it again automatically.
-
-For hardware verification, connect a client to the AP and check its DHCP
-gateway and DNS, IPv4 internet access by address and by hostname, Ethernet
-unplug/replug, and persistence across reboot. With sharing disabled, verify
-that AP clients can still open the device's web interface but cannot route
-through it. Also test DHCP and static Ethernet configurations and overlapping
-subnets. API validation tests are in `src/modules/wifi/tests/ethernet_sharing.py`.
+NAT sharing requires `CONFIG_LWIP_IP_FORWARD` and `CONFIG_LWIP_IPV4_NAPT`.
+The Ethernet and secure defconfigs enable both options. Each interface has its
+own DNS settings, so Ethernet and WiFi station DNS settings stay separate.
+Apply the lwIP patches as described above. Patch 0005 allows forwarding only
+when NAPT is active.
+Transparent LAN passthrough does not require NAPT support.
 
 ### Publish built libraries
 
