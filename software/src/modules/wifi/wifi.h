@@ -54,6 +54,7 @@ private:
     struct sta_runtime;
 
     void apply_soft_ap_config_and_start();
+    void update_ap_ethernet_sharing();
     void apply_ap_config(bool defer_start = false);
     void apply_sta_config(bool defer_start = false);
     void apply_ipv6_sta_config(sta_runtime *new_runtime);
@@ -80,6 +81,7 @@ private:
         uint32_t scan_start_time_s; // This overflows after an uptime of 68 years, which seems unlikely enough.
 
         ip4_addr_t gateway;
+        ip4_addr_t shared_dns;
         uint8_t subnet_cidr;
 
         uint8_t ssid_offset;
@@ -90,6 +92,11 @@ private:
         bool ap_fallback_only : 1;
         bool hide_ssid        : 1;
         bool soft_ap_running  : 1;
+        bool share_ethernet   : 1;
+        bool ethernet_shared : 1;
+        bool ethernet_passthrough : 1;
+        bool passthrough_active : 1;
+        bool passthrough_attempted : 1;
 
         char ip_ssid_passphrase[];
     };
