@@ -27,6 +27,7 @@ from .https_server import TestHTTPSServer
 from .testbox.testbox import TestBox
 from .testbox.warp2 import WARP2TestBox
 from .testbox.warp3 import WARP3TestBox
+from .testbox.warp4 import WARP4TestBox
 from .testbox.wem import WEMTestBox
 from .device_type import DeviceType
 
@@ -85,7 +86,9 @@ class TestContext:
         if self._brickd_host is None:
             return False
 
-        if self._brickd_host.startswith('warp3'):
+        if self._brickd_host.startswith('warp4'):
+            self._testbox = WARP4TestBox()
+        elif self._brickd_host.startswith('warp3'):
             self._testbox = WARP3TestBox()
         elif self._brickd_host.startswith('warp2'):
             self._testbox = WARP2TestBox()
