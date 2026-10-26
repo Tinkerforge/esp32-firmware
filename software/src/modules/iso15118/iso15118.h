@@ -191,6 +191,8 @@ public:
 
     void cancel_pending_tasks();
 
+    void rearm_for_next_ev();
+
     // Modem shutdown policy for begin_iec_transition():
     // None:      Caller handles the modem (already off, off pending, or keep on).
     // Immediate: No open socket, disable right away.
