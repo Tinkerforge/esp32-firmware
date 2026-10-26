@@ -19,9 +19,9 @@ def set_test_mode_enabled(enabled: bool, tc):
 
     ipcon = IPConnection()
 
-    if did == 2159:
+    if did == BrickletEVSE.DEVICE_IDENTIFIER:
         evse = BrickletEVSE(uid, ipcon)
-    elif did == 2167:
+    elif did == BrickletEVSEV2.DEVICE_IDENTIFIER:
         evse = BrickletEVSEV2(uid, ipcon)
 
     tc.http_request('GET', '/hidden_proxy/enable')
