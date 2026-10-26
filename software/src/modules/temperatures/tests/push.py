@@ -5,10 +5,13 @@
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
 from software.test_runner.test_context import run_testsuite, TestContext
-from software.src.modules.temperatures.tests._common import make_temperatures, midnight_today_minutes, TEMP_COUNT
+from software.src.modules.temperatures.tests._common import make_temperatures, midnight_today_minutes, minutes_since_epoch, TEMP_COUNT
 
 
 def suite_setup(tc: TestContext):
+    # Pushed data is timestamped with the device clock, which reads 0 until synced
+    tc.wait_for_clock_synced()
+
     config = tc.api('temperatures/config')
     config['enable'] = True
     config['source'] = 1  # Push
@@ -82,9 +85,10 @@ def test_push_updates_state(tc: TestContext):
 
     tc.api('temperatures/temperatures_update', payload)
 
+    now = minutes_since_epoch()
     state = tc.api('temperatures/state')
-    tc.assert_gt(0, state.get('last_sync'))
-    tc.assert_gt(0, state.get('last_check'))
+    tc.assert_epsilon(now, 2, state.get('last_sync'))
+    tc.assert_epsilon(now, 2, state.get('last_check'))
     tc.assert_eq(0, state.get('next_check'))
 
 

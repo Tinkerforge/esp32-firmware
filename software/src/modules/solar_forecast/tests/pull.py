@@ -79,6 +79,9 @@ def trigger_refetch(tc: TestContext):
 
 
 def configure_and_probe(tc: TestContext) -> str | None:
+    # The DUT only pulls once its clock is synced
+    tc.wait_for_clock_synced()
+
     server = get_server()
 
     config = tc.api('solar_forecast/config')

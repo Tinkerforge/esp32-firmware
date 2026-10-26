@@ -24,16 +24,6 @@ def time_to_datetime(t: dict) -> datetime.datetime:
     )
 
 
-# Devices without RTC report year 0 until NTP synced, give NTP some time
-def wait_for_valid_time(tc: TestContext) -> dict:
-    def check() -> dict:
-        t = tc.api("rtc/time")
-        tc.assert_ne(0, t["year"])
-        return t
-
-    return tc.wait_for(check, timeout=30, poll_delay=0.5)
-
-
 def has_ntp(tc: TestContext) -> bool:
     try:
         tc.api("ntp/config")
@@ -50,14 +40,14 @@ def suite_setup(tc: TestContext) -> None:
 
 # Time consistency
 def test_time_progresses(tc: TestContext) -> None:
-    t1 = time_to_datetime(wait_for_valid_time(tc))
+    t1 = time_to_datetime(tc.wait_for_clock_synced())
     time.sleep(1.5)
     t2 = time_to_datetime(tc.api("rtc/time"))
     tc.assert_gt(t1, t2)  # t2 > t1
 
 
 def test_weekday_matches_date(tc: TestContext) -> None:
-    t = wait_for_valid_time(tc)
+    t = tc.wait_for_clock_synced()
     dt = time_to_datetime(t)
     # Firmware convention: 0=Sunday
     # Python weekday(): 0=Monday
@@ -147,7 +137,7 @@ def test_set_time_via_api(tc: TestContext) -> None:
 
 # Rejection of invalid timestamps
 def test_reject_zero_time(tc: TestContext) -> None:
-    before = time_to_datetime(wait_for_valid_time(tc))
+    before = time_to_datetime(tc.wait_for_clock_synced())
 
     try:
         tc.api(
@@ -174,7 +164,7 @@ def test_reject_zero_time(tc: TestContext) -> None:
 
 
 def test_reject_ancient_time(tc: TestContext) -> None:
-    before = time_to_datetime(wait_for_valid_time(tc))
+    before = time_to_datetime(tc.wait_for_clock_synced())
 
     try:
         tc.api(

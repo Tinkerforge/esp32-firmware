@@ -31,6 +31,9 @@ def get_server() -> TestHTTPSServer:
 def suite_setup(tc: TestContext):
     global https_server, original_config
 
+    # The DUT only pulls once its clock is synced
+    tc.wait_for_clock_synced()
+
     original_config = tc.api('temperatures/config')
 
     https_server = tc.create_test_https_server(CERT_ID, 'temp-pull-test')

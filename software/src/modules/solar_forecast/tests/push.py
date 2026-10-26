@@ -5,12 +5,12 @@
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
 from software.test_runner.test_context import run_testsuite, TestContext
-from software.src.modules.solar_forecast.tests._common import make_forecast, midnight_today_minutes, minutes_since_epoch, wait_for_clock_synced, FORECAST_COUNT, MAX_FORECAST_SLOTS
+from software.src.modules.solar_forecast.tests._common import make_forecast, midnight_today_minutes, minutes_since_epoch, FORECAST_COUNT, MAX_FORECAST_SLOTS
 
 
 def suite_setup(tc: TestContext):
     # Pushed data is timestamped with the device clock, which reads 0 until synced
-    wait_for_clock_synced(tc)
+    tc.wait_for_clock_synced()
 
     # Configure module for push mode
     config = tc.api('solar_forecast/config')

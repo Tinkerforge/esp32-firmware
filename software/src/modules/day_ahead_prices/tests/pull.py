@@ -48,6 +48,9 @@ def base_config(tc: TestContext, **overrides) -> dict:
 def suite_setup(tc: TestContext):
     global https_server, original_config
 
+    # The DUT only pulls once its clock is synced
+    tc.wait_for_clock_synced()
+
     original_config = tc.api('day_ahead_prices/config')
 
     https_server = tc.create_test_https_server(CERT_ID, 'dap-pull-test')

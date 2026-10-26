@@ -409,6 +409,9 @@ original_dap_config = None
 def suite_setup(tc: TestContext):
     global device_tz_offset_minutes, original_heating_config, original_dap_config
 
+    # The heating plan is only calculated once the clock is synced
+    tc.wait_for_clock_synced()
+
     # Save original configs for teardown restoration.
     original_heating_config = tc.api("heating/config")
     original_dap_config = tc.api("day_ahead_prices/config")

@@ -10,6 +10,9 @@ from software.src.modules.day_ahead_prices.tests._common import make_prices, mid
 
 
 def suite_setup(tc: TestContext):
+    # Calendar prices are only applied once the clock is synced (needed for the day of week)
+    tc.wait_for_clock_synced()
+
     config = tc.api('day_ahead_prices/config')
     config['enable'] = True
     config['source'] = 1  # Push

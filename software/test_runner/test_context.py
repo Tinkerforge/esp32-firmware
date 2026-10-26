@@ -474,6 +474,15 @@ class TestContext:
 
         return act
 
+    def wait_for_clock_synced(self, timeout: float = 30) -> dict:
+        """Waits until the device clock is synced (e.g. via NTP after a reboot) and returns rtc/time."""
+        def check() -> dict:
+            t = self.api('rtc/time')
+            self.assert_ne(0, t['year'])
+            return t
+
+        return self.wait_for(check, timeout=timeout, poll_delay=0.5)
+
     def assert_fail(self, assert_fn: typing.Callable[[], typing.Any]):
         """Assert that the passed function raises an AssertionError"""
         error = None
