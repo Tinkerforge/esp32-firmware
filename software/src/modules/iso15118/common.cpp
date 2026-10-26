@@ -528,9 +528,10 @@ void Common::handle_supported_app_protocol_req()
         iso15118.begin_iec_transition(ISO15118::ModemOff::Delayed);
     } else {
         // Priority: ISO2 > DIN > ISO20. ISO20 is currently testing-only.
+        const bool prefer_din = iso15118.use_prefer_din() && iso15118.is_read_soc_only() && (din70121_schema_id != UINT8_MAX);
         uint8_t schema_id = 0;
         uint8_t index     = 0;
-        if (iso2_schema_id != UINT8_MAX) {
+        if (iso2_schema_id != UINT8_MAX && !prefer_din) {
             schema_id  = iso2_schema_id;
             index      = iso2_index;
             exi_in_use = ExiType::Iso2;
@@ -539,7 +540,7 @@ void Common::handle_supported_app_protocol_req()
             schema_id  = din70121_schema_id;
             index      = din70121_index;
             exi_in_use = ExiType::Din;
-            iso15118.trace("Using DIN 70121");
+            iso15118.trace("Using DIN 70121%s", prefer_din && iso2_schema_id != UINT8_MAX ? " (preferred over ISO 15118-2)" : "");
         } else {
             schema_id  = iso20_schema_id;
             index      = iso20_index;

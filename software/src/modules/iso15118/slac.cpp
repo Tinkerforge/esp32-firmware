@@ -398,11 +398,12 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     iso15118.common.detect_evcc_vendor_from_mac(pev_mac);
 
 #if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
-    iso15118.trace("ISO15118: SLAC attempt: autocharge=%d read_soc=%d charge_via_iso15118=%d; experimental: ef_teardown=%d nonegotiation_autocharge=%d nonegotiation_after_soc=%d ignore_soc_compatibility=%d",
+    iso15118.trace("ISO15118: SLAC attempt: autocharge=%d read_soc=%d charge_via_iso15118=%d; experimental: ef_teardown=%d nonegotiation_autocharge=%d nonegotiation_after_soc=%d ignore_soc_compatibility=%d prefer_din=%d",
                    iso15118.is_autocharge(), iso15118.config.get("read_soc")->asBool(),
                    iso15118.config.get("charge_via_iso15118")->asBool(),
                    iso15118.use_ef_teardown(), iso15118.use_nonegotiation_autocharge(),
-                   iso15118.use_nonegotiation_after_soc(), iso15118.config_experimental.get("ignore_soc_compatibility")->asBool());
+                   iso15118.use_nonegotiation_after_soc(), iso15118.config_experimental.get("ignore_soc_compatibility")->asBool(),
+                   iso15118.use_prefer_din());
 #endif
 
     memcpy(pev_run_id, cm_slac_parm_request.run_id, SLAC_RUN_ID_LENGTH);

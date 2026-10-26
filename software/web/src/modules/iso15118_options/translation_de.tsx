@@ -17,7 +17,10 @@ let x = {
             "nonegotiation_after_soc_help": "Nach der DC-Sitzung zum Auslesen des Ladestands eine neue Kommunikationsrunde versuchen, um den Wechsel zum AC-Laden zu testen. Beim SLAC-Matching ohne Bestätigung abbrechen. Bei aktivierter Autocharge-Variante stattdessen die Verbindung vollständig aufbauen und mit Failed_NoNegotiation antworten.",
             "ignore_soc_compatibility": "SoC immer lesen",
             "ignore_soc_compatibility_desc": "Kompatibilitätssperre ignorieren",
-            "ignore_soc_compatibility_help": "Fahrzeugbezogene Kompatibilitätsausschlüsse beim Auslesen des Ladestands ignorieren. Die normale Einstellung Ladestand auslesen muss weiterhin aktiviert sein."
+            "ignore_soc_compatibility_help": "Fahrzeugbezogene Kompatibilitätsausschlüsse beim Auslesen des Ladestands ignorieren. Die normale Einstellung Ladestand auslesen muss weiterhin aktiviert sein.",
+            "prefer_din": "DIN 70121 bevorzugen",
+            "prefer_din_desc": "DIN 70121 statt ISO 15118-2 zum Auslesen des Ladestands",
+            "prefer_din_help": "Wenn das Fahrzeug beide Protokolle unterstützt, den Ladestand über DIN 70121 statt ISO 15118-2 auslesen. Gilt nur, wenn Ladestand auslesen aktiviert und Laden über ISO 15118 deaktiviert ist."
         },
         "script": {
             "experimental_save_failed": "Speichern der experimentellen ISO15118-Einstellungen fehlgeschlagen."

@@ -67,6 +67,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                   nonegotiation_autocharge: false,
                   nonegotiation_after_soc: false,
                   ignore_soc_compatibility: false,
+                  prefer_din: false,
                   saving: false,
 //#endif
                   pib_downloading: false
@@ -656,6 +657,12 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                                     checked={state.nonegotiation_after_soc}
                                     disabled={experimental_disabled}
                                     onClick={this.toggle('nonegotiation_after_soc')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.prefer_din")} help={__("iso15118.content.prefer_din_help")}>
+                            <Switch desc={__("iso15118.content.prefer_din_desc")}
+                                    checked={state.prefer_din}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('prefer_din')}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.ignore_soc_compatibility")} help={__("iso15118.content.ignore_soc_compatibility_help")}>
                             <Switch desc={__("iso15118.content.ignore_soc_compatibility_desc")}

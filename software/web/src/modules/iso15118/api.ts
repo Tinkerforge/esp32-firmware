@@ -14,6 +14,7 @@ export interface config_experimental {
     nonegotiation_autocharge: boolean;
     nonegotiation_after_soc: boolean;
     ignore_soc_compatibility: boolean;
+    prefer_din: boolean;
 }
 //#endif
 

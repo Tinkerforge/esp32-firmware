@@ -17,7 +17,10 @@ let x = {
             "nonegotiation_after_soc_help": "After the DC state-of-charge session, attempt a new communication round to test AC fallback. Stop at SLAC matching without confirming the match. If Autocharge variant is enabled, complete the connection and reply with Failed_NoNegotiation instead.",
             "ignore_soc_compatibility": "Always read SoC",
             "ignore_soc_compatibility_desc": "Ignore compatibility restrictions",
-            "ignore_soc_compatibility_help": "Ignore vehicle compatibility exclusions for SoC reading. The normal Read state of charge setting must still be enabled."
+            "ignore_soc_compatibility_help": "Ignore vehicle compatibility exclusions for SoC reading. The normal Read state of charge setting must still be enabled.",
+            "prefer_din": "Prefer DIN 70121",
+            "prefer_din_desc": "Use DIN 70121 instead of ISO 15118-2 to read SoC",
+            "prefer_din_help": "If the vehicle supports both protocols, read the state of charge via DIN 70121 instead of ISO 15118-2. Only applies if Read state of charge is enabled and Charge via ISO 15118 is disabled."
         },
         "script": {
             "experimental_save_failed": "Failed to save the experimental ISO15118 settings."
