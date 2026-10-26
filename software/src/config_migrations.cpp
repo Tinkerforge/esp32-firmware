@@ -1140,9 +1140,8 @@ void migrate_config()
     */
     if (!LittleFS.exists("/config/version")) {
         logger.printfln("Moving all config files into config folder");
-        if (LittleFS.exists("/config"))
-            remove_directory("/config");
-        LittleFS.mkdir("/config");
+        if (!LittleFS.exists("/config"))
+            LittleFS.mkdir("/config");
 
         for_file_in("/", [](File *file) {
             String name = file->name();
