@@ -84,27 +84,6 @@ specs = [
                 'scale_factor': -10.0,
             },
             {
-                'name': 'Inverter power factor L1',
-                'value_id': 'PowerFactorL1Directional',  # FIXME: sign?
-                'start_address': 0x0838,
-                'value_type': 'S16',
-                'scale_factor': 0.001,
-            },
-            {
-                'name': 'Inverter power factor L2',
-                'value_id': 'PowerFactorL2Directional',  # FIXME: sign?
-                'start_address': 0x0839,
-                'value_type': 'S16',
-                'scale_factor': 0.001,
-            },
-            {
-                'name': 'Inverter power factor L3',
-                'value_id': 'PowerFactorL3Directional',  # FIXME: sign?
-                'start_address': 0x083A,
-                'value_type': 'S16',
-                'scale_factor': 0.001,
-            },
-            {
                 'name': 'Inverter apparent power L1 [0.01 kVA]',
                 'value_id': 'PowerApparentL1ImExDiff',
                 'start_address': 0x083B,
@@ -180,13 +159,6 @@ specs = [
                 'start_address': 0x089F,
                 'value_type': 'S16',
                 'scale_factor': 10.0,
-            },
-            {
-                'name': 'Inverter power factor',
-                'value_id': 'PowerFactorLSumDirectional',  # FIXME: sign?
-                'start_address': 0x08A1,
-                'value_type': 'S16',
-                'scale_factor': 0.001,
             },
             {
                 'name': 'Inverter apparent power [0.01 kVA]',
