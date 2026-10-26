@@ -679,7 +679,18 @@ class TestContext:
 
         return self.http_request('GET', f"/debug/fs{path}")
 
-    def list_dir(self, path: str, recursive: bool = True):
+    def remove_file(self, path: str, missing_ok: bool = False):
+        if not self.debug_fs_enabled():
+            self.skip("Firmware was built without DEBUG_FS_ENABLE")
+
+        try:
+            self.http_request('DELETE', f"/debug/fs{path}")
+        except HTTPError as e:
+            if missing_ok and e.code == 404:
+                return
+            raise
+
+    def list_dir(self, path: str, recursive: bool = False):
         if not path.endswith('/'):
             path = path + '/'
 
