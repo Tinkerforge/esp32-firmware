@@ -18,7 +18,7 @@ import tempfile
 import time
 import random
 from urllib.error import URLError, HTTPError
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, HTTPDigestAuthHandler, build_opener, install_opener
 
 import esptool.cmds
 from esptool.targets import ESP32ROM
@@ -86,6 +86,8 @@ class TestContext:
     _args: typing.Any = None
 
     _test_start: float = None
+
+    _http_digest_credentials: tuple[str, str] = None
 
     api_schema_port_list: list[tuple[str, int]] = field(default_factory=lambda: [('http', 80), ('https', 443)])
 
@@ -211,8 +213,21 @@ class TestContext:
             esptool.cmds.erase_region(esp, partition_offset, 8192)
         return True
 
+    def enable_digest_auth(self, user, password):
+        self._http_digest_credentials = (user, password)
 
-    def http_request(self, method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'], path: str, payload: str | bytes = "", headers: typing.MutableMapping[str, str] = {}, timeout: float = 120, parse: bool = False, schema_port: tuple[str, int] = None, verify_cert: bool = False):
+    def disable_digest_auth(self):
+        self._http_digest_credentials = None
+
+    def http_request(self,
+                     method: typing.Literal['GET', 'PUT', 'POST', 'DELETE'],
+                     path: str, payload: str | bytes = "",
+                     headers: typing.MutableMapping[str, str] = {},
+                     timeout: float = 120,
+                     parse: bool = False,
+                     schema_port: tuple[str, int] = None,
+                     verify_cert: bool = False,
+                     credentials: tuple[str, str] = None):
         if self._esp_host is None:
             self.skip("ESP Host not passed. Can't send HTTP requests")
 
@@ -231,9 +246,25 @@ class TestContext:
 
             exc = None
             for schema, port in schema_list:
-                req = Request(f'{schema}://{self._esp_host}:{port}{path}', data=payload, method=method, headers=headers)
+                uri = f'{schema}://{self._esp_host}:{port}{path}'
+
+                req = Request(uri, data=payload, method=method, headers=headers)
+
+                if credentials is None and self._http_digest_credentials is None:
+                    open_fn = urlopen
+                else:
+                    creds = credentials if credentials else self._http_digest_credentials
+
+                    auth_handler = HTTPDigestAuthHandler()
+                    auth_handler.add_password(realm='esp32-lib',
+                                              uri=uri,
+                                              user=creds[0],
+                                              passwd=creds[1])
+                    opener = build_opener(auth_handler)
+                    open_fn = opener.open
+
                 try:
-                    with urlopen(req, timeout=timeout) as resp:
+                    with open_fn(req, timeout=timeout) as resp:
                         result = resp.read()
                         if parse:
                             return json.loads(result)
