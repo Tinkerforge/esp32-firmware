@@ -700,7 +700,7 @@ class TestContext:
 
         html = self.http_request('GET', f"/debug/fs{path}").decode('utf-8')
 
-        if listed_path := re.search('<h1>([^<]+)</h1>', html).group(1) != path.removesuffix('/'):
+        if listed_path := re.search('<h1>([^<]+)</h1>', html).group(1) != (path.removesuffix('/') if path != '/' else path):
             raise Exception(f"Attempted to list directory {path}, but received listing of directory {listed_path}!")
 
         entries = [path + e for e in re.findall('<a href="([^"]+)"', html)]
