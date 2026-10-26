@@ -211,12 +211,6 @@ class TestContext:
                 except HTTPError as e:
                     e.msg += ":" + e.read().decode('utf-8')
                     exc = e
-                except TimeoutError as e:
-                    # A bare TimeoutError (not wrapped in URLError) means the request was sent completely and only the response timed out.
-                    # Don't re-send with other schema in case of non-GET.
-                    if method != 'GET':
-                        raise
-                    exc = e
                 except Exception as e:
                     exc = e
 
