@@ -514,13 +514,11 @@ class TestContext:
     def assert_fail(self, assert_fn: typing.Callable[[], typing.Any]):
         """Assert that the passed function raises an AssertionError"""
         error = None
-        self.dbg("Assert fail {")
+
         try:
             assert_fn()
         except AssertionError as e:
             error = e
-            self.dbg(" Failed")
-        self.dbg("}")
 
         if error is None:
             raise AssertionError(f"Assertion failed: expected inner asserts to fail but all succeeded. ({self._get_callee()})")
@@ -530,24 +528,15 @@ class TestContext:
         left_error = None
         right_error = None
 
-        self.dbg("Assert XOR {")
-        self.dbg("left:")
-
         try:
             assert_fn_left()
         except AssertionError as e:
             left_error = e
-            self.dbg(" Failed")
-
-        self.dbg("right:")
 
         try:
             assert_fn_right()
         except AssertionError as e:
             right_error = e
-            self.dbg(" Failed")
-
-        self.dbg("}")
 
         if left_error is None and right_error is None:
             raise AssertionError(f"Assertion failed: expected one failed assertion but both succeeded\n" + self._get_callee())
