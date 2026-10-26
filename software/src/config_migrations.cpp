@@ -1127,14 +1127,16 @@ void migrate_config()
         Pre 2.0.0 configs are just in /
         2.0.0 and higher configs are in /config/
         This requires a "special" migration first:
-        Create the config folder, move all configs there, /version last
+        Create the config folder, move all configs there, /spiffs.json last
         (This is the marker that this migration is done)
 
         Interruption check:
-        - Check if /version exists. If yes run again.
+        - Check if /spiffs.json exists. If yes run again.
         Moving files is atomic (guaranteed by LittleFS),
-        so if /version still exists we can just move all files
+        so if /spiffs.json still exists we can just move all files
         into /config/ again.
+
+        spiffs.json is renamed to (/config/)version.
     */
     if (!LittleFS.exists("/config/version")) {
         logger.printfln("Moving all config files into config folder");
