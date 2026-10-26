@@ -53,20 +53,13 @@ class WEMTestBox(TestBox):
 
     ## API
     def connect_meter(self, m: Meter):
-        try:
-            self.C.set_value(self.meter_relays[m])
-        except Exception as e:
-            print(e)
+        self.C.set_value(self.meter_relays[m])
 
     def get_meter_connected(self):
-        try:
-            r = self.C.get_value()
-            for k, v in self.meter_relays.items():
-                if r == v:
-                    return k
-        except Exception as e:
-            print(e)
-            return 'none'
+        r = self.C.get_value()
+        for k, v in self.meter_relays.items():
+            if r == v:
+                return k
 
     def set_input_3(self, i: Input):
         self._set_input(0, i)
@@ -81,18 +74,10 @@ class WEMTestBox(TestBox):
         return self._get_input(1)
 
     def is_relay_closed(self):
-        try:
-            return self.D.get_value()[0]
-        except Exception as e:
-            print(e)
-            return False
+        return self.D.get_value()[0]
 
     def is_contactor_closed(self, contactor: int = 0):
-        try:
-            return not self.D.get_value()[1]
-        except Exception as e:
-            print(e)
-            return False
+        return not self.D.get_value()[1]
 
     def _get_led_state(self):
         return "unknown"
