@@ -12,6 +12,13 @@ def minutes_since_epoch(ts=None):
     return int(ts) // 60
 
 
+def wait_for_clock_synced(tc, timeout=30):
+    def check():
+        tc.assert_ne(0, tc.api('rtc/time')['year'])
+
+    tc.wait_for(check, timeout=timeout, poll_delay=0.5)
+
+
 def make_forecast(count=FORECAST_COUNT, base_wh=500, amplitude=400):
     """Generate a bell-curve solar forecast: Low in morning, peak at midday, low in evening."""
     forecast = []
