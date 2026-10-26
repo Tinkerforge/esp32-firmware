@@ -19,6 +19,8 @@
 
 #include "evse_v2.h"
 
+#include "LittleFS.h"
+
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "bindings/errors.h"
@@ -28,6 +30,8 @@
 #include "modules/meters/meter_defs.h"
 
 #include "options.h"
+
+#include "preinit.h"
 
 extern EVSEV2 evse_v2;
 
@@ -192,6 +196,10 @@ void EVSEV2::post_setup()
         io_scheduler.hal_call([this, &press_time]() { return tf_evse_v2_get_button_press_boot_time(&device, true, &press_time); });
         if (press_time != 0)
             logger.printfln("Reset boot button press time");
+
+        if (LittleFS.exists(RECOVERY_STATE_PATH)) {
+            LittleFS.remove(RECOVERY_STATE_PATH);
+        }
     }, 40_s);
 
     // Get all data once before announcing the EVSE feature.

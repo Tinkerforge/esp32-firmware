@@ -28,6 +28,8 @@
 #include "tools.h"
 #include "tools/fs.h"
 
+#include "preinit.h"
+
 static constexpr micros_t BUTTON_MIN_PRESS_THRES = 10_s;
 static constexpr micros_t BUTTON_MAX_PRESS_THRES = 30_s;
 #define BUTTON_IS_PRESSED 0xFFFFFFFF
@@ -37,6 +39,95 @@ extern TF_HAL hal;
 
 extern gpio_num_t blue_led_pin;
 extern gpio_num_t green_led_pin;
+
+static constexpr uint8_t MAX_STAGE = 3;
+
+struct FactoryResetData {
+    uint8_t stage:4;
+    uint32_t magic:28;
+    uint32_t uptime; // only for entropy
+    uint16_t padding;
+    uint16_t checksum;
+};
+
+static uint8_t recover_stage_from_flash() {
+    if (!mount_or_format_data_partition()) {
+        logger.printfln("Failed to format data partition.");
+        return 0;
+    }
+
+    if (!LittleFS.exists(RECOVERY_STATE_PATH)) {
+        logger.printfln("Recovery state file not found.");
+        return 0;
+    }
+
+    uint8_t buf[63];
+    {
+        File f = LittleFS.open(RECOVERY_STATE_PATH, "rb");
+        if (!f) {
+            logger.printfln("Failed to open recovery state file!");
+            return 0;
+        }
+
+
+        if (int read = f.read(buf, std::size(buf)); read != std::size(buf)) {
+            logger.printfln("Failed to read recovery state file: %d != %zu", read, std::size(buf));
+            return 0;
+        }
+    }
+
+    if (uint16_t chksum = internet_checksum(buf, sizeof(FactoryResetData)); chksum != 0) {
+        logger.printfln("Checksum mismatch while reading recovery state file: %u != 0", chksum);
+        return 0;
+    }
+
+    FactoryResetData data;
+    memcpy(&data, buf, sizeof(data));
+    if (data.magic != 0x0BADB007) {
+        logger.printfln("Magic mismatch while reading recovery state file: %u != %u", data.magic, 0x0BADB007);
+        return 0;
+    }
+    if (data.uptime > 30000) {
+        logger.printfln("Unexpected uptime while reading recovery state file: %lu > %lu", data.uptime, 30000ul);
+        return 0;
+    }
+    if (data.stage > 3) {
+        logger.printfln("Unexpected stage while reading recovery state file: %u > %u", data.stage, MAX_STAGE);
+        return 0;
+    }
+
+    return data.stage;
+}
+
+static void save_stage_to_flash(uint8_t stage) {
+    logger.printfln("Writing request for stage %u into flash in case this boot-up fails.", stage + 1);
+
+    FactoryResetData data;
+    data.stage = stage + 1;
+    data.magic = FACTORY_RESET_DATA_MAGIC;
+    data.uptime = now_us().to<millis_t>().as<uint32_t>();
+    data.padding = 0;
+    data.checksum = 0;
+
+    uint8_t buf[63];
+
+    memcpy(buf, &data, sizeof(data));
+    data.checksum = internet_checksum(buf, sizeof(data));
+
+    memcpy(buf, &data, sizeof(data));
+    memset(buf + sizeof(data), 0, std::size(buf) - sizeof(data));
+
+    File f = LittleFS.open(RECOVERY_STATE_PATH, "wb", true);
+    if (!f) {
+        logger.printfln("Failed to open recovery state file!");
+        return;
+    }
+
+    if (size_t written = f.write(buf, std::size(buf)); written != std::size(buf)) {
+        logger.printfln("Failed to write recovery state file: %zu != %zu", written, std::size(buf));
+        return;
+    }
+}
 
 void evse_v2_button_recovery_handler()
 {
@@ -114,31 +205,7 @@ void evse_v2_button_recovery_handler()
 
     logger.printfln("Button was pressed for %.3f seconds on EVSE startup. Starting recovery routine.", button_press_time / 1000.0);
 
-    uint8_t stage = 0;
-
-    struct FactoryResetData {
-        uint8_t stage:4;
-        uint32_t magic:28;
-        uint32_t uptime; // only for entropy
-        uint16_t padding;
-        uint16_t checksum;
-    };
-
-    uint8_t buf[63] = {0};
-    tf_evse_v2_get_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
-
-    if (internet_checksum(buf, sizeof(FactoryResetData)) != 0) {
-        logger.printfln("Checksum mismatch while reading recovery info from EVSE RAM. Assuming stage 0.");
-        stage = 0;
-    }
-    else {
-        FactoryResetData data;
-        memcpy(&data, buf, sizeof(data));
-        if (data.magic != 0x0BADB007 || data.uptime > 30000 || data.stage > 3)
-            stage = 0;
-        else
-            stage = data.stage;
-    }
+    uint8_t stage = recover_stage_from_flash();
 
     logger.printfln("Requested recovery stage %u.", stage);
 
@@ -146,20 +213,8 @@ void evse_v2_button_recovery_handler()
     bool is_encrypted = ESP32Common::is_encrypted();
     logger.printfln("Flash is%s encrypted", is_encrypted ? "" : " not");
 
-    if (stage != 3) {
-        logger.printfln("Writing request for stage %u into EVSE RAM in case this boot-up fails.", stage + 1);
-
-        FactoryResetData data;
-        data.stage = stage + 1;
-        data.magic = FACTORY_RESET_DATA_MAGIC;
-        data.uptime = now_us().to<millis_t>().as<uint32_t>();
-        data.padding = 0;
-        data.checksum = 0;
-        memcpy(buf, &data, sizeof(data));
-        data.checksum = internet_checksum(buf, sizeof(data));
-
-        memcpy(buf, &data, sizeof(data));
-        tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
+    if (stage != MAX_STAGE) {
+        save_stage_to_flash(stage);
     }
 
     switch (stage) {
@@ -167,7 +222,6 @@ void evse_v2_button_recovery_handler()
         case 0:
             logger.printfln("Running stage 0: Resetting network configuration%s", is_encrypted ? "" : " and disabling web interface login");
 
-            mount_or_format_data_partition();
 #if MODULE_USERS_AVAILABLE()
             if (!is_encrypted) {
                 // We can't use api.restorePersistent config here,
@@ -202,16 +256,16 @@ void evse_v2_button_recovery_handler()
             // Browsers block HTTP on "unsafe" ports:
             // https://superuser.com/questions/188058/which-ports-are-considered-unsafe-by-chrome
             api.removeConfig("network/config");
-            LittleFS.end();
+
             logger.printfln("Stage 0 done");
             break;
         // Stage 1 - ESP crashed when booting after stage 0. Remove all configuration
         case 1:
             if (!is_encrypted) {
                 logger.printfln("Running stage 1: Removing configuration but keeping charge log.");
-                mount_or_format_data_partition();
+
                 api.removeAllConfig();
-                LittleFS.end();
+
                 logger.printfln("Stage 1 done");
             } else {
                 logger.printfln("Running stage 1: Encryption is enabled, doing nothing.");
@@ -221,16 +275,20 @@ void evse_v2_button_recovery_handler()
         case 2:
 #if MODULE_SYSTEM_AVAILABLE()
             logger.printfln("Running stage 2: Formatting data partition");
-            mount_or_format_data_partition();
+
             system_.factory_reset(false);
             logger.printfln("Stage 2 done");
 #endif
             break;
         // Stage 3 - ESP still crashed after formatting the data partition. The firmware is unrecoverably broken. To prevent a fast boot loop, delay here.
-        case 3:
+        case MAX_STAGE:
             logger.printfln("Running stage 3: Firmware is probably broken. Delaying next crash for a minute.");
             delay(60 * 1000);
             logger.printfln("Stage 3 done");
             break;
     }
+
+    // LittleFS is mounted in recover_stage_from_flash before running any stages.
+    // Stage 2 unmounts, but immediately reboots.
+    LittleFS.end();
 }
