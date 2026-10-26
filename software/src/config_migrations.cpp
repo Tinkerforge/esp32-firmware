@@ -1116,11 +1116,15 @@ void migrate_config()
 
     size_t migration_count = ARRAY_SIZE(migrations);
 
-    if (!LittleFS.exists("/config") && LittleFS.exists("/migration/version")) {
-        // The migration is done, we were interrupted while moving over the migrated files to /config.
-        remove_directory("/config");
-        LittleFS.rename("/migration", "/config");
-        return;
+    if (!LittleFS.exists("/config")) {
+        if (LittleFS.exists("/migration/version")) {
+            // The migration is done, we were interrupted while moving over the migrated files to /config.
+            remove_directory("/config");
+            LittleFS.rename("/migration", "/config");
+            return;
+        }
+
+        LittleFS.mkdir("/config");
     }
 
     /*
