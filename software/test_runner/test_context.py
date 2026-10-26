@@ -13,6 +13,7 @@ import io
 import ssl
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import random
@@ -33,6 +34,8 @@ from .device_type import DeviceType
 
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
+
+from tinkerforge_util.colored import red, green, blue, purple, gray
 
 try:
     from software.src.modules.meters.generated.meter_value_id import MeterValueID
@@ -80,6 +83,7 @@ class TestContext:
 
     _args: typing.Any = None
 
+    _test_start: float = None
     api_schema_port_list: list[tuple[str, int]] = field(default_factory=lambda: [('http', 80), ('https', 443)])
 
     def init_testbox(self):
@@ -120,12 +124,36 @@ class TestContext:
         raise TestContext.SkipTestError(reason)
 
     def _to_runner(self, cmd, **kwargs):
-        payload = json.dumps([cmd, dict({"testname": self.testname}, **kwargs)], separators=(',', ':')) + "\n"
+        kwargs = dict({"testname": self.testname}, **kwargs)
+        payload = json.dumps([cmd, kwargs], separators=(',', ':')) + "\n"
         if self._fifo_out is not None:
             self._fifo_out.write(payload)
         else:
-            # TODO do we want to print this or just drop it?
-            print(payload, end="") # payload already contains \n
+            match cmd:
+                case 'notify_test_start':
+                    self._test_start = time.monotonic()
+                    print(f"Started {kwargs["testname"]}", end=" ")
+                    sys.stdout.flush()
+
+                case 'notify_test_success':
+                    print(green("Success"), f"({time.monotonic() - self._test_start:.3f}s)")
+
+                case 'notify_test_failure':
+                    print(red("Failure"), f"({time.monotonic() - self._test_start:.3f}s)")
+                    print("    " + "\n    ".join(x.removeprefix('  ') for x in kwargs["error"].split("\n")))
+
+                case 'notify_test_error':
+                    print(purple("Error"), f"({time.monotonic() - self._test_start:.3f}s)")
+                    print("    " + "\n    ".join(kwargs["tb"].split("\n")))
+
+                case 'notify_test_skipped':
+                    print(blue("Skipped"), kwargs["reason"])
+
+                case 'set_test_timeout':
+                    print(gray("Set test timeout to"), kwargs["timeout"])
+
+                case 'dbg':
+                    print(kwargs["message"], end="")
 
     def set_test_timeout(self, timeout: float):
         self._to_runner("set_test_timeout", timeout=timeout)
