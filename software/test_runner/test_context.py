@@ -23,6 +23,8 @@ from urllib.request import Request, urlopen
 import esptool.cmds
 from esptool.targets import ESP32ROM
 
+from tinkerforge.ip_connection import IPConnection, Device
+
 from . import parttool
 from .https_server import TestHTTPSServer
 from .testbox.testbox import TestBox
@@ -718,6 +720,55 @@ class TestContext:
 
         return files
 
+    @dataclass
+    class Bricklet[T]:
+        tc: 'TestContext'
+        device_class: type[Device]
+        enumeration_timeout: float = 1
+
+        active_counter: typing.ClassVar[int] = 0
+
+        def __enter__(self) -> T:
+            self.ipcon = IPConnection()
+
+            dev = None
+
+            def cb_enumerate(uid, connected_uid, position, hardware_version, firmware_version, device_identifier, enumeration_type):
+                nonlocal dev
+
+                if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
+                    return
+
+                if device_identifier == self.device_class.DEVICE_IDENTIFIER:
+                    dev = self.device_class(uid, self.ipcon)
+
+            self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, cb_enumerate)
+
+            if TestContext.Bricklet.active_counter == 0:
+                self.tc.http_request('GET', '/hidden_proxy/enable')
+
+            TestContext.Bricklet.active_counter += 1
+
+            self.ipcon.connect(self.tc._esp_host, 4223)
+            self.ipcon.enumerate()
+
+            start = time.monotonic()
+            while dev is None and time.monotonic() - start < self.enumeration_timeout:
+                time.sleep(0.01)
+
+            if dev is None:
+                self.tc.skip(f"No {self.device_class.DEVICE_DISPLAY_NAME} enumerated.")
+
+            return dev
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.ipcon.disconnect()
+
+            TestContext.Bricklet.active_counter -= 1
+            if TestContext.Bricklet.active_counter == 0:
+                self.tc.http_request('GET', '/hidden_proxy/disable')
+
+            return False
 
     # @dataclass
     # class Cap:
