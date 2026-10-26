@@ -271,17 +271,18 @@ class TestContext:
                     continue
                 raise
 
-    def reboot(self):
+    def reboot(self, wait_for_host_responsive=True):
         # Fast reboot via esptool, if serial port available
         if self._serial_port:
             with ESP32ROM(self._serial_port) as esp:
                 esp.connect()
                 esptool.cmds.reset_chip(esp)
-                self.wait_for_reboot(6.5)
         else:
             # No serial port, use slow reboot via API
             self.api('reboot', '')
-            self.wait_for_reboot(9)
+
+        if wait_for_host_responsive:
+            self.wait_for_reboot(6.5 if self._serial_port else 9)
 
     def assert_(self, actual):
         if not actual:
