@@ -11,11 +11,11 @@ from tinkerforge.bricklet_industrial_digital_in_4_v2 import BrickletIndustrialDi
 from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
 from tinkerforge.bricklet_rs485 import BrickletRS485
 
-from .testbox import TestBox,  Meter, Input
+from .testbox import TestBox, Meter, Input
 
 """
 RPi Port    Bricklet            Pin     Function
-A           Ind Dual Relay      0       Input 3 (open -> connected to contactor check, closed -> connected to quad relay (Port B)
+A           Ind Dual Relay      0       not connected
                                 1       Input 4 (open -> connected to contactor check, closed -> connected to quad relay (Port B)
 
 B           Ind Quad Relay V2   0       Input 3 open/closed (iff port A pin 0 is closed)
@@ -135,6 +135,8 @@ class WEMTestBox(TestBox):
             self.B.set_selected_value(x, True)
             self.A.set_selected_value(x, True)
         elif i == 'contactor':
+            if x == 0:
+                raise Exception("Only input 4 can be connected to the contactor!")
             self.A.set_selected_value(x, False)
 
     def _get_input(self, x):
