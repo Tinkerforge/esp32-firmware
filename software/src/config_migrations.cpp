@@ -1138,7 +1138,7 @@ void migrate_config()
 
         spiffs.json is renamed to (/config/)version.
     */
-    if (!LittleFS.exists("/config/version")) {
+    if (!LittleFS.exists("/config/version") && LittleFS.exists("/spiffs.json")) {
         logger.printfln("Moving all config files into config folder");
         if (!LittleFS.exists("/config"))
             LittleFS.mkdir("/config");
@@ -1151,8 +1151,8 @@ void migrate_config()
             return true;
         });
 
-        if (LittleFS.exists("/spiffs.json"))
-            LittleFS.rename("/spiffs.json", "/config/version");
+
+        LittleFS.rename("/spiffs.json", "/config/version");
     }
 
     bool write_version_file = false;
