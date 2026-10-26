@@ -1381,6 +1381,9 @@ bool MeterModbusTCP::parse_next()
         if (register_start_address == SolaredgeInverterBatteryAddress::Battery1Status) {
             solaredge_inverter.battery_1_status = c32.u;
         }
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1RatedEnergy) {
+            solaredge_inverter.battery_1_rated_energy = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
+        }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1AverageTemperature) {
             solaredge_inverter.battery_1_temperature = solaredge_inverter.battery_1_status == 0 /* off */ ? NAN : value;
         }
@@ -1404,6 +1407,9 @@ bool MeterModbusTCP::parse_next()
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2Status) {
             solaredge_inverter.battery_2_status = c32.u;
+        }
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2RatedEnergy) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_rated_energy, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2AverageTemperature) {
             value = nan_safe_avg(solaredge_inverter.battery_1_temperature, solaredge_inverter.battery_2_status == 0 /* off */ ? NAN : value);

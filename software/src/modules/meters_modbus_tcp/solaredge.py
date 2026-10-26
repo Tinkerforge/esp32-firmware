@@ -28,6 +28,13 @@ specs = [
                 'value_type': 'U32LE',
             },
             {
+                'name': 'Battery 1 Rated Energy [0.001 kWh]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 0xE142,
+                'value_type': 'F32LE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Battery 1 Average Temperature [°C]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 0xE16C,
@@ -77,6 +84,13 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 0xE286,
                 'value_type': 'U32LE',
+            },
+            {
+                'name': 'Battery 2 Rated Energy [0.001 kWh]',
+                'value_id': 'Capacity',
+                'start_address': 0xE242,
+                'value_type': 'F32LE',
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Battery 2 Average Temperature [°C]',

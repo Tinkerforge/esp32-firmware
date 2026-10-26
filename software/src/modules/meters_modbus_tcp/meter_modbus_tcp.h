@@ -302,6 +302,7 @@ private:
         struct {
             SolaredgeInverterVirtualMeter virtual_meter;
             uint32_t battery_1_status;
+            float battery_1_rated_energy;
             float battery_1_temperature;
             float battery_1_voltage;
             float battery_1_current;
