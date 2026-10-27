@@ -212,7 +212,7 @@
 - Update timezone database
 - Improve Bricklet communication robustness
 
-2026-10-27: 2.3.1 (<unknown>)
+2026-10-27: 2.3.1 (afa5c782)
 - Remove eMudhra emSign root certificates
 - Improve WebSocket robustness
 - Fix dark mode specific layout bugs

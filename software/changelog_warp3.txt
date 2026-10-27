@@ -626,7 +626,7 @@
 - Update timezone database
 - Improve translations
 
-2026-10-27: 2.13.6 (<unknown>)
+2026-10-27: 2.13.6 (afa5c782)
 - Remove eMudhra emSign root certificates
 - Add Modbus TCP meter support: Chint Power hybrid inverters
 - Add Modbus TCP battery control support: Chint Power hybrid inverters
