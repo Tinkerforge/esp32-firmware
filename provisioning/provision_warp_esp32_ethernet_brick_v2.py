@@ -390,7 +390,7 @@ class P:
                               "server2": host_ip,
                           }, error_message="Failed to set NTP config!")
             else:
-                P.api_put(ethernet_ip, "config/reset", "ntp/config", error_message="Failed to set NTP config!")
+                P.api_put("10.0.0.1", "config/reset", "ntp/config", error_message="Failed to reset NTP config!")
 
             result["wifi_test_successful"] = True
 
