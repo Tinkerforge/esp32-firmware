@@ -133,12 +133,7 @@ uint32_t EMPhaseSwitcher::get_phases()
 
 PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state()
 {
-    PhaseSwitcherBackend::SwitchingState internal_state = get_phase_switching_state_internal();
-    if (internal_state != PhaseSwitcherBackend::SwitchingState::Ready) {
-        return internal_state;
-    }
-
-    return PhaseSwitcherBackend::SwitchingState::Ready;
+    return get_phase_switching_state_internal();
 }
 
 bool EMPhaseSwitcher::switch_phases(uint32_t phases_wanted)
