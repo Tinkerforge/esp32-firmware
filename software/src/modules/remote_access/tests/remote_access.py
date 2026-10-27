@@ -33,6 +33,7 @@
 import base64
 from contextlib import contextmanager
 import ctypes
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -44,11 +45,11 @@ import tempfile
 import time
 import threading
 import uuid as uuid_mod
+from urllib.error import HTTPError
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
-from urllib.error import HTTPError
 from tinkerforge.ip_connection import base58encode
 import tinkerforge_util as tfutil
 
@@ -72,9 +73,7 @@ TEST_CERT_NAME = "remote_access_test_cert"
 
 # WireGuard management tunnel parameters (must match remote_access.cpp)
 WG_MANAGEMENT_PORT = 51820
-WG_RELAY_IP = "10.123.123.1"
-WG_DEVICE_IP = "10.123.123.2"
-WG_SUBNET = "24"
+WG_MTU = 1280
 
 _snapshot: RemoteAccessSnapshot | None = None
 _server = None
@@ -162,6 +161,46 @@ def _encrypt_user_secret(secret: bytes, key: bytes, nonce: bytes) -> bytes:
 WG_DOCKER_IMAGE = "alpine:latest"
 WG_CONTAINER_NAME = "wg-ra-test"
 
+# Written into the container so both this suite and the charge-log relay can
+# discover the device without installing the test runner's Python dependencies.
+WG_DISCOVERY_SCRIPT = r"""
+import os
+import socket
+import struct
+import sys
+import time
+
+
+def discover(local, identifier, interface="wg0"):
+    index = socket.if_nametoindex(interface)
+    payload = os.urandom(16)
+    request = struct.pack("!BBHHH", 128, 0, 0, identifier, 1) + payload
+    with socket.socket(socket.AF_INET6, socket.SOCK_RAW, socket.IPPROTO_ICMPV6) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, interface.encode() + b"\0")
+        sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, index)
+        sock.bind((local, 0))
+        sock.settimeout(1)
+        # Linux supplies the ICMPv6 checksum for this raw socket.
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            sock.sendto(request, ("ff02::1", 0, 0, index))
+            retry_at = time.monotonic() + 1
+            while time.monotonic() < retry_at:
+                try:
+                    reply, source = sock.recvfrom(2048)
+                except socket.timeout:
+                    break
+                if (reply[:2] == b"\x81\0" and reply[4:8] == request[4:8]
+                        and reply[8:] == payload):
+                    return source[0]
+    raise AssertionError("No WireGuard discovery reply on " + interface)
+
+
+if __name__ == "__main__":
+    print(discover(sys.argv[1], int(sys.argv[2], 0),
+                   sys.argv[3] if len(sys.argv) > 3 else "wg0"))
+"""
+
 
 def _docker_available() -> bool:
     """Check if docker CLI is available and the daemon is running."""
@@ -239,8 +278,8 @@ class WireGuardTestPeer:
     - Host kernel with WireGuard support (Linux 5.6+ or wireguard-dkms)
     - Port 51820/UDP available on the host
 
-    The container listens on port 51820/UDP with tunnel IP 10.123.123.1/24
-    and accepts WireGuard connections from the device at 10.123.123.2.
+    The container listens on port 51820/UDP with a random IPv6 ULA. Each
+    device tunnel's service address is learned with multicast ICMPv6 echo.
     """
 
     def __init__(self) -> None:
@@ -249,6 +288,10 @@ class WireGuardTestPeer:
         self.device_private: str = ""
         self.device_public: str = ""
         self.psk: str = ""
+        self.relay_ip = str(ipaddress.IPv6Address(b"\xfd" + os.urandom(15)))
+        self.device_ip: str | None = None
+        self.user_peers: dict[int, str] = {}
+        self.user_addresses: dict[int, str] = {}
         self._container_running: bool = False
         self._tmpdir: str | None = None
         self._relay_process: subprocess.Popen[str] | None = None
@@ -283,18 +326,22 @@ class WireGuardTestPeer:
         # Write the WireGuard config file (wg-quick format)
         conf_content = (
             f"[Interface]\n"
-            f"Address = {WG_RELAY_IP}/{WG_SUBNET}\n"
+            f"Address = {self.relay_ip}/128\n"
+            f"MTU = {WG_MTU}\n"
+            f"Table = off\n"
             f"ListenPort = {WG_MANAGEMENT_PORT}\n"
             f"PrivateKey = {self.relay_private}\n"
             f"\n"
             f"[Peer]\n"
             f"PublicKey = {self.device_public}\n"
             f"PresharedKey = {self.psk}\n"
-            f"AllowedIPs = {WG_DEVICE_IP}/32\n"
+            f"AllowedIPs = ::/0\n"
         )
         conf_path = os.path.join(self._tmpdir, "wg0.conf")
         with open(conf_path, "w") as f:
             f.write(conf_content)
+        discovery_path = Path(self._tmpdir) / "discovery.py"
+        discovery_path.write_text(WG_DISCOVERY_SCRIPT)
 
         try:
             # Start the container:
@@ -307,12 +354,17 @@ class WireGuardTestPeer:
                     "docker", "run", "-d",
                     "--name", WG_CONTAINER_NAME,
                     "--cap-add=NET_ADMIN",
+                    "--sysctl", "net.ipv6.conf.all.disable_ipv6=0",
+                    "--sysctl", "net.ipv6.conf.default.disable_ipv6=0",
                     "-p", f"{WG_MANAGEMENT_PORT}:{WG_MANAGEMENT_PORT}/udp",
                     "-v", f"{self._tmpdir}:/etc/wireguard:ro",
+                    "-v", f"{discovery_path}:/discovery.py:ro",
                     WG_DOCKER_IMAGE,
                     "sh", "-c",
                     "apk add --no-cache wireguard-tools iproute2 python3 "
                     "&& wg-quick up wg0 "
+                    "&& ip link set wg0 multicast on "
+                    "&& ip -6 route add ff02::1/128 dev wg0 "
                     "&& sleep infinity",
                 ],
                 check=True, capture_output=True, text=True,
@@ -332,6 +384,9 @@ class WireGuardTestPeer:
             raise RuntimeError(
                 "Docker CLI not found. Install Docker to run WireGuard tests."
             ) from exc
+        except RuntimeError:
+            self.stop()
+            raise
 
     def _wait_for_ready(self, timeout: float = 30.0) -> None:
         """Wait until the WireGuard interface is up inside the container."""
@@ -339,10 +394,10 @@ class WireGuardTestPeer:
         while time.monotonic() < deadline:
             try:
                 result = subprocess.run(
-                    ["docker", "exec", WG_CONTAINER_NAME, "wg", "show", "wg0"],
+                    ["docker", "exec", WG_CONTAINER_NAME, "ip", "-6", "route", "show", "ff02::1/128"],
                     capture_output=True, text=True, timeout=5,
                 )
-                if result.returncode == 0 and "listening port" in result.stdout:
+                if result.returncode == 0 and "wg0" in result.stdout:
                     return
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 pass
@@ -399,21 +454,22 @@ class WireGuardTestPeer:
                                 connection_no: int, connection_uuid: bytes) -> None:
         """Send a management command packet to the device through the WireGuard tunnel.
 
-        The packet is sent from the container's wg0 IP (10.123.123.1) to the
-        device's inner socket at 10.123.123.2:12345.
+        The packet uses the address pair learned by management discovery.
 
         Packet layout is the same as the device's management protocol (see remote_access_packets.h):
         """
         assert len(connection_uuid) == 16, "connection_uuid must be exactly 16 bytes"
+        if self.device_ip is None:
+            self.discover_management()
         header = struct.pack('<HHHBB', 0x1234, 24, seq_num, 0, 0)
         command = struct.pack('<ii16s', command_id, connection_no, connection_uuid)
         packet_hex = (header + command).hex()
 
         script = (
             "import socket; "
-            "s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); "
-            "s.bind(('10.123.123.1', 0)); "
-            f"s.sendto(bytes.fromhex('{packet_hex}'), ('10.123.123.2', 12345)); "
+            "s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM); "
+            f"s.bind(('{self.relay_ip}', 0)); "
+            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345)); "
             "s.close()"
         )
         subprocess.run(
@@ -443,11 +499,13 @@ class WireGuardTestPeer:
         header = struct.pack('<HHHBB', 0x1234, 24, 0, 1, 5)
         packet_hex = (header + wire_uuid + padding).hex()
 
+        if self.device_ip is None:
+            self.discover_management()
         script = (
             "import socket; "
-            "s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); "
-            "s.bind(('10.123.123.1', 0)); "
-            f"s.sendto(bytes.fromhex('{packet_hex}'), ('10.123.123.2', 12345)); "
+            "s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM); "
+            f"s.bind(('{self.relay_ip}', 0)); "
+            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345)); "
             "s.close()"
         )
         subprocess.run(
@@ -491,7 +549,7 @@ class WireGuardTestPeer:
                 "wg", "set", "wg0",
                 "peer", charger_public,
                 "preshared-key", "/tmp/wg_mgmt_psk",
-                "allowed-ips", f"{WG_DEVICE_IP}/32",
+                "allowed-ips", "::/0",
             ],
             check=True, capture_output=True, text=True,
         )
@@ -499,6 +557,7 @@ class WireGuardTestPeer:
         # actually configured for so is_peer_connected() (and any future
         # caller that asks "who is the active peer?") sees the real key.
         self.device_public = charger_public
+        self.device_ip = None
 
     def start_user_relay(self) -> None:
         """Give each user tunnel its own relay key while keeping management up."""
@@ -525,7 +584,7 @@ class WireGuardTestPeer:
             f"[Interface]\nPrivateKey = {relay_private}\n"
             f"ListenPort = {USER_PORT_BASE + conn_no}\n\n"
             f"[Peer]\nPublicKey = {charger_public}\nPresharedKey = {psk}\n"
-            f"AllowedIPs = 10.123.{conn_no}.2/32\n"
+            f"AllowedIPs = ::/0\n"
         )
         subprocess.run(
             ["docker", "exec", WG_CONTAINER_NAME,
@@ -539,29 +598,32 @@ class WireGuardTestPeer:
         )
         subprocess.run(
             ["docker", "exec", WG_CONTAINER_NAME,
-             "ip", "addr", "add", f"10.123.{conn_no}.3/24", "dev", interface],
+             "ip", "-6", "addr", "add", f"{self.relay_ip}/128", "dev", interface,
+             "nodad"],
             check=True, capture_output=True, text=True, timeout=5,
         )
         subprocess.run(
             ["docker", "exec", WG_CONTAINER_NAME,
-             "ip", "link", "set", interface, "up"],
+             "ip", "link", "set", interface, "mtu", str(WG_MTU), "multicast", "on", "up"],
             check=True, capture_output=True, text=True, timeout=5,
         )
         self._user_interfaces[charger_public] = interface
         self._connection_interfaces[conn_no] = interface
+        self.user_peers[conn_no] = charger_public
+        self.user_addresses.pop(conn_no, None)
 
     def add_user_peer(self, charger_public: str, psk: str, conn_no: int) -> None:
         """Add a user-tunnel WireGuard peer to the container's wg0 interface.
 
-        The device uses IP 10.123.{conn_no}.2 inside user tunnels, so that
-        address is added to the peer's allowed-ips so WireGuard accepts the
-        handshake from the right source.
+        Handshakes do not need allowed-ips. Discovery temporarily gives this
+        peer ::/0, then pins its learned address to keep other peers reachable.
 
         Note: wg(8) requires the preshared key to be passed as a file path
         (the `preshared-key` flag), not as an inline argument, so we write the
         PSK to a temp file in the container and reference it.
         """
-        allowed_ip = f"10.123.{conn_no}.2/32"
+        self.user_peers[conn_no] = charger_public
+        self.user_addresses.pop(conn_no, None)
         # Write the PSK to a temp file inside the container so `wg` can read
         # it via `preshared-key <path>`. Using a fixed name keeps cleanup simple.
         subprocess.run(
@@ -575,7 +637,6 @@ class WireGuardTestPeer:
                 "wg", "set", "wg0",
                 "peer", charger_public,
                 "preshared-key", "/tmp/wg_user_psk",
-                "allowed-ips", allowed_ip,
             ],
             check=True, capture_output=True, text=True,
         )
@@ -627,17 +688,13 @@ class WireGuardTestPeer:
 
     def get_user_tunnel_config(self, conn_no: int) -> dict:
         """Read device configuration from the relay through a user tunnel."""
-        # wg set configures allowed-ips, but does not install a route to them.
-        subprocess.run(
-            ["docker", "exec", WG_CONTAINER_NAME, "ip", "route", "replace",
-             f"10.123.{conn_no}.2/32", "dev",
-             self._connection_interfaces.get(conn_no, "wg0")],
-            check=True, capture_output=True, text=True, timeout=5,
-        )
+        if conn_no not in self.user_addresses:
+            self.user_addresses[conn_no] = self._discover_peer(self.user_peers[conn_no], 0x5757)
+        address = self.user_addresses[conn_no]
         script = (
             "import urllib.request; "
             "opener = urllib.request.build_opener(urllib.request.ProxyHandler({})); "
-            f"response = opener.open('http://10.123.{conn_no}.2/remote_access/config', timeout=3); "
+            f"response = opener.open('http://[{address}]/remote_access/config', timeout=3); "
             "print(response.read().decode())"
         )
         result = subprocess.run(
@@ -647,6 +704,32 @@ class WireGuardTestPeer:
         if result.returncode != 0:
             raise AssertionError(f"Device unreachable through user tunnel: {result.stderr.strip()}")
         return json.loads(result.stdout)
+
+    def discover_management(self) -> None:
+        """Repeat discovery after reconnects, which choose a fresh device address."""
+        self.device_ip = self._discover_peer(self.device_public, 0x4d47)
+
+    def _discover_peer(self, public_key: str, identifier: int) -> str:
+        interface = self._user_interfaces.get(public_key, "wg0")
+
+        def execute(*args: str, timeout: float = 5) -> str:
+            result = subprocess.run(
+                ["docker", "exec", WG_CONTAINER_NAME, *args],
+                capture_output=True, text=True, timeout=timeout,
+            )
+            if result.returncode != 0:
+                raise AssertionError(f"WireGuard peer command failed: {result.stderr.strip()}")
+            return result.stdout.strip()
+
+        # Only the peer being discovered needs the wildcard. Once learned, its
+        # /128 remains valid while another peer takes over the discovery route.
+        execute("wg", "set", interface, "peer", public_key, "allowed-ips", "::/0")
+        execute("ip", "-6", "route", "replace", "ff02::1/128", "dev", interface, "src", self.relay_ip)
+        address = execute("python3", "/discovery.py", self.relay_ip, hex(identifier), interface, timeout=15)
+        address = str(ipaddress.IPv6Address(address))
+        execute("wg", "set", interface, "peer", public_key, "allowed-ips", f"{address}/128")
+        execute("ip", "-6", "route", "replace", f"{address}/128", "dev", interface, "src", self.relay_ip)
+        return address
 
 
 # ---------------------------------------------------------------------------
@@ -887,6 +970,9 @@ def _wait_for_management_connected(tc: TestContext, *, timeout: float = 60.0) ->
         timeout=timeout,
     )
 
+    assert _wg_peer is not None
+    _wg_peer.discover_management()
+
 
 def _make_management_response_ok() -> str:
     """Return a minimal valid management response for the V2 API."""
@@ -917,7 +1003,7 @@ def _make_config_update(tc: TestContext, enable: bool = True, **overrides) -> di
         "relay_port": _server.port if _server else 443,
         "email": "test@example.com",
         "cert_id": TEST_CERT_ID,
-        "mtu": 1240,
+        "mtu": WG_MTU,
     }
     cfg.update(overrides)
     return cfg
@@ -996,7 +1082,7 @@ def _point_at_production_relay(tc: TestContext, *, enable: bool = False) -> None
             "relay_port": PRODUCTION_RELAY_PORT,
             "cert_id": PRODUCTION_CERT_ID,
             "email": "test@example.com",
-            "mtu": 1240,
+            "mtu": WG_MTU,
         },
         timeout=3,
     )
@@ -1257,6 +1343,20 @@ def test_state_structure(tc: TestContext) -> None:
 def test_all_disconnected_when_disabled(tc: TestContext) -> None:
     """When remote access is disabled, all slots should be disconnected."""
     _assert_all_disconnected(tc)
+
+
+def test_mtu_below_ipv6_minimum_rejected(tc: TestContext) -> None:
+    """Reject IPv4-era MTUs without changing the current configuration."""
+    before = tc.api("remote_access/config")
+    for mtu in (576, 1240, 1279):
+        try:
+            tc.api("remote_access/config_update", _make_config_update(tc, mtu=mtu), timeout=3)
+        except HTTPError as exc:
+            tc.assert_eq(400, exc.code)
+            tc.assert_contains("1280", str(exc))
+        else:
+            raise AssertionError(f"Accepted an MTU below the IPv6 minimum: {mtu}")
+    tc.assert_eq(before, tc.api("remote_access/config"))
 
 
 def test_enable_triggers_management_request(tc: TestContext) -> None:
@@ -1549,13 +1649,14 @@ def test_full_registration_reconnect_after_disable_enable(tc: TestContext) -> No
     tc.set_test_timeout(120)
 
     try:
-        _do_full_registration(tc)
+        wg = _do_full_registration(tc)
     except RuntimeError as exc:
         tc.skip(f"WireGuard setup not available: {exc}")
         return
 
     # Wait for management connection
     _wait_for_management_connected(tc, timeout=60)
+    previous_address = wg.device_ip
 
     # Disable remote access
     _point_at_local_relay(tc, enable=False)
@@ -1570,6 +1671,7 @@ def test_full_registration_reconnect_after_disable_enable(tc: TestContext) -> No
 
     # Should re-establish management connection
     _wait_for_management_connected(tc, timeout=60)
+    tc.assert_ne(previous_address, wg.device_ip)
 
     state = _get_connection_state(tc)
     tc.assert_eq(STATE_CONNECTED, state[0]["state"])
@@ -1886,6 +1988,9 @@ def test_user_full_wg_handshake(tc: TestContext) -> None:
         lambda: tc.assert_true(wg.is_user_peer_connected(user_charger_public)),
         timeout=30, poll_delay=1.0,
     )
+
+    # A handshake alone does not establish the IPv6 address pair or HTTP access.
+    tc.assert_true(wg.get_user_tunnel_config(0)["enable"])
 
     # Wait for the device API to reflect STATE_CONNECTED.
     tc.wait_for(
