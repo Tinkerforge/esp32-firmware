@@ -25,7 +25,6 @@
 class WarpEsp32Rtc final : public IModule, public IRtcBackend
 {
 public:
-    WarpEsp32Rtc() {};
     void setup() override;
 
     void setup_rtc();

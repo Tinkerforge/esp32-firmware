@@ -37,7 +37,6 @@ class Http final : public IModule,
 #endif
 {
 public:
-    Http(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

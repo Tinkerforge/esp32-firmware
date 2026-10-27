@@ -51,7 +51,6 @@ public:
         _max     = 3
     };
 
-    SolarForecast(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

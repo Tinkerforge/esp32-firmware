@@ -65,7 +65,6 @@ private:
     void check_evse_shutdown_input();
 
 public:
-    P14aEnwg() {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

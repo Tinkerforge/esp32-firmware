@@ -84,7 +84,6 @@ public:
     struct pollfd fds[FDS_COUNT];
     void set_poll_fd(int index, int fd) { fds[index].fd = fd; }
 
-    ISO15118(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

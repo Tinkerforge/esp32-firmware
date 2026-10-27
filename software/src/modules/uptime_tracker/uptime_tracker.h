@@ -34,7 +34,6 @@ static_assert(sizeof(uptime_data_s) == 16, "Unexpected size of uptime_data_s");
 class UptimeTracker final : public IModule
 {
 public:
-    UptimeTracker() {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

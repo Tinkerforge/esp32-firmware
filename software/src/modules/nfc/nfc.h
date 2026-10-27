@@ -59,8 +59,6 @@ class NFC final : public IModule
 #endif
 {
 public:
-    NFC() {}
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

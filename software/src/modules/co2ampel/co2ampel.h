@@ -29,7 +29,6 @@
 class Co2Ampel final : public IModule
 {
 public:
-    Co2Ampel(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

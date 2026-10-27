@@ -33,7 +33,6 @@ public:
     // Returned by get_default_interface() for interfaces not managed by this module, e.g. a WireGuard tunnel.
     static constexpr uint8_t INTERFACE_OTHER    = 0xFF;
 
-    Network(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

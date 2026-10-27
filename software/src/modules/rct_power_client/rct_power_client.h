@@ -26,8 +26,6 @@
 class RCTPowerClient final : public IModule
 {
 public:
-    RCTPowerClient() {}
-
     void loop() override;
 
     TFRCTPowerClientPool *get_pool();

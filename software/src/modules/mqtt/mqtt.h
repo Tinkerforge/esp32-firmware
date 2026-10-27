@@ -57,7 +57,6 @@ public:
         Yes = 1,
     };
 
-    Mqtt(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

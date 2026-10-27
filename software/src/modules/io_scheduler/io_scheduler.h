@@ -41,8 +41,6 @@
 class IoScheduler final : public IModule
 {
 public:
-    IoScheduler() {}
-
     void pre_reboot() override;
 
     void start_task();

@@ -24,7 +24,5 @@
 class NetworkLib final : public IModule
 {
 public:
-    NetworkLib() {}
-
     void setup() override;
 };

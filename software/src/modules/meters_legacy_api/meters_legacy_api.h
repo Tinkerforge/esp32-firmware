@@ -32,7 +32,6 @@
 class MetersLegacyAPI final : public IModule
 {
 public:
-    MetersLegacyAPI(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

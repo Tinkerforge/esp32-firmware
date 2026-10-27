@@ -25,7 +25,6 @@
 class OveR37 final : public IModule
 {
 public:
-    OveR37(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

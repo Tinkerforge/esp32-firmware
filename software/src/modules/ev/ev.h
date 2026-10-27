@@ -54,7 +54,6 @@ struct EVSession {
 class Ev final : public IModule
 {
 public:
-    Ev(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

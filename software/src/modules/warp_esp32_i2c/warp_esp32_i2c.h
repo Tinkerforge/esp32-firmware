@@ -27,7 +27,6 @@
 class WarpEsp32I2c final : public IModule
 {
 public:
-    WarpEsp32I2c() {};
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

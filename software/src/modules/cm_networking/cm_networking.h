@@ -41,7 +41,6 @@ struct cm_state_v3;
 class CMNetworking final : public IModule
 {
 public:
-    CMNetworking(){}
     void register_urls() override;
     void register_events() override;
 

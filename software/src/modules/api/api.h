@@ -127,8 +127,6 @@ public:
         CoolArray<Config::Key, Config::MAX_NESTING> path;
     };
 
-    API() = default;
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

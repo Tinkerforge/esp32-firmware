@@ -35,8 +35,6 @@
 class MetersSunSpec final : public IModule, public IMeterGenerator
 {
 public:
-    MetersSunSpec() {}
-
     // for IModule
     void pre_setup() override;
 

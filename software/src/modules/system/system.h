@@ -27,8 +27,6 @@
 class System final : public IModule
 {
 public:
-    System() {}
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

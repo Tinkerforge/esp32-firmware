@@ -33,8 +33,6 @@ class ESP32Common final : public IModule
     friend class ESP32CommonSecureBoot;
 
 public:
-    ESP32Common(){}
-
     void pre_init() override;
     void pre_setup() override;
     void setup() override;

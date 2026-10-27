@@ -24,7 +24,6 @@
 class TutorialPhase1 final : public IModule
 {
 public:
-    TutorialPhase1(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

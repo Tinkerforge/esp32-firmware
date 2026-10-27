@@ -27,8 +27,6 @@
 class RCTPowerDebug final : public IModule
 {
 public:
-    RCTPowerDebug() {}
-
     void pre_setup() override;
     void register_urls() override;
 

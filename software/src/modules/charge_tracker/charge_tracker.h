@@ -72,7 +72,6 @@ struct ExportCharge;
 class ChargeTracker final : public IModule
 {
 public:
-    ChargeTracker(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

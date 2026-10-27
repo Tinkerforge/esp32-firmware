@@ -24,7 +24,5 @@ class Config;
 class IAutomationBackend
 {
 public:
-    virtual ~IAutomationBackend() = default;
-
     virtual bool has_triggered(const Config *conf, void *data) = 0;
 };

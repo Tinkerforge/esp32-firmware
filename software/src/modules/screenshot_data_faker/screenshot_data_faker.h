@@ -25,7 +25,6 @@
 class ScreenshotDataFaker final : public IModule
 {
 public:
-    ScreenshotDataFaker(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

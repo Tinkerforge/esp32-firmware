@@ -37,8 +37,6 @@
 class PortScanner final : public IModule
 {
 public:
-    PortScanner() {}
-
     // for IModule
     void pre_setup() override;
     void register_urls() override;

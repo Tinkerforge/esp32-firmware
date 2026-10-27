@@ -27,7 +27,6 @@
 class Ocpp final : public IModule
 {
 public:
-    Ocpp(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

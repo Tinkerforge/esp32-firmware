@@ -23,7 +23,16 @@ class IModule
 {
 public:
     IModule() = default;
-    IModule(const IModule &) = delete; // Do not allow modules to be copied. Note: Use references or pointers instead.
+
+    // Do not allow modules to be copied or assigned. Note: Use references or pointers instead.
+    IModule(const IModule &other) = delete;
+    IModule(IModule &&other) = delete;
+    IModule& operator=(IModule &other) = delete;
+    IModule& operator=(IModule &&other) = delete;
+
+    // Cannot remove destructor because all modules have static storage duration.
+    // From § 3.6.3 of the C++03 standard: Destructors (12.4) for initialized objects of static storage duration (declared at block scope
+    // or at namespace scope) are called as a result of returning from main and as a result of calling exit (18.3).
     virtual ~IModule() = default;
 
     // pre_init() is only for special handlers that must run very early.

@@ -31,8 +31,6 @@ class EMPhaseSwitcher final : public IModule,
                    public PhaseSwitcherBackend
 {
 public:
-    EMPhaseSwitcher(){}
-
     // for IModule
     void pre_setup() override;
     void setup() override;

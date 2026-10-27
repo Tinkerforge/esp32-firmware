@@ -47,7 +47,7 @@ public:
         setup_function(std::move(setup_function)),
         mandatory(mandatory) {}
 
-    virtual ~DeviceModuleBase() {}
+    virtual ~DeviceModuleBase() = default;
 
     void pre_setup() override;
     void register_urls() override;

@@ -27,7 +27,6 @@
 class Wireguard final : public IModule
 {
 public:
-    Wireguard(){}
     void pre_setup() override;
     void setup() override;
     void register_events() override;

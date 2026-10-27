@@ -37,7 +37,6 @@ struct StateUpdateRegistration {
 class Event final : public IModule, public IAPIBackend
 {
 public:
-    Event() {}
     void pre_setup() override;
     void setup() override;
 

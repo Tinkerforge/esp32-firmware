@@ -36,7 +36,6 @@ enum class POTI_POS {
 class PowerCycleTester final : public IModule
 {
 public:
-    PowerCycleTester(){}
     void setup() override;
 
     void led_green();

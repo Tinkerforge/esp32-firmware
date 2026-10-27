@@ -34,7 +34,6 @@
 class Certs final : public IModule
 {
 public:
-    Certs() = default;
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

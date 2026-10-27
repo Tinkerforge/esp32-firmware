@@ -27,7 +27,6 @@
 class Watchdog final : public IModule
 {
 public:
-    Watchdog(){}
     void pre_setup() override;
     void setup() override;
 

@@ -26,7 +26,6 @@
 class Proxy final : public IModule
 {
 public:
-    Proxy(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

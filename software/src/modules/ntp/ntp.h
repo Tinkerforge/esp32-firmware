@@ -37,7 +37,6 @@ private:
     micros_t sync_expires_at = 0_us;
 
 public:
-    NTP(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

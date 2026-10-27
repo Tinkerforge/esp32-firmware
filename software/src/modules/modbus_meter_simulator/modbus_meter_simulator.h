@@ -31,7 +31,6 @@
 class ModbusMeterSimulator final : public IModule
 {
 public:
-    ModbusMeterSimulator(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

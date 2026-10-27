@@ -26,8 +26,6 @@
 class ESP32EthernetBrick final : public IModule
 {
 public:
-    ESP32EthernetBrick(){}
-
     bool initHAL();
     bool destroyHAL();
 

@@ -28,9 +28,6 @@
 class Ethernet final : public IModule
 {
 public:
-    Ethernet()
-    {
-    }
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

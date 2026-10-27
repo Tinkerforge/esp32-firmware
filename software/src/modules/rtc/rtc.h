@@ -26,8 +26,7 @@
 class IRtcBackend
 {
 public:
-    IRtcBackend() {}
-    virtual ~IRtcBackend() {}
+    virtual ~IRtcBackend() = default;
 
     // Override exactly one of the set_time functions!
     virtual void set_time(const timeval &time);
@@ -50,8 +49,6 @@ After some time we should then accept a time set via the API.
 class Rtc final : public IModule
 {
 public:
-    Rtc() {}
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

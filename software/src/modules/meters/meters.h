@@ -107,7 +107,6 @@ public:
 
     static constexpr size_t HISTORY_JSON_SIZE = HISTORY_RING_BUF_SIZE * HISTORY_CHARS_PER_VALUE + 100;
 
-    Meters(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

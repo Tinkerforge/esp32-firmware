@@ -39,8 +39,6 @@ constexpr size_t METERS_MAX_SLOTS_RECORDED = OPTIONS_METERS_MAX_SLOTS();
 class EMEnergyAnalysis final : public IModule
 {
 public:
-    EMEnergyAnalysis() {}
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

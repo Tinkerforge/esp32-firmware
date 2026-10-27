@@ -30,7 +30,6 @@ class IDebugProtocolBackend;
 class DebugProtocol final : public IModule
 {
 public:
-    DebugProtocol(){}
     void register_urls() override;
 
     void debug_task();

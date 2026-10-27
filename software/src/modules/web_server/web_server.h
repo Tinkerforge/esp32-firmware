@@ -185,8 +185,6 @@ struct WebServerExtraPortData {
 class WebServer final : public IModule
 {
 public:
-    WebServer() {}
-
     void pre_setup();
     void post_setup();
     void register_events() override;

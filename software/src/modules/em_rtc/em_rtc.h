@@ -25,7 +25,6 @@
 class EmRtc final : public IModule, public IRtcBackend
 {
 public:
-    EmRtc() {}
     void setup() override;
 
     // IRtcBackend implementation

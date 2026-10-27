@@ -69,7 +69,6 @@ class PowerManager final : public IModule,
 #endif
 {
 public:
-    PowerManager() {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

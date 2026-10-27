@@ -26,7 +26,6 @@
 class Kransteuerung final : public IModule
 {
 public:
-    Kransteuerung(){}
     void setup() override;
 
     void button_pressed_handler(bool left, uint8_t button_l, uint8_t button_r, uint8_t led_l, uint8_t led_r);

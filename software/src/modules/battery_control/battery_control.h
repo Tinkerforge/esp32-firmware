@@ -40,8 +40,6 @@
 class BatteryControl final : public IModule
 {
 public:
-    BatteryControl() {}
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

@@ -57,8 +57,6 @@ struct WgKey {
 
 class RemoteAccess final : public IModule {
 public:
-    RemoteAccess() {};
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

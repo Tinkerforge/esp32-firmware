@@ -35,8 +35,6 @@
 class EventLog final : public IModule
 {
 public:
-    EventLog() {}
-
     void pre_init() override;
     void pre_setup() override;
     void register_urls() override;

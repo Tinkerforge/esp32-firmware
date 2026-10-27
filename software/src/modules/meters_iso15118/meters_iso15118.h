@@ -30,7 +30,6 @@
 class MetersISO15118 final : public IModule, public IMeterGenerator
 {
 public:
-    MetersISO15118(){}
     void pre_setup() override;
 
     [[gnu::const]] MeterClassID get_class() const override;

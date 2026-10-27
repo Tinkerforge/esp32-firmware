@@ -25,7 +25,6 @@
 class Authentication final : public IModule
 {
 public:
-    Authentication() = default;
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

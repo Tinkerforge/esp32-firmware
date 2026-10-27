@@ -39,8 +39,6 @@
 class SunSpec final : public IModule
 {
 public:
-    SunSpec() {}
-
     // for IModule
     void pre_setup() override;
     void register_urls() override;

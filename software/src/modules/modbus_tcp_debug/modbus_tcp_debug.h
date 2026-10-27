@@ -27,8 +27,6 @@
 class ModbusTCPDebug final : public IModule
 {
 public:
-    ModbusTCPDebug() {}
-
     void pre_setup() override;
     void register_urls() override;
 
