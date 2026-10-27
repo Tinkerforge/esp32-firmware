@@ -301,7 +301,6 @@ private:
         // SolarEdge inverter
         struct {
             SolaredgeInverterVirtualMeter virtual_meter;
-            uint32_t battery_1_status;
             float battery_1_rated_energy;
             float battery_1_temperature;
             float battery_1_voltage;
@@ -310,8 +309,16 @@ private:
             float battery_1_export_energy;
             float battery_1_import_energy;
             float battery_1_state_of_charge;
-            uint32_t battery_2_status;
+            uint32_t battery_1_status;
+            float battery_2_rated_energy;
+            float battery_2_temperature;
+            float battery_2_voltage;
+            float battery_2_current;
             float battery_2_power;
+            float battery_2_export_energy;
+            float battery_2_import_energy;
+            float battery_2_state_of_charge;
+            uint32_t battery_2_status;
             float dc_power;
             int16_t dc_power_sf;
         } solaredge_inverter;
