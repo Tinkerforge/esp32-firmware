@@ -28,7 +28,6 @@
 #include <lwip/err.h>
 #include <lwip/netdb.h>
 #include <lwip/pbuf.h>
-#include <lwip/prot/ip6.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <esp_random.h>
@@ -61,7 +60,7 @@ static constexpr uint16_t MIN_INNER_MTU = 1280;
 
 static constexpr char MULTICAST_ADDRESS[] = "ff02::1";
 
-static bool management_socket_address(bool peer, uint16_t port, sockaddr_in6 &result)
+bool RemoteAccess::management_socket_address(bool peer, uint16_t port, sockaddr_in6 &result) const
 {
     ip6_addr_t address = {};
     if (!RemoteAccessTunnel::get_address(RemoteAccessTunnel::MANAGEMENT_SLOT, peer, address)) {
@@ -1790,130 +1789,6 @@ void RemoteAccess::cleanup_after()
         0_s);
 }
 
-// Read the transport header without assuming that a pbuf is contiguous. IPv6
-// extension headers precede the transport header and must not be read as ports.
-static bool management_transport_header(const struct pbuf *packet, uint8_t &protocol, uint16_t &offset, bool incoming)
-{
-    const auto filtered = [packet, incoming](const char *reason) {
-        remote_access_log_packet("Management filtered %s packet (%hu bytes): %s",
-                       incoming ? "incoming" : "outgoing", packet->tot_len, reason);
-        return false;
-    };
-
-    uint8_t header[40];
-    if (pbuf_copy_partial(packet, header, sizeof(header), 0) != sizeof(header)) {
-        return filtered("truncated IPv6 header");
-    }
-    if ((header[0] >> 4) != 6) {
-        return filtered("expected IPv6");
-    }
-    const uint32_t length = sizeof(header) + (static_cast<uint16_t>(header[4]) << 8) + header[5];
-    if (length > packet->tot_len) {
-        return filtered("IPv6 payload length exceeds packet length");
-    }
-
-    protocol = header[6];
-    offset = sizeof(header);
-    while (protocol == IP6_NEXTH_HOPBYHOP || protocol == IP6_NEXTH_ROUTING ||
-           protocol == IP6_NEXTH_DESTOPTS || protocol == IP6_NEXTH_FRAGMENT) {
-        uint8_t extension[8];
-        if (offset + sizeof(extension) > length ||
-            pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
-            return filtered("truncated IPv6 extension header");
-        }
-        uint16_t extension_length;
-        if (protocol == IP6_NEXTH_FRAGMENT) {
-            // Reject fragmented traffic: later fragments cannot be checked for
-            // the permitted destination port before lwIP reassembles them.
-            if (extension[2] != 0 || extension[3] != 0) {
-                return filtered("fragmented traffic is not allowed");
-            }
-            extension_length = sizeof(extension);
-        } else {
-            extension_length = static_cast<uint16_t>((extension[1] + 1) * 8);
-        }
-        if (offset + extension_length > length) {
-            return filtered("IPv6 extension header exceeds packet length");
-        }
-        offset += extension_length;
-        protocol = extension[0];
-    }
-
-    // ICMPv6 has no ports; it is required for echo and Packet Too Big handling.
-    const size_t minimum_length = protocol == IP6_NEXTH_TCP ? 20 : 8;
-    if (protocol != IP6_NEXTH_ICMP6 && protocol != IP6_NEXTH_TCP && protocol != IP6_NEXTH_UDP) {
-        return filtered("unsupported transport protocol");
-    }
-    if (offset + minimum_length > length) {
-        return filtered("truncated transport header");
-    }
-    return true;
-}
-
-static int management_filter_in(struct pbuf *packet)
-{
-    // Log every inner packet before protocol, port, or payload validation.
-    uint8_t header[40];
-    if (pbuf_copy_partial(packet, header, sizeof(header), 0) == sizeof(header) && (header[0] >> 4) == 6) {
-        ip6_addr_t source = {}, destination = {};
-        memcpy(source.addr, header + 8, sizeof(source.addr));
-        memcpy(destination.addr, header + 24, sizeof(destination.addr));
-        char source_str[INET6_ADDRSTRLEN];
-        char destination_str[INET6_ADDRSTRLEN];
-        tf_ip6addr_ntoa(&source, source_str, sizeof(source_str));
-        tf_ip6addr_ntoa(&destination, destination_str, sizeof(destination_str));
-        remote_access_log_packet("Management received packet (%hu bytes, IPv6 next header %hhu): %s -> %s",
-                       packet->tot_len, header[6], source_str, destination_str);
-    } else {
-        remote_access_log_packet("Management received packet (%hu bytes): invalid or incomplete IPv6 header", packet->tot_len);
-    }
-
-    uint8_t protocol;
-    uint16_t offset;
-    if (!management_transport_header(packet, protocol, offset, true)) {
-        return ERR_VAL;
-    }
-    if (protocol == IP6_NEXTH_ICMP6) {
-        uint8_t icmp_header[2];
-        if (pbuf_copy_partial(packet, icmp_header, sizeof(icmp_header), offset) != sizeof(icmp_header)) {
-            remote_access_log_packet("Management filtered incoming ICMPv6 packet: truncated header");
-            return ERR_VAL;
-        }
-        remote_access_log_packet("Management received ICMPv6 type %hhu, code %hhu", icmp_header[0], icmp_header[1]);
-    }
-
-    const int filter_result = RemoteAccessTunnel::input_filter(RemoteAccessTunnel::MANAGEMENT_SLOT)(packet);
-    if (filter_result != ERR_OK) {
-        return filter_result;
-    }
-    if (protocol == IP6_NEXTH_ICMP6) {
-        // Discovery is handled above; lwIP handles ordinary echo and errors.
-        return ERR_OK;
-    }
-
-    uint8_t ports[4];
-    if (pbuf_copy_partial(packet, ports, sizeof(ports), offset) != sizeof(ports)) {
-        remote_access_log_packet("Management filtered incoming packet (%hu bytes): cannot read transport ports", packet->tot_len);
-        return ERR_VAL;
-    }
-    const uint16_t dest_port = (static_cast<uint16_t>(ports[2]) << 8) | ports[3];
-    if (dest_port != 12345 && (remote_access.send_port == 0 || dest_port != remote_access.send_port)) {
-        remote_access_log_packet("Management filtered incoming packet (%hu bytes): destination port %hu is not allowed", packet->tot_len, dest_port);
-        return ERR_VAL;
-    }
-    return ERR_OK;
-}
-
-static int management_filter_out(struct pbuf *packet)
-{
-    uint8_t protocol;
-    uint16_t offset;
-    if (!management_transport_header(packet, protocol, offset, false)) {
-        return ERR_VAL;
-    }
-    return RemoteAccessTunnel::output_filter(RemoteAccessTunnel::MANAGEMENT_SLOT)(packet);
-}
-
 static bool port_valid(uint16_t port)
 {
     bool port_valid = false;
@@ -1980,6 +1855,30 @@ bool RemoteAccess::is_mgmt_connected() const
            management_socket_address(true, 12345, peer);
 }
 
+std::unique_ptr<RemoteAccessTunnel> RemoteAccess::create_tunnel(uint8_t slot, uint16_t local_port, const char *remote_host,
+                                                             const char *private_key, const char *psk, const char *remote_public_key)
+{
+    const IPAddress any(IPv4); // No inner IPv4 address or default route.
+    const IPAddress mask{255,255,255,255};
+    auto tunnel = std::make_unique<RemoteAccessTunnel>(slot);
+    const bool started = tunnel->begin(any, mask, local_port, any, private_key, remote_host, remote_public_key, 51820,
+                                      any, mask, false, psk,
+                                      RemoteAccessTunnel::input_filter(slot), RemoteAccessTunnel::output_filter(slot),
+                                      [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
+        if (peer_index != 0) // Currently only one peer is supported.
+            return;
+        const uint8_t tunnel_slot = static_cast<uint8_t>(reinterpret_cast<uintptr_t>(user_data));
+        const uint8_t conn_idx = tunnel_slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? 255 : tunnel_slot;
+        task_scheduler.scheduleOnce([conn_idx, peer_index, up, addr_cpy = *addr, port]() {
+            remote_access.update_peer_info(conn_idx, peer_index, up, &addr_cpy, port);
+        });
+    }, reinterpret_cast<void *>(static_cast<uintptr_t>(slot)), config.get("mtu")->asUint16());
+    if (!started || !tunnel->configure_ipv6()) {
+        return nullptr;
+    }
+    return tunnel;
+}
+
 void RemoteAccess::connect_management()
 {
     struct timeval tv;
@@ -1998,12 +1897,6 @@ void RemoteAccess::connect_management()
     }
     send_port = 0;
     management = nullptr;
-
-    const IPAddress internal_ip     (IPv4); // No inner IPv4 address.
-    const IPAddress internal_subnet {255,255,255,255};
-    const IPAddress internal_gateway(IPv4);
-    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  {255,255,255,255};
 
     auto key_buf = heap_alloc_array<char>(3 * (WG_KEY_LENGTH + 1));
     char *private_key       = key_buf.get() + 0 * (WG_KEY_LENGTH + 1);
@@ -2027,37 +1920,9 @@ void RemoteAccess::connect_management()
         management_request_done = false;
         return;
     }
-    management = std::make_unique<RemoteAccessTunnel>(RemoteAccessTunnel::MANAGEMENT_SLOT);
-    // begin() copies the keys. Configure IPv6 only after it succeeds.
-    const bool started = management->begin(internal_ip,
-                      internal_subnet,
-                      local_port,
-                      internal_gateway,
-                      private_key,
-                      remote_host,
-                      remote_public_key,
-                      51820,
-                      allowed_ip,
-                      allowed_subnet,
-                      false,
-                      psk,
-                      &management_filter_in,
-                      &management_filter_out,
-                      [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
-                        // Currently only one peer is supported.
-                        if (peer_index != 0)
-                            return;
-
-                        task_scheduler.scheduleOnce([peer_index, up, addr_cpy=*addr, port]() {
-                            remote_access.update_peer_info(255, peer_index, up, &addr_cpy, port);
-                        });
-                      },
-                      nullptr,
-                      config.get("mtu")->asUint16());
-
-    if (!started || !management->configure_ipv6()) {
+    management = create_tunnel(RemoteAccessTunnel::MANAGEMENT_SLOT, local_port, remote_host, private_key, psk, remote_public_key);
+    if (management == nullptr) {
         logger.printfln("Failed to configure management WireGuard tunnel");
-        management = nullptr;
         management_request_done = false;
         return;
     }
@@ -2089,12 +1954,6 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port, const i
         return;
     }
 
-    const IPAddress internal_ip     (IPv4); // No inner IPv4 address.
-    const IPAddress internal_subnet {255,255,255,255};
-    const IPAddress internal_gateway(IPv4);
-    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  {255,255,255,255};
-
     // WireGuard decodes those (base64 encoded) keys and stores them.
     char private_key[WG_KEY_LENGTH + 1];
     char psk[WG_KEY_LENGTH + 1];
@@ -2118,38 +1977,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port, const i
         return;
     }
     remote_connections[conn_idx].id = i;
-    remote_connections[conn_idx].conn = std::make_unique<RemoteAccessTunnel>(conn_idx);
-
-    const bool started = remote_connections[conn_idx].conn->begin(internal_ip,
-                   internal_subnet,
-                   local_port,
-                   internal_gateway,
-                   private_key,
-                   remote_host,
-                   remote_public_key,
-                   51820,
-                   allowed_ip,
-                   allowed_subnet,
-                   false,
-                   psk,
-                   RemoteAccessTunnel::input_filter(conn_idx),
-                   RemoteAccessTunnel::output_filter(conn_idx),
-                   [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
-                    // Currently only one peer is supported.
-                    if (peer_index != 0)
-                        return;
-                    uint8_t connection_idx = static_cast<uint8_t>(reinterpret_cast<uintptr_t>(user_data));
-
-                    task_scheduler.scheduleOnce([connection_idx, peer_index, up, addr_cpy=*addr, port]() {
-                        remote_access.update_peer_info(connection_idx, peer_index, up, &addr_cpy, port);
-                    });
-                   },
-                   reinterpret_cast<void *>(conn_idx),
-                   config.get("mtu")->asUint16());
-
-    if (!started || !remote_connections[conn_idx].conn->configure_ipv6()) {
+    remote_connections[conn_idx].conn = create_tunnel(conn_idx, local_port, remote_host, private_key, psk, remote_public_key);
+    if (remote_connections[conn_idx].conn == nullptr) {
         logger.printfln("Failed to configure user WireGuard tunnel %hhu", i);
-        remote_connections[conn_idx].conn = nullptr;
     }
 
     update_connection_state(conn_idx, user_id, conn_id, ConnectionState::Disconnected);

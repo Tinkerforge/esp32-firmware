@@ -2200,7 +2200,14 @@ static void charge_log_send_tcp_task(void *arg)
         vTaskDelete(NULL);
     };
 
-    int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sockaddr_in6 local_addr, tcp_dest;
+    int tcp_sock = -1;
+    if (remote_access.management_socket_address(false, 0, local_addr) &&
+        remote_access.management_socket_address(true, 8080, tcp_dest)) {
+        tcp_sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    } else {
+        errno = ENOTCONN;
+    }
     if (tcp_sock < 0) {
         logger.printfln("Failed to create TCP socket for charge log: %s (%i)", strerror(errno), errno);
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
@@ -2211,12 +2218,6 @@ static void charge_log_send_tcp_task(void *arg)
         cleanup_and_delete_task();
         return;
     }
-
-    struct sockaddr_in local_addr;
-    memset(&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = 0;
-    local_addr.sin_addr.s_addr = inet_addr("10.123.123.2");
 
     int ret = bind(tcp_sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
     if (ret < 0) {
@@ -2231,17 +2232,11 @@ static void charge_log_send_tcp_task(void *arg)
         return;
     }
 
-    struct sockaddr_in src_addr;
+    struct sockaddr_in6 src_addr;
     socklen_t addr_len = sizeof(src_addr);
     if (getsockname(tcp_sock, reinterpret_cast<struct sockaddr *>(&src_addr), &addr_len) == 0) {
-        remote_access.send_port = ntohs(src_addr.sin_port);
+        remote_access.send_port = ntohs(src_addr.sin6_port);
     }
-
-    struct sockaddr_in tcp_dest;
-    memset(&tcp_dest, 0, sizeof(tcp_dest));
-    tcp_dest.sin_family = AF_INET;
-    tcp_dest.sin_port = htons(8080);
-    tcp_dest.sin_addr.s_addr = inet_addr("10.123.123.3");
 
     ret = connect(tcp_sock, reinterpret_cast<struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
     if (ret < 0) {

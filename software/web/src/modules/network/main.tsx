@@ -58,10 +58,6 @@ interface NetworkState {
 //#if MODULE_WIREGUARD_AVAILABLE
     wireguardConfig: API.getType["wireguard/config"];
 //#endif
-
-//#if MODULE_REMOTE_ACCESS_AVAILABLE
-    remoteAccessConfig: API.getType["remote_access/config"];
-//#endif
 }
 
 export class Network extends ConfigComponent<'network/config', {}, NetworkState> {
@@ -94,13 +90,6 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
 //#if MODULE_WIREGUARD_AVAILABLE
         util.addApiEventListener('wireguard/config', () => {
             this.setState({ wireguardConfig: API.get('wireguard/config') });
-        });
-//#endif
-
-
-//#if MODULE_REMOTE_ACCESS_AVAILABLE
-        util.addApiEventListener('remote_access/config', () => {
-            this.setState({ remoteAccessConfig: API.get('remote_access/config') });
         });
 //#endif
     }
@@ -151,17 +140,6 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
             const wireguardNetwork = wireguardIP & wireguardSubnet;
             const subnetString = `/${util.countBits(wireguardSubnet)}`;
             connectedSubnets.push({network: wireguardNetwork, name: __("wireguard.navbar.wireguard"), subnet: subnetString, href: "#wireguard"});
-        }
-//#endif
-
-//#if MODULE_REMOTE_ACCESS_AVAILABLE
-        if (this.state.remoteAccessConfig.enable) {
-            for (let i = 0; i < this.state.remoteAccessConfig.users.length * 5; i++) {
-                const remoteAccessNetwork = util.parseIP(`10.123.${i}.0`);
-                connectedSubnets.push({network: remoteAccessNetwork, name: __("remote_access.navbar.remote_access"), subnet: "/24", href: "#remote_access"});
-            }
-            const remoteAccessNetwork = util.parseIP(`10.123.123.0`);
-            connectedSubnets.push({network: remoteAccessNetwork, name: __("remote_access.navbar.remote_access"), subnet: "/24", href: "#remote_access"});
         }
 //#endif
 
