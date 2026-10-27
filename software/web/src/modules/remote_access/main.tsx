@@ -1214,7 +1214,7 @@ export class RemoteAccess extends ConfigComponent<
                             <FormRow label={__("remote_access.content.mtu")} label_muted={__("remote_access.content.mtu_desc")} >
                                 <InputNumber
                                     required
-                                    min={576}
+                                    min={1280}
                                     max={1440}
                                     value={this.state.mtu}
                                     onValue={(v) => this.setState({ mtu: v })}
