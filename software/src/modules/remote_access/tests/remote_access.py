@@ -28,10 +28,10 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import textwrap
 import time
 import threading
 import uuid as uuid_mod
-from pathlib import Path
 from urllib.error import HTTPError
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
@@ -235,7 +235,6 @@ class WireGuardTestPeer:
                     "--sysctl", "net.ipv6.conf.default.disable_ipv6=0",
                     "-p", f"{WG_MANAGEMENT_PORT}:{WG_MANAGEMENT_PORT}/udp",
                     "-v", f"{self._tmpdir}:/etc/wireguard:ro",
-                    "-v", f"{Path(__file__).with_name('_wireguard_discovery.py').resolve()}:/discovery.py:ro",
                     WG_DOCKER_IMAGE,
                     "sh", "-c",
                     "apk add --no-cache wireguard-tools iproute2 python3 "
@@ -435,7 +434,56 @@ class WireGuardTestPeer:
         # Only the peer being discovered needs the wildcard. Once learned, its
         # /128 remains valid while another peer takes over the discovery route.
         execute("wg", "set", "wg0", "peer", public_key, "allowed-ips", "::/0")
-        address = execute("python3", "/discovery.py", self.relay_ip, hex(identifier), timeout=15)
+        script = textwrap.dedent("""\
+            import ipaddress
+            import os
+            import socket
+            import struct
+            import sys
+            import time
+
+
+            def discover(local: str, identifier: int) -> str:
+                nonce = os.urandom(16)
+                interface = socket.if_nametoindex("wg0")
+                outstanding = set()
+                with socket.socket(socket.AF_INET6, socket.SOCK_RAW, socket.IPPROTO_ICMPV6) as sock:
+                    sock.bind((local, 0))
+                    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, interface)
+                    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 1)
+                    for sequence in range(20):
+                        # Linux computes the ICMPv6 checksum, including its pseudo-header.
+                        request = struct.pack("!BBHHH", 128, 0, 0, identifier, sequence) + nonce
+                        sock.sendto(request, ("ff02::1", 0, 0, interface))
+                        outstanding.add(sequence)
+                        deadline = time.monotonic() + 0.5
+                        while (remaining := deadline - time.monotonic()) > 0:
+                            sock.settimeout(remaining)
+                            try:
+                                reply, source = sock.recvfrom(4096)
+                            except socket.timeout:
+                                break
+                            if len(reply) != len(request):
+                                continue
+                            kind, code, _, ident, seq = struct.unpack("!BBHHH", reply[:8])
+                            if (kind, code, ident) != (129, 0, identifier) or seq not in outstanding or reply[8:] != nonce:
+                                continue
+                            address = ipaddress.IPv6Address(source[0])
+                            if address.packed[0] != 0xfd or str(address) == local:
+                                continue
+                            pseudo_header = (address.packed + ipaddress.IPv6Address(local).packed
+                                             + struct.pack("!I3xB", len(reply), socket.IPPROTO_ICMPV6))
+                            checksum = sum(struct.unpack("!32H", pseudo_header + reply))
+                            while checksum >> 16:
+                                checksum = (checksum & 0xffff) + (checksum >> 16)
+                            if checksum == 0xffff:
+                                return str(address)
+                raise AssertionError(f"No valid ICMPv6 discovery reply for identifier {identifier:#x} within 10 seconds")
+
+
+            print(discover(sys.argv[1], int(sys.argv[2], 0)))
+            """)
+        address = execute("python3", "-c", script, self.relay_ip, hex(identifier), timeout=15)
         address = str(ipaddress.IPv6Address(address))
         execute("wg", "set", "wg0", "peer", public_key, "allowed-ips", f"{address}/128")
         execute("ip", "-6", "route", "replace", f"{address}/128", "dev", "wg0", "src", self.relay_ip)
