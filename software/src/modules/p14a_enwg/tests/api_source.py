@@ -136,6 +136,12 @@ def test_state_limit_zero_when_inactive(tc: TestContext) -> None:
 
 def test_control_ignored_when_source_is_eebus(tc: TestContext) -> None:
     """When source is EEBus, control_update should not affect state."""
+
+    # Disable eebus if enabled
+    eebus_config = tc.api("eebus/config")
+    if eebus_config["enable"]:
+        tc.api("eebus/config_update", eebus_config | {"enable": False})
+
     cfg = make_api_config(enable=True)
     cfg["source"] = [1, None]  # EEBus
     tc.api("p14a_enwg/config_update", cfg)
@@ -143,7 +149,7 @@ def test_control_ignored_when_source_is_eebus(tc: TestContext) -> None:
     # Activate via control, should be ignored.
     set_control(tc, True, 4200)
 
-    # State should remain inactive (EEBus has no external trigger here).
+    # State should remain inactive (EEBus is disabled, so it reports no limit).
     def check() -> None:
         state = tc.api("p14a_enwg/state")
         tc.assert_false(state["active"])
