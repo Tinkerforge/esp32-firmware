@@ -36,6 +36,8 @@
 #include "modules/web_server/web_server.h"
 #include "remote_access_packets.h"
 
+struct sockaddr_in6;
+
 struct HttpResponse {
     int status;
     char *cookie = nullptr;
@@ -82,6 +84,9 @@ public:
     // Returns bytes sent on success, negative on error.
     int send_to_mgmt_server(const void *data, size_t len);
 
+    // Copies a management address in lwIP context; peer addresses require discovery.
+    bool management_socket_address(bool peer, uint16_t port, sockaddr_in6 &result) const;
+
     // Returns true if the management WireGuard tunnel is up and the inner socket is available.
     bool is_mgmt_connected() const;
 
@@ -104,6 +109,8 @@ public:
 private:
     void resolve_management();
     void connect_management();
+    std::unique_ptr<RemoteAccessTunnel> create_tunnel(uint8_t slot, uint16_t local_port, const char *remote_host,
+                                                    const char *private_key, const char *psk, const char *remote_public_key);
     uint8_t get_connection(int32_t conn_id);
     void connect_remote_access(uint8_t i, uint16_t local_port, const ip_addr_t &endpoint);
     void close_all_remote_connections();
