@@ -69,6 +69,11 @@ def teardown(tc: TestContext):
 
 def suite_teardown(tc: TestContext):
     stop_peer(tc)
+    # Restart the use cases: Tests leave an active limit behind that would otherwise be applied to §14a for its duration.
+    set_eebus_enabled(tc, False)
+    time.sleep(1)
+    set_eebus_enabled(tc, True)
+    time.sleep(2)
     restore_eebus_peers(tc, removed_peers)
 
 
