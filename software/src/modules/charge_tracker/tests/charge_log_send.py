@@ -19,7 +19,7 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 from software.test_runner.remote_access_snapshot import RemoteAccessSnapshot
 from software.src.modules.remote_access.tests.remote_access import (
-    WG_CONTAINER_NAME, WireGuardTestPeer, _generate_wg_keypair, _generate_wg_psk,
+    WG_CONTAINER_NAME, WG_MTU, WireGuardTestPeer, _generate_wg_keypair, _generate_wg_psk,
 )
 
 
@@ -32,8 +32,8 @@ PACKET_REQUEST = 4
 NACK_BUSY = 0
 NACK_ALREADY_SENT = 6
 
-# The container owns the relay's tunnel interface. Adding .3 allows it to
-# receive the device's charge-log UDP packets and TCP stream at their real IPs.
+# Both sockets use the relay's random ULA. Discovery also runs after reboots,
+# which replace the device's service address during the monthly upload tests.
 RELAY_SCRIPT = r"""
 import base64
 import json
@@ -41,12 +41,28 @@ import os
 import select
 import socket
 import sys
+import threading
+import time
 
-udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp.bind(('10.123.123.3', 12345))
-tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+from discovery import discover
+
+local = sys.argv[1]
+
+def keep_discovering():
+    while True:
+        try:
+            discover(local, 0x4d47)
+        except (AssertionError, OSError):
+            pass  # Retry while the device is rebooting or reconnecting.
+        time.sleep(1)
+
+threading.Thread(target=keep_discovering, daemon=True).start()
+
+udp = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+udp.bind((local, 12345))
+tcp = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-tcp.bind(('10.123.123.3', 8080))
+tcp.bind((local, 8080))
 tcp.listen(1)
 print(json.dumps({'kind': 'ready'}), flush=True)
 
@@ -54,6 +70,7 @@ client = None
 size = 0
 prefix = b''
 pending = b''
+peer = None
 while True:
     readers = [0, udp, tcp]
     if client is not None:
@@ -68,9 +85,11 @@ while True:
                 line, pending = pending.split(b'\n', 1)
                 command = json.loads(line)
                 payload = bytes.fromhex(command['packet'])
-                udp.sendto(payload, ('10.123.123.2', 12345))
+                assert peer is not None
+                udp.sendto(payload, (peer, 12345))
         elif source is udp:
-            packet, _ = udp.recvfrom(2048)
+            packet, source_address = udp.recvfrom(2048)
+            peer = source_address[0]
             print(json.dumps({'kind': 'udp', 'packet': packet.hex()}), flush=True)
         elif source is tcp:
             client, _ = tcp.accept()
@@ -95,14 +114,21 @@ class ChargeLogRelay:
         self.events: queue.Queue[dict] = queue.Queue()
         self.reader: threading.Thread | None = None
 
-    def start(self):
+    def start(self, peer: WireGuardTestPeer):
+        # This suite has only one management peer. Keep its wildcard and ULA
+        # route so discovery and replies still work when a reboot changes IPs.
         subprocess.run(
-            ["docker", "exec", WG_CONTAINER_NAME, "ip",
-             "addr", "add", "10.123.123.3/32", "dev", "wg0"],
+            ["docker", "exec", WG_CONTAINER_NAME, "wg", "set", "wg0",
+             "peer", peer.device_public, "allowed-ips", "::/0"],
+            check=True, capture_output=True, text=True,
+        )
+        subprocess.run(
+            ["docker", "exec", WG_CONTAINER_NAME, "ip", "-6", "route",
+             "replace", "fd00::/8", "dev", "wg0", "src", peer.relay_ip],
             check=True, capture_output=True, text=True,
         )
         self.process = subprocess.Popen(
-            ["docker", "exec", "-i", WG_CONTAINER_NAME, "python3", "-u", "-c", RELAY_SCRIPT],
+            ["docker", "exec", "-i", WG_CONTAINER_NAME, "python3", "-u", "-c", RELAY_SCRIPT, peer.relay_ip],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True, bufsize=1,
         )
@@ -178,9 +204,6 @@ def suite_setup(tc: TestContext):
     except RuntimeError as exc:
         tc.skip(f"WireGuard setup not available: {exc}")
 
-    _relay = ChargeLogRelay()
-    _relay.start()
-
     registered = threading.Event()
     charger_uuid = str(uuid.uuid4())
     password = base64.b64encode(os.urandom(16)).decode()
@@ -209,7 +232,7 @@ def suite_setup(tc: TestContext):
     tc.api("remote_access/register", {
         "config": {
             "enable": True, "relay_host": tc.get_local_ip(), "relay_port": _server.port,
-            "email": "test@example.com", "cert_id": CERT_ID, "mtu": 1240,
+            "email": "test@example.com", "cert_id": CERT_ID, "mtu": WG_MTU,
         },
         "note": "", "public_key": base64.b64encode(nacl_public).decode(),
         "mgmt_charger_private": _peer.device_private,
@@ -228,6 +251,9 @@ def suite_setup(tc: TestContext):
         assert tc.api("remote_access/state")[0]["state"] == 2
 
     tc.wait_for(connected, timeout=60)
+    _peer.discover_management()
+    _relay = ChargeLogRelay()
+    _relay.start(_peer)
 
 
 def suite_teardown(tc: TestContext):
@@ -245,7 +271,7 @@ def suite_teardown(tc: TestContext):
 
     attempt(lambda: tc.api("remote_access/config_update", {
         "enable": False, "relay_host": tc.get_local_ip(), "relay_port": _server.port,
-        "email": "test@example.com", "cert_id": CERT_ID, "mtu": 1240,
+        "email": "test@example.com", "cert_id": CERT_ID, "mtu": WG_MTU,
     }, timeout=3))
     time.sleep(1)
     if _relay is not None:
