@@ -2380,9 +2380,8 @@ bool ChargeTracker::try_start_monthly_upload_for_user(int user_idx)
     params->start_min = monthly_upload_start_timestamp_min;
     params->end_min = monthly_upload_end_timestamp_min;
     params->language = upload_config->get("language")->asEnum<Language>();
-    params->filter_empty_charges = upload_config->get("filter_empty_charges")->asBool();
     // Not part of the config hash on purpose. The hash is used for deduplication of uploads and would change for all existing configs when adding this field.
-    params->current_min = rtc.timestamp_minutes();
+    params->filter_empty_charges = upload_config->get("filter_empty_charges")->asBool();
 
     params->init();
 
