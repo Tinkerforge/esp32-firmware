@@ -211,3 +211,11 @@
 - Improve translations
 - Update timezone database
 - Improve Bricklet communication robustness
+
+2026-10-27: 2.3.1 (<unknown>)
+- Remove eMudhra emSign root certificates
+- Improve WebSocket robustness
+- Fix dark mode specific layout bugs
+- Show device name and type on login page
+- Wrap status popup on narrow screens
+- Update timezone database
