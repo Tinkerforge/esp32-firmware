@@ -22,6 +22,7 @@
 #include <array>
 #include <cstdarg>
 #include <cstdio>
+#include <memory>
 #include <utility>
 #include <esp_netif.h>
 #include <esp_random.h>
@@ -67,37 +68,88 @@ bool valid_peer(const ip6_addr_t &address)
            !ip6_addr_isipv4mappedipv6(&address);
 }
 
+void log_packet(size_t slot, const struct pbuf *packet, bool incoming, const char *reason)
+{
+    const char *kind = slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? "management" : "user";
+    uint8_t header[42];
+    const uint16_t copied = pbuf_copy_partial(packet, header, sizeof(header), 0);
+    if (copied >= IP6_HLEN && (header[0] >> 4) == 6) {
+        ip6_addr_t source = {}, destination = {};
+        memcpy(source.addr, header + 8, sizeof(source.addr));
+        memcpy(destination.addr, header + 24, sizeof(destination.addr));
+        char source_str[IP6ADDR_STRLEN_MAX], destination_str[IP6ADDR_STRLEN_MAX];
+        tf_ip6addr_ntoa(&source, source_str, sizeof(source_str));
+        tf_ip6addr_ntoa(&destination, destination_str, sizeof(destination_str));
+        if (header[6] == IP6_NEXTH_ICMP6 && copied == sizeof(header)) {
+            remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes, ICMPv6 type %hhu, code %hhu): %s -> %s: %s",
+                                    incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[40], header[41],
+                                    source_str, destination_str, reason);
+        } else {
+            remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes, IPv6 next header %hhu): %s -> %s: %s",
+                                    incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[6],
+                                    source_str, destination_str, reason);
+        }
+    } else {
+        remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes): %s",
+                                incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, reason);
+    }
+}
+
+// The IPv6 header and total length have already been checked by filter_packet.
+// Walk extension headers before reading ports, including across pbuf segments.
+const char *management_packet_error(const struct pbuf *packet, uint8_t protocol, bool incoming)
+{
+    uint16_t offset = IP6_HLEN;
+    while (protocol == IP6_NEXTH_HOPBYHOP || protocol == IP6_NEXTH_ROUTING ||
+           protocol == IP6_NEXTH_DESTOPTS || protocol == IP6_NEXTH_FRAGMENT) {
+        uint8_t extension[8];
+        if (pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
+            return "truncated IPv6 extension header";
+        }
+        const uint16_t length = protocol == IP6_NEXTH_FRAGMENT ? sizeof(extension) : (extension[1] + 1) * 8;
+        // Later fragments cannot be checked for a permitted destination port.
+        if (protocol == IP6_NEXTH_FRAGMENT && (extension[2] != 0 || extension[3] != 0)) {
+            return "fragmented traffic is not allowed";
+        }
+        if (offset + length > packet->tot_len) {
+            return "IPv6 extension header exceeds packet length";
+        }
+        offset += length;
+        protocol = extension[0];
+    }
+
+    // ICMPv6 has no ports; it is required for echo and Packet Too Big handling.
+    if (protocol != IP6_NEXTH_ICMP6 && protocol != IP6_NEXTH_TCP && protocol != IP6_NEXTH_UDP) {
+        return "unsupported transport protocol";
+    }
+    if (offset + (protocol == IP6_NEXTH_TCP ? 20 : 8) > packet->tot_len) {
+        return "truncated transport header";
+    }
+    if (incoming && protocol != IP6_NEXTH_ICMP6) {
+        uint8_t ports[4];
+        if (pbuf_copy_partial(packet, ports, sizeof(ports), offset) != sizeof(ports)) {
+            return "cannot read transport ports";
+        }
+        const uint16_t port = (static_cast<uint16_t>(ports[2]) << 8) | ports[3];
+        if (port != 12345 && (remote_access.send_port == 0 || port != remote_access.send_port)) {
+            return "destination port is not allowed";
+        }
+    }
+    return nullptr;
+}
+
 int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
 {
     const auto filtered = [slot, packet, incoming](const char *reason, int result = ERR_VAL) {
-        const char *kind = slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? "management" : "user";
-        uint8_t header[42];
-        const uint16_t copied = pbuf_copy_partial(packet, header, sizeof(header), 0);
-        if (copied >= 40 && (header[0] >> 4) == 6) {
-            ip6_addr_t source = {}, destination = {};
-            memcpy(source.addr, header + 8, sizeof(source.addr));
-            memcpy(destination.addr, header + 24, sizeof(destination.addr));
-            char source_str[IP6ADDR_STRLEN_MAX], destination_str[IP6ADDR_STRLEN_MAX];
-            tf_ip6addr_ntoa(&source, source_str, sizeof(source_str));
-            tf_ip6addr_ntoa(&destination, destination_str, sizeof(destination_str));
-            if (header[6] == IP6_NEXTH_ICMP6 && copied == sizeof(header)) {
-                remote_access_log_packet("Filtered %s packet on %s tunnel slot %zu (%hu bytes, ICMPv6 type %hhu, code %hhu): %s -> %s: %s",
-                               incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[40], header[41],
-                               source_str, destination_str, reason);
-            } else {
-                remote_access_log_packet("Filtered %s packet on %s tunnel slot %zu (%hu bytes, IPv6 next header %hhu): %s -> %s: %s",
-                               incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[6],
-                               source_str, destination_str, reason);
-            }
-        } else {
-            remote_access_log_packet("Filtered %s packet on %s tunnel slot %zu (%hu bytes): %s",
-                           incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, reason);
-        }
+        log_packet(slot, packet, incoming, reason);
         return result;
     };
+    if (slot == RemoteAccessTunnel::MANAGEMENT_SLOT && incoming) {
+        log_packet(slot, packet, incoming, "received");
+    }
 
     TunnelState &state = tunnels[slot];
-    uint8_t header[40];
+    uint8_t header[IP6_HLEN];
     if (state.tunnel == nullptr) {
         return filtered("tunnel is not configured");
     }
@@ -110,6 +162,11 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
     const uint16_t payload_length = static_cast<uint16_t>((header[4] << 8) | header[5]);
     if (sizeof(header) + payload_length != packet->tot_len) {
         return filtered("IPv6 payload length does not match packet length");
+    }
+    if (slot == RemoteAccessTunnel::MANAGEMENT_SLOT) {
+        if (const char *error = management_packet_error(packet, header[6], incoming)) {
+            return filtered(error);
+        }
     }
     ip6_addr_t source = {}, destination = {};
     memcpy(source.addr, header + 8, sizeof(source.addr));
@@ -134,31 +191,26 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
             !ip6_addr_cmp_zoneless(&state.peer, &source)) {
             return filtered("discovery source does not match the learned peer");
         }
-        struct pbuf *reply = pbuf_alloc(PBUF_IP, payload_length, PBUF_RAM);
+        std::unique_ptr<struct pbuf, decltype(&pbuf_free)> reply(pbuf_alloc(PBUF_IP, payload_length, PBUF_RAM), pbuf_free);
         if (reply == nullptr) {
             return filtered("cannot allocate discovery reply", ERR_MEM);
         }
         if (pbuf_copy_partial(packet, reply->payload, payload_length, sizeof(header)) != payload_length) {
-            pbuf_free(reply);
             return filtered("truncated discovery payload");
         }
         auto *echo = static_cast<uint8_t *>(reply->payload);
         if (echo[0] != 128 || echo[1] != 0) {
-            pbuf_free(reply);
             return filtered("discovery requires an echo request with code zero");
         }
         const uint16_t discovery_ident = slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? 0x4d47 : 0x5757;
         if (((echo[4] << 8) | echo[5]) != discovery_ident) {
-            pbuf_free(reply);
             return filtered("invalid discovery identifier");
         }
-        if (ip6_chksum_pseudo(reply, IP6_NEXTH_ICMP6, payload_length, &source, &destination) != 0) {
-            pbuf_free(reply);
+        if (ip6_chksum_pseudo(reply.get(), IP6_NEXTH_ICMP6, payload_length, &source, &destination) != 0) {
             return filtered("invalid discovery checksum");
         }
         struct netif *interface = state.tunnel->routeIPv6(&source);
         if (interface == nullptr) {
-            pbuf_free(reply);
             return filtered("no route for discovery reply", ERR_RTE);
         }
         // Pin the authenticated peer for this session. The output filter and
@@ -168,10 +220,9 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
         echo[0] = 129;
         echo[2] = 0;
         echo[3] = 0;
-        const uint16_t checksum = ip6_chksum_pseudo(reply, IP6_NEXTH_ICMP6, payload_length, &state.local, &source);
+        const uint16_t checksum = ip6_chksum_pseudo(reply.get(), IP6_NEXTH_ICMP6, payload_length, &state.local, &source);
         memcpy(echo + 2, &checksum, sizeof(checksum));
-        const err_t result = ip6_output_if_src(reply, &state.local, &source, 64, 0, IP6_NEXTH_ICMP6, interface);
-        pbuf_free(reply);
+        const err_t result = ip6_output_if_src(reply.get(), &state.local, &source, 64, 0, IP6_NEXTH_ICMP6, interface);
         if (result != ERR_OK) {
             remote_access_log_packet("Discovery reply failed on tunnel slot %zu: lwIP error %hhi", slot, result);
             return filtered("cannot send discovery reply");
@@ -200,19 +251,14 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
     return ERR_OK;
 }
 
-template<size_t Slot> int filter_in(struct pbuf *packet) { return filter_packet(Slot, packet, true); }
-template<size_t Slot> int filter_out(struct pbuf *packet) { return filter_packet(Slot, packet, false); }
+template<size_t Slot, bool Incoming> int filter(struct pbuf *packet) { return filter_packet(Slot, packet, Incoming); }
 
-template<size_t... Slots> constexpr auto make_input_filters(std::index_sequence<Slots...>)
+template<bool Incoming, size_t... Slots> constexpr auto make_filters(std::index_sequence<Slots...>)
 {
-    return std::array<RemoteAccessTunnel::PacketFilter, sizeof...(Slots)>{&filter_in<Slots>...};
+    return std::array<RemoteAccessTunnel::PacketFilter, sizeof...(Slots)>{&filter<Slots, Incoming>...};
 }
-template<size_t... Slots> constexpr auto make_output_filters(std::index_sequence<Slots...>)
-{
-    return std::array<RemoteAccessTunnel::PacketFilter, sizeof...(Slots)>{&filter_out<Slots>...};
-}
-constexpr auto input_filters = make_input_filters(std::make_index_sequence<TUNNEL_COUNT>{});
-constexpr auto output_filters = make_output_filters(std::make_index_sequence<TUNNEL_COUNT>{});
+constexpr auto input_filters = make_filters<true>(std::make_index_sequence<TUNNEL_COUNT>{});
+constexpr auto output_filters = make_filters<false>(std::make_index_sequence<TUNNEL_COUNT>{});
 } // namespace
 
 IPAddress random_remote_access_address()

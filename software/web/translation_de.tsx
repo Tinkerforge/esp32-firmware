@@ -59,8 +59,7 @@ let x = {
             "wifi_ap": "den WLAN-Access-Point",
             "wifi_sta": "die WLAN-Verbindung",
             "ethernet": "die LAN-Verbindung",
-            "wireguard": "die WireGuard-Verbindung",
-            "remote_access": "den Fernzugriff"
+            "wireguard": "die WireGuard-Verbindung"
         },
         "ip6_configuration": {
             "enable_ipv6": "IPv6 aktiviert",
