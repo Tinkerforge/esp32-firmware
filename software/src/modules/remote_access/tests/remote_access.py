@@ -164,6 +164,7 @@ WG_CONTAINER_NAME = "wg-ra-test"
 # Written into the container so both this suite and the charge-log relay can
 # discover the device without installing the test runner's Python dependencies.
 WG_DISCOVERY_SCRIPT = r"""
+import ipaddress
 import os
 import socket
 import struct
@@ -173,27 +174,41 @@ import time
 
 def discover(local, identifier, interface="wg0"):
     index = socket.if_nametoindex(interface)
-    payload = os.urandom(16)
-    request = struct.pack("!BBHHH", 128, 0, 0, identifier, 1) + payload
+    nonce = os.urandom(16)
+    outstanding = set()
     with socket.socket(socket.AF_INET6, socket.SOCK_RAW, socket.IPPROTO_ICMPV6) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, interface.encode() + b"\0")
         sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, index)
+        sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 1)
         sock.bind((local, 0))
-        sock.settimeout(1)
-        # Linux supplies the ICMPv6 checksum for this raw socket.
-        deadline = time.monotonic() + 10
-        while time.monotonic() < deadline:
+        for sequence in range(20):
+            # Linux computes the ICMPv6 checksum, including its pseudo-header.
+            request = struct.pack("!BBHHH", 128, 0, 0, identifier, sequence) + nonce
             sock.sendto(request, ("ff02::1", 0, 0, index))
-            retry_at = time.monotonic() + 1
-            while time.monotonic() < retry_at:
+            outstanding.add(sequence)
+            deadline = time.monotonic() + 0.5
+            while (remaining := deadline - time.monotonic()) > 0:
+                sock.settimeout(remaining)
                 try:
-                    reply, source = sock.recvfrom(2048)
+                    reply, source = sock.recvfrom(4096)
                 except socket.timeout:
                     break
-                if (reply[:2] == b"\x81\0" and reply[4:8] == request[4:8]
-                        and reply[8:] == payload):
-                    return source[0]
-    raise AssertionError("No WireGuard discovery reply on " + interface)
+                if len(reply) != len(request):
+                    continue
+                kind, code, _, ident, seq = struct.unpack("!BBHHH", reply[:8])
+                if (kind, code, ident) != (129, 0, identifier) or seq not in outstanding or reply[8:] != nonce:
+                    continue
+                address = ipaddress.IPv6Address(source[0])
+                if address.packed[0] != 0xfd or str(address) == local:
+                    continue
+                pseudo_header = (address.packed + ipaddress.IPv6Address(local).packed
+                                 + struct.pack("!I3xB", len(reply), socket.IPPROTO_ICMPV6))
+                checksum = sum(struct.unpack("!32H", pseudo_header + reply))
+                while checksum >> 16:
+                    checksum = (checksum & 0xffff) + (checksum >> 16)
+                if checksum == 0xffff:
+                    return str(address)
+    raise AssertionError(f"No valid ICMPv6 discovery reply for identifier {identifier:#x} on {interface} within 10 seconds")
 
 
 if __name__ == "__main__":
