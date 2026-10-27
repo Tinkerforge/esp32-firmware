@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <WireGuard-ESP32.h>
+#include "remote_access_tunnel.h"
 #include <esp_http_client.h>
 #include <queue>
 #include <memory>
@@ -34,8 +34,6 @@
 #include "language.h"
 #include "remote_access_packets.h"
 
-#define MAX_USER_CONNECTIONS 5
-
 struct HttpResponse {
     int status;
     char *cookie = nullptr;
@@ -45,7 +43,7 @@ struct HttpResponse {
 
 struct Connection {
     uint8_t id;
-    std::unique_ptr<WireGuard> conn = nullptr;
+    std::unique_ptr<RemoteAccessTunnel> conn = nullptr;
     bool in_progress = false;
 };
 
@@ -73,7 +71,7 @@ public:
 
     uint16_t send_port = 0;
 
-    // Sends a UDP packet to the management server (10.123.123.3:12345).
+    // Sends a UDP packet to the discovered management server on port 12345.
     // Thread-safe: can be called without locking the inner socket.
     // Returns bytes sent on success, negative on error.
     int send_to_mgmt_server(const void *data, size_t len);
@@ -87,7 +85,7 @@ private:
     void resolve_management();
     void connect_management();
     uint8_t get_connection(int32_t conn_id);
-    void connect_remote_access(uint8_t i, uint16_t local_port);
+    void connect_remote_access(uint8_t i, uint16_t local_port, const ip_addr_t &endpoint);
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
@@ -115,7 +113,7 @@ private:
     int end_charge_log_send(int tcp_sock);
     int send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language);
 
-    std::unique_ptr<WireGuard> management = nullptr;
+    std::unique_ptr<RemoteAccessTunnel> management = nullptr;
     Connection remote_connections[MAX_USER_CONNECTIONS] = {};
 
     String jwt;

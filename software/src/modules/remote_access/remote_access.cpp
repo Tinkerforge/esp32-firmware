@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2026 Frederic Henrichs <frederic@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 #include <lwip/err.h>
 #include <lwip/netdb.h>
 #include <lwip/pbuf.h>
+#include <lwip/prot/ip6.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <esp_random.h>
@@ -55,6 +56,23 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define KEY_DIRECTORY "/remote-access-keys"
 // Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
 #define MAX_HTTP_BODY_BYTES 5120
+
+static constexpr uint16_t MIN_INNER_MTU = 1280;
+
+static constexpr char MULTICAST_ADDRESS[] = "ff02::1";
+
+static bool management_socket_address(bool peer, uint16_t port, sockaddr_in6 &result)
+{
+    ip6_addr_t address = {};
+    if (!RemoteAccessTunnel::get_address(RemoteAccessTunnel::MANAGEMENT_SLOT, peer, address)) {
+        return false;
+    }
+    result = {};
+    result.sin6_family = AF_INET6;
+    result.sin6_port = htons(port);
+    memcpy(&result.sin6_addr, address.addr, sizeof(result.sin6_addr));
+    return true;
+}
 
 // Validate HTTP request body length and provide the length to callers.
 // Returns 0 on success, or an HTTP status code (400 for empty, 413 for too large).
@@ -188,19 +206,23 @@ void RemoteAccess::pre_setup()
         {"relay_host", Config::Str(OPTIONS_REMOTE_ACCESS_HOST(), 0, 64)},
         {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)},
-        // a mtu of 1240 should be always safe
-        {"mtu", Config::Uint16(1240)},
+        {"mtu", Config::Uint16(MIN_INNER_MTU)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
 
-    registration_config = Config::Object({
+    registration_config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"relay_host", Config::Str("", 0, 32)},
         {"relay_port", Config::Uint16(443)},
         {"email", Config::Str("", 0, 64)},
         {"cert_id", Config::Int8(-1)},
-        {"mtu", Config::Uint16(1280)},
-    });
+        {"mtu", Config::Uint16(MIN_INNER_MTU)},
+    }), [](Config &cfg, ConfigSource /*source*/) -> String {
+        if (cfg.get("mtu")->asUint16() < MIN_INNER_MTU) {
+            return "Remote access requires an MTU of at least 1280 for IPv6.";
+        }
+        return "";
+    }};
 
     ping_state = Config::Object({
         {"packets_sent", Config::Uint32(0)},
@@ -223,6 +245,11 @@ void RemoteAccess::setup()
     LittleFS.mkdir(KEY_DIRECTORY);
 
     api.restorePersistentConfig("remote_access/config", &config);
+    // Older configurations used an IPv4-only MTU of 1240.
+    if (config.get("mtu")->asUint16() < MIN_INNER_MTU) {
+        config.get("mtu")->updateUint(MIN_INNER_MTU);
+        api.writeConfig("remote_access/config", &config);
+    }
     initialized = true;
 
     if (!config.get("enable")->asBool())
@@ -571,10 +598,10 @@ void RemoteAccess::register_urls()
             // JsonArray already has reference semantics. No need for &.
             for (const auto key : doc["keys"].as<JsonArray>()) {
                 serializer.addObject();
-                serializer.addMemberStringF("charger_address", "10.123.%li.2", i);
+                serializer.addMemberString("charger_address", MULTICAST_ADDRESS);
                 serializer.addMemberString("charger_public", key["charger_public"]);
                 serializer.addMemberNumber("connection_no", i);
-                serializer.addMemberStringF("web_address", "10.123.%li.3", i);
+                serializer.addMemberString("web_address", random_remote_access_address().toString().c_str());
 
                 const String web_private = key["web_private"];
                 unsigned char encrypted_web_private[44 + crypto_box_SEALBYTES];
@@ -622,8 +649,8 @@ void RemoteAccess::register_urls()
 
         serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
         serializer.addMemberString("uid", esp32_common.get_uid_cstr());
-        serializer.addMemberString("wg_charger_ip", "10.123.123.2");
-        serializer.addMemberString("wg_server_ip", "10.123.123.3");
+        serializer.addMemberString("wg_charger_ip", MULTICAST_ADDRESS);
+        serializer.addMemberString("wg_server_ip", random_remote_access_address().toString().c_str());
         serializer.addMemberString("psk", doc["mgmt_psk"]);
 
         serializer.endObject();
@@ -882,8 +909,8 @@ void RemoteAccess::register_urls()
         for (auto key : doc["wg_keys"].as<JsonArray>()) {
             serializer.addObject();
             int32_t connection_number = (next_user_id - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + i;
-            serializer.addMemberStringF("charger_address", "10.123.%li.2", connection_number);
-            serializer.addMemberStringF("web_address", "10.123.%li.3", connection_number);
+            serializer.addMemberString("charger_address", MULTICAST_ADDRESS);
+            serializer.addMemberString("web_address", random_remote_access_address().toString().c_str());
             serializer.addMemberString("charger_public", key["charger_public"]);
 
             const String psk = key["psk"];
@@ -1763,22 +1790,115 @@ void RemoteAccess::cleanup_after()
         0_s);
 }
 
-static int management_filter_in(struct pbuf *packet)
+// Read the transport header without assuming that a pbuf is contiguous. IPv6
+// extension headers precede the transport header and must not be read as ports.
+static bool management_transport_header(const struct pbuf *packet, uint8_t &protocol, uint16_t &offset, bool incoming)
 {
-    // When this function is called it is already ensured that the payload contains a valid ip packet.
-    uint8_t *payload = static_cast<uint8_t *>(packet->payload);
+    const auto filtered = [packet, incoming](const char *reason) {
+        remote_access_log_packet("Management filtered %s packet (%hu bytes): %s",
+                       incoming ? "incoming" : "outgoing", packet->tot_len, reason);
+        return false;
+    };
 
-    if (payload[9] != 0x1 && payload[9] != 0x6 && payload[9] != 0x11) {
-        logger.printfln("Management blocked invalid incoming packet with protocol: 0x%X", payload[9]);
-        return ERR_VAL;
+    uint8_t header[40];
+    if (pbuf_copy_partial(packet, header, sizeof(header), 0) != sizeof(header)) {
+        return filtered("truncated IPv6 header");
+    }
+    if ((header[0] >> 4) != 6) {
+        return filtered("expected IPv6");
+    }
+    const uint32_t length = sizeof(header) + (static_cast<uint16_t>(header[4]) << 8) + header[5];
+    if (length > packet->tot_len) {
+        return filtered("IPv6 payload length exceeds packet length");
     }
 
-    int ip_header_len = (payload[0] & 0xF) * 4;
+    protocol = header[6];
+    offset = sizeof(header);
+    while (protocol == IP6_NEXTH_HOPBYHOP || protocol == IP6_NEXTH_ROUTING ||
+           protocol == IP6_NEXTH_DESTOPTS || protocol == IP6_NEXTH_FRAGMENT) {
+        uint8_t extension[8];
+        if (offset + sizeof(extension) > length ||
+            pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
+            return filtered("truncated IPv6 extension header");
+        }
+        uint16_t extension_length;
+        if (protocol == IP6_NEXTH_FRAGMENT) {
+            // Reject fragmented traffic: later fragments cannot be checked for
+            // the permitted destination port before lwIP reassembles them.
+            if (extension[2] != 0 || extension[3] != 0) {
+                return filtered("fragmented traffic is not allowed");
+            }
+            extension_length = sizeof(extension);
+        } else {
+            extension_length = static_cast<uint16_t>((extension[1] + 1) * 8);
+        }
+        if (offset + extension_length > length) {
+            return filtered("IPv6 extension header exceeds packet length");
+        }
+        offset += extension_length;
+        protocol = extension[0];
+    }
 
-    uint16_t dest_port = payload[ip_header_len + 2] << 8;
-    dest_port |= payload[ip_header_len + 3];
-    if (dest_port == 0 || (dest_port != 12345 && dest_port != remote_access.send_port)) {
-        logger.printfln("Management blocked invalid incoming packet with destination port: %i.", dest_port);
+    // ICMPv6 has no ports; it is required for echo and Packet Too Big handling.
+    const size_t minimum_length = protocol == IP6_NEXTH_TCP ? 20 : 8;
+    if (protocol != IP6_NEXTH_ICMP6 && protocol != IP6_NEXTH_TCP && protocol != IP6_NEXTH_UDP) {
+        return filtered("unsupported transport protocol");
+    }
+    if (offset + minimum_length > length) {
+        return filtered("truncated transport header");
+    }
+    return true;
+}
+
+static int management_filter_in(struct pbuf *packet)
+{
+    // Log every inner packet before protocol, port, or payload validation.
+    uint8_t header[40];
+    if (pbuf_copy_partial(packet, header, sizeof(header), 0) == sizeof(header) && (header[0] >> 4) == 6) {
+        ip6_addr_t source = {}, destination = {};
+        memcpy(source.addr, header + 8, sizeof(source.addr));
+        memcpy(destination.addr, header + 24, sizeof(destination.addr));
+        char source_str[INET6_ADDRSTRLEN];
+        char destination_str[INET6_ADDRSTRLEN];
+        tf_ip6addr_ntoa(&source, source_str, sizeof(source_str));
+        tf_ip6addr_ntoa(&destination, destination_str, sizeof(destination_str));
+        remote_access_log_packet("Management received packet (%hu bytes, IPv6 next header %hhu): %s -> %s",
+                       packet->tot_len, header[6], source_str, destination_str);
+    } else {
+        remote_access_log_packet("Management received packet (%hu bytes): invalid or incomplete IPv6 header", packet->tot_len);
+    }
+
+    uint8_t protocol;
+    uint16_t offset;
+    if (!management_transport_header(packet, protocol, offset, true)) {
+        return ERR_VAL;
+    }
+    if (protocol == IP6_NEXTH_ICMP6) {
+        uint8_t icmp_header[2];
+        if (pbuf_copy_partial(packet, icmp_header, sizeof(icmp_header), offset) != sizeof(icmp_header)) {
+            remote_access_log_packet("Management filtered incoming ICMPv6 packet: truncated header");
+            return ERR_VAL;
+        }
+        remote_access_log_packet("Management received ICMPv6 type %hhu, code %hhu", icmp_header[0], icmp_header[1]);
+    }
+
+    const int filter_result = RemoteAccessTunnel::input_filter(RemoteAccessTunnel::MANAGEMENT_SLOT)(packet);
+    if (filter_result != ERR_OK) {
+        return filter_result;
+    }
+    if (protocol == IP6_NEXTH_ICMP6) {
+        // Discovery is handled above; lwIP handles ordinary echo and errors.
+        return ERR_OK;
+    }
+
+    uint8_t ports[4];
+    if (pbuf_copy_partial(packet, ports, sizeof(ports), offset) != sizeof(ports)) {
+        remote_access_log_packet("Management filtered incoming packet (%hu bytes): cannot read transport ports", packet->tot_len);
+        return ERR_VAL;
+    }
+    const uint16_t dest_port = (static_cast<uint16_t>(ports[2]) << 8) | ports[3];
+    if (dest_port != 12345 && (remote_access.send_port == 0 || dest_port != remote_access.send_port)) {
+        remote_access_log_packet("Management filtered incoming packet (%hu bytes): destination port %hu is not allowed", packet->tot_len, dest_port);
         return ERR_VAL;
     }
     return ERR_OK;
@@ -1786,15 +1906,12 @@ static int management_filter_in(struct pbuf *packet)
 
 static int management_filter_out(struct pbuf *packet)
 {
-    uint8_t *payload = static_cast<uint8_t *>(packet->payload);
-
-    // Allow ICMP (0x1), TCP (0x6) packets, and UDP (0x11)
-    if (payload[9] == 0x1 || payload[9] == 0x6 || payload[9] == 0x11) {
-        return ERR_OK;
-    } else {
-        logger.printfln("Management blocked outgoing packet");
+    uint8_t protocol;
+    uint16_t offset;
+    if (!management_transport_header(packet, protocol, offset, false)) {
+        return ERR_VAL;
     }
-    return ERR_VAL;
+    return RemoteAccessTunnel::output_filter(RemoteAccessTunnel::MANAGEMENT_SLOT)(packet);
 }
 
 static bool port_valid(uint16_t port)
@@ -1846,23 +1963,21 @@ void RemoteAccess::request_cleanup()
 
 int RemoteAccess::send_to_mgmt_server(const void *data, size_t len)
 {
-    if (inner_socket < 0) {
+    sockaddr_in6 dest_addr;
+    if (inner_socket < 0 || !management_socket_address(true, 12345, dest_addr)) {
+        errno = ENOTCONN;
         return -1;
     }
 
-    struct sockaddr_in dest_addr;
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(12345);
-    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
-
     return sendto(inner_socket, data, len, 0,
-                  reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+                  reinterpret_cast<const struct sockaddr *>(&dest_addr), sizeof(dest_addr));
 }
 
 bool RemoteAccess::is_mgmt_connected() const
 {
-    return management != nullptr && management_request_done && inner_socket >= 0;
+    sockaddr_in6 peer;
+    return management != nullptr && management_request_done && inner_socket >= 0 &&
+           management_socket_address(true, 12345, peer);
 }
 
 void RemoteAccess::connect_management()
@@ -1876,13 +1991,19 @@ void RemoteAccess::connect_management()
             5_s);
         return;
     }
+    // A reconnect gets a fresh address, so its socket must be rebound as well.
+    if (inner_socket >= 0) {
+        close(inner_socket);
+        inner_socket = -1;
+    }
+    send_port = 0;
     management = nullptr;
 
-    const IPAddress internal_ip     { 10,123,123,2};
-    const IPAddress internal_subnet {255,255,255,0};
-    const IPAddress internal_gateway{ 10,123,123,1};
+    const IPAddress internal_ip     (IPv4); // No inner IPv4 address.
+    const IPAddress internal_subnet {255,255,255,255};
+    const IPAddress internal_gateway(IPv4);
     const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
+    const IPAddress allowed_subnet  {255,255,255,255};
 
     auto key_buf = heap_alloc_array<char>(3 * (WG_KEY_LENGTH + 1));
     char *private_key       = key_buf.get() + 0 * (WG_KEY_LENGTH + 1);
@@ -1900,16 +2021,15 @@ void RemoteAccess::connect_management()
 
     logger.printfln("Connecting to Management WireGuard peer %s:51820", remote_host);
 
-    management = std::make_unique<WireGuard>();
-
     const uint16_t local_port = find_next_free_port(51820);
     if (local_port == 0) {
         logger.printfln("No free port found for management connection");
+        management_request_done = false;
         return;
     }
-    this->setup_inner_socket();
-    // management->begin copys the keys.
-    management->begin(internal_ip,
+    management = std::make_unique<RemoteAccessTunnel>(RemoteAccessTunnel::MANAGEMENT_SLOT);
+    // begin() copies the keys. Configure IPv6 only after it succeeds.
+    const bool started = management->begin(internal_ip,
                       internal_subnet,
                       local_port,
                       internal_gateway,
@@ -1935,6 +2055,19 @@ void RemoteAccess::connect_management()
                       nullptr,
                       config.get("mtu")->asUint16());
 
+    if (!started || !management->configure_ipv6()) {
+        logger.printfln("Failed to configure management WireGuard tunnel");
+        management = nullptr;
+        management_request_done = false;
+        return;
+    }
+    this->setup_inner_socket();
+    if (inner_socket < 0) {
+        management = nullptr;
+        management_request_done = false;
+        return;
+    }
+
     if (!management_task_id) {
         management_task_id = task_scheduler.scheduleWithFixedDelay(
             [this]() {
@@ -1944,23 +2077,23 @@ void RemoteAccess::connect_management()
     }
 }
 
-void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
+void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port, const ip_addr_t &endpoint)
 {
     struct timeval tv;
     if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce(
-            [this, i, local_port]() {
-                this->connect_remote_access(i, local_port);
+            [this, i, local_port, endpoint]() {
+                this->connect_remote_access(i, local_port, endpoint);
             },
             5_s);
         return;
     }
 
-    const IPAddress internal_ip     { 10,123,  i,2};
-    const IPAddress internal_subnet {255,255,255,0};
-    const IPAddress internal_gateway{ 10,123,  i,1};
+    const IPAddress internal_ip     (IPv4); // No inner IPv4 address.
+    const IPAddress internal_subnet {255,255,255,255};
+    const IPAddress internal_gateway(IPv4);
     const IPAddress allowed_ip      (IPv4); // 0.0.0.0
-    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
+    const IPAddress allowed_subnet  {255,255,255,255};
 
     // WireGuard decodes those (base64 encoded) keys and stores them.
     char private_key[WG_KEY_LENGTH + 1];
@@ -1974,8 +2107,10 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
         return;
     }
 
-    // Only used for BLOCKING! DNS resolve. TODO Make this non-blocking in Wireguard-ESP32-Arduino/src/WireGuard.cpp!
-    const char *remote_host = config.get("relay_host")->asUnsafeCStr();
+    // Reuse the address resolved for port discovery. Passing the hostname to
+    // begin() would run another blocking DNS lookup on the main task.
+    char remote_host[INET_ADDRSTRLEN];
+    ip4addr_ntoa_r(ip_2_ip4(&endpoint), remote_host, sizeof(remote_host));
 
     uint8_t conn_idx = get_connection(i);
     if (conn_idx == 255) {
@@ -1983,9 +2118,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
         return;
     }
     remote_connections[conn_idx].id = i;
-    remote_connections[conn_idx].conn = std::make_unique<WireGuard>();
+    remote_connections[conn_idx].conn = std::make_unique<RemoteAccessTunnel>(conn_idx);
 
-    remote_connections[conn_idx].conn->begin(internal_ip,
+    const bool started = remote_connections[conn_idx].conn->begin(internal_ip,
                    internal_subnet,
                    local_port,
                    internal_gateway,
@@ -1997,8 +2132,8 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    allowed_subnet,
                    false,
                    psk,
-                   nullptr,
-                   nullptr,
+                   RemoteAccessTunnel::input_filter(conn_idx),
+                   RemoteAccessTunnel::output_filter(conn_idx),
                    [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
                     // Currently only one peer is supported.
                     if (peer_index != 0)
@@ -2011,6 +2146,11 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    },
                    reinterpret_cast<void *>(conn_idx),
                    config.get("mtu")->asUint16());
+
+    if (!started || !remote_connections[conn_idx].conn->configure_ipv6()) {
+        logger.printfln("Failed to configure user WireGuard tunnel %hhu", i);
+        remote_connections[conn_idx].conn = nullptr;
+    }
 
     update_connection_state(conn_idx, user_id, conn_id, ConnectionState::Disconnected);
 }
@@ -2078,19 +2218,20 @@ void RemoteAccess::setup_inner_socket()
         return;
     }
 
-    inner_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    inner_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (inner_socket < 0) {
         logger.printfln("Failed to create inner socket: %s (%i)", strerror(errno), errno);
         return;
     }
 
-    struct sockaddr_in local_addr;
-    memset(&local_addr, 0, sizeof(local_addr));
-
-    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address is already set by memset
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = htons(12345);
-    int ret = bind(inner_socket, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
+    sockaddr_in6 local_addr;
+    if (!management_socket_address(false, 12345, local_addr)) {
+        logger.printfln("Cannot bind management socket: tunnel address is not configured");
+        close(inner_socket);
+        inner_socket = -1;
+        return;
+    }
+    int ret = bind(inner_socket, reinterpret_cast<const struct sockaddr *>(&local_addr), sizeof(local_addr));
     if (ret < 0) {
         logger.printfln("Binding socket to port 12345 caused an error: %s (%i)", strerror(errno), errno);
         close(inner_socket);
@@ -2123,13 +2264,18 @@ uint8_t RemoteAccess::get_connection(int32_t conn_id)
 void RemoteAccess::run_management()
 {
     if (inner_socket < 0) {
+        logger.printfln("inner socket error");
         return;
     }
 
     uint8_t buf[sizeof(management_command_packet)];
-    struct sockaddr from;
-    socklen_t from_len = sizeof(sockaddr);
-    int ret = recvfrom(inner_socket, &buf, sizeof(management_command_packet), 0, &from, &from_len);
+    struct sockaddr_in6 from;
+    socklen_t from_len = sizeof(from);
+    int ret = recvfrom(inner_socket, &buf, sizeof(management_command_packet), 0,
+                       reinterpret_cast<struct sockaddr *>(&from), &from_len);
+    if (ret > 0) {
+        logger.printfln("Received %d bytes from management server", ret);
+    }
 
     if (ret < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -2222,6 +2368,7 @@ void RemoteAccess::run_management()
 
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no, conn_idx](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 if (data->err != ERR_OK) {
+                    remote_connections[conn_idx].in_progress = false;
                     if (data->err == ERR_CONN) {
                         logger.printfln("Failed to resolve remote host: no address associated with hostname");
                     } else {
@@ -2231,7 +2378,7 @@ void RemoteAccess::run_management()
                 }
 
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
-                connect_remote_access(conn_no, local_port);
+                connect_remote_access(conn_no, local_port, data->addr);
                 // Clear in_progress flag after connection setup is initiated
                 remote_connections[conn_idx].in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);
@@ -2450,7 +2597,7 @@ int RemoteAccess::poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reas
         }
 
         uint8_t buf[32];
-        struct sockaddr_in from;
+        struct sockaddr_in6 from;
         socklen_t from_len = sizeof(from);
         int received = recvfrom(inner_socket, buf, sizeof(buf), 0,
                                 reinterpret_cast<struct sockaddr *>(&from), &from_len);
@@ -2521,11 +2668,12 @@ int RemoteAccess::begin_charge_log_send(
         return -4;
     }
 
-    struct sockaddr_in dest_addr;
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(12345);
-    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
+    sockaddr_in6 dest_addr;
+    if (!management_socket_address(true, 12345, dest_addr)) {
+        logger.printfln("Cannot send charge log: management peer discovery is incomplete");
+        release_inner_socket();
+        return -5;
+    }
 
     // Step 1: Send RequestChargeLogSend
     management_packet_header request_header;
@@ -2536,7 +2684,7 @@ int RemoteAccess::begin_charge_log_send(
     request_header.type = PacketType::RequestChargeLogSend;
 
     int ret = sendto(inner_socket, &request_header, sizeof(request_header), 0,
-                     reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+                     reinterpret_cast<const struct sockaddr *>(&dest_addr), sizeof(dest_addr));
     if (ret < 0) {
         logger.printfln("Failed to send charge log request: %s (%i)", strerror(errno), errno);
         release_inner_socket();
@@ -2615,7 +2763,7 @@ int RemoteAccess::begin_charge_log_send(
     }
 
     ret = sendto(inner_socket, meta_buf.get(), written, 0,
-                 reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+                 reinterpret_cast<const struct sockaddr *>(&dest_addr), sizeof(dest_addr));
     if (ret < 0) {
         logger.printfln("Failed to send charge log metadata: %s (%i)", strerror(errno), errno);
         release_inner_socket();
@@ -2638,23 +2786,26 @@ int RemoteAccess::begin_charge_log_send(
         return -11;
     }
 
-    logger.printfln("Received Ack, opening TCP connection to 10.123.123.3:8080...");
+    sockaddr_in6 local_addr, tcp_dest;
+    if (!management_socket_address(false, 0, local_addr) ||
+        !management_socket_address(true, 8080, tcp_dest)) {
+        logger.printfln("Cannot send charge log: management tunnel disconnected");
+        release_inner_socket();
+        return -12;
+    }
+    char server_address[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &tcp_dest.sin6_addr, server_address, sizeof(server_address));
+    logger.printfln("Received Ack, opening TCP connection to [%s]:8080...", server_address);
 
     // Step 6: Open TCP connection to management server
-    int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int tcp_sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_sock < 0) {
         logger.printfln("Failed to create TCP socket: %s (%i)", strerror(errno), errno);
         release_inner_socket();
         return -12;
     }
 
-    struct sockaddr_in local_addr;
-    memset(&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = 0; // Let OS assign a port
-    local_addr.sin_addr.s_addr = inet_addr("10.123.123.2");
-
-    ret = bind(tcp_sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
+    ret = bind(tcp_sock, reinterpret_cast<const struct sockaddr *>(&local_addr), sizeof(local_addr));
     if (ret < 0) {
         logger.printfln("Failed to bind TCP socket: %s (%i)", strerror(errno), errno);
         close(tcp_sock);
@@ -2662,20 +2813,14 @@ int RemoteAccess::begin_charge_log_send(
         return -13;
     }
 
-    struct sockaddr_in src_addr;
+    struct sockaddr_in6 src_addr;
     socklen_t addr_len = sizeof(src_addr);
     getsockname(tcp_sock, reinterpret_cast<struct sockaddr *>(&src_addr), &addr_len);
-    logger.printfln("Connected from %u", ntohs(src_addr.sin_port));
+    logger.printfln("Connected from %u", ntohs(src_addr.sin6_port));
 
-    send_port = ntohs(src_addr.sin_port);
+    send_port = ntohs(src_addr.sin6_port);
 
-    struct sockaddr_in tcp_dest;
-    memset(&tcp_dest, 0, sizeof(tcp_dest));
-    tcp_dest.sin_family = AF_INET;
-    tcp_dest.sin_port = htons(8080);
-    tcp_dest.sin_addr.s_addr = inet_addr("10.123.123.3");
-
-    ret = connect(tcp_sock, reinterpret_cast<struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
+    ret = connect(tcp_sock, reinterpret_cast<const struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
     if (ret < 0) {
         logger.printfln("Failed to connect TCP socket: %s (%i)", strerror(errno), errno);
         close(tcp_sock);
@@ -2836,14 +2981,13 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
     }
 
     // Send the packet through the inner socket to the management server
-    struct sockaddr_in dest_addr;
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(12345);
-    // Management server is at 10.123.123.3
-    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
+    sockaddr_in6 dest_addr;
+    if (!management_socket_address(true, 12345, dest_addr)) {
+        logger.printfln("Cannot send charge log metadata: management peer discovery is incomplete");
+        return -12;
+    }
 
-    int ret = sendto(inner_socket, buf.get(), written, 0, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+    int ret = sendto(inner_socket, buf.get(), written, 0, reinterpret_cast<const struct sockaddr *>(&dest_addr), sizeof(dest_addr));
     if (ret < 0) {
         logger.printfln("Failed to send charge log metadata: %s (%i)", strerror(errno), errno);
         return -12;
@@ -2854,42 +2998,7 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
 }
 
 bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip, const IPAddress &remote_ip) {
-    const uint32_t ip = static_cast<uint32_t>(local_ip);
-    const uint32_t masked_ip = ip & 0xFF00FFFFul; // Mask connection ID in third octet
-    constexpr uint32_t expected_masked_ip = ntohl((10u << 24) + (123u << 16) + (0u << 8) + (2u << 0)); // 10.123.x.2
-
-    if (masked_ip != expected_masked_ip) {
-        return false;
-    }
-
-    const uint32_t remote = static_cast<uint32_t>(remote_ip);
-
-    if (remote != ip + ntohl(1)) { // Remote must be local address + 1
-        return false;
-    }
-
-    const uint8_t conn_id = (ip >> 16) & 0xFF; // Third octet
-    size_t conn_idx;
-
-    for (size_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
-        if (remote_connections[i].id == conn_id) {
-            conn_idx = i;
-            goto conn_idx_found;
-        }
-    }
-
-    logger.printfln("Local IP query couldn't find connection ID %hhu", conn_id);
-    return false;
-
-conn_idx_found:
-    // The connection state is currently updated up to 400ms after the WireGuard tunnel is established,
-    // which is too late for checking the immediately established HTTP connection.
-    // Use only the IP address checks for now.
-    //const ConnectionState conn_state = connection_state.get(conn_idx + 1)->get("state")->asEnum<ConnectionState>();
-    //return conn_state == ConnectionState::Connected;
-    (void)conn_idx;
-
-    return true;
+    return RemoteAccessTunnel::is_connected_address(local_ip, remote_ip);
 }
 
 [[gnu::const]]
