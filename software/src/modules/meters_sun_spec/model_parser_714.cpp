@@ -156,15 +156,15 @@ static float uint64_to_float(uint64_t val, int32_t sunssf)
     return static_cast<float>(u.u64) * get_sun_spec_scale_factor(sunssf);
 }
 
-bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
 {
     if (!is_valid(register_data)) {
         return false;
     }
 
-    const struct Model714_s *block1 = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data[1]));
+    const struct Model714_s *block = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data));
 
-    cached_port_count = block1->NPrt;
+    cached_port_count = block->NPrt;
 
     if (cached_port_count > MODEL_714_MAX_PORT_COUNT) {
         // FIXME: remove this limitation that is caused by the 125 register read limit
@@ -199,14 +199,14 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2
     return true;
 }
 
-bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
+bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data, uint32_t quirks)
 {
     if (!is_valid(register_data)) {
         return false;
     }
 
-    const struct Model714_s *block1 = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data[1]));
-    size_t port_count = block1->NPrt;
+    const struct Model714_s *block = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data));
+    size_t port_count = block->NPrt;
 
     if (port_count > cached_port_count) {
         port_count = cached_port_count;
@@ -225,9 +225,9 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
     size_t pv_idx = 0;
 
     for (size_t port_idx = 0; port_idx < port_count; ++port_idx) {
-        const struct Model714_Port_s *block1_port = static_cast<const struct Model714_Port_s *>(static_cast<const void *>(&register_data[1][MODEL_714_REGISTER_COUNT + port_idx * MODEL_714_PORT_REGISTER_COUNT]));
+        const struct Model714_Port_s *block_port = static_cast<const struct Model714_Port_s *>(static_cast<const void *>(&register_data[MODEL_714_REGISTER_COUNT + port_idx * MODEL_714_PORT_REGISTER_COUNT]));
 
-        if (block1_port->PrtTyp != static_cast<uint16_t>(port_type)) {
+        if (block_port->PrtTyp != static_cast<uint16_t>(port_type)) {
             continue;
         }
 
@@ -235,12 +235,12 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
 
         ++matching_port_count;
 
-        float dca      =  int16_to_float(block1_port->DCA,     block1->DCA_SF);
-        float dcv      = uint16_to_float(block1_port->DCV,     block1->DCV_SF);
-        float dcw      =  int16_to_float(block1_port->DCW,     block1->DCW_SF);
-        float dcwh_inj = uint64_to_float(block1_port->DCWhInj, block1->DCWH_SF) * 0.001f;
-        float dcwh_abs = uint64_to_float(block1_port->DCWhAbs, block1->DCWH_SF) * 0.001f;
-        float tmp      =  int16_to_float(block1_port->Tmp,     block1->Tmp_SF);
+        float dca      =  int16_to_float(block_port->DCA,     block->DCA_SF);
+        float dcv      = uint16_to_float(block_port->DCV,     block->DCV_SF);
+        float dcw      =  int16_to_float(block_port->DCW,     block->DCW_SF);
+        float dcwh_inj = uint64_to_float(block_port->DCWhInj, block->DCWH_SF) * 0.001f;
+        float dcwh_abs = uint64_to_float(block_port->DCWhAbs, block->DCWH_SF) * 0.001f;
+        float tmp      =  int16_to_float(block_port->Tmp,     block->Tmp_SF);
 
         values[0] = nan_safe_sum(values[0], dca);
         values[1] = nan_safe_sum(values[1], dcv);
@@ -274,12 +274,6 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
 }
 
 [[gnu::const]]
-bool MetersSunSpecParser714::must_read_twice()
-{
-    return true;
-}
-
-[[gnu::const]]
 bool MetersSunSpecParser714::is_model_length_supported(uint32_t model_length)
 {
     return model_length >= (MODEL_714_REGISTER_COUNT - 2) && ((model_length - (MODEL_714_REGISTER_COUNT - 2)) % MODEL_714_PORT_REGISTER_COUNT) == 0;
@@ -291,20 +285,12 @@ uint32_t MetersSunSpecParser714::get_interesting_registers_count()
     return MODEL_714_REGISTER_COUNT + cached_port_count * MODEL_714_PORT_REGISTER_COUNT;
 }
 
-bool MetersSunSpecParser714::is_valid(const uint16_t *const register_data[2])
+bool MetersSunSpecParser714::is_valid(const uint16_t *const register_data)
 {
-    const struct Model714_s *block0 = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data[0]));
-    const struct Model714_s *block1 = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data[1]));
+    const struct Model714_s *block = static_cast<const struct Model714_s *>(static_cast<const void *>(register_data));
 
-    if (block0->ID      != 714)                return false;
-    if (block1->ID      != 714)                return false;
-    if (!is_model_length_supported(block0->L)) return false;
-    if (block0->L       != block1->L)          return false;
-    if (block0->DCA_SF  != block1->DCA_SF)     return false;
-    if (block0->DCV_SF  != block1->DCV_SF)     return false;
-    if (block0->DCW_SF  != block1->DCW_SF)     return false;
-    if (block0->DCWH_SF != block1->DCWH_SF)    return false;
-    if (block0->Tmp_SF  != block1->Tmp_SF)     return false;
+    if (block->ID != 714)                     return false;
+    if (!is_model_length_supported(block->L)) return false;
 
     return true;
 }

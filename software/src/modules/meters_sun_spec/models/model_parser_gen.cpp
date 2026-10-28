@@ -64,11 +64,11 @@ static inline float convert_me_float(const uint32_t *me32, bool is_already_le32)
 
 #include "model_001.h"
 
-static bool model_001_validator(const uint16_t * const register_data[2])
+static bool model_001_validator(const uint16_t * const register_data)
 {
-    const SunSpecCommonModel001_s *block0 = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data[0]);
-    if (block0->ID !=   1) return false;
-    if (block0->L  !=  65) return false;
+    const SunSpecCommonModel001_s *block = reinterpret_cast<const SunSpecCommonModel001_s *>(register_data);
+    if (block->ID !=   1) return false;
+    if (block->L  !=  65) return false;
     return true;
 }
 
@@ -77,7 +77,6 @@ static const MetersSunSpecParser::ModelData model_001_data = {
     65, // model_length
     0, // interesting_registers_count
     false, // is_meter
-    false, // read_twice
     &model_001_validator,
     0,  // value_count
     {    // value_data
@@ -347,26 +346,11 @@ static float get_model_101_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_101_validator(const uint16_t * const register_data[2])
+static bool model_101_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterModel101_s *block0 = reinterpret_cast<const SunSpecInverterModel101_s *>(register_data[0]);
-    const SunSpecInverterModel101_s *block1 = reinterpret_cast<const SunSpecInverterModel101_s *>(register_data[1]);
-    if (block0->ID != 101) return false;
-    if (block1->ID != 101) return false;
-    if (block0->L  !=  50) return false;
-    if (block1->L  !=  50) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAr_SF != block1->VAr_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->WH_SF != block1->WH_SF) return false;
-    if (block0->DCA_SF != block1->DCA_SF) return false;
-    if (block0->DCV_SF != block1->DCV_SF) return false;
-    if (block0->DCW_SF != block1->DCW_SF) return false;
-    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    const SunSpecInverterModel101_s *block = reinterpret_cast<const SunSpecInverterModel101_s *>(register_data);
+    if (block->ID != 101) return false;
+    if (block->L  !=  50) return false;
     return true;
 }
 
@@ -375,7 +359,6 @@ static const MetersSunSpecParser::ModelData model_101_data = {
     50, // model_length
     38, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_101_validator,
     23,  // value_count
     {    // value_data
@@ -668,26 +651,11 @@ static float get_model_102_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_102_validator(const uint16_t * const register_data[2])
+static bool model_102_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterModel102_s *block0 = reinterpret_cast<const SunSpecInverterModel102_s *>(register_data[0]);
-    const SunSpecInverterModel102_s *block1 = reinterpret_cast<const SunSpecInverterModel102_s *>(register_data[1]);
-    if (block0->ID != 102) return false;
-    if (block1->ID != 102) return false;
-    if (block0->L  !=  50) return false;
-    if (block1->L  !=  50) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAr_SF != block1->VAr_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->WH_SF != block1->WH_SF) return false;
-    if (block0->DCA_SF != block1->DCA_SF) return false;
-    if (block0->DCV_SF != block1->DCV_SF) return false;
-    if (block0->DCW_SF != block1->DCW_SF) return false;
-    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    const SunSpecInverterModel102_s *block = reinterpret_cast<const SunSpecInverterModel102_s *>(register_data);
+    if (block->ID != 102) return false;
+    if (block->L  !=  50) return false;
     return true;
 }
 
@@ -696,7 +664,6 @@ static const MetersSunSpecParser::ModelData model_102_data = {
     50, // model_length
     38, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_102_validator,
     23,  // value_count
     {    // value_data
@@ -989,26 +956,11 @@ static float get_model_103_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_103_validator(const uint16_t * const register_data[2])
+static bool model_103_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterModel103_s *block0 = reinterpret_cast<const SunSpecInverterModel103_s *>(register_data[0]);
-    const SunSpecInverterModel103_s *block1 = reinterpret_cast<const SunSpecInverterModel103_s *>(register_data[1]);
-    if (block0->ID != 103) return false;
-    if (block1->ID != 103) return false;
-    if (block0->L  !=  50) return false;
-    if (block1->L  !=  50) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAr_SF != block1->VAr_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->WH_SF != block1->WH_SF) return false;
-    if (block0->DCA_SF != block1->DCA_SF) return false;
-    if (block0->DCV_SF != block1->DCV_SF) return false;
-    if (block0->DCW_SF != block1->DCW_SF) return false;
-    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    const SunSpecInverterModel103_s *block = reinterpret_cast<const SunSpecInverterModel103_s *>(register_data);
+    if (block->ID != 103) return false;
+    if (block->L  !=  50) return false;
     return true;
 }
 
@@ -1017,7 +969,6 @@ static const MetersSunSpecParser::ModelData model_103_data = {
     50, // model_length
     38, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_103_validator,
     23,  // value_count
     {    // value_data
@@ -1242,11 +1193,11 @@ static float get_model_111_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_111_validator(const uint16_t * const register_data[2])
+static bool model_111_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterFLOATModel111_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data[0]);
-    if (block0->ID != 111) return false;
-    if (block0->L  !=  60) return false;
+    const SunSpecInverterFLOATModel111_s *block = reinterpret_cast<const SunSpecInverterFLOATModel111_s *>(register_data);
+    if (block->ID != 111) return false;
+    if (block->L  !=  60) return false;
     return true;
 }
 
@@ -1255,7 +1206,6 @@ static const MetersSunSpecParser::ModelData model_111_data = {
     60, // model_length
     48, // interesting_registers_count
     false, // is_meter
-    false, // read_twice
     &model_111_validator,
     23,  // value_count
     {    // value_data
@@ -1480,11 +1430,11 @@ static float get_model_112_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_112_validator(const uint16_t * const register_data[2])
+static bool model_112_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterFLOATModel112_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data[0]);
-    if (block0->ID != 112) return false;
-    if (block0->L  !=  60) return false;
+    const SunSpecInverterFLOATModel112_s *block = reinterpret_cast<const SunSpecInverterFLOATModel112_s *>(register_data);
+    if (block->ID != 112) return false;
+    if (block->L  !=  60) return false;
     return true;
 }
 
@@ -1493,7 +1443,6 @@ static const MetersSunSpecParser::ModelData model_112_data = {
     60, // model_length
     48, // interesting_registers_count
     false, // is_meter
-    false, // read_twice
     &model_112_validator,
     23,  // value_count
     {    // value_data
@@ -1718,11 +1667,11 @@ static float get_model_113_TmpOt(const void *register_data, uint32_t quirks, boo
     return fval;
 }
 
-static bool model_113_validator(const uint16_t * const register_data[2])
+static bool model_113_validator(const uint16_t * const register_data)
 {
-    const SunSpecInverterFLOATModel113_s *block0 = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data[0]);
-    if (block0->ID != 113) return false;
-    if (block0->L  !=  60) return false;
+    const SunSpecInverterFLOATModel113_s *block = reinterpret_cast<const SunSpecInverterFLOATModel113_s *>(register_data);
+    if (block->ID != 113) return false;
+    if (block->L  !=  60) return false;
     return true;
 }
 
@@ -1731,7 +1680,6 @@ static const MetersSunSpecParser::ModelData model_113_data = {
     60, // model_length
     48, // interesting_registers_count
     false, // is_meter
-    false, // read_twice
     &model_113_validator,
     23,  // value_count
     {    // value_data
@@ -2515,24 +2463,11 @@ static float get_model_201_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_201_validator(const uint16_t * const register_data[2])
+static bool model_201_validator(const uint16_t * const register_data)
 {
-    const SunSpecSinglePhaseMeterModel201_s *block0 = reinterpret_cast<const SunSpecSinglePhaseMeterModel201_s *>(register_data[0]);
-    const SunSpecSinglePhaseMeterModel201_s *block1 = reinterpret_cast<const SunSpecSinglePhaseMeterModel201_s *>(register_data[1]);
-    if (block0->ID != 201) return false;
-    if (block1->ID != 201) return false;
-    if (block0->L  != 105) return false;
-    if (block1->L  != 105) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAR_SF != block1->VAR_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->TotWh_SF != block1->TotWh_SF) return false;
-    if (block0->TotVAh_SF != block1->TotVAh_SF) return false;
-    if (block0->TotVArh_SF != block1->TotVArh_SF) return false;
+    const SunSpecSinglePhaseMeterModel201_s *block = reinterpret_cast<const SunSpecSinglePhaseMeterModel201_s *>(register_data);
+    if (block->ID != 201) return false;
+    if (block->L  != 105) return false;
     return true;
 }
 
@@ -2541,7 +2476,6 @@ static const MetersSunSpecParser::ModelData model_201_data = {
     105, // model_length
     105, // interesting_registers_count
     true, // is_meter
-    true, // read_twice
     &model_201_validator,
     61,  // value_count
     {    // value_data
@@ -3363,24 +3297,11 @@ static float get_model_202_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_202_validator(const uint16_t * const register_data[2])
+static bool model_202_validator(const uint16_t * const register_data)
 {
-    const SunSpecSplitSinglePhaseMeterModel202_s *block0 = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel202_s *>(register_data[0]);
-    const SunSpecSplitSinglePhaseMeterModel202_s *block1 = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel202_s *>(register_data[1]);
-    if (block0->ID != 202) return false;
-    if (block1->ID != 202) return false;
-    if (block0->L  != 105) return false;
-    if (block1->L  != 105) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAR_SF != block1->VAR_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->TotWh_SF != block1->TotWh_SF) return false;
-    if (block0->TotVAh_SF != block1->TotVAh_SF) return false;
-    if (block0->TotVArh_SF != block1->TotVArh_SF) return false;
+    const SunSpecSplitSinglePhaseMeterModel202_s *block = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
+    if (block->ID != 202) return false;
+    if (block->L  != 105) return false;
     return true;
 }
 
@@ -3389,7 +3310,6 @@ static const MetersSunSpecParser::ModelData model_202_data = {
     105, // model_length
     105, // interesting_registers_count
     true, // is_meter
-    true, // read_twice
     &model_202_validator,
     61,  // value_count
     {    // value_data
@@ -4211,24 +4131,11 @@ static float get_model_203_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_203_validator(const uint16_t * const register_data[2])
+static bool model_203_validator(const uint16_t * const register_data)
 {
-    const SunSpecWyeConnectThreePhaseMeterModel203_s *block0 = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data[0]);
-    const SunSpecWyeConnectThreePhaseMeterModel203_s *block1 = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data[1]);
-    if (block0->ID != 203) return false;
-    if (block1->ID != 203) return false;
-    if (block0->L  != 105) return false;
-    if (block1->L  != 105) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAR_SF != block1->VAR_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->TotWh_SF != block1->TotWh_SF) return false;
-    if (block0->TotVAh_SF != block1->TotVAh_SF) return false;
-    if (block0->TotVArh_SF != block1->TotVArh_SF) return false;
+    const SunSpecWyeConnectThreePhaseMeterModel203_s *block = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
+    if (block->ID != 203) return false;
+    if (block->L  != 105) return false;
     return true;
 }
 
@@ -4237,7 +4144,6 @@ static const MetersSunSpecParser::ModelData model_203_data = {
     105, // model_length
     105, // interesting_registers_count
     true, // is_meter
-    true, // read_twice
     &model_203_validator,
     61,  // value_count
     {    // value_data
@@ -5059,24 +4965,11 @@ static float get_model_204_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_204_validator(const uint16_t * const register_data[2])
+static bool model_204_validator(const uint16_t * const register_data)
 {
-    const SunSpecDeltaConnectThreePhaseMeterModel204_s *block0 = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data[0]);
-    const SunSpecDeltaConnectThreePhaseMeterModel204_s *block1 = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data[1]);
-    if (block0->ID != 204) return false;
-    if (block1->ID != 204) return false;
-    if (block0->L  != 105) return false;
-    if (block1->L  != 105) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->VAR_SF != block1->VAR_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->TotWh_SF != block1->TotWh_SF) return false;
-    if (block0->TotVAh_SF != block1->TotVAh_SF) return false;
-    if (block0->TotVArh_SF != block1->TotVArh_SF) return false;
+    const SunSpecDeltaConnectThreePhaseMeterModel204_s *block = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
+    if (block->ID != 204) return false;
+    if (block->L  != 105) return false;
     return true;
 }
 
@@ -5085,7 +4978,6 @@ static const MetersSunSpecParser::ModelData model_204_data = {
     105, // model_length
     105, // interesting_registers_count
     true, // is_meter
-    true, // read_twice
     &model_204_validator,
     61,  // value_count
     {    // value_data
@@ -5683,11 +5575,11 @@ static float get_model_211_TotVArhExpQ4phC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_211_validator(const uint16_t * const register_data[2])
+static bool model_211_validator(const uint16_t * const register_data)
 {
-    const SunSpecSinglePhaseMeterModel211_s *block0 = reinterpret_cast<const SunSpecSinglePhaseMeterModel211_s *>(register_data[0]);
-    if (block0->ID != 211) return false;
-    if (block0->L  != 124) return false;
+    const SunSpecSinglePhaseMeterModel211_s *block = reinterpret_cast<const SunSpecSinglePhaseMeterModel211_s *>(register_data);
+    if (block->ID != 211) return false;
+    if (block->L  != 124) return false;
     return true;
 }
 
@@ -5696,7 +5588,6 @@ static const MetersSunSpecParser::ModelData model_211_data = {
     124, // model_length
     124, // interesting_registers_count
     true, // is_meter
-    false, // read_twice
     &model_211_validator,
     61,  // value_count
     {    // value_data
@@ -6294,11 +6185,11 @@ static float get_model_212_TotVArhExpQ4phC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_212_validator(const uint16_t * const register_data[2])
+static bool model_212_validator(const uint16_t * const register_data)
 {
-    const SunSpecSplitSinglePhaseMeterModel212_s *block0 = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel212_s *>(register_data[0]);
-    if (block0->ID != 212) return false;
-    if (block0->L  != 124) return false;
+    const SunSpecSplitSinglePhaseMeterModel212_s *block = reinterpret_cast<const SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
+    if (block->ID != 212) return false;
+    if (block->L  != 124) return false;
     return true;
 }
 
@@ -6307,7 +6198,6 @@ static const MetersSunSpecParser::ModelData model_212_data = {
     124, // model_length
     124, // interesting_registers_count
     true, // is_meter
-    false, // read_twice
     &model_212_validator,
     61,  // value_count
     {    // value_data
@@ -6905,11 +6795,11 @@ static float get_model_213_TotVArhExpQ4phC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_213_validator(const uint16_t * const register_data[2])
+static bool model_213_validator(const uint16_t * const register_data)
 {
-    const SunSpecWyeConnectThreePhaseMeterModel213_s *block0 = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data[0]);
-    if (block0->ID != 213) return false;
-    if (block0->L  != 124) return false;
+    const SunSpecWyeConnectThreePhaseMeterModel213_s *block = reinterpret_cast<const SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
+    if (block->ID != 213) return false;
+    if (block->L  != 124) return false;
     return true;
 }
 
@@ -6918,7 +6808,6 @@ static const MetersSunSpecParser::ModelData model_213_data = {
     124, // model_length
     124, // interesting_registers_count
     true, // is_meter
-    false, // read_twice
     &model_213_validator,
     61,  // value_count
     {    // value_data
@@ -7516,11 +7405,11 @@ static float get_model_214_TotVArhExpQ4phC(const void *register_data, uint32_t q
     return fval;
 }
 
-static bool model_214_validator(const uint16_t * const register_data[2])
+static bool model_214_validator(const uint16_t * const register_data)
 {
-    const SunSpecDeltaConnectThreePhaseMeterModel214_s *block0 = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data[0]);
-    if (block0->ID != 214) return false;
-    if (block0->L  != 124) return false;
+    const SunSpecDeltaConnectThreePhaseMeterModel214_s *block = reinterpret_cast<const SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
+    if (block->ID != 214) return false;
+    if (block->L  != 124) return false;
     return true;
 }
 
@@ -7529,7 +7418,6 @@ static const MetersSunSpecParser::ModelData model_214_data = {
     124, // model_length
     124, // interesting_registers_count
     true, // is_meter
-    false, // read_twice
     &model_214_validator,
     61,  // value_count
     {    // value_data
@@ -8103,24 +7991,11 @@ static float get_model_701_TotVarhAbsL3(const void *register_data, uint32_t quir
     return fval;
 }
 
-static bool model_701_validator(const uint16_t * const register_data[2])
+static bool model_701_validator(const uint16_t * const register_data)
 {
-    const SunSpecDERACMeasurementModel701_s *block0 = reinterpret_cast<const SunSpecDERACMeasurementModel701_s *>(register_data[0]);
-    const SunSpecDERACMeasurementModel701_s *block1 = reinterpret_cast<const SunSpecDERACMeasurementModel701_s *>(register_data[1]);
-    if (block0->ID != 701) return false;
-    if (block1->ID != 701) return false;
-    if (block0->L  != 153) return false;
-    if (block1->L  != 153) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->Hz_SF != block1->Hz_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
-    if (block0->PF_SF != block1->PF_SF) return false;
-    if (block0->VA_SF != block1->VA_SF) return false;
-    if (block0->Var_SF != block1->Var_SF) return false;
-    if (block0->TotWh_SF != block1->TotWh_SF) return false;
-    if (block0->TotVarh_SF != block1->TotVarh_SF) return false;
-    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    const SunSpecDERACMeasurementModel701_s *block = reinterpret_cast<const SunSpecDERACMeasurementModel701_s *>(register_data);
+    if (block->ID != 701) return false;
+    if (block->L  != 153) return false;
     return true;
 }
 
@@ -8129,7 +8004,6 @@ static const MetersSunSpecParser::ModelData model_701_data = {
     153, // model_length
     123, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_701_validator,
     49,  // value_count
     {    // value_data
@@ -8201,16 +8075,11 @@ static float get_model_713_SoC(const void *register_data, uint32_t quirks, bool 
     return fval;
 }
 
-static bool model_713_validator(const uint16_t * const register_data[2])
+static bool model_713_validator(const uint16_t * const register_data)
 {
-    const SunSpecDERStorageCapacityModel713_s *block0 = reinterpret_cast<const SunSpecDERStorageCapacityModel713_s *>(register_data[0]);
-    const SunSpecDERStorageCapacityModel713_s *block1 = reinterpret_cast<const SunSpecDERStorageCapacityModel713_s *>(register_data[1]);
-    if (block0->ID != 713) return false;
-    if (block1->ID != 713) return false;
-    if (block0->L  !=   7) return false;
-    if (block1->L  !=   7) return false;
-    if (block0->WH_SF != block1->WH_SF) return false;
-    if (block0->Pct_SF != block1->Pct_SF) return false;
+    const SunSpecDERStorageCapacityModel713_s *block = reinterpret_cast<const SunSpecDERStorageCapacityModel713_s *>(register_data);
+    if (block->ID != 713) return false;
+    if (block->L  !=   7) return false;
     return true;
 }
 
@@ -8219,7 +8088,6 @@ static const MetersSunSpecParser::ModelData model_713_data = {
     7, // model_length
     9, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_713_validator,
     1,  // value_count
     {    // value_data
@@ -8273,19 +8141,11 @@ static float get_model_714_DCWhAbs(const void *register_data, uint32_t quirks, b
     return fval;
 }
 
-static bool model_714_validator(const uint16_t * const register_data[2])
+static bool model_714_validator(const uint16_t * const register_data)
 {
-    const SunSpecDERDCMeasurementModel714_s *block0 = reinterpret_cast<const SunSpecDERDCMeasurementModel714_s *>(register_data[0]);
-    const SunSpecDERDCMeasurementModel714_s *block1 = reinterpret_cast<const SunSpecDERDCMeasurementModel714_s *>(register_data[1]);
-    if (block0->ID != 714) return false;
-    if (block1->ID != 714) return false;
-    if (block0->L  !=  18) return false;
-    if (block1->L  !=  18) return false;
-    if (block0->DCA_SF != block1->DCA_SF) return false;
-    if (block0->DCV_SF != block1->DCV_SF) return false;
-    if (block0->DCW_SF != block1->DCW_SF) return false;
-    if (block0->DCWH_SF != block1->DCWH_SF) return false;
-    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    const SunSpecDERDCMeasurementModel714_s *block = reinterpret_cast<const SunSpecDERDCMeasurementModel714_s *>(register_data);
+    if (block->ID != 714) return false;
+    if (block->L  !=  18) return false;
     return true;
 }
 
@@ -8294,7 +8154,6 @@ static const MetersSunSpecParser::ModelData model_714_data = {
     18, // model_length
     19, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_714_validator,
     4,  // value_count
     {    // value_data
@@ -8351,26 +8210,11 @@ static float get_model_802_W(const void *register_data, uint32_t quirks, bool de
     return fval;
 }
 
-static bool model_802_validator(const uint16_t * const register_data[2])
+static bool model_802_validator(const uint16_t * const register_data)
 {
-    const SunSpecBatteryBaseModelModel802_s *block0 = reinterpret_cast<const SunSpecBatteryBaseModelModel802_s *>(register_data[0]);
-    const SunSpecBatteryBaseModelModel802_s *block1 = reinterpret_cast<const SunSpecBatteryBaseModelModel802_s *>(register_data[1]);
-    if (block0->ID != 802) return false;
-    if (block1->ID != 802) return false;
-    if (block0->L  !=  62) return false;
-    if (block1->L  !=  62) return false;
-    if (block0->AHRtg_SF != block1->AHRtg_SF) return false;
-    if (block0->WHRtg_SF != block1->WHRtg_SF) return false;
-    if (block0->WChaDisChaMax_SF != block1->WChaDisChaMax_SF) return false;
-    if (block0->DisChaRte_SF != block1->DisChaRte_SF) return false;
-    if (block0->SoC_SF != block1->SoC_SF) return false;
-    if (block0->DoD_SF != block1->DoD_SF) return false;
-    if (block0->SoH_SF != block1->SoH_SF) return false;
-    if (block0->V_SF != block1->V_SF) return false;
-    if (block0->CellV_SF != block1->CellV_SF) return false;
-    if (block0->A_SF != block1->A_SF) return false;
-    if (block0->AMax_SF != block1->AMax_SF) return false;
-    if (block0->W_SF != block1->W_SF) return false;
+    const SunSpecBatteryBaseModelModel802_s *block = reinterpret_cast<const SunSpecBatteryBaseModelModel802_s *>(register_data);
+    if (block->ID != 802) return false;
+    if (block->L  !=  62) return false;
     return true;
 }
 
@@ -8379,7 +8223,6 @@ static const MetersSunSpecParser::ModelData model_802_data = {
     62, // model_length
     64, // interesting_registers_count
     false, // is_meter
-    true, // read_twice
     &model_802_validator,
     4,  // value_count
     {    // value_data

@@ -188,35 +188,23 @@ void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason
         resolver = nullptr;
     }
 
-    free(generic_read_request.data[0]);
-
-    generic_read_request.data[0] = nullptr;
-    generic_read_request.data[1] = nullptr;
+    free(generic_read_request.data);
+    generic_read_request.data = nullptr;
 }
 
 bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
 {
-    free(generic_read_request.data[0]);
+    free(generic_read_request.data);
+    generic_read_request.data = nullptr;
 
-    generic_read_request.data[0] = nullptr;
-    generic_read_request.data[1] = nullptr;
-
-    bool read_twice = model_parser->must_read_twice();
-    size_t buffer_regcount = read_twice ? model_regcount * 2 : model_regcount;
-    uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * buffer_regcount));
+    uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * model_regcount));
 
     if (buffer == nullptr) {
         logger.printfln_meter("Cannot alloc read buffer");
         return false;
     }
 
-    generic_read_request.data[0] = buffer;
-
-    if (read_twice) {
-        generic_read_request.data[1] = buffer + model_regcount;
-    }
-
-    generic_read_request.read_twice = read_twice;
+    generic_read_request.data = buffer;
 
     return true;
 }
@@ -230,25 +218,18 @@ void MeterSunSpec::trace_response()
               generic_read_request.register_count,
               static_cast<uint32_t>(generic_read_request.result));
     }
-    else {
+    else if (generic_read_request.data != nullptr) {
+        trace("m%lu a%zu c%zu",
+              slot,
+              generic_read_request.start_address,
+              generic_read_request.register_count);
+
         char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
-        size_t data_buf_used;
+        size_t data_buf_used = hexdump(generic_read_request.data, generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
+        data_buf[data_buf_used] = '\n';
+        ++data_buf_used;
 
-        for (size_t i = 0; i < 2; ++i) {
-            if (generic_read_request.data[i] != nullptr) {
-                trace("m%lu a%zu c%zu d%zu",
-                      slot,
-                      generic_read_request.start_address,
-                      generic_read_request.register_count,
-                      i);
-
-                data_buf_used = hexdump(generic_read_request.data[i], generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
-                data_buf[data_buf_used] = '\n';
-                ++data_buf_used;
-
-                logger.trace_plain(meters_sun_spec.trace_buffer_index, data_buf, data_buf_used);
-            }
-        }
+        logger.trace_plain(meters_sun_spec.trace_buffer_index, data_buf, data_buf_used);
     }
 }
 

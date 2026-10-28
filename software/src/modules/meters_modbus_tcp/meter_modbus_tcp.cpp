@@ -194,9 +194,7 @@ void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TF
         return;
     }
 
-    generic_read_request.data[0] = register_buffer;
-    generic_read_request.data[1] = nullptr;
-    generic_read_request.read_twice = false;
+    generic_read_request.data = register_buffer;
     generic_read_request.done_callback = [this]{ read_done(); };
 
     read_index = 0;

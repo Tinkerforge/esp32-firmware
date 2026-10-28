@@ -77,7 +77,6 @@ void GenericModbusTCPClient::start_generic_read()
         return;
     }
 
-    read_buffer_num = 0;
     registers_done_count = 0;
 
     if (generic_read_request.register_count == 0) {
@@ -99,7 +98,7 @@ void GenericModbusTCPClient::read_next()
         esp_system_abort("Not connected while trying to read");
     }
 
-    uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
+    uint16_t *target_buffer = generic_read_request.data + registers_done_count;
     uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address + registers_done_count);
     uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
     uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
@@ -153,19 +152,11 @@ void GenericModbusTCPClient::read_next()
         registers_done_count = static_cast<uint16_t>(registers_done_count + read_block_size);
 
         if (registers_done_count >= generic_read_request.register_count) {
-            // buffer done
-            if (generic_read_request.read_twice && read_buffer_num == 0) {
-                // Two reads requested and first read is done. -> Next buffer.
-                read_buffer_num = 1;
-                registers_done_count = 0;
-            } else {
-                // Only one read requested or second buffer done. -> All done.
-                last_successful_read = now_us();
-                read_pending = false;
-                generic_read_request.result = TFModbusTCPClientTransactionResult::Success;
-                generic_read_request.done_callback();
-                return;
-            }
+            last_successful_read = now_us();
+            read_pending = false;
+            generic_read_request.result = TFModbusTCPClientTransactionResult::Success;
+            generic_read_request.done_callback();
+            return;
         }
 
         read_next();

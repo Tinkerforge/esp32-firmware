@@ -47,7 +47,7 @@ class MetersSunSpecParser : public IMetersSunSpecParser
 {
 public:
     typedef float (*get_value_fn)(const void *register_data, uint32_t quirks, bool detection);
-    typedef bool (*model_validator_fn)(const uint16_t *const register_data[2]);
+    typedef bool (*model_validator_fn)(const uint16_t *const register_data);
 
     struct ValueData {
         get_value_fn get_value;
@@ -64,7 +64,6 @@ public:
         uint16_t model_length; // as specified in the model length register, excludes model ID and model length
         uint16_t interesting_registers_count; // amount of interesting registers, including model ID and model length
         bool is_meter;
-        bool read_twice;
         model_validator_fn validator;
         size_t value_count;
         ValueData value_data[]; // ISO C++ forbids flexible array members
@@ -80,10 +79,8 @@ public:
 
     static IMetersSunSpecParser *new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type);
 
-    bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) override;
-    bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) override;
-
-    bool must_read_twice() override;
+    bool detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read) override;
+    bool parse_values(const uint16_t *const register_data, uint32_t quirks) override;
     bool is_model_length_supported(uint32_t model_length) override;
     uint32_t get_interesting_registers_count() override;
 

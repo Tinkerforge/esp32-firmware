@@ -101,19 +101,18 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char 
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
 {
     if (!model->validator(register_data))
         return false;
 
-    const uint16_t *data = model->read_twice ? register_data[1] : register_data[0];
     uint8_t max_register = 0;
 
     detected_values.reserve(model->value_count);
 
     for (size_t i = 0; i < model->value_count; i++) {
         const ValueData *value_data = &model->value_data[i];
-        if (!model->is_meter || !isnan(value_data->get_value(data, quirks, true))) {
+        if (!model->is_meter || !isnan(value_data->get_value(register_data, quirks, true))) {
             detected_values.push_back(value_data);
 
             if (value_data->max_register > max_register) {
@@ -137,25 +136,18 @@ bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], 
     return true;
 }
 
-bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
+bool MetersSunSpecParser::parse_values(const uint16_t *const register_data, uint32_t quirks)
 {
     if (!model->validator(register_data))
         return false;
 
-    const uint16_t *data = model->read_twice ? register_data[1] : register_data[0];
-
     float meter_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t value_count = detected_values.size();
     for (size_t i = 0; i < value_count; i++) {
-        meter_values[i] = detected_values[i]->get_value(data, quirks, false);
+        meter_values[i] = detected_values[i]->get_value(register_data, quirks, false);
     }
     meters.update_all_values(meter_slot, meter_values);
     return true;
-}
-
-bool MetersSunSpecParser::must_read_twice()
-{
-    return model->read_twice;
 }
 
 bool MetersSunSpecParser::is_model_length_supported(uint32_t model_length)

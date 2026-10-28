@@ -136,15 +136,15 @@ static float acc32_to_float(uint32_t val, int32_t sunssf)
     return static_cast<float>(u.u32) * get_sun_spec_scale_factor(sunssf);
 }
 
-bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
 {
     if (!is_valid(register_data)) {
         return false;
     }
 
-    const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
+    const struct Model160_s *block = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data));
 
-    mppt_count = block1->N;
+    mppt_count = block->N;
 
     switch (mode) {
     case Mode::Normal:
@@ -157,7 +157,7 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
         // model in the SunSpec Common model, so they cannot be distiguished by that. Instead
         // we use the actual MPPT count to distiguish them. Fronius GEN24 has two actual MPPT.
         // Fronius GEN24 Plus reports four in total, but only has two actual MPPT too.
-        if (block1->N == 4) {
+        if (block->N == 4) {
             mppt_count = 2;
         }
 
@@ -170,7 +170,7 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
         // we use the actual MPPT count to distiguish them. Fronius Verto has three or four
         // actual MPPT, depending on the exact model. Fronius Verto Plus reports five in total,
         // but only has three actual MPPT.
-        if (block1->N == 5) {
+        if (block->N == 5) {
             mppt_count = 3;
         }
 
@@ -194,13 +194,13 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
     return true;
 }
 
-bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
+bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data, uint32_t quirks)
 {
     if (!is_valid(register_data)) {
         return false;
     }
 
-    const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
+    const struct Model160_s *block = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data));
     float values[ARRAY_SIZE(model_160_ids)];
 
     values[0] = NAN;
@@ -210,15 +210,15 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
     values[5] = NAN;
 
     for (uint16_t mppt_idx = 0; mppt_idx < mppt_count; ++mppt_idx) {
-        const struct Model160_MPPT_s *block1_mppt = static_cast<const struct Model160_MPPT_s *>(static_cast<const void *>(&register_data[1][MODEL_160_REGISTER_COUNT + mppt_idx * MODEL_160_MPPT_REGISTER_COUNT]));
+        const struct Model160_MPPT_s *block_mppt = static_cast<const struct Model160_MPPT_s *>(static_cast<const void *>(&register_data[MODEL_160_REGISTER_COUNT + mppt_idx * MODEL_160_MPPT_REGISTER_COUNT]));
 
         // FIXME: maybe use DCSt to exclude disabled modules?
 
-        float dca  = uint16_to_float(block1_mppt->DCA,  block1->DCA_SF);
-        float dcv  = uint16_to_float(block1_mppt->DCV,  block1->DCV_SF);
-        float dcw  = uint16_to_float(block1_mppt->DCW,  block1->DCW_SF);
-        float dcwh =  acc32_to_float(block1_mppt->DCWH, block1->DCWH_SF) * 0.001f;
-        float tmp  =  int16_to_float(block1_mppt->Tmp,  0);
+        float dca  = uint16_to_float(block_mppt->DCA,  block->DCA_SF);
+        float dcv  = uint16_to_float(block_mppt->DCV,  block->DCV_SF);
+        float dcw  = uint16_to_float(block_mppt->DCW,  block->DCW_SF);
+        float dcwh =  acc32_to_float(block_mppt->DCWH, block->DCWH_SF) * 0.001f;
+        float tmp  =  int16_to_float(block_mppt->Tmp,  0);
 
         values[0] = nan_safe_sum(values[0], dca);
         values[1] = nan_safe_sum(values[1], dcv);
@@ -245,12 +245,6 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
 }
 
 [[gnu::const]]
-bool MetersSunSpecParser160::must_read_twice()
-{
-    return true;
-}
-
-[[gnu::const]]
 bool MetersSunSpecParser160::is_model_length_supported(uint32_t model_length)
 {
     return model_length >= (MODEL_160_REGISTER_COUNT - 2) && ((model_length - (MODEL_160_REGISTER_COUNT - 2)) % MODEL_160_MPPT_REGISTER_COUNT) == 0;
@@ -262,19 +256,12 @@ uint32_t MetersSunSpecParser160::get_interesting_registers_count()
     return MODEL_160_REGISTER_COUNT + mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
 }
 
-bool MetersSunSpecParser160::is_valid(const uint16_t *const register_data[2])
+bool MetersSunSpecParser160::is_valid(const uint16_t *const register_data)
 {
-    const struct Model160_s *block0 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[0]));
-    const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
+    const struct Model160_s *block = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data));
 
-    if (block0->ID      != 160)                return false;
-    if (block1->ID      != 160)                return false;
-    if (!is_model_length_supported(block0->L)) return false;
-    if (block0->L       != block1->L)          return false;
-    if (block0->DCA_SF  != block1->DCA_SF)     return false;
-    if (block0->DCV_SF  != block1->DCV_SF)     return false;
-    if (block0->DCW_SF  != block1->DCW_SF)     return false;
-    if (block0->DCWH_SF != block1->DCWH_SF)    return false;
+    if (block->ID != 160)                     return false;
+    if (!is_model_length_supported(block->L)) return false;
 
     return true;
 }

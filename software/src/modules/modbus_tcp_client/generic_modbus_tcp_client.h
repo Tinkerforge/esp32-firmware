@@ -33,8 +33,7 @@ protected:
         ModbusRegisterType register_type;
         size_t start_address;
         size_t register_count;
-        uint16_t *data[2] = { nullptr, nullptr };
-        bool read_twice;
+        uint16_t *data = nullptr;
         TFModbusTCPClientTransactionResult result;
         std::function<void(void)> done_callback;
     };
@@ -53,7 +52,6 @@ private:
 
     micros_t last_successful_read = 0_us;
 
-    uint8_t read_buffer_num;
     uint16_t read_block_size;
     uint16_t registers_done_count;
 
