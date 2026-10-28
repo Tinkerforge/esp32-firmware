@@ -823,8 +823,7 @@ static void pdf_write(struct pdf_doc *pdf, const char *buf, size_t count) {
 
 static struct pdf_object *pdf_get_page(struct pdf_doc *pdf, struct pdf_object *object) {
     if (object->page_id <= 0) {
-        printf("can't get page: object not a child of a page!\n");
-        exit(1);
+        esp_system_abort("can't get page: object not a child of a page!");
     }
     return pdf_get_object(pdf, object->page_id);
 }
