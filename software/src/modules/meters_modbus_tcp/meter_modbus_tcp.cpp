@@ -30,6 +30,7 @@
 #include "generated/meter_modbus_tcp_specs.h"
 #include "tools/float.h"
 #include "tools/sun_spec.h"
+#include "tools/hexdump.h"
 
 #include "gcc_warnings.h"
 
@@ -188,7 +189,7 @@ void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TF
 {
     GenericModbusTCPClient::connect_callback(result, share_level);
 
-    trace("m%lu t%u c%d sl%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(result), static_cast<int>(share_level));
+    trace("m%lu c%d sl%d", slot, static_cast<int>(result), static_cast<int>(share_level));
 
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -203,7 +204,7 @@ void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result, TF
 
 void MeterModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level)
 {
-    trace("m%lu t%u d%d sl%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(reason), static_cast<int>(share_level));
+    trace("m%lu d%d sl%d", slot, static_cast<int>(reason), static_cast<int>(share_level));
 
     read_allowed = false;
 }
@@ -247,11 +248,8 @@ void MeterModbusTCP::read_done()
     read_allowed = true;
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%lu t%u i%zu a%zu:%x c%zu e%lu",
+        trace("m%lu a%zu c%zu e%lu",
               slot,
-              static_cast<uint8_t>(table_id),
-              read_index,
-              generic_read_request.start_address,
               generic_read_request.start_address,
               generic_read_request.register_count,
               static_cast<uint32_t>(generic_read_request.result));
@@ -279,6 +277,18 @@ void MeterModbusTCP::read_done()
 
         return; // make a little pause after each error or restart
     }
+
+    trace("m%lu a%zu c%zu",
+          slot,
+          generic_read_request.start_address,
+          generic_read_request.register_count);
+
+    char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
+    size_t data_buf_used = hexdump(generic_read_request.data, generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
+    data_buf[data_buf_used] = '\n';
+    ++data_buf_used;
+
+    logger.trace_plain(meters_modbus_tcp.trace_buffer_index, data_buf, data_buf_used);
 
     register_buffer_index = 0;
     register_start_address = generic_read_request.start_address;
@@ -378,35 +388,29 @@ bool MeterModbusTCP::parse_next()
 
     switch (value_type) {
     case ModbusValueType::None:
-        trace("m%lu t%u i%zu n a%zu:%x",
+        trace("m%lu i%zu n",
               slot,
-              static_cast<uint8_t>(table_id),
-              read_index,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address);
+              read_index);
+
         break;
 
     case ModbusValueType::U16:
-        trace("m%lu t%u i%zu u16 a%zu:%x r%u v%u",
+        trace("m%lu i%zu a%zu o%zu u16 %u",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
               table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index],
+              register_buffer_index,
               c16.u);
 
         value = static_cast<float>(c16.u);
         break;
 
     case ModbusValueType::S16:
-        trace("m%lu t%u i%zu s16 a%zu:%x r%u v%d",
+        trace("m%lu i%zu a%zu o%zu s16 %d",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
               table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index],
+              register_buffer_index,
               static_cast<int16_t>(c16.u));
 
         value = static_cast<float>(static_cast<int16_t>(c16.u));
@@ -414,15 +418,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
-        trace("m%lu t%u i%zu u32%s a%zu:%x r%u,%u v%lu",
+        trace("m%lu i%zu a%zu o%zu u32%s %lu",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
               c32.u);
 
         value = static_cast<float>(c32.u);
@@ -430,15 +431,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
-        trace("m%lu t%u i%zu s32%s a%zu:%x r%u,%u v%ld",
+        trace("m%lu i%zu a%zu o%zu s32%s %ld",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
               static_cast<int32_t>(c32.u));
 
         value = static_cast<float>(static_cast<int32_t>(c32.u));
@@ -446,15 +444,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
-        trace("m%lu t%u i%zu f32%s a%zu:%x r%u,%u v%f",
+        trace("m%lu i%zu a%zu o%zu f32%s %f",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
               static_cast<double>(c32.f));
 
         if (!table->f32_negative_max_as_nan || !is_exactly_equal(c32.f, -FLT_MAX)) {
@@ -465,17 +460,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
-        trace("m%lu t%u i%zu u64%s a%zu:%x r%u,%u,%u,%u v%llu",
+        trace("m%lu i%zu a%zu o%zu u64%s %llu",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
-              register_buffer[register_buffer_index + 2],
-              register_buffer[register_buffer_index + 3],
               c64.u);
 
         value = static_cast<float>(c64.u);
@@ -483,17 +473,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
-        trace("m%lu t%u i%zu s64%s a%zu:%x r%u,%u,%u,%u v%lld",
+        trace("m%lu i%zu a%zu o%zu s64%s %lld",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
-              register_buffer[register_buffer_index + 2],
-              register_buffer[register_buffer_index + 3],
               static_cast<int64_t>(c64.u));
 
         value = static_cast<float>(static_cast<int64_t>(c64.u));
@@ -501,17 +486,12 @@ bool MeterModbusTCP::parse_next()
 
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
-        trace("m%lu t%u i%zu f64%s a%zu:%x r%u,%u,%u,%u v%f",
+        trace("m%lu i%zu a%zu o%zu f64%s %f",
               slot,
-              static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
+              register_buffer_index,
               endian,
-              table->specs[read_index].start_address,
-              table->specs[read_index].start_address,
-              register_buffer[register_buffer_index + 0],
-              register_buffer[register_buffer_index + 1],
-              register_buffer[register_buffer_index + 2],
-              register_buffer[register_buffer_index + 3],
               c64.f);
 
         value = static_cast<float>(c64.f);
