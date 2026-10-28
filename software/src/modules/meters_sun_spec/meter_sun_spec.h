@@ -56,7 +56,6 @@ private:
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
 
     bool alloc_read_buffer(size_t model_regcount);
-    void trace_response();
     void read_start(size_t start_address, size_t model_regcount);
     void read_done();
     void record_timeout();

@@ -209,30 +209,6 @@ bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
     return true;
 }
 
-void MeterSunSpec::trace_response()
-{
-    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%lu a%zu c%zu e%lu",
-              slot,
-              generic_read_request.start_address,
-              generic_read_request.register_count,
-              static_cast<uint32_t>(generic_read_request.result));
-    }
-    else if (generic_read_request.data != nullptr) {
-        trace("m%lu a%zu c%zu",
-              slot,
-              generic_read_request.start_address,
-              generic_read_request.register_count);
-
-        char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
-        size_t data_buf_used = hexdump(generic_read_request.data, generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
-        data_buf[data_buf_used] = '\n';
-        ++data_buf_used;
-
-        logger.trace_plain(meters_sun_spec.trace_buffer_index, data_buf, data_buf_used);
-    }
-}
-
 void MeterSunSpec::read_start(size_t start_address, size_t model_regcount)
 {
     if (!alloc_read_buffer(model_regcount)) {
@@ -251,9 +227,13 @@ void MeterSunSpec::read_done()
 {
     read_allowed = true;
 
-    trace_response();
-
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        trace("m%lu a%zu c%zu e%lu",
+              slot,
+              generic_read_request.start_address,
+              generic_read_request.register_count,
+              static_cast<uint32_t>(generic_read_request.result));
+
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Aborted) {
             // an abort is triggered before a connection close or before a forced
             // reconnect, stop reading. in both cases the reading will be restarted
@@ -266,6 +246,18 @@ void MeterSunSpec::read_done()
 
         return;
     }
+
+    trace("m%lu a%zu c%zu",
+          slot,
+          generic_read_request.start_address,
+          generic_read_request.register_count);
+
+    char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
+    size_t data_buf_used = hexdump(generic_read_request.data, generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
+    data_buf[data_buf_used] = '\n';
+    ++data_buf_used;
+
+    logger.trace_plain(meters_sun_spec.trace_buffer_index, data_buf, data_buf_used);
 
     if (!values_declared) {
         size_t registers_to_read = generic_read_request.register_count;
