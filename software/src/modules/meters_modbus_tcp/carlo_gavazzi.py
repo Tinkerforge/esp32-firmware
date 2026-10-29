@@ -195,7 +195,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1+L2+L3 [W]',
+        'name': 'W L1 and L2 and L3 [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -236,7 +236,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh Positive Total [kWh]',
+        'name': 'kWh Positive Total L1 and L2 and L3 [kWh]',
         'value_id': 'EnergyActiveLSumImport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -255,7 +255,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh Negative Total [kWh]',
+        'name': 'kWh Negative Total L1 and L2 and L3 [kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -707,7 +707,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1+L2+L3 [W]',
+        'name': 'W L1 and L2 and L3 [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -747,7 +747,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh Positive Total [kWh]',
+        'name': 'kWh Positive Total L1 and L2 and L3 [kWh]',
         'value_id': 'EnergyActiveLSumImport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -766,7 +766,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh Negative Total [kWh]',
+        'name': 'kWh Negative Total L1 and L2 and L3 [kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },

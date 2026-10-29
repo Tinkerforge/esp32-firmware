@@ -99,12 +99,12 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'AC Consumption L1+L2+L3 [W]',
+                'name': 'AC Consumption L1 and L2 and L3 [W]',
                 'value_id': 'PowerActiveLSumImport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'AC Consumption L1+L2+L3 Signed [W]',
+                'name': 'AC Consumption L1 and L2 and L3 Signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

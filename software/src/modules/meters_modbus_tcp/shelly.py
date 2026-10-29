@@ -222,7 +222,7 @@ monophase_values = [
         'value_type': 'F32LE',
     },
     {
-        'name': 'L1+L2+L3 active power [W]',
+        'name': 'Active power L1 and L2 and L3 [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -252,7 +252,7 @@ monophase_values = [
         'scale_factor': 0.001
     },
     {
-        'name': 'L1+L2+L3 total active energy - perpetual count [kWh]',
+        'name': 'Total active energy L1 and L2 and L3 - perpetual count [kWh]',
         'value_id': 'EnergyActiveLSumImportResettable',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
@@ -264,7 +264,7 @@ monophase_values = [
         'scale_factor': 0.001
     },
     {
-        'name': 'L1+L2+L3 total active returned energy - perpetual count [kWh]',
+        'name': 'Total active returned energy L1 and L2 and L3 - perpetual count [kWh]',
         'value_id': 'EnergyActiveLSumExportResettable',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
