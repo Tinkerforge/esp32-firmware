@@ -62,32 +62,36 @@ public:
     void deregister_task(TaskHandle_t handle);
 
 #ifdef DEBUG_FS_ENABLE
-    size_t ssl_key_trace_buffer_index;
+    inline size_t get_ssl_key_trace_buffer_index() {return ssl_key_trace_buffer_index;}
 #endif
 
 private:
     void deregister_task_internal(size_t index);
 
-    ConfigRoot state_static;
-    ConfigRoot state_fast;
-    ConfigRoot state_slow;
-    ConfigRoot state_slots;
-    ConfigRoot state_hwm;
+    ConfigRoot state_static{};
+    ConfigRoot state_fast{};
+    ConfigRoot state_slow{};
+    ConfigRoot state_slots{};
+    ConfigRoot state_hwm{};
 
-    Config state_hwm_prototype;
+    Config state_hwm_prototype{};
 
-    std::vector<TaskHandle_t> task_handles;
+    std::vector<TaskHandle_t> task_handles{};
 
     uint32_t run_max = 0;
     micros_t last_run = 0_us;
 
-    micros_t last_state_update;
+    micros_t last_state_update = 0_us;
     uint32_t integrity_check_runs = 0;
     uint32_t integrity_check_runtime_sum = 0;
     uint32_t integrity_check_runtime_max = 0;
     bool     integrity_check_print_errors = true;
     uint8_t  check_heap_next = 0;
     uint8_t  lwip_sockets_hwm = 0;
+
+#ifdef DEBUG_FS_ENABLE
+    size_t ssl_key_trace_buffer_index = 0;
+#endif
 
     struct TaskAccounting {
         void init(size_t max_entries);
@@ -117,6 +121,6 @@ private:
         uint32_t       task_accounting_line_shift = 0;
     };
 
-    TaskAccounting task_scheduler_accounting;
-    //TaskAccounting event_accounting;
+    TaskAccounting task_scheduler_accounting{};
+    //TaskAccounting event_accounting{};
 };

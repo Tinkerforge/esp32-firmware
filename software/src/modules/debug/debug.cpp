@@ -117,7 +117,7 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
         logger.format_timestamp(timestamp_buf);
 
         logger.tracefln_plain(
-            debug.ssl_key_trace_buffer_index,
+            debug.get_ssl_key_trace_buffer_index(),
             "\n# %s p_expkey %p prf_type %s server_random %s ",
             timestamp_buf, p_expkey, prf_type[tls_prf_type], server_random_hex.get());
 
@@ -127,7 +127,7 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
     switch (type) {
         case MBEDTLS_SSL_KEY_EXPORT_TLS12_MASTER_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "CLIENT_RANDOM %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
@@ -135,42 +135,42 @@ extern "C" void mbedtls_ssl_export_keys_default_cb(void *p_expkey,
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_EARLY_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "CLIENT_EARLY_TRAFFIC_SECRET %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
 
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_EARLY_EXPORTER_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "EARLY_EXPORTER_SECRET %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
 
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_HANDSHAKE_TRAFFIC_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "CLIENT_HANDSHAKE_TRAFFIC_SECRET %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
 
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_SERVER_HANDSHAKE_TRAFFIC_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "SERVER_HANDSHAKE_TRAFFIC_SECRET %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
 
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_CLIENT_APPLICATION_TRAFFIC_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "CLIENT_TRAFFIC_SECRET_0 %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
 
         case MBEDTLS_SSL_KEY_EXPORT_TLS1_3_SERVER_APPLICATION_TRAFFIC_SECRET:
             logger.tracefln_plain(
-                debug.ssl_key_trace_buffer_index,
+                debug.get_ssl_key_trace_buffer_index(),
                 "SERVER_TRAFFIC_SECRET_0 %s %s",
                 client_random_hex.get(), secret_hex.get());
             break;
