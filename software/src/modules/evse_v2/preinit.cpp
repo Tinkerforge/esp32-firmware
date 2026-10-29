@@ -219,6 +219,8 @@ void evse_v2_button_recovery_handler()
 
     tf_evse_v2_set_indicator_led(&evse, 2003, 2000, 60, 255, 255, nullptr);
     delay(1750);
+    tf_evse_v2_set_indicator_led(&evse, 0, 2000, 0, 0, 0, nullptr);
+    delay(1000);
 
     tf_evse_v2_set_indicator_led(&evse, error_indication, 2000, 0, 255, 255, nullptr);
 
