@@ -61,3 +61,6 @@ pythonVersion = "3.12"
 venvPath = "."
 venv = ".venv"
 extraPaths = [".."]
+
+[tool.uv]
+exclude-newer = "7 days"
