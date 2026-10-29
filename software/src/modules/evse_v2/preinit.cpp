@@ -291,7 +291,7 @@ void evse_v2_button_recovery_handler()
 
             // Delay here to finish showing the red blink indication.
             delay(1750);
-            system_.factory_reset(false);
+            system_.factory_reset(false, false);
             logger.printfln("Stage 2 done");
 #endif
             break;

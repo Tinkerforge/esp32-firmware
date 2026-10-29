@@ -74,7 +74,7 @@ static void write_cached_secure_boot_v2_key(const std::unique_ptr<uint8_t[]> &ke
 
 #endif
 
-void System::factory_reset(bool restart_esp)
+void System::factory_reset(bool restart_esp, bool write_back_cache)
 {
     if (factory_reset_running)
         return;
@@ -97,7 +97,7 @@ void System::factory_reset(bool restart_esp)
 #if defined(CONFIG_SECURE_BOOT) && MODULE_ESP32_COMMON_AVAILABLE()
     String key_cache_path;
     std::unique_ptr<uint8_t[]> key_cache;
-    const size_t key_length = ESP32CommonSecureBoot::get_cached_secure_boot_v2_key_and_path(&key_cache, &key_cache_path);
+    const size_t key_length = write_back_cache ? ESP32CommonSecureBoot::get_cached_secure_boot_v2_key_and_path(&key_cache, &key_cache_path) : 0;
 #endif
 
     LittleFS.end();

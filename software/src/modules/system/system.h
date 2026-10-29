@@ -31,7 +31,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void factory_reset(bool restart_esp = true);
+    void factory_reset(bool restart_esp = true, bool write_back_cache = true);
 
 private:
     bool factory_reset_running = false;
