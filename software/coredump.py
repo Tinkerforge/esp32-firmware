@@ -16,29 +16,16 @@ import datetime
 import tinkerforge_util as tfutil
 import test_runner.parttool as parttool
 
-def find_xtensa_tool(name):
-    tool = f"xtensa-esp32-elf-{name}"
 
-    path = shutil.which(tool)
-    if path is not None:
-        return [path]
+def xtensa_tool(name):
+    return ["uv", "run", "pio", "pkg", "exec", f"xtensa-esp32-elf-{name}", "--"]
 
-    path = shutil.which("pio")
-    if path is not None:
-        return [path, "pkg", "exec", tool, "--"]
-
-    return None
 
 def strip_xtensa_property_tables(elf_path, stripped_path):
     # .xt.prop and .xt.lit are only needed by the linker.
     # With -mtext-section-literals, they cause gdb to disassemble most functions as data.
-    objcopy = find_xtensa_tool("objcopy")
-    if objcopy is None:
-        print("Can't find xtensa-esp32-elf-objcopy or pio. Disassembly might show code as data.")
-        return elf_path
-
     try:
-        subprocess.check_call(objcopy + ["-R", ".xt.prop", "-R", ".xt.lit", elf_path, stripped_path])
+        subprocess.check_call(xtensa_tool("objcopy") + ["-R", ".xt.prop", "-R", ".xt.lit", elf_path, stripped_path])
     except (subprocess.CalledProcessError, OSError) as e:
         print(f"Could not strip Xtensa property tables ({e}). Disassembly might show code as data.")
         return elf_path
@@ -181,7 +168,7 @@ XTENSA_EXCEPTION_CAUSE_DICT = {
 }
 
 def esptool(*args):
-    subprocess.check_call(['uv', 'run', 'pio', 'pkg', 'exec', '-p', 'tool-esptoolpy', '--', 'esptool'] + [str(arg) for arg in args])
+    subprocess.check_call(['uv', 'run', 'esptool'] + [str(arg) for arg in args])
 
 def format_extra_data(extra_data):
     result = ""
@@ -288,11 +275,7 @@ def download_core_dump(port):
     esptool('--port', port, '--chip', 'esp32', '--baud', '921600', 'read-flash', core_dump_offset, core_dump_size, core_dump_path)
 
 if __name__ == '__main__':
-    gdb = find_xtensa_tool("gdb")
-    if gdb is None:
-        print("Can't find xtensa-esp32-elf-gdb or pio.")
-        print("Make sure that one of them is available in your $PATH.")
-        sys.exit(-1)
+    gdb = xtensa_tool("gdb")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--interactive", action='store_true', help="Don't exit gdb immediately")
