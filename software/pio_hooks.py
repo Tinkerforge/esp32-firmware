@@ -1488,14 +1488,7 @@ def main():
 
         all_backend_modules_upper.append(existing_backend_module.upper())
 
-    identifier_backlist = ["system"]
-
-    tfutil.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
-        '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *const {x.under}_imodule;' for x in backend_modules]),
-        '{{{imodules_count}}}': str(len(backend_modules)),
-        '{{{imodules_array}}}': '\n    '.join([f'{{&{x.under}_imodule, "{x.camel}"}},' for x in backend_modules]),
-        '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}_imodule->initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
-    })
+    identifier_blacklist = ["system"]
 
     util.log("Generating module_dependencies.h from module.ini", flush=True)
 
@@ -1524,26 +1517,32 @@ def main():
 
                 instance_name = config['Common'].get('InstanceName', instance_name)
 
-        if instance_name in identifier_backlist:
+        if instance_name in identifier_blacklist:
             instance_name += '_'
 
         backend_module_instance_names[backend_module.space] = instance_name
 
         module_cpp  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
+        module_cpp += '#include <new>\n'
+        module_cpp += '#include <type_traits>\n'
+        module_cpp += '#include <utility>\n\n'
         module_cpp += f'#include "../{backend_module.under}.h"\n\n'
-        module_cpp += f'{backend_module.camel} {instance_name};\n\n'
-        module_cpp += '// Enforce that all back-end modules implement the IModule interface. If you receive\n'
-        module_cpp += "// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n"
-        module_cpp += '// have to add the IModule interface to your back-end module\'s class declaration:\n'
+        module_cpp += 'template <class T> class no_destroy {\n'
+        module_cpp += '  alignas(T) std::byte data[sizeof(T)];\n'
+        module_cpp += 'public:\n'
+        module_cpp += '  no_destroy() { new (data) T(); }\n'
+        module_cpp += '};\n\n'
+        module_cpp += f'no_destroy<{backend_module.camel}> {instance_name};\n'
+        module_cpp += f'static_assert(sizeof({backend_module.camel}) == sizeof({instance_name}));\n\n'
+        module_cpp += '// Enforce that all back-end modules implement the IModule interface.\n'
+        module_cpp += '// If the static assertion below fails, you have to add the IModule\n'
+        module_cpp += '// interface to your back-end module\'s class declaration:\n'
         module_cpp += '//\n'
         module_cpp += '// class MyModule final : public IModule\n'
         module_cpp += '// {\n'
         module_cpp += '//     // content here\n'
         module_cpp += '// }\n'
-
-        # To get global constants that are usable in other compilation units, they must be
-        # declared extern. Otherwise, they will be optimized away before reaching the linker.
-        module_cpp += f'extern IModule *const {backend_module.under}_imodule = &{instance_name};\n'
+        module_cpp += f'static_assert(std::is_base_of_v<IModule, {backend_module.camel}>);\n'
 
         util.write_generated_file(os.path.join(mod_path, 'generated', 'module.cpp'), module_cpp)
 
@@ -1555,6 +1554,13 @@ def main():
         generate_backend_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_backend_modules_upper, backend_module_instance_names)
 
     generate_backend_module_dependencies_header('src/main_dependencies.ini', 'src/main_', None, backend_modules, all_backend_modules_upper, backend_module_instance_names)
+
+    tfutil.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
+        '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule {backend_module_instance_names[x.space]};' for x in backend_modules]),
+        '{{{imodules_count}}}': str(len(backend_modules)),
+        '{{{imodules_array}}}': '\n    '.join([f'{{&{backend_module_instance_names[x.space]}, "{x.camel}"}},' for x in backend_modules]),
+        '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({backend_module_instance_names[x.space]}.initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
+    })
 
     # Generate options
     options_value = {}

@@ -23,7 +23,7 @@
 #include "module.h"
 
 struct imodule_info {
-    IModule *const *imodule;
+    IModule *imodule;
     const char *name;
 };
 

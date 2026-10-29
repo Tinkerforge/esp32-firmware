@@ -129,7 +129,7 @@ static void pre_reboot_helper()
 {
     for (size_t i = imodules_count; i > 0;) {
         i--;
-        (*imodules[i].imodule)->pre_reboot();
+        imodules[i].imodule->pre_reboot();
     }
 
     delay(1500);
@@ -260,7 +260,7 @@ void setup()
     tools_malloc_pre_setup();
 
     for (size_t i = 0; i < imodules_count; i++) {
-        (*imodules[i].imodule)->pre_init();
+        imodules[i].imodule->pre_init();
     }
 
     if (!mount_or_format_data_partition()) {
@@ -272,13 +272,13 @@ void setup()
     boot_stage = BootStage::PRE_SETUP;
 
     for (size_t i = 0; i < imodules_count; i++) {
-        (*imodules[i].imodule)->pre_setup();
+        imodules[i].imodule->pre_setup();
     }
 
     boot_stage = BootStage::SETUP;
 
     for (size_t i = 0; i < imodules_count; i++) {
-        (*imodules[i].imodule)->setup();
+        imodules[i].imodule->setup();
     }
 
     modules = modules_get_init_config();
@@ -292,18 +292,18 @@ void setup()
     register_default_urls();
 
     for (size_t i = 0; i < imodules_count; i++) {
-        (*imodules[i].imodule)->register_urls();
+        imodules[i].imodule->register_urls();
     }
 
     boot_stage = BootStage::REGISTER_EVENTS;
 
     for (size_t i = 0; i < imodules_count; i++) {
-        (*imodules[i].imodule)->register_events();
+        imodules[i].imodule->register_events();
     }
 
     // Ignore non-overridden empty loop functions.
     for (size_t i = 0; i < imodules_count; i++) {
-        if (is_module_loop_overridden(*imodules[i].imodule)) {
+        if (is_module_loop_overridden(imodules[i].imodule)) {
             loop_array_size++;
         }
     }
@@ -314,7 +314,7 @@ void setup()
 
         size_t loop_array_used = 0;
         for (size_t i = 0; i < imodules_count; i++) {
-            if (is_module_loop_overridden(*imodules[i].imodule)) {
+            if (is_module_loop_overridden(imodules[i].imodule)) {
                 loop_array[loop_array_used] = imodules[i];
                 loop_array_used++;
             }
@@ -361,7 +361,7 @@ void loop() {
 #endif
 
         imodule_info *module = loop_array + loop_array_position;
-        (*module->imodule)->loop();
+        module->imodule->loop();
 
 #if MODULE_DEBUG_AVAILABLE()
         const micros_t t_runtime = now_us() - t_start;
