@@ -259,28 +259,28 @@ specs = [
             {
                 'name': 'Power factor of A phase [0.01]',
                 'value_id': 'PowerFactorL1Directional',
-                'start_address': 0x002B,
+                'start_address': 0x0033,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
                 'name': 'Power factor of B phase [0.01]',
                 'value_id': 'PowerFactorL2Directional',
-                'start_address': 0x002D,
+                'start_address': 0x0034,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
                 'name': 'Power factor of C phase [0.01]',
                 'value_id': 'PowerFactorL3Directional',
-                'start_address': 0x002F,
+                'start_address': 0x0035,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
                 'name': 'Total power factor [0.01]',
                 'value_id': 'PowerFactorLSumDirectional',
-                'start_address': 0x0031,
+                'start_address': 0x0036,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
