@@ -1543,6 +1543,7 @@ def main():
         module_cpp += '//     // content here\n'
         module_cpp += '// }\n'
         module_cpp += f'static_assert(std::is_base_of_v<IModule, {backend_module.camel}>);\n'
+        module_cpp += f'static_assert(std::is_final_v<{backend_module.camel}>);\n'
 
         util.write_generated_file(os.path.join(mod_path, 'generated', 'module.cpp'), module_cpp)
 
