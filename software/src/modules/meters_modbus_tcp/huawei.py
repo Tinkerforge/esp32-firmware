@@ -250,14 +250,14 @@ specs = [
             {
                 'name': 'B-C line voltage [0.1 V]',
                 'value_id': 'VoltageL2L3',
-                'start_address': 37126,
+                'start_address': 37128,
                 'value_type': 'S32BE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'C-A line voltage [0.1 V]',
                 'value_id': 'VoltageL3L1',
-                'start_address': 37126,
+                'start_address': 37130,
                 'value_type': 'S32BE',
                 'scale_factor': 0.1,
             },
