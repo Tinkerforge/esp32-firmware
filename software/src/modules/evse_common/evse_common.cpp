@@ -1011,11 +1011,6 @@ void EvseCommon::set_modbus_enabled(bool enabled)
     backend->set_charging_slot_max_current(CHARGING_SLOT_MODBUS_TCP_ENABLE, enabled ? 32000 : 0);
 }
 
-uint32_t EvseCommon::get_charger_meter()
-{
-    return charger_meter_slot;
-}
-
 MeterValueAvailability EvseCommon::get_charger_meter_power(float *power, micros_t max_age)
 {
     return meters.get_power(this->get_charger_meter(), power, max_age);
@@ -1031,11 +1026,6 @@ MeterValueAvailability EvseCommon::get_charger_meter_energy(float *energy, micro
         return meters.get_energy_import(this->get_charger_meter(), energy, max_age);
 
     return result;
-}
-
-bool EvseCommon::get_use_imexsum()
-{
-    return use_imexsum;
 }
 
 void EvseCommon::set_require_meter_blocking(bool blocking)
@@ -1127,29 +1117,9 @@ void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint16
     backend->set_indicator_led(indication, duration, color_h, color_s, color_v, ret_status);
 }
 
-bool EvseCommon::get_central_user_management_enabled()
-{
-    return central_user_management_enabled;
-}
-
 void EvseCommon::set_central_user_management_enabled(bool enabled) {
     central_user_management_enabled = enabled;
     management_state.get("central_user_management_enabled")->updateBool(enabled);
-}
-
-ConfigRoot &EvseCommon::get_slots()
-{
-    return slots;
-}
-
-ConfigRoot &EvseCommon::get_low_level_state()
-{
-    return low_level_state;
-}
-
-ConfigRoot &EvseCommon::get_state()
-{
-    return state;
 }
 
 bool EvseCommon::get_management_enabled()

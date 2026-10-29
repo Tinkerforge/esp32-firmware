@@ -156,10 +156,10 @@ public:
     void set_modbus_current(uint16_t);
     void set_modbus_enabled(bool);
 
-    uint32_t get_charger_meter();
+    uint32_t get_charger_meter() {return charger_meter_slot;}
     MeterValueAvailability get_charger_meter_power(float *power, micros_t max_age = 0_us);
     MeterValueAvailability get_charger_meter_energy(float *energy, micros_t max_age = 0_us);
-    bool get_use_imexsum();
+    bool get_use_imexsum() {return use_imexsum;}
 
     void set_require_meter_blocking(bool);
     void set_require_meter_enabled(bool);
@@ -167,7 +167,7 @@ public:
     bool get_require_meter_enabled();
 
     void set_central_user_management_enabled(bool);
-    bool get_central_user_management_enabled();
+    bool get_central_user_management_enabled() {return central_user_management_enabled;}
 
     void set_charge_limits_slot(uint16_t, bool);
 
@@ -190,9 +190,9 @@ public:
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     bool apply_defaults();
 
-    ConfigRoot &get_state();
-    ConfigRoot &get_slots();
-    ConfigRoot &get_low_level_state();
+    ConfigRoot &get_state() {return state;}
+    ConfigRoot &get_slots() {return slots;}
+    ConfigRoot &get_low_level_state() {return low_level_state;}
     bool get_management_enabled();
     uint32_t get_evse_version();
 
