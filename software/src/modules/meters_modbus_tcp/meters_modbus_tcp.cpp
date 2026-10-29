@@ -40,7 +40,7 @@ void MetersModbusTCP::pre_setup()
     table_custom_registers_prototype = Config::Object({
         {"rtype", Config::Enum(ModbusRegisterType::HoldingRegister)},
         {"addr", Config::Uint16(0)},
-        {"vtype", Config::Enum(ModbusValueType::U16)},
+        {"vtype", Config::Enum(ModbusValueType::U16, ModbusValueType::U16, ModbusValueType::_max)},
         {"off", Config::Float(0.0f)},
         {"scale", Config::Float(1.0f)},
         {"id", Config::Uint16(static_cast<uint16_t>(MeterValueID::NotSupported))},
