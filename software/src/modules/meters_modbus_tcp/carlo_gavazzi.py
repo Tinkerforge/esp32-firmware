@@ -1003,9 +1003,10 @@ specs = [
             },
             {
                 'name': 'PF Sum [0.001]',
-                'value_id': 'PowerFactorLSum',  # FIXME: negative values correspond to lead(C), positive value correspond to lag(L)
+                'value_id': 'PowerFactorLSum',
                 'start_address': 0x35,
                 'value_type': 'S16',
+                'drop_sign': True,  # negative values correspond to capacitive load, positive value correspond to inductive load
                 'scale_factor': 0.001,
             },
             {
