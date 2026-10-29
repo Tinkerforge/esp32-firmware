@@ -377,7 +377,8 @@ void Users::setup()
 #if MODULE_EVSE_COMMON_AVAILABLE()
     Config *user_slot = get_user_slot();
     bool charge_start_tracked = charge_tracker.currentlyCharging();
-    bool charging = get_charger_state() == 2 || get_charger_state() == 3
+    const uint8_t cstate = get_charger_state();
+    bool charging = cstate == 2 || cstate == 3
                     || (user_slot->get("active")->asBool() && user_slot->get("max_current")->asUint() == 32000);
 
     if (charge_start_tracked && !charging) {
@@ -406,10 +407,7 @@ void Users::setup()
             this->start_charging(0, 32000, CMAuthType::None, Config::ConfVariant{});
     }
 
-    auto outer_charger_state = get_charger_state();
-    task_scheduler.scheduleUncancelable([this, outer_charger_state](){
-        static uint8_t last_charger_state = outer_charger_state;
-
+    task_scheduler.scheduleUncancelable([this, last_charger_state = get_charger_state()]() mutable {
         uint8_t charger_state = get_charger_state();
         if (charger_state == last_charger_state)
             return;

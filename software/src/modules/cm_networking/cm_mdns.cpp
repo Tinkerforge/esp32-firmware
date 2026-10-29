@@ -126,7 +126,7 @@ static void add_charger_services() {
 #if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
 static void add_wem_services() {
 
-    static auto *cfg = api.getState("em_phase_switcher/charger_config");
+    const Config *cfg = api.getState("em_phase_switcher/charger_config");
     if (!cfg->get("proxy_mode")->asBool())
         return;
 
@@ -138,7 +138,7 @@ static void add_wem_services() {
     add_mdns_service_display_name_by_event();
     add_mdns_service_proxy_by_event();
 #else
-    task_scheduler.scheduleUncancelable([]() {
+    task_scheduler.scheduleUncancelable([cfg]() {
         // Keep "display_name" updated because it can be changed at runtime without reboot.
         add_mdns_service_display_name(device_name.display_name.get("display_name")->asUnsafeCStr());
         add_mdns_service_proxy(cfg->get("host")->asEphemeralCStr());

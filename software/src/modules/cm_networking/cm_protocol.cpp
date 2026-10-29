@@ -477,10 +477,7 @@ void CMNetworking::register_client(ClientManagerUpdateReceivedCallback &&manager
 
     memset(&manager_addr, 0, sizeof(manager_addr));
 
-    task_scheduler.scheduleUncancelable([this, manager_update_received_cb = std::move(manager_update_received_cb)](){
-        static uint16_t last_seen_seq_num = 255;
-        static micros_t last_successful_recv = now_us();
-
+    task_scheduler.scheduleUncancelable([this, manager_update_received_cb = std::move(manager_update_received_cb), last_seen_seq_num = static_cast<uint16_t>(255), last_successful_recv = now_us()]() mutable {
         struct cm_command_packet command_pkt;
 
         struct sockaddr_storage from_addr;

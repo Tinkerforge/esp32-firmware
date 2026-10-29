@@ -209,9 +209,7 @@ void Automation::handle_cron_task()
     bool need_cron = has_task_with_trigger(AutomationTriggerID::Cron);
 
     if (need_cron && cron_task_id == 0) {
-        cron_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-            static int last_min = 0;
-            static bool was_synced = false;
+        cron_task_id = task_scheduler.scheduleWithFixedDelay([this, last_min = static_cast<uint8_t>(0), was_synced = false]() mutable {
             timeval tv;
             bool is_synced = rtc.clock_synced(&tv);
             tm time_struct;

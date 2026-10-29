@@ -727,23 +727,21 @@ void ChargeManager::start_manager_task()
 
     millis_t cm_send_delay = 1_s / millis_t{charger_count};
 
-    send_client_task_id = task_scheduler.scheduleUncancelable([this](){
-        static int i = 0;
-
-        if (i >= charger_count)
-            i = 0;
-
+    send_client_task_id = task_scheduler.scheduleUncancelable([this, charger_index = static_cast<uint8_t>(0)]() mutable {
         if (this->override_next_client_send != -1) {
             if (this->send_client_packet((uint8_t) this->override_next_client_send))
                 this->override_next_client_send = -1;
             return;
         }
 
-        this->charger_state[i].last_send_was_urgent = false;
+        this->charger_state[charger_index].last_send_was_urgent = false;
 
-        if (this->send_client_packet(i))
-            ++i;
-
+        if (this->send_client_packet(charger_index)) {
+            ++charger_index;
+            if (charger_index >= charger_count) {
+                charger_index = 0;
+            }
+        }
     }, cm_send_delay);
 }
 

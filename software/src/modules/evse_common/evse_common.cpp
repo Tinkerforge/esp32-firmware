@@ -407,8 +407,7 @@ void EvseCommon::handle_external_current_wd_task()
     bool need = automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd);
 
     if (need && wd_trigger_task_id == 0) {
-        wd_trigger_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-            static bool was_triggered = false;
+        wd_trigger_task_id = task_scheduler.scheduleWithFixedDelay([this, was_triggered = false]() mutable {
             const bool elapsed = deadline_elapsed(last_external_update + 30_s);
             if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
                 automation.trigger(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, this);
@@ -943,12 +942,11 @@ void EvseCommon::register_urls()
 void EvseCommon::register_events()
 {
 #if MODULE_AUTOMATION_AVAILABLE()
-    event.registerEvent("evse/state", {}, [this](const Config *cfg) {
+    event.registerEvent("evse/state", {}, [this, last_state = static_cast<uint32_t>(0)](const Config *cfg) mutable {
         // we need this since not only iec state changes trigger this api event.
-        static uint32_t last_state = 0;
         uint32_t state_now = cfg->get("charger_state")->asUint();
-        uint32_t states[2] = {last_state, state_now};
         if (last_state != state_now) {
+            uint32_t states[2] = {last_state, state_now};
             automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
             last_state = state_now;
         }

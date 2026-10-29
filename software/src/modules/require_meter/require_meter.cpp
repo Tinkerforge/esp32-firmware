@@ -118,7 +118,7 @@ void RequireMeter::apply_config() {
 #if MODULE_AUTOMATION_AVAILABLE()
             automation.set_enabled(AutomationTriggerID::RequireMeter, true);
 #endif
-            this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->task_id = task_scheduler.scheduleWithFixedDelay([this, automation_was_triggered = false, last_meter_timeout = false]() mutable {
                 bool meter_timeout = false;
 
                 if (!meters.meter_has_value_changed(evse_common.get_charger_meter(), METER_TIMEOUT)) {
@@ -176,15 +176,16 @@ void RequireMeter::apply_config() {
                 evse_common.set_require_meter_blocking(meter_timeout);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-                static bool was_triggered = false;
                 if (meter_timeout) {
-                    if (!was_triggered) {
+                    if (!automation_was_triggered) {
                         automation.trigger(AutomationTriggerID::RequireMeter, nullptr, this);
-                        was_triggered = true;
+                        automation_was_triggered = true;
                     }
                 } else {
-                    was_triggered = false;
+                    automation_was_triggered = false;
                 }
+#else
+                (void)automation_was_triggered;
 #endif
 
 #if MODULE_USERS_AVAILABLE()
@@ -192,7 +193,6 @@ void RequireMeter::apply_config() {
                     users.stop_charging(0, true, 0);
 #endif
 
-                static bool last_meter_timeout = false;
                 if (meter_timeout != last_meter_timeout) {
                     if (meter_timeout) {
                         logger.printfln("Charger energy meter stuck or unreachable! Blocking charging.");
