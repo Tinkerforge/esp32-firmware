@@ -156,7 +156,7 @@ specs = [
             {
                 'name': 'Inverter reactive power [0.01 kvar]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
-                'start_address': 0x089F,
+                'start_address': 0x08A0,
                 'value_type': 'S16',
                 'scale_factor': 10.0,
             },
