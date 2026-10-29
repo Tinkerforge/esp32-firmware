@@ -345,7 +345,7 @@ em270_and_em280_meter_values = [
     {
         'name': 'W Sum [0.1 W]',
         'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
-        'start_address': 0x22,
+        'start_address': 0x12,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
