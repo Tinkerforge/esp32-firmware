@@ -215,6 +215,13 @@ void evse_v2_button_recovery_handler()
 
     logger.printfln("Requested recovery stage %u.", stage);
 
+    auto error_indication = 2000 + stage + 1;
+
+    tf_evse_v2_set_indicator_led(&evse, 2003, 2000, 60, 255, 255, nullptr);
+    delay(1750);
+
+    tf_evse_v2_set_indicator_led(&evse, error_indication, 2000, 0, 255, 255, nullptr);
+
     // If this device is encrypted, don't allow access to PII without authentication.
     bool is_encrypted = ESP32Common::is_encrypted();
     logger.printfln("Flash is%s encrypted", is_encrypted ? "" : " not");
@@ -282,6 +289,8 @@ void evse_v2_button_recovery_handler()
 #if MODULE_SYSTEM_AVAILABLE()
             logger.printfln("Running stage 2: Formatting data partition");
 
+            // Delay here to finish showing the red blink indication.
+            delay(1750);
             system_.factory_reset(false);
             logger.printfln("Stage 2 done");
 #endif
