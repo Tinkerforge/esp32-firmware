@@ -61,8 +61,8 @@ class TestSuiteInfo:
     tests: list[TestCaseInfo]
     suite_setup:    TestFn | None = None
     suite_teardown: TestFn | None = None
-    test_setup:     TestFn | None = None
-    test_teardown:  TestFn | None = None
+    setup:     TestFn | None = None
+    teardown:  TestFn | None = None
 
 type JSON = typing.Mapping[str, JSON] | typing.Sequence[JSON] | str | int | float | bool | None
 
@@ -854,7 +854,7 @@ class TestContext:
     #         raise
 
 
-def _run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
+def _run_test(tc: TestContext, name: str, fn: TestFn | None, force_skip: bool) -> typing.Literal['skipped', 'skip_called', 'failed', 'errored', 'finished']:
     if tc._args.list_tests:
         if fn is not None:
             tc._wait_for_start()
@@ -872,18 +872,25 @@ def _run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
         if name.endswith("/suite_teardown"):
             tc._restore_suite()
 
+        if force_skip:
+            tc._notify_test_skipped(reason=f"Preceding setup or teardown not finished")
+            return 'skipped'
+
         if fn is not None:
             fn(tc)
         tc._notify_test_success()
-        return True
+        return 'finished'
     except TestContext.SkipTestError as e:
         tc._notify_test_skipped(reason=str(e.args[0]))
+        return 'skip_called'
     except AssertionError as e:
         tc._notify_test_failure(error=str(e), tb=traceback.format_exc())
+        return 'failed'
     except Exception as e:
         tc._notify_test_error(error=str(e), tb=traceback.format_exc())
+        return 'errored'
 
-    return False
+    raise Exception("unreachable")
 
 def run_testsuite(l: dict[str, typing.Any]):
     suite = TestSuiteInfo(Path(l['__file__']).parts[-3], Path(l['__file__']).stem, [])
@@ -927,17 +934,37 @@ def run_testsuite(l: dict[str, typing.Any]):
     if not args.no_shuffle:
         random.shuffle(suite.tests)
 
-    if not _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup):
-        _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
-        return
+    run = [
+        'suite_setup',
+        'setup',
+        'test',
+        'teardown',
+        'suite_teardown'
+    ]
+
+    match _run_test(tc, f"{suite.module}/{suite.suite}/suite_setup", suite.suite_setup, 'suite_setup' not in run):
+        case 'skipped':
+            run = []
+        case 'skip_called' | 'failed' | 'errored':
+            run = ['suite_teardown']
+
 
     for t in suite.tests:
-        if not _run_test(tc, f"{suite.module}/{suite.suite}/setup", suite.test_setup):
-            _run_test(tc, f"{suite.module}/{suite.suite}/teardown", suite.test_teardown)
-            break
+        run_test = run[:]
 
-        _run_test(tc, t.name, t.fn)
-        if not _run_test(tc, f"{suite.module}/{suite.suite}/teardown", suite.test_teardown):
-            break
 
-    _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown)
+        match _run_test(tc, f"{suite.module}/{suite.suite}/setup", suite.setup, 'setup' not in run_test):
+            case 'skipped':
+                run_test = []
+            case 'skip_called' | 'failed' | 'errored':
+                run_test = ['teardown']
+                run = ['suite_teardown']
+
+
+        _run_test(tc, t.name, t.fn, 'test' not in run_test)
+
+        if _run_test(tc, f"{suite.module}/{suite.suite}/teardown", suite.teardown, 'teardown' not in run_test) in ('failed', 'errored'):
+            run = ['suite_teardown']
+
+
+    _run_test(tc, f"{suite.module}/{suite.suite}/suite_teardown", suite.suite_teardown, 'suite_teardown' not in run)
