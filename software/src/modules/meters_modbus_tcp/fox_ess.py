@@ -887,12 +887,6 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
-                'name': 'PV1 Power [W]',
-                'value_id': 'PowerPV1Export',
-                'start_address': 39279,
-                'value_type': 'U32BE',
-            },
-            {
                 'name': 'PV2 Voltage [0.1 V]',
                 'value_id': 'VoltagePV2',
                 'start_address': 39072,
@@ -905,12 +899,6 @@ specs = [
                 'start_address': 39073,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
-            },
-            {
-                'name': 'PV2 Power [W]',
-                'value_id': 'PowerPV2Export',
-                'start_address': 39281,
-                'value_type': 'U32BE',
             },
             {
                 'name': 'PV3 Voltage [0.1 V]',
@@ -927,12 +915,6 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
-                'name': 'PV3 Power [W]',
-                'value_id': 'PowerPV3Export',
-                'start_address': 39283,
-                'value_type': 'U32BE',
-            },
-            {
                 'name': 'PV4 Voltage [0.1 V]',
                 'value_id': 'VoltagePV4',
                 'start_address': 39076,
@@ -945,12 +927,6 @@ specs = [
                 'start_address': 39077,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
-            },
-            {
-                'name': 'PV4 Power [W]',
-                'value_id': 'PowerPV4Export',
-                'start_address': 39285,
-                'value_type': 'U32BE',
             },
             {
                 'name': 'PV5 Voltage [0.1 V]',
@@ -966,13 +942,6 @@ specs = [
                 'start_address': 39079,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
-                'variants': ['Pro'],
-            },
-            {
-                'name': 'PV5 Power [W]',
-                'value_id': 'PowerPV5Export',
-                'start_address': 39287,
-                'value_type': 'U32BE',
                 'variants': ['Pro'],
             },
             {
@@ -992,13 +961,6 @@ specs = [
                 'variants': ['Pro'],
             },
             {
-                'name': 'PV6 Power [W]',
-                'value_id': 'PowerPV6Export',
-                'start_address': 39289,
-                'value_type': 'U32BE',
-                'variants': ['Pro'],
-            },
-            {
                 'name': 'PV Voltage Average [V]',
                 'value_id': 'VoltagePVAvg',
                 'calculate': True,
@@ -1013,6 +975,44 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 39118,
                 'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV1 Power [W]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 39279,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV2 Power [W]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 39281,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV3 Power [W]',
+                'value_id': 'PowerPV3Export',
+                'start_address': 39283,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV4 Power [W]',
+                'value_id': 'PowerPV4Export',
+                'start_address': 39285,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV5 Power [W]',
+                'value_id': 'PowerPV5Export',
+                'start_address': 39287,
+                'value_type': 'U32BE',
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'PV6 Power [W]',
+                'value_id': 'PowerPV6Export',
+                'start_address': 39289,
+                'value_type': 'U32BE',
+                'variants': ['Pro'],
             },
         ],
     },
