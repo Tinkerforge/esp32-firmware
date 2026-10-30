@@ -249,7 +249,7 @@ monophase_values = [
         'value_id': 'EnergyActiveL1ImportResettable',
         'start_address': 2310,
         'value_type': 'F32LE',
-        'scale_factor': 0.001
+        'scale_factor': 0.001,
     },
     {
         'name': 'Total active energy L1 and L2 and L3 - perpetual count [kWh]',
@@ -261,7 +261,7 @@ monophase_values = [
         'value_id': 'EnergyActiveL1ExportResettable',
         'start_address': 2312,
         'value_type': 'F32LE',
-        'scale_factor': 0.001
+        'scale_factor': 0.001,
     },
     {
         'name': 'Total active returned energy L1 and L2 and L3 - perpetual count [kWh]',
@@ -431,56 +431,56 @@ specs = [
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 1162,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Total active returned energy accumulated for all phases - perpetual count [Wh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 1164,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase A total active energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL1Import',
                 'start_address': 1182,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase A total active returned energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL1Export',
                 'start_address': 1184,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase B total active energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL2Import',
                 'start_address': 1202,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase B total active returned energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL2Export',
                 'start_address': 1204,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase C total active energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL3Import',
                 'start_address': 1222,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Phase C total active returned energy - perpetual count [Wh]',
                 'value_id': 'EnergyActiveL3Export',
                 'start_address': 1224,
                 'value_type': 'F32LE',
-                'scale_factor': 0.001
+                'scale_factor': 0.001,
             },
         ],
     },
