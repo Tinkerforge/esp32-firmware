@@ -32,9 +32,9 @@ debug_log_variables = [
     ##"on_state_change_blocked_until",
 ]
 
-formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
+formats = 'fmt(' + '),\n        fmt('.join('runtime_data->' + v if len(v) > 0 else '' for v in debug_log_variables) + '),'
 header  = '    "' + ',"\n    "'.join([re.sub(r'[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
-data    = ',\n               '.join(filter(None, debug_log_variables))
+data    = ',\n               '.join('runtime_data->' + v for v in filter(None, debug_log_variables))
 
 cpp = tfutil.specialize_template("power_manager_debug.cpp.template", None, {
     "{{{varcount}}}": str(len(debug_log_variables)),

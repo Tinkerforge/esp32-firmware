@@ -27,7 +27,7 @@ static char *fmtstr;
 [[gnu::noinline]]
 const char *PowerManager::prepare_fmtstr() {
     const char * const fmts[{{{varcount}}}] = {
-        {{{formats}}}
+{{{formats}}}
     };
 
     StringBuilder sb;

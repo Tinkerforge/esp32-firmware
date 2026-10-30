@@ -174,7 +174,11 @@ void PowerManager::pre_setup()
             {"block", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
-            this->charging_blocked.pin[cfg->get("slot")->asUint8()] = static_cast<uint8_t>(cfg->get("block")->asBool());
+            if (this->runtime_data != nullptr) {
+                this->runtime_data->charging_blocked.pin[cfg->get("slot")->asUint8()] = static_cast<uint8_t>(cfg->get("block")->asBool());
+            } else {
+                logger.printfln("PM not enabled for PMBlockCharge");
+            }
         });
 #endif
 
@@ -287,29 +291,36 @@ void PowerManager::setup()
     automation.set_enabled(AutomationTriggerID::PMGridPowerDraw, true);
 #endif
 
+    runtime_data = new(std::nothrow) runtime_data_t{};
+
+    if (runtime_data == nullptr) {
+        logger.printfln("No memory for runtime data");
+        return;
+    }
+
     debug_protocol.register_backend(this);
 
-    cm_limits             = charge_manager.get_limits();
-    cm_allocated_currents = charge_manager.get_allocated_currents();
+    runtime_data->cm_limits             = charge_manager.get_limits();
+    runtime_data->cm_allocated_currents = charge_manager.get_allocated_currents();
 
     // If the PM is enabled, make sure to override the CM's default current.
     zero_limits();
 
     // Cache config for energy update
-    excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
-    meter_slot_power            = config.get("meter_slot_grid_power" )->asUint8();
-    target_power_from_grid_w    = config.get("target_power_from_grid")->asInt32(); // watt
-    meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint8();
-    battery_priority            = config.get("battery_mode")->asEnum<BatteryPriority>(); // FIXME: for API stability reasons this member cannot be renamed to battery_priority
-    battery_target_soc          = config.get("battery_target_soc")->asUint8();
-    battery_inverted            = config.get("battery_inverted")->asBool();
-    battery_deadzone_w          = config.get("battery_deadzone")->asUint16(); // watt
-    phase_switching_mode        = config.get("phase_switching_mode")->asUint8();
-    dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
-    meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint8();
-    supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.get_maximum_available_current()); // milliampere
+    runtime_data->excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
+    runtime_data->meter_slot_power            = config.get("meter_slot_grid_power" )->asUint8();
+    runtime_data->target_power_from_grid_w    = config.get("target_power_from_grid")->asInt32(); // watt
+    runtime_data->meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint8();
+    runtime_data->battery_priority            = config.get("battery_mode")->asEnum<BatteryPriority>(); // FIXME: for API stability reasons this member cannot be renamed to battery_priority
+    runtime_data->battery_target_soc          = config.get("battery_target_soc")->asUint8();
+    runtime_data->battery_inverted            = config.get("battery_inverted")->asBool();
+    runtime_data->battery_deadzone_w          = config.get("battery_deadzone")->asUint16(); // watt
+    runtime_data->phase_switching_mode        = config.get("phase_switching_mode")->asUint8();
+    runtime_data->dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
+    runtime_data->meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint8();
+    runtime_data->supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.get_maximum_available_current()); // milliampere
 
-    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+    if (runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
         api.addFeature("phase_switch");
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -337,37 +348,37 @@ void PowerManager::setup()
     const size_t values_count_long_min = 60; // 1 hour @ 1 sample per minute
 
     // Set up meter power filters if excess charging is enabled
-    if (excess_charging_enabled) {
-        init_minmax_filter(&current_pv_minmax_ma,   values_count,          FilterType::MinMax);
-        init_minmax_filter(&current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
+    if (runtime_data->excess_charging_enabled) {
+        init_minmax_filter(&runtime_data->current_pv_minmax_ma,   values_count,          FilterType::MinMax);
+        init_minmax_filter(&runtime_data->current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
     }
 
     // Calculate constants and set up meter current filters if dynamic load management is enabled
-    if (dynamic_load_enabled) {
+    if (runtime_data->dynamic_load_enabled) {
         const int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit"           )->asUint32());
         const int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint32());
         const int32_t safety_margin_pct           = static_cast<int32_t>(dynamic_load_config.get("safety_margin_pct"       )->asUint8());
 
         const int32_t circuit_breaker_trip_point_ma = current_limit_ma * 7 / 5; // limit + 40%
         const int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
-        target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
+        runtime_data->target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
 
-        phase_current_max_increase_ma = target_phase_current_ma / 2; // Cap maximum ramp-up for safety. Might not be necessary.
+        runtime_data->phase_current_max_increase_ma = runtime_data->target_phase_current_ma / 2; // Cap maximum ramp-up for safety. Might not be necessary.
 
         constexpr size_t min_filter_length = 4 * 60 * 1000 / PM_TASK_DELAY_MS; // 4min
         constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS; // 10s
 
-        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_ma); i++) {
-            init_minmax_filter(currents_phase_min_ma + i,      min_filter_length,     FilterType::MinOnly);
-            init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
+        for (size_t i = 0; i < ARRAY_SIZE(runtime_data->currents_phase_min_ma); i++) {
+            init_minmax_filter(runtime_data->currents_phase_min_ma + i,      min_filter_length,     FilterType::MinOnly);
+            init_minmax_filter(runtime_data->currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
 
-            init_minmax_filter(currents_phase_preproc_max_ma + i, preproc_filter_length, FilterType::MaxOnly);
-            init_mavg_filter(currents_phase_preproc_mavg_ma + i,  preproc_filter_length);
+            init_minmax_filter(runtime_data->currents_phase_preproc_max_ma + i, preproc_filter_length, FilterType::MaxOnly);
+            init_mavg_filter(runtime_data->currents_phase_preproc_mavg_ma + i,  preproc_filter_length);
         }
 
-        currents_phase_preproc_mavg_limit        = target_phase_current_ma * 11 / 10; // target + 10%
-        currents_phase_preproc_interpolate_limit = target_phase_current_ma *  6 /  5; // target + 20%
-        currents_phase_preproc_interpolate_interval_quantized = (currents_phase_preproc_interpolate_limit - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
+        runtime_data->currents_phase_preproc_mavg_limit        = runtime_data->target_phase_current_ma * 11 / 10; // target + 10%
+        runtime_data->currents_phase_preproc_interpolate_limit = runtime_data->target_phase_current_ma *  6 /  5; // target + 20%
+        runtime_data->currents_phase_preproc_interpolate_interval_quantized = (runtime_data->currents_phase_preproc_interpolate_limit - runtime_data->currents_phase_preproc_mavg_limit) / runtime_data->currents_phase_preproc_interpolate_quantization_factor;
 
         //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i  pp mavg limit %i  pp int limit %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma, currents_phase_preproc_mavg_limit, currents_phase_preproc_interpolate_limit);
     }
@@ -381,39 +392,39 @@ void PowerManager::setup()
     bool current_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
     float unused_power;
-    if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
-        meter_slot_power = std::numeric_limits<decltype(meter_slot_power)>::max();
+    if (meters.get_power(runtime_data->meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
+        runtime_data->meter_slot_power = std::numeric_limits<decltype(runtime_data->meter_slot_power)>::max();
     } else {
         power_meter_available = true;
     }
 
-    if (meter_slot_battery_power < METER_SLOT_BATTERY_NO_BATTERY) {
-        if (meters.get_power(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
-            meter_slot_battery_power = std::numeric_limits<decltype(meter_slot_battery_power)>::max();
+    if (runtime_data->meter_slot_battery_power < METER_SLOT_BATTERY_NO_BATTERY) {
+        if (meters.get_power(runtime_data->meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
+            runtime_data->meter_slot_battery_power = std::numeric_limits<decltype(runtime_data->meter_slot_battery_power)>::max();
             logger.printfln("Battery storage configured but meter can't provide power values.");
         } else {
-            have_battery = true;
+            runtime_data->have_battery = true;
         }
     }
 
-    if (!have_battery) {
-        power_at_battery_raw_w = 0;
+    if (!runtime_data->have_battery) {
+        runtime_data->power_at_battery_raw_w = 0;
     }
 
     float unused_meter_currents[INDEX_CACHE_CURRENT_COUNT];
-    if (meters.get_currents(meter_slot_currents, unused_meter_currents) == MeterValueAvailability::Unavailable) {
-        meter_slot_currents = std::numeric_limits<decltype(meter_slot_currents)>::max();
+    if (meters.get_currents(runtime_data->meter_slot_currents, unused_meter_currents) == MeterValueAvailability::Unavailable) {
+        runtime_data->meter_slot_currents = std::numeric_limits<decltype(runtime_data->meter_slot_currents)>::max();
     } else {
         current_meter_available = true;
     }
 
 #endif
-    if (excess_charging_enabled && !power_meter_available) {
+    if (runtime_data->excess_charging_enabled && !power_meter_available) {
         set_config_error(PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("Excess charging enabled but configured meter can't provide power values.");
     }
 
-    if (dynamic_load_enabled && !current_meter_available) {
+    if (runtime_data->dynamic_load_enabled && !current_meter_available) {
         set_config_error(PM_CONFIG_ERROR_FLAGS_DLM_NO_METER_MASK);
         logger.printfln("Dynamic load management enabled but configured meter can't provide current values.");
     }
@@ -430,7 +441,7 @@ void PowerManager::setup()
         }
     });
 
-    if (supply_cable_max_current_ma == 0) {
+    if (runtime_data->supply_cable_max_current_ma == 0) {
         logger.printfln("No maximum current configured for chargers. Disabling energy distribution.");
         set_config_error(PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
         return;
@@ -439,9 +450,9 @@ void PowerManager::setup()
     // supply_cable_max_current_ma must be set before reset
     reset_max_current_limit();
 
-    auto th = build_trace_header(excess_charging_enabled, dynamic_load_enabled);
-    this->trace_header = th.first;
-    this->trace_header_length = th.second;
+    auto th = build_trace_header(runtime_data->excess_charging_enabled, runtime_data->dynamic_load_enabled);
+    runtime_data->trace_header = th.first;
+    runtime_data->trace_header_length = th.second;
 
     task_scheduler.scheduleUncancelable([this]() {
         this->update_data();
@@ -461,7 +472,7 @@ void PowerManager::register_urls()
     api.addState("power_manager/external_control", &external_control);
 
     if (phase_switcher_backend != nullptr
-        && ((MODULE_EM_V1_AVAILABLE() && !excess_charging_enabled && phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+        && ((MODULE_EM_V1_AVAILABLE() && !runtime_data->excess_charging_enabled && runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
             || !config.get("enabled")->asBool())
         && phase_switcher_backend->is_external_control_allowed() && phase_switcher_backend->phase_switching_capable()) {
 
@@ -474,7 +485,7 @@ void PowerManager::register_urls()
 
         logger.printfln("External phase switching API enabled, starting with %lup", phases);
 
-        if (MODULE_EM_V1_AVAILABLE() && !dynamic_load_enabled) {
+        if (MODULE_EM_V1_AVAILABLE() && !runtime_data->dynamic_load_enabled) {
             // Try to enable faster allocator runs because the EM Phase Switcher needs it.
             charge_manager.enable_fast_single_charger_mode();
         }
@@ -526,7 +537,7 @@ void PowerManager::register_urls()
         }
 
         if (!automation.has_task_with_action(AutomationActionID::PMBlockCharge)) {
-            charging_blocked.combined = 0;
+            runtime_data->charging_blocked.combined = 0;
         }
     });
 #endif
@@ -547,11 +558,11 @@ void PowerManager::zero_limits()
 {
     // Zero all limits, includes PV "phase"
     for (size_t phase = 0; phase < 4; phase++) {
-        cm_limits->raw[phase]    = 0;
-        cm_limits->min[phase]    = 0;
-        cm_limits->spread[phase] = 0;
+        runtime_data->cm_limits->raw[phase]    = 0;
+        runtime_data->cm_limits->min[phase]    = 0;
+        runtime_data->cm_limits->spread[phase] = 0;
     }
-    cm_limits->max_pv = 0;
+    runtime_data->cm_limits->max_pv = 0;
 }
 
 [[gnu::noinline]]
@@ -724,48 +735,48 @@ static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filte
 void PowerManager::update_data()
 {
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
-        power_at_meter_raw_w = NAN;
+    if (meters.get_power(runtime_data->meter_slot_power, &runtime_data->power_at_meter_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
+        runtime_data->power_at_meter_raw_w = NAN;
     }
 
-    low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
+    low_level_state.get("power_at_meter")->updateFloat(runtime_data->power_at_meter_raw_w);
 
-    if (have_battery) {
-        if (meters.get_power(meter_slot_battery_power, &power_at_battery_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
-            power_at_battery_raw_w = NAN;
+    if (runtime_data->have_battery) {
+        if (meters.get_power(runtime_data->meter_slot_battery_power, &runtime_data->power_at_battery_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
+            runtime_data->power_at_battery_raw_w = NAN;
         }
 
-        if (meters.get_soc(meter_slot_battery_power, &battery_soc_raw, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
-            battery_soc_raw = NAN;
+        if (meters.get_soc(runtime_data->meter_slot_battery_power, &runtime_data->battery_soc_raw, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
+            runtime_data->battery_soc_raw = NAN;
         }
 
-        if (!isnan(power_at_battery_raw_w)) {
-            if (battery_inverted) {
-                power_at_battery_raw_w *= -1;
+        if (!isnan(runtime_data->power_at_battery_raw_w)) {
+            if (runtime_data->battery_inverted) {
+                runtime_data->power_at_battery_raw_w *= -1;
             }
         }
 
-        low_level_state.get("power_at_battery")->updateFloat(power_at_battery_raw_w);
-        low_level_state.get("battery_soc"     )->updateFloat(battery_soc_raw);
+        low_level_state.get("power_at_battery")->updateFloat(runtime_data->power_at_battery_raw_w);
+        low_level_state.get("battery_soc"     )->updateFloat(runtime_data->battery_soc_raw);
     }
 #endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (!isnan(power_at_meter_raw_w)) {
-        TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
-        if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
+    if (!isnan(runtime_data->power_at_meter_raw_w)) {
+        TristateBool drawing_power = static_cast<TristateBool>(runtime_data->power_at_meter_raw_w > 0);
+        if (drawing_power != runtime_data->automation_drawing_power_last && boot_stage > BootStage::SETUP) {
             automation.trigger(AutomationTriggerID::PMGridPowerDraw, nullptr, this);
-            automation_drawing_power_last = drawing_power;
+            runtime_data->automation_drawing_power_last = drawing_power;
         }
     }
 #endif
 
 
-    if (dynamic_load_enabled) {
+    if (runtime_data->dynamic_load_enabled) {
         float meter_currents[INDEX_CACHE_CURRENT_COUNT];
 
 #if MODULE_METERS_AVAILABLE()
-        MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents, MAX_DYNAMIC_LOAD_METER_AGE);
+        MeterValueAvailability ret = meters.get_currents(runtime_data->meter_slot_currents, meter_currents, MAX_DYNAMIC_LOAD_METER_AGE);
         if (ret != MeterValueAvailability::Fresh)
 #else
         // Unconditionally execute block
@@ -782,9 +793,9 @@ void PowerManager::update_data()
                 // TODO Store in low_level_state
 
                 int32_t raw_current_ma = static_cast<int32_t>(meter_current_a * 1000);
-                currents_at_meter_raw_ma[i] = raw_current_ma;
+                runtime_data->currents_at_meter_raw_ma[i] = raw_current_ma;
             } else {
-                currents_at_meter_raw_ma[i] = INT32_MAX;
+                runtime_data->currents_at_meter_raw_ma[i] = INT32_MAX;
             }
         }
     }
@@ -797,44 +808,44 @@ void PowerManager::update_energy()
     size_t trace_log_len = 0;
 #endif
 
-    if (!excess_charging_enabled) {
-        power_available_w = INT32_MAX;
+    if (!runtime_data->excess_charging_enabled) {
+        runtime_data->power_available_w = INT32_MAX;
     } else {
         int32_t p_error_w;
 
-        if (isnan(power_at_meter_raw_w) || (have_battery && isnan(power_at_battery_raw_w))) {
-            if (!printed_skipping_energy_update) {
+        if (isnan(runtime_data->power_at_meter_raw_w) || (runtime_data->have_battery && isnan(runtime_data->power_at_battery_raw_w))) {
+            if (!runtime_data->printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available (yet).");
-                printed_skipping_energy_update = true;
+                runtime_data->printed_skipping_energy_update = true;
             }
 
-            power_available_w = INT32_MAX;
+            runtime_data->power_available_w = INT32_MAX;
         } else {
-            if (printed_skipping_energy_update) {
+            if (runtime_data->printed_skipping_energy_update) {
                 logger.printfln("PV excess charging available because power values are now available.");
-                printed_skipping_energy_update = false;
+                runtime_data->printed_skipping_energy_update = false;
             }
 
             // Grid: +import -export
-            const int32_t power_grid_raw_w = static_cast<int32_t>(power_at_meter_raw_w);
+            const int32_t power_grid_raw_w = static_cast<int32_t>(runtime_data->power_at_meter_raw_w);
             int32_t power_combined_raw_w;
 
-            if (have_battery) {
+            if (runtime_data->have_battery) {
                 // Battery: +charging -discharging
-                int32_t power_battery_w = static_cast<int32_t>(power_at_battery_raw_w);
+                int32_t power_battery_w = static_cast<int32_t>(runtime_data->power_at_battery_raw_w);
 
                 // Always avoid discharging the battery (negative values), but when the battery is charging (positive values),
                 // taking its power means prioritizing chargers, ignoring its power means prioritizing the battery.
                 if (power_battery_w > 0) {
-                    if (battery_priority == BatteryPriority::PreferBattery) {
+                    if (runtime_data->battery_priority == BatteryPriority::PreferBattery) {
                         power_battery_w = 0;
-                    } else if (battery_priority == BatteryPriority::TargetSOC) {
-                        if (isnan(battery_soc_raw)) {
+                    } else if (runtime_data->battery_priority == BatteryPriority::TargetSOC) {
+                        if (isnan(runtime_data->battery_soc_raw)) {
                             // SOC unknown; let the battery do its thing.
                             power_battery_w = 0;
                         } else {
-                            const uint8_t soc = static_cast<uint8_t>(battery_soc_raw);
-                            if (soc < battery_target_soc) {
+                            const uint8_t soc = static_cast<uint8_t>(runtime_data->battery_soc_raw);
+                            if (soc < runtime_data->battery_target_soc) {
                                 // Battery below target SOC; let it charge.
                                 power_battery_w = 0;
                             }
@@ -848,14 +859,14 @@ void PowerManager::update_energy()
                 int32_t power_grid_adjusted_w = power_grid_raw_w;
 
                 if (power_grid_adjusted_w > 0) {
-                    if (power_grid_adjusted_w > battery_deadzone_w) {
-                        power_grid_adjusted_w -= battery_deadzone_w;
+                    if (power_grid_adjusted_w > runtime_data->battery_deadzone_w) {
+                        power_grid_adjusted_w -= runtime_data->battery_deadzone_w;
                     } else {
                         power_grid_adjusted_w = 0;
                     }
                 } else if (power_grid_adjusted_w < 0) {
-                    if (power_grid_adjusted_w < -battery_deadzone_w) {
-                        power_grid_adjusted_w += battery_deadzone_w;
+                    if (power_grid_adjusted_w < -runtime_data->battery_deadzone_w) {
+                        power_grid_adjusted_w += runtime_data->battery_deadzone_w;
                     } else {
                         power_grid_adjusted_w = 0;
                     }
@@ -870,7 +881,7 @@ void PowerManager::update_energy()
                 power_combined_raw_w = power_grid_raw_w;
             }
 
-            p_error_w = target_power_from_grid_w - power_combined_raw_w;
+            p_error_w = runtime_data->target_power_from_grid_w - power_combined_raw_w;
 
 #if MODULE_EM_V1_AVAILABLE()
             if (p_error_w > 200) {
@@ -884,7 +895,7 @@ void PowerManager::update_energy()
 
             // Excess charging uses an adaptive P controller to adjust available power.
             int32_t p_adjust_w;
-            int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
+            int32_t cm_allocated_power_w = runtime_data->cm_allocated_currents->pv * 230 / 1000; // ma -> watt
 
             if (cm_allocated_power_w <= 0) {
                 // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
@@ -892,7 +903,12 @@ void PowerManager::update_energy()
 
                 // Sanity check
                 if (cm_allocated_power_w < 0) {
-                    logger.printfln("Negative cm_allocated_power_w: %li  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                    logger.printfln("Negative cm_allocated_power_w: %li  cm_allocated_currents(%i %i %i %i)",
+                        cm_allocated_power_w,
+                        runtime_data->cm_allocated_currents->pv,
+                        runtime_data->cm_allocated_currents->l1,
+                        runtime_data->cm_allocated_currents->l2,
+                        runtime_data->cm_allocated_currents->l3);
                     cm_allocated_power_w = 0;
                 }
             } else {
@@ -911,49 +927,49 @@ void PowerManager::update_energy()
                 }
             }
 
-            power_available_w = cm_allocated_power_w + p_adjust_w;
+            runtime_data->power_available_w = cm_allocated_power_w + p_adjust_w;
         }
     }
 
-    low_level_state.get("power_available")->updateInt(power_available_w);
+    low_level_state.get("power_available")->updateInt(runtime_data->power_available_w);
 
-    if (power_available_w == INT32_MAX) {
-        cm_limits->raw.pv = 0;
-        cm_limits->min.pv = 0;
-        cm_limits->spread.pv = 0;
-        cm_limits->max_pv = 0;
+    if (runtime_data->power_available_w == INT32_MAX) {
+        runtime_data->cm_limits->raw.pv = 0;
+        runtime_data->cm_limits->min.pv = 0;
+        runtime_data->cm_limits->spread.pv = 0;
+        runtime_data->cm_limits->max_pv = 0;
 
-        cm_limits->min_expiration_ts[0] = 0_us;
-        cm_limits->max_pv_expiration_ts = 0_us;
+        runtime_data->cm_limits->min_expiration_ts[0] = 0_us;
+        runtime_data->cm_limits->max_pv_expiration_ts = 0_us;
     } else {
-        int32_t pv_raw_ma = power_available_w * 1000 / 230;
-        update_minmax_filter(pv_raw_ma, &current_pv_minmax_ma);
+        int32_t pv_raw_ma = runtime_data->power_available_w * 1000 / 230;
+        update_minmax_filter(pv_raw_ma, &runtime_data->current_pv_minmax_ma);
 
-        if (current_long_min_iterations == 0) {
-            update_minmax_filter(current_pv_floating_min_ma, &current_pv_long_min_ma);
+        if (runtime_data->current_long_min_iterations == 0) {
+            update_minmax_filter(runtime_data->current_pv_floating_min_ma, &runtime_data->current_pv_long_min_ma);
 
-            current_pv_floating_min_ma = pv_raw_ma;
+            runtime_data->current_pv_floating_min_ma = pv_raw_ma;
         } else {
-            if (pv_raw_ma < current_pv_floating_min_ma) {
-                current_pv_floating_min_ma = pv_raw_ma;
+            if (pv_raw_ma < runtime_data->current_pv_floating_min_ma) {
+                runtime_data->current_pv_floating_min_ma = pv_raw_ma;
             }
         }
 
-        int32_t pv_long_min_ma = std::min(current_pv_floating_min_ma, current_pv_long_min_ma.min);
+        int32_t pv_long_min_ma = std::min(runtime_data->current_pv_floating_min_ma, runtime_data->current_pv_long_min_ma.min);
 
-        cm_limits->raw.pv = pv_raw_ma;
-        cm_limits->min.pv = current_pv_minmax_ma.min;
-        cm_limits->max_pv = current_pv_minmax_ma.max;
-        cm_limits->spread.pv = pv_long_min_ma;
+        runtime_data->cm_limits->raw.pv = pv_raw_ma;
+        runtime_data->cm_limits->min.pv = runtime_data->current_pv_minmax_ma.min;
+        runtime_data->cm_limits->max_pv = runtime_data->current_pv_minmax_ma.max;
+        runtime_data->cm_limits->spread.pv = pv_long_min_ma;
 
-        cm_limits->min_expiration_ts[0] = current_pv_minmax_ma.min_expiration_ts;
-        cm_limits->max_pv_expiration_ts = current_pv_minmax_ma.max_expiration_ts;
+        runtime_data->cm_limits->min_expiration_ts[0] = runtime_data->current_pv_minmax_ma.min_expiration_ts;
+        runtime_data->cm_limits->max_pv_expiration_ts = runtime_data->current_pv_minmax_ma.max_expiration_ts;
 
 #if ENABLE_PM_TRACE
         // Raw power values are guaranteed not to be NaN here.
         trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li %6li %6li",
-            static_cast<int32_t>(power_at_meter_raw_w), static_cast<int32_t>(power_at_battery_raw_w), power_available_w,
-            pv_raw_ma, current_pv_minmax_ma.max, current_pv_minmax_ma.min, pv_long_min_ma);
+            static_cast<int32_t>(runtime_data->power_at_meter_raw_w), static_cast<int32_t>(runtime_data->power_at_battery_raw_w), runtime_data->power_available_w,
+            pv_raw_ma, runtime_data->current_pv_minmax_ma.max, runtime_data->current_pv_minmax_ma.min, pv_long_min_ma);
 #endif
     }
 
@@ -964,61 +980,61 @@ void PowerManager::update_energy()
     Config *state_i_pp      = static_cast<Config *>(low_level_state.get("i_pp"));
 
     for (size_t cm_phase = 1; cm_phase <= 3; cm_phase++) {
-        if (!dynamic_load_enabled) {
-            cm_limits->raw[cm_phase]    = max_current_limited_ma;
-            cm_limits->min[cm_phase]    = max_current_limited_ma;
-            cm_limits->spread[cm_phase] = max_current_limited_ma;
+        if (!runtime_data->dynamic_load_enabled) {
+            runtime_data->cm_limits->raw[cm_phase]    = runtime_data->max_current_limited_ma;
+            runtime_data->cm_limits->min[cm_phase]    = runtime_data->max_current_limited_ma;
+            runtime_data->cm_limits->spread[cm_phase] = runtime_data->max_current_limited_ma;
 
-            cm_limits->min_expiration_ts[cm_phase] = 0_us;
+            runtime_data->cm_limits->min_expiration_ts[cm_phase] = 0_us;
         } else {
             size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
 
-            int32_t phase_current_meter_ma = currents_at_meter_raw_ma[pm_phase];
+            int32_t phase_current_meter_ma = runtime_data->currents_at_meter_raw_ma[pm_phase];
 
             if (phase_current_meter_ma == INT32_MAX) {
-                if (!printed_skipping_currents_update && cm_phase == 1) {
+                if (!runtime_data->printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management unavailable because current values are not available (yet).");
-                    printed_skipping_currents_update = true;
+                    runtime_data->printed_skipping_currents_update = true;
                 }
 
-                cm_limits->raw[cm_phase] = 0;
-                cm_limits->min[cm_phase] = 0;
-                cm_limits->spread[cm_phase] = 0;
+                runtime_data->cm_limits->raw[cm_phase] = 0;
+                runtime_data->cm_limits->min[cm_phase] = 0;
+                runtime_data->cm_limits->spread[cm_phase] = 0;
 
-                cm_limits->min_expiration_ts[cm_phase] = 0_us;
+                runtime_data->cm_limits->min_expiration_ts[cm_phase] = 0_us;
             } else {
-                if (printed_skipping_currents_update && cm_phase == 1) {
+                if (runtime_data->printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management available because current values are now available.");
-                    printed_skipping_currents_update = false;
+                    runtime_data->printed_skipping_currents_update = false;
                 }
 
                 // Preprocess meter value for CM. Estimates a sensible current value for the past 10s interval.
-                minmax_filter *phase_preproc_max_ma = currents_phase_preproc_max_ma + pm_phase;
+                minmax_filter *phase_preproc_max_ma = runtime_data->currents_phase_preproc_max_ma + pm_phase;
                 update_minmax_filter(phase_current_meter_ma, phase_preproc_max_ma);
-                mavg_filter *phase_preproc_mavg_ma = currents_phase_preproc_mavg_ma + pm_phase;
+                mavg_filter *phase_preproc_mavg_ma = runtime_data->currents_phase_preproc_mavg_ma + pm_phase;
                 int32_t phase_preproc_mavg_val_ma = update_mavg_filter(phase_current_meter_ma, phase_preproc_mavg_ma);
 
                 int32_t phase_max_mavg_ma = (phase_preproc_max_ma->max + phase_preproc_mavg_val_ma) / 2;
 
                 int32_t phase_preproc_ma;
-                if (phase_current_meter_ma < currents_phase_preproc_mavg_limit) {
+                if (phase_current_meter_ma < runtime_data->currents_phase_preproc_mavg_limit) {
                     // raw < target + 10% -> mavg
                     phase_preproc_ma = phase_preproc_mavg_val_ma;
-                } else if (phase_current_meter_ma > currents_phase_preproc_interpolate_limit) {
+                } else if (phase_current_meter_ma > runtime_data->currents_phase_preproc_interpolate_limit) {
                     // raw > target + 20% -> (max+mavg)/2
                     phase_preproc_ma = phase_max_mavg_ma;
 
                     // Limit exceeded too much, trigger CM allocator run
-                    if (deadline_elapsed(cm_allocator_trigger_hysteresis)) {
+                    if (deadline_elapsed(runtime_data->cm_allocator_trigger_hysteresis)) {
                         charge_manager.trigger_allocator_run(true);
-                        cm_allocator_trigger_hysteresis = now_us() + 5_s;
+                        runtime_data->cm_allocator_trigger_hysteresis = now_us() + 5_s;
                     }
                 } else {
                     // else -> interpolate between mavg and (max+mavg)/2
-                    int32_t interval_max_quantized = (phase_current_meter_ma - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
-                    int32_t interval_mavg_quantized = currents_phase_preproc_interpolate_interval_quantized - interval_max_quantized;
-                    int32_t part_max  = phase_max_mavg_ma         * interval_max_quantized  / currents_phase_preproc_interpolate_interval_quantized;
-                    int32_t part_mavg = phase_preproc_mavg_val_ma * interval_mavg_quantized / currents_phase_preproc_interpolate_interval_quantized;
+                    int32_t interval_max_quantized = (phase_current_meter_ma - runtime_data->currents_phase_preproc_mavg_limit) / runtime_data->currents_phase_preproc_interpolate_quantization_factor;
+                    int32_t interval_mavg_quantized = runtime_data->currents_phase_preproc_interpolate_interval_quantized - interval_max_quantized;
+                    int32_t part_max  = phase_max_mavg_ma         * interval_max_quantized  / runtime_data->currents_phase_preproc_interpolate_interval_quantized;
+                    int32_t part_mavg = phase_preproc_mavg_val_ma * interval_mavg_quantized / runtime_data->currents_phase_preproc_interpolate_interval_quantized;
                     phase_preproc_ma = part_mavg + part_max;
                 }
 
@@ -1029,9 +1045,9 @@ void PowerManager::update_energy()
                 state_i_pp     ->get(pm_phase)->updateInt(phase_preproc_ma);
 
                 // Current controller
-                int32_t current_error_ma = target_phase_current_ma - phase_preproc_ma;
+                int32_t current_error_ma = runtime_data->target_phase_current_ma - phase_preproc_ma;
 
-                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[cm_phase];
+                int32_t cm_allocated_phase_current_ma = (*runtime_data->cm_allocated_currents)[cm_phase];
                 int32_t current_adjust_ma;
 
                 if (cm_allocated_phase_current_ma <= 0) {
@@ -1040,7 +1056,11 @@ void PowerManager::update_energy()
 
                     // Sanity check
                     if (cm_allocated_phase_current_ma < 0) {
-                        logger.printfln("Negative cm_allocated_phase_current_ma: cm_allocated_currents(%i %i %i %i)", cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                        logger.printfln("Negative cm_allocated_phase_current_ma: cm_allocated_currents(%i %i %i %i)",
+                            runtime_data->cm_allocated_currents->pv,
+                            runtime_data->cm_allocated_currents->l1,
+                            runtime_data->cm_allocated_currents->l2,
+                            runtime_data->cm_allocated_currents->l3);
                         cm_allocated_phase_current_ma = 0;
                     }
                 } else {
@@ -1052,41 +1072,41 @@ void PowerManager::update_energy()
                         current_adjust_ma = current_error_ma / 2;
 
                         // Cap to maximum allowed increase
-                        current_adjust_ma = std::min(current_adjust_ma, phase_current_max_increase_ma);
+                        current_adjust_ma = std::min(current_adjust_ma, runtime_data->phase_current_max_increase_ma);
                     }
                 }
 
                 int32_t phase_limit_raw_ma = cm_allocated_phase_current_ma + current_adjust_ma;
 
-                phase_limit_raw_ma = min(phase_limit_raw_ma, max_current_limited_ma);
+                phase_limit_raw_ma = min(phase_limit_raw_ma, runtime_data->max_current_limited_ma);
 
                 // Calculate min
-                minmax_filter *phase_min_ma = currents_phase_min_ma + pm_phase;
+                minmax_filter *phase_min_ma = runtime_data->currents_phase_min_ma + pm_phase;
                 update_minmax_filter(phase_limit_raw_ma, phase_min_ma);
 
                 // Calculate long min
-                if (current_long_min_iterations == 0) {
-                    update_minmax_filter(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma + pm_phase);
+                if (runtime_data->current_long_min_iterations == 0) {
+                    update_minmax_filter(runtime_data->currents_phase_floating_min_ma[pm_phase], runtime_data->currents_phase_long_min_ma + pm_phase);
 
-                    currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
+                    runtime_data->currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
                 } else {
-                    if (phase_limit_raw_ma < currents_phase_floating_min_ma[pm_phase]) {
-                        currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
+                    if (phase_limit_raw_ma < runtime_data->currents_phase_floating_min_ma[pm_phase]) {
+                        runtime_data->currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
                     }
                 }
 
-                int32_t phase_long_min_ma = std::min(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma[pm_phase].min);
+                int32_t phase_long_min_ma = std::min(runtime_data->currents_phase_floating_min_ma[pm_phase], runtime_data->currents_phase_long_min_ma[pm_phase].min);
 
                 // Store limits
-                cm_limits->raw[cm_phase] = phase_limit_raw_ma;
-                cm_limits->min[cm_phase] = phase_min_ma->min;
-                cm_limits->spread[cm_phase] = phase_long_min_ma;
+                runtime_data->cm_limits->raw[cm_phase] = phase_limit_raw_ma;
+                runtime_data->cm_limits->min[cm_phase] = phase_min_ma->min;
+                runtime_data->cm_limits->spread[cm_phase] = phase_long_min_ma;
 
-                cm_limits->min_expiration_ts[cm_phase] = phase_min_ma->min_expiration_ts;
+                runtime_data->cm_limits->min_expiration_ts[cm_phase] = phase_min_ma->min_expiration_ts;
 
 #if ENABLE_PM_TRACE
                 // Only add rule before first phase if PV is active.
-                if (cm_phase != 1 || power_available_w != INT32_MAX) {
+                if (cm_phase != 1 || runtime_data->power_available_w != INT32_MAX) {
                     trace_log[trace_log_len] = '|';
                     trace_log_len += 1;
                 }
@@ -1104,30 +1124,51 @@ void PowerManager::update_energy()
 #endif
 
     // Calculate long-term minimum over one-minute blocks
-    if (++current_long_min_iterations > 60 * (1000 / PM_TASK_DELAY_MS)) {
-        current_long_min_iterations = 0;
+    if (++runtime_data->current_long_min_iterations > 60 * (1000 / PM_TASK_DELAY_MS)) {
+        runtime_data->current_long_min_iterations = 0;
     }
 
-    low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
+    low_level_state.get("charging_blocked")->updateUint(runtime_data->charging_blocked.combined);
 
-    if (charging_blocked.combined) {
+    if (runtime_data->charging_blocked.combined) {
         zero_limits();
 
-        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+        if (runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
             state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
 
         return;
     }
 }
 
+bool PowerManager::external_control_enabled()
+{
+    bool ret;
+
+    if (phase_switcher_backend != nullptr
+        && (runtime_data == nullptr // No runtime data -> PM off -> external control allowed
+            || (MODULE_EM_V1_AVAILABLE() && !runtime_data->excess_charging_enabled && runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)) // PM on -> external control allowed on WEM1 when excess charging is off and phase switching is set to external control.
+        && phase_switcher_backend->is_external_control_allowed() && phase_switcher_backend->phase_switching_capable())
+    {
+        ret = true;
+        // TODO start task if not started
+    }
+    else
+    {
+        ret = false;
+        // TODO cancel task if started
+    }
+
+    return ret;
+}
+
 void PowerManager::set_max_current_limit(int32_t limit_ma)
 {
-    if (limit_ma > supply_cable_max_current_ma) {
-        max_current_limited_ma = supply_cable_max_current_ma;
+    if (limit_ma > runtime_data->supply_cable_max_current_ma) {
+        runtime_data->max_current_limited_ma = runtime_data->supply_cable_max_current_ma;
     } else {
-        max_current_limited_ma = limit_ma;
+        runtime_data->max_current_limited_ma = limit_ma;
     }
-    low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma);
+    low_level_state.get("max_current_limited")->updateInt(runtime_data->max_current_limited_ma);
 }
 
 void PowerManager::reset_max_current_limit()
@@ -1166,7 +1207,7 @@ uint32_t PowerManager::get_phases() const
 }
 
 void PowerManager::switch_phases(uint32_t phases_wanted, String &errmsg, bool log) {
-    if (phase_switcher_backend == nullptr || !phase_switcher_backend->is_external_control_allowed()) {
+    if (!external_control_enabled()) {
         const char *msg = "Ignoring external control phase change request: External control is not enabled.";
         if (log) { logger.printfln("%s", msg); }
         errmsg = msg;
@@ -1213,13 +1254,16 @@ void PowerManager::switch_phases(uint32_t phases_wanted, String &errmsg, bool lo
 }
 
 void PowerManager::print_trace_header() const {
-    logger.trace_plain(charge_manager.trace_buffer_index, this->trace_header, this->trace_header_length);
+    if (!runtime_data) {
+        return;
+    }
+    logger.trace_plain(charge_manager.trace_buffer_index, runtime_data->trace_header, runtime_data->trace_header_length);
 }
 
 void PowerManager::set_config_error(uint32_t config_error_mask)
 {
-    config_error_flags |= config_error_mask;
-    state.get("config_error_flags")->updateUint(config_error_flags);
+    runtime_data->config_error_flags |= config_error_mask;
+    state.get("config_error_flags")->updateUint(runtime_data->config_error_flags);
 
 #if MODULE_EM_COMMON_AVAILABLE()
     // TODO FIXME
@@ -1236,9 +1280,10 @@ bool PowerManager::has_triggered(const Config *conf, void *data)
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 
     switch (conf->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::PMGridPowerDraw:
-            return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
-
+        case AutomationTriggerID::PMGridPowerDraw: {
+            const float power = runtime_data->power_at_meter_raw_w;
+            return ((power > 0) == cfg->get("drawing_power")->asBool());
+        }
         default:
             break;
     }

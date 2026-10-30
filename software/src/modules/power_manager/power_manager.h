@@ -127,6 +127,7 @@ private:
     void zero_limits();
     void update_data();
     void update_energy();
+    bool external_control_enabled();
     void set_max_current_limit(int32_t limit_ma);
     void reset_max_current_limit();
     void set_config_error(uint32_t config_error_mask);
@@ -136,6 +137,79 @@ private:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    class runtime_data_t {
+    public:
+        uint32_t config_error_flags = 0;
+
+        bool     printed_skipping_energy_update      = false;
+        bool     printed_skipping_currents_update    = false;
+
+        int32_t max_current_limited_ma               = 0;
+
+        union {
+            uint32_t combined;
+            uint8_t  pin[4];
+        } charging_blocked = {0};
+
+        int32_t  power_available_w = 0;
+
+        size_t current_long_min_iterations = 0;
+
+        float    power_at_meter_raw_w = NAN;
+        float    power_at_battery_raw_w = NAN;
+        float    battery_soc_raw = NAN;
+        int32_t  current_pv_floating_min_ma = INT32_MAX;
+        minmax_filter current_pv_minmax_ma;
+        minmax_filter current_pv_long_min_ma;
+
+        // Raw currents measured by meter
+        int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
+        // Preprocessor for meter values
+        int32_t       currents_phase_preproc_mavg_limit;
+        int32_t       currents_phase_preproc_interpolate_limit;
+        int32_t       currents_phase_preproc_interpolate_interval_quantized;
+        // 1kA = 20 bits; interval_*_quantized max 11 bits; max interval = 18 bits -> quantization factor must save 7 bits
+        const int32_t currents_phase_preproc_interpolate_quantization_factor = 128;
+        minmax_filter currents_phase_preproc_max_ma[3];
+        mavg_filter   currents_phase_preproc_mavg_ma[3];
+        // Short filter (4min)
+        minmax_filter currents_phase_min_ma[3];
+        // Long filter (1h)
+        int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
+        minmax_filter currents_phase_long_min_ma[3];
+
+        // CM data
+        CurrentLimits *cm_limits          = nullptr;
+        const Cost *cm_allocated_currents = nullptr;
+        micros_t cm_allocator_trigger_hysteresis = 0_us;
+
+        // Config cache
+        bool     excess_charging_enabled  = false;
+        uint8_t  meter_slot_power         = UINT8_MAX;
+        uint8_t  meter_slot_battery_power = UINT8_MAX;
+        BatteryPriority battery_priority  = BatteryPriority::PreferChargers;
+        uint8_t  battery_target_soc       = 0;
+        bool     battery_inverted         = false;
+        uint16_t battery_deadzone_w       = 0;
+        int32_t  target_power_from_grid_w = 0;
+        uint8_t  phase_switching_mode     = 0;
+        bool     dynamic_load_enabled     = false;
+        uint8_t  meter_slot_currents      = UINT8_MAX;
+        int32_t  supply_cable_max_current_ma = 0;
+
+        // Pre-calculated limits
+        int32_t  target_phase_current_ma = 0;
+        int32_t  phase_current_max_increase_ma = 0;
+        bool     have_battery = false;
+
+        // Automation
+        TristateBool automation_drawing_power_last = TristateBool::Undefined;
+
+        // Tracing
+        const char *trace_header = nullptr;
+        size_t trace_header_length = 0;
+    };
+
     ConfigRoot state;
     ConfigRoot low_level_state;
     ConfigRoot config;
@@ -143,79 +217,9 @@ private:
     ConfigRoot external_control;
     ConfigRoot external_control_update;
 
-    uint32_t config_error_flags = 0;
-
+    runtime_data_t *runtime_data = nullptr;
     PhaseSwitcherBackend *phase_switcher_backend = nullptr;
-
-    bool     printed_skipping_energy_update      = false;
-    bool     printed_skipping_currents_update    = false;
-
-    micros_t last_phase_switch_start             = 0_us;
-
-    int32_t max_current_limited_ma               = 0;
-
-    union {
-        uint32_t combined;
-        uint8_t  pin[4];
-    } charging_blocked               = {0};
-
-    int32_t  power_available_w = 0;
-
-    size_t current_long_min_iterations = 0;
-
-    float    power_at_meter_raw_w = NAN;
-    float    power_at_battery_raw_w = NAN;
-    float    battery_soc_raw = NAN;
-    int32_t  current_pv_floating_min_ma = INT32_MAX;
-    minmax_filter current_pv_minmax_ma;
-    minmax_filter current_pv_long_min_ma;
-
-    // Raw currents measured by meter
-    int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-    // Preprocessor for meter values
-    int32_t       currents_phase_preproc_mavg_limit;
-    int32_t       currents_phase_preproc_interpolate_limit;
-    int32_t       currents_phase_preproc_interpolate_interval_quantized;
-    // 1kA = 20 bits; interval_*_quantized max 11 bits; max interval = 18 bits -> quantization factor must save 7 bits
-    const int32_t currents_phase_preproc_interpolate_quantization_factor = 128;
-    minmax_filter currents_phase_preproc_max_ma[3];
-    mavg_filter   currents_phase_preproc_mavg_ma[3];
-    // Short filter (4min)
-    minmax_filter currents_phase_min_ma[3];
-    // Long filter (1h)
-    int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-    minmax_filter currents_phase_long_min_ma[3];
-
-    // CM data
-    CurrentLimits *cm_limits;
-    const Cost *cm_allocated_currents;
-    micros_t cm_allocator_trigger_hysteresis = 0_us;
-
-    // Config cache
-    bool     excess_charging_enabled  = false;
-    uint8_t  meter_slot_power         = UINT8_MAX;
-    uint8_t  meter_slot_battery_power = UINT8_MAX;
-    BatteryPriority battery_priority  = BatteryPriority::PreferChargers;
-    uint8_t  battery_target_soc       = 0;
-    bool     battery_inverted         = false;
-    uint16_t battery_deadzone_w       = 0;
-    int32_t  target_power_from_grid_w = 0;
-    uint8_t  phase_switching_mode     = 0;
-    bool     dynamic_load_enabled     = false;
-    uint8_t  meter_slot_currents      = UINT8_MAX;
-    int32_t  supply_cable_max_current_ma = 0;
-
-    // Pre-calculated limits
-    int32_t  target_phase_current_ma = 0;
-    int32_t  phase_current_max_increase_ma = 0;
-    bool     have_battery = false;
-
-    // Automation
-    TristateBool automation_drawing_power_last   = TristateBool::Undefined;
-
-    // Tracing
-    const char *trace_header;
-    size_t trace_header_length;
+    micros_t last_phase_switch_start = 0_us;
 };
 
 #include "generated/module_available_end.h"
