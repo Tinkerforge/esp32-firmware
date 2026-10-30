@@ -273,6 +273,7 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 33134,
                 'value_type': 'S16',  # value is actually unsigned
+                'drop_sign': True,
                 'scale_factor': 0.1,
             },
             {
@@ -297,6 +298,7 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 33149,
                 'value_type': 'S32BE',  # value is actually unsigned
+                'drop_sign': True,
             },
             {
                 'name': 'Battery power signed [W]',

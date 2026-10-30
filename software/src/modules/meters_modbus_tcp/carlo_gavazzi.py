@@ -195,9 +195,12 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1 and L2 and L3 [W]',
-        'value_id': 'PowerActiveLSumImExDiff',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'W L1 and L2 and L3 [0.1 W]',
+        'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
+        'start_address': 0x04,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'VA [0.1 VA]',
@@ -236,9 +239,12 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Positive Total L1 and L2 and L3 [kWh]',
-        'value_id': 'EnergyActiveLSumImport',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'kWh Positive Total L1 and L2 and L3 [0.1 kWh]',
+        'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
+        'start_address': 0x10,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'kvarh Positive Total [0.1 kvarh]',
@@ -255,9 +261,12 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Negative Total L1 and L2 and L3 [kWh]',
-        'value_id': 'EnergyActiveLSumExport',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'kWh Negative Total L1 and L2 and L3 [0.1 kWh]',
+        'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
+        'start_address': 0x20,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'kvarh Negative Total [0.1 kvarh]',
@@ -707,9 +716,12 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1 and L2 and L3 [W]',
-        'value_id': 'PowerActiveLSumImExDiff',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'W L1 and L2 and L3 [0.1 W]',
+        'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
+        'start_address': 0x04,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'VA [0.1 VA]',
@@ -747,9 +759,12 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Positive Total L1 and L2 and L3 [kWh]',
-        'value_id': 'EnergyActiveLSumImport',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'kWh Positive Total L1 and L2 and L3 [0.1 kWh]',
+        'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
+        'start_address': 0x10,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'kvarh Positive Total [0.1 kvarh]',
@@ -766,9 +781,12 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Negative Total L1 and L2 and L3 [kWh]',
-        'value_id': 'EnergyActiveLSumExport',
-        'start_address': 'START_ADDRESS_VIRTUAL',
+        'name': 'kWh Negative Total L1 and L2 and L3 [0.1 kWh]',
+        'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
+        'start_address': 0x20,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+        'duplicate': True,
     },
     {
         'name': 'kvarh Negative Total [0.1 kvarh]',

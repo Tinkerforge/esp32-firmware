@@ -37,6 +37,9 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
+INCLUDE_DEBUG_VALUES = False
+START_ADDRESS_VIRTUAL_BASE = 100000
+
 modules = [
     sungrow,
     solarmax,
@@ -193,6 +196,8 @@ specs_h.append('}')
 
 calculations = {}
 
+start_address_virtual_next = START_ADDRESS_VIRTUAL_BASE
+
 for spec in specs:
     alias = spec.get('alias')
 
@@ -220,6 +225,9 @@ for spec in specs:
 
             virtual_meters.setdefault(virtual_meter_group, []).append((virtual_meter_member, spec_name, spec['fixed_location']))
 
+        if not INCLUDE_DEBUG_VALUES:
+            spec['values'] = [value for value in spec['values'] if value['value_id'] != 'VALUE_ID_DEBUG']
+
         if spec['values'] == None:
             continue
 
@@ -234,10 +242,11 @@ for spec in specs:
         pv_voltage_values = []
         pv_current_values = []
         pv_power_values = []
+        start_addresses = set()
+        last_start_address = None
+        last_register_count = 0
 
         for i, value in enumerate(spec['values']):
-            value['_index'] = i
-
             variants_value = value.get('variants')
 
             if variants_value != None and variant_spec not in variants_value:
@@ -286,21 +295,51 @@ for spec in specs:
                 else:
                     start_address = value['start_address']
 
-            if start_address != 'START_ADDRESS_VIRTUAL':
+            address_name_words = ''.join([x for x in value['name'].split('|', 1)[-1].split('[')[0] if (x >= 'A' and x <= 'Z') or (x >= 'a' and x <= 'z') or (x >= '0' and x <= '9') or x == '_' or x == ' ']).split(' ')
+            address_name = ' '.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
+
+            if start_address == 'START_ADDRESS_VIRTUAL':
+                address_name = 'Virtual_' + address_name
+                start_address = start_address_virtual_next
+                start_address_virtual_next += 1
+            else:
                 if start_address < 0 or start_address > 65535:
                     print(f'Error: Value {spec_name.space} / {value["name"]} has invalid start address {start_address}')
                     sys.exit(1)
 
-                address_name_words = ''.join([x for x in value['name'].split('|', 1)[-1].split('[')[0] if (x >= 'A' and x <= 'Z') or (x >= 'a' and x <= 'z') or (x >= '0' and x <= '9') or x == '_' or x == ' ']).split(' ')
-                address_name = ' '.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
+                duplicate = value.get('duplicate', False)
 
-                value['_address_name'] = address_name
+                if (start_address in start_addresses) != duplicate:
+                    print(f'Error: Value {spec_name.space} / {value["name"]} has {"no " if duplicate else ""}duplicate start address {start_address}')
+                    sys.exit(1)
 
-                value_addresses.append(f'    {address_name.replace(" ", "")} = {start_address},')
+                start_addresses.add(start_address)
+
+                if duplicate:
+                    address_name += '_Duplicate'
+                    start_address_gap = ''
+                else:
+                    if last_start_address == None:
+                        start_address_gap = 0
+                    else:
+                        start_address_gap = start_address - last_start_address - last_register_count
+
+                    if start_address_gap != 0:
+                        value_addresses.append(f'    // {start_address_gap} register{"s" if start_address_gap > 1 else ""} gap')
+
+                last_start_address = start_address
+                last_register_count = int(''.join([c for c in value.get('value_type', 'None') if c >= '0' and c <= '9'])) // 16
+
+                if value['value_id'] == 'VALUE_ID_GAP_FILLER':
+                    address_name += '_GapFiller'
+
+            value['_address_name'] = address_name
+
+            value_addresses.append(f'    {address_name.replace(" ", "")} = {start_address},')
 
             value_specs.append('    {\n'
                               f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
-                              f'        {start_address},\n'
+                              f'        {spec_name.camel}Address::{address_name.replace(" ", "")},\n'
                               f'        ModbusValueType::{value.get("value_type", "None")},\n'
                               f'        {"true" if value.get("drop_sign", False) else "false"},\n'
                               f'        {value.get("offset", 0.0)}f,\n'
@@ -311,6 +350,8 @@ for spec in specs:
                 value_index.append('    VALUE_INDEX_META,')
             elif value['value_id'] == 'VALUE_ID_DEBUG':
                 value_index.append('    VALUE_INDEX_DEBUG,')
+            elif value['value_id'] == 'VALUE_ID_GAP_FILLER':
+                value_index.append('    VALUE_INDEX_GAP_FILLER,')
             else:
                 if value['value_id'] in value_ids_raw:
                     print(f'Error: Value {spec_name.space} / {value["name"]} has duplicate ID {value["value_id"]}')
@@ -495,9 +536,11 @@ h += '#pragma once\n\n'
 h += '#include "config.h"\n'
 h += '#include "../meter_modbus_tcp.h"\n'
 h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
-h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
-h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
-h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'
+h += '#define VALUE_INDEX_META       0xFFFFFFFEu\n'
+h += '#define VALUE_INDEX_DEBUG      0xFFFFFFFDu\n'
+h += '#define VALUE_INDEX_GAP_FILLER 0xFFFFFFFCu\n'
+h += '#define VALUE_INDEX_CUT_OFF    VALUE_INDEX_GAP_FILLER\n\n'
+h += f'#define START_ADDRESS_VIRTUAL_BASE {START_ADDRESS_VIRTUAL_BASE}\n\n'
 h += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
@@ -564,49 +607,43 @@ for spec_name, values in calculations.items():
 
     calculate_values_inc += f'else if (is_{spec_name.under}_meter()) {{'
 
-    for value in values:
+    for v, value in enumerate(values):
         calculate_values_inc += f'\n    // {value[0]["name"]}\n'
 
         for i, input_ in enumerate(value[1]):
-            calculate_values_inc += f'    {"else " if i != 0 else ""}if (register_start_address == {spec_name.camel}Address::{input_["_address_name"].replace(" ", "")}) {{\n'
+            calculate_values_inc += f'    {"" if v == 0 and i == 0 else "else "}if (spec->start_address == {spec_name.camel}Address::{input_["_address_name"].replace(" ", "")}) {{\n'
             calculate_values_inc += f'        {spec_name.under}.{input_["_address_name"].lower().replace(" ", "_")} = value;\n'
+            calculate_values_inc +=  '    }\n'
 
-            if i == len(value[1]) - 1:
-                if value[0]['value_id'] == 'VoltagePVAvg':
-                    calculate_values_inc += '\n        float voltage_sum = 0.0f;\n'
-                    calculate_values_inc += '        float voltage_count = 0.0f;\n'
+        calculate_values_inc += f'    else if (spec->start_address == {spec_name.camel}Address::{value[0]["_address_name"].replace(" ", "")}) {{\n'
 
-                    for input__ in value[1]:
-                        calculate_values_inc += f'\n        if (!is_exactly_zero({spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")})) {{\n'
-                        calculate_values_inc += f'            voltage_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
-                        calculate_values_inc +=  '            ++voltage_count;\n'
-                        calculate_values_inc +=  '        }\n'
+        if value[0]['value_id'] == 'VoltagePVAvg':
+            calculate_values_inc += '        float voltage_sum = 0.0f;\n'
+            calculate_values_inc += '        float voltage_count = 0.0f;\n'
 
-                    calculate_values_inc += '\n        float voltage_avg = voltage_sum / voltage_count;\n\n'
+            for input__ in value[1]:
+                calculate_values_inc += f'\n        if (!is_exactly_zero({spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")})) {{\n'
+                calculate_values_inc += f'            voltage_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
+                calculate_values_inc +=  '            ++voltage_count;\n'
+                calculate_values_inc +=  '        }\n'
 
-                    read_index_offset = value[0]['_index'] - input__['_index']
+            calculate_values_inc += '\n        value = voltage_sum / voltage_count;\n'
+        elif value[0]['value_id'] == 'CurrentPVSumExport':
+            calculate_values_inc += '        float current_sum = 0.0f;\n\n'
 
-                    calculate_values_inc += f'        meters.update_value(slot, table->index[read_index + {read_index_offset}], voltage_avg);\n'
-                elif value[0]['value_id'] == 'CurrentPVSumExport':
-                    calculate_values_inc += '\n        float current_sum = 0.0f;\n\n'
+            for input__ in value[1]:
+                calculate_values_inc += f'        current_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
 
-                    for input__ in value[1]:
-                        calculate_values_inc += f'        current_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
+            calculate_values_inc += '\n        value = current_sum;\n'
+        elif value[0]['value_id'] == 'PowerPVSumExport':
+            calculate_values_inc += '        float power_sum = 0.0f;\n\n'
 
-                    read_index_offset = value[0]['_index'] - input__['_index']
+            for input__ in value[1]:
+                calculate_values_inc += f'        power_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
 
-                    calculate_values_inc += f'\n        meters.update_value(slot, table->index[read_index + {read_index_offset}], current_sum);\n'
-                elif value[0]['value_id'] == 'PowerPVSumExport':
-                    calculate_values_inc += '\n        float power_sum = 0.0f;\n\n'
+            calculate_values_inc += '\n        value = power_sum;\n'
 
-                    for input__ in value[1]:
-                        calculate_values_inc += f'        power_sum += {spec_name.under}.{input__["_address_name"].lower().replace(" ", "_")};\n'
-
-                    read_index_offset = value[0]['_index'] - input__['_index']
-
-                    calculate_values_inc += f'\n        meters.update_value(slot, table->index[read_index + {read_index_offset}], power_sum);\n'
-
-            calculate_values_inc += '    }\n'
+        calculate_values_inc += '    }\n'
 
     calculate_values_inc += '}\n'
 

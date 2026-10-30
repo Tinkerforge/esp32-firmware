@@ -229,6 +229,7 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 3170,
                 'value_type': 'S16',
+                'drop_sign': True,
                 'scale_factor': 0.1,
             },
             {

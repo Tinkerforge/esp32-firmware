@@ -100,8 +100,11 @@ inverter_values = [
     {
         'name': 'Total Active Power Signed [W]',
         'value_id': 'PowerActiveLSumImExDiff',
-        'start_number': 'START_NUMBER_VIRTUAL',
+        'start_number': 5031,
+        'value_type': 'U32LE',
+        'scale_factor': -1.0,
         'variants': ['String'],
+        'duplicate': True,
     },
     {
         'name': 'Reactive Power [var]',

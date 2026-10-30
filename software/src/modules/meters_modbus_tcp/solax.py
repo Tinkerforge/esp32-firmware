@@ -345,7 +345,10 @@ specs = [
             {
                 'name': 'Output Power Signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'start_address': 0x40E,
+                'value_type': 'U16',
+                'scale_factor': -1.0,
+                'duplicate': True,
             },
             {
                 'name': 'R Phase Output Power [W]',

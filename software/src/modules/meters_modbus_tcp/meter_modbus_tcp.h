@@ -85,7 +85,7 @@ private:
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
     void read_next();
     void read_done();
-    bool parse_next();
+    bool parse();
 
 #include "generated/meter_modbus_tcp_is.inc"
 
@@ -95,14 +95,10 @@ private:
 
     MeterModbusTCPTableID table_id;
     const TableSpec *table = nullptr;
-
     bool read_allowed = false;
     size_t read_index = 0;
     size_t max_register_count = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
     uint16_t register_buffer[METER_MODBUS_TCP_REGISTER_BUFFER_SIZE];
-    size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-    size_t register_start_address;
 
     enum class GoodweGridDetectState {
         Idle,
@@ -153,18 +149,8 @@ private:
         struct {
             DeyeHybridInverterVirtualMeter virtual_meter;
             int device_type;
-            float pv1_power;
-            float pv2_power;
-            float pv3_power;
-            float pv4_power;
-            float pv1_voltage;
-            float pv1_current;
-            float pv2_voltage;
-            float pv2_current;
-            float pv3_voltage;
-            float pv3_current;
-            float pv4_voltage;
-            float pv4_current;
+            bool low_voltage;
+            bool high_voltage;
         } deye_hybrid_inverter;
 
         // Alpha ESS hybrid inverter
@@ -425,7 +411,9 @@ private:
             SolisHybridInverterVirtualMeter virtual_meter;
             float battery_current;
             uint16_t battery_current_direction;
+            float battery_power;
             float house_load_power;
+            float backup_load_power;
             float dc_voltage_1;
             float dc_current_1;
             float dc_voltage_2;
@@ -443,7 +431,8 @@ private:
             float grid_reverse_power;
             float battery_current;
             float battery_discharge_power;
-            float battery_charge_power;
+            float battery_power_signed;
+            float total_load_power;
         } growatt_hybrid_inverter;
 
         // QCells hybrid inverter

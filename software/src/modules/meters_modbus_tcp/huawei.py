@@ -1056,7 +1056,9 @@ specs = [
             {
                 'name': 'Load power signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'start_address': 30356,
+                'value_type': 'U32BE',
+                'duplicate': True,
             },
         ],
     },

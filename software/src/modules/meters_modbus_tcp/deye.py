@@ -10,7 +10,11 @@ table_prototypes = [
 ]
 
 table_lookup_extras = [
-    ('Deye Hybrid Inverter', 'deye_hybrid_inverter.device_type = -1;'),
+    ('Deye Hybrid Inverter', '''
+        deye_hybrid_inverter.device_type = -1;
+        deye_hybrid_inverter.low_voltage = false;
+        deye_hybrid_inverter.high_voltage = false;'''
+    ),
 ]
 
 default_device_addresses = [
@@ -684,17 +688,17 @@ specs = [
             {
                 'name': 'PV Total Power [W]',
                 'value_id': 'PowerPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Average Voltage [V]',
                 'value_id': 'VoltagePVAvg',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
             {
                 'name': 'PV Total Current [A]',
                 'value_id': 'CurrentPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'calculate': True,
             },
         ],
     },
