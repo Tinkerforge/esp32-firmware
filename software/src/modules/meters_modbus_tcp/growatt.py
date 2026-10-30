@@ -246,6 +246,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'TempB: Temperture B [0.1 °C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 3177,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Pdischr: Discharge power [0.1 W]',
                 'value_id': 'PowerDCDischarge',
                 'start_address': 3178,

@@ -209,6 +209,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Daily Power Grid Sold Electricity [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2077,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Total Power Grid Sold Electricity [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 2078,
@@ -262,6 +269,13 @@ specs = [
                 'value_id': 'EnergyDCCharge',
                 'start_address': 2069,
                 'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Daily Battery Discharge [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2071,
+                'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {

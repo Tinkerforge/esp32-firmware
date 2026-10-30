@@ -136,6 +136,13 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Efficiency [0.01 %]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32086,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
                 'name': 'Internal temperature [0.1 °C]',
                 'value_id': 'Temperature',
                 'start_address': 32087,
@@ -239,6 +246,12 @@ specs = [
                 'start_address': 37123,
                 'value_type': 'S32BE',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Meter type',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37125,
+                'value_type': 'U16',
             },
             {
                 'name': 'A-B line voltage [0.1 V]',
@@ -693,6 +706,13 @@ specs = [
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 37001,
                 'value_type': 'S32BE',
+            },
+            {
+                'name': 'Energy storage unit 1 - bus voltage [ 0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37003,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Energy storage unit 1 - SOC [0.1 %]',

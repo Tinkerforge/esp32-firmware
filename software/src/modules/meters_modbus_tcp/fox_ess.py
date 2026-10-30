@@ -132,6 +132,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Smart Meter Export Daily [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32011,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Smart Meter Import Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 32012,
@@ -206,6 +213,13 @@ specs = [
                 'value_id': 'EnergyDCCharge',
                 'start_address': 32003,
                 'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery Charge Energy Daily [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32005,
+                'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
@@ -396,6 +410,12 @@ specs = [
                 'start_address': 39139,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Reserved',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39140,
+                'value_type': 'U16',
             },
             {
                 'name': 'Inverter Temperature [0.1 °C]',

@@ -161,6 +161,13 @@ specs = [
                 'scale_factor': 10.0,
             },
             {
+                'name': 'Inverter power factor [0.001]',
+                'value_id': 'VALUE_ID_GAP_FILLER',  # FIXME: the reported power factor only jumps between 0.000, 0.999 and -0.999, ignore it
+                'start_address': 0x08A1,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Inverter apparent power [0.01 kVA]',
                 'value_id': 'PowerApparentLSumImExDiff',
                 'start_address': 0x08A2,

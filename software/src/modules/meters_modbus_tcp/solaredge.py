@@ -35,8 +35,8 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Battery 1 Max Temperature [°C]',  # just read this value to fill the gap here to read the values in less transactions
-                'value_id': 'VALUE_ID_META',
+                'name': 'Battery 1 Max Temperature [°C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 0xE16E,
                 'value_type': 'F32LE',
             },
@@ -99,8 +99,8 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Battery 2 Max Temperature [°C]',  # just read this value to fill the gap here to read the values in less transactions
-                'value_id': 'VALUE_ID_META',
+                'name': 'Battery 2 Max Temperature [°C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 0xE26E,
                 'value_type': 'F32LE',
             },

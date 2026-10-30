@@ -245,6 +245,7 @@ for spec in specs:
         start_addresses = set()
         last_start_address = None
         last_register_count = 0
+        adjacent_register_count = 0
 
         for i, value in enumerate(spec['values']):
             variants_value = value.get('variants')
@@ -325,13 +326,19 @@ for spec in specs:
                         start_address_gap = start_address - last_start_address - last_register_count
 
                     if start_address_gap != 0:
-                        value_addresses.append(f'    // {start_address_gap} register{"s" if start_address_gap > 1 else ""} gap')
+                        value_addresses[-1] += f' // {adjacent_register_count} adjacent register{"s" if adjacent_register_count > 1 else ""}'
+                        adjacent_register_count = 0
 
-                last_start_address = start_address
-                last_register_count = int(''.join([c for c in value.get('value_type', 'None') if c >= '0' and c <= '9'])) // 16
+                        value_addresses.append(f'    // {start_address_gap} register{"s" if start_address_gap > 1 else ""} gap')
 
                 if value['value_id'] == 'VALUE_ID_GAP_FILLER':
                     address_name += '_GapFiller'
+
+                register_count = int(''.join([c for c in value.get('value_type', 'None') if c >= '0' and c <= '9'])) // 16
+                adjacent_register_count += register_count
+
+                last_start_address = start_address
+                last_register_count = register_count
 
             value['_address_name'] = address_name
 
@@ -368,6 +375,9 @@ for spec in specs:
                 pv_current_values.append(value)
             elif re.match(r'PowerPV\d+Export', value['value_id']) != None:
                 pv_power_values.append(value)
+
+        if adjacent_register_count > 0:
+            value_addresses[-1] += f' // {adjacent_register_count} adjacent register{"s" if adjacent_register_count > 1 else ""}'
 
         specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
                        f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'

@@ -120,6 +120,12 @@ specs = [
                 'scale_factor': 10.0,  # FIXME: sign?
             },
             {
+                'name': 'Wirkleistung Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 105,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Spannung L1 [0.1 V]',
                 'value_id': 'VoltageL1N',
                 'start_address': 106,
@@ -205,11 +211,23 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Spannung Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 83,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Summenleistung AC Wirk [10 W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 84,
                 'value_type': 'S16',
                 'scale_factor': 10.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Summenleistung AC Wirk Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 85,
+                'value_type': 'S16',
             },
             {
                 'name': 'Netzfrequenz [0.1 Hz]',
@@ -219,6 +237,12 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Netzfrequenz Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 87,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Summenleistung AC Schein [10 VA]',
                 'value_id': 'PowerApparentLSumImExDiff',
                 'start_address': 88,
@@ -226,11 +250,23 @@ specs = [
                 'scale_factor': 10.0,  # FIXME: sign?
             },
             {
+                'name': 'Summenleistung AC Schein Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 89,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Summenleistung AC Blind [10 var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 90,
                 'value_type': 'S16',
                 'scale_factor': 10.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Summenleistung AC Blind Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 91,
+                'value_type': 'S16',
             },
             {
                 'name': 'Leistungsfaktor [0.1]',

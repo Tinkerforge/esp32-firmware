@@ -1028,6 +1028,12 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x36,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Hz [0.1 Hz]',
                 'value_id': 'FrequencyLAvg',
                 'start_address': 0x37,
@@ -1282,6 +1288,12 @@ specs = [
                 'value_type': 'S16',
                 'drop_sign': True,  # negative values correspond to capacitive load, positive value correspond to inductive load
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
             },
             {
                 'name': 'Hz [0.1 Hz]',
@@ -1554,6 +1566,12 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Hz [0.1 Hz]',
                 'value_id': 'FrequencyLAvg',
                 'start_address': 0x33,
@@ -1820,6 +1838,12 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Hz [0.1 Hz]',
                 'value_id': 'FrequencyLAvg',
                 'start_address': 0x33,
@@ -2070,6 +2094,12 @@ specs = [
                 'start_address': 0x31,
                 'value_type': 'S16',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
             },
             {
                 'name': 'Hz [0.1 Hz]',
@@ -2361,6 +2391,12 @@ specs = [
                 'start_address': 0x31,
                 'value_type': 'S16',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
             },
             {
                 'name': 'Hz [0.1 Hz]',
@@ -2687,6 +2723,12 @@ specs = [
                 'start_address': 0x31,
                 'value_type': 'S16',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Phase Sequence',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x32,
+                'value_type': 'S16',
             },
             {
                 'name': 'Hz [0.1 Hz]',

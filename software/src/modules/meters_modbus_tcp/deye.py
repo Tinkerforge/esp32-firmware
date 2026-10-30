@@ -440,6 +440,12 @@ specs = [
                 'value_type': 'U16',
             },
             {
+                'name': 'Undefined',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 589,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 590,

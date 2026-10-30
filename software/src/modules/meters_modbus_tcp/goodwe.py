@@ -43,6 +43,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Model Temperature [0.1 °C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35175,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Radiator Temperature [0.1 °C]',
                 'value_id': 'TemperatureHeatSink',
                 'start_address': 35176,
@@ -332,6 +339,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Daily Charge Energy [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35208,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 # FIXME: this is the combined energy of all batteries. this is okay if there is
@@ -390,6 +404,13 @@ specs = [
                 # results in reporting the combined energy twice
                 'start_address': 35206,
                 'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Daily Charge Energy [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35208,
+                'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
@@ -469,6 +490,13 @@ specs = [
                 'value_id': 'EnergyDCCharge',
                 'start_address': 35206,
                 'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Daily Charge Energy [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35208,
+                'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
@@ -598,6 +626,12 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Load Mode R',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35148,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'R Phase Load Power of Backup [W]',
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 35149,
@@ -625,6 +659,12 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Load Mode S',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35154,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'S Phase Load Power of Backup [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 35155,
@@ -650,6 +690,12 @@ specs = [
                 'start_address': 35159,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Load Mode T',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35160,
+                'value_type': 'U16',
             },
             {
                 'name': 'T Phase Load Power of Backup [W]',

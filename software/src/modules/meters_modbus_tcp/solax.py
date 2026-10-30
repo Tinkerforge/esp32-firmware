@@ -206,6 +206,12 @@ specs = [
                 'value_type': 'S16',
             },
             {
+                'name': 'BMS Connect State',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x17,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Battery Temperature [°C]',
                 'value_id': 'Temperature',
                 'start_address': 0x18,
@@ -349,6 +355,12 @@ specs = [
                 'value_type': 'U16',
                 'scale_factor': -1.0,
                 'duplicate': True,
+            },
+            {
+                'name': 'Inverter Status',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x40F,
+                'value_type': 'U16',
             },
             {
                 'name': 'R Phase Output Power [W]',
