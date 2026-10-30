@@ -556,13 +556,8 @@ void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend
 
 void PowerManager::zero_limits()
 {
-    // Zero all limits, includes PV "phase"
-    for (size_t phase = 0; phase < 4; phase++) {
-        runtime_data->cm_limits->raw[phase]    = 0;
-        runtime_data->cm_limits->min[phase]    = 0;
-        runtime_data->cm_limits->spread[phase] = 0;
-    }
-    runtime_data->cm_limits->max_pv = 0;
+    // Zero all limits and timestamps, includes PV "phase"
+    memset(runtime_data->cm_limits, 0, sizeof(*runtime_data->cm_limits));
 }
 
 [[gnu::noinline]]
