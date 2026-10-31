@@ -216,6 +216,8 @@ private:
     ConfigRoot dynamic_load_config;
     ConfigRoot external_control;
     ConfigRoot external_control_update;
+    ConfigRoot battery_mode;
+    ConfigRoot battery_mode_update;
 
     runtime_data_t *runtime_data = nullptr;
     PhaseSwitcherBackend *phase_switcher_backend = nullptr;

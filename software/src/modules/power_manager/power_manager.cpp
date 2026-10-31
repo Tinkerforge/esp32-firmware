@@ -137,6 +137,12 @@ void PowerManager::pre_setup()
         }
     };
 
+    // Not persisted: after a reboot battery_mode from the config applies again.
+    battery_mode = Config::Object({
+        {"mode", Config::Enum(BatteryPriority::PreferChargers)},
+    });
+    battery_mode_update = battery_mode;
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
         AutomationActionID::PMPhaseSwitch,
@@ -271,6 +277,7 @@ void PowerManager::setup()
 
     api.restorePersistentConfig("power_manager/config", &config);
     api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
+    battery_mode.get("mode")->updateEnum(config.get("battery_mode")->asEnum<BatteryPriority>());
 
     bool automation_has_action = false;
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -470,6 +477,12 @@ void PowerManager::register_urls()
     api.addState("power_manager/low_level_state", &low_level_state);
 
     api.addState("power_manager/external_control", &external_control);
+
+    api.addState("power_manager/battery_mode", &battery_mode);
+    api.addCommand("power_manager/battery_mode_update", &battery_mode_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
+        battery_priority = battery_mode_update.get("mode")->asEnum<BatteryPriority>();
+        battery_mode.get("mode")->updateEnum(battery_priority);
+    }, false);
 
     if (phase_switcher_backend != nullptr
         && ((MODULE_EM_V1_AVAILABLE() && !runtime_data->excess_charging_enabled && runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
