@@ -16,7 +16,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Victron Energy GX Grid',
-        'virtual_meter': ('Victron Energy GX', 'Grid'),
+        'table_id': 'Victron Energy GX',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
@@ -42,7 +43,8 @@ specs = [
     },
     {
         'name': 'Victron Energy GX Battery',
-        'virtual_meter': ('Victron Energy GX', 'Battery'),
+        'table_id': 'Victron Energy GX',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
@@ -76,7 +78,8 @@ specs = [
     },
     {
         'name': 'Victron Energy GX Load',
-        'virtual_meter': ('Victron Energy GX', 'Load'),
+        'table_id': 'Victron Energy GX',
+        'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
@@ -112,7 +115,8 @@ specs = [
     },
     {
         'name': 'Victron Energy GX PV',
-        'virtual_meter': ('Victron Energy GX', 'PV'),
+        'table_id': 'Victron Energy GX',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [

@@ -237,9 +237,10 @@ hybrid_inverter_phase_current_values = [
 
 specs = [
     {
-        'name': 'Sungrow {variant} Inverter Output Type',
         'variants': ['Hybrid', 'String'],
-        'virtual_meter': ('Sungrow {variant} Inverter', 'Inverter'),
+        'name': 'Sungrow {variant} Inverter Output Type',
+        'table_id': 'Sungrow {variant} Inverter',
+        'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
@@ -252,30 +253,34 @@ specs = [
         ],
     },
     {
-        'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'variants': ['Hybrid', 'String'],
+        'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
+        'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': inverter_values + inverter_phase_voltage_values[:1] + hybrid_inverter_phase_current_values[:1],
     },
     {
-        'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'variants': ['Hybrid', 'String'],
+        'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
+        'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': inverter_values + inverter_phase_voltage_values + hybrid_inverter_phase_current_values,
     },
     {
-        'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'variants': ['Hybrid', 'String'],
+        'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
+        'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': inverter_values + inverter_line_voltage_values + hybrid_inverter_phase_current_values,
     },
     {
-        'name': 'Sungrow {variant} Inverter Grid',
         'variants': ['Hybrid', 'String'],
-        'virtual_meter': ('Sungrow {variant} Inverter', 'Grid'),
+        'name': 'Sungrow {variant} Inverter Grid',
+        'table_id': 'Sungrow {variant} Inverter',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
@@ -366,7 +371,8 @@ specs = [
     },
     {
         'name': 'Sungrow Hybrid Inverter Battery',
-        'virtual_meter': ('Sungrow Hybrid Inverter', 'Battery'),
+        'table_id': 'Sungrow Hybrid Inverter',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
@@ -463,9 +469,10 @@ specs = [
         ],
     },
     {
-        'name': 'Sungrow {variant} Inverter Load',
         'variants': ['Hybrid', 'String'],
-        'virtual_meter': ('Sungrow {variant} Inverter', 'Load'),
+        'name': 'Sungrow {variant} Inverter Load',
+        'table_id': 'Sungrow {variant} Inverter',
+        'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
@@ -486,9 +493,10 @@ specs = [
         ],
     },
     {
-        'name': 'Sungrow {variant} Inverter PV',
         'variants': ['Hybrid', 'String'],
-        'virtual_meter': ('Sungrow {variant} Inverter', 'PV'),
+        'name': 'Sungrow {variant} Inverter PV',
+        'table_id': 'Sungrow {variant} Inverter',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [

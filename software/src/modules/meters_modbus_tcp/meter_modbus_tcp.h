@@ -149,8 +149,6 @@ private:
         struct {
             DeyeHybridInverterVirtualMeter virtual_meter;
             int device_type;
-            bool low_voltage;
-            bool high_voltage;
         } deye_hybrid_inverter;
 
         // Alpha ESS hybrid inverter

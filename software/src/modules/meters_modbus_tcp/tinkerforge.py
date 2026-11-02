@@ -23,7 +23,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Tinkerforge WARP Charger',
-        'virtual_meter': ('Tinkerforge WARP Charger', None),
+        'table_id': 'Tinkerforge WARP Charger',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [

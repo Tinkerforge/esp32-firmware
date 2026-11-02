@@ -26,4 +26,4 @@ specs = deepcopy(solax.specs)
 
 for spec in specs:
     spec['name'] = spec['name'].replace('Solax', 'QCells')
-    spec['virtual_meter'] = (spec['virtual_meter'][0].replace('Solax', 'QCells'), spec['virtual_meter'][1])
+    spec['table_id'] = spec['table_id'].replace('Solax', 'QCells')

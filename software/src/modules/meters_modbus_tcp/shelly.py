@@ -40,15 +40,15 @@ table_lookup_extras = [
                 break;
 
             case ShellyEMMonophaseMapping::L1:
-                table = &shelly_em_monophase_channel_1_as_l1_table;
+                table = &shelly_pro_em_monophase_channel_1_as_l1_table;
                 break;
 
             case ShellyEMMonophaseMapping::L2:
-                table = &shelly_em_monophase_channel_1_as_l2_table;
+                table = &shelly_pro_em_monophase_channel_1_as_l2_table;
                 break;
 
             case ShellyEMMonophaseMapping::L3:
-                table = &shelly_em_monophase_channel_1_as_l3_table;
+                table = &shelly_pro_em_monophase_channel_1_as_l3_table;
                 break;
 
             default:
@@ -65,15 +65,15 @@ table_lookup_extras = [
                 break;
 
             case ShellyEMMonophaseMapping::L1:
-                table = &shelly_em_monophase_channel_2_as_l1_table;
+                table = &shelly_pro_em_monophase_channel_2_as_l1_table;
                 break;
 
             case ShellyEMMonophaseMapping::L2:
-                table = &shelly_em_monophase_channel_2_as_l2_table;
+                table = &shelly_pro_em_monophase_channel_2_as_l2_table;
                 break;
 
             case ShellyEMMonophaseMapping::L3:
-                table = &shelly_em_monophase_channel_2_as_l3_table;
+                table = &shelly_pro_em_monophase_channel_2_as_l3_table;
                 break;
 
             default:
@@ -99,7 +99,7 @@ table_lookup_extras = [
 
         switch (shelly_pro_3em.device_profile) {
         case ShellyPro3EMDeviceProfile::Triphase:
-            table = &shelly_em_triphase_table;
+            table = &shelly_pro_3em_triphase_table;
             break;
 
         case ShellyPro3EMDeviceProfile::Monophase:
@@ -115,15 +115,15 @@ table_lookup_extras = [
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = &shelly_em_monophase_channel_1_as_l1_table;
+                    table = &shelly_pro_3em_monophase_channel_1_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = &shelly_em_monophase_channel_1_as_l2_table;
+                    table = &shelly_pro_3em_monophase_channel_1_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = &shelly_em_monophase_channel_1_as_l3_table;
+                    table = &shelly_pro_3em_monophase_channel_1_as_l3_table;
                     break;
 
                 default:
@@ -140,15 +140,15 @@ table_lookup_extras = [
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = &shelly_em_monophase_channel_2_as_l1_table;
+                    table = &shelly_pro_3em_monophase_channel_2_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = &shelly_em_monophase_channel_2_as_l2_table;
+                    table = &shelly_pro_3em_monophase_channel_2_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = &shelly_em_monophase_channel_2_as_l3_table;
+                    table = &shelly_pro_3em_monophase_channel_2_as_l3_table;
                     break;
 
                 default:
@@ -165,15 +165,15 @@ table_lookup_extras = [
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = &shelly_em_monophase_channel_3_as_l1_table;
+                    table = &shelly_pro_3em_monophase_channel_3_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = &shelly_em_monophase_channel_3_as_l2_table;
+                    table = &shelly_pro_3em_monophase_channel_3_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = &shelly_em_monophase_channel_3_as_l3_table;
+                    table = &shelly_pro_3em_monophase_channel_3_as_l3_table;
                     break;
 
                 default:
@@ -298,7 +298,50 @@ def make_monophase_values(channel, phase, start_address_offset):
 
 specs = [
     {
-        'name': 'Shelly EM Triphase',
+        'name': 'Shelly Pro EM Monophase Channel 1 As L1',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 1', 'L1', 0)
+    },
+    {
+        'name': 'Shelly Pro EM Monophase Channel 1 As L2',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 1', 'L2', 0)
+    },
+    {
+        'name': 'Shelly Pro EM Monophase Channel 1 As L3',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 1', 'L3', 0)
+    },
+    {
+        'name': 'Shelly Pro EM Monophase Channel 2 As L1',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 2', 'L1', 20)
+    },
+    {
+        'name': 'Shelly Pro EM Monophase Channel 2 As L2',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 2', 'L2', 20)
+    },
+    {
+        'name': 'Shelly Pro EM Monophase Channel 2 As L3',
+        'table_id': 'Shelly Pro EM',
+        'fixed_location': 'Unknown',
+        'register_type': 'InputRegister',
+        'values': make_monophase_values('Channel 2', 'L3', 20)
+    },
+    {
+        'name': 'Shelly Pro 3EM Triphase',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -493,55 +536,64 @@ specs = [
         ],
     },
     {
-        'name': 'Shelly EM Monophase Channel 1 As L1',
+        'name': 'Shelly Pro 3EM Monophase Channel 1 As L1',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L1', 0)
     },
     {
-        'name': 'Shelly EM Monophase Channel 1 As L2',
+        'name': 'Shelly Pro 3EM Monophase Channel 1 As L2',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L2', 0)
     },
     {
-        'name': 'Shelly EM Monophase Channel 1 As L3',
+        'name': 'Shelly Pro 3EM Monophase Channel 1 As L3',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L3', 0)
     },
     {
-        'name': 'Shelly EM Monophase Channel 2 As L1',
+        'name': 'Shelly Pro 3EM Monophase Channel 2 As L1',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L1', 20)
     },
     {
-        'name': 'Shelly EM Monophase Channel 2 As L2',
+        'name': 'Shelly Pro 3EM Monophase Channel 2 As L2',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L2', 20)
     },
     {
-        'name': 'Shelly EM Monophase Channel 2 As L3',
+        'name': 'Shelly Pro 3EM Monophase Channel 2 As L3',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L3', 20)
     },
     {
-        'name': 'Shelly EM Monophase Channel 3 As L1',
+        'name': 'Shelly Pro 3EM Monophase Channel 3 As L1',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L1', 40)
     },
     {
-        'name': 'Shelly EM Monophase Channel 3 As L2',
+        'name': 'Shelly Pro 3EM Monophase Channel 3 As L2',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L2', 40)
     },
     {
-        'name': 'Shelly EM Monophase Channel 3 As L3',
+        'name': 'Shelly Pro 3EM Monophase Channel 3 As L3',
+        'table_id': 'Shelly Pro 3EM',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L3', 40)

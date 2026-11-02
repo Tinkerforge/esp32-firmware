@@ -275,7 +275,8 @@ def make_battery_values(battery_integer_values, start_number_offset):
 specs = [
     {
         'name': 'Fronius GEN24 Plus Battery Type',
-        'virtual_meter': ('Fronius GEN24 Plus', 'Battery'),
+        'table_id': 'Fronius GEN24 Plus',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -289,19 +290,22 @@ specs = [
     },
     {
         'name': 'Fronius GEN24 Plus Battery Integer',
+        'table_id': 'Fronius GEN24 Plus',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_gen24, 0),
     },
     {
         'name': 'Fronius GEN24 Plus Battery Float',
+        'table_id': 'Fronius GEN24 Plus',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_gen24, 10),
     },
     {
         'name': 'Fronius Verto Plus Battery Type',
-        'virtual_meter': ('Fronius Verto Plus', 'Battery'),
+        'table_id': 'Fronius Verto Plus',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -315,12 +319,14 @@ specs = [
     },
     {
         'name': 'Fronius Verto Plus Battery Integer',
+        'table_id': 'Fronius Verto Plus',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_verto, 0),
     },
     {
         'name': 'Fronius Verto Plus Battery Float',
+        'table_id': 'Fronius Verto Plus',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_verto, 10),

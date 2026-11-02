@@ -34,30 +34,6 @@
 
 #include "gcc_warnings.h"
 
-// 1P2L, 3P4L and 3P3L use the same addresses, but different amounts of phase voltage registers
-namespace SungrowHybridInverterAddress = SungrowHybridInverter1P2LAddress;
-
-// 1P2L, 3P4L and 3P3L use the same addresses, but different amounts of phase voltage registers
-namespace SungrowStringInverterAddress = SungrowStringInverter1P2LAddress;
-
-// AtL1, AtL2 and AtL3 use the same addresses, but different value IDs
-namespace CarloGavazziEM100AndET100Address = CarloGavazziEM100AndET100AtL1Address;
-
-// AsL1, AsL2 and AsL3 use the same addresses, but different value IDs
-namespace ShellyEMMonophaseChannel1Address = ShellyEMMonophaseChannel1AsL1Address;
-
-// AsL1, AsL2 and AsL3 use the same addresses, but different value IDs
-namespace ShellyEMMonophaseChannel2Address = ShellyEMMonophaseChannel2AsL1Address;
-
-// AsL1, AsL2 and AsL3 use the same addresses, but different value IDs
-namespace ShellyEMMonophaseChannel3Address = ShellyEMMonophaseChannel3AsL1Address;
-
-// AtL1, AtL2 and AtL3 use the same addresses, but different value IDs
-namespace CarloGavazziEM510Address = CarloGavazziEM510AtL1Address;
-
-// InputPower uses the same address in all HuaweiSUN2000PV*Address
-namespace HuaweiSUN2000PVAddress = HuaweiSUN2000PVNoStringsAddress;
-
 #define NUMBER_TO_ADDRESS(number) ((number) - 1u)
 
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
@@ -68,9 +44,6 @@ namespace HuaweiSUN2000PVAddress = HuaweiSUN2000PVNoStringsAddress;
         meters_modbus_tcp.trace_timestamp(); \
         logger.tracefln_plain(meters_modbus_tcp.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
-
-#define is_deye_hybrid_inverter_low_voltage_pv_meter()  (is_deye_hybrid_inverter_pv_meter() && deye_hybrid_inverter.low_voltage)
-#define is_deye_hybrid_inverter_high_voltage_pv_meter() (is_deye_hybrid_inverter_pv_meter() && deye_hybrid_inverter.high_voltage)
 
 MeterClassID MeterModbusTCP::get_class() const
 {
@@ -533,7 +506,7 @@ bool MeterModbusTCP::parse()
         value *= spec->scale_factor;
     }
 
-    if (is_sungrow_hybrid_inverter_inverter_meter()
+    if (table == &sungrow_hybrid_inverter_output_type_table
      && spec->start_address == SungrowHybridInverterOutputTypeAddress::OutputType
      && sungrow_hybrid_inverter.output_type < 0) {
         switch (c16.u) {
@@ -562,7 +535,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_sungrow_string_inverter_inverter_meter()
+    if (table == &sungrow_string_inverter_output_type_table
      && spec->start_address == SungrowStringInverterOutputTypeAddress::OutputType
      && sungrow_string_inverter.output_type < 0) {
         switch (c16.u) {
@@ -591,7 +564,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_deye_hybrid_inverter_battery_meter()
+    if (table == &deye_hybrid_inverter_battery_device_type_table
      && spec->start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType
      && deye_hybrid_inverter.device_type < 0) {
         switch (c16.u) {
@@ -602,15 +575,13 @@ bool MeterModbusTCP::parse()
             return false;
 
         case 0x0005:
-            deye_hybrid_inverter.low_voltage = true;
-            table = &deye_hybrid_inverter_low_voltage_battery_table;
+            table = &deye_hybrid_inverter_battery_low_voltage_table;
             logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
             break;
 
         case 0x0006:
         case 0x0106:
-            deye_hybrid_inverter.high_voltage = true;
-            table = &deye_hybrid_inverter_high_voltage_battery_table;
+            table = &deye_hybrid_inverter_battery_high_voltage_table;
             logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
             break;
 
@@ -624,7 +595,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_deye_hybrid_inverter_pv_meter()
+    if (table == &deye_hybrid_inverter_pv_device_type_table
      && spec->start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType
      && deye_hybrid_inverter.device_type < 0) {
         switch (c16.u) {
@@ -635,15 +606,13 @@ bool MeterModbusTCP::parse()
             return false;
 
         case 0x0005:
-            deye_hybrid_inverter.low_voltage = true;
-            table = &deye_hybrid_inverter_low_voltage_pv_table;
+            table = &deye_hybrid_inverter_pv_low_voltage_table;
             logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
             break;
 
         case 0x0006:
         case 0x0106:
-            deye_hybrid_inverter.high_voltage = true;
-            table = &deye_hybrid_inverter_high_voltage_pv_table;
+            table = &deye_hybrid_inverter_pv_high_voltage_table;
             logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
             break;
 
@@ -657,7 +626,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_goodwe_inverter_grid_meter()
+    if (table == &goodwe_inverter_grid_detect_table
      && spec->start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal
      && goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading) {
         if (c64.u == UINT64_MAX) {
@@ -675,7 +644,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_goodwe_inverter_battery_meter()
+    if (table == &goodwe_inverter_battery_modes_table
      && spec->start_address == GoodweInverterBatteryModesAddress::Battery1Mode
      && goodwe_inverter.battery_1_mode < 0) {
         goodwe_inverter.battery_1_mode = c16.u;
@@ -688,7 +657,7 @@ bool MeterModbusTCP::parse()
         return true;
     }
 
-    if (is_goodwe_inverter_battery_meter()
+    if (table == &goodwe_inverter_battery_modes_table
      && spec->start_address == GoodweInverterBatteryModesAddress::Battery2Mode
      && goodwe_inverter.battery_2_mode < 0) {
         goodwe_inverter.battery_2_mode = c16.u;
@@ -721,7 +690,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_fronius_gen24_plus_battery_meter()
+    if (table == &fronius_gen24_plus_battery_type_table
      && spec->start_address == FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID
      && fronius_gen24_plus.input_id_or_model_id < 0) {
         switch (c16.u) {
@@ -747,7 +716,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_huawei_sun2000_battery_meter()
+    if (table == &huawei_sun2000_battery_product_model_table
      && spec->start_address == HuaweiSUN2000BatteryProductModelAddress::EnergyStorageProductModel
      && huawei_sun2000.energy_storage_product_model < 0) {
         switch (c16.u) {
@@ -775,7 +744,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_huawei_sun2000_pv_meter()
+    if (table == &huawei_sun2000_pv_string_count_table
      && spec->start_address == HuaweiSUN2000PVStringCountAddress::NumberOfPVStrings
      && huawei_sun2000.number_of_pv_strings < 0) {
         switch (c16.u) {
@@ -827,7 +796,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_huawei_sun2000_smart_dongle_battery_meter()
+    if (table == &huawei_sun2000_smart_dongle_battery_product_model_table
      && spec->start_address == HuaweiSUN2000SmartDongleBatteryProductModelAddress::EnergyStorageProductModel
      && huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
         switch (c16.u) {
@@ -855,7 +824,7 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
-    if (is_fronius_verto_plus_battery_meter()
+    if (table == &fronius_verto_plus_battery_type_table
      && spec->start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID
      && fronius_verto_plus.input_id_or_model_id < 0) {
         switch (c16.u) {

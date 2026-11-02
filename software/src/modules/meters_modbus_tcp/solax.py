@@ -22,7 +22,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Solax Hybrid Inverter',
-        'virtual_meter': ('Solax Hybrid Inverter', 'Inverter'),
+        'table_id': 'Solax Hybrid Inverter',
+        'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
@@ -37,7 +38,8 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter Grid',
-        'virtual_meter': ('Solax Hybrid Inverter', 'Grid'),
+        'table_id': 'Solax Hybrid Inverter',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
@@ -181,7 +183,8 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter Battery',
-        'virtual_meter': ('Solax Hybrid Inverter', 'Battery'),
+        'table_id': 'Solax Hybrid Inverter',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
@@ -241,7 +244,8 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter PV',  # FIXME: some models have PV3, but it's unclear how to detect it properly: https://github.com/evcc-io/evcc/issues/19598
-        'virtual_meter': ('Solax Hybrid Inverter', 'PV'),
+        'table_id': 'Solax Hybrid Inverter',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
@@ -311,7 +315,8 @@ specs = [
     },
     {
         'name': 'Solax String Inverter',
-        'virtual_meter': ('Solax String Inverter', 'Inverter'),
+        'table_id': 'Solax String Inverter',
+        'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
@@ -384,7 +389,8 @@ specs = [
     },
     {
         'name': 'Solax String Inverter Grid',
-        'virtual_meter': ('Solax String Inverter', 'Grid'),
+        'table_id': 'Solax String Inverter',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
@@ -476,7 +482,8 @@ specs = [
     },
     {
         'name': 'Solax String Inverter PV',
-        'virtual_meter': ('Solax String Inverter', 'PV'),
+        'table_id': 'Solax String Inverter',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [

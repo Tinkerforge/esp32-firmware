@@ -16,7 +16,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Alpha ESS Hybrid Inverter',
-        'virtual_meter': ('Alpha ESS Hybrid Inverter', 'Inverter'),
+        'table_id': 'Alpha ESS Hybrid Inverter',
+        'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -108,7 +109,8 @@ specs = [
     },
     {
         'name': 'Alpha ESS Hybrid Inverter Grid',
-        'virtual_meter': ('Alpha ESS Hybrid Inverter', 'Grid'),
+        'table_id': 'Alpha ESS Hybrid Inverter',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -288,7 +290,8 @@ specs = [
     },
     {
         'name': 'Alpha ESS Hybrid Inverter Battery',
-        'virtual_meter': ('Alpha ESS Hybrid Inverter', 'Battery'),
+        'table_id': 'Alpha ESS Hybrid Inverter',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -352,7 +355,8 @@ specs = [
     },
     {
         'name': 'Alpha ESS Hybrid Inverter PV',
-        'virtual_meter': ('Alpha ESS Hybrid Inverter', 'PV'),
+        'table_id': 'Alpha ESS Hybrid Inverter',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

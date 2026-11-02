@@ -46,6 +46,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Siemens PAC2200',
+        'table_id': 'Siemens PAC2200',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -373,6 +374,7 @@ specs = [
     },
     {
         'name': 'Siemens PAC3120',
+        'table_id': 'Siemens PAC3120',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -735,11 +737,13 @@ specs = [
         ],
     },
     {
+        'clone': 'Siemens PAC3120',
         'name': 'Siemens PAC3220',
-        'alias': 'Siemens PAC3120',
+        'table_id': 'Siemens PAC3220',
     },
     {
         'name': 'Siemens PAC3200',
+        'table_id': 'Siemens PAC3200',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -992,6 +996,7 @@ specs = [
     },
     {
         'name': 'Siemens PAC4200',
+        'table_id': 'Siemens PAC4200',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1250,6 +1255,7 @@ specs = [
     },
     {
         'name': 'Siemens PAC4220',
+        'table_id': 'Siemens PAC4220',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

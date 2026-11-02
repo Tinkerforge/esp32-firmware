@@ -77,11 +77,22 @@ table_prototypes = []
 table_typedefs = []
 table_typenames = []
 table_news = []
+table_lookup_extras = {}
 table_lookup_cases = []
 default_device_addresses = []
 specs = []
 virtual_meters = collections.OrderedDict()
 translation_tables = {}
+
+METER_MODBUS_TCP_REGISTER_BUFFER_SIZE = None
+
+with open('meter_modbus_tcp.h', 'r') as f:
+    for line in f.readlines():
+        m = re.match(r'#define METER_MODBUS_TCP_REGISTER_BUFFER_SIZE (\d+)', line.strip())
+
+        if m != None:
+            METER_MODBUS_TCP_REGISTER_BUFFER_SIZE = int(m.group(1))
+            break
 
 for module in modules:
     for display_name in module.display_names:
@@ -91,8 +102,6 @@ for module in modules:
 
         for lang in display_name[1]:
             translation_tables.setdefault(lang, []).append(f'"table_{table_id.under}": "{display_name[1][lang]}"')
-
-    table_lookup_extras = {}
 
     for table_lookup_extra in getattr(module, 'table_lookup_extras', []):
         extra = '        ' + table_lookup_extra[1].strip()
@@ -199,31 +208,26 @@ calculations = {}
 start_address_virtual_next = START_ADDRESS_VIRTUAL_BASE
 
 for spec in specs:
-    alias = spec.get('alias')
+    clone = spec.get('clone')
 
-    if alias != None:
+    if clone != None:
         for other_spec in specs:
-            if other_spec['name'] == alias:
-                name = spec['name']
-                spec = deepcopy(other_spec)
-                spec['name'] = name
+            if other_spec['name'] == clone:
+                for key, value in other_spec.items():
+                    if key not in spec:
+                        spec[key] = deepcopy(value)
+
                 break
         else:
-            print(f'Error: {spec["name"]} is an alias for unknown {alias}')
+            print(f'Error: {spec["name"]} tries to clone unknown spec {clone}')
             sys.exit(1)
 
     for variant_spec in spec.get('variants', [None]):
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
+        table_id = util.FlavoredName(spec['table_id'].format(variant=variant_spec)).get()
 
         if 'virtual_meter' in spec:
-            virtual_meter_group = util.FlavoredName(spec['virtual_meter'][0].format(variant=variant_spec)).get()
-
-            if spec['virtual_meter'][1] != None:
-                virtual_meter_member = util.FlavoredName(spec['virtual_meter'][1]).get()
-            else:
-                virtual_meter_member = None
-
-            virtual_meters.setdefault(virtual_meter_group, []).append((virtual_meter_member, spec_name, spec['fixed_location']))
+            virtual_meters.setdefault(table_id, []).append((util.FlavoredName(spec['virtual_meter']).get(), spec_name, spec['fixed_location']))
 
         if not INCLUDE_DEBUG_VALUES:
             spec['values'] = [value for value in spec['values'] if value['value_id'] != 'VALUE_ID_DEBUG']
@@ -246,6 +250,13 @@ for spec in specs:
         last_start_address = None
         last_register_count = 0
         adjacent_register_count = 0
+        max_register_count = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE
+
+        if table_id.space in table_lookup_extras:
+            m = re.search(r'max_register_count = (\d+);', table_lookup_extras[table_id.space].replace('\n', ' '))
+
+            if m != None:
+                max_register_count = min(max_register_count, int(m.group(1)))
 
         for i, value in enumerate(spec['values']):
             variants_value = value.get('variants')
@@ -326,7 +337,17 @@ for spec in specs:
                         start_address_gap = start_address - last_start_address - last_register_count
 
                     if start_address_gap != 0:
-                        value_addresses[-1] += f' // {adjacent_register_count} adjacent register{"s" if adjacent_register_count > 1 else ""}'
+                        if adjacent_register_count <= max_register_count:
+                            adjacent_register_count_blocks = ''
+                        else:
+                            adjacent_register_count_blocks = [str(max_register_count)] * (adjacent_register_count // max_register_count)
+
+                            if adjacent_register_count % max_register_count != 0:
+                                adjacent_register_count_blocks.append(str(adjacent_register_count % max_register_count))
+
+                            adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
+
+                        value_addresses[-1] += f' // {adjacent_register_count}{adjacent_register_count_blocks} adjacent register{"s" if adjacent_register_count > 1 else ""}'
                         adjacent_register_count = 0
 
                         value_addresses.append(f'    // {start_address_gap} register{"s" if start_address_gap > 1 else ""} gap')
@@ -377,7 +398,17 @@ for spec in specs:
                 pv_power_values.append(value)
 
         if adjacent_register_count > 0:
-            value_addresses[-1] += f' // {adjacent_register_count} adjacent register{"s" if adjacent_register_count > 1 else ""}'
+            if adjacent_register_count <= max_register_count:
+                adjacent_register_count_blocks = ''
+            else:
+                adjacent_register_count_blocks = [str(max_register_count)] * (adjacent_register_count // max_register_count)
+
+                if adjacent_register_count % max_register_count != 0:
+                    adjacent_register_count_blocks.append(str(adjacent_register_count % max_register_count))
+
+                adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
+
+            value_addresses[-1] += f' // {adjacent_register_count}{adjacent_register_count_blocks} adjacent register{"s" if adjacent_register_count > 1 else ""}'
 
         specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
                        f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'
@@ -408,27 +439,24 @@ for spec in specs:
                          f'    {f32_negative_max_as_nan},\n'
                           '};')
 
-for group, value in virtual_meters.items():
-    if len(value) == 1 and value[0][0] == None:
-        continue
+for table_id, value in virtual_meters.items():
+    specs_h.append(f'const MeterModbusTCP::TableSpec *get_{table_id.under}_table(uint32_t slot, {table_id.camel}VirtualMeter virtual_meter);')
 
-    specs_h.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter);')
-
-    specs_cpp.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter)\n'
+    specs_cpp.append(f'const MeterModbusTCP::TableSpec *get_{table_id.under}_table(uint32_t slot, {table_id.camel}VirtualMeter virtual_meter)\n'
                       '{\n'
                       '    switch (virtual_meter) {\n'
-                     f'    case {group.camel}VirtualMeter::None:\n'
-                     f'        logger.printfln_meter("No {group.space} Virtual Meter selected");\n'
+                     f'    case {table_id.camel}VirtualMeter::None:\n'
+                     f'        logger.printfln_meter("No {table_id.space} Virtual Meter selected");\n'
                       '        return nullptr;')
 
-    for member_spec_name_fixed_location in value:
-        member, spec_name, _ = member_spec_name_fixed_location
+    for virtual_meter_spec_name_fixed_location in value:
+        virtual_meter, spec_name, _ = virtual_meter_spec_name_fixed_location
 
-        specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
+        specs_cpp.append(f'    case {table_id.camel}VirtualMeter::{virtual_meter.camel}:\n'
                          f'        return &{spec_name.under}_table;')
 
     specs_cpp.append(f'    default:\n'
-                     f'        logger.printfln_meter("Unknown {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
+                     f'        logger.printfln_meter("Unknown {table_id.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
                       '        return nullptr;\n'
                       '    }\n'
                       '}')
@@ -437,17 +465,17 @@ specs_ts.append('export function get_virtual_meter_items(table_id: number) {\n'
                 '    let virtual_meter_items: [string, string][] = [];\n\n'
                 '    switch (table_id) {\r')
 
-for group, value in virtual_meters.items():
+for table_id, value in virtual_meters.items():
     if len(value) == 1 and value[0][0] == None:
         continue
 
-    specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+    specs_ts.append(f'    case MeterModbusTCPTableID.{table_id.camel}:\n'
                      '        virtual_meter_items = [\r')
 
-    for member_spec_name_fixed_location in value:
-        member, _, _ = member_spec_name_fixed_location
+    for virtual_meter_spec_name_fixed_location in value:
+        virtual_meter, _, _ = virtual_meter_spec_name_fixed_location
 
-        specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
+        specs_ts.append(f'            [{table_id.camel}VirtualMeter.{virtual_meter.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{virtual_meter.under}")],\r')
 
     specs_ts.append('        ];\n'
                     '\n'
@@ -461,21 +489,21 @@ specs_ts.append('    }\n\n'
 specs_ts.append('export function get_fixed_location(table_id: number, virtual_meter: number) {\n'
                 '    switch (table_id) {\r')
 
-for group, value in virtual_meters.items():
+for table_id, value in virtual_meters.items():
     if len(value) > 1 or value[0][0] != None:
-        specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+        specs_ts.append(f'    case MeterModbusTCPTableID.{table_id.camel}:\n'
                          '        switch (virtual_meter) {\r')
 
-        for member_spec_name_fixed_location in value:
-            member, _, fixed_location = member_spec_name_fixed_location
+        for virtual_meter_spec_name_fixed_location in value:
+            virtual_meter, _, fixed_location = virtual_meter_spec_name_fixed_location
 
-            specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{fixed_location};\r')
+            specs_ts.append(f'            case {table_id.camel}VirtualMeter.{virtual_meter.camel}: return MeterLocation.{fixed_location};\r')
 
         specs_ts.append('        }\n'
                         '\n'
                         '        return MeterLocation.Unknown;')
     else:
-        specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+        specs_ts.append(f'    case MeterModbusTCPTableID.{table_id.camel}:\n'
                         f'        return MeterLocation.{value[0][2]};')
 
 specs_ts[-1] += '\r'
@@ -487,7 +515,7 @@ ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { __ } from "../../../ts/translation";\n'
 ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
 ts += 'import { MeterLocation } from "../../meters/generated/meter_location.enum";\n'
-ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
+ts += '\n'.join([f'import {{ {table_id.camel}VirtualMeter }} from "./{table_id.under}_virtual_meter.enum";' for table_id, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
@@ -537,7 +565,7 @@ util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
-h += '\n'.join([f'#include "{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+h += '\n'.join([f'#include "{table_id.under}_virtual_meter.enum.h"' for table_id, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
 
 util.write_generated_file('generated/meter_modbus_tcp_virtual_meter_enums.h', h)
 
@@ -584,18 +612,18 @@ for table_id in table_ids:
               f'    return table_id == MeterModbusTCPTableID::{table_id.camel};\n' \
                '}\n'
 
-for group, value in virtual_meters.items():
+for table_id, value in virtual_meters.items():
     if len(value) == 1 and value[0][0] == None:
         continue
 
-    for member_spec_name_fixed_location in value:
-        member, _, _ = member_spec_name_fixed_location
+    for virtual_meter_spec_name_fixed_location in value:
+        virtual_meter, _, _ = virtual_meter_spec_name_fixed_location
 
-        is_inc += f'bool is_{group.under}_{member.under}_meter() const;\n'
-        is_cpp += f'\nbool MeterModbusTCP::is_{group.under}_{member.under}_meter() const\n' \
+        is_inc += f'bool is_{table_id.under}_{virtual_meter.under}_meter() const;\n'
+        is_cpp += f'\nbool MeterModbusTCP::is_{table_id.under}_{virtual_meter.under}_meter() const\n' \
                    '{\n' \
-                  f'    return table_id == MeterModbusTCPTableID::{group.camel}\n' \
-                  f'        && {group.under}.virtual_meter == {group.camel}VirtualMeter::{member.camel};\n' \
+                  f'    return table_id == MeterModbusTCPTableID::{table_id.camel}\n' \
+                  f'        && {table_id.under}.virtual_meter == {table_id.camel}VirtualMeter::{virtual_meter.camel};\n' \
                    '}\n'
 
 util.write_generated_file('generated/meter_modbus_tcp_is.inc', is_inc)
@@ -615,7 +643,7 @@ for spec_name, values in calculations.items():
 
     calculate_structs_inc += f'}} {spec_name.under};\n'
 
-    calculate_values_inc += f'else if (is_{spec_name.under}_meter()) {{'
+    calculate_values_inc += f'else if (table == &{spec_name.under}_table) {{'
 
     for v, value in enumerate(values):
         calculate_values_inc += f'\n    // {value[0]["name"]}\n'

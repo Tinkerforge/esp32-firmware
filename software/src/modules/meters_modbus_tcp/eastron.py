@@ -20,6 +20,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Eastron SDM630 TCP',
+        'table_id': 'Eastron SDM630 TCP',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

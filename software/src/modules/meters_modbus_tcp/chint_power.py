@@ -16,7 +16,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Chint Power Hybrid Inverter',
-        'virtual_meter': ('Chint Power Hybrid Inverter', 'Inverter'),
+        'table_id': 'Chint Power Hybrid Inverter',
+        'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
@@ -184,7 +185,8 @@ specs = [
     },
     {
         'name': 'Chint Power Hybrid Inverter Grid',
-        'virtual_meter': ('Chint Power Hybrid Inverter', 'Grid'),
+        'table_id': 'Chint Power Hybrid Inverter',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
@@ -280,7 +282,8 @@ specs = [
     },
     {
         'name': 'Chint Power Hybrid Inverter Battery',
-        'virtual_meter': ('Chint Power Hybrid Inverter', 'Battery'),
+        'table_id': 'Chint Power Hybrid Inverter',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
@@ -341,7 +344,8 @@ specs = [
     },
     {
         'name': 'Chint Power Hybrid Inverter Load',
-        'virtual_meter': ('Chint Power Hybrid Inverter', 'Load'),
+        'table_id': 'Chint Power Hybrid Inverter',
+        'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
@@ -382,7 +386,8 @@ specs = [
     },
     {
         'name': 'Chint Power Hybrid Inverter PV',
-        'virtual_meter': ('Chint Power Hybrid Inverter', 'PV'),
+        'table_id': 'Chint Power Hybrid Inverter',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
         'values': [

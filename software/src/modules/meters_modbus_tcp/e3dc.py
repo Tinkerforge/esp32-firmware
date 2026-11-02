@@ -16,7 +16,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'E3DC Hauskraftwerk Grid',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'Grid'),
+        'table_id': 'E3DC Hauskraftwerk',
+        'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -30,7 +31,8 @@ specs = [
     },
     {
         'name': 'E3DC Hauskraftwerk Battery',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'Battery'),
+        'table_id': 'E3DC Hauskraftwerk',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -50,7 +52,8 @@ specs = [
     },
     {
         'name': 'E3DC Hauskraftwerk Load',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'Load'),
+        'table_id': 'E3DC Hauskraftwerk',
+        'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -64,7 +67,8 @@ specs = [
     },
     {
         'name': 'E3DC Hauskraftwerk PV',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'PV'),
+        'table_id': 'E3DC Hauskraftwerk',
+        'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
@@ -135,7 +139,8 @@ specs = [
     },
     {
         'name': 'E3DC Hauskraftwerk Additional Generation',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'Additional Generation'),
+        'table_id': 'E3DC Hauskraftwerk',
+        'virtual_meter': 'Additional Generation',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

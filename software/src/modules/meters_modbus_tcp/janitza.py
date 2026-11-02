@@ -16,6 +16,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Janitza',
+        'table_id': 'Janitza',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

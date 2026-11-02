@@ -20,4 +20,4 @@ specs = deepcopy(alpha_ess.specs)
 
 for spec in specs:
     spec['name'] = spec['name'].replace('Alpha ESS', 'Hailei')
-    spec['virtual_meter'] = (spec['virtual_meter'][0].replace('Alpha ESS', 'Hailei'), spec['virtual_meter'][1])
+    spec['table_id'] = spec['table_id'].replace('Alpha ESS', 'Hailei')

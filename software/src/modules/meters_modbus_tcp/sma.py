@@ -16,7 +16,8 @@ default_device_addresses = [
 specs = [
     {
         'name': 'SMA Hybrid Inverter Battery',  # FIXME: handle NAN markers
-        'virtual_meter': ('SMA Hybrid Inverter', 'Battery'),
+        'table_id': 'SMA Hybrid Inverter',
+        'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [

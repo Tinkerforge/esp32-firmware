@@ -81,15 +81,15 @@ table_lookup_extras = [
             break;
 
         case CarloGavazziPhase::L1:
-            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            table = &carlo_gavazzi_em100_at_l1_table;
             break;
 
         case CarloGavazziPhase::L2:
-            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            table = &carlo_gavazzi_em100_at_l2_table;
             break;
 
         case CarloGavazziPhase::L3:
-            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            table = &carlo_gavazzi_em100_at_l3_table;
             break;
 
         default:
@@ -107,15 +107,15 @@ table_lookup_extras = [
             break;
 
         case CarloGavazziPhase::L1:
-            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            table = &carlo_gavazzi_et100_at_l1_table;
             break;
 
         case CarloGavazziPhase::L2:
-            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            table = &carlo_gavazzi_et100_at_l2_table;
             break;
 
         case CarloGavazziPhase::L3:
-            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            table = &carlo_gavazzi_et100_at_l3_table;
             break;
 
         default:
@@ -831,6 +831,7 @@ def make_em510_single_phase_values(phase):
 specs = [
     {
         'name': 'Carlo Gavazzi EM24 DIN',
+        'table_id': 'Carlo Gavazzi EM24 DIN',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1093,6 +1094,7 @@ specs = [
     },
     {
         'name': 'Carlo Gavazzi EM24 E1',
+        'table_id': 'Carlo Gavazzi EM24 E1',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1354,25 +1356,44 @@ specs = [
         ],
     },
     {
-        'name': 'Carlo Gavazzi EM100 And ET100 At L1',
+        'name': 'Carlo Gavazzi EM100 At L1',
+        'table_id': 'Carlo Gavazzi EM100',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L1')
     },
     {
-        'name': 'Carlo Gavazzi EM100 And ET100 At L2',
+        'name': 'Carlo Gavazzi EM100 At L2',
+        'table_id': 'Carlo Gavazzi EM100',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L2')
     },
     {
-        'name': 'Carlo Gavazzi EM100 And ET100 At L3',
+        'name': 'Carlo Gavazzi EM100 At L3',
+        'table_id': 'Carlo Gavazzi EM100',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L3')
     },
     {
+        'clone': 'Carlo Gavazzi EM100 At L1',
+        'name': 'Carlo Gavazzi ET100 At L1',
+        'table_id': 'Carlo Gavazzi ET100',
+    },
+    {
+        'clone': 'Carlo Gavazzi EM100 At L2',
+        'name': 'Carlo Gavazzi ET100 At L2',
+        'table_id': 'Carlo Gavazzi ET100',
+    },
+    {
+        'clone': 'Carlo Gavazzi EM100 At L3',
+        'name': 'Carlo Gavazzi ET100 At L3',
+        'table_id': 'Carlo Gavazzi ET100',
+    },
+    {
         'name': 'Carlo Gavazzi EM210',
+        'table_id': 'Carlo Gavazzi EM210',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1603,48 +1624,48 @@ specs = [
     },
     {
         'name': 'Carlo Gavazzi EM270 Meter',
-        'virtual_meter': ('Carlo Gavazzi EM270', 'Meter'),
+        'table_id': 'Carlo Gavazzi EM270',
+        'virtual_meter': 'Meter',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': em270_and_em280_meter_values,
     },
     {
         'name': 'Carlo Gavazzi EM270 Current Transformer 1',
-        'virtual_meter': ('Carlo Gavazzi EM270', 'Current Transformer 1'),
+        'table_id': 'Carlo Gavazzi EM270',
+        'virtual_meter': 'Current Transformer 1',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': em270_and_em280_current_transformer_1_values,
     },
     {
         'name': 'Carlo Gavazzi EM270 Current Transformer 2',
-        'virtual_meter': ('Carlo Gavazzi EM270', 'Current Transformer 2'),
+        'table_id': 'Carlo Gavazzi EM270',
+        'virtual_meter': 'Current Transformer 2',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': em270_and_em280_current_transformer_2_values,
     },
     {
+        'clone': 'Carlo Gavazzi EM270 Meter',
         'name': 'Carlo Gavazzi EM280 Meter',
-        'virtual_meter': ('Carlo Gavazzi EM280', 'Meter'),
-        'fixed_location': 'Unknown',
-        'register_type': 'InputRegister',
-        'values': em270_and_em280_meter_values,
+        'table_id': 'Carlo Gavazzi EM280',
     },
     {
+        'clone': 'Carlo Gavazzi EM270 Current Transformer 1',
         'name': 'Carlo Gavazzi EM280 Current Transformer 1',
-        'virtual_meter': ('Carlo Gavazzi EM280', 'Current Transformer 1'),
-        'fixed_location': 'Unknown',
-        'register_type': 'InputRegister',
-        'values': em270_and_em280_current_transformer_1_values,
+        'table_id': 'Carlo Gavazzi EM280',
+        'virtual_meter': 'Current Transformer 1',
     },
     {
+        'clone': 'Carlo Gavazzi EM270 Current Transformer 2',
         'name': 'Carlo Gavazzi EM280 Current Transformer 2',
-        'virtual_meter': ('Carlo Gavazzi EM280', 'Current Transformer 2'),
-        'fixed_location': 'Unknown',
-        'register_type': 'InputRegister',
-        'values': em270_and_em280_current_transformer_2_values,
+        'table_id': 'Carlo Gavazzi EM280',
+        'virtual_meter': 'Current Transformer 2',
     },
     {
         'name': 'Carlo Gavazzi EM300',
+        'table_id': 'Carlo Gavazzi EM300',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1903,6 +1924,7 @@ specs = [
     },
     {
         'name': 'Carlo Gavazzi ET300',
+        'table_id': 'Carlo Gavazzi ET300',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -2182,24 +2204,28 @@ specs = [
     },
     {
         'name': 'Carlo Gavazzi EM510 At L1',
+        'table_id': 'Carlo Gavazzi EM510',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L1')
     },
     {
         'name': 'Carlo Gavazzi EM510 At L2',
+        'table_id': 'Carlo Gavazzi EM510',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L2')
     },
     {
         'name': 'Carlo Gavazzi EM510 At L3',
+        'table_id': 'Carlo Gavazzi EM510',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L3')
     },
     {
         'name': 'Carlo Gavazzi EM530',
+        'table_id': 'Carlo Gavazzi EM530',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -2527,11 +2553,13 @@ specs = [
         ],
     },
     {
+        'clone': 'Carlo Gavazzi EM530',
         'name': 'Carlo Gavazzi EM540',
-        'alias': 'Carlo Gavazzi EM530',
+        'table_id': 'Carlo Gavazzi EM540',
     },
     {
         'name': 'Carlo Gavazzi EM580',
+        'table_id': 'Carlo Gavazzi EM580',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
