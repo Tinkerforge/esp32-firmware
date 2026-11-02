@@ -374,9 +374,7 @@ export class RemoteAccess extends ConfigComponent<
 
     async runServiceTokenRegister() {
         this.setState({
-            status_modal_string: __(
-                "remote_access.content.service_token_register_in_progress",
-            ),
+            status_modal_string: __("remote_access.content.service_token_register_in_progress"),
         });
         const registrationPromise: Promise<void> = new Promise(
             (resolve, reject) => {
@@ -879,9 +877,7 @@ export class RemoteAccess extends ConfigComponent<
                             <span
                                 class="badge rounded-pill bg-info ms-2 p-1"
                                 style="font-size: 0.7em; padding: 0.2em 0.5em;"
-                                title={__(
-                                    "remote_access.content.service_token_register",
-                                )}
+                                title={__("remote_access.content.service_token_register")}
                             >
                                 {__("remote_access.content.service_token_badge")}
                             </span>
