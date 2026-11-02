@@ -916,8 +916,8 @@ def run_testsuite(l: dict[str, typing.Any]):
 
         if k == "suite_setup": suite.suite_setup = v
         if k == "suite_teardown": suite.suite_teardown = v
-        if k == "setup": suite.test_setup = v
-        if k == "teardown": suite.test_teardown = v
+        if k == "setup": suite.setup = v
+        if k == "teardown": suite.teardown = v
 
     tc = TestContext(
             open(args.fifo_in_path, 'r', buffering=1) if args.fifo_in_path else None,
