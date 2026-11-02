@@ -873,7 +873,7 @@ export class RemoteAccess extends ConfigComponent<
             const row: TableRow = {
                 columnValues: [
                     <>
-                        {user.email}
+                        <span class="me-1">{user.email}</span>
                         {isServiceTokenUser && (
                             <Badge pill bg="primary">
                                 {__("remote_access.content.service_token_badge")}
