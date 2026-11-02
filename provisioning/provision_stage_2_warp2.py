@@ -546,6 +546,16 @@ class Scanner:
             else:
                 print(yellow('Malformed QR code, try again'))
 
+        if self.qr_custom_engraving:
+            answer = 'n'
+
+            while answer not in ['y', 'n']:
+                tfutil.drop_stdin_buffer()
+                answer = input(green('Does front panel have custom engraving? [y/n] '))
+
+            if answer == 'n':
+                fatal_error('Front panel does not have custom engraving')
+
     def read_charger_code(self, code):
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:1;;;
         pattern_4 = r'^T:(WARP(4)-C(S|P|E)-(SS|PC)-((?:11|22)?(?:50|75)?|CC)-(W|C));V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?(?:;Z:(0|1))?(?:;O:(SO/(:?B\d{7}|\d{5})|))?;;;*$'
