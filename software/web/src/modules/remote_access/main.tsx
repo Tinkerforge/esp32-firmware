@@ -42,6 +42,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import {
+    Badge,
     Button,
     Collapse,
     Container,
@@ -874,13 +875,9 @@ export class RemoteAccess extends ConfigComponent<
                     <>
                         {user.email}
                         {isServiceTokenUser && (
-                            <span
-                                class="badge rounded-pill bg-info ms-2 p-1"
-                                style="font-size: 0.7em; padding: 0.2em 0.5em;"
-                                title={__("remote_access.content.service_token_register")}
-                            >
+                            <Badge pill bg="primary">
                                 {__("remote_access.content.service_token_badge")}
-                            </span>
+                            </Badge>
                         )}
                     </>,
                 ],
