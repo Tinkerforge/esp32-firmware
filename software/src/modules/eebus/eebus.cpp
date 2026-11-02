@@ -632,7 +632,7 @@ void EEBus::setup()
         []() {
             update_limit();
         },
-        10_s, // Start after 10 seconds
+        0_s,  // Start immediately, so that the LPC failsafe limit applies right after boot (LPC-901)
         1_s); // Check every second
 }
 
