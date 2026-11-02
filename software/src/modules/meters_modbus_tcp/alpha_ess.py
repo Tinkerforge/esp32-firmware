@@ -345,6 +345,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Battery energy charge from grid [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0124,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Battery power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 0x0126,

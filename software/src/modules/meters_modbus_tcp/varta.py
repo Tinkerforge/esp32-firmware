@@ -148,6 +148,12 @@ specs = [
                 'start_address': 2067,
                 'value_type': 'S16',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 2068,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Total Charge Energy SF',
                 'value_id': 'VALUE_ID_META',

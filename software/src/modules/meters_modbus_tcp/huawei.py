@@ -110,6 +110,13 @@ specs = [
                 'scale_factor': -0.001,
             },
             {
+                'name': 'Peak active power of current day [W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32078,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+            {
                 'name': 'Active power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 32080,
@@ -349,6 +356,18 @@ specs = [
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 37761,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Energy storage - running status',
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 37762,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Energy storage - bus voltage [0.1 V]',
                 'value_id': 'VoltageDC',
@@ -855,6 +874,18 @@ specs = [
                 'start_address': 31657,
                 'value_type': 'S32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 31659,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 31660,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Power factor of built-in electric energy sensor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',
@@ -986,6 +1017,18 @@ specs = [
                 'start_address': 31913,
                 'value_type': 'S32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 31915,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 31916,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Power factor of external electric energy sensor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',
@@ -1056,6 +1099,13 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Energy discharged today [0.01 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 30312,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
                 'name': 'Total discharged energy [0.01 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 30314,
@@ -1113,6 +1163,18 @@ specs = [
                 'value_type': 'U64BE',
                 'scale_factor': 0.01,
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 30352,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 30353,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'PV output power [W]',
                 'value_id': 'PowerPVSumExport',
@@ -1204,11 +1266,25 @@ specs = [
                 'value_type': 'S32BE',
             },
             {
+                'name': 'Active electricity (reserved) [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32282,
+                'value_type': 'S32BE',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Power factor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',  # FIXME: direction?
                 'start_address': 32284,
                 'value_type': 'S16',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Reactive electricity (reserved) [0.1 kvarh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 32285,
+                'value_type': 'S32BE',
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Apparent power [VA]',

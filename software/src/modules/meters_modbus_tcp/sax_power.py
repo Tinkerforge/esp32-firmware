@@ -81,6 +81,18 @@ specs = [
                 'scale_factor': 10.0,
             },
             {
+                'name': 'Energie Skalierung',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 97,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Schaltzustand des Speichers',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 98,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Strom L1 [0.01 A]',
                 'value_id': 'CurrentL1ImExDiff',
                 'start_address': 99,
@@ -284,6 +296,19 @@ specs = [
                 'value_id': 'StateOfCharge',
                 'start_address': 113,
                 'value_type': 'S16',
+            },
+            {
+                'name': 'Capacity [0.01 kWh]',
+                'value_id': 'Capacity',
+                'start_address': 114,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Cycles',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 115,
+                'value_type': 'U16',
             },
             {
                 'name': 'Temperatur [°C]',  # FIXME: not available?

@@ -127,6 +127,20 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'PV side IGBT temperature  [0.1 °C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0868,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery side IGBT temperature  [0.1 °C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0869,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Control board temperature [0.1 °C]',
                 'value_id': 'TemperatureCabinet',
                 'start_address': 0x086A,

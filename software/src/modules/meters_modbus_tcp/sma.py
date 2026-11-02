@@ -35,6 +35,12 @@ specs = [
                 'value_type': 'U32BE',
             },
             {
+                'name': 'Bat.Diag.ActlCapacNom [%]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 30847,
+                'value_type': 'U32BE',
+            },
+            {
                 'name': 'Bat.TmpVal [0.1 °C]',
                 'value_id': 'Temperature',
                 'start_address': 30849,

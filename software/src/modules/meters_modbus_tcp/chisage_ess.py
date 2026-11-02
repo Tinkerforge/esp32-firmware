@@ -255,6 +255,18 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
+                'name': 'PV1 Power [W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2037,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'PV2 Power [W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2038,
+                'value_type': 'S16',
+            },
+            {
                 'name': 'Battery SOC [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 2039,

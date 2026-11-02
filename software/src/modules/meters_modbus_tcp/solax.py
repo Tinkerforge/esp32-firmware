@@ -233,6 +233,19 @@ specs = [
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
+            #{
+            #    'name': 'Reserved',  # FIXME: this register is marked as reserved in the documentation, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 0x1E,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Output Energy Today [0.1 kWh]',
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 0x1F,
+            #    'value_type': 'U16',
+            #    'scale_factor': 0.1,
+            #},
             {
                 'name': 'Input Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',

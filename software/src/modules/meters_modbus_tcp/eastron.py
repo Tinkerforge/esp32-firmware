@@ -156,6 +156,18 @@ specs = [
                 'start_number': 43,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 45,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 46,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Average line current [A]',
                 'value_id': 'CurrentLAvgImExSum',
@@ -168,18 +180,54 @@ specs = [
                 'start_number': 49,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 51,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 52,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Total system power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_number': 53,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 55,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 56,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Total system volt amps [VA]',
                 'value_id': 'PowerApparentLSumImExSum',
                 'start_number': 57,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 59,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 60,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Total system volt amps reactive [var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
@@ -192,12 +240,36 @@ specs = [
                 'start_number': 63,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 65,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 66,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Total system phase angle [°]',
                 'value_id': 'PhaseAngleLSum',
                 'start_number': 67,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 69,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 70,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Frequency of supply voltages [Hz]',
                 'value_id': 'FrequencyLAvg',
@@ -306,6 +378,18 @@ specs = [
                 'start_number': 245,
                 'value_type': 'F32BE',
             },
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 247,
+            #    'value_type': 'U16',
+            #},
+            #{
+            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
+            #    'value_id': 'VALUE_ID_GAP_FILLER',
+            #    'start_address': 248,
+            #    'value_type': 'U16',
+            #},
             {
                 'name': 'Average line to neutral volts THD [%]',
                 'value_id': 'VoltageTHDLNAvg',

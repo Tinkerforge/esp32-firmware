@@ -177,6 +177,12 @@ specs = [
                 'value_type': 'F32BE',
             },
             {
+                'name': 'Rotation field',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 19052,
+                'value_type': 'F32BE',
+            },
+            {
                 'name': 'Real energy L1 [Wh]',
                 'value_id': 'EnergyActiveL1ImExDiff',
                 'start_address': 19054,

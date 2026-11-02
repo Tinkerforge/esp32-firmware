@@ -440,7 +440,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Undefined',
+                'name': 'Undefined',  # this register is marked as undefined in the documentation, but testing showed that it can be read without error
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 589,
                 'value_type': 'U16',

@@ -315,6 +315,18 @@ specs = [
                 'value_type': 'U32BE',
             },
             {
+                'name': 'Today battery charge [kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 33163,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Yesterday battery charge [kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 33164,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Total battery discharge [kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 33165,

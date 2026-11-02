@@ -418,7 +418,7 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
-                'name': 'Reserved',
+                'name': 'Reserved',  # this register is marked as reserved in the documentation, but testing showed that it can be read without error
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 39140,
                 'value_type': 'U16',
