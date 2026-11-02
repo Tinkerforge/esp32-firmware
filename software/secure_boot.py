@@ -1,3 +1,5 @@
+#!/usr/bin/env -S uv run --script
+
 import argparse
 import ctypes
 import ctypes.util
@@ -7,6 +9,9 @@ import subprocess
 import sys
 import tempfile
 
+import tinkerforge_util as tfutil
+tfutil.create_parent_module(__file__, 'software')
+from software.util import load_libsodium
 
 directory = os.path.normpath(os.path.dirname(__file__))
 
@@ -16,28 +21,6 @@ def make_path(path) -> str:
         return path
 
     return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
-
-
-def load_libsodium():
-    libsodium_path = ctypes.util.find_library('sodium')
-
-    if libsodium_path != None:
-        libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
-    else:
-        for extension in ['so', 'dll', 'dylib']:
-            try:
-                libsodium = ctypes.cdll.LoadLibrary(make_path(f'libsodium.{extension}'))
-            except:
-                continue
-
-            break
-        else:
-            raise Exception('Cannot find libsodium library')
-
-    if libsodium.sodium_init() < 0:
-        raise Exception('libsodium sodium_init failed')
-
-    return libsodium
 
 
 def load_libmbedtls():

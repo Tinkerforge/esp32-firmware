@@ -16,6 +16,8 @@ import shlex
 from dataclasses import dataclass, InitVar, field
 from collections.abc import Callable
 import importlib.util
+import ctypes
+import ctypes.util
 import tinkerforge_util as tfutil
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
@@ -834,3 +836,25 @@ def get_env_metadata(default=None):
         raise Exception('$PLATFORMIO_METADATA not set')
 
     return json.loads(metadata_json)
+
+
+def load_libsodium():
+    libsodium_path = ctypes.util.find_library('sodium')
+
+    if libsodium_path != None:
+        libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
+    else:
+        for extension in ['so', 'dll', 'dylib']:
+            try:
+                libsodium = ctypes.cdll.LoadLibrary(make_path(f'libsodium.{extension}'))
+            except:
+                continue
+
+            break
+        else:
+            raise Exception('Cannot find libsodium library')
+
+    if libsodium.sodium_init() < 0:
+        raise Exception('libsodium sodium_init failed')
+
+    return libsodium

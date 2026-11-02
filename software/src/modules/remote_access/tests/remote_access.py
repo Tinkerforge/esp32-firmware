@@ -38,6 +38,7 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 from software.test_runner.remote_access_snapshot import RemoteAccessSnapshot
+from software.util import load_libsodium
 
 # Connection state values (from remote_access.cpp)
 STATE_DISCONNECTED = 1
@@ -115,10 +116,7 @@ def _password_key(password: str, salt: bytes, length: int) -> bytes:
 
 def _encrypt_user_secret(secret: bytes, key: bytes, nonce: bytes) -> bytes:
     """Create the libsodium secretbox value returned by /api/user/get_secret."""
-    library = ctypes.util.find_library("sodium")
-    if library is None:
-        raise RuntimeError("libsodium is required for the password-based relay test")
-    sodium = ctypes.CDLL(library)
+    sodium = load_libsodium()
     sodium.crypto_secretbox_easy.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                              ctypes.c_ulonglong, ctypes.c_void_p,
                                              ctypes.c_void_p]
