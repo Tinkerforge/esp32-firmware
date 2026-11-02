@@ -30,7 +30,7 @@
 #include "options.h"
 #include "gcc_warnings.h"
 
-#if !BUILD_IS_SIGNED()
+#if !OPTIONS_BUILD_IS_SIGNED()
 #define SOLAR_FORECAST_USE_TEST_DATA
 #endif
 

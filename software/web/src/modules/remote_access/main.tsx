@@ -1205,7 +1205,7 @@ export class RemoteAccess extends ConfigComponent<
                             />
                         </FormRow>
                         <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
-                            {!!options.IS_SIGNED && (
+                            {!!options.BUILD_IS_SIGNED && (
                                 <FormRow
                                     label={__("remote_access.content.service_token_register")}
                                     help={
