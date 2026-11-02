@@ -67,6 +67,8 @@ cd ~/esp32-arduino-lib-builder
 
 **Replace .esp32brick with .esp32ethernetbrick in the next sections for ESP32 Ethernet, WARP2, WARP3 and WEM firmwares**
 
+**For WARP4, use .esp32secure instead.**
+
 ### To modify settings:
 
 ```bash
@@ -95,7 +97,16 @@ platform_packages = platformio/framework-arduinoespressif32-libs @ symlink:///ho
 uv run pio run -e warp
 ```
 
-### Add built libs to arduino-esp32 Repo:
+### Ethernet sharing on the WiFi access point
+
+NAT sharing requires `CONFIG_LWIP_IP_FORWARD` and `CONFIG_LWIP_IPV4_NAPT`.
+The Ethernet and secure defconfigs enable both options. Each interface has its
+own DNS settings, so Ethernet and WiFi station DNS settings stay separate.
+Apply the lwIP patches as described above. Patch 0005 allows forwarding only
+when NAPT is active.
+Transparent LAN passthrough does not require NAPT support.
+
+### Publish built libraries
 
 ```bash
 (git clone https://github.com/Tinkerforge/esp32-arduino-libs)

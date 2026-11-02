@@ -46,11 +46,13 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
               () => __("wifi.script.ap_save_failed"));
     }
 
-    override async isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid && !this.last_interface; }
+    override async isSaveAllowed(cfg: APConfig) { return (cfg.ethernet_passthrough || this.ipconfig_valid) && !this.last_interface; }
 
     dismissModal() {
         this.setState({show_modal: false,
                        ap_fallback_only: API.get("wifi/ap_config").ap_fallback_only,
+                       share_ethernet: API.get("wifi/ap_config").share_ethernet,
+                       ethernet_passthrough: API.get("wifi/ap_config").ethernet_passthrough,
                        enable_ap: API.get("wifi/ap_config").enable_ap});
     }
 
@@ -91,7 +93,9 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     {wifi_state.ap_state != 0 &&
                         <FormRow label={__("wifi.content.status_ap_ip")}>
                             <InputText
-                                value={state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")"}
+                                value={saved_config.ethernet_passthrough && API.hasModule("ethernet")
+                                    ? API.get("ethernet/state").ip
+                                    : saved_config.ip + " (/" + util.countBits(util.parseIP(saved_config.subnet)) + ")"}
                             />
                         </FormRow>
                     }
@@ -141,7 +145,9 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                             onValue={(v) => {
                                 this.setState({show_modal: v == "2",
                                                enable_ap: v != "2",
-                                               ap_fallback_only: v == "1"});
+                                               ap_fallback_only: v == "1",
+                                               ethernet_passthrough: v == "0" && state.ethernet_passthrough,
+                                               share_ethernet: v == "0" && state.share_ethernet});
                             }}
                             items={[
                                 ["0", __("wifi.content.ap_enabled")],
@@ -156,6 +162,21 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                                 : undefined}
                         />
                     </FormRow>
+
+                    {API.hasModule("ethernet") &&
+                        <FormRow label={__("wifi.content.ap_share_ethernet")} help={__("wifi.content.ap_share_ethernet_help")}>
+                            <InputSelect
+                                value={state.ethernet_passthrough ? "passthrough" : state.share_ethernet ? "nat" : "off"}
+                                disabled={!state.enable_ap || state.ap_fallback_only}
+                                onValue={(v) => this.setState({share_ethernet: v == "nat", ethernet_passthrough: v == "passthrough"})}
+                                items={[
+                                    ["off", __("wifi.content.ap_sharing_off")],
+                                    [API.hasFeature("wifi_ap_ethernet_sharing") ? "nat" : "nat_disabled", __("wifi.content.ap_sharing_nat")],
+                                    [API.hasFeature("wifi_ap_ethernet_passthrough") ? "passthrough" : "passthrough_disabled", __("wifi.content.ap_sharing_passthrough")]
+                                ]}
+                            />
+                        </FormRow>
+                    }
 
                     <FormRow label={__("wifi.content.ap_ssid")}>
                         <InputText required={state.enable_ap}
@@ -203,13 +224,14 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                         />
                     </FormRow>
 
-                    <IPConfiguration
+                    {!state.ethernet_passthrough && <IPConfiguration
                         showAnyAddress
                         showDhcp={false}
                         showDns={false}
+                        hideGateway={state.share_ethernet}
                         required={state.enable_ap}
                         onValue={(v) => this.setState(v)}
-                        value={state}
+                        value={state.share_ethernet ? {...state, gateway: "0.0.0.0"} : state}
                         setValid={(v) => this.ipconfig_valid = v}
                         min_subnet_prefix={24}
                         max_subnet_prefix={30}
@@ -232,7 +254,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                                 name: __("component.ip_configuration.wireguard")}]
                             )
                         }
-                        />
+                        />}
 
                 </SubPage.Config>
 

@@ -1461,6 +1461,12 @@ def main():
 
         excluded_backend_modules.remove(backend_module.under)
 
+    # Keep replies to NAT AP clients on the AP even when a local service was
+    # reached through the Ethernet address. The wrapper delegates all other
+    # routing decisions to ESP-IDF's precompiled source-routing hook.
+    if {'wifi', 'ethernet'}.issubset({module.under for module in backend_modules}):
+        env.Append(LINKFLAGS=['-Wl,--wrap=ip4_route_src_hook'])
+
     del deduplicated_modules
 
     for root, dirs, files in os.walk('src', followlinks=True):

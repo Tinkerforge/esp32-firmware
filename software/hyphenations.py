@@ -1,4 +1,9 @@
 de_hyph = [
+    'se-pa-ra-tes',
+    'Stan-dard-schnitt-stel-le',
+    'Durch-lei-tung',
+    'Ge-rä-te-ver-wal-tung',
+    'Netz-werk-schlei-fen',
     'abge-brochen',
     'Abge-schlossen',
     'ab-ge-schlos-sen',
@@ -1636,9 +1641,20 @@ de_hyph = [
     "über-nom-men",
     "Be-kann-tes",
     "Auf-recht-er-hal-ten",
+    "In-ter-net-zu-gang",
+    "be-reit-stel-len",
+    "Er-for-dert",
+    "dau-er-haft",
+    "ak-ti-vier-ten",
+    "über-schnei-den",
+    "Un-ter-stüt-zung",
+    "Wei-ter-lei-tung",
 ]
 
 en_hyph = [
+    'Pass-through',
+    'pass-through',
+    'mul-ti-cast',
     "Acti-vating",
     "alter-native",
     "Alter-native",
@@ -2214,6 +2230,7 @@ en_hyph = [
     "Son-nen-bat-te-rie",
     "spec-i-fi-ca-tion",
     "re-solv-ing",
+    "for-ward-ing",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]

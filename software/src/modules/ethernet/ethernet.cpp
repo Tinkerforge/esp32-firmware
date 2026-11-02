@@ -32,6 +32,9 @@
 #include "generated/module_dependencies.h"
 
 #include <ETH.h>
+#if MODULE_WIFI_AVAILABLE()
+#include "modules/wifi/ethernet_passthrough.h"
+#endif
 #include <esp_netif.h>
 #include <lwip/tcpip.h>
 
@@ -555,6 +558,12 @@ void Ethernet::register_urls()
 #if OPTIONS_ETHERNET_ENABLE_RESTART_API()
     server.on_HTTPThread("/ethernet/restart", HTTP_GET, [this](WebServerRequest req) {
         task_scheduler.scheduleOnce([this]() {
+#if MODULE_WIFI_AVAILABLE()
+            if (!ethernet_passthrough::stop()) {
+                logger.printfln("Stopping Ethernet passthrough failed; cancelling Ethernet restart");
+                return;
+            }
+#endif
             ETH.end();
             this->runtime_data->last_connected = now_us();
             ETH.begin();
