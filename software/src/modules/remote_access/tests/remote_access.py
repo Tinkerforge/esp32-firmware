@@ -190,7 +190,7 @@ def _load_sodium() -> ctypes.CDLL:
     """Load system libsodium via ctypes (cached)."""
     global _sodium_lib
     if _sodium_lib is None:
-        lib = ctypes.CDLL("libsodium.so.23")
+        lib = ctypes.CDLL("libsodium.so")
         lib.sodium_init.restype = ctypes.c_int
         lib.sodium_init()
 
