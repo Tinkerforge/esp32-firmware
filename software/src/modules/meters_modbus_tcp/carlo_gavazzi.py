@@ -130,7 +130,7 @@ table_lookup_extras = [
     ('Carlo Gavazzi ET300', 'max_register_count = 50;'),
     ('Carlo Gavazzi EM510', '''
         carlo_gavazzi_em510.phase = ephemeral_table_config->get("phase")->asEnum<CarloGavazziPhase>();
-        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+        max_register_count = 50;
 
         switch (carlo_gavazzi_em510.phase) {
         case CarloGavazziPhase::None:
