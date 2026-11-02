@@ -1249,7 +1249,6 @@ def main():
     build_lines.append('#define BUILD_VERSION_BETA {}'.format(version[3]))
     build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
     build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
-    build_lines.append('#define BUILD_IS_SIGNED() {}'.format("1" if len(signature_preset) > 0 else "0"))
     build_lines.append('uint32_t build_timestamp();')
     build_lines.append('const char *build_timestamp_hex_str();')
     build_lines.append('const char *build_version_full_str();')
@@ -1636,8 +1635,8 @@ def main():
     options_value['product_id_is_warp_any'] = '1' if product_id in ['warp', 'warp2', 'warp3', 'warp4'] else '0'
     options_origin['product_id_is_warp_any'] = 'pio_hooks.py'
 
-    options_value['is_signed'] = '1' if len(signature_preset) > 0 else '0'
-    options_origin['is_signed'] = 'pio_hooks.py'
+    options_value['build_is_signed'] = '1' if len(signature_preset) > 0 else '0'
+    options_origin['build_is_signed'] = 'pio_hooks.py'
 
     assert 'manufacturer_upper' not in options_value
 
