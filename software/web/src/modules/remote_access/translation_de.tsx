@@ -48,7 +48,7 @@ let x = {
             "auth_method": "Autorisierungsmethode",
             "service_token_register": `${options.MANUFACTURER}-Support-Zugriff aktivieren`,
             "service_token_register_desc": /*FFN*/(host: string) => <>Erlaubt dem {options.MANUFACTURER}-Support auf {__("this_device")} zuzugreifen. Der Zugriff erlischt nach spätestens 24h automatisch, sofern er nicht verlängert wird.</> /*NF*/,
-            "service_token_register_active_desc": /*FFN*/(host: string, remaining: string) => <>Der {options.MANUFACTURER} Service-Account darf noch {remaining} auf {__("this_device")} zugreifen.</> /*NF*/,
+            "service_token_register_active_desc": /*FFN*/(host: string, expiry_date: string) => <>Der {options.MANUFACTURER} Service-Account darf bis {expiry_date} auf {__("this_device")} zugreifen.</> /*NF*/,
             "service_token_extend": "Support-Zugriff um 24 h verlängern",
             "service_token_register_failed": "Aktivierung des Support-Zugriffs fehlgeschlagen:",
             "service_token_register_in_progress": "Fordere Support-Zugriffs-Token vom Relay an",

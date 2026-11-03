@@ -48,7 +48,7 @@ let x = {
             "auth_method": "Authorization method",
             "service_token_register": `Activate ${options.MANUFACTURER} support access`,
             "service_token_register_desc": /*FFN*/(host: string) => <>Allows {options.MANUFACTURER} support to access {__("this_device")}. Access expires automatically after 24 hours unless it is extended.</> /*NF*/,
-            "service_token_register_active_desc": /*FFN*/(host: string, remaining: string) => <>The {options.MANUFACTURER} service account may access {__("this_device")} for {remaining}.</> /*NF*/,
+            "service_token_register_active_desc": /*FFN*/(host: string, expiry_date: string) => <>The {options.MANUFACTURER} service account may access {__("this_device")} until {expiry_date}.</> /*NF*/,
             "service_token_extend": "Extend support access by 24 h",
             "service_token_register_failed": "Support access activation failed:",
             "service_token_register_in_progress": "Requesting support access token from relay",
