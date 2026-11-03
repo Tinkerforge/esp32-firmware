@@ -203,29 +203,6 @@ void PowerManager::pre_setup()
 #endif
 }
 
-static void init_minmax_filter(PowerManager::minmax_filter *filter, size_t values_count, PowerManager::FilterType filter_type)
-{
-    if (values_count <= 0) {
-        logger.printfln("Cannot create minmax filter with %zu values.", values_count);
-        values_count = 1;
-    }
-
-    filter->history_length = static_cast<decltype(filter->history_length)>(values_count);
-    filter->history_values = static_cast<decltype(filter->history_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM)); // Prefer IRAM
-    filter->type = filter_type;
-}
-
-static void init_mavg_filter(PowerManager::mavg_filter *filter, size_t values_count)
-{
-    if (values_count <= 0) {
-        logger.printfln("Cannot create mavg filter with %zu values.", values_count);
-        values_count = 1;
-    }
-
-    filter->mavg_values_count = static_cast<decltype(filter->mavg_values_count)>(values_count);
-    filter->mavg_values       = static_cast<decltype(filter->mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
-}
-
 static std::pair<char *, size_t> build_trace_header(bool with_pv, bool with_phases) {
     StringBuilder sb{};
     sb.setCapacity(173 + 196);
@@ -349,8 +326,8 @@ void PowerManager::setup()
 
     // Set up meter power filters if excess charging is enabled
     if (runtime_data->excess_charging_enabled) {
-        init_minmax_filter(&runtime_data->current_pv_minmax_ma,   values_count,          FilterType::MinMax);
-        init_minmax_filter(&runtime_data->current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
+        runtime_data->current_pv_minmax_ma.init(values_count, FilterType::MinMax);
+        runtime_data->current_pv_long_min_ma.init(values_count_long_min, FilterType::MinOnly);
     }
 
     // Calculate constants and set up meter current filters if dynamic load management is enabled
@@ -369,11 +346,11 @@ void PowerManager::setup()
         constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS; // 10s
 
         for (size_t i = 0; i < ARRAY_SIZE(runtime_data->currents_phase_min_ma); i++) {
-            init_minmax_filter(runtime_data->currents_phase_min_ma + i,      min_filter_length,     FilterType::MinOnly);
-            init_minmax_filter(runtime_data->currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
+            runtime_data->currents_phase_min_ma[i].init(min_filter_length, FilterType::MinOnly);
+            runtime_data->currents_phase_long_min_ma[i].init(values_count_long_min, FilterType::MinOnly);
 
-            init_minmax_filter(runtime_data->currents_phase_preproc_max_ma + i, preproc_filter_length, FilterType::MaxOnly);
-            init_mavg_filter(runtime_data->currents_phase_preproc_mavg_ma + i,  preproc_filter_length);
+            runtime_data->currents_phase_preproc_max_ma[i].init(preproc_filter_length, FilterType::MaxOnly);
+            runtime_data->currents_phase_preproc_mavg_ma[i].init(preproc_filter_length);
         }
 
         runtime_data->currents_phase_preproc_mavg_limit        = runtime_data->target_phase_current_ma * 11 / 10; // target + 10%
@@ -565,166 +542,6 @@ void PowerManager::zero_limits()
 static void abort_on_invalid_history_length(int32_t history_length)
 {
     esp_system_abortf<52>("Invalid minmax filter history length %li", history_length);
-}
-
-static micros_t calculate_minmax_filter_expiration_timestamp(int32_t value_pos, int32_t current_pos, int32_t history_length)
-{
-    int32_t expiration_in_samples = value_pos - current_pos;
-
-    if (expiration_in_samples < 0) {
-        expiration_in_samples += history_length;
-    }
-
-    const millis_t expiration_in_ms{expiration_in_samples * PM_TASK_DELAY_MS}; // Would overflow for durations of about 24 days, which is far beyond the capacity of this filter.
-
-    return now_us() + micros_t{expiration_in_ms};
-}
-
-static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
-{
-    // Check if filter history needs to be initialized
-    if (filter->min == INT32_MAX) {
-        filter->min = new_value;
-        filter->max = filter->type == PowerManager::FilterType::MinOnly ? -1 : new_value; // Unused max uses -1 to avoid underflows from INT32_MIN
-
-        if (filter->history_length <= 0) {
-            abort_on_invalid_history_length(filter->history_length);
-        } else if (filter->history_length == 1) {
-            filter->history_pos = 0; // History contains only a single value, next value will overwrite.
-        } else {
-            filter->history_pos = 1; // Position for next value
-        }
-        filter->history_min_pos = 0;
-        filter->history_max_pos = 0;
-
-        const micros_t expiration = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
-        filter->min_expiration_ts = expiration;
-        filter->max_expiration_ts = expiration;
-
-        filter->history_values[0] = new_value;
-        // Other values don't need to be initialized because they won't be read before the first value is removed,
-        // at which point all values must have been written.
-
-        return;
-    }
-
-    int32_t history_pos = filter->history_pos;
-
-    filter->history_values[history_pos] = new_value;
-
-    if (filter->type != PowerManager::FilterType::MaxOnly) {
-        if (new_value <= filter->min) {
-            filter->min = new_value;
-            filter->history_min_pos = history_pos;
-            filter->min_expiration_ts = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
-        } else {
-            if (filter->history_min_pos == history_pos) {
-                // Current minimum was just replaced, need to find new minimum.
-                int32_t *values = filter->history_values;
-                int32_t min = INT32_MAX;
-                int32_t min_pos = 0;
-
-                // Search older data after current position in history
-                for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
-                    if (values[i] <= min) {
-                        min = values[i];
-                        min_pos = i;
-                    }
-                }
-                // Search newer data before current position in history
-                for (int32_t i = 0; i <= history_pos; i++) {
-                    if (values[i] <= min) {
-                        min = values[i];
-                        min_pos = i;
-                    }
-                }
-
-                filter->min = min;
-                filter->history_min_pos = min_pos;
-                filter->min_expiration_ts = calculate_minmax_filter_expiration_timestamp(min_pos, history_pos, filter->history_length);
-            }
-        }
-    }
-
-    if (filter->type != PowerManager::FilterType::MinOnly) {
-        if (new_value >= filter->max) {
-            filter->max = new_value;
-            filter->history_max_pos = history_pos;
-            filter->max_expiration_ts = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
-        } else {
-            if (filter->history_max_pos == history_pos) {
-                // Current maximum was just replaced, need to find new maximum.
-                int32_t *values = filter->history_values;
-                int32_t max = INT32_MIN;
-                int32_t max_pos = 0;
-
-                // Search older data after current position in history
-                for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
-                    if (values[i] >= max) {
-                        max = values[i];
-                        max_pos = i;
-                    }
-                }
-                // Search newer data before current position in history
-                for (int32_t i = 0; i <= history_pos; i++) {
-                    if (values[i] >= max) {
-                        max = values[i];
-                        max_pos = i;
-                    }
-                }
-
-                filter->max = max;
-                filter->history_max_pos = max_pos;
-                filter->max_expiration_ts = calculate_minmax_filter_expiration_timestamp(max_pos, history_pos, filter->history_length);
-            }
-        }
-    }
-
-    history_pos++;
-    if (history_pos >= filter->history_length) {
-        history_pos = 0;
-    }
-    filter->history_pos = history_pos;
-}
-
-static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filter *filter)
-{
-    // Check if filter values need to be initialized
-    if (filter->filtered_val == INT32_MAX) {
-        int32_t values_count = filter->mavg_values_count;
-
-        filter->filtered_val = filter_input;
-        filter->mavg_total = filter_input * values_count;
-
-        int32_t *values = filter->mavg_values;
-        int32_t *values_end = values + values_count;
-        while (values < values_end) {
-            *values = filter_input;
-            values++;
-        }
-
-        return filter_input;
-    }
-
-    int32_t mavg_position = filter->mavg_position;
-
-    int32_t mavg_total = filter->mavg_total - filter->mavg_values[mavg_position] + filter_input;
-    filter->mavg_values[mavg_position] = filter_input;
-    filter->mavg_total = mavg_total;
-
-    mavg_position++;
-    if (mavg_position >= filter->mavg_values_count) {
-        mavg_position = 0;
-    }
-    filter->mavg_position = mavg_position;
-
-    // Signed division requires both numbers to be signed
-    static_assert(std::is_same<int32_t, decltype(filter->mavg_total       )>::value, "filter's mavg_total must be signed");
-    static_assert(std::is_same<int32_t, decltype(filter->mavg_values_count)>::value, "filter's mavg_values_count must be signed");
-
-    filter->filtered_val = mavg_total / filter->mavg_values_count;
-
-    return filter->filtered_val;
 }
 
 void PowerManager::update_data()
@@ -938,10 +755,10 @@ void PowerManager::update_energy()
         runtime_data->cm_limits->max_pv_expiration_ts = 0_us;
     } else {
         int32_t pv_raw_ma = runtime_data->power_available_w * 1000 / 230;
-        update_minmax_filter(pv_raw_ma, &runtime_data->current_pv_minmax_ma);
+        runtime_data->current_pv_minmax_ma.update(pv_raw_ma);
 
         if (runtime_data->current_long_min_iterations == 0) {
-            update_minmax_filter(runtime_data->current_pv_floating_min_ma, &runtime_data->current_pv_long_min_ma);
+            runtime_data->current_pv_long_min_ma.update(runtime_data->current_pv_floating_min_ma);
 
             runtime_data->current_pv_floating_min_ma = pv_raw_ma;
         } else {
@@ -950,21 +767,21 @@ void PowerManager::update_energy()
             }
         }
 
-        int32_t pv_long_min_ma = std::min(runtime_data->current_pv_floating_min_ma, runtime_data->current_pv_long_min_ma.min);
+        int32_t pv_long_min_ma = std::min(runtime_data->current_pv_floating_min_ma, runtime_data->current_pv_long_min_ma.get_min());
 
         runtime_data->cm_limits->raw.pv = pv_raw_ma;
-        runtime_data->cm_limits->min.pv = runtime_data->current_pv_minmax_ma.min;
-        runtime_data->cm_limits->max_pv = runtime_data->current_pv_minmax_ma.max;
+        runtime_data->cm_limits->min.pv = runtime_data->current_pv_minmax_ma.get_min();
+        runtime_data->cm_limits->max_pv = runtime_data->current_pv_minmax_ma.get_max();
         runtime_data->cm_limits->spread.pv = pv_long_min_ma;
 
-        runtime_data->cm_limits->min_expiration_ts[0] = runtime_data->current_pv_minmax_ma.min_expiration_ts;
-        runtime_data->cm_limits->max_pv_expiration_ts = runtime_data->current_pv_minmax_ma.max_expiration_ts;
+        runtime_data->cm_limits->min_expiration_ts[0] = runtime_data->current_pv_minmax_ma.get_min_expiration_ts();
+        runtime_data->cm_limits->max_pv_expiration_ts = runtime_data->current_pv_minmax_ma.get_max_expiration_ts();
 
 #if ENABLE_PM_TRACE
         // Raw power values are guaranteed not to be NaN here.
         trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li %6li %6li",
             static_cast<int32_t>(runtime_data->power_at_meter_raw_w), static_cast<int32_t>(runtime_data->power_at_battery_raw_w), runtime_data->power_available_w,
-            pv_raw_ma, runtime_data->current_pv_minmax_ma.max, runtime_data->current_pv_minmax_ma.min, pv_long_min_ma);
+            pv_raw_ma, runtime_data->current_pv_minmax_ma.get_max(), runtime_data->current_pv_minmax_ma.get_min(), pv_long_min_ma);
 #endif
     }
 
@@ -1004,12 +821,12 @@ void PowerManager::update_energy()
                 }
 
                 // Preprocess meter value for CM. Estimates a sensible current value for the past 10s interval.
-                minmax_filter *phase_preproc_max_ma = runtime_data->currents_phase_preproc_max_ma + pm_phase;
-                update_minmax_filter(phase_current_meter_ma, phase_preproc_max_ma);
-                mavg_filter *phase_preproc_mavg_ma = runtime_data->currents_phase_preproc_mavg_ma + pm_phase;
-                int32_t phase_preproc_mavg_val_ma = update_mavg_filter(phase_current_meter_ma, phase_preproc_mavg_ma);
+                MinMaxFilter *phase_preproc_max_ma = runtime_data->currents_phase_preproc_max_ma + pm_phase;
+                phase_preproc_max_ma->update(phase_current_meter_ma);
+                MavgFilter *phase_preproc_mavg_ma = runtime_data->currents_phase_preproc_mavg_ma + pm_phase;
+                int32_t phase_preproc_mavg_val_ma = phase_preproc_mavg_ma->update(phase_current_meter_ma);
 
-                int32_t phase_max_mavg_ma = (phase_preproc_max_ma->max + phase_preproc_mavg_val_ma) / 2;
+                int32_t phase_max_mavg_ma = (phase_preproc_max_ma->get_max() + phase_preproc_mavg_val_ma) / 2;
 
                 int32_t phase_preproc_ma;
                 if (phase_current_meter_ma < runtime_data->currents_phase_preproc_mavg_limit) {
@@ -1035,7 +852,7 @@ void PowerManager::update_energy()
 
                 // Update low-level state
                 state_i_meter  ->get(pm_phase)->updateInt(phase_current_meter_ma);
-                state_i_pp_max ->get(pm_phase)->updateInt(phase_preproc_max_ma->max);
+                state_i_pp_max ->get(pm_phase)->updateInt(phase_preproc_max_ma->get_max());
                 state_i_pp_mavg->get(pm_phase)->updateInt(phase_preproc_mavg_val_ma);
                 state_i_pp     ->get(pm_phase)->updateInt(phase_preproc_ma);
 
@@ -1076,12 +893,14 @@ void PowerManager::update_energy()
                 phase_limit_raw_ma = min(phase_limit_raw_ma, runtime_data->max_current_limited_ma);
 
                 // Calculate min
-                minmax_filter *phase_min_ma = runtime_data->currents_phase_min_ma + pm_phase;
-                update_minmax_filter(phase_limit_raw_ma, phase_min_ma);
+                MinMaxFilter *phase_min_ma_filter = runtime_data->currents_phase_min_ma + pm_phase;
+                phase_min_ma_filter->update(phase_limit_raw_ma);
 
                 // Calculate long min
+                MinMaxFilter *phase_long_min_ma_filter = runtime_data->currents_phase_long_min_ma + pm_phase;
+
                 if (runtime_data->current_long_min_iterations == 0) {
-                    update_minmax_filter(runtime_data->currents_phase_floating_min_ma[pm_phase], runtime_data->currents_phase_long_min_ma + pm_phase);
+                    phase_long_min_ma_filter->update(runtime_data->currents_phase_floating_min_ma[pm_phase]);
 
                     runtime_data->currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
                 } else {
@@ -1090,14 +909,14 @@ void PowerManager::update_energy()
                     }
                 }
 
-                int32_t phase_long_min_ma = std::min(runtime_data->currents_phase_floating_min_ma[pm_phase], runtime_data->currents_phase_long_min_ma[pm_phase].min);
+                const int32_t phase_long_min_ma = std::min(runtime_data->currents_phase_floating_min_ma[pm_phase], phase_long_min_ma_filter->get_min());
 
                 // Store limits
                 runtime_data->cm_limits->raw[cm_phase] = phase_limit_raw_ma;
-                runtime_data->cm_limits->min[cm_phase] = phase_min_ma->min;
+                runtime_data->cm_limits->min[cm_phase] = phase_min_ma_filter->get_min();
                 runtime_data->cm_limits->spread[cm_phase] = phase_long_min_ma;
 
-                runtime_data->cm_limits->min_expiration_ts[cm_phase] = phase_min_ma->min_expiration_ts;
+                runtime_data->cm_limits->min_expiration_ts[cm_phase] = phase_min_ma_filter->get_min_expiration_ts();
 
 #if ENABLE_PM_TRACE
                 // Only add rule before first phase if PV is active.
@@ -1107,7 +926,7 @@ void PowerManager::update_energy()
                 }
                 trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li %6li %6li",
                     phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
-                    phase_limit_raw_ma, phase_min_ma->min, phase_long_min_ma);
+                    phase_limit_raw_ma, phase_min_ma_filter->get_min(), phase_long_min_ma);
 #endif
             }
         }
@@ -1288,3 +1107,211 @@ bool PowerManager::has_triggered(const Config *conf, void *data)
     return false;
 }
 #endif
+
+PowerManager::MinMaxFilter::~MinMaxFilter()
+{
+    deinit();
+}
+
+void PowerManager::MinMaxFilter::init(size_t values_count, PowerManager::FilterType filter_type)
+{
+    assert(history_values == nullptr);
+
+    if (values_count <= 0) {
+        logger.printfln("Cannot create minmax filter with %zu values.", values_count);
+        values_count = 1;
+    }
+
+    history_length = static_cast<decltype(history_length)>(values_count);
+    history_values = static_cast<decltype(history_values)>(heap_caps_malloc_prefer(values_count * sizeof(history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM)); // Prefer IRAM
+    type = filter_type;
+}
+
+void PowerManager::MinMaxFilter::deinit()
+{
+    if (history_values != nullptr) {
+        free(history_values);
+    }
+
+    new(this) MinMaxFilter{};
+}
+
+static micros_t calculate_minmax_filter_expiration_timestamp(int32_t value_pos, int32_t current_pos, int32_t history_length)
+{
+    int32_t expiration_in_samples = value_pos - current_pos;
+
+    if (expiration_in_samples < 0) {
+        expiration_in_samples += history_length;
+    }
+
+    const millis_t expiration_in_ms{expiration_in_samples * PM_TASK_DELAY_MS}; // Would overflow for durations of about 24 days, which is far beyond the capacity of this filter.
+
+    return now_us() + micros_t{expiration_in_ms};
+}
+
+void PowerManager::MinMaxFilter::update(int32_t new_value)
+{
+    // Check if filter history needs to be initialized
+    if (min == INT32_MAX) {
+        min = new_value;
+        max = type == PowerManager::FilterType::MinOnly ? -1 : new_value; // Unused max uses -1 to avoid underflows from INT32_MIN
+
+        if (history_length <= 0) {
+            abort_on_invalid_history_length(history_length);
+        } else if (history_length == 1) {
+            history_pos = 0; // History contains only a single value, next value will overwrite.
+        } else {
+            history_pos = 1; // Position for next value
+        }
+        history_min_pos = 0;
+        history_max_pos = 0;
+
+        const micros_t expiration = now_us() + millis_t{history_length * PM_TASK_DELAY_MS};
+        min_expiration_ts = expiration;
+        max_expiration_ts = expiration;
+
+        history_values[0] = new_value;
+        // Other values don't need to be initialized because they won't be read before the first value is removed,
+        // at which point all values must have been written.
+
+        return;
+    }
+
+    history_values[history_pos] = new_value;
+
+    if (type != PowerManager::FilterType::MaxOnly) {
+        if (new_value <= min) {
+            min = new_value;
+            history_min_pos = history_pos;
+            min_expiration_ts = now_us() + millis_t{history_length * PM_TASK_DELAY_MS};
+        } else {
+            if (history_min_pos == history_pos) {
+                // Current minimum was just replaced, need to find new minimum.
+                int32_t *values = history_values;
+                int32_t min_value = INT32_MAX;
+                int32_t min_pos = 0;
+
+                // Search older data after current position in history
+                for (int32_t i = history_pos + 1; i < history_length; i++) {
+                    if (values[i] <= min_value) {
+                        min_value = values[i];
+                        min_pos = i;
+                    }
+                }
+                // Search newer data before current position in history
+                for (int32_t i = 0; i <= history_pos; i++) {
+                    if (values[i] <= min_value) {
+                        min_value = values[i];
+                        min_pos = i;
+                    }
+                }
+
+                min = min_value;
+                history_min_pos = min_pos;
+                min_expiration_ts = calculate_minmax_filter_expiration_timestamp(min_pos, history_pos, history_length);
+            }
+        }
+    }
+
+    if (type != PowerManager::FilterType::MinOnly) {
+        if (new_value >= max) {
+            max = new_value;
+            history_max_pos = history_pos;
+            max_expiration_ts = now_us() + millis_t{history_length * PM_TASK_DELAY_MS};
+        } else {
+            if (history_max_pos == history_pos) {
+                // Current maximum was just replaced, need to find new maximum.
+                int32_t *values = history_values;
+                int32_t max_value = INT32_MIN;
+                int32_t max_pos = 0;
+
+                // Search older data after current position in history
+                for (int32_t i = history_pos + 1; i < history_length; i++) {
+                    if (values[i] >= max_value) {
+                        max_value = values[i];
+                        max_pos = i;
+                    }
+                }
+                // Search newer data before current position in history
+                for (int32_t i = 0; i <= history_pos; i++) {
+                    if (values[i] >= max_value) {
+                        max_value = values[i];
+                        max_pos = i;
+                    }
+                }
+
+                max = max_value;
+                history_max_pos = max_pos;
+                max_expiration_ts = calculate_minmax_filter_expiration_timestamp(max_pos, history_pos, history_length);
+            }
+        }
+    }
+
+    history_pos++;
+    if (history_pos >= history_length) {
+        history_pos = 0;
+    }
+    history_pos = history_pos;
+}
+
+PowerManager::MavgFilter::~MavgFilter()
+{
+    deinit();
+}
+
+void PowerManager::MavgFilter::init(size_t values_count)
+{
+    if (values_count <= 0) {
+        logger.printfln("Cannot create mavg filter with %zu values.", values_count);
+        values_count = 1;
+    }
+
+    mavg_values_count = static_cast<decltype(mavg_values_count)>(values_count);
+    mavg_values       = static_cast<decltype(mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
+}
+
+void PowerManager::MavgFilter::deinit()
+{
+    if (mavg_values != nullptr) {
+        free(mavg_values);
+    }
+
+    new(this) MavgFilter{};
+}
+
+int32_t PowerManager::MavgFilter::update(int32_t filter_input)
+{
+    // Check if filter values need to be initialized
+    if (filtered_val == INT32_MAX) {
+        int32_t values_count = mavg_values_count;
+
+        filtered_val = filter_input;
+        mavg_total = filter_input * values_count;
+
+        int32_t *values = mavg_values;
+        int32_t *values_end = values + values_count;
+        while (values < values_end) {
+            *values = filter_input;
+            values++;
+        }
+
+        return filter_input;
+    }
+
+    mavg_total = mavg_total - mavg_values[mavg_position] + filter_input;
+    mavg_values[mavg_position] = filter_input;
+
+    mavg_position++;
+    if (mavg_position >= mavg_values_count) {
+        mavg_position = 0;
+    }
+    mavg_position = mavg_position;
+
+    // Signed division requires both numbers to be signed
+    static_assert(std::is_same<int32_t, decltype(mavg_total       )>::value, "filter's mavg_total must be signed");
+    static_assert(std::is_same<int32_t, decltype(mavg_values_count)>::value, "filter's mavg_values_count must be signed");
+
+    filtered_val = mavg_total / mavg_values_count;
+
+    return filtered_val;
+}

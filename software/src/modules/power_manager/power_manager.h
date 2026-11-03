@@ -90,13 +90,32 @@ public:
 
     void print_trace_header() const;
 
+private:
     enum class FilterType : uint8_t {
         MinOnly = 0,
         MaxOnly = 1,
         MinMax  = 2,
     };
 
-    struct minmax_filter {
+    class MinMaxFilter final {
+    public:
+        MinMaxFilter() = default;
+        MinMaxFilter(const MinMaxFilter &other) = delete;
+        MinMaxFilter(MinMaxFilter &&other) = delete;
+        MinMaxFilter& operator=(MinMaxFilter &other) = delete;
+        MinMaxFilter& operator=(MinMaxFilter &&other) = delete;
+        ~MinMaxFilter();
+
+        void init(size_t values_count, PowerManager::FilterType filter_type);
+        void deinit();
+        void update(int32_t new_value);
+
+        inline micros_t get_min_expiration_ts() {return min_expiration_ts;}
+        inline micros_t get_max_expiration_ts() {return max_expiration_ts;}
+        inline int32_t get_min() {return min;}
+        inline int32_t get_max() {return max;}
+
+    private:
         micros_t min_expiration_ts = 0_us;
         micros_t max_expiration_ts = 0_us;
         int32_t  min               = INT32_MAX;
@@ -109,7 +128,20 @@ public:
         FilterType type            = FilterType::MinOnly;
     };
 
-    struct mavg_filter {
+    class MavgFilter {
+    public:
+        MavgFilter() = default;
+        MavgFilter(const MavgFilter &other) = delete;
+        MavgFilter(MavgFilter &&other) = delete;
+        MavgFilter& operator=(MavgFilter &other) = delete;
+        MavgFilter& operator=(MavgFilter &&other) = delete;
+        ~MavgFilter();
+
+        void init(size_t values_count);
+        void deinit();
+        int32_t update(int32_t filter_input);
+
+    private:
         int32_t  filtered_val       = INT32_MAX;
         int32_t *mavg_values        = nullptr;
         int32_t  mavg_total         = 0;
@@ -117,7 +149,6 @@ public:
         int32_t  mavg_position      = 0;
     };
 
-private:
     enum class TristateBool : uint8_t {
         False = 0,
         True = 1,
@@ -159,8 +190,8 @@ private:
         float    power_at_battery_raw_w = NAN;
         float    battery_soc_raw = NAN;
         int32_t  current_pv_floating_min_ma = INT32_MAX;
-        minmax_filter current_pv_minmax_ma;
-        minmax_filter current_pv_long_min_ma;
+        MinMaxFilter current_pv_minmax_ma;
+        MinMaxFilter current_pv_long_min_ma;
 
         // Raw currents measured by meter
         int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
@@ -170,13 +201,13 @@ private:
         int32_t       currents_phase_preproc_interpolate_interval_quantized;
         // 1kA = 20 bits; interval_*_quantized max 11 bits; max interval = 18 bits -> quantization factor must save 7 bits
         const int32_t currents_phase_preproc_interpolate_quantization_factor = 128;
-        minmax_filter currents_phase_preproc_max_ma[3];
-        mavg_filter   currents_phase_preproc_mavg_ma[3];
+        MinMaxFilter currents_phase_preproc_max_ma[3];
+        MavgFilter   currents_phase_preproc_mavg_ma[3];
         // Short filter (4min)
-        minmax_filter currents_phase_min_ma[3];
+        MinMaxFilter currents_phase_min_ma[3];
         // Long filter (1h)
         int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-        minmax_filter currents_phase_long_min_ma[3];
+        MinMaxFilter currents_phase_long_min_ma[3];
 
         // CM data
         CurrentLimits *cm_limits          = nullptr;
