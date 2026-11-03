@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
 let x = {
     "remote_access": {
@@ -45,13 +46,13 @@ let x = {
             "auth_token": "Authorization token",
             "auth_token_help": /*FFN*/(host: string, port: number) => <>Paste the authorization token of the account you want to add here. The token can be created here: <a href={`https://${host}${port === 443 ? '' : ':' + port}/tokens`} target="_blank">{host}{port === 443 ? '' : ':' + port}</a></> /*NF*/,
             "auth_method": "Authorization method",
-            "service_token_register": "Register with service token",
-            "service_token_register_desc": /*FFN*/(host: string) => <>Allows Tinkerforge support to access this device. Access expires automatically after 24 hours unless it is extended.</> /*NF*/,
-            "service_token_register_active_desc": /*FFN*/(host: string, remaining: number) => <>Your device is currently connected to the Tinkerforge service account on <a href={`https://${host}/`}>{host}</a>. The connection will be disconnected automatically in {Math.floor(remaining / 60)} h {remaining % 60} min. You can use the button below to reset the timer to 24 h.</> /*NF*/,
-            "service_token_extend": "Extend service token by 24 h",
-            "service_token_register_failed": "Service token registration failed:",
-            "service_token_register_in_progress": "Requesting service token from relay",
-            "service_token_badge": "Service",
+            "service_token_register": `Activate ${options.MANUFACTURER} support access`,
+            "service_token_register_desc": /*FFN*/(host: string) => <>Allows {options.MANUFACTURER} support to access {__("this_device")}. Access expires automatically after 24 hours unless it is extended.</> /*NF*/,
+            "service_token_register_active_desc": /*FFN*/(host: string, remaining: string) => <>The {options.MANUFACTURER} service account may access {__("this_device")} for {remaining}.</> /*NF*/,
+            "service_token_extend": "Extend support access by 24 h",
+            "service_token_register_failed": "Support access activation failed:",
+            "service_token_register_in_progress": "Requesting support access token from relay",
+            "service_token_badge": "support access",
             "ping": "Ping",
             "start_ping": "Start ping",
             "stop_ping": "Stop ping",
