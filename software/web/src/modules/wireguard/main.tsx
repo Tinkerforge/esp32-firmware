@@ -40,6 +40,8 @@ import { Button } from "react-bootstrap";
 import { InputHost } from "ts/components/input_host";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
+import "./wireguard";
+
 export function WireguardNavbar() {
     return (
         <NavbarItem name="wireguard" module="wireguard" title={__("wireguard.navbar.wireguard")} symbol={
