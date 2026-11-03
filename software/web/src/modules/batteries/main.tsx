@@ -193,6 +193,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         get_column_fast_chg_cond(rule_config.fast_chg_cond),
                         get_column_action(rule_config.action),
                     ],
+                    fieldHideEmptyValue: [false, false, true, true, true, true, true, true, false],
                     editTitle: this.props.category == "charge" ? __("batteries.content.edit_rule_title_charge") : __("batteries.content.edit_rule_title_discharge"),
                     onEditShow: async () => {
                         this.setState({edit_rule_config: {...rule_config}, all_conditions_ignored: false});

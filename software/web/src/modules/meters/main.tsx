@@ -992,6 +992,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     extraFieldName: __("meters.content.detailed_values"),
                                     extraValue: extraValue,
                                     fieldWithBox: [true, true, true, true, true, false],
+                                    fieldHideEmptyValue: [false, false, true, true, true, true],
                                     editTitle: __("meters.content.edit_meter_title"),
                                     onEditShow: async () => {
                                         let config_plugin = config_plugins[config[0]];

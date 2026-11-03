@@ -37,6 +37,7 @@ export interface TableRow {
     fieldNames?: string[];
     fieldValues?: ComponentChild[];
     fieldWithBox?: boolean[];
+    fieldHideEmptyValue?: boolean[];
     editTitle?: string;
     onEditShow?: () => Promise<void>;
     onEditGetChildren?: () => ComponentChildren;
@@ -86,8 +87,12 @@ interface TableState {
     showRowExtra: boolean[/*row_index*/];
 }
 
-const value_or_else = (value: ComponentChild, replacement: ComponentChild): ComponentChild => {
-    if (util.hasValue(value)) {
+function value_is_empty(value: ComponentChild) {
+    return !util.hasValue(value) || value === '';
+}
+
+function value_or_else(value: ComponentChild, replacement: ComponentChild) {
+    if (!value_is_empty(value)) {
         return value;
     }
 
@@ -114,13 +119,23 @@ export class Table extends Component<TableProps, TableState> {
             values.pop();
         }
 
-        return names.map((name, i) => name ?
-            <FormRow label={name}>
-                {!util.hasValue(row.fieldWithBox) || row.fieldWithBox[i + 1] ?
-                    <span class="form-control" style="height: unset;">{value_or_else(values[i], <>&nbsp;</>)}</span>
-                    : <>{values[i]}</>}
-            </FormRow>
-            : (value_or_else(values[i], undefined)));
+        let fields = [];
+
+        for (let i = 0; i < names.length; ++i) {
+            if (util.hasValue(row.fieldHideEmptyValue) && row.fieldHideEmptyValue[i + 1] && value_is_empty(values[i])) {
+                continue
+            }
+
+            fields.push(!value_is_empty(names[i]) ?
+                <FormRow label={names[i]}>
+                    {!util.hasValue(row.fieldWithBox) || row.fieldWithBox[i + 1] ?
+                        <span class="form-control" style="height: unset;">{value_or_else(values[i], <>&nbsp;</>)}</span>
+                        : <>{values[i]}</>}
+                </FormRow>
+                : (value_or_else(values[i], undefined)));
+        }
+
+        return fields;
     }
 
     render(props: TableProps, state: TableState) {
