@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
 let x = {
     "remote_access": {
@@ -45,13 +46,13 @@ let x = {
             "auth_token": "Autorisierungstoken",
             "auth_token_help": /*FFN*/(host: string, port: number) => <>Autorisierungstoken des Accounts, der hinzugefügt werden soll, hier einfügen. Das Token kann unter <a href={`https://${host}${port === 443 ? '' : ':' + port}/tokens`} target="_blank">{host}{port === 443 ? '' : ':' + port}</a> erstellt werden.</> /*NF*/,
             "auth_method": "Autorisierungsmethode",
-            "service_token_register": "Mit Service-Token registrieren",
-            "service_token_register_desc": /*FFN*/(host: string) => <>Erlaubt dem Tinkerforge-Support auf dieses Gerät zuzugreifen. Der Zugriff erlischt nach spätestens 24h automatisch, sofern er nicht verlängert wird.</> /*NF*/,
-            "service_token_register_active_desc": /*FFN*/(host: string, remaining: number) => <>Dein Gerät ist aktuell mit dem Tinkerforge Service-Account auf <a href={`https://${host}/`}>{host}</a> verbunden. Die Verbindung wird in {Math.floor(remaining / 60)} h {remaining % 60} min automatisch wieder getrennt. Mit dem Knopf unten kannst du die Zeit auf 24h zurücksetzen.</> /*NF*/,
-            "service_token_extend": "Service-Token um 24 h verlängern",
-            "service_token_register_failed": "Service-Token-Registrierung fehlgeschlagen:",
-            "service_token_register_in_progress": "Fordere Service-Token vom Relay an",
-            "service_token_badge": "Service",
+            "service_token_register": `${options.MANUFACTURER}-Support-Zugriff aktivieren`,
+            "service_token_register_desc": /*FFN*/(host: string) => <>Erlaubt dem {options.MANUFACTURER}-Support auf {__("this_device")} zuzugreifen. Der Zugriff erlischt nach spätestens 24h automatisch, sofern er nicht verlängert wird.</> /*NF*/,
+            "service_token_register_active_desc": /*FFN*/(host: string, remaining: string) => <>Der {options.MANUFACTURER} Service-Account darf noch {remaining} auf {__("this_device")} zugreifen.</> /*NF*/,
+            "service_token_extend": "Support-Zugriff um 24 h verlängern",
+            "service_token_register_failed": "Aktivierung des Support-Zugriffs fehlgeschlagen:",
+            "service_token_register_in_progress": "Fordere Support-Zugriffs-Token vom Relay an",
+            "service_token_badge": "Support-Zugriff",
             "ping": "Ping",
             "start_ping": "Ping starten",
             "stop_ping": "Ping stoppen",
