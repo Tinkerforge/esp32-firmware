@@ -2395,7 +2395,7 @@ void RemoteAccess::resolve_management()
 
             const String &public_key = user.get("public_key")->asString();
             if (public_key.length() != 0) {
-                auto key = decode_base64(public_key, 32);
+                auto key = decode_base64(public_key, crypto_box_PUBLICKEYBYTES);
 
                 auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
                 crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), key.get());
