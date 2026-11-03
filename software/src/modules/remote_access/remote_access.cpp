@@ -52,8 +52,9 @@
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-#define WG_KEY_LENGTH 45
-#define KEY_SIZE (3 * WG_KEY_LENGTH)
+static constexpr size_t WG_KEY_LENGTH = 44;
+static constexpr size_t WG_NULL_TERMINATED_KEY_LENGTH = 45;
+static constexpr size_t KEY_SIZE = 3 * WG_KEY_LENGTH;
 #define KEY_DIRECTORY "/remote-access-keys"
 // Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
 #define MAX_HTTP_BODY_BYTES 5120
@@ -238,24 +239,24 @@ static bool generate_wg_key(WgKey &key)
     crypto_box_keypair(pub_raw, priv_raw);
     randombytes_buf(psk_raw, sizeof(psk_raw));
 
-    char priv_b64[WG_KEY_LENGTH];
-    char pub_b64[WG_KEY_LENGTH];
-    char psk_b64[WG_KEY_LENGTH];
+    char priv_b64[WG_NULL_TERMINATED_KEY_LENGTH];
+    char pub_b64[WG_NULL_TERMINATED_KEY_LENGTH];
+    char psk_b64[WG_NULL_TERMINATED_KEY_LENGTH];
 
     size_t priv_len = 0;
     size_t pub_len  = 0;
     size_t psk_len  = 0;
-    int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(priv_b64), WG_KEY_LENGTH, &priv_len, priv_raw, sizeof(priv_raw));
+    int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(priv_b64), std::size(priv_b64), &priv_len, priv_raw, sizeof(priv_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard private key");
         return false;
     }
-    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(pub_b64), WG_KEY_LENGTH, &pub_len, pub_raw, sizeof(pub_raw));
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(pub_b64), std::size(pub_b64), &pub_len, pub_raw, sizeof(pub_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard public key");
         return false;
     }
-    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(psk_b64), WG_KEY_LENGTH, &psk_len, psk_raw, sizeof(psk_raw));
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(psk_b64), std::size(psk_b64), &psk_len, psk_raw, sizeof(psk_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard pre-shared key");
         return false;
@@ -2652,10 +2653,10 @@ void RemoteAccess::connect_management()
     const IPAddress allowed_ip      (IPv4);
     const IPAddress allowed_subnet  (IPv4);
 
-    auto key_buf = heap_alloc_array<char>(3 * (WG_KEY_LENGTH + 1));
-    char *private_key       = key_buf.get() + 0 * (WG_KEY_LENGTH + 1);
-    char *psk               = key_buf.get() + 1 * (WG_KEY_LENGTH + 1);
-    char *remote_public_key = key_buf.get() + 2 * (WG_KEY_LENGTH + 1);
+    auto key_buf = heap_alloc_array<char>(3 * (WG_NULL_TERMINATED_KEY_LENGTH));
+    char *private_key       = key_buf.get() + 0 * (WG_NULL_TERMINATED_KEY_LENGTH);
+    char *psk               = key_buf.get() + 1 * (WG_NULL_TERMINATED_KEY_LENGTH);
+    char *remote_public_key = key_buf.get() + 2 * (WG_NULL_TERMINATED_KEY_LENGTH);
 
     if (!get_key(0, 0, private_key, psk, remote_public_key)) {
         logger.printfln("Can't connect to management server: no WireGuard key installed!");
@@ -2729,9 +2730,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
     const IPAddress allowed_ip      (IPv4);
     const IPAddress allowed_subnet  (IPv4);
 
-    char private_key[WG_KEY_LENGTH + 1];
-    char psk[WG_KEY_LENGTH + 1];
-    char remote_public_key[WG_KEY_LENGTH + 1];
+    char private_key[WG_NULL_TERMINATED_KEY_LENGTH];
+    char psk[WG_NULL_TERMINATED_KEY_LENGTH];
+    char remote_public_key[WG_NULL_TERMINATED_KEY_LENGTH];
 
     uint8_t conn_id = i % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
     uint8_t user_id = i / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
