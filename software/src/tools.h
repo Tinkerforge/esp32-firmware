@@ -195,12 +195,13 @@ struct CoolArray {
     T *end() { return val + used; }
     const T *cend() const { return val + used; }
 
-    void add(T &&elem) {
+    T &add(T &&elem) {
         if (used >= capacity_)
             esp_system_abort("CoolArray was full!");
 
         val[used] = std::move(elem);
         ++used;
+        return val[used - 1];
     }
 
     [[nodiscard]]
@@ -213,12 +214,13 @@ struct CoolArray {
         return true;
     }
 
-    void push_back(T elem) {
+    T &push_back(T elem) {
         if (used >= capacity_)
             esp_system_abort("CoolArray was full!");
 
         val[used] = elem;
         ++used;
+        return val[used - 1];
     }
 
     T *data() { return val; }
