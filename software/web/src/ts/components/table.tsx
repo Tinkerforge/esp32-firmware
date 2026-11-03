@@ -113,12 +113,6 @@ export class Table extends Component<TableProps, TableState> {
     get_card_fields(row: TableRow) {
         let names = (util.hasValue(row.fieldNames) ? row.fieldNames : this.props.columnNames).slice(1);
         let values = (util.hasValue(row.fieldValues) ? row.fieldValues : row.columnValues).slice(1);
-
-        while (values.length > 0 && !util.hasValue(values[values.length - 1])) {
-            names.pop();
-            values.pop();
-        }
-
         let fields = [];
 
         for (let i = 0; i < names.length; ++i) {
