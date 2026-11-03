@@ -247,36 +247,77 @@ static bool generate_wg_key(WgKey &key)
     uint8_t priv_raw[crypto_box_SECRETKEYBYTES];
     uint8_t pub_raw[crypto_box_PUBLICKEYBYTES];
     uint8_t psk_raw[crypto_box_SECRETKEYBYTES];
+    defer {
+        sodium_memzero(priv_raw, std::size(priv_raw));
+        sodium_memzero(pub_raw, std::size(pub_raw));
+        sodium_memzero(psk_raw, std::size(psk_raw));
+    };
 
-    crypto_box_keypair(pub_raw, priv_raw);
-    randombytes_buf(psk_raw, sizeof(psk_raw));
+    if (auto rc = crypto_box_keypair(pub_raw, priv_raw); rc != 0)  {
+        logger.printfln("Failed to create crypto_box_keypair: %d", rc);
+        return false;
+    }
 
-    char priv_b64[WG_NULL_TERMINATED_KEY_LENGTH];
-    char pub_b64[WG_NULL_TERMINATED_KEY_LENGTH];
-    char psk_b64[WG_NULL_TERMINATED_KEY_LENGTH];
+    randombytes_buf(psk_raw, crypto_box_SECRETKEYBYTES);
 
-    size_t priv_len = 0;
-    size_t pub_len  = 0;
-    size_t psk_len  = 0;
-    int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(priv_b64), std::size(priv_b64), &priv_len, priv_raw, sizeof(priv_raw));
+    // Make sure reserving causes heap allocations.
+    // We don't want to hold keys on the stack.
+    static_assert(decltype(key.priv)::MAX_SSO < WG_NULL_TERMINATED_KEY_LENGTH);
+    static_assert(decltype(key.pub)::MAX_SSO < WG_NULL_TERMINATED_KEY_LENGTH);
+    static_assert(decltype(key.psk)::MAX_SSO < WG_NULL_TERMINATED_KEY_LENGTH);
+
+    if (!key.priv.reserve(WG_NULL_TERMINATED_KEY_LENGTH)) {
+        logger.printfln("Failed to alloc private key buffer");
+        return false;
+    }
+    if (!key.pub.reserve(WG_NULL_TERMINATED_KEY_LENGTH)) {
+        logger.printfln("Failed to alloc public key buffer");
+        return false;
+    }
+    if (!key.psk.reserve(WG_NULL_TERMINATED_KEY_LENGTH)) {
+        logger.printfln("Failed to alloc PSK buffer");
+        return false;
+    }
+
+    size_t written = 0;
+    int ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(key.priv.begin()), key.priv.getCapacity() + 1 /*null-terminator is writable*/, &written, priv_raw, sizeof(priv_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard private key");
         return false;
     }
-    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(pub_b64), std::size(pub_b64), &pub_len, pub_raw, sizeof(pub_raw));
+    if (written != WG_KEY_LENGTH) {
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard private key");
+        logger.printfln_continue("wrote %zu instead of %zu", written, WG_KEY_LENGTH);
+        return false;
+    }
+
+    written = 0;
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(key.pub.begin()), key.pub.getCapacity() + 1 /*null-terminator is writable*/, &written, pub_raw, sizeof(pub_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard public key");
         return false;
     }
-    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(psk_b64), std::size(psk_b64), &psk_len, psk_raw, sizeof(psk_raw));
+    if (written != WG_KEY_LENGTH) {
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard public key");
+        logger.printfln_continue("wrote %zu instead of %zu", written, WG_KEY_LENGTH);
+        return false;
+    }
+
+    written = 0;
+    ret = mbedtls_base64_encode(reinterpret_cast<uint8_t *>(key.psk.begin()), key.psk.getCapacity() + 1 /*null-terminator is writable*/, &written, psk_raw, sizeof(psk_raw));
     if (ret != 0) {
         log_mbedtls_error(ret, "Failed to base64-encode WireGuard pre-shared key");
         return false;
     }
+    if (written != WG_KEY_LENGTH) {
+        log_mbedtls_error(ret, "Failed to base64-encode WireGuard pre-shared key");
+        logger.printfln_continue("wrote %zu instead of %zu", written, WG_KEY_LENGTH);
+        return false;
+    }
 
-    key.priv = String(priv_b64, priv_len);
-    key.pub  = String(pub_b64,  pub_len);
-    key.psk  = String(psk_b64,  psk_len);
+    key.priv.setLength(WG_KEY_LENGTH);
+    key.pub.setLength(WG_KEY_LENGTH);
+    key.psk.setLength(WG_KEY_LENGTH);
     return true;
 }
 
