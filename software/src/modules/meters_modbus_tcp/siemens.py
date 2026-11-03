@@ -238,9 +238,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 805,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Wirkarbeit Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 809,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 813,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -252,9 +266,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 821,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',
                 'start_address': 825,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 829,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -266,9 +294,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 837,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Wirkarbeit Bezug Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL1Import',
                 'start_address': 841,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 845,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -280,9 +322,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 853,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Blindarbeit Bezug Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL1Inductive',
                 'start_address': 857,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 861,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -294,9 +350,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 869,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Scheinarbeit Tarif 1 [VAh]',
                 'value_id': 'EnergyApparentL1ImExSum',  # FIXME: sum?
                 'start_address': 873,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 877,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -308,9 +378,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 885,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Wirkarbeit Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL2Export',
                 'start_address': 889,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 893,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -322,9 +406,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 901,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL2Capacitive',
                 'start_address': 905,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 909,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -336,9 +434,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 917,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Wirkarbeit Bezug Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL3Import',
                 'start_address': 921,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 925,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -350,6 +462,13 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 933,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Blindarbeit Bezug Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL3Inductive',
                 'start_address': 937,
@@ -357,9 +476,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 941,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL3Capacitive',
                 'start_address': 945,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 949,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -602,9 +735,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 805,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Wirkarbeit Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveLSumExportResettable',  # FIXME: add reset logic
                 'start_address': 809,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 813,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -616,9 +763,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 821,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 825,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 829,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -630,9 +791,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 837,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Wirkarbeit Bezug Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL1ImportResettable',  # FIXME: add reset logic
                 'start_address': 841,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 845,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -644,9 +819,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 853,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Blindarbeit Bezug Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME: add reset logic
                 'start_address': 857,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 861,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -658,9 +847,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 869,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Scheinarbeit Tarif 1 [VAh]',
                 'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME: sum? add reset logic
                 'start_address': 873,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 877,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -672,9 +875,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 885,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Wirkarbeit Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL2ExportResettable',  # FIXME: add reset logic
                 'start_address': 889,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 893,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -686,9 +903,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 901,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL2CapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 905,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 909,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -700,9 +931,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Scheinarbeit Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 917,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Wirkarbeit Bezug Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL3ImportResettable',  # FIXME: add reset logic
                 'start_address': 921,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 925,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -714,6 +959,13 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 933,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Blindarbeit Bezug Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL3InductiveResettable',  # FIXME: add reset logic
                 'start_address': 937,
@@ -721,9 +973,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 941,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL3CapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 945,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 949,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -965,9 +1231,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Wirkarbeit Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 805,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Wirkarbeit Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveLSumExportResettable',  # FIXME: add reset logic
                 'start_address': 809,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Wirkarbeit Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 813,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -979,9 +1259,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Blindarbeit Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 821,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 825,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Blindarbeit Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 829,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1224,9 +1518,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Bezogene Wirkenergie Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 805,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Gelieferte Wirkenergie Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveLSumExportResettable',  # FIXME: add reset logic
                 'start_address': 809,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Gelieferte Wirkenergie Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 813,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1238,9 +1546,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Bezogene Blindenergie Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 821,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Gelieferte Blindenergie Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 825,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Gelieferte Blindenergie Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 829,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1447,9 +1769,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Wirkenergie Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 805,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Wirkenergie Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveLSumExportResettable',  # FIXME: add reset logic
                 'start_address': 809,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Wirkenergie Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 813,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1461,9 +1797,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Blindenergie Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 821,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'Blindenergie Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 825,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Blindenergie Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 829,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1475,9 +1825,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'Scheinenergie Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 837,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Wirkenergie Bezug Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL1ImportResettable',  # FIXME: add reset logic
                 'start_address': 841,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Wirkenergie Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 845,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1489,9 +1853,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Wirkenergie Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 853,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Blindenergie Bezug Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME: add reset logic
                 'start_address': 857,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Blindenergie Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 861,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1503,9 +1881,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L1 Blindenergie Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 869,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L1 Scheinenergie Tarif 1 [VAh]',
                 'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME: sum? add reset logic
                 'start_address': 873,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L1 Scheinenergie Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 877,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1517,9 +1909,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Wirkenergie Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 885,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Wirkenergie Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL2ExportResettable',  # FIXME: add reset logic
                 'start_address': 889,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Wirkenergie Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 893,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1531,6 +1937,13 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Blindenergie Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 901,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Blindenergie Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL2CapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 905,
@@ -1538,9 +1951,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L2 Blindenergie Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 909,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L2 Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME: sum?
+                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME: sum? add reset logic
                 'start_address': 913,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L2 Scheinenergie Tarif 2 [VAh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 917,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1552,9 +1979,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Wirkenergie Bezug Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 925,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Wirkenergie Abgabe Tarif 1 [Wh]',
                 'value_id': 'EnergyActiveL3ExportResettable',  # FIXME: add reset logic
                 'start_address': 929,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Wirkenergie Abgabe Tarif 2 [Wh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 933,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },
@@ -1566,9 +2007,23 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
+                'name': 'L3 Blindenergie Bezug Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 941,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
                 'name': 'L3 Blindenergie Abgabe Tarif 1 [varh]',
                 'value_id': 'EnergyReactiveL3CapacitiveResettable',  # FIXME: add reset logic
                 'start_address': 945,
+                'value_type': 'F64BE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'L3 Blindenergie Abgabe Tarif 2 [varh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 949,
                 'value_type': 'F64BE',
                 'scale_factor': 0.001,
             },

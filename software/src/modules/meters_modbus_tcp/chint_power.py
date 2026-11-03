@@ -253,6 +253,24 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Undocumented 1',  # this register is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0826,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Undocumented 2',  # this register is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0827,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Undocumented 3',  # this register is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0828,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Grid active power L1 [0.01 kW]',
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 0x0829,

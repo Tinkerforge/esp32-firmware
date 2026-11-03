@@ -261,21 +261,21 @@ specs = [
             },
             {
                 'name': 'Grid Side Internal Current A [0.01 A]',
-                'value_id': 'VALUE_ID_DEBUG',
+                'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 610,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
                 'name': 'Grid Side Internal Current B [0.01 A]',
-                'value_id': 'VALUE_ID_DEBUG',
+                'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 611,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
                 'name': 'Grid Side Internal Current C [0.01 A]',
-                'value_id': 'VALUE_ID_DEBUG',
+                'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 612,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
@@ -504,6 +504,27 @@ specs = [
                 'start_address': 646,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Load Phase Current A No Use [0.01 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 647,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Load Phase Current B No Use [0.01 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 648,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Load Phase Current C No Use [0.01 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 649,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Load Phase Power A [W]',

@@ -241,6 +241,24 @@ monophase_values = [
         'value_type': 'F32LE',
     },
     {
+        'name': 'Channel 1 overpower error',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 2013,
+        'value_type': 'U16',
+    },
+    {
+        'name': 'Channel 1 overvoltage error',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 2014,
+        'value_type': 'U16',
+    },
+    {
+        'name': 'Channel 1 overcurrent error',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 2015,
+        'value_type': 'U16',
+    },
+    {
         'name': 'Channel 1 frequency [Hz]',
         'value_id': 'FrequencyL1',
         'start_address': 2016,
@@ -352,6 +370,18 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
+                'name': 'Neutral current mismatch',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1009,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Neutral overcurrent error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1010,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Total current [A]',
                 'value_id': 'CurrentLSumImExSum',
                 'start_address': 1011,
@@ -368,6 +398,24 @@ specs = [
                 'value_id': 'PowerApparentLSumImExSum',
                 'start_address': 1015,
                 'value_type': 'F32LE',
+            },
+            {
+                'name': 'Reserved 1',  # this register is marked as reserved in the documentation, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1017,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Reserved 2',  # this register is marked as reserved in the documentation, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1018,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Reserved 3',  # this register is marked as reserved in the documentation, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1019,
+                'value_type': 'U16',
             },
             {
                 'name': 'Phase A voltage [V]',
@@ -398,6 +446,24 @@ specs = [
                 'value_id': 'PowerFactorL1',
                 'start_address': 1028,
                 'value_type': 'F32LE',
+            },
+            {
+                'name': 'Phase A overpower error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1030,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase A overvoltage error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1031,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase A overcurrent error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1032,
+                'value_type': 'U16',
             },
             {
                 'name': 'Phase A frequency [Hz]',
@@ -436,6 +502,24 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
+                'name': 'Phase B overpower error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1050,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase B overvoltage error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1051,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase B overcurrent error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1052,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Phase B frequency [Hz]',
                 'value_id': 'FrequencyL2',
                 'start_address': 1053,
@@ -470,6 +554,24 @@ specs = [
                 'value_id': 'PowerFactorL3',
                 'start_address': 1068,
                 'value_type': 'F32LE',
+            },
+            {
+                'name': 'Phase C overpower error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1070,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase C overvoltage error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1071,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Phase C overcurrent error',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1072,
+                'value_type': 'U16',
             },
             {
                 'name': 'Phase C frequency [Hz]',

@@ -159,13 +159,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 45,
+            #    'start_number': 45,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 46,
+            #    'start_number': 46,
             #    'value_type': 'U16',
             #},
             {
@@ -183,13 +183,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 51,
+            #    'start_number': 51,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 52,
+            #    'start_number': 52,
             #    'value_type': 'U16',
             #},
             {
@@ -201,13 +201,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 55,
+            #    'start_number': 55,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 56,
+            #    'start_number': 56,
             #    'value_type': 'U16',
             #},
             {
@@ -219,13 +219,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 59,
+            #    'start_number': 59,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 60,
+            #    'start_number': 60,
             #    'value_type': 'U16',
             #},
             {
@@ -243,13 +243,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 65,
+            #    'start_number': 65,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 66,
+            #    'start_number': 66,
             #    'value_type': 'U16',
             #},
             {
@@ -261,13 +261,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 69,
+            #    'start_number': 69,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 70,
+            #    'start_number': 70,
             #    'value_type': 'U16',
             #},
             {
@@ -381,13 +381,13 @@ specs = [
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 247,
+            #    'start_number': 247,
             #    'value_type': 'U16',
             #},
             #{
             #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
             #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 248,
+            #    'start_number': 248,
             #    'value_type': 'U16',
             #},
             {

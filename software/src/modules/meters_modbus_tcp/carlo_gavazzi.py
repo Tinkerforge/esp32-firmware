@@ -2509,6 +2509,12 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Not available 1',  # these registers are documented as "not available" with value 0
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x88,
+                'value_type': 'S32LE',
+            },
+            {
                 'name': 'THD V L1-N [%]',
                 'value_id': 'VoltageTHDL1N',
                 'start_address': 0x8A,
@@ -2528,6 +2534,12 @@ specs = [
                 'start_address': 0x8E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Not available 2',  # these registers are documented as "not available" with value 0
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x90,
+                'value_type': 'S32LE',
             },
             {
                 'name': 'THD V L1-L2 [%]',

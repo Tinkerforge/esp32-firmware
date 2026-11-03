@@ -53,6 +53,20 @@ inverter_values = [
         'variants': ['String'],
     },
     {
+        'name': 'Reserved',  # this register is marked as reserved in the documentation, but testing showed that it can be read without error
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 5006,
+        'value_type': 'U32LE',
+        'variants': ['Hybrid'],
+    },
+    {
+        'name': 'Total running time [h]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 5006,
+        'value_type': 'U32LE',
+        'variants': ['String'],
+    },
+    {
         'name': 'Inside Temperature [0.1 °C]',
         'value_id': 'TemperatureCabinet',
         'start_number': 5008,
@@ -64,30 +78,6 @@ inverter_values = [
         'value_id': 'PowerApparentLSumImExDiff',
         'start_number': 5009,
         'value_type': 'U32LE',
-        'variants': ['String'],
-    },
-    {
-        'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
-        'value_id': 'CurrentL1Export',
-        'start_number': 5022,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-        'variants': ['String'],
-    },
-    {
-        'name': 'Phase B Current [0.1 A]',  # FIXME: not available for all device types
-        'value_id': 'CurrentL2Export',
-        'start_number': 5023,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-        'variants': ['String'],
-    },
-    {
-        'name': 'Phase C Current [0.1 A]',  # FIXME: not available for all device types
-        'value_id': 'CurrentL3Export',
-        'start_number': 5024,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
         'variants': ['String'],
     },
     {
@@ -184,6 +174,25 @@ inverter_phase_voltage_values = [
     },
 ]
 
+string_inverter_phase_voltage_gap_filler_values = [
+    {
+        'name': 'B-N Voltage [0.1 V]',  # FIXME: not available for all string device types
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 5020,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variants': ['String'],
+    },
+    {
+        'name': 'C-N Voltage [0.1 V]',  # FIXME: not available for all string device types
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 5021,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variants': ['String'],
+    },
+]
+
 inverter_line_voltage_values = [
     {
         'name': 'A-B Voltage [0.1 V]',  # FIXME: not available for all string device types
@@ -235,6 +244,52 @@ hybrid_inverter_phase_current_values = [
     },
 ]
 
+hybrid_inverter_phase_current_gap_filler_values = [
+    {
+        'name': 'Phase B Current [0.1 A]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 13032,
+        'value_type': 'S16',
+        'scale_factor': -0.1,  # FIXME: is the current always positive?
+        'variants': ['Hybrid'],
+    },
+    {
+        'name': 'Phase C Current [0.1 A]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_number': 13033,
+        'value_type': 'S16',
+        'scale_factor': -0.1,  # FIXME: is the current always positive?
+        'variants': ['Hybrid'],
+    },
+]
+
+string_inverter_phase_current_values = [
+    {
+        'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL1Export',
+        'start_number': 5022,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variants': ['String'],
+    },
+    {
+        'name': 'Phase B Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL2Export',
+        'start_number': 5023,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variants': ['String'],
+    },
+    {
+        'name': 'Phase C Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL3Export',
+        'start_number': 5024,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variants': ['String'],
+    },
+]
+
 specs = [
     {
         'variants': ['Hybrid', 'String'],
@@ -258,7 +313,13 @@ specs = [
         'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
-        'values': inverter_values + inverter_phase_voltage_values[:1] + hybrid_inverter_phase_current_values[:1],
+        'values': list(sorted(inverter_values +
+                              inverter_phase_voltage_values[:1] +
+                              string_inverter_phase_voltage_gap_filler_values +
+                              hybrid_inverter_phase_current_values[:1] +
+                              hybrid_inverter_phase_current_gap_filler_values +
+                              string_inverter_phase_current_values[:1],
+                              key=lambda x: x['start_number'])),
     },
     {
         'variants': ['Hybrid', 'String'],
@@ -266,7 +327,11 @@ specs = [
         'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
-        'values': inverter_values + inverter_phase_voltage_values + hybrid_inverter_phase_current_values,
+        'values': list(sorted(inverter_values +
+                              inverter_phase_voltage_values +
+                              hybrid_inverter_phase_current_values +
+                              string_inverter_phase_current_values,
+                              key=lambda x: x['start_number'])),
     },
     {
         'variants': ['Hybrid', 'String'],
@@ -274,7 +339,11 @@ specs = [
         'table_id': 'Sungrow {variant} Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
-        'values': inverter_values + inverter_line_voltage_values + hybrid_inverter_phase_current_values,
+        'values': list(sorted(inverter_values +
+                              inverter_line_voltage_values +
+                              hybrid_inverter_phase_current_values +
+                              string_inverter_phase_current_values,
+                              key=lambda x: x['start_number'])),
     },
     {
         'variants': ['Hybrid', 'String'],
@@ -331,6 +400,14 @@ specs = [
                 'name': 'Total Export Energy [0.1 kWh]',  # FIXME: not available for all device types
                 'value_id': 'EnergyActiveLSumExport',
                 'start_number': 5095,
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
+                'variants': ['String'],
+            },
+            {
+                'name': 'Daily Import Energy [0.1 kWh]',  # FIXME: not available for all device types
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_number': 5097,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
                 'variants': ['String'],
