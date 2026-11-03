@@ -51,11 +51,7 @@ struct Connection {
     bool in_progress = false;
 };
 
-struct WgKey {
-    String priv;
-    String psk;
-    String pub;
-};
+struct WgKey;
 
 class RemoteAccess final : public IModule {
 public:

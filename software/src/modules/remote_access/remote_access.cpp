@@ -140,6 +140,18 @@ static constexpr const char *ERR_PING_ALREADY_STARTED      = "remote_access.scri
 
 #undef ERR_KEY
 
+struct WgKey {
+    CoolString priv = "";
+    CoolString psk = "";
+    CoolString pub = "";
+
+    ~WgKey() {
+        sodium_memzero(priv.begin(), priv.getCapacity());
+        sodium_memzero(psk.begin(), psk.getCapacity());
+        sodium_memzero(pub.begin(), pub.getCapacity());
+    }
+};
+
 // Validate HTTP request body length and provide the length to callers.
 // Returns 0 on success, or an HTTP status code (400 for empty, 413 for too large).
 static inline uint16_t validate_http_body(WebServerRequest &request, size_t &out_len) {
