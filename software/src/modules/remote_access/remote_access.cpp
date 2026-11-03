@@ -1398,6 +1398,7 @@ void RemoteAccess::register_urls()
 
         // TODO: use TFJsonDeserializer?
         StaticJsonDocument<768> doc;
+        defer { sodium_memzero(&doc, sizeof(doc)); };
 
         {
             DeserializationError error = deserializeJson(doc, req_body.get(), content_len);
@@ -1436,6 +1437,7 @@ void RemoteAccess::register_urls()
             }
 
             unsigned char secret[crypto_box_SECRETKEYBYTES];
+            defer { sodium_memzero(secret, std::size(secret)); };
             int ret = crypto_secretbox_open_easy(secret,
                                                  encrypted_secret.get(),
                                                  crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
@@ -1548,6 +1550,7 @@ void RemoteAccess::register_urls()
             }
 
             unsigned char secret[crypto_box_SECRETKEYBYTES];
+            defer { sodium_memzero(secret, std::size(secret)); };
             int ret = crypto_secretbox_open_easy(secret,
                                                  encrypted_secret.get(),
                                                  crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
@@ -2791,6 +2794,11 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
     char private_key[WG_NULL_TERMINATED_KEY_LENGTH];
     char psk[WG_NULL_TERMINATED_KEY_LENGTH];
     char remote_public_key[WG_NULL_TERMINATED_KEY_LENGTH];
+    defer {
+        sodium_memzero(private_key, std::size(private_key));
+        sodium_memzero(psk, std::size(psk));
+        sodium_memzero(remote_public_key, std::size(remote_public_key));
+    };
 
     uint8_t conn_id = i % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
     uint8_t user_id = i / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
