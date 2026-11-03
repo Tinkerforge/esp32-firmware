@@ -768,10 +768,17 @@ class Stage3:
         duration = -1
         timeout = 30
 
+        if self.generation <= 2:
+            def get_dc_protect_pins(gpio_state):
+                return [gpio_state[18], gpio_state[17], gpio_state[2]]  # 18: DC X30, 17: DC X6, 2: DC Error
+        else:
+            def get_dc_protect_pins(gpio_state):
+                return gpio_state[:3]  # 0: DC X30, 1: DC X6, 2: DC Error
+
         while duration < timeout:
             gpio_state = self.get_gpio_state_function()
 
-            if not any(gpio_state[:3]):
+            if not any(get_dc_protect_pins(gpio_state)):
                 if duration < 0:
                     print('DC fault already cleared')
                 else:
@@ -794,7 +801,7 @@ class Stage3:
             while duration < stay_cleared_timeout:
                 gpio_state = self.get_gpio_state_function()
 
-                if any(gpio_state[:3]):
+                if any(get_dc_protect_pins(gpio_state)):
                     if duration < 0:
                         fatal_error('DC fault immediately present again')
                     else:
