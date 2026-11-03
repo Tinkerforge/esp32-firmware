@@ -546,8 +546,8 @@ class Scanner:
             else:
                 print(yellow('Malformed QR code, try again'))
 
-        if self.qr_custom_engraving:
-            answer = 'x'
+        if self.qr_custom_engraving == True:
+            answer = None
 
             while answer not in ['y', 'n']:
                 tfutil.drop_stdin_buffer()
