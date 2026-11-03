@@ -385,18 +385,29 @@ void RemoteAccess::setup()
     logger.printfln("Remote Access is enabled, trying to connect");
 }
 
-static std::unique_ptr<uint8_t[]> decode_base64(const String &input, size_t buffer_size)
+static std::unique_ptr<uint8_t[]> decode_base64_key(const String &input, size_t buffer_size)
 {
+    const auto input_len = input.length();
+    if (input_len != WG_KEY_LENGTH) {
+        logger.printfln("Error while decoding: Expected exactly %zu bytes, got %zu", WG_KEY_LENGTH, input_len);
+        return nullptr;
+    }
+
     std::unique_ptr<uint8_t[]> out = heap_alloc_array<uint8_t>(buffer_size);
     if (out == nullptr) {
-        return out;
+        return nullptr;
     }
-    size_t _unused = 0;
-    int ret = mbedtls_base64_decode(out.get(), buffer_size, &_unused, reinterpret_cast<const unsigned char *>(input.c_str()), input.length());
+    size_t written = 0;
+    int ret = mbedtls_base64_decode(out.get(), buffer_size, &written, reinterpret_cast<const unsigned char *>(input.c_str()), input_len);
     if (ret != 0) {
         logger.printfln("Error while decoding: %i", ret);
         return nullptr;
     }
+    if (written != buffer_size) {
+        logger.printfln("Error while decoding: Expected to decode to exactly %zu bytes, got %zu", buffer_size, written);
+        return nullptr;
+    }
+
     return out;
 }
 
@@ -1366,9 +1377,8 @@ void RemoteAccess::register_urls()
         // authorization_token; here we derive it from the auth-flow material.
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
         if (!doc["secret_key"].isNull()) {
-            // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
-            // Also validate the decoded lengths!
-            std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
+            // TODO: Should we validate the secret_nonce length before decoding?
+            std::unique_ptr<uint8_t[]> secret_key = decode_base64_key(doc["secret_key"], crypto_secretbox_KEYBYTES);
 
             if (secret_key == nullptr) {
                 this->request_cleanup();
@@ -1394,7 +1404,7 @@ void RemoteAccess::register_urls()
                 return request.send_plain(500, ERR_DERIVE_PUBLIC_KEY);
             }
         } else if (!doc["public_key"].isNull()) {
-            std::unique_ptr<uint8_t[]> public_key = decode_base64(doc["public_key"], crypto_box_PUBLICKEYBYTES);
+            std::unique_ptr<uint8_t[]> public_key = decode_base64_key(doc["public_key"], crypto_box_PUBLICKEYBYTES);
             if (public_key == nullptr) {
                 this->request_cleanup();
                 return request.send_plain(500, ERR_LOW_MEMORY);
@@ -1474,10 +1484,8 @@ void RemoteAccess::register_urls()
 
         std::unique_ptr<unsigned char[]> pk = nullptr;
         if (!doc["secret_key"].isNull()) {
-
-            // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
-            // Also validate the decoded lengths!
-            std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
+            // TODO: Should we validate the secret_nonce length before decoding?
+            std::unique_ptr<uint8_t[]> secret_key = decode_base64_key(doc["secret_key"], crypto_secretbox_KEYBYTES);
             if (secret_key == nullptr) {
                 this->request_cleanup();
                 return request.send_plain(500, ERR_LOW_MEMORY);
@@ -1508,7 +1516,7 @@ void RemoteAccess::register_urls()
                 return request.send_plain(500, ERR_DERIVE_PUBLIC_KEY);
             }
         } else if (!doc["public_key"].isNull()) {
-            pk = decode_base64(doc["public_key"], crypto_box_PUBLICKEYBYTES);
+            pk = decode_base64_key(doc["public_key"], crypto_box_PUBLICKEYBYTES);
             if (pk == nullptr) {
                 this->request_cleanup();
                 return request.send_plain(500, ERR_LOW_MEMORY);
@@ -2396,7 +2404,7 @@ void RemoteAccess::resolve_management()
 
             const String &public_key = user.get("public_key")->asString();
             if (public_key.length() != 0) {
-                auto key = decode_base64(public_key, crypto_box_PUBLICKEYBYTES);
+                auto key = decode_base64_key(public_key, crypto_box_PUBLICKEYBYTES);
 
                 auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
                 crypto_box_seal(encrypted_name.get(), reinterpret_cast<const unsigned char *>(name.c_str()), name.length(), key.get());
