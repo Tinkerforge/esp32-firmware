@@ -238,7 +238,7 @@ export class Table extends Component<TableProps, TableState> {
                         let card_fields = this.get_card_fields(row);
                         let needs_body = card_fields.length > 0 || (row.extraValue && (state.showRowExtra[i] || row.extraMode == "static"));
 
-                        return <><Card className="mb-2">
+                        return <><Card className={i < props.rows.length - 1 || props.onAddShow ? "mb-2" : ""}>
                         <div class={"card-header d-flex justify-content-between align-items-center p-2" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">
                                 {row.extraValue && row.extraMode != "static" ?
