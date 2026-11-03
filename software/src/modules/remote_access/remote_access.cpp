@@ -703,20 +703,17 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
 
     // Generate one user-tunnel keypair set per MAX_KEYS_PER_USER slot.
     // Each tunnel needs two independent Curve25519 keypairs plus a shared PSK.
-    std::vector<WgKey> charger_keys;
-    std::vector<WgKey> relay_keys;
-    charger_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-    relay_keys.reserve(OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+    CoolArray<WgKey, OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER()> charger_keys;
+    CoolArray<WgKey, OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER()> relay_keys;
     for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
-        WgKey charger;
-        WgKey relay;
+        WgKey &charger = charger_keys.add({});
+        WgKey &relay = relay_keys.add({});
+
         if (!generate_wg_key(charger) || !generate_wg_key(relay)) {
             return String(ERR_GENERATE_WG_KEY);
         }
         // A single PSK is shared by both endpoints of one tunnel.
         relay.psk = charger.psk;
-        charger_keys.push_back(std::move(charger));
-        relay_keys.push_back(std::move(relay));
     }
 
     TFJsonSerializer serializer{ptr.get(), json_size};
