@@ -1240,7 +1240,12 @@ def main(stage3, scanner, result):
             result["security_info_checked"] = True
 
         info_version = json.loads(connect_to_ethernet(ssid, "info/version").decode('utf-8'))
-        version_parts = info_version['firmware'].split('+')
+
+        if '+' in info_version['firmware']:
+            version_parts = info_version['firmware'].split('+')
+        else:
+            version_parts = info_version['firmware'].split('-')
+
         version = [int(x) for x in version_parts[0].split('.')] + [int(version_parts[1], base=16)]
 
         dprint("post version fetch")
