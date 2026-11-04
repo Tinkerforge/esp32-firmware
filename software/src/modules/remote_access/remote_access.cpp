@@ -2989,7 +2989,6 @@ void RemoteAccess::run_management()
     }
 #endif
 
-    logger.printfln("Received management packet of size %d, sizeof expected packet: %d", ret, static_cast<int>(sizeof(remove_user_command_packet)));
     // Handle server-prompted user removal. This is dispatched before the
     // management-command path so the RemoveUser packet doesn't have to share
     // its on-wire layout (and its always-zero seq_number) with Connect/Disconnect.
