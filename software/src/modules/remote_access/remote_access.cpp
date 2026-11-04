@@ -3086,19 +3086,33 @@ void RemoteAccess::run_management()
     auto &conn = remote_connections[conn_idx].conn;
     switch (command->command_id) {
         case management_command_id::Connect: {
-            remote_connections[conn_idx].id = static_cast<uint8_t>(command->connection_no);
-            if (conn != nullptr || remote_connections[conn_idx].in_progress) {
-                if (should_log_dropped_management_command()) {
-                    const uint8_t no = static_cast<uint8_t>(command->connection_no);
-                    logger.printfln("Ignoring Connect for connection %u of user %u: %s",
-                                    no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
-                                    no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
-                                    conn != nullptr ? "connection is still open" : "connection is still being set up");
+            Connection &slot = remote_connections[conn_idx];
+            slot.id = static_cast<uint8_t>(command->connection_no);
+            if (conn != nullptr || slot.in_progress) {
+                const uint8_t no = static_cast<uint8_t>(command->connection_no);
+                const unsigned conn_id = no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
+                const unsigned user_id = no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
+
+                if (memcmp(slot.connection_uuid, command->connection_uuid, sizeof(slot.connection_uuid)) != 0) {
+                    // Most likely we missed the Disconnect for the previous client.
+                    if (should_log_dropped_management_command()) {
+                        logger.printfln("Ignoring Connect for connection %u of user %u: %s",
+                                        conn_id, user_id,
+                                        conn != nullptr ? "a previous connection is still open" : "a previous connection is still being set up");
+                    }
+                } else if (!slot.lost_answer_logged && slot.answer_sent_at != 0_us && deadline_elapsed(slot.answer_sent_at + 5_s)) {
+                    // Repetitions shortly after answering are expected, as they cross our answer on the way.
+                    logger.printfln("Relay still repeats Connect for connection %u of user %u, it probably didn't receive our answer",
+                                    conn_id, user_id);
+                    slot.lost_answer_logged = true;
                 }
                 return;
             }
 
-            remote_connections[conn_idx].in_progress = true;
+            slot.in_progress = true;
+            memcpy(slot.connection_uuid, command->connection_uuid, sizeof(slot.connection_uuid));
+            slot.answer_sent_at = 0_us;
+            slot.lost_answer_logged = false;
 
             uint8_t conn_no = static_cast<uint8_t>(command->connection_no);
 
@@ -3137,6 +3151,7 @@ void RemoteAccess::run_management()
                 }
 
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
+                remote_connections[conn_idx].answer_sent_at = now_us();
                 connect_remote_access(conn_no, local_port);
                 remote_connections[conn_idx].in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);

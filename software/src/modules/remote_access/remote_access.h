@@ -49,6 +49,9 @@ struct Connection {
     uint8_t id;
     std::unique_ptr<WireGuard> conn = nullptr;
     bool in_progress = false;
+    uint8_t connection_uuid[16] = {};
+    micros_t answer_sent_at = 0_us;
+    bool lost_answer_logged = false;
 };
 
 struct WgKey;
