@@ -91,7 +91,6 @@ export function InputNumber(props: InputNumberProps) {
                 required={props.required}
         />
         {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
-        {invalidFeedback}
         {props.onValue && !props.readonly ? <>
         <Button variant="primary"
                 disabled={props.value == props.min || props.disabled || props.readonly}
@@ -111,7 +110,7 @@ export function InputNumber(props: InputNumberProps) {
         </Button>
         <Button variant="primary"
                 disabled={props.value == props.max || props.disabled || props.readonly}
-                className="px-1 py-0"
+                className="px-1 py-0 rounded-end"
                 onClick={() => {
                     if (util.hasValue(props.value) && !isNaN(props.value)) {
                         props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
@@ -123,7 +122,8 @@ export function InputNumber(props: InputNumberProps) {
                     input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
                 }}>
             <Plus/>
-        </Button> </> : null}
+        </Button> </> : undefined}
+        {invalidFeedback}
     </div>;
 }
 

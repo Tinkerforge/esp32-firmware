@@ -52,16 +52,16 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
 
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback) {
-        invalidFeedback = props.invalidFeedback;
+        invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
     } else if (invalid) {
         if (props.required && isNaN(value)) {
-            invalidFeedback = __("component.input_number.required");
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.required")}</div>;
         } else if ("min" in props && !("max" in props)) {
-            invalidFeedback = __("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "");
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_only")(props.min.toString(), props.unit ? props.unit : "")}</div>;
         } else if (!("min" in props) && "max" in props) {
-            invalidFeedback = __("component.input_number.max_only")(props.max.toString(), props.unit ? props.unit : "");
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.max_only")(props.max.toString(), props.unit ? props.unit : "")}</div>;
         } else if ("min" in props && "max" in props) {
-            invalidFeedback = __("component.input_number.min_max")(props.min.toString(), props.max.toString(), props.unit ? props.unit : "");
+            invalidFeedback = <div class="invalid-feedback">{__("component.input_number.min_max")(props.min.toString(), props.max.toString(), props.unit ? props.unit : "")}</div>;
         }
     }
 
@@ -114,7 +114,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
             </Button>
             <Button variant="primary"
                     disabled={!props.checked || props.value == props.max || props.disabled}
-                    className="px-1 py-0"
+                    className="px-1 py-0 rounded-end"
                     onClick={() => {
                         if (!props.checked || props.disabled) {
                             return;
@@ -131,7 +131,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                     }}>
                 <Plus/>
             </Button>
-            <div class="invalid-feedback">{invalidFeedback}</div>
+            {invalidFeedback}
         </div>
     );
 }
