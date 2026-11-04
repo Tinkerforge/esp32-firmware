@@ -36,7 +36,7 @@ let x = {
             "kostal_plenticore_g3_firmware_warning": <><p>Please ensure that software version 03.05.xxxxx or newer is installed on the inverter.</p></>,
             "kostal_plenticore_watchdog_timeout": "KOSTAL battery control timeout",
             "kostal_plenticore_watchdog_timeout_help": <><p>KOSTAL inverters have a setting named "Timeout for ext. battery control [s]". This is the duration for which the "force charge" and "force discharge" modes still applies after the battery control has stopped sending this mode. The battery control needs to wait for at least this duration when the modes "force charge" and "force discharge" are left, before switching to another mode.</p>
-                                                         <p>It is not possible to automatically read this setting from the KOSTAL inverter. This value has to be configured manually according to the "Timeout for ext. battery control [s]" setting of the KOSTAL inverter.</p></>,
+                                                         <p>It is not possible to automatically read this setting from the KOSTAL inverter. This value has to be set to the value of the "Timeout for ext. battery control [s]" setting of the KOSTAL inverter.</p></>,
             "custom_mode_degradation_warning": <><p>The effective mode differs from the active mode due to explicit selection the in custom register table for this battery storage.</p></>,
             "testing_warning": <><p>Due to the running test the active mode of this battery storage can differ from the global battery control mode.</p></>,
             "device_address": "Device address",
