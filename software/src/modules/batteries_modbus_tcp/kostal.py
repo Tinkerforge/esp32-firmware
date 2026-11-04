@@ -250,21 +250,21 @@ plenticore_g3_specs = [
         'register_blocks': [
             # don't write register 1034 to let the watchdog clear any previous
             # force charge/discharge to gain normal charge/discharge. no need
-            # to really wait here for the watchdog, because register 1280 and
-            # 1282 have higher priority than register 1034 and 1280/1282 at zero
+            # to really wait here for the watchdog, because register 1038 and
+            # 1040 have higher priority than register 1034 and 1038/1040 at zero
             # will block any previous force charge/discharge that might be active
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     0,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     0,
                 ],
@@ -281,17 +281,17 @@ plenticore_g3_specs = [
             # 1034 for it to change back to 0. the register just seems to keep the last
             # written value. instead just wait for the configured watchdog timeout duration
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     2147483647,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     2147483647,
                 ],
@@ -309,17 +309,17 @@ plenticore_g3_specs = [
             # to keep the last written value. instead just wait for the configured
             # watchdog timeout duration
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     2147483647,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     0,
                 ],
@@ -339,17 +339,17 @@ plenticore_g3_specs = [
                 ],
             },
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     2147483647,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     0,
                 ],
@@ -367,17 +367,17 @@ plenticore_g3_specs = [
             # to keep the last written value. instead just wait for the configured
             # watchdog timeout duration
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     0,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     2147483647,
                 ],
@@ -397,17 +397,17 @@ plenticore_g3_specs = [
                 ],
             },
             {
-                'description': 'Max battery charge power [W]',
+                'description': 'Battery maximum charge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1280,
+                'start_address': 1038,
                 'f32_values': [
                     0,
                 ],
             },
             {
-                'description': 'Max battery discharge power [W]',
+                'description': 'Battery maximum discharge power limit absolute [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 1282,
+                'start_address': 1040,
                 'f32_values': [
                     2147483647,
                 ],
