@@ -1992,16 +1992,17 @@ def test_out_of_order_command_ignored(tc: TestContext) -> None:
 
     conn_uuid = os.urandom(16)
 
-    # Connect with seq=2; this sets in_seq_number=2 on the device.
+    # Connect with seq=3; this sets in_seq_number=3 on the device.
     wg.send_management_command(
-        seq_num=2, command_id=_CONN_COMMAND_CONNECT,
+        seq_num=3, command_id=_CONN_COMMAND_CONNECT,
         connection_no=0, connection_uuid=conn_uuid,
     )
     _wait_for_any_user_slot_active(tc, timeout=15)
 
-    # Send Disconnect with seq=1 (lower than in_seq_number=2) – must be ignored.
+    # Send Disconnect with seq=2 (lower than in_seq_number=3) – must be ignored.
+    # (seq=1 would be accepted as a sequence restart of the relay.)
     wg.send_management_command(
-        seq_num=1, command_id=_CONN_COMMAND_DISCONNECT,
+        seq_num=2, command_id=_CONN_COMMAND_DISCONNECT,
         connection_no=0, connection_uuid=conn_uuid,
     )
 
@@ -2009,11 +2010,57 @@ def test_out_of_order_command_ignored(tc: TestContext) -> None:
     time.sleep(2)
 
     # The connection for connection_no=0 should still be active (the
-    # out-of-order Disconnect with seq=1 must be ignored because in_seq_number
-    # is now 2).
+    # out-of-order Disconnect with seq=2 must be ignored because in_seq_number
+    # is now 3).
     active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
     tc.assert_ge(1, len(active))
     tc.assert_eq(0, active[0]["connection"])
+
+
+def test_relay_sequence_restart_accepted(tc: TestContext) -> None:
+    """The relay starts counting at 1 again when it recreates its side of the
+    management tunnel (e.g. after a restart), while the device's WireGuard
+    connection stays up. A command with seq=1 must then be accepted although
+    it is not newer than the last seen sequence number."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _, _, _ = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    wg.send_management_command(
+        seq_num=11, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=os.urandom(16),
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    # Relay restarted: seq=1 must be accepted and open connection_no=1.
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=1, connection_uuid=os.urandom(16),
+    )
+
+    def assert_both_active() -> None:
+        active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
+        tc.assert_eq([0, 1], sorted(s["connection"] for s in active))
+
+    tc.wait_for(assert_both_active, timeout=15)
+
+    # The sequence continues from 1, so seq=2 must be accepted as well.
+    wg.send_management_command(
+        seq_num=2, command_id=_CONN_COMMAND_DISCONNECT,
+        connection_no=1, connection_uuid=os.urandom(16),
+    )
+
+    def assert_only_first_active() -> None:
+        active = [s for s in _get_connection_state(tc)[1:] if s["user"] != 255]
+        tc.assert_eq([0], [s["connection"] for s in active])
+
+    tc.wait_for(assert_only_first_active, timeout=15)
 
 
 def test_disable_closes_user_connections(tc: TestContext) -> None:

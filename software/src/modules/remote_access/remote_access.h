@@ -164,6 +164,7 @@ private:
     String jwt;
     int inner_socket = -1;
     uint16_t in_seq_number = 0;
+    bool in_seq_number_valid = false;
     bool management_request_done = false;
     bool management_request_failed = false;
     bool management_request_allowed = true;

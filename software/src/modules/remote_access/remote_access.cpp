@@ -1762,7 +1762,7 @@ void RemoteAccess::apply_config()
     }
 
     if (this->management != nullptr) {
-        in_seq_number = 0;
+        in_seq_number_valid = false;
         this->close_all_remote_connections();
         if (inner_socket >= 0) {
             close(inner_socket);
@@ -2874,7 +2874,7 @@ void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool u
                 task_scheduler.cancel(this->timeout_task_id);
                 this->timeout_task_id = 0;
             } else {
-                in_seq_number = 0;
+                in_seq_number_valid = false;
                 this->management_request_done = false;
                 logger.printfln("Management connection disconnected");
                 // Close all remote access connections when management connection is lost
@@ -3045,14 +3045,24 @@ void RemoteAccess::run_management()
         return;
     }
 
-    if (static_cast<int16_t>(command_packet->header.seq_num - in_seq_number) > 0) {
-        in_seq_number = command_packet->header.seq_num;
+    const uint16_t seq_num = command_packet->header.seq_num;
+    const bool seq_num_is_newer = static_cast<int16_t>(seq_num - in_seq_number) > 0;
+    // The relay starts counting at 1 again whenever it creates a new management tunnel for us, for example after it was restarted.
+    // We don't always notice that. So accept 1 as the start of a new sequence.
+    const bool relay_restarted_sequence = seq_num == 1 && in_seq_number != 1;
+
+    if (!in_seq_number_valid || seq_num_is_newer || relay_restarted_sequence) {
+        if (in_seq_number_valid && !seq_num_is_newer) {
+            logger.printfln("Relay restarted management command sequence (last seq_num was %u)", static_cast<unsigned>(in_seq_number));
+        }
+        in_seq_number = seq_num;
+        in_seq_number_valid = true;
     } else {
         if (should_log_dropped_management_command()) {
             logger.printfln("Dropped %s command for connection %i: seq_num %u is not newer than last seq_num %u",
                             management_command_name(command_packet->command.command_id),
                             static_cast<int>(command_packet->command.connection_no),
-                            static_cast<unsigned>(command_packet->header.seq_num),
+                            static_cast<unsigned>(seq_num),
                             static_cast<unsigned>(in_seq_number));
         }
         return;
