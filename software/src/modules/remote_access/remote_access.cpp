@@ -2952,6 +2952,34 @@ uint8_t RemoteAccess::get_connection(int32_t conn_id)
     return first_free_idx;
 }
 
+static const char *management_command_name(management_command_id id)
+{
+    switch (id) {
+        case management_command_id::Connect:
+            return "Connect";
+        case management_command_id::Disconnect:
+            return "Disconnect";
+        default:
+            return "unknown";
+    }
+}
+
+bool RemoteAccess::should_log_dropped_management_command()
+{
+    if (last_dropped_mgmt_command_log != 0_us && !deadline_elapsed(last_dropped_mgmt_command_log + 10_s)) {
+        suppressed_dropped_mgmt_command_logs++;
+        return false;
+    }
+
+    if (suppressed_dropped_mgmt_command_logs > 0) {
+        logger.printfln("Suppressed %lu dropped management command messages", suppressed_dropped_mgmt_command_logs);
+        suppressed_dropped_mgmt_command_logs = 0;
+    }
+
+    last_dropped_mgmt_command_log = now_us();
+    return true;
+}
+
 void RemoteAccess::run_management()
 {
     if (inner_socket < 0) {
@@ -3009,17 +3037,34 @@ void RemoteAccess::run_management()
 
     management_command_packet *command_packet = reinterpret_cast<management_command_packet *>(buf);
     if (command_packet->header.magic != 0x1234 || command_packet->header.length != sizeof(management_command)) {
+        if (should_log_dropped_management_command()) {
+            logger.printfln("Dropped management command with invalid header: magic=0x%04X length=%u",
+                            static_cast<unsigned>(command_packet->header.magic),
+                            static_cast<unsigned>(command_packet->header.length));
+        }
         return;
     }
 
     if (static_cast<int16_t>(command_packet->header.seq_num - in_seq_number) > 0) {
         in_seq_number = command_packet->header.seq_num;
     } else {
+        if (should_log_dropped_management_command()) {
+            logger.printfln("Dropped %s command for connection %i: seq_num %u is not newer than last seq_num %u",
+                            management_command_name(command_packet->command.command_id),
+                            static_cast<int>(command_packet->command.connection_no),
+                            static_cast<unsigned>(command_packet->header.seq_num),
+                            static_cast<unsigned>(in_seq_number));
+        }
         return;
     }
 
     management_command *command = &command_packet->command;
     if (static_cast<uint32_t>(command->connection_no) >= OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() * OPTIONS_REMOTE_ACCESS_MAX_USERS()) {
+        if (should_log_dropped_management_command()) {
+            logger.printfln("Dropped %s command: connection %i out of range",
+                            management_command_name(command->command_id),
+                            static_cast<int>(command->connection_no));
+        }
         return;
     }
 
@@ -3033,6 +3078,13 @@ void RemoteAccess::run_management()
         case management_command_id::Connect: {
             remote_connections[conn_idx].id = static_cast<uint8_t>(command->connection_no);
             if (conn != nullptr || remote_connections[conn_idx].in_progress) {
+                if (should_log_dropped_management_command()) {
+                    const uint8_t no = static_cast<uint8_t>(command->connection_no);
+                    logger.printfln("Ignoring Connect for connection %u of user %u: %s",
+                                    no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
+                                    no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
+                                    conn != nullptr ? "connection is still open" : "connection is still being set up");
+                }
                 return;
             }
 
