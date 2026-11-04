@@ -191,7 +191,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Charge Limit [W]',
+                'description': 'Remote Control Command Charge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE00E,  # F32LE
                 'f32le_values': [
@@ -199,7 +199,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Discharge Limit [W]',
+                'description': 'Remote Control Command Discharge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE010,  # F32LE
                 'f32le_values': [
@@ -245,7 +245,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Charge Limit [W]',
+                'description': 'Remote Control Command Charge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE00E,  # F32LE
                 'f32le_values': [
@@ -253,7 +253,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Discharge Limit [W]',
+                'description': 'Remote Control Command Discharge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE010,  # F32LE
                 'f32le_values': [
@@ -299,7 +299,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Charge Limit [W]',
+                'description': 'Remote Control Command Charge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE00E,  # F32LE
                 'f32le_values': [
@@ -307,7 +307,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Discharge Limit [W]',
+                'description': 'Remote Control Command Discharge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE010,  # F32LE
                 'f32le_values': [
@@ -353,7 +353,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Charge Limit [W]',
+                'description': 'Remote Control Command Charge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE00E,  # F32LE
                 'f32le_values': [
@@ -361,7 +361,7 @@ specs = [
                 ],
             },
             {
-                'description': ' Remote Control Command Discharge Limit [W]',
+                'description': 'Remote Control Command Discharge Limit [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0xE010,  # F32LE
                 'f32le_values': [
