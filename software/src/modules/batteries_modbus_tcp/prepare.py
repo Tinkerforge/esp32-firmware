@@ -61,6 +61,16 @@ for module in modules:
 
         table_ids.append(table_id)
 
+        for member in table_prototype[1]:
+            if not isinstance(member, dict):
+                continue
+
+            if 'default_backend' not in member:
+                member['default_backend'] = member['default']
+
+            if 'default_frontend' not in member:
+                member['default_frontend'] = member['default']
+
         if table_prototype[1] == None:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
 
@@ -82,7 +92,7 @@ for module in modules:
                     member_prototype = f'Config::Uint8(DefaultDeviceAddress::{table_id.camel})'
                     standard_table_members.setdefault(table_id.space, []).append(member_name)
                 elif isinstance(member, dict):
-                    member_prototype = f"Config::{member['type']}({member['default']})"
+                    member_prototype = f"Config::{member['type']}({member['default_backend']})"
                 else:
                     print(f'Error: Table prototype {table_id.space} has unknown member {member_name}')
                     sys.exit(1)
@@ -114,7 +124,7 @@ for module in modules:
                 if member_name == 'device_address':
                     member_default = (f'DefaultDeviceAddress.{table_id.camel}')
                 elif isinstance(member, dict):
-                    member_default = member['default']
+                    member_default = member['default_frontend']
                 else:
                     print(f'Error: Table prototype {table_id.space} has unknown member {member_name}')
                     sys.exit(1)

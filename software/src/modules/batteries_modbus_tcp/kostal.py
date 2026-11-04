@@ -49,7 +49,8 @@ table_prototypes = [
         {
             'name': 'watchdog_timeout',
             'type': 'Uint16',  # FIXME: add range limit to [30..65535]
-            'default': 30,  # seconds
+            'default_backend': 30,  # seconds
+            'default_frontend': 'null',  # force user to specify value
         },
     ]),
 ]
