@@ -99,7 +99,7 @@ specs = [
                 'function_code': 'IfDifferentWriteMultipleRegisters',
                 'start_address': 0xE004,  # U16
                 'values': [
-                    4,  # Remote control
+                    1,  # Maximize self-consumption
                 ],
             },
             {
