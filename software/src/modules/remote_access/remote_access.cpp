@@ -354,6 +354,9 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     }
 
     ret = sendto(sock, payload, payload_len, 0, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+    if (ret < 0) {
+        logger.printfln("Sending from port %u caused an error: %s (%i)", local_port, strerror(errno), errno);
+    }
     close(sock);
     return ret;
 }
@@ -2944,7 +2947,7 @@ uint8_t RemoteAccess::get_connection(int32_t conn_id)
     for (uint8_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
         if (remote_connections[i].id == static_cast<uint8_t>(conn_id)) {
             return i;
-        } else if (remote_connections[i].conn == nullptr && first_free_idx == 255) {
+        } else if (remote_connections[i].conn == nullptr && !remote_connections[i].in_progress && first_free_idx == 255) {
             first_free_idx = i;
         }
     }
@@ -3141,19 +3144,30 @@ void RemoteAccess::run_management()
             }
 
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no, conn_idx](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+                Connection &setup_slot = remote_connections[conn_idx];
+                if (!setup_slot.in_progress || memcmp(setup_slot.connection_uuid, response.connection_uuid, sizeof(setup_slot.connection_uuid)) != 0) {
+                    // Disconnected while the relay host was being resolved.
+                    return;
+                }
+
                 if (data->err != ERR_OK) {
                     if (data->err == ERR_CONN) {
                         logger.printfln("Failed to resolve remote host: no address associated with hostname");
                     } else {
                         logger.printfln("Failed to resolve remote host: DNS error %i", data->err);
                     }
+                    setup_slot.in_progress = false;
                     return;
                 }
 
-                create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
-                remote_connections[conn_idx].answer_sent_at = now_us();
+                if (create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port) < 0) {
+                    // The relay repeats its Connect until it gets our answer, so we'll try again then.
+                    setup_slot.in_progress = false;
+                    return;
+                }
+                setup_slot.answer_sent_at = now_us();
                 connect_remote_access(conn_no, local_port);
-                remote_connections[conn_idx].in_progress = false;
+                setup_slot.in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
 
