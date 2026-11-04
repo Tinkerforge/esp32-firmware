@@ -2983,6 +2983,26 @@ bool RemoteAccess::should_log_dropped_management_command()
     return true;
 }
 
+void RemoteAccess::remember_closed_connect(const uint8_t *connection_uuid)
+{
+    ClosedConnect &entry = recently_closed_connects[next_closed_connect];
+    memcpy(entry.connection_uuid, connection_uuid, sizeof(entry.connection_uuid));
+    entry.closed_at = now_us();
+    next_closed_connect = static_cast<uint8_t>((next_closed_connect + 1) % MAX_USER_CONNECTIONS);
+}
+
+bool RemoteAccess::was_connect_closed(const uint8_t *connection_uuid)
+{
+    for (const ClosedConnect &entry : recently_closed_connects) {
+        // The relay gives up repeating a Connect after 30 seconds.
+        if (entry.closed_at != 0_us && !deadline_elapsed(entry.closed_at + 60_s)
+            && memcmp(entry.connection_uuid, connection_uuid, sizeof(entry.connection_uuid)) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void RemoteAccess::run_management()
 {
     if (inner_socket < 0) {
@@ -3089,6 +3109,16 @@ void RemoteAccess::run_management()
     auto &conn = remote_connections[conn_idx].conn;
     switch (command->command_id) {
         case management_command_id::Connect: {
+            if (was_connect_closed(command->connection_uuid)) {
+                if (should_log_dropped_management_command()) {
+                    const uint8_t no = static_cast<uint8_t>(command->connection_no);
+                    logger.printfln("Ignoring Connect for connection %u of user %u: it was already closed",
+                                    no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
+                                    no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
+                }
+                return;
+            }
+
             Connection &slot = remote_connections[conn_idx];
             slot.id = static_cast<uint8_t>(command->connection_no);
             if (conn != nullptr || slot.in_progress) {
@@ -3172,8 +3202,12 @@ void RemoteAccess::run_management()
         } break;
 
         case management_command_id::Disconnect: {
-            remote_connections[conn_idx].id = 255;
-            remote_connections[conn_idx].in_progress = false;
+            Connection &slot = remote_connections[conn_idx];
+            if (conn != nullptr || slot.in_progress) {
+                remember_closed_connect(slot.connection_uuid);
+            }
+            slot.id = 255;
+            slot.in_progress = false;
             if (conn == nullptr) {
                 logger.printfln("Not found");
                 break;

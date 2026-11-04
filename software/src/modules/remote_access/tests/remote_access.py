@@ -1939,6 +1939,49 @@ def test_user_disconnect_command_clears_state(tc: TestContext) -> None:
     tc.wait_for(lambda: _assert_all_user_slots_cleared(tc), timeout=10)
 
 
+def test_connect_repeated_after_disconnect_ignored(tc: TestContext) -> None:
+    """The relay repeats a Connect until the device answers it, so a repetition
+    may arrive after the Disconnect for it. It must not reopen the connection,
+    while a new Connect for the same connection number must still work."""
+    tc.set_test_timeout(90)
+
+    try:
+        wg, _charger_public, _relay_priv, _psk = _do_full_registration_with_user_tunnel(tc)
+    except RuntimeError as exc:
+        tc.skip(f"WireGuard setup not available: {exc}")
+        return
+
+    _wait_for_management_connected(tc, timeout=60)
+
+    conn_uuid = os.urandom(16)
+    wg.send_management_command(
+        seq_num=1, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+    wg.send_management_command(
+        seq_num=2, command_id=_CONN_COMMAND_DISCONNECT,
+        connection_no=0, connection_uuid=os.urandom(16),
+    )
+    tc.wait_for(lambda: _assert_all_user_slots_cleared(tc), timeout=10)
+
+    # Late repetition of the Connect that was just closed.
+    wg.send_management_command(
+        seq_num=3, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=conn_uuid,
+    )
+    time.sleep(3)
+    _assert_all_user_slots_cleared(tc)
+
+    # A new client connecting to the same connection number.
+    wg.send_management_command(
+        seq_num=4, command_id=_CONN_COMMAND_CONNECT,
+        connection_no=0, connection_uuid=os.urandom(16),
+    )
+    _wait_for_any_user_slot_active(tc, timeout=15)
+
+
 def test_duplicate_seq_num_ignored(tc: TestContext) -> None:
     """A command with the same sequence number as the last processed command
     should be silently dropped."""

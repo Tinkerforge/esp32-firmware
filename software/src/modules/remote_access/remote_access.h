@@ -54,6 +54,11 @@ struct Connection {
     bool lost_answer_logged = false;
 };
 
+struct ClosedConnect {
+    uint8_t connection_uuid[16];
+    micros_t closed_at;
+};
+
 struct WgKey;
 
 class RemoteAccess final : public IModule {
@@ -157,12 +162,17 @@ private:
     int poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason);
     void release_inner_socket();
     bool should_log_dropped_management_command();
+    void remember_closed_connect(const uint8_t *connection_uuid);
+    bool was_connect_closed(const uint8_t *connection_uuid);
     int begin_charge_log_send(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, const char *user_uuid_str, Language language);
     int end_charge_log_send(int tcp_sock);
     int send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language);
 
     std::unique_ptr<WireGuard> management = nullptr;
     Connection remote_connections[MAX_USER_CONNECTIONS] = {};
+    // The relay may still repeat a Connect after we got the Disconnect for it.
+    ClosedConnect recently_closed_connects[MAX_USER_CONNECTIONS] = {};
+    uint8_t next_closed_connect = 0;
 
     String jwt;
     int inner_socket = -1;
