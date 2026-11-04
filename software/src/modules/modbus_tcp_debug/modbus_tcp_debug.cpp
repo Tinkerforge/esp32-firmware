@@ -233,6 +233,14 @@ void ModbusTCPDebug::register_urls()
         case ModbusFunctionCode::IfDifferentMaskWriteRegister:
         case ModbusFunctionCode::IfDifferentReadMaskWriteSingleRegister:
         case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
+        case ModbusFunctionCode::CopySingleCoil:
+        case ModbusFunctionCode::CopySingleDiscreteInput:
+        case ModbusFunctionCode::CopySingleHoldingRegister:
+        case ModbusFunctionCode::CopySingleInputRegister:
+        case ModbusFunctionCode::CopyMultipleCoils:
+        case ModbusFunctionCode::CopyMultipleDiscreteInputs:
+        case ModbusFunctionCode::CopyMultipleHoldingRegisters:
+        case ModbusFunctionCode::CopyMultipleInputRegisters:
         default:
             report_errorf(cookie, "Unsupported function code: %u", static_cast<uint8_t>(config_function_code));
             return;

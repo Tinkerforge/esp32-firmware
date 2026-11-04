@@ -72,6 +72,22 @@ ModbusDataType modbus_get_data_type(ModbusFunctionCode function_code)
     case ModbusFunctionCode::IfDifferentReadMaskWriteMultipleRegisters:
         return ModbusDataType::Register;
 
+    case ModbusFunctionCode::CopySingleCoil:
+    case ModbusFunctionCode::CopySingleDiscreteInput:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::CopySingleHoldingRegister:
+    case ModbusFunctionCode::CopySingleInputRegister:
+        return ModbusDataType::Register;
+
+    case ModbusFunctionCode::CopyMultipleCoils:
+    case ModbusFunctionCode::CopyMultipleDiscreteInputs:
+        return ModbusDataType::Coil;
+
+    case ModbusFunctionCode::CopyMultipleHoldingRegisters:
+    case ModbusFunctionCode::CopyMultipleInputRegisters:
+        return ModbusDataType::Register;
+
     default:
         esp_system_abortf<64>("Unknown Modbus function code: %d", static_cast<int>(function_code));
     }

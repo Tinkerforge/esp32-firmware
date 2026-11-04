@@ -278,6 +278,8 @@ for spec in specs:
 
             if function_code in ['ReadCoils', 'ReadDiscreteInputs', 'WriteSingleCoil', 'WriteMultipleCoils', 'IfDifferentWriteSingleCoil', 'IfDifferentWriteMultipleCoils']:
                 buffer_length = (values_count + 7) // 8
+            elif function_code.startswith('Copy'):
+                buffer_length = 2 * 2
             else:
                 buffer_length = values_count * 2
 
@@ -338,6 +340,23 @@ for spec in specs:
                     specs_cpp.append(f'        values[{k}] = {value};\r')
             elif function_code in ['ReadMaskWriteMultipleRegisters', 'IfDifferentReadMaskWriteMultipleRegisters']:
                 assert False  # FIXME
+            elif function_code.startswith('Copy'):
+                specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
+
+                if len(register_block['values']) != 2:
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                if not isinstance(value, str) and (register_block['values'][0] < 0 or register_block['values'][0] > 65535):
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                if not isinstance(value, str) and (register_block['values'][1] < 0 or register_block['values'][1] > (123 if 'Register' in function_code else 1968)):
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                for k, value in enumerate(register_block['values']):
+                    specs_cpp.append(f'        values[{k}] = {value};\r')
             else:
                 print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
@@ -430,6 +449,20 @@ for spec in specs:
                 values_count_scale = 2
             elif function_code in ['ReadMaskWriteMultipleRegisters', 'IfDifferentReadMaskWriteMultipleRegisters']:
                 assert False  # FIXME
+            elif function_code.startswith('Copy'):
+                if len(register_block['values']) != 2:
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                if register_block['values'][0] < 0 or register_block['values'][0] > 65535:
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                if register_block['values'][1] < 0 or register_block['values'][1] > (123 if 'Register' in function_code else 1968):
+                    print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block["description"]} has invalid value')
+                    sys.exit(1)
+
+                specs_cpp.append(f'static const uint16_t {group.under}{variant_name_under}_{mode.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
             else:
                 print(f'Error: Register block {group.space}{variant_name_slash} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
