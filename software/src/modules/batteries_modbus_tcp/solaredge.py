@@ -13,16 +13,6 @@ table_prototypes = [
     ('Solaredge Inverter', [
         'device_address',
         {
-            'name': 'max_normal_charge_power',  # FIXME: read this from 0xE144 "Battery 1 Max Charge Continues Power" instead
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 5000,  # W
-        },
-        {
-            'name': 'max_normal_discharge_power',  # FIXME: read this from 0xE146 "Battery 1 Max Discharge Continues Power" instead
-            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
-            'default': 5000,  # W
-        },
-        {
             'name': 'force_charge_power',
             'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
             'default': 2000,  # W
@@ -138,18 +128,18 @@ specs = [
             },
             {
                 'description': ' Remote Control Command Charge Limit [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'CopyMultipleHoldingRegisters',
                 'start_address': 0xE00E,  # F32LE
-                'f32le_values': [
-                    'max_normal_charge_power',
+                'values': [
+                    0xE144, 2,
                 ],
             },
             {
                 'description': ' Remote Control Command Discharge Limit [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'CopyMultipleHoldingRegisters',
                 'start_address': 0xE010,  # F32LE
-                'f32le_values': [
-                    'max_normal_discharge_power',
+                'values': [
+                    0xE146, 2,
                 ],
             },
         ],
@@ -192,10 +182,10 @@ specs = [
             },
             {
                 'description': 'Remote Control Command Charge Limit [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'CopyMultipleHoldingRegisters',
                 'start_address': 0xE00E,  # F32LE
-                'f32le_values': [
-                    'max_normal_charge_power',
+                'values': [
+                    0xE144, 2,
                 ],
             },
             {
@@ -308,10 +298,10 @@ specs = [
             },
             {
                 'description': 'Remote Control Command Discharge Limit [W]',
-                'function_code': 'WriteMultipleRegisters',
+                'function_code': 'CopyMultipleHoldingRegisters',
                 'start_address': 0xE010,  # F32LE
-                'f32le_values': [
-                    'max_normal_discharge_power',
+                'values': [
+                    0xE146, 2,
                 ],
             },
         ],

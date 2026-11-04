@@ -1692,28 +1692,6 @@ export function pre_init() {
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SolaredgeInverter) {
                         edit_children.push(
-                            <FormRow label={__("batteries_modbus_tcp.content.max_normal_charge_power")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={2147483647}
-                                    unit="W"
-                                    value={config[1].table[1].max_normal_charge_power}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_normal_charge_power: v})}));
-                                    }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.max_normal_discharge_power")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={2147483647}
-                                    unit="W"
-                                    value={config[1].table[1].max_normal_discharge_power}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_normal_discharge_power: v})}));
-                                    }} />
-                            </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputNumber
                                     required
@@ -1738,8 +1716,6 @@ export function pre_init() {
                             </FormRow>);
 
                         extra_values = {
-                            max_normal_charge_power: config[1].table[1].max_normal_charge_power,
-                            max_normal_discharge_power: config[1].table[1].max_normal_discharge_power,
                             force_charge_power: config[1].table[1].force_charge_power,
                             force_discharge_power: config[1].table[1].force_discharge_power,
                         };
