@@ -1638,6 +1638,26 @@ de_hyph = [
     "Auf-recht-er-hal-ten",
     "auf-ge-hört",
     "ver-las-sen",
+    "ver-län-gern",
+    "zu-grei-fen",
+    "zu-zu-grei-fen",
+    "ver-län-gert",
+    "An-fra-ge-kör-per",
+    "de-ko-diert",
+    "De-ko-die-ren",
+    "Ge-heim-nis",
+    "ent-sch-lüs-selt",
+    "ab-ge-lei-tet",
+    "De-se-ri-a-li-sie-ren",
+    "Re-gis-trie-rungs-ant-wort",
+    "de-se-ri-a-li-siert",
+    "Kryp-to-gra-phie",
+    "in-iti-a-li-siert",
+    "ak-ti-vier-tes",
+    "Si-gna-tur-prü-fung",
+    "Si-gnier-tes",
+    "Si-gnier-te",
+    "Zei-chen-ket-te",
 ]
 
 en_hyph = [
@@ -2216,6 +2236,10 @@ en_hyph = [
     "Son-nen-bat-te-rie",
     "spec-i-fi-ca-tion",
     "re-solv-ing",
+    "Re-quest-ing",
+    "de-se-ri-al-iz-ing",
+    "de-se-ri-al-ize",
+    "ini-tial-ize",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -2298,4 +2322,7 @@ allowed_missing = set([
     "forecast_update",
     "_charging",
     "temperatures_update",
+    "service_token",
+    "secret_nonce",
+    "secret_salt",
 ])
