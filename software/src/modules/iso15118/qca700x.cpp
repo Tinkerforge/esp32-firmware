@@ -420,6 +420,10 @@ void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
         return;
     }
 
+    if (!modem_detected) {
+        return;
+    }
+
     constexpr uint16_t max_payload = QCA700X_DMA_SCRATCH_SIZE - QCA700X_SEND_HEADER_SIZE - QCA700X_SEND_FOOTER_SIZE;
     if (length > max_payload) {
         iso15118.trace("QCA700x: write_burst frame too long: %u > %u", length, max_payload);
@@ -711,6 +715,29 @@ void QCA700x::link_down()
 
     if (esp_netif_is_netif_up(netif)) {
         esp_netif_action_stop(netif, nullptr, 0, nullptr);
+    }
+}
+
+// Called when the modem is held in hardware reset. Stops the netif, so that
+// lwIP stops sending (router solicitations, MLD reports, ...) into a modem
+// that can't take them, and drops all frames that are still queued.
+void QCA700x::disable()
+{
+    modem_detected = false;
+
+    if (netif != nullptr && esp_netif_is_netif_up(netif)) {
+        esp_netif_action_stop(netif, nullptr, 0, nullptr);
+    }
+
+    finish_burst_write(true);
+
+    while (tx_queue_count > 0) {
+        TxFrame *frame = &tx_queue[tx_queue_head];
+        free(frame->buffer);
+        frame->buffer = nullptr;
+        frame->total_length = 0;
+        tx_queue_head = (tx_queue_head + 1) % QCA700X_TX_QUEUE_LENGTH;
+        tx_queue_count--;
     }
 }
 

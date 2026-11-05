@@ -161,6 +161,7 @@ public:
     bool get_ip6_linklocal(esp_ip6_addr_t *if_ip6);
     void link_up();
     void link_down();
+    void disable();
     void state_machine_loop();
     void flush_all_buffers();  // Flush both hardware and local buffers
 

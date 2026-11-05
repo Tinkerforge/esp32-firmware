@@ -386,6 +386,7 @@ void ISO15118::pre_setup()
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
                 iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 evse_v2.set_plc_modem(false);
+                qca700x.disable();
             }
         }
         return "";
@@ -935,6 +936,8 @@ void ISO15118::disable_plc_modem()
     if (fds[FDS_ACTIVE_INDEX].fd >= 0) {
         common.reset_active_socket();
     }
+
+    qca700x.disable();
 }
 
 void ISO15118::schedule_delayed_modem_off()
