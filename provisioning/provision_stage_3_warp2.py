@@ -60,7 +60,7 @@ ISO15118_CONNECT_DURATION = 3 # seconds
 
 STACK_MASTER_UIDS = {
     '0': '61SMKP',
-    '2': '6DY5kB',
+    '2': '6LeFrC',
 }
 
 EXPECTED_DEVICE_IDENTIFIERS = {
@@ -84,10 +84,13 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '03B': BrickletPiezoSpeakerV2.DEVICE_IDENTIFIER,
     '03C': BrickletIndustrialDualRelay.DEVICE_IDENTIFIER,
     '20': BrickMaster.DEVICE_IDENTIFIER,
-    '20A': BrickletLEDStripV2.DEVICE_IDENTIFIER,
-    '20B': BrickletNFC.DEVICE_IDENTIFIER,
-    '20C': BrickletServoV2.DEVICE_IDENTIFIER,
-    '20D': BrickletColorV2.DEVICE_IDENTIFIER,
+    '20A': BrickletColorV2.DEVICE_IDENTIFIER,
+    '20B': BrickletColorV2.DEVICE_IDENTIFIER,
+    '21': BrickMaster.DEVICE_IDENTIFIER,
+    '21A': BrickletLEDStripV2.DEVICE_IDENTIFIER,
+    '21B': BrickletNFC.DEVICE_IDENTIFIER,
+    '21C': BrickletServoV2.DEVICE_IDENTIFIER,
+    '21D': BrickletColorV2.DEVICE_IDENTIFIER,
 }
 
 # maximum of each bin seen with the first ~ 180 chargers + 5 dB
@@ -440,7 +443,7 @@ class Stage3:
 
     def is_color_bricklet_crashed(self):
         for _ in range(5):
-            color = self.try_action('20D', lambda device: device.get_color())
+            color = self.try_action('21D', lambda device: device.get_color())
 
             if max(color) > 50000:
                 return True
@@ -451,24 +454,24 @@ class Stage3:
 
     # internal
     def is_front_panel_led_blue(self):
-        color = self.try_action('20D', lambda device: device.get_color())
+        color = self.try_action('21D', lambda device: device.get_color())
         return color[2] / color[3] > 0.65 and color[3] > 10000
 
     # internal
     def is_front_panel_led_red(self):
-        color = self.try_action('20D', lambda device: device.get_color())
+        color = self.try_action('21D', lambda device: device.get_color())
 
         return color[0] / color[3] > 0.85 and color[3] > 5000
 
     # internal
     def is_front_panel_led_green(self):
-        color = self.try_action('20D', lambda device: device.get_color())
+        color = self.try_action('21D', lambda device: device.get_color())
 
         return color[1] / color[3] > 0.60 and color[3] > 10000
 
     # internal
     def is_front_panel_led_white(self):
-        color = self.try_action('20D', lambda device: device.get_color())
+        color = self.try_action('21D', lambda device: device.get_color())
 
         # White can saturate the sensor
         if color[0] >= 60000 and color[1] >= 60000 and color[2] >= 60000 and color[3] >= 60000:
@@ -534,7 +537,7 @@ class Stage3:
         self.devices = {}
 
         for stack_position, positions in [('0', {'0': ['A', 'B', 'C', 'D'], '1': ['A', 'B', 'C', 'D'], '2': ['A', 'B', 'C', 'D'], '3': ['A', 'B', 'C']}),
-                                          ('2', {'0': ['A', 'B', 'C', 'D']})]:
+                                          ('2', {'0': ['A', 'B'], '1': ['A', 'B', 'C', 'D']})]:
             for brick_position, bricklet_positions in positions.items():
                 full_position = stack_position + brick_position
 
@@ -592,7 +595,7 @@ class Stage3:
 
                     self.devices[full_position] = device
 
-        self.try_action('20B', lambda device: device.simple_get_tag_id(255)) # clear tags from last test run
+        self.try_action('21B', lambda device: device.simple_get_tag_id(255)) # clear tags from last test run
 
         self.action_stop_queue = queue.Queue()
         self.action_enabled_ref = [True]
@@ -659,7 +662,7 @@ class Stage3:
     def test_front_panel_button(self, automatic):
         assert self.is_front_panel_button_pressed_function != None
 
-        servo = '20C'
+        servo = '21C'
         channel = 0
 
         try:
@@ -724,7 +727,7 @@ class Stage3:
             fatal_error('Could not test front panel button: {0}'.format(e))
 
     def get_nfc_tag_ids(self):
-        return [self.try_action('20B', lambda device: device.simple_get_tag_id(i)) for i in range(8)]
+        return [self.try_action('21B', lambda device: device.simple_get_tag_id(i)) for i in range(8)]
 
     def set_led_strip_color(self, left, middle=None, right=None):
         if middle == None:
@@ -733,7 +736,7 @@ class Stage3:
         if right == None:
             right = middle
 
-        self.try_action('20A', lambda device: device.set_led_values(0, right * 3 + middle * 5 + left * 3))
+        self.try_action('21A', lambda device: device.set_led_values(0, right * 3 + middle * 5 + left * 3))
 
     def beep_success(self):
         volume = 5
