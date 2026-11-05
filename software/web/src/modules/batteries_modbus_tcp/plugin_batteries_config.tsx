@@ -1690,7 +1690,7 @@ export function pre_init() {
                             force_discharge_power: config[1].table[1].force_discharge_power,
                         };
                     }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.SolaredgeInverter) {
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SolaredgeHybridInverter) {
                         edit_children.push(
                             <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputNumber

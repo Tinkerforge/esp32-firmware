@@ -3,14 +3,14 @@ def f32le(value):
 
 
 display_names = [
-    ('Solaredge Inverter', {
-        'en': 'SolarEdge inverter',
-        'de': 'SolarEdge Wechselrichter',
+    ('Solaredge Hybrid Inverter', {
+        'en': 'SolarEdge hybrid inverter',
+        'de': 'SolarEdge Hybrid-Wechselrichter',
     }),
 ]
 
 table_prototypes = [
-    ('Solaredge Inverter', [
+    ('Solaredge Hybrid Inverter', [
         'device_address',
         {
             'name': 'force_charge_power',
@@ -26,18 +26,18 @@ table_prototypes = [
 ]
 
 default_device_addresses = [
-    ('Solaredge Inverter', 1),
+    ('Solaredge Hybrid Inverter', 1),
 ]
 
 repeat_intervals = [
-    ('Solaredge Inverter', 60),  # remote control commands use a timeout of 90 seconds
+    ('Solaredge Hybrid Inverter', 60),  # remote control commands use a timeout of 90 seconds
 ]
 
 variants = []
 
 specs = [
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Block',
         'register_blocks': [
             {
@@ -91,7 +91,7 @@ specs = [
         ],
     },
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Normal',
         'register_blocks': [
             {
@@ -145,7 +145,7 @@ specs = [
         ],
     },
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Block Discharge',
         'register_blocks': [
             {
@@ -199,7 +199,7 @@ specs = [
         ],
     },
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Force Charge',
         'register_blocks': [
             {
@@ -253,7 +253,7 @@ specs = [
         ],
     },
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Block Charge',
         'register_blocks': [
             {
@@ -307,7 +307,7 @@ specs = [
         ],
     },
     {
-        'group': 'Solaredge Inverter',
+        'group': 'Solaredge Hybrid Inverter',
         'mode': 'Force Discharge',
         'register_blocks': [
             {
