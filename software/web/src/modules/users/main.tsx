@@ -652,6 +652,7 @@ function EditUserFormContent({
                 />
             </FormRow>
             <FormRow label={__("users.content.edit_user_password")}>
+                {/* Do not add a length limit etc. here: Passwords are hashed anyway, so whatever the user can produce in the input's value, we accept. */}
                 <InputPassword
                     value={user.password === undefined ? user.digest_hash : user.password}
                     onValue={(v) => onUserChange({ password: v })}
