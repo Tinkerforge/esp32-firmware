@@ -336,6 +336,7 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
             r_file.seek(r_file.size() - sizeof(Charge));
             r_file.write(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
             logger.printfln("Repaired previous broken charge.");
+            repaired = true;
         }
     }
 
