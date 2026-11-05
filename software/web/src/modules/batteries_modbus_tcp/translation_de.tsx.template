@@ -72,8 +72,8 @@ let x = {
             "register_blocks_function_code": "Funktionscode",
             "register_blocks_function_code_read_coils": "1 – Coils lesen",
             "register_blocks_function_code_read_discrete_inputs": "2 – Discrete Inputs lesen",
-            "register_blocks_function_code_read_holding_registers": "3 – Holding Register lesen",
-            "register_blocks_function_code_read_input_registers": "4 – Input Register lesen",
+            "register_blocks_function_code_read_holding_registers": "3 – Holding-Register lesen",
+            "register_blocks_function_code_read_input_registers": "4 – Input-Register lesen",
             "register_blocks_function_code_write_single_coil": "5 – Einzelne Coil schreiben",
             "register_blocks_function_code_write_single_register": "6 – Einzelnes Register schreiben",
             "register_blocks_function_code_write_multiple_coils": "15 – Mehrere Coils schreiben",
@@ -88,6 +88,14 @@ let x = {
             "register_blocks_function_code_if_different_mask_write_register": "100 + 22 – Falls abweichend, Register maskiert schreiben",
             "register_blocks_function_code_if_different_read_mask_write_single_register": "100 + 3 + 6 – Falls abweichend, einzelnes Register lesen und maskiert schreiben",
             "register_blocks_function_code_if_different_read_mask_write_multiple_registers": "100 + 3 + 16 – Falls abweichend, mehrere Register lesen und maskiert schreiben",
+            "register_blocks_function_code_copy_single_coil": "200 + 1 + 5 - Einzelne Coil kopieren",
+            "register_blocks_function_code_copy_single_discrete_input": "200 + 2 + 5 - Einzelnen Discrete Input kopieren",
+            "register_blocks_function_code_copy_single_holding_register": "200 + 3 + 6 - Einzelnes Holding-Register kopieren",
+            "register_blocks_function_code_copy_single_input_register": "200 + 4 + 6 - Einzelnes Input-Register kopieren",
+            "register_blocks_function_code_copy_multiple_coil": "200 + 1 + 15 - Mehrere Coils kopieren",
+            "register_blocks_function_code_copy_multiple_discrete_inputs": "200 + 2 + 15 - Mehrere Discrete Inputs kopieren",
+            "register_blocks_function_code_copy_multiple_holding_registers": "200 + 3 + 16 - Mehrere Holding-Register kopieren",
+            "register_blocks_function_code_copy_multiple_input_registers": "200 + 4 + 16 - Mehrere Input-Register kopieren",
             "register_blocks_start_address": "Startadresse",
             "register_blocks_start_address_muted": "beginnt bei 0",
             "register_blocks_start_number": "Startnummer",
@@ -97,6 +105,8 @@ let x = {
             "register_blocks_value_invalid": "Der Wert muss eine Dezimalzahl sein.",
             "register_blocks_values": "Werte",
             "register_blocks_values_muted": "kommagetrennt",
+            "register_blocks_values_muted_source_start_address_and_data_count": "Startadresse, Datenanzahl",
+            "register_blocks_values_muted_source_start_number_and_data_count": "Startnummer, Datenanzahl",
             "register_blocks_values_invalid": "Die Werte müssen eine kommagetrennte Liste von Dezimalzahlen sein.",
             "register_blocks_mask": "Bitmaske",
             "register_blocks_mask_muted": "",
@@ -105,28 +115,61 @@ let x = {
             "register_blocks_masks_muted": "kommagetrennt",
             "register_blocks_masks_invalid": "Die Bitmasken müssen eine kommagetrennte Liste von Folgen von 0, 1 oder x sein.",
             "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
+                if (func > 200) {
+                    let rtyp = "Unbekannt";
+                    let values_parts = values.split(",");
+                    let src_addr = parseInt(values_parts[0].trim(), 10);
+                    let src_data_count = parseInt(values_parts[1].trim(), 10);
+                    let multiple = src_data_count > 1;
+
+                    switch (func) {
+                    case 206:
+                    case 216:
+                        rtyp = multiple ? "Coils" : "Coil";
+                        break;
+
+                    case 207:
+                    case 217:
+                        rtyp = multiple ? "Discrete Inputs" : "Discrete Input";
+                        break;
+
+                    case 209:
+                    case 219:
+                        rtyp = "Holding-Register";
+                        break;
+
+                    case 210:
+                    case 220:
+                        rtyp = "Input-Register";
+                        break;
+                    }
+
+                    return "Kopiere " + (src_data_count > 1 ? "" + src_data_count + " " : "") + rtyp + (src_data_count > 1 ? " ab " : " ") + src_addr + " nach " + addr;
+                }
+
                 let action = "";
+                let multiple = values.indexOf(",") >= 0;
                 let rtyp = "Unbekannt";
 
                 switch (func) {
                 case 1:
                     action = "Prüfe";
-                    rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
+                    rtyp = multiple ? "Coils" : "Coil";
                     break;
 
                 case 2:
                     action = "Prüfe";
-                    rtyp = values.indexOf(",") >= 0 ? "Discrete Inputs" : "Discrete Input";
+                    rtyp = multiple ? "Discrete Inputs" : "Discrete Input";
                     break;
 
                 case 3:
                     action = "Prüfe";
-                    rtyp = "Holding Register";
+                    rtyp = "Holding-Register";
                     break;
 
                 case 4:
                     action = "Prüfe";
-                    rtyp = "Input Register";
+                    rtyp = "Input-Register";
                     break;
 
                 case 5:
@@ -134,7 +177,7 @@ let x = {
                 case 105:
                 case 115:
                     action = "Setze";
-                    rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
+                    rtyp = multiple ? "Coils" : "Coil";
                     break;
 
                 case 6:
@@ -152,7 +195,7 @@ let x = {
                     break;
                 }
 
-                return action + " " + (values.indexOf(",") >= 0 ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
+                return action + " " + (multiple ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
             }/*NF*/,
             "register_effective_mode": "Effektiver Modus",
             "register_effective_mode_matching": "Übereinstimmend",

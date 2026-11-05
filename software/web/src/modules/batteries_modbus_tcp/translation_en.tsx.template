@@ -88,6 +88,14 @@ let x = {
             "register_blocks_function_code_if_different_mask_write_register": "100 + 22 – If different, mask write register",
             "register_blocks_function_code_if_different_read_mask_write_single_register": "100 + 3 + 6 – If different, read, mask and write single register",
             "register_blocks_function_code_if_different_read_mask_write_multiple_registers": "100 + 3 + 16 – If different, read, mask and write multiple registers",
+            "register_blocks_function_code_copy_single_coil": "200 + 1 + 5 - Copy single coil",
+            "register_blocks_function_code_copy_single_discrete_input": "200 + 2 + 5 - Copy single discrete input",
+            "register_blocks_function_code_copy_single_holding_register": "200 + 3 + 6 - Copy single holding register",
+            "register_blocks_function_code_copy_single_input_register": "200 + 4 + 6 - Copy single input register",
+            "register_blocks_function_code_copy_multiple_coil": "200 + 1 + 15 - Copy multiple coils",
+            "register_blocks_function_code_copy_multiple_discrete_inputs": "200 + 2 + 15 - Copy multiple discrete inputs",
+            "register_blocks_function_code_copy_multiple_holding_registers": "200 + 3 + 16 - Copy multiple holding registers",
+            "register_blocks_function_code_copy_multiple_input_registers": "200 + 4 + 16 - Copy multiple input registers",
             "register_blocks_start_address": "Start address",
             "register_blocks_start_address_muted": "begins at 0",
             "register_blocks_start_number": "Start number",
@@ -97,6 +105,8 @@ let x = {
             "register_blocks_value_invalid": "The value must be a decimal number.",
             "register_blocks_values": "Values",
             "register_blocks_values_muted": "comma-separated",
+            "register_blocks_values_muted_source_start_address_and_data_count": "Start address, data count",
+            "register_blocks_values_muted_source_start_number_and_data_count": "Start number, data count",
             "register_blocks_values_invalid": "The values must be a comma-separated list of decimal numbers.",
             "register_blocks_mask": "Bitmask",
             "register_blocks_mask_muted": "",
@@ -105,28 +115,61 @@ let x = {
             "register_blocks_masks_muted": "comma-separated",
             "register_blocks_masks_invalid": "The bitmasks must be a comma-separated list of sequences of 0, 1 or x.",
             "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
+                if (func > 200) {
+                    let rtyp = "unknown";
+                    let values_parts = values.split(",");
+                    let src_addr = parseInt(values_parts[0].trim(), 10);
+                    let src_data_count = parseInt(values_parts[1].trim(), 10);
+                    let multiple = src_data_count > 1;
+
+                    switch (func) {
+                    case 206:
+                    case 216:
+                        rtyp = multiple ? "coils" : "coil";
+                        break;
+
+                    case 207:
+                    case 217:
+                        rtyp = multiple ? "discrete inputs" : "discrete input";
+                        break;
+
+                    case 209:
+                    case 219:
+                        rtyp = multiple ? "holding registers" : "holding register";
+                        break;
+
+                    case 210:
+                    case 220:
+                        rtyp = multiple ? "input registers" : "input register";
+                        break;
+                    }
+
+                    return "Copy " + (src_data_count > 1 ? "" + src_data_count + " " : "") + rtyp + (src_data_count > 1 ? " from " : " ") + src_addr + " to " + addr;
+                }
+
                 let action = "";
+                let multiple = values.indexOf(",") >= 0;
                 let rtyp = "unknown";
 
                 switch (func) {
                 case 1:
                     action = "Compare";
-                    rtyp = values.indexOf(",") >= 0 ? "coils" : "coil";
+                    rtyp = multiple ? "coils" : "coil";
                     break;
 
                 case 2:
                     action = "Compare";
-                    rtyp = values.indexOf(",") >= 0 ? "discrete inputs" : "discrete input";
+                    rtyp = multiple ? "discrete inputs" : "discrete input";
                     break;
 
                 case 3:
                     action = "Compare";
-                    rtyp = values.indexOf(",") >= 0 ? "holding registers" : "holding register";
+                    rtyp = multiple ? "holding registers" : "holding register";
                     break;
 
                 case 4:
                     action = "Compare";
-                    rtyp = values.indexOf(",") >= 0 ? "input registers" : "input register";
+                    rtyp = multiple ? "input registers" : "input register";
                     break;
 
                 case 5:
@@ -134,7 +177,8 @@ let x = {
                 case 105:
                 case 115:
                     action = "Set";
-                    rtyp = values.indexOf(",") >= 0 ? "coils" : "coil";
+                    multiple = values.indexOf(",") >= 0;
+                    rtyp = multiple ? "coils" : "coil";
                     break;
 
                 case 6:
@@ -148,11 +192,12 @@ let x = {
                 case 109:
                 case 119:
                     action = "Set";
-                    rtyp = values.indexOf(",") >= 0 ? "registers" : "register";
+                    multiple = values.indexOf(",") >= 0;
+                    rtyp = multiple ? "registers" : "register";
                     break;
                 }
 
-                return action + " " + (values.indexOf(",") >= 0 ? "from" : "") + " " + rtyp + " " + addr + " to " + values;
+                return action + " " + (multiple ? "from" : "") + " " + rtyp + " " + addr + " to " + values;
             }/*NF*/,
             "register_effective_mode": "Effective mode",
             "register_effective_mode_matching": "Matching",

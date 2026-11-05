@@ -43,7 +43,7 @@ let x = {
             "start_number_dec": "Startnummer (dezimal)",
             "start_number_hex": "Startnummer (hexadezimal)",
             "start_number_hex_invalid": "Muss aus 1 bis 4 hexadezimale Ziffern bestehen",
-            "data_count": "Anzahl",
+            "data_count": "Datenanzahl",
             "write_data_single_value": "Wert",
             "write_data_single_value_invalid": "Der Wert muss eine Dezimalzahl sein.",
             "write_data_multiple_values": "Werte",

@@ -173,6 +173,38 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             values_invalid = __("batteries_modbus_tcp.content.register_blocks_masks_invalid");
             values_filter = (v: string) => v.toLowerCase();
             break;
+
+        case ModbusFunctionCode.CopySingleCoil:
+        case ModbusFunctionCode.CopySingleDiscreteInput:
+        case ModbusFunctionCode.CopySingleHoldingRegister:
+        case ModbusFunctionCode.CopySingleInputRegister:
+            values_pattern = `^ *${util.UINT16_PATTERN} *, *1 *$`; // FIXME: allow to omit the data count
+            values_label = __("batteries_modbus_tcp.content.register_blocks_values");
+            values_label_muted = this.props.register_address_mode == ModbusRegisterAddressMode.Address
+                                 ? __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_address_and_data_count")
+                                 : __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_number_and_data_count");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
+
+        case ModbusFunctionCode.CopyMultipleCoils:
+        case ModbusFunctionCode.CopyMultipleDiscreteInputs:
+            values_pattern = `^ *${util.UINT16_PATTERN} *, *(?:196[0-8]|19[0-5][0-9]|1[0-8][0-9]{2}|[1-9][0-9]{0,2}) *$`;
+            values_label = __("batteries_modbus_tcp.content.register_blocks_values");
+            values_label_muted = this.props.register_address_mode == ModbusRegisterAddressMode.Address
+                                 ? __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_address_and_data_count")
+                                 : __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_number_and_data_count");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
+
+        case ModbusFunctionCode.CopyMultipleHoldingRegisters:
+        case ModbusFunctionCode.CopyMultipleInputRegisters:
+            values_pattern = `^ *${util.UINT16_PATTERN} *, *(?:12[0-3]|1[0-1][0-9]|[1-9][0-9]?) *$`;
+            values_label = __("batteries_modbus_tcp.content.register_blocks_values");
+            values_label_muted = this.props.register_address_mode == ModbusRegisterAddressMode.Address
+                                 ? __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_address_and_data_count")
+                                 : __("batteries_modbus_tcp.content.register_blocks_values_muted_source_start_number_and_data_count");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
         }
 
         let children = [
@@ -205,7 +237,14 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         [ModbusFunctionCode.IfDifferentWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_write_multiple_registers")],
                         [ModbusFunctionCode.IfDifferentMaskWriteRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_mask_write_register")],
                         [ModbusFunctionCode.IfDifferentReadMaskWriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_read_mask_write_single_register")],
-                        [ModbusFunctionCode.IfDifferentReadMaskWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_if_different_read_mask_write_multiple_registers")],
+                        [ModbusFunctionCode.CopySingleCoil.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_single_coil")],
+                        [ModbusFunctionCode.CopySingleDiscreteInput.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_single_discrete_input")],
+                        [ModbusFunctionCode.CopySingleHoldingRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_single_holding_register")],
+                        [ModbusFunctionCode.CopySingleInputRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_single_input_register")],
+                        [ModbusFunctionCode.CopyMultipleCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_multiple_coil")],
+                        [ModbusFunctionCode.CopyMultipleDiscreteInputs.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_multiple_discrete_inputs")],
+                        [ModbusFunctionCode.CopyMultipleHoldingRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_multiple_holding_registers")],
+                        [ModbusFunctionCode.CopyMultipleInputRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_copy_multiple_input_registers")],
                     ]}
                     placeholder={__("select")}
                     value={util.hasValue(this.state.register_block.func) ? this.state.register_block.func.toString() : undefined}
@@ -266,7 +305,15 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
          || function_code == ModbusFunctionCode.IfDifferentWriteSingleCoil
          || function_code == ModbusFunctionCode.IfDifferentWriteSingleRegister
          || function_code == ModbusFunctionCode.IfDifferentWriteMultipleCoils
-         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleRegisters) {
+         || function_code == ModbusFunctionCode.IfDifferentWriteMultipleRegisters
+         || function_code == ModbusFunctionCode.CopySingleCoil
+         || function_code == ModbusFunctionCode.CopySingleDiscreteInput
+         || function_code == ModbusFunctionCode.CopySingleHoldingRegister
+         || function_code == ModbusFunctionCode.CopySingleInputRegister
+         || function_code == ModbusFunctionCode.CopyMultipleCoils
+         || function_code == ModbusFunctionCode.CopyMultipleDiscreteInputs
+         || function_code == ModbusFunctionCode.CopyMultipleHoldingRegisters
+         || function_code == ModbusFunctionCode.CopyMultipleInputRegisters) {
             values = vals.join(", ");
         }
         else if (function_code == ModbusFunctionCode.MaskWriteRegister
@@ -440,6 +487,62 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 vals.push(and_mask);
                 vals.push(or_mask);
             }
+        }
+        else if (function_code == ModbusFunctionCode.CopySingleCoil
+              || function_code == ModbusFunctionCode.CopySingleDiscreteInput
+              || function_code == ModbusFunctionCode.CopySingleHoldingRegister
+              || function_code == ModbusFunctionCode.CopySingleInputRegister
+              || function_code == ModbusFunctionCode.CopyMultipleCoils
+              || function_code == ModbusFunctionCode.CopyMultipleDiscreteInputs
+              || function_code == ModbusFunctionCode.CopyMultipleHoldingRegisters
+              || function_code == ModbusFunctionCode.CopyMultipleInputRegisters) {
+            let max_data_count = 0;
+
+            if (function_code == ModbusFunctionCode.CopySingleCoil
+             || function_code == ModbusFunctionCode.CopySingleDiscreteInput
+             || function_code == ModbusFunctionCode.CopySingleHoldingRegister
+             || function_code == ModbusFunctionCode.CopySingleInputRegister) {
+                max_data_count = 1;
+            }
+            else if (function_code == ModbusFunctionCode.CopyMultipleCoils
+                  || function_code == ModbusFunctionCode.CopyMultipleDiscreteInputs) {
+                max_data_count = 1968;
+            }
+            else if (function_code == ModbusFunctionCode.CopyMultipleHoldingRegisters
+                  || function_code == ModbusFunctionCode.CopyMultipleInputRegisters) {
+                max_data_count = 123;
+            }
+
+            let values_dec = values_str.split(",");
+
+            if (values_dec.length > 2) {
+                return [];
+            }
+
+            let start_address_dec = values_dec[0].trim();
+            let data_count_dec = values_dec[1].trim();
+
+            let start_address = parseInt(start_address_dec, 10);
+            let data_count = parseInt(data_count_dec, 10);
+
+            if (start_address > 65535) {
+                return [];
+            }
+
+            if (data_count > max_data_count) {
+                return [];
+            }
+
+            if ("" + start_address !== start_address_dec) {
+                return [];
+            }
+
+            if ("" + data_count !== data_count_dec) {
+                return [];
+            }
+
+            vals.push(start_address);
+            vals.push(data_count);
         }
         else {
             console.log('Unhandled Modbus function code', function_code);
