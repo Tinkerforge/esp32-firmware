@@ -2043,7 +2043,7 @@ def test_out_of_order_command_ignored(tc: TestContext) -> None:
     _wait_for_any_user_slot_active(tc, timeout=15)
 
     # Send Disconnect with seq=2 (lower than in_seq_number=3) – must be ignored.
-    # (seq=1 would be accepted as a sequence restart of the relay.)
+    # (seq=1 would be accepted as a new sequence started by the relay.)
     wg.send_management_command(
         seq_num=2, command_id=_CONN_COMMAND_DISCONNECT,
         connection_no=0, connection_uuid=conn_uuid,
@@ -2060,11 +2060,12 @@ def test_out_of_order_command_ignored(tc: TestContext) -> None:
     tc.assert_eq(0, active[0]["connection"])
 
 
-def test_relay_sequence_restart_accepted(tc: TestContext) -> None:
+def test_relay_new_sequence_accepted(tc: TestContext) -> None:
     """The relay starts counting at 1 again when it recreates its side of the
-    management tunnel (e.g. after a restart), while the device's WireGuard
-    connection stays up. A command with seq=1 must then be accepted although
-    it is not newer than the last seen sequence number."""
+    management tunnel (e.g. after a restart or when the device's NAT address
+    changed), while the device's WireGuard connection stays up. A command with
+    seq=1 must then be accepted although it is not newer than the last seen
+    sequence number."""
     tc.set_test_timeout(90)
 
     try:
@@ -2081,7 +2082,7 @@ def test_relay_sequence_restart_accepted(tc: TestContext) -> None:
     )
     _wait_for_any_user_slot_active(tc, timeout=15)
 
-    # Relay restarted: seq=1 must be accepted and open connection_no=1.
+    # Relay started a new sequence: seq=1 must be accepted and open connection_no=1.
     wg.send_management_command(
         seq_num=1, command_id=_CONN_COMMAND_CONNECT,
         connection_no=1, connection_uuid=os.urandom(16),

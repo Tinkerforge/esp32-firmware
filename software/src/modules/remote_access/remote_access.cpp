@@ -3070,13 +3070,14 @@ void RemoteAccess::run_management()
 
     const uint16_t seq_num = command_packet->header.seq_num;
     const bool seq_num_is_newer = static_cast<int16_t>(seq_num - in_seq_number) > 0;
-    // The relay starts counting at 1 again whenever it creates a new management tunnel for us, for example after it was restarted.
+    // The relay starts counting at 1 again whenever it creates a new management tunnel for us,
+    // for example after it was restarted or when our NAT address changed.
     // We don't always notice that. So accept 1 as the start of a new sequence.
-    const bool relay_restarted_sequence = seq_num == 1 && in_seq_number != 1;
+    const bool relay_started_new_sequence = seq_num == 1 && in_seq_number != 1;
 
-    if (!in_seq_number_valid || seq_num_is_newer || relay_restarted_sequence) {
+    if (!in_seq_number_valid || seq_num_is_newer || relay_started_new_sequence) {
         if (in_seq_number_valid && !seq_num_is_newer) {
-            logger.printfln("Relay restarted management command sequence (last seq_num was %u)", static_cast<unsigned>(in_seq_number));
+            logger.printfln("Relay started a new management command sequence (last seq_num was %u)", static_cast<unsigned>(in_seq_number));
         }
         in_seq_number = seq_num;
         in_seq_number_valid = true;
