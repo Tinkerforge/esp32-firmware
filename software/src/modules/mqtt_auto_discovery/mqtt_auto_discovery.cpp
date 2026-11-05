@@ -236,11 +236,9 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
         }
     }
 
-    // topic is not null-terminated and needs to be copied to terminate properly.
-    String tp(topic, topic_len);
-
     // Unknown discovery topic with data; needs to be removed by sending a retained empty payload.
-    task_scheduler.scheduleOnce([tp]() {
+    // topic is not null-terminated and needs to be copied to terminate properly.
+    task_scheduler.scheduleOnce([tp = String{topic, topic_len}]() {
         mqtt.publish(tp, String(), true);
     });
 }
