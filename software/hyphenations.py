@@ -1658,6 +1658,8 @@ de_hyph = [
     "Si-gnier-tes",
     "Si-gnier-te",
     "Zei-chen-ket-te",
+    "Ein-zel-nen",
+    "Da-te-n-an-zahl",
 ]
 
 en_hyph = [
