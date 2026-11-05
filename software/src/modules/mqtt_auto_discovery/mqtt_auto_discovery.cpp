@@ -123,9 +123,12 @@ void MqttAutoDiscovery::start()
     discovery_topic.concat(mqtt.client_name);
     discovery_topic.concat("/+/config");
 
+    // Run the check in the MQTT thread: The broker echoes every announced topic back to us.
+    // Handing each one to the main thread blocks receiving any other MQTT messages
+    // (for example meter updates) for multiple seconds.
     mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
         check_discovery_topic(topic, topic_len, data_len);
-    }, Mqtt::Retained::Accept);
+    }, Mqtt::Retained::Accept, Mqtt::CallbackInThread::Mqtt);
 
     task_id = task_scheduler.scheduleWithFixedDelay([this](){
         this->announce_next_topic();
@@ -194,30 +197,52 @@ void MqttAutoDiscovery::prepare_topic_lengths()
     }
 }
 
+static bool consume_suffix(const char *topic, size_t *topic_len, const char *suffix, size_t suffix_len)
+{
+    if (*topic_len < suffix_len || memcmp(topic + *topic_len - suffix_len, suffix, suffix_len) != 0)
+        return false;
+
+    *topic_len -= suffix_len;
+    return true;
+}
+
+// Called in the MQTT thread. Must not access this->prefix or mqtt_discovery_topic_lengths:
+// Both are replaced in the main thread when the config changes.
+// The discovery prefix was already matched by the subscription's topic filter.
+// mqtt.client_name can't change while the MQTT client is running.
 void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_len, size_t data_len)
 {
-    for (size_t i = 0; i < MQTT_DISCOVERY_TOPIC_COUNT; ++i) {
-        if (mqtt_discovery_topic_lengths[i] != topic_len)
-            continue;
+    // Zero-length data is either an echo of us removing a topic or a topic removed by someone else.
+    // Ignore it to avoid an infinite loop.
+    if (data_len == 0)
+        return;
 
-        char buf[255];
-        this->get_discovery_topic(i, buf, 255);
+    const String &client_name = mqtt.client_name;
+    const size_t client_name_len = client_name.length();
 
-        if (memcmp(buf, topic, topic_len) == 0) {
+    // <discovery_prefix>/<component>/<node_id>/<object_id>/config
+    for (const auto &info : mqtt_discovery_topic_infos) {
+        size_t len = topic_len;
+
+        if (consume_suffix(topic, &len, "/config", 7)
+         && consume_suffix(topic, &len, info.object_id, strlen(info.object_id))
+         && consume_suffix(topic, &len, "/", 1)
+         && consume_suffix(topic, &len, client_name.c_str(), client_name_len)
+         && consume_suffix(topic, &len, "/", 1)
+         && consume_suffix(topic, &len, info.component, strlen(info.component))
+         && len >= 2 && topic[len - 1] == '/') {
             // Discovery topic is known; nothing to do.
             return;
         }
     }
 
-    // Unknown discovery topic with zero-length data probably caused by us removing it. Catch it to avoid an infinite loop.
-    if (data_len == 0)
-        return;
-
     // topic is not null-terminated and needs to be copied to terminate properly.
     String tp(topic, topic_len);
 
     // Unknown discovery topic with data; needs to be removed by sending a retained empty payload.
-    mqtt.publish(tp, String(), true);
+    task_scheduler.scheduleOnce([tp]() {
+        mqtt.publish(tp, String(), true);
+    });
 }
 
 void MqttAutoDiscovery::announce_next_topic()
