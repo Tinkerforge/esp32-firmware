@@ -282,9 +282,9 @@ private:
             CarloGavazziPhase phase;
         } carlo_gavazzi_em510;
 
-        // SolarEdge inverter
+        // SolarEdge hybrid inverter
         struct {
-            SolaredgeInverterVirtualMeter virtual_meter;
+            SolaredgeHybridInverterVirtualMeter virtual_meter;
             float battery_1_rated_energy;
             float battery_1_temperature;
             float battery_1_voltage;
@@ -305,7 +305,7 @@ private:
             uint32_t battery_2_status;
             float dc_power;
             int16_t dc_power_sf;
-        } solaredge_inverter;
+        } solaredge_hybrid_inverter;
 
         // SAX Power Home basic mode
         struct {

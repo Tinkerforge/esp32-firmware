@@ -1,22 +1,22 @@
 display_names = [
-    ('Solaredge Inverter', {
-        'en': 'SolarEdge inverter',
-        'de': 'SolarEdge Wechselrichter',
+    ('Solaredge Hybrid Inverter', {
+        'en': 'SolarEdge hybrid inverter',
+        'de': 'SolarEdge Hybrid-Wechselrichter',
     }),
 ]
 
 table_prototypes = [
-    ('Solaredge Inverter', ['device_address', 'virtual_meter']),
+    ('Solaredge Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
-    ('Solaredge Inverter', 1),
+    ('Solaredge Hybrid Inverter', 1),
 ]
 
 specs = [
     {
-        'name': 'Solaredge Inverter Battery',
-        'table_id': 'Solaredge Inverter',
+        'name': 'Solaredge Hybrid Inverter Battery',
+        'table_id': 'Solaredge Hybrid Inverter',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -193,8 +193,8 @@ specs = [
         ],
     },
     {
-        'name': 'Solaredge Inverter PV',
-        'table_id': 'Solaredge Inverter',
+        'name': 'Solaredge Hybrid Inverter PV',
+        'table_id': 'Solaredge Hybrid Inverter',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
