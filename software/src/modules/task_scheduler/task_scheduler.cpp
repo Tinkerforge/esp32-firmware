@@ -557,8 +557,8 @@ bool TaskScheduler::updateDelay(uint64_t task_id, micros_t new_delay) {
     if (task == nullptr)
         return false;
 
-    task->delay = new_delay;
     task->next_deadline = task->next_deadline - task->delay + new_delay;
+    task->delay = new_delay;
 
     this->tasks.restoreHeap();
 
