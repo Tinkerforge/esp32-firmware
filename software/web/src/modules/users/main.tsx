@@ -651,7 +651,7 @@ function EditUserFormContent({
                     max={32000}
                 />
             </FormRow>
-            <FormRow label={__("users.content.edit_user_password")} help={__("users.content.edit_user_password_help")}>
+            <FormRow label={__("users.content.edit_user_password")}>
                 <InputPassword
                     value={user.password === undefined ? user.digest_hash : user.password}
                     onValue={(v) => onUserChange({ password: v })}
