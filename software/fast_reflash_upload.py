@@ -85,7 +85,10 @@ def subprocess_call(cmd, shell=False):
         sys.stderr.buffer.write(new_stderr)
         sys.stderr.buffer.flush()
 
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell) as p:
+    env = dict(os.environ)
+    env['FORCE_COLOR'] = '1'
+
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell, env=env) as p:
         while p.poll() == None:
             communicate(p, timeout=0.1)
 
