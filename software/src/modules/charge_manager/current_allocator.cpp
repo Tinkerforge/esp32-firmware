@@ -1735,8 +1735,17 @@ static void stage_5(StageContext &sc) {
         auto old_factors = get_phase_factors(1, state->phase_rotation);
         // TODO use already allocated current here
         new_cost -= already_allocated;
-        // TODO should we subtract the 1p enable cost here?
-        new_enable_cost -= already_allocated;
+
+        // can_activate multiplies wnd_min with the enable factor
+        // (basically to make sure all already active chargers
+        // can be raised to the enable current
+        // before phase-switching (or enabling) this charger)
+        //
+        // However this charger is already part of the minimum window,
+        // so we have to subtract the 1p enable cost here,
+        // so that it's fine that can_activate re-applys it.
+        new_enable_cost -= sc.cfg->enable_current_factor * already_allocated;
+
 
         // If this charger's mode is at least Min, it has a guaranteed PV current > 0.
         // If this current is sufficient to enable the charger, we don't have to check
