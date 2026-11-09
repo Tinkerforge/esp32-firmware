@@ -32,7 +32,7 @@ debug_log_variables = [
     ##"on_state_change_blocked_until",
 ]
 
-formats = 'fmt(' + '),\n        fmt('.join('runtime_data->' + v if len(v) > 0 else '' for v in debug_log_variables) + '),'
+formats = '        fmt(' + '),\n        fmt('.join('runtime_data->' + v if len(v) > 0 else '' for v in debug_log_variables) + '),'
 header  = '    "' + ',"\n    "'.join([re.sub(r'[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
 data    = ',\n               '.join('runtime_data->' + v for v in filter(None, debug_log_variables))
 

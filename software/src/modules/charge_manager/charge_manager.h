@@ -94,16 +94,13 @@ public:
 
     uint32_t get_maximum_available_current();
 
-    CurrentLimits *get_limits() {
-        // TODO: Maybe add separate function for this?
-        static_cm = false;
-        return &limits;
-    }
+    CurrentLimits *get_limits() {return &limits;}
     const Cost *get_allocated_currents() {return &allocated_currents;}
 
     void trigger_allocator_run(bool force);
     void skip_global_hysteresis();
-    void enable_fast_single_charger_mode();
+    void enable_fast_single_charger_mode(bool enable);
+    void enable_static_cm(bool enable);
 
     const ChargerState *get_charger_state(uint8_t idx);
     ChargerState *get_mutable_charger_state(uint8_t idx);
@@ -126,6 +123,8 @@ private:
     bool seen_all_chargers();
     void start_manager_task();
     void check_watchdog();
+    void toggle_watchdog();
+    void reset_limits();
 
     void update_charger_state_config(uint8_t idx);
     void update_charger_state_from_mode(ChargerState *state, int charger_idx);
@@ -236,6 +235,7 @@ private:
 
     uint64_t allocate_task_id = 0;
     uint64_t send_client_task_id = 0;
+    uint64_t watchdog_task_id = 0;
 
     int16_t override_next_client_send = 0;
 

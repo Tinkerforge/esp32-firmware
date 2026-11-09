@@ -939,17 +939,7 @@ void ChargeManager::setup()
         charger_state[i].authenticated_user_id = NOT_AUTHORIZED;
     }
 
-    // TODO: Change all currents everywhere to int32_t or int16_t.
-    int def_cur = (int) default_current;
-    this->limits.raw = {0, def_cur, def_cur, def_cur};
-    this->limits.min = {0, def_cur, def_cur, def_cur};
-    this->limits.spread = {0, def_cur, def_cur, def_cur};
-    this->limits.max_pv = 0;
-
-    for (size_t i = 0; i < ARRAY_SIZE(this->limits.min_expiration_ts); i++) {
-        this->limits.min_expiration_ts[i] = 0_us;
-    }
-    this->limits.max_pv_expiration_ts = 0_us;
+    reset_limits();
 
     start_manager_task();
 
@@ -1500,9 +1490,7 @@ void ChargeManager::register_urls()
     });
 #endif
 
-    if (static_cm && config.get("enable_watchdog")->asBool()) {
-        task_scheduler.scheduleUncancelable([this](){this->check_watchdog();}, 1_s, 1_s);
-    }
+    toggle_watchdog();
 }
 
 void ChargeManager::update_supported_charge_modes(bool pv, bool eco) {
@@ -1711,20 +1699,69 @@ int8_t ChargeManager::get_charger_state_index(const ChargerState *state)
     return static_cast<int8_t>(state - this->charger_state);
 }
 
-void ChargeManager::enable_fast_single_charger_mode()
+void ChargeManager::enable_fast_single_charger_mode(bool enable)
 {
     if (!config.get("enable_charge_manager")->asBool()) {
         logger.printfln("Cannot enable fast single charger mode because the charge manager is disabled");
-        return;
+        enable = false;
     }
 
     if (charger_count != 1) {
         logger.printfln("Cannot enable fast single charger mode because %zu chargers are configured", charger_count);
-        return;
+        enable = false;
     }
 
-    ca_config->allocation_interval = 5_s;
-    low_level_config.get("allocation_interval")->updateUint(5);
+    if (enable) {
+        ca_config->allocation_interval = 5_s;
+        logger.printfln("Enabled fast single charger mode");
+    } else {
+        ca_config->allocation_interval = seconds_t{low_level_config.get("allocation_interval")->asUint()};
+        logger.printfln("Disabled fast single charger mode");
+    }
 
-    logger.printfln("Enabled fast single charger mode");
+    if (allocate_task_id != 0) {
+        task_scheduler.updateDelay(allocate_task_id, ca_config->allocation_interval);
+    }
+}
+
+void ChargeManager::enable_static_cm(bool enable)
+{
+    static_cm = enable;
+    toggle_watchdog();
+
+    if (enable) {
+        reset_limits();
+    }
+}
+
+void ChargeManager::toggle_watchdog()
+{
+    if (static_cm && config.get("enable_watchdog")->asBool()) {
+        // Want watchdog
+        if (watchdog_task_id == 0) {
+            watchdog_task_id = task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1_s, 1_s);
+        }
+    } else {
+        // Don't want watchdog
+        if (watchdog_task_id != 0) {
+            task_scheduler.cancel(watchdog_task_id);
+            watchdog_task_id = 0;
+        }
+    }
+}
+
+void ChargeManager::reset_limits()
+{
+    // TODO: Change all currents everywhere to int32_t or int16_t.
+    const int def_cur = static_cast<int>(config.get("default_available_current")->asUint());
+
+    this->limits.raw    = {0, def_cur, def_cur, def_cur};
+    this->limits.min    = {0, def_cur, def_cur, def_cur};
+    this->limits.spread = {0, def_cur, def_cur, def_cur};
+    this->limits.max_pv = 0;
+
+    for (size_t i = 0; i < ARRAY_SIZE(this->limits.min_expiration_ts); i++) {
+        this->limits.min_expiration_ts[i] = 0_us;
+    }
+    this->limits.max_pv_expiration_ts = 0_us;
 }

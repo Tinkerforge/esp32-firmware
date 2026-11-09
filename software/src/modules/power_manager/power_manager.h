@@ -239,6 +239,9 @@ private:
         // Tracing
         const char *trace_header = nullptr;
         size_t trace_header_length = 0;
+
+        // Debug protocol
+        const char *fmtstr = nullptr;
     };
 
     ConfigRoot state;

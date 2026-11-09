@@ -249,6 +249,12 @@ void PowerManager::setup()
     api.restorePersistentConfig("power_manager/config", &config);
     api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
+    debug_protocol.register_backend(this);
+
+    if (phase_switcher_backend != nullptr) {
+        api.addFeature("phase_switch");
+    }
+
     bool automation_has_action = false;
 #if MODULE_AUTOMATION_AVAILABLE()
     automation_has_action = automation.has_task_with_action(AutomationActionID::PMBlockCharge)
@@ -275,10 +281,11 @@ void PowerManager::setup()
         return;
     }
 
-    debug_protocol.register_backend(this);
-
     runtime_data->cm_limits             = charge_manager.get_limits();
     runtime_data->cm_allocated_currents = charge_manager.get_allocated_currents();
+
+    // Disable static CM when power manager is enabled
+    charge_manager.enable_static_cm(false);
 
     // If the PM is enabled, make sure to override the CM's default current.
     zero_limits();
@@ -299,7 +306,6 @@ void PowerManager::setup()
 
     if (runtime_data->phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
-        api.addFeature("phase_switch");
 #if MODULE_AUTOMATION_AVAILABLE()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
 #endif
@@ -360,11 +366,7 @@ void PowerManager::setup()
         //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i  pp mavg limit %i  pp int limit %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma, currents_phase_preproc_mavg_limit, currents_phase_preproc_interpolate_limit);
     }
 
-    // Update data from meter, requires power filter to be set up.
-    update_data();
-
     // Check for incomplete configuration after as much as possible has been set up.
-
     bool power_meter_available = false;
     bool current_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
@@ -464,17 +466,12 @@ void PowerManager::register_urls()
 
         if (MODULE_EM_V1_AVAILABLE() && !runtime_data->dynamic_load_enabled) {
             // Try to enable faster allocator runs because the EM Phase Switcher needs it.
-            charge_manager.enable_fast_single_charger_mode();
+            charge_manager.enable_fast_single_charger_mode(true); // TODO Needs fixing
         }
 
-        api.addFeature("phase_switch");
 #if MODULE_AUTOMATION_AVAILABLE()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
 #endif
-
-        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](Language /*language*/, String &errmsg) {
-            this->switch_phases(external_control_update.get("phases_wanted")->asUint8(), errmsg, true);
-        }, true);
 
         task_scheduler.scheduleUncancelable([this](){
             uint32_t ext_state = EXTERNAL_CONTROL_STATE_AVAILABLE;
@@ -496,8 +493,13 @@ void PowerManager::register_urls()
         }, 1_s, 1_s);
     }
 
-    // Update phase information even when PM is disabled because the back-end might change state by itself.
     if (phase_switcher_backend != nullptr) {
+        // Always register API so that external control can be switched on at runtime.
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](Language /*language*/, String &errmsg) {
+            this->switch_phases(external_control_update.get("phases_wanted")->asUint8(), errmsg, true);
+        }, true);
+
+        // Update phase information even when PM is disabled because the back-end might change state by itself.
         task_scheduler.scheduleUncancelable([this]() {
             low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_phases() == 3);
         }, 500_ms);
