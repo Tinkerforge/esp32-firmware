@@ -223,6 +223,18 @@ struct CoolArray {
         return val[used - 1];
     }
 
+    bool remove(size_t i) {
+        if (i >= used)
+            return false;
+
+        if (i != used - 1)
+            val[i] = std::move(val[used - 1]);
+        else
+            val[used - 1] = T();
+        --used;
+        return true;
+    }
+
     T *data() { return val; }
     const T *data() const { return val; }
 
