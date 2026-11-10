@@ -1080,6 +1080,32 @@ void EVSEV2::fetch_all_data()
     d.valid = true;
 }
 
+static const char *error_state_to_string(uint8_t error_state)
+{
+    switch (error_state) {
+        case TF_EVSE_V2_ERROR_STATE_OK:            return "OK";
+        case TF_EVSE_V2_ERROR_STATE_SWITCH:        return "Switch error";
+        case TF_EVSE_V2_ERROR_STATE_DC_FAULT:      return "DC fault protector error";
+        case TF_EVSE_V2_ERROR_STATE_CONTACTOR:     return "Contactor/PE error";
+        case TF_EVSE_V2_ERROR_STATE_COMMUNICATION: return "Communication error";
+        default:                                   return "Unknown error";
+    }
+}
+
+static const char *dc_fault_current_state_to_string(uint8_t dc_fault_current_state)
+{
+    switch (dc_fault_current_state) {
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_NORMAL_CONDITION:             return "OK";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_6_MA_DC_ERROR:                return "6 mA DC fault";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_SYSTEM_ERROR:                 return "Sensor system error";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_UNKNOWN_ERROR:                return "Unknown error";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_CALIBRATION_ERROR:            return "Self-test/calibration failed";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_20_MA_AC_ERROR:               return "20 mA AC fault";
+        case TF_EVSE_V2_DC_FAULT_CURRENT_STATE_6_MA_AC_AND_20_MA_AC_ERROR:   return "6 mA DC and 20 mA AC fault";
+        default:                                                             return "Invalid state";
+    }
+}
+
 void EVSEV2::publish_all_data()
 {
     if (!all_data.valid) {
@@ -1230,7 +1256,7 @@ void EVSEV2::publish_all_data()
 
     if (error_state_changed) {
         if (error_state != 0) {
-            logger.printfln("Error state %d", error_state);
+            logger.printfln("Error state %u: %s", error_state, error_state_to_string(error_state));
         } else {
             logger.printfln("Error state cleared");
         }
@@ -1238,13 +1264,32 @@ void EVSEV2::publish_all_data()
 
     if (dc_fault_current_state_changed) {
         if (dc_fault_current_state != 0) {
-            logger.printfln("DC Fault current state %u (%s %u; sensor type %u)",
-                            dc_fault_current_state,
-                            dc_fault_current_state == 4 ? "calibration error code" : "pins",
-                            dc_fault_pins,
-                            dc_sensor_type);
+            const char *sensor_name = dc_sensor_type == 0 ? "X904" : "X804";
+            const bool pin0 = dc_fault_pins & 1;
+            const bool pin1 = dc_fault_pins & 2;
+            const bool pin2 = dc_fault_pins & 4;
+
+            if (dc_fault_current_state == TF_EVSE_V2_DC_FAULT_CURRENT_STATE_CALIBRATION_ERROR) {
+                // Pin bits hold the self-test results: X6 tripped, X30 tripped, both released afterwards.
+                logger.printfln("DC fault protector state %u: %s (sensor %s; self-test results: X6 trip %s, X30 trip %s, release %s)",
+                                dc_fault_current_state,
+                                dc_fault_current_state_to_string(dc_fault_current_state),
+                                sensor_name,
+                                pin0 ? "OK" : "FAILED",
+                                pin1 ? "OK" : "FAILED",
+                                pin2 ? "OK" : "FAILED");
+            } else {
+                // Pin bits hold the sensor outputs at the time of the fault.
+                logger.printfln("DC fault protector state %u: %s (sensor %s; outputs: X6 %s, X30 %s, ERR %s)",
+                                dc_fault_current_state,
+                                dc_fault_current_state_to_string(dc_fault_current_state),
+                                sensor_name,
+                                pin0 ? "active" : "inactive",
+                                pin1 ? "active" : "inactive",
+                                pin2 ? "active" : "inactive");
+            }
         } else {
-            logger.printfln("DC Fault current state cleared");
+            logger.printfln("DC fault protector state cleared");
         }
     }
 
