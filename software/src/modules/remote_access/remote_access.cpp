@@ -60,6 +60,11 @@ static constexpr size_t KEY_SIZE = 3 * WG_KEY_LENGTH;
 #define MAX_HTTP_BODY_BYTES 5120
 #define MAX_SERVICE_TOKEN_REMOVAL_ATTEMPTS 10
 
+#ifdef DEBUG_FS_ENABLE
+// Kept outside KEY_DIRECTORY, whose contents are removed with the last user.
+#define SERVICE_TOKEN_PUBLIC_KEY_PATH "/remote-access-service-token-public-key"
+#endif
+
 // Authorization token layout as defined by
 // https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
 //
@@ -78,7 +83,7 @@ static constexpr size_t KEY_SIZE = 3 * WG_KEY_LENGTH;
 // FLICKR base58 alphabet (also used by Tinkerforge's tf_base58_* helpers).
 
 
-#if signature_sodium_public_key_length != 0
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
 static const char FLICKR_BASE58_ALPHABET[] = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 #endif
 
@@ -93,7 +98,7 @@ static constexpr const char *ERR_LOW_MEMORY                = ERR_KEY("low_memory
 static constexpr const char *ERR_READ_REQUEST_BODY         = ERR_KEY("read_request_body");
 static constexpr const char *ERR_DESERIALIZE_REQUEST_BODY  = ERR_KEY("deserialize_request_body");
 static constexpr const char *ERR_FAILED_TO_INIT_CRYPTO     = ERR_KEY("init_crypto");
-#if signature_sodium_public_key_length != 0
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
 static constexpr const char *ERR_DECODE_TOKEN_BASE58       = ERR_KEY("decode_token_base58");
 static constexpr const char *ERR_AUTH_TOKEN_TOO_SHORT      = ERR_KEY("auth_token_too_short");
 static constexpr const char *ERR_BASE64_ENCODE_TOKEN       = ERR_KEY("base64_encode_token");
@@ -110,7 +115,7 @@ static constexpr const char *ERR_FAILED_TO_START_PING      = ERR_KEY("failed_to_
 static constexpr const char *ERR_GENERATE_WG_KEY           = ERR_KEY("generate_wg_key");
 static constexpr const char *ERR_ENCRYPT_WG_KEYS           = ERR_KEY("encrypt_wg_keys");
 static constexpr const char *ERR_ENCRYPT_PSK               = ERR_KEY("encrypt_psk");
-#if signature_sodium_public_key_length != 0
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
 static constexpr const char *ERR_EMPTY_SERVICE_TOKEN       = ERR_KEY("empty_service_token");
 static constexpr const char *ERR_DECODE_SERVICE_TOKEN_B64  = ERR_KEY("decode_service_token_b64");
 static constexpr const char *ERR_SIGNED_SERVICE_TOKEN_SHORT = ERR_KEY("signed_service_token_short");
@@ -479,7 +484,7 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
     response_body.concat(static_cast<const uint8_t *>(event->data_chunk), static_cast<unsigned int>(event->data_chunk_len));
 }
 
-#if signature_sodium_public_key_length != 0
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
 // Decode a FLICKR-alphabet base58 string into an arbitrary-length byte buffer.
 // Returns nullptr on failure (invalid character, overflow, or buffer too small).
 // On success, *out_len holds the number of decoded bytes (always <= buffer_size).
@@ -844,7 +849,27 @@ String RemoteAccess::register_with_relay(const Config &relay_config,
     return String();
 }
 
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
+static bool get_service_token_public_key(uint8_t *public_key)
+{
+#ifdef DEBUG_FS_ENABLE
+    if (LittleFS.exists(SERVICE_TOKEN_PUBLIC_KEY_PATH)) {
+        File file = LittleFS.open(SERVICE_TOKEN_PUBLIC_KEY_PATH, "r");
+        // A broken override must fail closed instead of silently changing trust.
+        return file && file.size() == crypto_sign_PUBLICKEYBYTES &&
+               file.read(public_key, crypto_sign_PUBLICKEYBYTES) == crypto_sign_PUBLICKEYBYTES;
+    }
+#endif
+
 #if signature_sodium_public_key_length != 0
+    static_assert(signature_sodium_public_key_length == crypto_sign_PUBLICKEYBYTES);
+    memcpy(public_key, signature_sodium_public_key_data, crypto_sign_PUBLICKEYBYTES);
+    return true;
+#else
+    return false;
+#endif
+}
+
 WebServerRequestReturnProtect RemoteAccess::handle_service_token_register(WebServerRequest request)
 {
     this->management_request_allowed = false;
@@ -934,12 +959,19 @@ void RemoteAccess::parse_service_token()
         return;
     }
 
+    uint8_t public_key[crypto_sign_PUBLICKEYBYTES];
+    if (!get_service_token_public_key(public_key)) {
+        update_registration_state(RegistrationState::Error, String(ERR_SERVICE_TOKEN_SIG_FAIL));
+        this->request_cleanup();
+        return;
+    }
+
     unsigned long long extracted_len = 0;
     int verify_ret = crypto_sign_open(message.get(),
                                       &extracted_len,
                                       signed_data.get(),
                                       static_cast<unsigned long long>(decoded_size),
-                                      signature_sodium_public_key_data);
+                                      public_key);
     if (verify_ret != 0) {
         update_registration_state(RegistrationState::Error, String(ERR_SERVICE_TOKEN_SIG_FAIL));
         this->request_cleanup();
@@ -1493,7 +1525,41 @@ void RemoteAccess::register_urls()
         return request.send_plain(200);
     });
 
-#if signature_sodium_public_key_length != 0
+#ifdef DEBUG_FS_ENABLE
+    server.on("/remote_access/service_token_public_key", HTTP_PUT, [](WebServerRequest request) {
+        if (request.contentLength() != crypto_sign_PUBLICKEYBYTES) {
+            return request.send_plain(400, "Expected a raw 32-byte Ed25519 public key");
+        }
+
+        uint8_t public_key[crypto_sign_PUBLICKEYBYTES];
+        if (request.receive(reinterpret_cast<char *>(public_key), sizeof(public_key)) != sizeof(public_key)) {
+            return request.send_plain(500, "Failed to receive service-token public key");
+        }
+
+        // Replace atomically so a failed upload preserves the previous key.
+        constexpr const char *tmp_path = SERVICE_TOKEN_PUBLIC_KEY_PATH ".tmp";
+        defer { LittleFS.remove(tmp_path); };
+        File file = LittleFS.open(tmp_path, "w");
+        if (!file || file.write(public_key, sizeof(public_key)) != sizeof(public_key)) {
+            return request.send_plain(500, "Failed to write service-token public key");
+        }
+        file.close();
+        if (!LittleFS.rename(tmp_path, SERVICE_TOKEN_PUBLIC_KEY_PATH)) {
+            return request.send_plain(500, "Failed to install service-token public key");
+        }
+
+        return request.send_plain(200);
+    });
+
+    server.on("/remote_access/service_token_public_key", HTTP_DELETE, [](WebServerRequest request) {
+        if (LittleFS.exists(SERVICE_TOKEN_PUBLIC_KEY_PATH) && !LittleFS.remove(SERVICE_TOKEN_PUBLIC_KEY_PATH)) {
+            return request.send_plain(500, "Failed to remove service-token public key");
+        }
+        return request.send_plain(200);
+    });
+#endif
+
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
     server.on("/remote_access/service_token_register", HTTP_PUT, [this](WebServerRequest request) {
         return this->handle_service_token_register(request);
     });

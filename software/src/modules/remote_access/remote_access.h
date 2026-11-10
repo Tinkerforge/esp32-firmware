@@ -89,9 +89,8 @@ public:
 
     bool parse_uuid_string(const char *uuid_str, uint8_t *out);
 
-#if signature_sodium_public_key_length != 0
-    // Authorization token extracted from the most recent successful
-    // /remote_access/verify_signature call.
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
+    // Authorization token decoded from an auth token or a verified service token.
     //
     // See https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
     struct AuthorizationToken {
@@ -112,7 +111,7 @@ private:
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
-#if signature_sodium_public_key_length != 0
+#if signature_sodium_public_key_length != 0 || defined(DEBUG_FS_ENABLE)
     WebServerRequestReturnProtect handle_decode_auth_token(WebServerRequest request);
     WebServerRequestReturnProtect handle_service_token_register(WebServerRequest request);
     void fetch_service_token();

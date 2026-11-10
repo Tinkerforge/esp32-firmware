@@ -28,10 +28,11 @@
 # (my.warp-charger.com) instead of the local mock server. They require
 # signed firmware (signature_sodium_public_key_length != 0) and a relay
 # that is willing to issue service tokens for the test device.
+# Public-key upload tests use debug-fs and the local mock relay instead.
 
 import base64
+from contextlib import contextmanager
 import ctypes
-import ctypes.util
 import json
 import os
 from pathlib import Path
@@ -45,8 +46,10 @@ import threading
 import uuid as uuid_mod
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 from urllib.error import HTTPError
+from tinkerforge.ip_connection import base58encode
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
@@ -191,9 +194,6 @@ def _load_sodium() -> ctypes.CDLL:
     global _sodium_lib
     if _sodium_lib is None:
         lib = load_libsodium()
-        lib.sodium_init.restype = ctypes.c_int
-        lib.sodium_init()
-
         lib.crypto_box_seal_open.restype = ctypes.c_int
         lib.crypto_box_seal_open.argtypes = [
             ctypes.c_char_p,  # m (output, plaintext)
@@ -737,14 +737,7 @@ def _do_full_registration(tc: TestContext, *, user_tunnels: bool = False) -> Wir
     #    and ships the (sealed) relay-side private keys plus the device-side
     #    public keys in the registration request to the relay.
     registration_body = {
-        "config": {
-            "enable": True,
-            "relay_host": tc.get_local_ip(),
-            "relay_port": _server.port,
-            "email": "test@example.com",
-            "cert_id": TEST_CERT_ID,
-            "mtu": 1240,
-        },
+        "config": _make_config_update(tc),
         "note": "",
         "public_key": nacl_pub_b64,
         "user_uuid": "null",
@@ -1031,12 +1024,12 @@ def _get_service_token_timestamp_minutes(tc: TestContext) -> int:
 
 
 def _service_token_feature_available(tc: TestContext) -> bool:
-    """Return True if the /remote_access/service_token_register endpoint is registered.
+    """Return True if an embedded key is available for production service tokens.
 
-    The endpoint is only compiled in when the firmware has a sodium public key
-    embedded (signature_sodium_public_key_length != 0). On signed firmware that
-    sodium key is also baked into firmware_update/state.publisher (via
-    signature_publisher); on unsigned firmware the field is the empty string.
+    Signed firmware embeds a sodium public key and sets
+    firmware_update/state.publisher (via signature_publisher). Unsigned debug
+    builds also provide the endpoint, but require an uploaded key and therefore
+    cannot exercise the production service-token tests below.
 
     We probe via firmware_update/state instead of calling
     /remote_access/service_token_register directly: that endpoint kicks off an
@@ -1273,7 +1266,7 @@ def test_enable_triggers_management_request(tc: TestContext) -> None:
     _server.set_response_fn(_make_response_fn(200))
     _clear_request_log()
 
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # The device should send a management request within ~30s (periodic interval + jitter)
     _wait_for_management_request(tc, timeout=45)
@@ -1298,7 +1291,7 @@ def test_auth_failure_disables_module(tc: TestContext) -> None:
     _server.set_response_fn(_make_response_fn(401, '{"error":"unauthorized"}'))
     _clear_request_log()
 
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # Wait for the management request to happen
     _wait_for_management_request(tc, timeout=45)
@@ -1336,7 +1329,7 @@ def test_server_error_retries(tc: TestContext) -> None:
     _server.set_response_fn(counting_handler)
     _clear_request_log()
 
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # Wait for at least 2 management requests (first fails, second succeeds on retry)
     # The retry happens after ~30s, so total wait needs to be >60s
@@ -1359,13 +1352,13 @@ def test_disable_resets_state(tc: TestContext) -> None:
     _clear_request_log()
 
     # Enable remote access
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # Wait for at least one management request
     _wait_for_management_request(tc, timeout=45)
 
     # Now disable
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    _point_at_local_relay(tc, enable=False)
 
     # All slots should be disconnected
     tc.wait_for(lambda: _assert_all_disconnected(tc), timeout=5)
@@ -1379,17 +1372,17 @@ def test_enable_disable_enable_cycle(tc: TestContext) -> None:
     _clear_request_log()
 
     # First enable
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
     _wait_for_management_request(tc, timeout=45)
 
     # Disable
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    _point_at_local_relay(tc, enable=False)
     time.sleep(2)
     _assert_all_disconnected(tc)
 
     # Clear log and re-enable
     _clear_request_log()
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # Should make a new management request
     _wait_for_management_request(tc, timeout=45)
@@ -1423,7 +1416,7 @@ def test_config_preserved_after_server_error(tc: TestContext) -> None:
     _server.set_response_fn(_make_response_fn(500, '{"error":"server error"}'))
     _clear_request_log()
 
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
     _wait_for_management_request(tc, timeout=45)
 
     # Wait a bit for error processing
@@ -1565,7 +1558,7 @@ def test_full_registration_reconnect_after_disable_enable(tc: TestContext) -> No
     _wait_for_management_connected(tc, timeout=60)
 
     # Disable remote access
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    _point_at_local_relay(tc, enable=False)
     time.sleep(2)
 
     # Verify disconnected
@@ -1573,7 +1566,7 @@ def test_full_registration_reconnect_after_disable_enable(tc: TestContext) -> No
 
     # Re-enable (keys are still stored on the device)
     _clear_request_log()
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=True), timeout=3)
+    _point_at_local_relay(tc, enable=True)
 
     # Should re-establish management connection
     _wait_for_management_connected(tc, timeout=60)
@@ -2128,7 +2121,7 @@ def test_disable_closes_user_connections(tc: TestContext) -> None:
     _wait_for_any_user_slot_active(tc, timeout=15)
 
     # Disable remote access.  apply_config() calls close_all_remote_connections().
-    tc.api("remote_access/config_update", _make_config_update(tc, enable=False), timeout=3)
+    _point_at_local_relay(tc, enable=False)
     tc.wait_for(lambda: _assert_all_disconnected(tc), timeout=10)
 
 
@@ -2212,15 +2205,243 @@ def test_remove_user_prompt_unknown_uuid_is_ignored(tc: TestContext) -> None:
 # Service-token tests
 # ---------------------------------------------------------------------------
 #
-# These tests exercise the support-account registration/removal flow against a
-# real relay (typically my.warp-charger.com). They require:
-#
-#   1. Signed firmware (signature_sodium_public_key_length != 0) so the
-#      /remote_access/service_token_register endpoint is compiled in.
-#   2. The relay currently configured on the device must be reachable and
-#      willing to issue a service token for it.
-#
-# All tests skip if the endpoint is not registered (e.g. on unsigned firmware).
+# Public-key upload tests use debug-fs and a locally signed service token.
+
+SERVICE_TOKEN_KEY_ENDPOINT = "/remote_access/service_token_public_key"
+SERVICE_TOKEN_KEY_FILE = "/remote-access-service-token-public-key"
+
+
+def _read_service_token_key(tc: TestContext) -> bytes | None:
+    try:
+        return tc.download_file(SERVICE_TOKEN_KEY_FILE)
+    except HTTPError as exc:
+        if exc.code != 404:
+            raise
+        return None
+
+
+def _restore_service_token_key(tc: TestContext, key: bytes | None) -> None:
+    # Use debug-fs so even a malformed pre-existing file is restored verbatim.
+    if key is None:
+        tc.http_request("DELETE", SERVICE_TOKEN_KEY_ENDPOINT)
+    else:
+        tc.upload_file(SERVICE_TOKEN_KEY_FILE, key)
+
+
+def test_service_token_public_key_upload_validation(tc: TestContext) -> None:
+    """Bad uploads preserve the current key; replacement and deletion take effect."""
+    saved_key = _read_service_token_key(tc)
+    try:
+        for _ in range(2):
+            key = Ed25519PrivateKey.generate().public_key().public_bytes_raw()
+            tc.http_request("PUT", SERVICE_TOKEN_KEY_ENDPOINT, key)
+            tc.assert_eq(key, tc.download_file(SERVICE_TOKEN_KEY_FILE))
+
+            for bad_key in (b"", key[:-1], key + b"\0"):
+                try:
+                    tc.http_request("PUT", SERVICE_TOKEN_KEY_ENDPOINT, bad_key)
+                except HTTPError as exc:
+                    tc.assert_eq(400, exc.code)
+                else:
+                    raise AssertionError("Invalid public-key length was accepted")
+                tc.assert_eq(key, tc.download_file(SERVICE_TOKEN_KEY_FILE))
+
+        tc.http_request("DELETE", SERVICE_TOKEN_KEY_ENDPOINT)
+        tc.assert_eq(None, _read_service_token_key(tc))
+        tc.http_request("DELETE", SERVICE_TOKEN_KEY_ENDPOINT)  # Idempotent.
+    finally:
+        _restore_service_token_key(tc, saved_key)
+
+
+def test_service_token_public_key_verification(tc: TestContext) -> None:
+    """Only the uploaded key can authorize the mock relay's support account."""
+    tc.set_test_timeout(120)
+    with _mock_service_token_relay(tc) as expected_user:
+        public_key = _read_service_token_key(tc)
+
+        # An unknown key, a different trusted key, and a damaged override must
+        # all fail before the relay sees an account-registration request.
+        for key in (None, Ed25519PrivateKey.generate().public_key().public_bytes_raw(), b"broken"):
+            _restore_service_token_key(tc, key)
+            _reset_registration_state(tc)
+            tc.http_request("PUT", "/remote_access/service_token_register")
+            tc.wait_for(lambda: tc.assert_eq(REG_STATE_ERROR, _get_registration_state(tc)["state"]), timeout=15)
+            tc.assert_eq("remote_access.script.error.service_token_signature_failed", _get_registration_state(tc)["message"])
+            tc.assert_false(any("/api/add_with_token" in r["path"] for r in _get_request_log()))
+
+        tc.http_request("PUT", SERVICE_TOKEN_KEY_ENDPOINT, public_key)
+        _register_service_token(tc, timeout=30)
+        tc.assert_true(any("/api/add_with_token" in r["path"] for r in _get_request_log()))
+        tc.assert_eq(expected_user["uuid"], _get_service_token_user_uuid(tc))
+        user = tc.api("remote_access/config")["users"][0]
+        for field, value in expected_user.items():
+            tc.assert_eq(value, user[field])
+
+
+@contextmanager
+def _mock_service_token_relay(tc: TestContext):
+    """Install a test signing key and restore the device's trust after the test."""
+    saved_key = _read_service_token_key(tc)
+    signing_key = Ed25519PrivateKey.generate()
+    public_key = signing_key.public_key().public_bytes_raw()
+    user_id = str(uuid_mod.uuid4())
+    email = "support@example.com"
+    authorization = os.urandom(32)
+    user_key = X25519PrivateKey.generate().public_key().public_bytes_raw()
+    token_bytes = authorization + user_id.encode() + user_key + email.encode() + os.urandom(32)
+    leading_zeros = len(token_bytes) - len(token_bytes.lstrip(b"\0"))
+    token = ("1" * leading_zeros + base58encode(int.from_bytes(token_bytes, "big"))).encode()
+    signed_token = base64.b64encode(signing_key.sign(token) + token).decode()
+
+    def relay_handler(method: str, path: str, body: bytes) -> tuple[int, str]:
+        _log_request(method, path, body)
+        if "/api/auth/service_token" in path:
+            return 200, signed_token
+        if "/api/add_with_token" in path:
+            return 200, json.dumps({
+                "charger_uuid": str(uuid_mod.uuid4()),
+                "charger_password": base64.b64encode(os.urandom(16)).decode(),
+                "management_pub": base64.b64encode(X25519PrivateKey.generate().public_key().public_bytes_raw()).decode(),
+                "user_id": user_id,
+            })
+        return 200, _make_management_response_ok()
+
+    try:
+        _server.set_response_fn(_make_response_fn(200))
+        _clear_service_token_registration(tc)
+        _clear_request_log()
+        tc.http_request("PUT", SERVICE_TOKEN_KEY_ENDPOINT, public_key)
+        _server.set_response_fn(relay_handler)
+        yield {"uuid": user_id, "email": email, "public_key": base64.b64encode(user_key).decode()}
+    finally:
+        _server.set_response_fn(_make_response_fn(200))
+        try:
+            _clear_service_token_registration(tc)
+        finally:
+            _restore_service_token_key(tc, saved_key)
+
+
+def test_service_token_mock_register_sets_tracking(tc: TestContext) -> None:
+    """After successful service-token registration the device must populate
+    service_token_user_uuid so the user can be removed automatically later."""
+    tc.set_test_timeout(60)
+
+    with _mock_service_token_relay(tc) as expected_user:
+        # This issues a GET /api/auth/service_token
+        # against the local mock relay and then adds the user through
+        # /api/add_with_token.
+        _register_service_token(tc, timeout=30)
+
+        # service_token_user_uuid must now be non-empty.
+        uuid = _get_service_token_user_uuid(tc)
+        tc.assert_eq(expected_user["uuid"], uuid)
+
+
+def test_service_token_mock_register_enables_remote_access(tc: TestContext) -> None:
+    """A successful service-token registration must flip enable=true (it replaces
+    the manual config_update step)."""
+    tc.set_test_timeout(60)
+
+    with _mock_service_token_relay(tc):
+        _register_service_token(tc, timeout=30)
+        # The registration handler updates enable=true in-memory and parse_registration()
+        # persists it via API::writeConfig() before it sets registration_state=Success.
+        # _register_service_token() only waits for the latter, so there is a small
+        # window where state is Success but the writeConfig has not been picked up by
+        # the state reader yet (or the WebServer handler is running on a different
+        # task that hasn't released the lock). Poll until enable is actually True.
+
+        tc.wait_for(lambda: tc.assert_true(tc.api("remote_access/config").get("enable")), timeout=10)
+
+
+def test_service_token_mock_register_idempotent(tc: TestContext) -> None:
+    """Calling /remote_access/service_token_register again while a service user is
+    already registered must be a no-op: it must not re-issue a token and must
+    keep the existing tracking UUID intact. It must, however, refresh the
+    deadline so the automatic removal is rescheduled 24 h into the future."""
+    tc.set_test_timeout(120)
+
+    with _mock_service_token_relay(tc):
+        # Register the service user the first time so we can exercise the
+        # "already registered" branch on the second call.
+        _register_service_token(tc, timeout=30)
+
+        # The second call should not change the tracked UUID: the existing-user
+        # branch in handle_service_token_register() returns early and only
+        # refreshes the timestamp and re-schedules the removal.
+        first_uuid = _get_service_token_user_uuid(tc)
+        tc.assert_ne("", first_uuid)
+
+        # Capture the deadline timestamp before the second call so we can verify
+        # that the second call moves it forward. The field is stored as epoch
+        # minutes (epoch / 60), so two calls within the same minute would be
+        # indistinguishable.
+        initial_ts = _get_service_token_timestamp_minutes(tc)
+        tc.assert_gt(0, initial_ts)  # Must be set after the first registration.
+
+        time.sleep(61)  # Wait for a minute to ensure the timestamp can advance.
+
+        # The second call should not change the tracked UUID: the existing-user
+        # branch in handle_service_token_register() returns early and only
+        # refreshes the timestamp and re-schedules the removal.
+        tc.api("remote_access/service_token_register", {}, timeout=10)
+
+        tc.wait_for(
+            lambda: tc.assert_eq(first_uuid, _get_service_token_user_uuid(tc)),
+            timeout=10,
+        )
+
+        # The removal deadline must have been pushed forward: the timestamp
+        # that drives setup()'s 24 h removal scheduler should now be later than
+        # the one we observed after the initial registration.
+        tc.wait_for(
+            lambda: tc.assert_gt(initial_ts, _get_service_token_timestamp_minutes(tc)),
+            timeout=10,
+        )
+
+
+def test_service_token_mock_removal_clears_tracking(tc: TestContext) -> None:
+    """Manually removing the service-token user via /remote_access/remove_user
+    must cancel the pending automatic removal (via cancel_service_token_removal())
+    and clear the tracking UUID. The retry loop in remove_service_token_user()
+    must not re-populate the tracking field after this.
+    """
+    tc.set_test_timeout(120)
+
+    with _mock_service_token_relay(tc):
+        # Register first so we have a service-token user to remove.
+        _register_service_token(tc, timeout=30)
+        uuid = _get_service_token_user_uuid(tc)
+        tc.assert_ne("", uuid)
+
+        # Look up the user id by uuid and remove it via the regular endpoint.
+        cfg = tc.api("remote_access/config")
+        user_id = None
+        for u in cfg["users"]:
+            if u["uuid"] == uuid:
+                user_id = u["id"]
+                break
+        tc.assert_ne(None, user_id)
+
+        tc.api("remote_access/remove_user", {"id": user_id}, timeout=10)
+
+        # The tracking UUID must be cleared promptly. The retry loop in
+        # remove_service_token_user() must terminate on a manual removal.
+        tc.wait_for(
+            lambda: tc.assert_eq("", _get_service_token_user_uuid(tc)),
+            timeout=20,
+        )
+
+        # Give the retry loop time to misbehave (it must not re-populate the
+        # field). The first backoff is 1 minute; 5 s is well below it.
+        time.sleep(5)
+        tc.assert_eq("", _get_service_token_user_uuid(tc))
+
+
+# The following registration/removal tests use the production relay. They
+# require signed firmware with its embedded production key and a reachable
+# relay willing to issue a service token for the test device.
+
 
 def test_service_token_register_sets_tracking(tc: TestContext) -> None:
     """After successful service-token registration the device must populate
@@ -2431,14 +2652,7 @@ def _do_auth_token_register(tc: TestContext, *, timeout: float = 15.0) -> str:
     _clear_request_log()
 
     register_body = {
-        "config": {
-            "enable": True,
-            "relay_host": tc.get_local_ip(),
-            "relay_port": _server.port,
-            "email": "test@example.com",
-            "cert_id": TEST_CERT_ID,
-            "mtu": 1240,
-        },
+        "config": _make_config_update(tc),
         "note": "",
         "public_key": nacl_pub_b64,
         # Non-null user_uuid + auth_token selects the /api/add_with_token
