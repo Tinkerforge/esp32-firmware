@@ -1216,14 +1216,16 @@ def main():
         build_flags.append('-DDEFAULT_WIFI_STA_PASSPHRASE="\\"{0}\\""'.format(custom_wifi['sta_passphrase']))
 
     if 'debug_fs_enable' in custom_wifi:
-        # Force not for distribution if file system access is enabled.
-        # This is too dangerous to distribute, as one can access for example stored wifi passphrases
-        # via /debug/fs/config/wifi_sta_config
-        not_for_distribution = True
         build_flags.append('-DDEBUG_FS_ENABLE="\\"{0}\\""'.format(custom_wifi['debug_fs_enable']))
 
     if 'w_error' in custom_wifi and custom_wifi['w_error']:
         build_flags.append('-Werror')
+
+    if any('-DDEBUG_FS_ENABLE' in f for f in build_flags):
+        # Force not for distribution if file system access is enabled.
+        # This is too dangerous to distribute, as one can access for example stored wifi passphrases
+        # via /debug/fs/config/wifi_sta_config
+        not_for_distribution = True
 
     env.Replace(BUILD_FLAGS=build_flags)
 
