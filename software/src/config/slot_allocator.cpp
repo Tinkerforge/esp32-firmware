@@ -66,15 +66,18 @@ template<typename ConfT> size_t RootBlock<ConfT>::frees              = 0;
 #endif
 
 template<typename ConfigT>
-uint16_t nextSlot()
+uint16_t nextSlots(uint16_t batch_size)
 {
     ASSERT_MAIN_THREAD();
+    assert(batch_size > 0 && batch_size <= SlotConfig<ConfigT>::slots_per_block);
 
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
     size_t superblock_offset = 0;
 
     size_t block_i = RootBlock<ConfigT>::first_free_slot / SlotConfig<ConfigT>::slots_per_block;
     size_t slot_i  = RootBlock<ConfigT>::first_free_slot % SlotConfig<ConfigT>::slots_per_block;
+
+    bool first_free_set = false;
 
     while (block_i >= SlotConfig<ConfigT>::blocks_per_superblock) {
         if (superblock->next_superblock == nullptr) {
@@ -95,8 +98,11 @@ uint16_t nextSlot()
     }
 
     while (true) {
+        const size_t superblock_slot_index_offset = superblock_offset * SlotConfig<ConfigT>::slots_per_superblock;
+
         for (; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
             typename ConfigT::Slot *block = superblock->blocks[block_i];
+
             if (block == nullptr) {
                 block = ConfigT::allocSlotBuf(SlotConfig<ConfigT>::slots_per_block);
 
@@ -111,22 +117,54 @@ uint16_t nextSlot()
 #endif
             }
 
-            for (; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
-                const uint16_t idx = static_cast<uint16_t>(superblock_offset * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i);
+            const size_t block_slot_index_offset = superblock_slot_index_offset + block_i * SlotConfig<ConfigT>::slots_per_block;
+
+            for (; slot_i <= SlotConfig<ConfigT>::slots_per_block - batch_size; slot_i++) {
+                const uint16_t idx = static_cast<uint16_t>(block_slot_index_offset + slot_i);
+
                 if (ConfigT::slotEmpty(block + slot_i, idx)) {
-                    RootBlock<ConfigT>::first_free_slot = idx + 1;
+                    uint16_t last_idx;
+
+                    if (batch_size == 1) {
+                        RootBlock<ConfigT>::first_free_slot = idx + 1;
+                        last_idx = idx;
+                    } else {
+                        uint16_t free_found = 1;
+
+                        for (; free_found < batch_size; free_found++) {
+                            if (!ConfigT::slotEmpty(block + slot_i + free_found, idx + free_found)) {
+                                break;
+                            }
+                        }
+
+                        if (free_found < batch_size) {
+                            if (!first_free_set) {
+                                RootBlock<ConfigT>::first_free_slot = idx;
+                                first_free_set = true;
+                            }
+
+                            slot_i += free_found;
+                            continue;
+                        }
+
+                        if (!first_free_set) {
+                            RootBlock<ConfigT>::first_free_slot = idx + batch_size;
+                        }
+
+                        last_idx = static_cast<uint16_t>(idx + batch_size - 1);
+                    }
 
 #if MODULE_DEBUG_AVAILABLE()
-                    RootBlock<ConfigT>::used_slots++;
+                    RootBlock<ConfigT>::used_slots += batch_size;
 #ifdef DEBUG_FS_ENABLE
-                    RootBlock<ConfigT>::allocs++;
+                    RootBlock<ConfigT>::allocs += batch_size;
 #endif
 
-                    if (idx > RootBlock<ConfigT>::last_used_slot) {
-                        RootBlock<ConfigT>::last_used_slot = idx;
+                    if (last_idx > RootBlock<ConfigT>::last_used_slot) {
+                        RootBlock<ConfigT>::last_used_slot = last_idx;
 
-                        if (idx > RootBlock<ConfigT>::slots_hwm) {
-                            RootBlock<ConfigT>::slots_hwm = idx;
+                        if (last_idx > RootBlock<ConfigT>::slots_hwm) {
+                            RootBlock<ConfigT>::slots_hwm = last_idx;
                         }
                     }
 #endif
@@ -153,18 +191,18 @@ uint16_t nextSlot()
     }
 }
 
-template uint16_t nextSlot<Config::ConfUint>();
-template uint16_t nextSlot<Config::ConfInt>();
-template uint16_t nextSlot<Config::ConfUint32>();
-template uint16_t nextSlot<Config::ConfInt32>();
-template uint16_t nextSlot<Config::ConfFloat>();
-template uint16_t nextSlot<Config::ConfString>();
-template uint16_t nextSlot<Config::ConfArray>();
-template uint16_t nextSlot<Config::ConfObject>();
-template uint16_t nextSlot<Config::ConfUnion>();
-template uint16_t nextSlot<Config::ConfUint53>();
-template uint16_t nextSlot<Config::ConfInt52>();
-template uint16_t nextSlot<Config::ConfTuple>();
+template uint16_t nextSlots<Config::ConfUint  >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfInt   >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfUint32>(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfInt32 >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfFloat >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfString>(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfArray >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfObject>(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfUnion >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfUint53>(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfInt52 >(uint16_t batch_size);
+template uint16_t nextSlots<Config::ConfTuple >(uint16_t batch_size);
 
 template<typename ConfigT>
 typename ConfigT::Slot *get_slot(uint16_t idx)
@@ -202,6 +240,8 @@ static void check_slot_accounting()
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
     size_t superblock_idx = 0;
+    size_t block_count = 0;
+    size_t last_used_slot = 0;
 
 #if MODULE_DEBUG_AVAILABLE()
     size_t used_slots = 0;
@@ -214,11 +254,14 @@ static void check_slot_accounting()
                 break;
             }
 
+            block_count++;
+
             for (size_t slot_i = 0; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
                 const size_t abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
                 if (!ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     ConfigT::slotDebugHook(block + slot_i, abs_slot_idx);
                     used_slots++;
+                    last_used_slot = abs_slot_idx;
                 }
             }
         }
@@ -232,7 +275,19 @@ static void check_slot_accounting()
             ConfigT::variantName, used_slots, RootBlock<ConfigT>::used_slots, RootBlock<ConfigT>::allocs, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs - RootBlock<ConfigT>::frees);
     }
 
+    if (block_count != RootBlock<ConfigT>::allocated_blocks) {
+        logger.printfln("allocated_blocks mismatch for %s. Counted %zu, expected %hu.", ConfigT::variantName, block_count, RootBlock<ConfigT>::allocated_blocks);
+    }
+
+    if (last_used_slot != RootBlock<ConfigT>::last_used_slot) {
+        logger.printfln("last_used_slot mismatch for %s. Found %zu, expected %hu.", ConfigT::variantName, last_used_slot, RootBlock<ConfigT>::last_used_slot);
+    }
+
 #endif
+
+    if (RootBlock<ConfigT>::frees > RootBlock<ConfigT>::allocs) {
+        logger.printfln("alloc/free mismatch for %s. %zu frees > %zu allocs.", ConfigT::variantName, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs);
+    }
 
     superblock = RootBlock<ConfigT>::first_superblock;
     superblock_idx = 0;
@@ -282,7 +337,6 @@ static void check_slot_accounting()
         superblock = superblock->next_superblock;
         superblock_idx++;
     }
-
 }
 #endif
 
@@ -303,6 +357,6 @@ void config_post_setup()
         check_slot_accounting<Config::ConfInt52>();
         check_slot_accounting<Config::ConfTuple>();
         slotDebugHookDone();
-    }, 1_min, 1_min);
+    }, 30_s, 1_min);
 #endif
 }

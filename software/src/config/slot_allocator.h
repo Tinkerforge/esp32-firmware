@@ -164,20 +164,23 @@ struct RootBlock {
 };
 
 template<typename ConfigT>
-uint16_t nextSlot();
+uint16_t nextSlots(uint16_t batch_size);
 
-extern template uint16_t nextSlot<Config::ConfUint>();
-extern template uint16_t nextSlot<Config::ConfInt>();
-extern template uint16_t nextSlot<Config::ConfUint32>();
-extern template uint16_t nextSlot<Config::ConfInt32>();
-extern template uint16_t nextSlot<Config::ConfFloat>();
-extern template uint16_t nextSlot<Config::ConfString>();
-extern template uint16_t nextSlot<Config::ConfArray>();
-extern template uint16_t nextSlot<Config::ConfObject>();
-extern template uint16_t nextSlot<Config::ConfUnion>();
-extern template uint16_t nextSlot<Config::ConfInt52>();
-extern template uint16_t nextSlot<Config::ConfUint53>();
-extern template uint16_t nextSlot<Config::ConfTuple>();
+extern template uint16_t nextSlots<Config::ConfUint  >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfInt   >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfUint32>(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfInt32 >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfFloat >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfString>(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfArray >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfObject>(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfUnion >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfInt52 >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfUint53>(uint16_t batch_size);
+extern template uint16_t nextSlots<Config::ConfTuple >(uint16_t batch_size);
+
+template<typename ConfigT>
+inline uint16_t nextSlot() {return nextSlots<ConfigT>(1);}
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
@@ -224,22 +227,23 @@ size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_
 #endif
 
 template<typename ConfigT>
-inline void notify_free_slot(uint16_t idx)
+inline void notify_free_slots(uint16_t idx, uint16_t batch_size)
 {
     ASSERT_MAIN_THREAD();
+    assert(batch_size > 0);
 
     if (idx < RootBlock<ConfigT>::first_free_slot) {
         RootBlock<ConfigT>::first_free_slot = idx;
     }
 
 #if MODULE_DEBUG_AVAILABLE()
-    RootBlock<ConfigT>::used_slots--;
+    RootBlock<ConfigT>::used_slots -= batch_size;
 #ifdef DEBUG_FS_ENABLE
-    RootBlock<ConfigT>::frees++;
+    RootBlock<ConfigT>::frees += batch_size;
 #endif
 
-    if (idx == RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot > 0) {
-        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u, 0);
+    if (idx + batch_size - 1 >= RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot >= batch_size) {
+        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - batch_size, 0);
 
         if (last_used == std::numeric_limits<size_t>::max()) { // All unused
             RootBlock<ConfigT>::last_used_slot = 0;
@@ -249,6 +253,9 @@ inline void notify_free_slot(uint16_t idx)
     }
 #endif
 }
+
+template<typename ConfigT>
+inline void notify_free_slot(uint16_t idx) {notify_free_slots<ConfigT>(idx, 1);}
 
 template<typename ConfigT>
 typename ConfigT::Slot *get_slot(uint16_t idx);
