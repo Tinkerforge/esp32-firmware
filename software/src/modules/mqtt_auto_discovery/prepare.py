@@ -363,6 +363,30 @@ class Entity:
         if self.static_info_homeassistant_en is None:
             self.static_info_homeassistant_en = {}
 
+        # Language-dependent options are announced separately:
+        # After a language change the entity is announced with the options of both languages first.
+        # Home Assistant validates its cached (old language) state against the new options immediately.
+        self.options_de = None
+        self.options_en = None
+        options_de = self.static_info_homeassistant.get("options")
+        options_en = self.static_info_homeassistant_en.get("options", options_de)
+        if options_de is not None and options_de != options_en:
+            self.static_info_homeassistant = {k: v for k, v in self.static_info_homeassistant.items() if k != "options"}
+            self.static_info_homeassistant_en = {k: v for k, v in self.static_info_homeassistant_en.items() if k != "options"}
+            self.options_de = options_de
+            self.options_en = options_en
+
+    def get_options_strs(self):
+        """Returns the C string literals for the German, English and union options, or NULL if the options are not language-dependent."""
+        if self.options_de is None:
+            return "NULL", "NULL", "NULL"
+
+        def to_c_str(options):
+            return '"' + json.dumps({"options": options}).strip().lstrip("{").rstrip("}").replace('"', '\\"') + '"'
+
+        union = list(dict.fromkeys(self.options_de + self.options_en))
+        return to_c_str(self.options_de), to_c_str(self.options_en), to_c_str(union)
+
     def get_json_len(self):
         # Estimate max length of the availability section
         avail_len = 0
@@ -378,6 +402,7 @@ class Entity:
             len(self.get_static_info_homeassistant_str()),
             len(self.get_static_info_homeassistant_en_str()),
         )
+                + max(len(s) for s in self.get_options_strs())
                 + avail_len
                 + len(self.get_json_attributes_info_str())
         )
@@ -452,6 +477,9 @@ topic_template = """    {{
             "generic_mode_removed",
             {static_info_homeassistant_en}
         }},
+        .options_de = {options_de},
+        .options_en = {options_en},
+        .options_union = {options_union},
         .type = MqttDiscoveryType::{discovery_type},
         .check_type = MqttDiscoveryCheckType::{check_type},
         .api_check_path = {api_check_path},
@@ -954,6 +982,9 @@ topics = [
         json_attributes_info=x.get_json_attributes_info_str(),
         static_info_homeassistant=x.get_static_info_homeassistant_str(),
         static_info_homeassistant_en=x.get_static_info_homeassistant_en_str(),
+        options_de=x.get_options_strs()[0],
+        options_en=x.get_options_strs()[1],
+        options_union=x.get_options_strs()[2],
         discovery_type=x.component.get_discovery_type().value,
         check_type=x.check_type.value,
         api_check_path='"%s"' % x.api_check_path if x.api_check_path else "NULL",

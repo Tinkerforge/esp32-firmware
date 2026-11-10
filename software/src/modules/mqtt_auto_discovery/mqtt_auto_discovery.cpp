@@ -109,6 +109,8 @@ void MqttAutoDiscovery::stop()
     }
 
     mqtt_discovery_topic_lengths = nullptr;
+    this->announced_language = Language::Default;
+    this->language_transition = false;
 }
 
 void MqttAutoDiscovery::start()
@@ -173,6 +175,14 @@ void MqttAutoDiscovery::register_events()
 {
 #if MODULE_SYSTEM_AVAILABLE()
     event.registerEvent("system/i18n_config", {"language"}, [this](const Config */*language*/) {
+        if (this->task_id == 0 || this->announced_language == Language::Default || this->announced_language == default_language)
+            return EventResult::OK;
+
+        // Home Assistant immediately validates its cached state (in the old language) against new options.
+        // Announce the options of both languages first; finish_pass resends the states and then announces the final options.
+        // A language change during a running pass is not handled.
+        this->language_transition = true;
+        this->next_topic = 0;
         task_scheduler.rescheduleNow(this->task_id);
         return EventResult::OK;
     });
@@ -283,17 +293,7 @@ void MqttAutoDiscovery::announce_next_topic()
     auto topic_idx = this->next_topic;
     if (++this->next_topic >= MQTT_DISCOVERY_TOPIC_COUNT) {
         this->next_topic = 0;
-        task_scheduler.updateCurrentTaskDelay(15_min);
-        // HA does not re-evaluate old state messages when discovery changes a template.
-        // Allow discovery processing to finish, then resend through the normal API backend.
-        task_scheduler.cancel(this->refresh_task_id);
-        this->refresh_task_id = task_scheduler.scheduleOnce([this]() {
-            this->refresh_task_id = 0;
-            for (const auto &info : mqtt_discovery_topic_infos) {
-                if (info.type != MqttDiscoveryType::CommandOnly)
-                    mqtt.refresh_state(info.path);
-            }
-        }, 1_s);
+        finish_pass();
     } else {
         task_scheduler.updateCurrentTaskDelay(0_us);
     }
@@ -476,6 +476,12 @@ void MqttAutoDiscovery::announce_next_topic()
     // Inject pre-formatted static_info as raw JSON object members
     json._addJson(static_info, strlen(static_info));
 
+    if (info.options_union != nullptr) {
+        const char *options = this->language_transition ? info.options_union
+                            : default_language == Language::English ? info.options_en : info.options_de;
+        json._addJson(options, strlen(options));
+    }
+
     if (info.check_type == MqttDiscoveryCheckType::ChargeModeSelect) {
         String value_template = "{% set m = {";
         json.addMemberArray("options");
@@ -514,4 +520,33 @@ void MqttAutoDiscovery::announce_next_topic()
 
     mqtt.publish(topic, json_str, true);
     free(buf);
+}
+
+void MqttAutoDiscovery::finish_pass()
+{
+    const bool transition = this->language_transition;
+    this->announced_language = default_language;
+
+    // After a language transition, announce the final options once the states were resent.
+    task_scheduler.updateCurrentTaskDelay(transition ? 3_s : 15_min);
+
+    // HA does not re-evaluate old state messages when discovery changes a template.
+    // Allow discovery processing to finish, then resend the states.
+    task_scheduler.cancel(this->refresh_task_id);
+    this->refresh_task_id = task_scheduler.scheduleOnce([this, transition]() {
+        this->refresh_task_id = 0;
+        // Not earlier: This runs after the last topic of the pass was announced.
+        this->language_transition = false;
+        for (const auto &info : mqtt_discovery_topic_infos) {
+            if (info.type == MqttDiscoveryType::CommandOnly)
+                continue;
+
+            if (transition && info.options_union != nullptr) {
+                // Must arrive before the final options: Don't wait for the send interval.
+                mqtt.publish_state(info.path);
+            } else {
+                mqtt.refresh_state(info.path);
+            }
+        }
+    }, 1_s);
 }

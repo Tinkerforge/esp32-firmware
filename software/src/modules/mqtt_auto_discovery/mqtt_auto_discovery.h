@@ -23,6 +23,7 @@
 #include "config.h"
 #include "generated/mqtt_discovery_topics.h"
 #include "cool_string.h"
+#include "language.h"
 #include "generated/mqtt_auto_discovery_mode.enum.h"
 
 class MqttAutoDiscovery final : public IModule
@@ -51,7 +52,11 @@ private:
     uint32_t next_topic = 0;
     bool discovery_topic_subscribed = false;
 
+    Language announced_language = Language::Default;
+    bool language_transition = false;
+
     void announce_next_topic();
+    void finish_pass();
 
     void subscribe_discovery_topic();
     void prepare_topic_lengths();
