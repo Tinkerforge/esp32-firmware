@@ -1097,6 +1097,48 @@ def flash_firmware(firmware_path, ssid, do_factory_reset=True):
     if do_factory_reset:
         factory_reset(ssid)
 
+def detect_meter(stage3, expected_variant):
+    meter_type, c = stage3.detect_meter()
+
+    if meter_type == 'unknown':
+        stage3.beep_notify()
+        while (i := my_input(
+            f'Meter detection inconclusive ({c=}). Press [p] if there is a meter, [s] otherwise.'
+        )) not in ('p', 's'):
+            pass
+        meter_type = {'p': 'meter', 's': 'no_meter'}
+
+    match meter_type:
+        case 'meter':
+            if expected_variant != 'P':
+                fatal_error(f'Detected meter ({c=}), but QR code indicates this is not a Pro!')
+            print(f"Meter detected ({c=})")
+        case 'no_meter':
+            if expected_variant == 'P':
+                fatal_error(f'Detected no meter ({c=}), but QR code indicates this is a Pro!')
+            print(f"No meter detected ({c=})")
+
+def detect_front_plate(stage3, expected_material):
+    front_plate_type, c = stage3.detect_front_plate_type()
+
+    if front_plate_type == 'unknown':
+        stage3.beep_notify()
+        while (i := my_input(
+            f'Front plate detection inconclusive ({c=}). Press [p] if the front plate is power-coated, [s] if it is stainless steel.'
+        )) not in ('p', 's'):
+            pass
+        front_plate_type = {'p': 'powder', 's': 'stainless'}
+
+    match front_plate_type:
+        case 'powder':
+            if expected_material != 'PC':
+                fatal_error(f'Detected power coated front plate ({c=}), but QR code indicates it should be stainless steel!')
+            print(f"Power coated front plate detected ({c=})")
+        case 'stainless':
+            if expected_material != 'SS':
+                fatal_error(f'Detected stainless steel front plate ({c=}), but QR code indicates it should be power coated!')
+            print(f"Stainless steel front plate detected ({c=})")
+
 def main(stage3, scanner, result):
     global host
 
@@ -1118,46 +1160,6 @@ def main(stage3, scanner, result):
         if stage3.is_color_bricklet_crashed():
             fatal_error('Color Bricklet crashed, reconnect the USB cable of the upper tester box')
 
-        meter_type, c = stage3.detect_meter()
-
-        if meter_type == 'unknown':
-            stage3.beep_notify()
-            while (i := my_input(
-                f'Meter detection inconclusive ({c=}). Press [p] if there is a meter, [s] otherwise.'
-            )) not in ('p', 's'):
-                pass
-            meter_type = {'p': 'meter', 's': 'no_meter'}
-
-        match meter_type:
-            case 'meter':
-                if scanner.qr_variant != 'P':
-                    fatal_error(f'Detected meter ({c=}), but QR code indicates this is not a Pro!')
-                print(f"Meter detected ({c=})")
-            case 'no_meter':
-                if scanner.qr_variant == 'P':
-                    fatal_error(f'Detected no meter ({c=}), but QR code indicates this is a Pro!')
-                print(f"No meter detected ({c=})")
-
-    front_plate_type, c = stage3.detect_front_plate_type()
-
-    if front_plate_type == 'unknown':
-        stage3.beep_notify()
-        while (i := my_input(
-            f'Front plate detection inconclusive ({c=}). Press [p] if the front plate is power-coated, [s] if it is stainless steel.'
-        )) not in ('p', 's'):
-            pass
-        front_plate_type = {'p': 'powder', 's': 'stainless'}
-
-    match front_plate_type:
-        case 'powder':
-            if scanner.qr_material != 'PC':
-                fatal_error(f'Detected power coated front plate ({c=}), but QR code indicates it should be stainless steel!')
-            print(f"Power coated front plate detected ({c=})")
-        case 'stainless':
-            if scanner.qr_material != 'SS':
-                fatal_error(f'Detected stainless steel front plate ({c=}), but QR code indicates it should be power coated!')
-            print(f"Stainless steel front plate detected ({c=})")
-
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
@@ -1171,6 +1173,11 @@ def main(stage3, scanner, result):
         tag_infos = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
         dprint("post nfc tags")
+
+        if generation >= 4: # no WARP4 is tested on the stand anymore, but always in the tester, so we can assume a front panel in the tester
+            detect_meter(stage3, scanner.qr_variant)
+
+        detect_front_plate(stage3, scanner.qr_material)
 
         stage3.measure_front_panel_rlow(result["electrical_tests"])
 
@@ -1453,6 +1460,11 @@ def main(stage3, scanner, result):
 
         dprint("post nfc config")
     else:
+        if generation >= 4: # no WARP4 is tested on the stand anymore, but always in the tester, so we can assume a front panel in the tester
+            detect_meter(stage3, scanner.qr_variant)
+
+        detect_front_plate(stage3, scanner.qr_material)
+
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
         else:
