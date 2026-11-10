@@ -197,10 +197,10 @@ String Mqtt::build_topic(const String &path, AddPrefix add_prefix, bool *out_sta
     return local_topic;
 }
 
-void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread, AddPrefix add_prefix)
+bool Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread, AddPrefix add_prefix)
 {
     if (client == nullptr) {
-        return;
+        return false;
     }
 
     bool starts_with_global_topic_prefix;
@@ -209,6 +209,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
     bool subscribed = this->subscribe_internal(topic.c_str(), 0) >= 0;
 
     this->commands.push_back({std::move(topic), std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed, false});
+    return true;
 }
 
 bool Mqtt::unsubscribe(const String &path, AddPrefix add_prefix)
@@ -396,6 +397,10 @@ void Mqtt::onMqttConnect()
     // of the first topics (for example the global topic prefix)
     // over sending state updates.
     this->resubscribe();
+
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    mqtt_auto_discovery.on_mqtt_connect();
+#endif
 }
 
 void Mqtt::onMqttDisconnect()
@@ -1014,6 +1019,15 @@ void Mqtt::reconfigure()
     // queued in the main thread's task scheduler.
     ++config_generation;
 
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    // Discovery topics and unique IDs contain the client name.
+    // Remove the old entities while the old client is still connected.
+    const bool restart_auto_discovery = client_name != config.get("client_name")->asString();
+    if (restart_auto_discovery) {
+        mqtt_auto_discovery.stop();
+    }
+#endif
+
     stop_and_destroy_client();
 
     // Update member variables from the (already saved) config.
@@ -1021,6 +1035,15 @@ void Mqtt::reconfigure()
     send_interval = seconds_t{config.get("interval")->asUint()};
     client_name = config.get("client_name")->asString();
     read_only = config.get("read_only")->asBool();
+
+#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
+    if (restart_auto_discovery) {
+        // Start after the new client was created below: Auto discovery subscribes with it.
+        task_scheduler.scheduleOnce([]() {
+            mqtt_auto_discovery.start();
+        });
+    }
+#endif
 
     // Rebuild automation trigger subscriptions with the (possibly changed) prefix.
     // This must happen before create_client() so that the new command entries

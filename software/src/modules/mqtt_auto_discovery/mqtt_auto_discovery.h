@@ -33,6 +33,11 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    // Called by the MQTT module.
+    void start();
+    void stop();
+    void on_mqtt_connect();
+
     ConfigRoot config;
 
 private:
@@ -44,12 +49,12 @@ private:
     uint64_t task_id = 0;
     uint64_t refresh_task_id = 0;
     uint32_t next_topic = 0;
+    bool discovery_topic_subscribed = false;
+
     void announce_next_topic();
 
+    void subscribe_discovery_topic();
     void prepare_topic_lengths();
     void check_discovery_topic(const char *topic, size_t topic_len, size_t data_len);
     size_t get_discovery_topic(size_t topic_idx, char *buf, size_t buf_len);
-
-    void start();
-    void stop();
 };

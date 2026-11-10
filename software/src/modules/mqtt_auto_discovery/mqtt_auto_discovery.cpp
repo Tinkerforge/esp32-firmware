@@ -81,15 +81,22 @@ void MqttAutoDiscovery::stop()
     task_scheduler.cancel(this->refresh_task_id);
     this->refresh_task_id = 0;
 
-    // <discovery_prefix>/+/<node_id>/+/config
-    String discovery_topic;
-    discovery_topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
+    if (this->discovery_topic_subscribed) {
+        // <discovery_prefix>/+/<node_id>/+/config
+        String discovery_topic;
+        discovery_topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
 
-    discovery_topic.concat(this->prefix);
-    discovery_topic.concat("/+/");
-    discovery_topic.concat(mqtt.client_name);
-    discovery_topic.concat("/+/config");
-    mqtt.unsubscribe(discovery_topic);
+        discovery_topic.concat(this->prefix);
+        discovery_topic.concat("/+/");
+        discovery_topic.concat(mqtt.client_name);
+        discovery_topic.concat("/+/config");
+        mqtt.unsubscribe(discovery_topic);
+        this->discovery_topic_subscribed = false;
+    }
+
+    // Already stopped.
+    if (mqtt_discovery_topic_lengths == nullptr)
+        return;
 
     for (size_t topic_num = 0; topic_num < MQTT_DISCOVERY_TOPIC_COUNT; ++topic_num) {
         CoolString topic;
@@ -114,6 +121,20 @@ void MqttAutoDiscovery::start()
 
     prepare_topic_lengths();
 
+    // Fails if there is no MQTT client yet. Retried in on_mqtt_connect.
+    subscribe_discovery_topic();
+
+    this->next_topic = 0;
+    task_id = task_scheduler.scheduleWithFixedDelay([this](){
+        this->announce_next_topic();
+    }, 1_s);
+}
+
+void MqttAutoDiscovery::subscribe_discovery_topic()
+{
+    if (this->discovery_topic_subscribed)
+        return;
+
     // <discovery_prefix>/+/<node_id>/+/config
     String discovery_topic;
     discovery_topic.reserve(256); // no need to be efficient here: esp_mqtt_client_subscribe copies this string
@@ -126,13 +147,21 @@ void MqttAutoDiscovery::start()
     // Run the check in the MQTT thread: The broker echoes every announced topic back to us.
     // Handing each one to the main thread blocks receiving any other MQTT messages
     // (for example meter updates) for multiple seconds.
-    mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
+    this->discovery_topic_subscribed = mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
         check_discovery_topic(topic, topic_len, data_len);
     }, Mqtt::Retained::Accept, Mqtt::CallbackInThread::Mqtt);
+}
 
-    task_id = task_scheduler.scheduleWithFixedDelay([this](){
-        this->announce_next_topic();
-    }, 1_s);
+void MqttAutoDiscovery::on_mqtt_connect()
+{
+    if (this->mode == MqttAutoDiscoveryMode::Disabled || this->task_id == 0)
+        return;
+
+    subscribe_discovery_topic();
+
+    // The broker might be a different one or might have lost the retained discovery topics: Announce everything again.
+    this->next_topic = 0;
+    task_scheduler.rescheduleNow(this->task_id);
 }
 
 void MqttAutoDiscovery::register_urls()
