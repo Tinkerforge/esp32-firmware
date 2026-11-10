@@ -265,13 +265,25 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 //#endif
 }
 
+static ssize_t find_state_idx(const char *path)
+{
+    const size_t path_len = strlen(path);
+
+    for (size_t i = 0; i < api.states.size(); ++i) {
+        const auto &reg = api.states[i];
+        if (reg.get_path_len() == path_len && memcmp(reg.path, path, path_len) == 0) {
+            return static_cast<ssize_t>(i);
+        }
+    }
+
+    return -1;
+}
+
 void Mqtt::refresh_state(const char *path)
 {
-    for (auto &reg : api.states) {
-        if (reg.path == path) {
-            reg.config->set_updated(1 << this->backend_idx);
-            return;
-        }
+    const ssize_t idx = find_state_idx(path);
+    if (idx >= 0) {
+        api.states[idx].config->set_updated(1 << this->backend_idx);
     }
 }
 
