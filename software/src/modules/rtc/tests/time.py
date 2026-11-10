@@ -77,7 +77,9 @@ def utc_now() -> datetime.datetime:
 
 def wait_for_correct_time(tc: TestContext) -> None:
     def check() -> None:
-        device = time_to_datetime(tc.api("rtc/time"))
+        t = tc.api("rtc/time")
+        tc.assert_ne(0, t["year"])
+        device = time_to_datetime(t)
         tc.assert_le(5.0, abs((device - utc_now()).total_seconds()))
 
     tc.wait_for(check, timeout=60, poll_delay=1)
@@ -99,26 +101,16 @@ def test_set_time_via_api(tc: TestContext) -> None:
         # Reboot to clear the quality deadline.
         tc.reboot()
 
-        now            = datetime.datetime.now()
-        target_hour    = (now.hour + 5) % 24
-        target_weekday = (now.weekday() + 1) % 7
+        target = (utc_now() + datetime.timedelta(hours=5)).replace(minute=0, second=0, microsecond=0)
 
-        tc.api(
-            "rtc/time_update",
-            {
-                "year": now.year,
-                "month": now.month,
-                "day": now.day,
-                "hour": target_hour,
-                "minute": 0,
-                "second": 0,
-                "weekday": target_weekday,
-            },
-        )
+        set_device_time(tc, target)
 
         def check() -> None:
             t = tc.api("rtc/time")
-            tc.assert_eq(target_hour, t["hour"])
+            # rtc/time is all zeros until the device has a valid time.
+            tc.assert_ne(0, t["year"])
+            tc.assert_eq(target.date(), time_to_datetime(t).date())
+            tc.assert_eq(target.hour, t["hour"])
             tc.assert_eq(0, t["minute"])
             tc.assert_le(5, t["second"])
 
