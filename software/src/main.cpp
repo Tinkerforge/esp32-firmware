@@ -344,33 +344,37 @@ void setup()
     boot_stage = BootStage::LOOP;
 }
 
+[[gnu::noreturn]]
 void loop() {
+    // Skip Arduino's main loop that checks its unused watchdog and serial events.
+    while (true) {
 #if !MODULE_IO_SCHEDULER_AVAILABLE()
-    tf_hal_tick(&hal, 0);
+        tf_hal_tick(&hal, 0);
 #endif
-    task_scheduler.custom_loop();
+        task_scheduler.custom_loop();
 
 #if MODULE_DEBUG_AVAILABLE()
-    debug.custom_loop();
+        debug.custom_loop();
 #endif
 
-    // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
-    if (loop_array != nullptr) {
+        // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
+        if (loop_array != nullptr) {
 #if MODULE_DEBUG_AVAILABLE()
-        const micros_t t_start = now_us();
+            const micros_t t_start = now_us();
 #endif
 
-        imodule_info *module = loop_array + loop_array_position;
-        module->imodule->loop();
+            imodule_info *module = loop_array + loop_array_position;
+            module->imodule->loop();
 
 #if MODULE_DEBUG_AVAILABLE()
-        const micros_t t_runtime = now_us() - t_start;
-        debug.task_scheduler_task_accounting_call(module->name, 0, t_runtime);
+            const micros_t t_runtime = now_us() - t_start;
+            debug.task_scheduler_task_accounting_call(module->name, 0, t_runtime);
 #endif
 
-        loop_array_position++;
-        if (loop_array_position >= loop_array_size) {
-            loop_array_position = 0;
+            loop_array_position++;
+            if (loop_array_position >= loop_array_size) {
+                loop_array_position = 0;
+            }
         }
     }
 }
