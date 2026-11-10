@@ -68,7 +68,8 @@ public:
     bool publish(const String &topic, const String &payload, bool retain);
     void refresh_state(const char *path);
 
-    void subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
+    // Returns false if there is no client to subscribe with. The subscription is not stored in that case.
+    bool subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
     bool unsubscribe(const String &path, AddPrefix add_prefix = AddPrefix::No);
 
     // IAPIBackend implementation
