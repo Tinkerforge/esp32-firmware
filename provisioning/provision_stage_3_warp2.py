@@ -481,6 +481,7 @@ class Stage3:
         return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 10000
 
     def detect_front_plate_type(self) -> (typing.Literal['powder', 'stainless', 'unknown'], int):
+        self.try_action('20A', lambda device: device.set_light(True))
         self.try_action('20A', lambda device: device.set_configuration(BrickletColorV2.GAIN_1X, BrickletColorV2.INTEGRATION_TIME_154MS))
         time.sleep(0.4)
         c = self.try_action('20A', lambda device: device.get_color()).c
@@ -494,6 +495,7 @@ class Stage3:
         return 'unknown', c
 
     def detect_meter(self) -> (typing.Literal['meter', 'no_meter', 'unknown'], int):
+        self.try_action('20B', lambda device: device.set_light(True))
         self.try_action('20B', lambda device: device.set_configuration(BrickletColorV2.GAIN_1X, BrickletColorV2.INTEGRATION_TIME_154MS))
         time.sleep(0.4)
         c = self.try_action('20B', lambda device: device.get_color()).c
