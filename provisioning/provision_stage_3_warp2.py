@@ -442,15 +442,16 @@ class Stage3:
             current_position = self.try_action(servo, lambda device: device.get_current_position(channel))
 
     def is_color_bricklet_crashed(self):
-        for _ in range(5):
-            color = self.try_action('21D', lambda device: device.get_color())
+        for dev in ['20A', '20B', '21D']:
+            for _ in range(5):
+                color = self.try_action(dev, lambda device: device.get_color())
 
-            if max(color) > 50000:
-                return True
+                if max(color) > 50000:
+                    return True
 
-            time.sleep(0.2)
+                time.sleep(0.2)
 
-        return False
+            return False
 
     # internal
     def is_front_panel_led_blue(self):
