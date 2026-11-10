@@ -480,6 +480,32 @@ class Stage3:
 
         return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 10000
 
+    def detect_front_plate_type(self) -> (typing.Literal['powder', 'stainless', 'unknown'], int):
+        self.try_action('20A', lambda device: device.set_configuration(BrickletColorV2.GAIN_1X, BrickletColorV2.INTEGRATION_TIME_154MS))
+        time.sleep(0.4)
+        c = self.try_action('20A', lambda device: device.get_color()).c
+
+        if 1400 <= c <= 1500:
+            return 'stainless', c
+
+        if 200 <= c <= 800:
+            return 'powder', c
+
+        return 'unknown', c
+
+    def detect_meter(self) -> (typing.Literal['meter', 'no_meter', 'unknown'], int):
+        self.try_action('20B', lambda device: device.set_configuration(BrickletColorV2.GAIN_1X, BrickletColorV2.INTEGRATION_TIME_154MS))
+        time.sleep(0.4)
+        c = self.try_action('20B', lambda device: device.get_color()).c
+
+        if 1450 <= c <= 1600:
+            return 'meter', c
+
+        if 200 <= c <= 500:
+            return 'no_meter', c
+
+        return 'unknown', c
+
     # internal
     def check_iec_state(self, expected_state):
         assert self.get_iec_state_function != None
