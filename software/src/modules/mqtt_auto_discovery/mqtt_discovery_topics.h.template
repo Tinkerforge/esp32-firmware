@@ -34,6 +34,9 @@ struct MqttDiscoveryTopicInfo {
     const char * const json_attributes_info;
     const char * const static_infos[2];
     const char * const static_infos_en[2]; // Language-specific overrides; NULL entries fall back to static_infos
+    const char * const options_de;
+    const char * const options_en;
+    const char * const options_union; // Options of all languages, announced during a language change
     const MqttDiscoveryType type;
     const MqttDiscoveryCheckType check_type;
     const char * const api_check_path; // API path to check (for ApiBool and MeterValue)

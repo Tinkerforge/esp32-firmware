@@ -288,6 +288,22 @@ void Mqtt::refresh_state(const char *path)
     }
 }
 
+bool Mqtt::publish_state(const char *path)
+{
+    const ssize_t idx = find_state_idx(path);
+    if (idx < 0) {
+        return false;
+    }
+
+    const auto &reg = api.states[idx];
+    if (!this->publish_with_prefix(path, reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len()))) {
+        return false;
+    }
+
+    this->state_last_send[idx] = now_us();
+    return true;
+}
+
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
     auto &last_send = this->state_last_send[stateIdx];

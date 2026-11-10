@@ -67,6 +67,8 @@ public:
     bool publish_with_prefix(const String &path, const String &payload, bool retain = true);
     bool publish(const String &topic, const String &payload, bool retain);
     void refresh_state(const char *path);
+    // Publishes the current value of the state immediately, ignoring the send interval.
+    bool publish_state(const char *path);
 
     // Returns false if there is no client to subscribe with. The subscription is not stored in that case.
     bool subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread = CallbackInThread::Main, AddPrefix add_prefix = AddPrefix::No);
