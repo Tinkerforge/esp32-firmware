@@ -20,7 +20,8 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext, MeterValueID
 from software.src.modules.mqtt.tests._common import MqttHelper, ensure_mqtt_connected, wait_mqtt_state, CONN_NOT_CONFIGURED
-from software.src.modules.mqtt_auto_discovery.tests._home_assistant import HomeAssistant, MosquittoBroker, docker_available
+from software.test_runner.docker_container import docker_available
+from software.src.modules.mqtt_auto_discovery.tests._home_assistant import HomeAssistant, MosquittoBroker
 
 CLIENT_NAME = "tf-ha-test"
 RENAMED_CLIENT_NAME = "tf-ha-renamed"

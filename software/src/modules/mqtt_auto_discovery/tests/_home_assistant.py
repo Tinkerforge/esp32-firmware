@@ -7,13 +7,15 @@ onboards it headlessly and provides helpers for the REST and WebSocket APIs.
 import itertools
 import json
 import os
-import socket
-import subprocess
-import tempfile
 import time
 
 import requests
 from websockets.sync.client import connect as ws_connect
+
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, "software")
+from software.test_runner.docker_container import Container
 
 HA_IMAGE = os.environ.get("HA_TEST_IMAGE", "ghcr.io/home-assistant/home-assistant:stable")
 HA_CONTAINER_NAME = "ha-mqtt-discovery-test"
@@ -55,77 +57,27 @@ HA_USER = "test"
 HA_PASSWORD = "test-password-1234"
 
 
-def docker_available() -> bool:
-    try:
-        return subprocess.run(["docker", "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30).returncode == 0
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-
-
 class HomeAssistantError(Exception):
     pass
 
 
-def pull_image_if_missing(image: str) -> None:
-    if subprocess.run(["docker", "image", "inspect", image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0:
-        subprocess.run(["docker", "pull", image], check=True, stdout=subprocess.DEVNULL)
-
-
-def _create_container(name: str, image: str, files: dict[str, str], args: list[str] | None = None) -> None:
-    """Creates a container in the host network and copies the given files (container path -> content) into it."""
-    subprocess.run(["docker", "rm", "-f", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["docker", "create", "--name", name, "--network", "host", *(args or []), image], check=True, stdout=subprocess.DEVNULL)
-
-    with tempfile.TemporaryDirectory() as d:
-        for container_path, content in files.items():
-            path = os.path.join(d, os.path.basename(container_path))
-            with open(path, "w") as f:
-                f.write(content)
-            subprocess.run(["docker", "cp", path, f"{name}:{container_path}"], check=True, stdout=subprocess.DEVNULL)
-
-
-def _container_running(name: str) -> bool:
-    state = subprocess.run(["docker", "inspect", "-f", "{{.State.Running}}", name], capture_output=True, text=True)
-    return state.stdout.strip() == "true"
-
-
-def _container_logs(name: str) -> str:
-    result = subprocess.run(["docker", "logs", name], capture_output=True, text=True, errors="replace")
-    return result.stdout + result.stderr
-
-
 class MosquittoBroker:
-    """Mosquitto in a Docker container (host network) without persistence: A restart loses all retained messages."""
+    """Mosquitto without persistence: A restart loses all retained messages."""
 
     def __init__(self, port: int, image: str = MOSQUITTO_IMAGE, container_name: str = MOSQUITTO_CONTAINER_NAME):
         self.port = port
-        self.image = image
-        self.container_name = container_name
+        self.container = Container(container_name, image, {"/mosquitto/config/mosquitto.conf": MOSQUITTO_CONF.format(port=port)})
 
     def start(self, timeout: float = 30) -> None:
-        pull_image_if_missing(self.image)
-        _create_container(self.container_name, self.image, {"/mosquitto/config/mosquitto.conf": MOSQUITTO_CONF.format(port=self.port)})
-        subprocess.run(["docker", "start", self.container_name], check=True, stdout=subprocess.DEVNULL)
-        self._wait_for_port(timeout)
+        self.container.start()
+        self.container.wait_for_port(self.port, timeout)
 
     def restart(self, timeout: float = 30) -> None:
-        subprocess.run(["docker", "restart", "-t", "0", self.container_name], check=True, stdout=subprocess.DEVNULL)
-        self._wait_for_port(timeout)
+        self.container.restart()
+        self.container.wait_for_port(self.port, timeout)
 
     def stop(self) -> None:
-        subprocess.run(["docker", "rm", "-f", self.container_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def _wait_for_port(self, timeout: float) -> None:
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            if not _container_running(self.container_name):
-                raise HomeAssistantError(f"Mosquitto container stopped:\n{_container_logs(self.container_name)[-3000:]}")
-            try:
-                with socket.create_connection(("127.0.0.1", self.port), timeout=1):
-                    return
-            except OSError:
-                time.sleep(0.2)
-        raise HomeAssistantError(f"Mosquitto did not start within {timeout}s")
+        self.container.remove()
 
 
 def _schema_defaults(schema: list[dict]) -> dict:
@@ -142,8 +94,7 @@ def _schema_defaults(schema: list[dict]) -> dict:
 class HomeAssistant:
     def __init__(self, port: int, image: str = HA_IMAGE, container_name: str = HA_CONTAINER_NAME):
         self.port = port
-        self.image = image
-        self.container_name = container_name
+        self.container = Container(container_name, image, {"/config/configuration.yaml": HA_CONFIGURATION_YAML.format(port=port)}, ["-e", "TZ=Europe/Berlin"])
         self.base_url = f"http://127.0.0.1:{port}"
         self.client_id = f"{self.base_url}/"
         self.token: str | None = None
@@ -153,30 +104,21 @@ class HomeAssistant:
     # ---- Container lifecycle -------------------------------------------------
 
     def start(self, timeout: float = 180) -> None:
-        pull_image_if_missing(self.image)
-        _create_container(self.container_name, self.image,
-                          {"/config/configuration.yaml": HA_CONFIGURATION_YAML.format(port=self.port)},
-                          ["-e", "TZ=Europe/Berlin"])
-        subprocess.run(["docker", "start", self.container_name], check=True, stdout=subprocess.DEVNULL)
-
+        self.container.start()
         self._wait_for_http(timeout)
 
     def stop(self) -> None:
         self.ws_close()
-        self.remove_container()
-
-    def remove_container(self) -> None:
-        subprocess.run(["docker", "rm", "-f", self.container_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.container.remove()
 
     def logs(self) -> str:
-        return _container_logs(self.container_name)
+        return self.container.logs()
 
     def _wait_for_http(self, timeout: float) -> None:
         deadline = time.monotonic() + timeout
         last_error: Exception | None = None
         while time.monotonic() < deadline:
-            if not _container_running(self.container_name):
-                raise HomeAssistantError(f"Home Assistant container stopped:\n{self.logs()[-3000:]}")
+            self.container.assert_running()
             try:
                 r = requests.get(f"{self.base_url}/api/onboarding", timeout=2)
                 if r.status_code == 200:
