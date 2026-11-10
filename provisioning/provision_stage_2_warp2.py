@@ -1138,7 +1138,7 @@ def main(stage3, scanner, result):
                     fatal_error(f'Detected no meter ({c=}), but QR code indicates this is a Pro!')
                 print(f"No meter detected ({c=})")
 
-    front_plate_type, c = stage_2.detect_front_plate_type()
+    front_plate_type, c = stage3.detect_front_plate_type()
 
     if front_plate_type == 'unknown':
         stage3.beep_notify()
