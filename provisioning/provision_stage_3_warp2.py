@@ -486,10 +486,10 @@ class Stage3:
         time.sleep(0.4)
         c = self.try_action('20A', lambda device: device.get_color()).c
 
-        if 1400 <= c <= 1500:
+        if 1100 <= c <= 1500:
             return 'stainless', c
 
-        if 200 <= c <= 800:
+        if 200 <= c <= 600:
             return 'powder', c
 
         return 'unknown', c
