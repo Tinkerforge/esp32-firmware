@@ -354,7 +354,7 @@ specs = [
                 'scale_factor': -10.0,
             },
             {
-                'name': 'Battery Temperature [0.1 °C]',
+                'name': 'Battery temperature [0.1 °C]',
                 'value_id': 'Temperature',
                 'start_address': 0x0894,
                 'value_type': 'S16',
