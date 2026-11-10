@@ -1606,6 +1606,11 @@ struct is_updated {
         for (const Config &c : *x.getVal()) {
             result |= c.value.updated & api_backend_flag;
             result |= Config::apply_visitor(is_updated{api_backend_flag}, c.value);
+
+            // Short-circuit if the the maximum possible amount of bits is set.
+            if (result == api_backend_flag) {
+                return result;
+            }
         }
         return result;
     }
@@ -1618,6 +1623,11 @@ struct is_updated {
         for (size_t i = 0; i < size; ++i) {
             result |= slot->values[i].value.updated & api_backend_flag;
             result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->values[i].value);
+
+            // Short-circuit if the the maximum possible amount of bits is set.
+            if (result == api_backend_flag) {
+                return result;
+            }
         }
         return result;
     }
@@ -1635,6 +1645,11 @@ struct is_updated {
         for (size_t i = 0; i < size; ++i) {
             result |= static_cast<uint8_t>(slot->values[i].value.updated & api_backend_flag); //TODO: why is this cast necessary? Works above for ConfArray, Object and Union
             result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->values[i].value);
+
+            // Short-circuit if the the maximum possible amount of bits is set.
+            if (result == api_backend_flag) {
+                return result;
+            }
         }
         return result;
     }

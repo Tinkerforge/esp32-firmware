@@ -1104,7 +1104,15 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
 uint8_t Config::was_updated(uint8_t api_backend_flag) const
 {
     ASSERT_MAIN_THREAD();
-    return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);
+
+    uint8_t result = value.updated & api_backend_flag;
+
+    // Short-circuit: Recurse only if the the maximum possible amount of bits is not already set.
+    if (result != api_backend_flag) {
+        result |= Config::apply_visitor(is_updated{api_backend_flag}, value);
+    }
+
+    return result;
 }
 
 void Config::clear_updated(uint8_t api_backend_flag)
