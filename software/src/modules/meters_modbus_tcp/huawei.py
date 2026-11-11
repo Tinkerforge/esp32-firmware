@@ -25,10 +25,7 @@ table_prototypes = [
 ]
 
 table_lookup_extras = [
-    ('Huawei SUN2000', '''
-        huawei_sun2000.energy_storage_product_model = -1;
-        huawei_sun2000.number_of_pv_strings = -1;'''
-    ),
+    ('Huawei SUN2000', 'huawei_sun2000.energy_storage_product_model = -1;'),
     ('Huawei SUN2000 Smart Dongle', 'huawei_sun2000_smart_dongle.energy_storage_product_model = -1;'),
 ]
 

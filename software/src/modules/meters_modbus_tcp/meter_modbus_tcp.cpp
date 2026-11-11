@@ -507,8 +507,7 @@ bool MeterModbusTCP::parse()
     }
 
     if (table == &sungrow_hybrid_inverter_output_type_table
-     && spec->start_address == SungrowHybridInverterOutputTypeAddress::OutputType
-     && sungrow_hybrid_inverter.output_type < 0) {
+     && spec->start_address == SungrowHybridInverterOutputTypeAddress::OutputType) {
         switch (c16.u) {
         case 0:
             table = &sungrow_hybrid_inverter_1p2l_table;
@@ -530,14 +529,12 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        sungrow_hybrid_inverter.output_type = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
 
     if (table == &sungrow_string_inverter_output_type_table
-     && spec->start_address == SungrowStringInverterOutputTypeAddress::OutputType
-     && sungrow_string_inverter.output_type < 0) {
+     && spec->start_address == SungrowStringInverterOutputTypeAddress::OutputType) {
         switch (c16.u) {
         case 0:
             table = &sungrow_string_inverter_1p2l_table;
@@ -559,14 +556,12 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        sungrow_string_inverter.output_type = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
 
     if (table == &deye_hybrid_inverter_battery_device_type_table
-     && spec->start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType
-     && deye_hybrid_inverter.device_type < 0) {
+     && spec->start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType) {
         switch (c16.u) {
         case 0x0002:
         case 0x0003:
@@ -590,14 +585,12 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        deye_hybrid_inverter.device_type = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
 
     if (table == &deye_hybrid_inverter_pv_device_type_table
-     && spec->start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType
-     && deye_hybrid_inverter.device_type < 0) {
+     && spec->start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType) {
         switch (c16.u) {
         case 0x0002:
         case 0x0003:
@@ -621,7 +614,6 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        deye_hybrid_inverter.device_type = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
@@ -691,8 +683,7 @@ bool MeterModbusTCP::parse()
     }
 
     if (table == &fronius_gen24_plus_battery_type_table
-     && spec->start_address == FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID
-     && fronius_gen24_plus.input_id_or_model_id < 0) {
+     && spec->start_address == FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID) {
         switch (c16.u) {
         case 1: // module/1/ID: Input ID
             table = &fronius_gen24_plus_battery_integer_table;
@@ -711,7 +702,6 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        fronius_gen24_plus.input_id_or_model_id = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
@@ -745,8 +735,7 @@ bool MeterModbusTCP::parse()
     }
 
     if (table == &huawei_sun2000_pv_string_count_table
-     && spec->start_address == HuaweiSUN2000PVStringCountAddress::NumberOfPVStrings
-     && huawei_sun2000.number_of_pv_strings < 0) {
+     && spec->start_address == HuaweiSUN2000PVStringCountAddress::NumberOfPVStrings) {
         switch (c16.u) {
         case 0:
             table = &huawei_sun2000_pv_no_strings_table;
@@ -791,7 +780,6 @@ bool MeterModbusTCP::parse()
         }
 
         logger.printfln_meter("Huawei SUN2000 inverter has %u PV string%s", c16.u, c16.u != 1 ? "s" : "");
-        huawei_sun2000.number_of_pv_strings = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }
@@ -825,8 +813,7 @@ bool MeterModbusTCP::parse()
     }
 
     if (table == &fronius_verto_plus_battery_type_table
-     && spec->start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID
-     && fronius_verto_plus.input_id_or_model_id < 0) {
+     && spec->start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID) {
         switch (c16.u) {
         case 1: // module/1/ID: Input ID
             table = &fronius_verto_plus_battery_integer_table;
@@ -845,7 +832,6 @@ bool MeterModbusTCP::parse()
             return false;
         }
 
-        fronius_verto_plus.input_id_or_model_id = c16.u;
         meters.declare_value_ids(slot, table->ids, table->ids_length);
         return false;
     }

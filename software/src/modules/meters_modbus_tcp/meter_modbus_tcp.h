@@ -111,15 +111,9 @@ private:
     union {
         // Sungrow hybrid inverter
         struct {
-            int output_type;
             uint16_t running_state;
             int16_t battery_current;
         } sungrow_hybrid_inverter;
-
-        // Sungrow string inverter
-        struct {
-            int output_type;
-        } sungrow_string_inverter;
 
         // Victron Energy GX
         struct {
@@ -137,11 +131,6 @@ private:
             float ac_coupled_pv_power_on_generator_l3;
             float dc_coupled_pv_power;
         } victron_energy_gx;
-
-        // Deye hybrid inverter
-        struct {
-            int device_type;
-        } deye_hybrid_inverter;
 
         // Shelly Pro EM
         struct {
@@ -188,7 +177,6 @@ private:
 
         // Fronius GEN24 Plus
         struct {
-            int input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
             int16_t dcv_sf;
@@ -208,7 +196,6 @@ private:
 
         // Fronius Verto Plus
         struct {
-            int input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
             int16_t dcv_sf;
@@ -268,7 +255,6 @@ private:
         // Huawei SUN2000
         struct {
             int energy_storage_product_model;
-            int number_of_pv_strings;
         } huawei_sun2000;
 
         // Huawei SUN2000 Smart Dongle
