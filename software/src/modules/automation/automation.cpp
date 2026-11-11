@@ -54,14 +54,11 @@ static bool action_starts_charge(AutomationActionID id, const Config *cfg)
 }
 #endif
 
-Automation::Automation()
+void Automation::pre_setup()
 {
     trigger_prototypes.push_back({AutomationTriggerID::None, *Config::Null()});
     action_prototypes.push_back({AutomationActionID::None, *Config::Null()});
-}
 
-void Automation::pre_setup()
-{
     register_action(
         AutomationActionID::Print,
         Config::Object({

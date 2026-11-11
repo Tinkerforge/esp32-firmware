@@ -49,8 +49,6 @@ public:
     typedef std::map<AutomationTriggerID, TriggerValue> TriggerMap;
     typedef std::vector<std::pair<size_t, Config *>>    ConfigVec;
 
-    Automation();
-
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
