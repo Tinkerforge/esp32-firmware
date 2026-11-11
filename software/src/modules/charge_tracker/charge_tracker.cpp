@@ -215,7 +215,7 @@ void ChargeTracker::pre_setup()
         {"evse_uptime_start", Config::Uint32(0)},
         {"timestamp_minutes", Config::Uint32(0)},
         {"authorization_type", Config::Enum<CMAuthType>(CMAuthType::None)},
-        {"authorization_info", Config{Config::ConfVariant()}},
+        {"authorization_info", *Config::Null()},
         {"charger_name", Config::Str("", 0, 32)}
     });
 
@@ -464,7 +464,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
     current_charge.get("evse_uptime_start")->updateUint(0);
     current_charge.get("timestamp_minutes")->updateUint(0);
     current_charge.get("authorization_type")->updateUint(0);
-    current_charge.get("authorization_info")->value = Config::ConfVariant{};
+    current_charge.get("authorization_info")->value = Config::Null()->value;
 
     ++this->total_charge_log_entries;
     state.get("tracked_charges")->updateUint(this->total_charge_log_entries);
