@@ -19,7 +19,7 @@ tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext
 from software.test_runner.remote_access_snapshot import RemoteAccessSnapshot
 from software.src.modules.remote_access.tests.remote_access import (
-    WG_CONTAINER_NAME, WireGuardTestPeer, _generate_wg_keypair, _generate_wg_psk,
+    WG_CONTAINER_NAME, WireGuardTestPeer,
 )
 
 
@@ -187,6 +187,9 @@ def suite_setup(tc: TestContext):
 
     def https_handler(method: str, path: str, body: bytes) -> tuple[int, str]:
         if "/api/charger/add" in path or "/api/add_with_token" in path:
+            # Registration generates the device's management keys on-board.
+            charger = json.loads(body)["charger"]
+            _peer.set_management_peer(charger["charger_pub"], charger["psk"])
             registered.set()
             return 200, json.dumps({
                 "charger_uuid": charger_uuid,
@@ -203,8 +206,6 @@ def suite_setup(tc: TestContext):
         return 404, '{"error":"not found"}'
 
     _server.set_response_fn(https_handler)
-    charger_private, charger_public = _generate_wg_keypair()
-    web_private, web_public = _generate_wg_keypair()
     nacl_public = X25519PrivateKey.generate().public_key().public_bytes_raw()
     tc.api("remote_access/register", {
         "config": {
@@ -212,20 +213,12 @@ def suite_setup(tc: TestContext):
             "email": "test@example.com", "cert_id": CERT_ID, "mtu": 1240,
         },
         "note": "", "public_key": base64.b64encode(nacl_public).decode(),
-        "mgmt_charger_private": _peer.device_private,
-        "mgmt_charger_public": _peer.device_public,
-        "mgmt_psk": _peer.psk,
-        "keys": [{
-            "charger_private": charger_private, "charger_public": charger_public,
-            "psk": _generate_wg_psk(), "web_private": web_private,
-            "web_public": web_public,
-        }],
         "user_uuid": "null", "auth_token": "null",
     }, timeout=10)
     tc.assert_(registered.wait(timeout=15))
 
     def connected():
-        assert tc.api("remote_access/state")[0]["state"] == 2
+        tc.assert_eq(2, tc.api("remote_access/state")[0]["state"])
 
     tc.wait_for(connected, timeout=60)
 
