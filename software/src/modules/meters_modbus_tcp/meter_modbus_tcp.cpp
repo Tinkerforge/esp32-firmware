@@ -511,21 +511,21 @@ bool MeterModbusTCP::parse()
         switch (c16.u) {
         case 0:
             table = &sungrow_hybrid_inverter_1p2l_table;
-            logger.printfln_meter("Sungrow 1P2L Hybrid Inverter detected");
+            logger.printfln_meter("Sungrow 1P2L hybrid inverter detected");
             break;
 
         case 1:
             table = &sungrow_hybrid_inverter_3p4l_table;
-            logger.printfln_meter("Sungrow 3P4L Hybrid Inverter detected");
+            logger.printfln_meter("Sungrow 3P4L hybrid inverter detected");
             break;
 
         case 2:
             table = &sungrow_hybrid_inverter_3p3l_table;
-            logger.printfln_meter("Sungrow 3P3L Hybrid Inverter detected");
+            logger.printfln_meter("Sungrow 3P3L hybrid inverter detected");
             break;
 
         default:
-            logger.printfln_meter("Sungrow Hybrid Inverter has unknown output type: %u", c16.u);
+            logger.printfln_meter("Sungrow hybrid inverter has unknown output type: %u", c16.u);
             return false;
         }
 
@@ -538,21 +538,21 @@ bool MeterModbusTCP::parse()
         switch (c16.u) {
         case 0:
             table = &sungrow_string_inverter_1p2l_table;
-            logger.printfln_meter("Sungrow 1P2L String Inverter detected");
+            logger.printfln_meter("Sungrow 1P2L string inverter detected");
             break;
 
         case 1:
             table = &sungrow_string_inverter_3p4l_table;
-            logger.printfln_meter("Sungrow 3P4L String Inverter detected");
+            logger.printfln_meter("Sungrow 3P4L string inverter detected");
             break;
 
         case 2:
             table = &sungrow_string_inverter_3p3l_table;
-            logger.printfln_meter("Sungrow 3P3L String Inverter detected");
+            logger.printfln_meter("Sungrow 3P3L string inverter detected");
             break;
 
         default:
-            logger.printfln_meter("Sungrow String Inverter has unknown output type: %u", c16.u);
+            logger.printfln_meter("Sungrow string inverter has unknown output type: %u", c16.u);
             return false;
         }
 
