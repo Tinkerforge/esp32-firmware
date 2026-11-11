@@ -130,7 +130,7 @@ for module in modules:
                     has_virtual_meter = True
 
                     table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
-                    table_lookup_cases.append(f'        {table_id.under}.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<{table_id.camel}VirtualMeter>();')
+                    table_lookup_cases.append(f'        virtual_meter.{table_id.under} = ephemeral_table_config->get("virtual_meter")->asEnum<{table_id.camel}VirtualMeter>();')
                 elif member == 'device_address':
                     table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
                     table_lookup_cases.append('        device_address = ephemeral_table_config->get("device_address")->asUint8();')
@@ -153,7 +153,7 @@ for module in modules:
             pass
 
         if has_virtual_meter:
-            table_lookup_cases.append(f'        table = get_{table_id.under}_table(slot, {table_id.under}.virtual_meter);')
+            table_lookup_cases.append(f'        table = get_{table_id.under}_table(slot, virtual_meter.{table_id.under});')
         elif not has_custom_lookup:
             table_lookup_cases.append(f'        table = &{table_id.under}_table;')
 
@@ -565,12 +565,6 @@ util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
-h += '\n'.join([f'#include "{table_id.under}_virtual_meter.enum.h"' for table_id, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
-
-util.write_generated_file('generated/meter_modbus_tcp_virtual_meter_enums.h', h)
-
-h  = '// WARNING: This file is generated.\n\n'
-h += '#pragma once\n\n'
 h += '#include "config.h"\n'
 h += '#include "../meter_modbus_tcp.h"\n'
 h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
@@ -600,6 +594,19 @@ cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 util.write_generated_file('generated/meter_modbus_tcp_specs.cpp', cpp)
 
+virtual_meter_enum_h  = '// WARNING: This file is generated.\n\n'
+virtual_meter_enum_h += '#pragma once\n\n'
+virtual_meter_enum_h += '\n'.join([f'#include "{table_id.under}_virtual_meter.enum.h"' for table_id, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+
+util.write_generated_file('generated/meter_modbus_tcp_virtual_meter_enums.h', virtual_meter_enum_h)
+
+virtual_meter_union_inc  = '// WARNING: This file is generated.\n\n'
+virtual_meter_union_inc += 'union {\n'
+virtual_meter_union_inc += '\n'.join([f'    {table_id.camel}VirtualMeter {table_id.under};' for table_id, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+virtual_meter_union_inc += '} virtual_meter;'
+
+util.write_generated_file('generated/meter_modbus_tcp_virtual_meter_union.inc', virtual_meter_union_inc)
+
 is_inc = '// WARNING: This file is generated.\n\n'
 
 is_cpp  = '// WARNING: This file is generated.\n\n'
@@ -623,7 +630,7 @@ for table_id, value in virtual_meters.items():
         is_cpp += f'\nbool MeterModbusTCP::is_{table_id.under}_{virtual_meter.under}_meter() const\n' \
                    '{\n' \
                   f'    return table_id == MeterModbusTCPTableID::{table_id.camel}\n' \
-                  f'        && {table_id.under}.virtual_meter == {table_id.camel}VirtualMeter::{virtual_meter.camel};\n' \
+                  f'        && virtual_meter.{table_id.under} == {table_id.camel}VirtualMeter::{virtual_meter.camel};\n' \
                    '}\n'
 
 util.write_generated_file('generated/meter_modbus_tcp_is.inc', is_inc)
@@ -701,4 +708,7 @@ for lang in translation_tables:
         '{{{tables}}}': ',\n            '.join(translation_tables[lang]),
     })
 
-util.write_generated_file('generated/meter_modbus_tcp_table_lookup_cases.inc', '\n'.join(table_lookup_cases))
+table_lookup_cases_inc  = '// WARNING: This file is generated.\n\n'
+table_lookup_cases_inc +='\n'.join(table_lookup_cases)
+
+util.write_generated_file('generated/meter_modbus_tcp_table_lookup_cases.inc', table_lookup_cases_inc)

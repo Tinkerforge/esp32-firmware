@@ -94,6 +94,7 @@ private:
     Config *errors;
 
     MeterModbusTCPTableID table_id;
+#include "generated/meter_modbus_tcp_virtual_meter_union.inc"
     const TableSpec *table = nullptr;
     bool read_allowed = false;
     size_t read_index = 0;
@@ -110,7 +111,6 @@ private:
     union {
         // Sungrow hybrid inverter
         struct {
-            SungrowHybridInverterVirtualMeter virtual_meter;
             int output_type;
             uint16_t running_state;
             int16_t battery_current;
@@ -118,18 +118,11 @@ private:
 
         // Sungrow string inverter
         struct {
-            SungrowStringInverterVirtualMeter virtual_meter;
             int output_type;
         } sungrow_string_inverter;
 
-        // Solarmax Max Storage
-        struct {
-            SolarmaxMaxStorageVirtualMeter virtual_meter;
-        } solarmax_max_storage;
-
         // Victron Energy GX
         struct {
-            VictronEnergyGXVirtualMeter virtual_meter;
             float ac_consumption_l1;
             float ac_consumption_l2;
             float ac_consumption_l3;
@@ -147,14 +140,8 @@ private:
 
         // Deye hybrid inverter
         struct {
-            DeyeHybridInverterVirtualMeter virtual_meter;
             int device_type;
         } deye_hybrid_inverter;
-
-        // Alpha ESS hybrid inverter
-        struct {
-            AlphaESSHybridInverterVirtualMeter virtual_meter;
-        } alpha_ess_hybrid_inverter;
 
         // Shelly Pro EM
         struct {
@@ -171,7 +158,6 @@ private:
 
         // GoodWe inverter
         struct {
-            GoodweInverterVirtualMeter virtual_meter;
             GoodweGridDetectState grid_detect_state;
             int battery_1_mode;
             int battery_2_mode;
@@ -200,14 +186,8 @@ private:
             float pv4_power;
         } goodwe_inverter;
 
-        // Solax hybrid inverter
-        struct {
-            SolaxHybridInverterVirtualMeter virtual_meter;
-        } solax_hybrid_inverter;
-
         // Fronius GEN24 Plus
         struct {
-            FroniusGEN24PlusVirtualMeter virtual_meter;
             int input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
@@ -228,7 +208,6 @@ private:
 
         // Fronius Verto Plus
         struct {
-            FroniusVertoPlusVirtualMeter virtual_meter;
             int input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
@@ -247,16 +226,6 @@ private:
             int16_t chastate_sf;
         } fronius_verto_plus;
 
-        // Hailei hybrid inverter
-        struct {
-            HaileiHybridInverterVirtualMeter virtual_meter;
-        } hailei_hybrid_inverter;
-
-        // Fox ESS H3 AC3 hybrid inverter
-        struct {
-            FoxESSH3AC3HybridInverterVirtualMeter virtual_meter;
-        } fox_ess_h3_ac3_hybrid_inverter;
-
         // Carlo Gavazzi EM100
         struct {
             CarloGavazziPhase phase;
@@ -267,16 +236,6 @@ private:
             CarloGavazziPhase phase;
         } carlo_gavazzi_et100;
 
-        // Carlo Gavazzi EM270
-        struct {
-            CarloGavazziEM270VirtualMeter virtual_meter;
-        } carlo_gavazzi_em270;
-
-        // Carlo Gavazzi EM280
-        struct {
-            CarloGavazziEM280VirtualMeter virtual_meter;
-        } carlo_gavazzi_em280;
-
         // Carlo Gavazzi EM510
         struct {
             CarloGavazziPhase phase;
@@ -284,7 +243,6 @@ private:
 
         // SolarEdge hybrid inverter
         struct {
-            SolaredgeHybridInverterVirtualMeter virtual_meter;
             float battery_1_rated_energy;
             float battery_1_temperature;
             float battery_1_voltage;
@@ -307,47 +265,19 @@ private:
             int16_t dc_power_sf;
         } solaredge_hybrid_inverter;
 
-        // SAX Power Home basic mode
-        struct {
-            SAXPowerHomeBasicModeVirtualMeter virtual_meter;
-        } sax_power_home_basic_mode;
-
-        // SAX Power Home extended mode
-        struct {
-            SAXPowerHomeExtendedModeVirtualMeter virtual_meter;
-        } sax_power_home_extended_mode;
-
-        // E3/DC Hauskraftwerk
-        struct {
-            E3DCHauskraftwerkVirtualMeter virtual_meter;
-        } e3dc_hauskraftwerk;
-
         // Huawei SUN2000
         struct {
-            HuaweiSUN2000VirtualMeter virtual_meter;
             int energy_storage_product_model;
             int number_of_pv_strings;
         } huawei_sun2000;
 
         // Huawei SUN2000 Smart Dongle
         struct {
-            HuaweiSUN2000SmartDongleVirtualMeter virtual_meter;
             int energy_storage_product_model;
         } huawei_sun2000_smart_dongle;
 
-        // Huawei EMMA
-        struct {
-            HuaweiEMMAVirtualMeter virtual_meter;
-        } huawei_emma;
-
-        // Solax string inverter
-        struct {
-            SolaxStringInverterVirtualMeter virtual_meter;
-        } solax_string_inverter;
-
         // Fox ESS H3 Smart hybrid inverter
         struct {
-            FoxESSH3SmartHybridInverterVirtualMeter virtual_meter;
             uint16_t bms_1_connection_status;
             float bms_1_voltage;
             float bms_1_current;
@@ -359,7 +289,6 @@ private:
 
         // Fox ESS H3 Pro hybrid inverter
         struct {
-            FoxESSH3ProHybridInverterVirtualMeter virtual_meter;
             uint16_t bms_1_connection_status;
             float bms_1_voltage;
             float bms_1_current;
@@ -371,19 +300,12 @@ private:
 
         // SMA hybrid inverter
         struct {
-            SMAHybridInverterVirtualMeter virtual_meter;
             float battery_charge_power;
             float battery_discharge_power;
         } sma_hybrid_inverter;
 
-        // VARTA element
-        struct {
-            VARTAElementVirtualMeter virtual_meter;
-        } varta_element;
-
         // VARTA flex
         struct {
-            VARTAFlexVirtualMeter virtual_meter;
             float grid_power;
             int16_t grid_power_sf;
             float battery_active_power;
@@ -394,19 +316,8 @@ private:
             int16_t battery_total_charge_energy_sf;
         } varta_flex;
 
-        // Chisage ESS hybrid inverter
-        struct {
-            ChisageESSHybridInverterVirtualMeter virtual_meter;
-        } chisage_ess_hybrid_inverter;
-
-        // Huawei Smart Logger 3000
-        struct {
-            HuaweiSmartLogger3000VirtualMeter virtual_meter;
-        } huawei_smart_logger_3000;
-
         // Solis hybrid inverter
         struct {
-            SolisHybridInverterVirtualMeter virtual_meter;
             float battery_current;
             uint16_t battery_current_direction;
             float battery_power;
@@ -424,7 +335,6 @@ private:
 
         // Growatt hybrid inverter
         struct {
-            GrowattHybridInverterVirtualMeter virtual_meter;
             float grid_forward_power;
             float grid_reverse_power;
             float battery_current;
@@ -432,21 +342,6 @@ private:
             float battery_power_signed;
             float total_load_power;
         } growatt_hybrid_inverter;
-
-        // QCells hybrid inverter
-        struct {
-            QCellsHybridInverterVirtualMeter virtual_meter;
-        } qcells_hybrid_inverter;
-
-        // QCells string inverter
-        struct {
-            QCellsStringInverterVirtualMeter virtual_meter;
-        } qcells_string_inverter;
-
-        // Chint Power hybrid inverter
-        struct {
-            ChintPowerHybridInverterVirtualMeter virtual_meter;
-        } chint_power_hybrid_inverter;
     };
 
     union {
