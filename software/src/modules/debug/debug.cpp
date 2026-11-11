@@ -218,7 +218,7 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
     }
 }
 
-static constexpr int CONFIG_TYPES = 12;
+static constexpr int CONFIG_TYPES = 13;
 
 static void (*const slot_debug_info_fns[CONFIG_TYPES])(SlotDebugInfo *slot_info) = {
     &get_slot_debug_info<Config::ConfUint>,
@@ -233,6 +233,7 @@ static void (*const slot_debug_info_fns[CONFIG_TYPES])(SlotDebugInfo *slot_info)
     &get_slot_debug_info<Config::ConfTuple>,
     &get_slot_debug_info<Config::ConfObject>,
     &get_slot_debug_info<Config::ConfUnion>,
+    &get_slot_debug_info<Config>,
 };
 
 void Debug::pre_setup()
@@ -323,6 +324,7 @@ void Debug::pre_setup()
         {"conf_tuple_buf_size", Config::Uint32(0)},
         {"conf_object_buf_size", Config::Uint32(0)},
         {"conf_union_buf_size", Config::Uint32(0)},
+        {"config_buf_size", Config::Uint32(0)},
         {"ipsock_cur", Config::Uint8(0)},
         {"ipsock_hwm", Config::Uint8(0)},
         {"api_states",    Config::Uint16(0)},
@@ -409,6 +411,7 @@ void Debug::setup()
         state_slow.get("conf_tuple_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfTuple>());
         state_slow.get("conf_object_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfObject>());
         state_slow.get("conf_union_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfUnion>());
+        state_slow.get("config_buf_size" )->updateUint(get_allocated_slot_memory<Config>());
 
         for (size_t i = 0; i < CONFIG_TYPES; i++) {
             SlotDebugInfo slot_info;

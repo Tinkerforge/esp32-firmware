@@ -65,6 +65,26 @@ void config_abort_on_type_error(const char *fn_name, const Config *config_is, co
     esp_system_abort(msg);
 }
 
+bool Config::slotEmpty(const Slot *slot, size_t slotIdx)
+{
+    (void) slotIdx;
+    return slot->value.tag == ConfVariant::Tag::UNINITIALIZED;
+}
+
+void Config::slotDebugHook(const Slot *slot, size_t slotIdx)
+{
+    (void) slot;
+    (void) slotIdx;
+}
+
+Config::Slot *Config::allocSlotBuf(size_t elements)
+{
+    const size_t buf_size = sizeof(Config::Slot) * elements;
+    auto result = perm_alloc(buf_size, DRAM);
+    memset(result, to_underlying(Config::ConfVariant::Tag::UNINITIALIZED), buf_size);
+    return static_cast<Config::Slot *>(result);
+}
+
 bool Config::containsNull(const ConfUpdate *update)
 {
     static constexpr std::size_t nullptr_idx = ConfUpdate::find_which<std::nullptr_t>::value;

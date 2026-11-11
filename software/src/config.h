@@ -83,6 +83,13 @@ struct Config {
     // This is the assumed maximum nesting of configs. Increase if longer paths etc. are required.
     static constexpr size_t MAX_NESTING = 8;
 
+    using Slot = Config;
+
+    static bool slotEmpty(const Slot *slot, size_t slotIdx);
+    static void slotDebugHook(const Slot *slot, size_t slotIdx);
+    static constexpr const char *variantName = "Config";
+    [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
+
     struct ConfString {
         friend struct api_info;
         using Slot = ConfStringSlot;
@@ -532,7 +539,8 @@ struct Config {
             INT16,
             UINT8,
             INT8,
-            TUPLE
+            TUPLE,
+            UNINITIALIZED = 0xFF
         };
         Tag tag;
         uint8_t updated;
@@ -633,6 +641,9 @@ struct Config {
                 return visitor(v.val.i8);
             case ConfVariant::Tag::TUPLE:
                 return visitor(v.val.t);
+            case ConfVariant::Tag::UNINITIALIZED:
+                esp_system_abort("apply_visitor: const ConfVariant not initialized!");
+
         }
         esp_system_abort("apply_visitor: ConfVariant has unknown type!");
     }
@@ -677,6 +688,8 @@ struct Config {
                 return visitor(v.val.i8);
             case ConfVariant::Tag::TUPLE:
                 return visitor(v.val.t);
+            case ConfVariant::Tag::UNINITIALIZED:
+                esp_system_abort("apply_visitor: const ConfVariant not initialized!");
         }
         esp_system_abort("apply_visitor: const ConfVariant has unknown type!");
     }

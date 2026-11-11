@@ -101,6 +101,8 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy) : tag(cpy.tag), updated
         case ConfVariant::Tag::TUPLE:
             new(&val.t) ConfTuple(cpy.val.t);
             break;
+        case ConfVariant::Tag::UNINITIALIZED:
+            esp_system_abort("ConfVariant::ConfVariant: Copying unintialized config!");
         default:
             esp_system_abort("ConfVariant::ConfVariant: Unknown tag!");
     }
@@ -112,8 +114,7 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         return *this;
     }
 
-    if (tag != Tag::EMPTY)
-        destroyUnionMember();
+    destroyUnionMember();
 
     this->tag = cpy.tag;
     this->updated = cpy.updated;
@@ -173,6 +174,8 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         case ConfVariant::Tag::TUPLE:
             new(&val.t) ConfTuple(cpy.val.t);
             break;
+        case ConfVariant::Tag::UNINITIALIZED:
+            esp_system_abort("ConfVariant::operator=: Copying unintialized config!");
         default:
             esp_system_abort("ConfVariant::operator=: Unknown tag!");
     }
@@ -237,6 +240,8 @@ void Config::ConfVariant::destroyUnionMember()
         case ConfVariant::Tag::TUPLE:
             val.t.~ConfTuple();
             break;
+        case ConfVariant::Tag::UNINITIALIZED:
+            break;
         default:
             esp_system_abort("ConfVariant::destroyUnionMember: Unknown tag!");
     }
@@ -245,6 +250,7 @@ void Config::ConfVariant::destroyUnionMember()
 Config::ConfVariant::~ConfVariant()
 {
     destroyUnionMember();
+    this->tag = ConfVariant::Tag::UNINITIALIZED;
 }
 
 const char *Config::ConfVariant::getVariantName() const
@@ -286,6 +292,8 @@ const char *Config::ConfVariant::getVariantName() const
             return val.i8.variantName;
         case ConfVariant::Tag::TUPLE:
             return val.t.variantName;
+        case ConfVariant::Tag::UNINITIALIZED:
+            return "Not initialized";
         default:
             esp_system_abort("ConfVariant::getVariantName: Unknown tag!");
     }
@@ -348,17 +356,18 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) : tag(cpy.tag), updated(cpy.
         case ConfVariant::Tag::TUPLE:
             new(&val.t) ConfTuple(std::move(cpy.val.t));
             break;
+        case ConfVariant::Tag::UNINITIALIZED:
+            break;
         default:
             esp_system_abort("ConfVariant::ConfVariant(&&): Unknown tag!");
     }
 
-    cpy.tag = ConfVariant::Tag::EMPTY;
+    cpy.tag = ConfVariant::Tag::UNINITIALIZED;
 }
 
 Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy)
 {
-    if (tag != Tag::EMPTY)
-        destroyUnionMember();
+    destroyUnionMember();
 
     this->tag = cpy.tag;
     this->updated = cpy.updated;
@@ -418,11 +427,13 @@ Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy)
         case ConfVariant::Tag::TUPLE:
             new(&val.t) ConfTuple(std::move(cpy.val.t));
             break;
+        case ConfVariant::Tag::UNINITIALIZED:
+            esp_system_abort("ConfVariant::operator=(&&): Moving uninitialized config!");
         default:
             esp_system_abort("ConfVariant::operator=(&&): Unknown tag!");
     }
 
-    cpy.tag = ConfVariant::Tag::EMPTY;
+    cpy.tag = ConfVariant::Tag::UNINITIALIZED;
 
     return *this;
 }

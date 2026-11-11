@@ -105,6 +105,7 @@ export class Debug extends Component {
             "ConfTuple",
             "ConfObject",
             "ConfUnion",
+            "Config",
         ];
 
         const flash_id_device = state_static.flash_id & 0xFFFF;
@@ -272,6 +273,9 @@ export class Debug extends Component {
 
                 <Row label="ConfUnion"
                      l={<OutputBytes value={state_slow.conf_union_buf_size} />}/>
+
+                 <Row label="Config"
+                     l={<OutputBytes value={state_slow.config_buf_size} />}/>
 
                 <FormSeparator heading={__("debug.content.config_slots")} />
 

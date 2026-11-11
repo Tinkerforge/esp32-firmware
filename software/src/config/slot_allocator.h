@@ -139,6 +139,15 @@ template<> struct SlotConfig<Config::ConfTuple> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+template<> struct SlotConfig<Config> {
+    static constexpr const size_t slots_per_superblock  = 4096;
+    static constexpr const size_t slots_per_block       =  256;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+
 template<typename ConfigT>
 struct Superblock {
     typename ConfigT::Slot *blocks[SlotConfig<ConfigT>::blocks_per_superblock];
@@ -178,6 +187,7 @@ extern template uint16_t nextSlots<Config::ConfUnion >(uint16_t batch_size);
 extern template uint16_t nextSlots<Config::ConfInt52 >(uint16_t batch_size);
 extern template uint16_t nextSlots<Config::ConfUint53>(uint16_t batch_size);
 extern template uint16_t nextSlots<Config::ConfTuple >(uint16_t batch_size);
+extern template uint16_t nextSlots<Config            >(uint16_t batch_size);
 
 template<typename ConfigT>
 inline uint16_t nextSlot() {return nextSlots<ConfigT>(1);}
@@ -272,6 +282,7 @@ extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t i
 extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
 extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
 extern template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
+extern template Config::Slot             *get_slot<Config>(uint16_t idx);
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
