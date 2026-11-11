@@ -154,7 +154,9 @@ uint16_t nextSlots(uint16_t batch_size)
                         last_idx = static_cast<uint16_t>(idx + batch_size - 1);
                     }
 
-#if MODULE_DEBUG_AVAILABLE()
+#if !MODULE_DEBUG_AVAILABLE()
+                    (void) last_idx; //Avoid unused warning
+#else
                     RootBlock<ConfigT>::used_slots += batch_size;
 #ifdef DEBUG_FS_ENABLE
                     RootBlock<ConfigT>::allocs += batch_size;
