@@ -282,6 +282,8 @@ class TestContext:
                 ssl._create_default_https_context = old_default_context
 
     def factory_reset(self):
+        self.check_device_health()
+
         if self._serial_port:
             self._erase_littlefs_header()
         else:
@@ -305,6 +307,8 @@ class TestContext:
                 raise
 
     def reboot(self, wait_for_host_responsive=True):
+        self.check_device_health()
+
         # Fast reboot via esptool, if serial port available
         if self._serial_port:
             with ESP32ROM(self._serial_port) as esp:
@@ -801,6 +805,14 @@ class TestContext:
 
             return False
 
+    def check_device_health(self):
+        self.assert_false(self.api('coredump/state/coredump_available'))
+
+        if self.debug_fs_enabled():
+            self.assert_(self.api('debug/state_slow/heap_integrity_ok'))
+            self.assert_(self.api('debug/state_slow/slot_accounting_ok'))
+
+
     # @dataclass
     # class Cap:
     #     val: typing.Any
@@ -877,7 +889,9 @@ def _run_test(tc: TestContext, name: str, fn: TestFn | None, force_skip: bool) -
             return 'skipped'
 
         if fn is not None:
+            tc.check_device_health()
             fn(tc)
+            tc.check_device_health()
         tc._notify_test_success()
         return 'finished'
     except TestContext.SkipTestError as e:
