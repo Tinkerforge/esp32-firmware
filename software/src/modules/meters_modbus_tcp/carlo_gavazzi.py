@@ -195,7 +195,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1 and L2 and L3 [0.1 W]',
+        'name': 'W L1 plus L2 plus L3 [0.1 W]',
         'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
         'start_address': 0x04,
         'value_type': 'S32LE',
@@ -239,7 +239,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Positive Total L1 and L2 and L3 [0.1 kWh]',
+        'name': 'kWh Positive Total L1 plus L2 plus L3 [0.1 kWh]',
         'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
         'start_address': 0x10,
         'value_type': 'S32LE',
@@ -261,7 +261,7 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Negative Total L1 and L2 and L3 [0.1 kWh]',
+        'name': 'kWh Negative Total L1 plus L2 plus L3 [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
         'start_address': 0x20,
         'value_type': 'S32LE',
@@ -716,7 +716,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'W L1 and L2 and L3 [0.1 W]',
+        'name': 'W L1 plus L2 plus L3 [0.1 W]',
         'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
         'start_address': 0x04,
         'value_type': 'S32LE',
@@ -759,7 +759,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Positive Total L1 and L2 and L3 [0.1 kWh]',
+        'name': 'kWh Positive Total L1 plus L2 plus L3 [0.1 kWh]',
         'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
         'start_address': 0x10,
         'value_type': 'S32LE',
@@ -781,7 +781,7 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh Negative Total L1 and L2 and L3 [0.1 kWh]',
+        'name': 'kWh Negative Total L1 plus L2 plus L3 [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
         'start_address': 0x20,
         'value_type': 'S32LE',

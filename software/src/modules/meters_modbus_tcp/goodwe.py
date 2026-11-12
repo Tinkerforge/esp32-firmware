@@ -297,7 +297,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                # Reading "BMS 2 Pack Temperature" (39001) and "Battery 2 Capacity" (39005) when "Battery 2 Mode" is 0,
+                # Reading "BMS 2 Pack Temperature" (39001) and "Battery 2 Capacity" (39005) when "Battery 2 Mode" is 0 or 65535,
                 # might result in constant timeouts, blocking the whole reading process
                 'name': 'Battery 2 Mode',
                 'value_id': 'VALUE_ID_META',
@@ -445,7 +445,7 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Inverter Battery 1 And 2',
+        'name': 'Goodwe Inverter Battery 1 Plus 2',
         'table_id': 'Goodwe Inverter',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',

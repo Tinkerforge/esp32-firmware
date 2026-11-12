@@ -703,9 +703,9 @@ specs = [
     },
     {
         'variants': ['Smart', 'Pro'],
-        'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery 1 And 2',
+        'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery 1 Plus 2',
         'table_id': 'Fox ESS H3 {variant} Hybrid Inverter',
-        'virtual_meter': 'Battery 1 And 2',
+        'virtual_meter': 'Battery 1 Plus 2',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
