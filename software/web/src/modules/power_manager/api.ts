@@ -43,3 +43,7 @@ export interface dynamic_load_config {
 export interface external_control {
     phases_wanted: number;
 }
+
+export interface battery_mode {
+    mode: number;
+}
