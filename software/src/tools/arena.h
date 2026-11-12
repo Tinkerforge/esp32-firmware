@@ -26,6 +26,8 @@
 #include <initializer_list>
 #include <utility>
 
+#include "main_available.h"
+
 //#include "gcc_warnings.h"
 
 struct Arena {
@@ -91,7 +93,7 @@ struct Arena {
     void *aligned_alloc(size_t alignment, size_t size);
     void *alloc(size_t size);
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
     bool check_integrity() const;
 #endif
     // Statistics
@@ -110,4 +112,6 @@ struct Arena {
     size_t block_capacity;
     BlockHeader *head;
 };
+
+#include "main_available_end.h"
 

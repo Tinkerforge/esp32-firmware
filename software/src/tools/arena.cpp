@@ -135,7 +135,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
         return nullptr;
     }
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
     // Include heap canary when calculating (mis)alignment
     size += CANARY_SIZE;
 #endif
@@ -150,7 +150,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
     while (true) {
         start = block->memory + block->used;
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
         // Include heap canary when calculating (mis)alignment
         start += CANARY_SIZE;
 #endif
@@ -175,7 +175,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
         // Recalculate size to be allocated:
         // A new block starts aligned but this can result in additional padding being required due to the canary.
         auto alloc_size = size;
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
         alloc_size += get_padding(CANARY_SIZE, align);
 #endif
 
@@ -191,7 +191,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
             continue;
         }
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
         // Undo including heap canary when passing through to allocation function.
         size -= CANARY_SIZE;
 #endif
@@ -201,7 +201,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
         return aligned_alloc_fn(align, size);
     }
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
     // Undo including heap canary
     size -= CANARY_SIZE;
     start -= CANARY_SIZE;
@@ -256,7 +256,7 @@ void *Arena::alloc(size_t size)
     return this->aligned_alloc(align, size);
 }
 
-#ifdef DEBUG_FS_ENABLE
+#if MODULE_DEBUG_AVAILABLE()
 bool Arena::check_integrity() const
 {
     size_t allocs_seen = 0;
