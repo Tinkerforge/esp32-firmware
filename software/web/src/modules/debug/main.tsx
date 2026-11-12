@@ -279,6 +279,16 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.config_slots")} />
 
+                <FormRow label={__("debug.content.slot_accounting_result")}>
+                    <IndicatorGroup
+                        value={state_slow.slot_accounting_ok ? 0 : 1} // intentionally inverted, OK is first
+                        items={[
+                            ["success", __("debug.content.slot_accounting_ok")],
+                            ["danger", __("debug.content.slot_accounting_fail")],
+                        ]}
+                    />
+                </FormRow>
+
                 <FormRow class="d-none d-sm-flex">
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-2">

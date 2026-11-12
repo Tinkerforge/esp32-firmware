@@ -306,6 +306,7 @@ void Debug::pre_setup()
         {"largest_free_iram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
+        {"slot_accounting_ok", Config::Bool(true)},
         {"loop_max_us", Config::Uint32(0)},
         {"loop_max_fn_file", Config::Str("", 0, 0)},
         {"loop_max_fn_line", Config::Uint32(0)},
@@ -1408,6 +1409,13 @@ void Debug::deregister_task_internal(size_t i)
     task_handles.erase(task_handles.begin() + static_cast<int>(i));
     state_hwm.remove(i);
 }
+
+#ifdef DEBUG_FS_ENABLE
+void Debug::report_slot_accounting_error()
+{
+    this->state_slow.get("slot_accounting_ok")->updateBool(false);
+}
+#endif
 
 [[gnu::noinline]]
 static float benchmark_spi_flash()

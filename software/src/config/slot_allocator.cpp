@@ -241,8 +241,9 @@ template Config::Slot             *get_slot<Config>(uint16_t idx);
 
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
-static void check_slot_accounting()
+static bool check_slot_accounting()
 {
+    bool success = true;
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
     size_t superblock_idx = 0;
@@ -279,20 +280,24 @@ static void check_slot_accounting()
     if (used_slots != RootBlock<ConfigT>::used_slots) {
         logger.printfln("used_slots mismatch for %s. Counted %zu, expected %hu. allocs %zu  frees %zu  diff %zu",
             ConfigT::variantName, used_slots, RootBlock<ConfigT>::used_slots, RootBlock<ConfigT>::allocs, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs - RootBlock<ConfigT>::frees);
+        success = false;
     }
 
     if (block_count != RootBlock<ConfigT>::allocated_blocks) {
         logger.printfln("allocated_blocks mismatch for %s. Counted %zu, expected %hu.", ConfigT::variantName, block_count, RootBlock<ConfigT>::allocated_blocks);
+        success = false;
     }
 
     if (last_used_slot != RootBlock<ConfigT>::last_used_slot) {
         logger.printfln("last_used_slot mismatch for %s. Found %zu, expected %hu.", ConfigT::variantName, last_used_slot, RootBlock<ConfigT>::last_used_slot);
+        success = false;
     }
 
 #endif
 
     if (RootBlock<ConfigT>::frees > RootBlock<ConfigT>::allocs) {
         logger.printfln("alloc/free mismatch for %s. %zu frees > %zu allocs.", ConfigT::variantName, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs);
+        success = false;
     }
 
     superblock = RootBlock<ConfigT>::first_superblock;
@@ -302,11 +307,12 @@ static void check_slot_accounting()
         if (superblock == nullptr) {
             if (last_idx == 0) {
                 // Points to first slot in unallocated superblock, which is ok.
-                return;
+                return success;
             }
 
             logger.printfln("First free slot %zu points into an unallocated superblock for %s", last_idx, ConfigT::variantName);
-            return;
+            success = false;
+            return success;
         }
 
         for (size_t block_i = 0; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
@@ -315,25 +321,27 @@ static void check_slot_accounting()
             if (block == nullptr) {
                 if (last_idx == 0) {
                     // Points to first slot in unallocated block, which is ok.
-                    return;
+                    return success;
                 }
 
                 logger.printfln("First free slot %zu points into an unallocated block %zu for %s", last_idx, block_i, ConfigT::variantName);
-                return;
+                success = false;
+                return success;
             }
 
             for (size_t slot_i = 0; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
                 if (slot_i >= last_idx) {
-                    return;
+                    return success;
                 }
 
                 const size_t abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
                 if (ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     if (slot_i != last_idx) {
                         logger.printfln("First free slot mismatch. Expected %zu but found %zu in block %zu for %s.", last_idx, slot_i, block_i, ConfigT::variantName);
+                        success = false;
                     }
 
-                    return;
+                    return success;
                 }
             }
 
@@ -343,6 +351,8 @@ static void check_slot_accounting()
         superblock = superblock->next_superblock;
         superblock_idx++;
     }
+
+    return success;
 }
 #endif
 
@@ -350,19 +360,22 @@ void config_post_setup()
 {
 #ifdef DEBUG_FS_ENABLE
     task_scheduler.scheduleUncancelable([]() {
-        check_slot_accounting<Config::ConfUint>();
-        check_slot_accounting<Config::ConfInt>();
-        check_slot_accounting<Config::ConfUint32>();
-        check_slot_accounting<Config::ConfInt32>();
-        check_slot_accounting<Config::ConfFloat>();
-        check_slot_accounting<Config::ConfString>();
-        check_slot_accounting<Config::ConfArray>();
-        check_slot_accounting<Config::ConfObject>();
-        check_slot_accounting<Config::ConfUnion>();
-        check_slot_accounting<Config::ConfUint53>();
-        check_slot_accounting<Config::ConfInt52>();
-        check_slot_accounting<Config::ConfTuple>();
-        check_slot_accounting<Config>();
+        bool accounting_ok = true;
+        accounting_ok &= check_slot_accounting<Config::ConfUint>();
+        accounting_ok &= check_slot_accounting<Config::ConfInt>();
+        accounting_ok &= check_slot_accounting<Config::ConfUint32>();
+        accounting_ok &= check_slot_accounting<Config::ConfInt32>();
+        accounting_ok &= check_slot_accounting<Config::ConfFloat>();
+        accounting_ok &= check_slot_accounting<Config::ConfString>();
+        accounting_ok &= check_slot_accounting<Config::ConfArray>();
+        accounting_ok &= check_slot_accounting<Config::ConfObject>();
+        accounting_ok &= check_slot_accounting<Config::ConfUnion>();
+        accounting_ok &= check_slot_accounting<Config::ConfUint53>();
+        accounting_ok &= check_slot_accounting<Config::ConfInt52>();
+        accounting_ok &= check_slot_accounting<Config::ConfTuple>();
+        accounting_ok &= check_slot_accounting<Config>();
+        if (!accounting_ok)
+            debug.report_slot_accounting_error();
         slotDebugHookDone();
     }, 30_s, 1_min);
 #endif

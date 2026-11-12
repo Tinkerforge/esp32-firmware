@@ -34,6 +34,9 @@ let x = {
             "slots_first_free": "First free",
             "slots_last_used": "Last used",
             "slots_holes": "Holes",
+            "slot_accounting_result": "Check result",
+            "slot_accounting_ok": "Passed",
+            "slot_accounting_fail": "Corrupt",
 
             "rtos_task_header": "RTOS task information",
             "free_stack": "Free stack",

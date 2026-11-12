@@ -41,6 +41,7 @@ export interface state_slow {
     largest_free_iram_block: number;
     largest_free_psram_block: number;
     heap_integrity_ok: boolean;
+    slot_accounting_ok: boolean;
     loop_max_us: number;
     loop_max_fn_file: string;
     loop_max_fn_line: number;

@@ -65,6 +65,10 @@ public:
     inline size_t get_ssl_key_trace_buffer_index() {return ssl_key_trace_buffer_index;}
 #endif
 
+#ifdef DEBUG_FS_ENABLE
+    void report_slot_accounting_error();
+#endif
+
 private:
     void deregister_task_internal(size_t index);
 

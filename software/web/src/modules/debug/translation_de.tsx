@@ -34,6 +34,9 @@ let x = {
             "slots_first_free": "Erster frei",
             "slots_last_used": "Letzter belegt",
             "slots_holes": "Löcher",
+            "slot_accounting_result": "Prüfergebnis",
+            "slot_accounting_ok": "Bestanden",
+            "slot_accounting_fail": "Korrupt",
 
             "rtos_task_header": "RTOS-Taskinformationen",
             "free_stack": "Freier Stack",
