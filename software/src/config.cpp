@@ -80,7 +80,7 @@ void Config::slotDebugHook(const Slot *slot, size_t slotIdx)
 Config::Slot *Config::allocSlotBuf(size_t elements)
 {
     const size_t buf_size = sizeof(Config::Slot) * elements;
-    auto result = perm_alloc(buf_size, DRAM);
+    auto result = heap_caps_malloc_prefer(buf_size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
     memset(result, to_underlying(Config::ConfVariant::Tag::UNINITIALIZED), buf_size);
     return static_cast<Config::Slot *>(result);
 }
