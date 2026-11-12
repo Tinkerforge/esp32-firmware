@@ -377,6 +377,6 @@ void config_post_setup()
         if (!accounting_ok)
             debug.report_slot_accounting_error();
         slotDebugHookDone();
-    }, 30_s, 1_min);
+    }, 0_ms, 10_s);
 #endif
 }
