@@ -148,6 +148,31 @@ template<> struct SlotConfig<Config> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+#ifdef DEBUG_FS_ENABLE
+struct SelfTest
+{
+    using Slot = SelfTest;
+
+    static bool slotEmpty(const Slot *slot, size_t slotIdx) {return !slot->inuse;}
+    static void slotDebugHook(const Slot *slot, size_t slotIdx) {}
+    static constexpr const char *variantName = "SelfTest";
+    static Slot *allocSlotBuf(size_t elements);
+    static uint16_t allocSlot(uint16_t batch_size);
+    static void freeSlot(uint16_t idx, uint16_t batch_size);
+
+    bool inuse = false;
+};
+
+template<> struct SlotConfig<SelfTest> {
+    static constexpr const size_t slots_per_superblock  = 8;
+    static constexpr const size_t slots_per_block       = 4;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+#endif
+
 template<typename ConfigT>
 struct Superblock {
     typename ConfigT::Slot *blocks[SlotConfig<ConfigT>::blocks_per_superblock];

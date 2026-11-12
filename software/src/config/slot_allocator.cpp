@@ -382,9 +382,300 @@ static bool check_slot_accounting()
 }
 #endif
 
+#ifdef DEBUG_FS_ENABLE
+template<> Superblock<SelfTest> *RootBlock<SelfTest>::first_superblock = nullptr;
+template uint16_t nextSlots<SelfTest>(uint16_t batch_size);
+template SelfTest::Slot *get_slot<SelfTest>(uint16_t idx);
+
+SelfTest::Slot *SelfTest::allocSlotBuf(size_t elements)
+{
+    const size_t buf_size = sizeof(SelfTest::Slot) * elements;
+    auto result = heap_caps_calloc_prefer(buf_size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    return static_cast<SelfTest::Slot *>(result);
+}
+
+uint16_t SelfTest::allocSlot(uint16_t batch_size)
+{
+    const uint16_t idx = nextSlots<SelfTest>(batch_size);
+
+    for (uint16_t i = 0; i < batch_size; i++) {
+        SelfTest::Slot *slot = get_slot<SelfTest>(idx + i);
+        assert(!slot->inuse);
+        slot->inuse = true;
+    }
+
+    return idx;
+}
+
+void SelfTest::freeSlot(uint16_t idx, uint16_t batch_size)
+{
+    for (uint16_t i = 0; i < batch_size; i++) {
+        SelfTest::Slot *slot = get_slot<SelfTest>(idx + i);
+        assert(slot->inuse);
+        slot->inuse = false;
+    }
+
+    notify_free_slots<SelfTest>(idx, batch_size);
+}
+
+static void clear_dummy_superblock(Superblock<SelfTest> *superblock, size_t superblock_index)
+{
+    if (superblock->next_superblock != nullptr) {
+        clear_dummy_superblock(superblock->next_superblock, superblock_index + 1);
+        free(superblock->next_superblock);
+        superblock->next_superblock = nullptr;
+    }
+
+    for (size_t i = 0; i < SlotConfig<SelfTest>::blocks_per_superblock; i++) {
+        SelfTest::Slot *block = superblock->blocks[i];
+
+        if (block == nullptr) {
+            continue;
+        }
+
+        for (size_t j = 0; j < SlotConfig<SelfTest>::slots_per_block; j++) {
+            if (block[j].inuse) {
+                dbg("super %zu -> block %zu -> slot %zu still in use", superblock_index, i, j);
+            }
+        }
+
+        free(block);
+        superblock->blocks[i] = nullptr;
+    }
+}
+
+static void check_dummy_slots()
+{
+    RootBlock<SelfTest>::first_superblock = static_cast<decltype(RootBlock<SelfTest>::first_superblock)>(calloc_32bit_addressed(1, sizeof(*RootBlock<SelfTest>::first_superblock)));
+
+    uint16_t idx;
+
+    // Test allocating full blocks and full superblock.
+    // Test single tail allocations.
+
+    for (uint16_t i = 0; i < 8; i++) {
+        idx = SelfTest::allocSlot(1);
+
+        if (idx != i) {
+            esp_system_abortf<64>("Alloc index failed: expected %hu, got %hu", i, idx);
+        }
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Single alloc failed at index %zu", i);
+        }
+    }
+
+    // xxxx xxxx
+
+    // Test the self-test.
+
+    get_slot<SelfTest>(2)->inuse = false;
+
+    if (check_slot_accounting<SelfTest>()) {
+        esp_system_abort("check_slot_accounting passed even though it should have failed");
+    }
+
+    logger.printfln("Error test ok, ignore previous errors");
+
+    // xx|x xxxx
+
+    // Restore consistent state after test self-test.
+
+    get_slot<SelfTest>(2)->inuse = true;
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("check_slot_accounting failed after its own self-test");
+    }
+
+    // xxxx xxxx
+
+    // Test single middle free.
+
+    SelfTest::freeSlot(2, 1);
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Single free failed at index 2");
+    }
+
+    // xx.x xxxx
+
+    // Test single middle allocation.
+
+    idx = SelfTest::allocSlot(1);
+
+    if (idx != 2) {
+        esp_system_abortf<64>("Single alloc index failed: expected 2, got %hu", idx);
+    }
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Single alloc failed at index 2");
+    }
+
+    // xxxx xxxx
+
+    // Test single tail allocation into new superblock.
+
+    idx = SelfTest::allocSlot(1);
+
+    if (idx != 8) {
+        esp_system_abortf<64>("Single alloc index failed: expected 8, got %hu", idx);
+    }
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Single alloc failed at index 8");
+    }
+
+    // xxxx xxxx  x...
+
+    // Test notify_free_slots first_free_slot updates.
+    // Test single head frees until empty.
+
+    for (uint16_t i = 0; i < 9; i++) {
+        SelfTest::freeSlot(i, 1);
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Single free failed at index %zu", i);
+        }
+    }
+
+    // .... .... ....
+
+    // Fill again.
+
+    for (uint16_t i = 0; i < 9; i++) {
+        idx = SelfTest::allocSlot(1);
+
+        if (idx != i) {
+            esp_system_abortf<64>("Alloc index failed: expected %hu, got %hu", i, idx);
+        }
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Single alloc failed at index %zu", i);
+        }
+    }
+
+    // xxxx xxxx  x...
+
+    // Test single tail frees until empty.
+
+    for (uint16_t i = 9; i > 0; i--) {
+        SelfTest::freeSlot(i - 1, 1);
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Single free failed at index %hu", i - 1);
+        }
+    }
+
+    // .... ....  ....
+
+    // Test batch allocation at first free slot and tail allocation.
+
+    for (uint16_t i = 0; i < 8; i += 4) {
+        idx = SelfTest::allocSlot(4);
+
+        if (idx != i) {
+            esp_system_abortf<64>("Block alloc 4 at wrong index: expected %hu, got %hu", i, idx);
+        }
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Block alloc failed at index %hu", i);
+        }
+    }
+
+    // xxxx xxxx  ....
+
+    // Test batch middle free.
+
+    SelfTest::freeSlot(2, 2);
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Block free failed at index 2");
+    }
+
+    // xx.. xxxx  ....
+
+    // Test batch allocation that doesn't fit into the first free slot.
+    // Test tail batch allocation.
+
+    idx = SelfTest::allocSlot(4);
+
+    if (idx != 8) {
+        esp_system_abortf<64>("Block alloc 4 at wrong index: expected 8, got %hu", idx);
+    }
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Block alloc failed at index 8");
+    }
+
+    // xx.. xxxx  xxxx
+
+    // Test batch middle alloc.
+
+    idx = SelfTest::allocSlot(2);
+
+    if (idx != 2) {
+        esp_system_abortf<64>("Block alloc 2 at wrong index: expected 2, got %hu", idx);
+    }
+
+    if (!check_slot_accounting<SelfTest>()) {
+        esp_system_abort("Block alloc failed at index 2");
+    }
+
+    // xxxx xxxx  xxxx
+
+    // Test freeing head batch until empty.
+
+    for (uint16_t i = 0; i < 12; i += 2) {
+        SelfTest::freeSlot(i, 2);
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Block free failed at index %hu", i);
+        }
+    }
+
+    // .... ....  ....
+
+    // Fill again.
+
+    for (uint16_t i = 0; i < 8; i += 2) {
+        idx = SelfTest::allocSlot(2);
+
+        if (idx != i) {
+            esp_system_abortf<64>("Block alloc 2 at wrong index: expected %hu, got %hu", i, idx);
+        }
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Block alloc failed at index %hu", i);
+        }
+    }
+
+    // xxxx xxxx  ....
+
+    // Test freeing tail batch until empty.
+
+    for (uint16_t i = 8; i > 0; i -= 2) {
+        SelfTest::freeSlot(i - 2, 2);
+
+        if (!check_slot_accounting<SelfTest>()) {
+            esp_system_abortf<64>("Block free failed at index %hu", i - 2);
+        }
+    }
+
+    // .... ....  ....
+
+    logger.printfln("Slot allocator self-test passed");
+
+    clear_dummy_superblock(RootBlock<SelfTest>::first_superblock, 0);
+    free(RootBlock<SelfTest>::first_superblock);
+    RootBlock<SelfTest>::first_superblock = nullptr;
+}
+#endif
+
 void config_post_setup()
 {
 #ifdef DEBUG_FS_ENABLE
+    check_dummy_slots();
+
     task_scheduler.scheduleUncancelable([]() {
         bool accounting_ok = true;
         accounting_ok &= check_slot_accounting<Config::ConfUint>();
