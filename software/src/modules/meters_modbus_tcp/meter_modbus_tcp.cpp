@@ -1230,90 +1230,90 @@ bool MeterModbusTCP::parse()
             value = fronius_gen24_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf) * 0.001f;
         }
     }
-    else if (is_solaredge_hybrid_inverter_battery_meter()) {
-        if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1RatedEnergy) {
+    else if (is_solaredge_hybrid_inverter_battery_1_plus_2_meter()) {
+        if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1RatedEnergy) {
             solaredge_hybrid_inverter.battery_1_rated_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1AverageTemperature) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1AverageTemperature) {
             solaredge_hybrid_inverter.battery_1_temperature = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1InstantaneousVoltage) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1InstantaneousVoltage) {
             solaredge_hybrid_inverter.battery_1_voltage = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1InstantaneousCurrent) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1InstantaneousCurrent) {
             solaredge_hybrid_inverter.battery_1_current = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1InstantaneousPower) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1InstantaneousPower) {
             solaredge_hybrid_inverter.battery_1_power = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1LifetimeExportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1LifetimeExportEnergyCounter) {
             solaredge_hybrid_inverter.battery_1_export_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1LifetimeImportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1LifetimeImportEnergyCounter) {
             solaredge_hybrid_inverter.battery_1_import_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1StateOfEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1StateOfEnergy) {
             solaredge_hybrid_inverter.battery_1_state_of_charge = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery1Status) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Status) {
             solaredge_hybrid_inverter.battery_1_status = c32.u;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2RatedEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2RatedEnergy) {
             solaredge_hybrid_inverter.battery_2_rated_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2AverageTemperature) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2AverageTemperature) {
             solaredge_hybrid_inverter.battery_2_temperature = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2InstantaneousVoltage) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2InstantaneousVoltage) {
             solaredge_hybrid_inverter.battery_2_voltage = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2InstantaneousCurrent) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2InstantaneousCurrent) {
             solaredge_hybrid_inverter.battery_2_current = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2InstantaneousPower) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2InstantaneousPower) {
             solaredge_hybrid_inverter.battery_2_power = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2LifetimeExportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2LifetimeExportEnergyCounter) {
             solaredge_hybrid_inverter.battery_2_export_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2LifetimeImportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2LifetimeImportEnergyCounter) {
             solaredge_hybrid_inverter.battery_2_import_energy = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2StateOfEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2StateOfEnergy) {
             solaredge_hybrid_inverter.battery_2_state_of_charge = value;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Battery2Status) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2Status) {
             solaredge_hybrid_inverter.battery_2_status = c32.u;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2RatedEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2RatedEnergy) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_rated_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_rated_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2AverageTemperature) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2AverageTemperature) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_temperature,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_temperature);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2InstantaneousVoltage) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousVoltage) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_voltage,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_voltage);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2InstantaneousCurrent) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousCurrent) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_current,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_current);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2InstantaneousPower) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousPower) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_power,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_power);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2LifetimeExportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2LifetimeExportEnergyCounter) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_export_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_export_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2LifetimeImportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2LifetimeImportEnergyCounter) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_import_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_import_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBatteryAddress::Virtual_Battery1Plus2StateOfEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2StateOfEnergy) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_state_of_charge,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_state_of_charge);
         }
