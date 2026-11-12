@@ -26,6 +26,7 @@
 #include "generated/module_dependencies.h"
 #include "model_parser_160.h"
 #include "model_parser_714.h"
+#include "modules/sun_spec/sun_spec_resolver.h"
 
 #include "options.h"
 #include "gcc_warnings.h"
@@ -87,6 +88,30 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char 
                     else if (value_id == MeterValueID::CurrentL2ImExSum)   value_id = MeterValueID::CurrentL2ImExDiff;
                     else if (value_id == MeterValueID::CurrentL3ImExSum)   value_id = MeterValueID::CurrentL3ImExDiff;
                     else if (value_id == MeterValueID::CurrentLSumImExSum) value_id = MeterValueID::CurrentLSumImExDiff;
+
+                    patched_model_data->value_data[k].value_id = value_id;
+                }
+
+                actual_model_data = patched_model_data;
+            }
+
+            // KOSTAL Smart Energy Meter reports its power factors as non-directional, despite the documentation listing them as directional
+            if (sun_spec_is_kostal(manufacturer_name) && sun_spec_is_kostal_smart_energy_meter(model_name) && model_id == 203) {
+                logger.printfln_meter("Mapping power factors as non-directional for KOSTAL Smart Energy Meter");
+
+                size_t model_data_length = sizeof(ModelData) + sizeof(ValueData) * model_data->value_count;
+
+                // FIXME: leaking this, as meter instances are not destroyed
+                ModelData *patched_model_data = static_cast<ModelData *>(malloc(model_data_length));
+                memcpy(patched_model_data, model_data, model_data_length);
+
+                for (size_t k = 0; k < patched_model_data->value_count; ++k) {
+                    MeterValueID value_id = patched_model_data->value_data[k].value_id;
+
+                    if      (value_id == MeterValueID::PowerFactorL1Directional)   value_id = MeterValueID::PowerFactorL1;
+                    else if (value_id == MeterValueID::PowerFactorL2Directional)   value_id = MeterValueID::PowerFactorL2;
+                    else if (value_id == MeterValueID::PowerFactorL3Directional)   value_id = MeterValueID::PowerFactorL3;
+                    else if (value_id == MeterValueID::PowerFactorLSumDirectional) value_id = MeterValueID::PowerFactorLSum;
 
                     patched_model_data->value_data[k].value_id = value_id;
                 }
