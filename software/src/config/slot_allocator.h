@@ -252,13 +252,17 @@ inline void notify_free_slots(uint16_t idx, uint16_t batch_size)
     RootBlock<ConfigT>::frees += batch_size;
 #endif
 
-    if (idx + batch_size - 1 >= RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot >= batch_size) {
-        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - batch_size, 0);
-
-        if (last_used == std::numeric_limits<size_t>::max()) { // All unused
+    if (idx + batch_size - 1 >= RootBlock<ConfigT>::last_used_slot) {
+        if (RootBlock<ConfigT>::last_used_slot < batch_size) {
             RootBlock<ConfigT>::last_used_slot = 0;
         } else {
-            RootBlock<ConfigT>::last_used_slot = static_cast<uint16_t>(last_used);
+            const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - batch_size, 0);
+
+            if (last_used == std::numeric_limits<size_t>::max()) { // All unused
+                RootBlock<ConfigT>::last_used_slot = 0;
+            } else {
+                RootBlock<ConfigT>::last_used_slot = static_cast<uint16_t>(last_used);
+            }
         }
     }
 #endif
