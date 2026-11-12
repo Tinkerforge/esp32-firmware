@@ -1213,28 +1213,51 @@ void Debug::register_events()
     register_task("wpsT",            0, ExpectMissing);
 }
 
+static constexpr const char * const heap_names[] {
+    "DRAM heap",
+    "IRAM heap",
 #if defined(BOARD_HAS_PSRAM)
-#define CHECK_PSRAM 1
-#else
-#define CHECK_PSRAM 0
+    "PSRAM heap",
 #endif
+    "DRAM arena",
+    "IRAM arena",
+#if defined(BOARD_HAS_PSRAM)
+    "PSRAM arena"
+#endif
+};
 
 void Debug::task_scheduler_idle_call()
 {
-    uint32_t check_caps;
-    if (check_heap_next == 0) {
-        check_caps = MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT;
-        check_heap_next = 1;
-    } else if (check_heap_next == 1) {
-        check_caps = MALLOC_CAP_IRAM;
-        check_heap_next = CHECK_PSRAM ? 2 : 0;
+    micros_t start;
+    bool heap_valid;
+
+    if (check_heap_next < HeapCheckStage::ArenaDRAM) {
+        uint32_t check_caps;
+        if (check_heap_next == HeapCheckStage::DRAM) {
+            check_caps = MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT;
+        } else if (check_heap_next == HeapCheckStage::IRAM) {
+            check_caps = MALLOC_CAP_IRAM;
+        } else {
+            check_caps = MALLOC_CAP_SPIRAM;
+        }
+
+        start = now_us();
+        heap_valid = heap_caps_check_integrity(check_caps, integrity_check_print_errors);
     } else {
-        check_caps = MALLOC_CAP_SPIRAM;
-        check_heap_next = 0;
+        Arena *arena;
+        if (check_heap_next == HeapCheckStage::DRAM) {
+            arena = &dram_arena;
+        } else if (check_heap_next == HeapCheckStage::IRAM) {
+            arena = &iram_arena;
+#if defined(BOARD_HAS_PSRAM)
+        } else {
+            arena = &psram_arena;
+#endif
+        }
+        start = now_us();
+        heap_valid = arena->check_integrity();
     }
 
-    const micros_t start = now_us();
-    const bool heap_valid = heap_caps_check_integrity(check_caps, integrity_check_print_errors);
     const uint32_t runtime = (now_us() - start).as<uint32_t>();
 
     integrity_check_runs++;
@@ -1247,7 +1270,12 @@ void Debug::task_scheduler_idle_call()
     if (!heap_valid) {
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
+        logger.printfln("%s failed integrity check!", heap_names[to_underlying(check_heap_next)]);
     }
+
+    check_heap_next = static_cast<HeapCheckStage>(to_underlying(check_heap_next) + 1);
+    if (check_heap_next == HeapCheckStage::_max)
+        check_heap_next = HeapCheckStage::DRAM;
 }
 
 void Debug::task_scheduler_task_accounting_call(const char *file, uint_least32_t line, micros_t runtime)

@@ -86,7 +86,21 @@ private:
     uint32_t integrity_check_runtime_sum = 0;
     uint32_t integrity_check_runtime_max = 0;
     bool     integrity_check_print_errors = true;
-    uint8_t  check_heap_next = 0;
+
+    enum class HeapCheckStage : uint8_t {
+        DRAM,
+        IRAM,
+#if defined(BOARD_HAS_PSRAM)
+        PSRAM,
+#endif
+        ArenaDRAM,
+        ArenaIRAM,
+#if defined(BOARD_HAS_PSRAM)
+        ArenaPSRAM,
+#endif
+        _max
+    };
+    HeapCheckStage  check_heap_next = HeapCheckStage::DRAM;
     uint8_t  lwip_sockets_hwm = 0;
 
 #ifdef DEBUG_FS_ENABLE
