@@ -198,7 +198,7 @@ void *Arena::aligned_alloc(size_t align, size_t size)
 
         // alloc_size is more than what fits into one block.
         // Because we never free anyway, we can just allocate this directly (i.e. without BlockHeader etc.)
-        return aligned_alloc_fn(align, size + get_padding(size, align));
+        return aligned_alloc_fn(align, size);
     }
 
 #ifdef DEBUG_FS_ENABLE
