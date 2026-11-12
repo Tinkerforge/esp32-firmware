@@ -1,0 +1,25 @@
+From: esp32-firmware <info@tinkerforge.com>
+Subject: [PATCH] Only forward traffic through NAPT interfaces
+
+Enabling IP_FORWARD for optional Ethernet sharing must not turn the device
+into a router while sharing is disabled. ip4_forward only calls
+ip_napt_forward when the output interface does not have NAPT enabled.
+Reject forwarding if the input interface does not have NAPT enabled either.
+
+---
+ src/core/ipv4/ip4_napt.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/ipv4/ip4_napt.c b/src/core/ipv4/ip4_napt.c
+--- a/src/core/ipv4/ip4_napt.c
++++ b/src/core/ipv4/ip4_napt.c
+@@ -868,6 +868,8 @@
+ err_t
+ ip_napt_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp, struct netif *outp)
+ {
++  /* The output interface is not a NAPT interface. Only forward traffic
++     arriving from a NAPT interface, keeping routing opt-in at runtime. */
+   if (!inp->napt)
+-    return ERR_OK;
++    return ERR_RTE;
+ 
