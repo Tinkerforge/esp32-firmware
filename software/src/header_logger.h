@@ -24,3 +24,7 @@
 [[gnu::format(__printf__, 2, 3)]]
 int header_printfln(const char *prefix, const char *fmt, ...);
 int header_vprintfln(const char *prefix, const char *fmt, va_list args);
+
+#ifndef dbg
+#define dbg(fmt, ...) header_printfln("hdbg", fmt __VA_OPT__(,) __VA_ARGS__)
+#endif

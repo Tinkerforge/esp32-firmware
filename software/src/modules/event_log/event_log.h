@@ -143,4 +143,5 @@ extern "C" [[gnu::format(__printf__, 1, 0)]] int tf_event_log_vprintfln(const ch
 // extern int tf_event_log_printfln(const char *fmt, ...);
 extern "C" [[gnu::format(__printf__, 1, 2)]] int tf_event_log_printfln(const char *fmt, ...);
 
+#undef dbg
 #define dbg(fmt, ...) logger.printfln_debug(fmt __VA_OPT__(,) __VA_ARGS__)
