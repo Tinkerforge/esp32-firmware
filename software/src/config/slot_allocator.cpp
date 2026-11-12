@@ -175,6 +175,21 @@ uint16_t nextSlots(uint16_t batch_size)
                     return idx;
                 }
             }
+
+            if (slot_i < SlotConfig<ConfigT>::slots_per_block && !first_free_set) {
+                do {
+                    const size_t idx = block_slot_index_offset + slot_i;
+
+                    if (ConfigT::slotEmpty(block + slot_i, idx)) {
+                        RootBlock<ConfigT>::first_free_slot = static_cast<uint16_t>(idx);
+                        first_free_set = true;
+                        break;
+                    }
+
+                    slot_i++;
+                } while (slot_i < SlotConfig<ConfigT>::slots_per_block);
+            }
+
             slot_i = 0;
         }
 
