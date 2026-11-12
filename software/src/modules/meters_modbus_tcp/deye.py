@@ -333,7 +333,7 @@ specs = [
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Power Factor',
+                'name': 'Grid Side Power Factor [0.001]',
                 'value_id': 'PowerFactorLSum',
                 'start_address': 621,
                 'value_type': 'U16',

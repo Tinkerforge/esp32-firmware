@@ -58,10 +58,10 @@ specs = [
             },
             {
                 'name': 'Pac1: Three/single phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
-                'value_id': 'PowerApparentL1ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL1ImExSum',
                 'start_address': 3028,
                 'value_type': 'U32BE',
-                'scale_factor': 0.1,
+                'scale_factor': 0.1,  # FIXME: sign?
             },
             {
                 'name': 'Vac2: Three phase grid voltage [0.1 V]',
@@ -79,10 +79,10 @@ specs = [
             },
             {
                 'name': 'Pac2: Three phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
-                'value_id': 'PowerApparentL2ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL2ImExSum',
                 'start_address': 3032,
                 'value_type': 'U32BE',
-                'scale_factor': 0.1,
+                'scale_factor': 0.1,  # FIXME: sign?
             },
             {
                 'name': 'Vac3: Three phase grid voltage [0.1 V]',
@@ -100,10 +100,10 @@ specs = [
             },
             {
                 'name': 'Pac3: Three phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
-                'value_id': 'PowerApparentL3ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL3ImExSum',
                 'start_address': 3036,
                 'value_type': 'U32BE',
-                'scale_factor': 0.1,
+                'scale_factor': 0.1,  # FIXME: sign?
             },
             {
                 'name': 'Vac RS: Three phase grid voltage [0.1 V]',

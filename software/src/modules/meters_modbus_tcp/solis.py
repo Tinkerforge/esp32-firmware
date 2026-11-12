@@ -76,15 +76,17 @@ specs = [
             },
             {
                 'name': 'Reactive power [var]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 33081,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Apparent power [VA]',
-                'value_id': 'PowerApparentLSumImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentLSumImExSum',
                 'start_address': 33083,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Inverter temperature [0.1 °C]',
@@ -181,51 +183,57 @@ specs = [
             },
             {
                 'name': 'Meter reactive power A [var]',
-                'value_id': 'PowerReactiveL1IndCapSum',  # FIXME: sign?
+                'value_id': 'PowerReactiveL1IndCapSum',
                 'start_address': 33265,
                 'value_type': 'S32BE',
             },
             {
                 'name': 'Meter reactive power B [var]',
-                'value_id': 'PowerReactiveL2IndCapSum',  # FIXME: sign?
+                'value_id': 'PowerReactiveL2IndCapSum',
                 'start_address': 33267,
                 'value_type': 'S32BE',
             },
             {
                 'name': 'Meter reactive power C [var]',
-                'value_id': 'PowerReactiveL3IndCapSum',  # FIXME: sign?
+                'value_id': 'PowerReactiveL3IndCapSum',
                 'start_address': 33269,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter total reactive power [var]',
-                'value_id': 'PowerReactiveLSumIndCapSum',  # FIXME: sign?
+                'value_id': 'PowerReactiveLSumIndCapSum',
                 'start_address': 33271,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter apparent power A [VA]',
-                'value_id': 'PowerApparentL1ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL1ImExSum',
                 'start_address': 33273,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter apparent power B [VA]',
-                'value_id': 'PowerApparentL2ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL2ImExSum',
                 'start_address': 33275,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter apparent power C [VA]',
-                'value_id': 'PowerApparentL3ImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentL3ImExSum',
                 'start_address': 33277,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter total apparent power [VA]',
-                'value_id': 'PowerApparentLSumImExSum',  # FIXME: sign?
+                'value_id': 'PowerApparentLSumImExSum',
                 'start_address': 33279,
                 'value_type': 'S32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Meter power factor [0.01]',

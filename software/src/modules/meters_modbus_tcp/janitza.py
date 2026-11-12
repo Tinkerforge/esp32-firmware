@@ -82,27 +82,31 @@ specs = [
             },
             {
                 'name': 'Real power L1 [W]',
-                'value_id': 'PowerActiveL1ImExDiff',  # FIXME: sign?
+                'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 19020,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Real power L2 [W]',
-                'value_id': 'PowerActiveL2ImExDiff',  # FIXME: sign?
+                'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 19022,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Real power L3 [W]',
-                'value_id': 'PowerActiveL3ImExDiff',  # FIXME: sign?
+                'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 19024,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Real power L1+L2+L3 [W]',
-                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: sign?
+                'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 19026,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Apparent power L1 [VA]',
@@ -130,27 +134,31 @@ specs = [
             },
             {
                 'name': 'Reactive power L1 [var]',
-                'value_id': 'PowerReactiveL1IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL1IndCapDiff',
                 'start_address': 19036,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Reactive power L2 [var]',
-                'value_id': 'PowerReactiveL2IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL2IndCapDiff',
                 'start_address': 19038,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Reactive power L3 [var]',
-                'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL3IndCapDiff',
                 'start_address': 19040,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Reactive power L1+L2+L3 [var]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 19042,
                 'value_type': 'F32BE',
+                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Power factor L1',

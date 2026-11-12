@@ -149,31 +149,31 @@ specs = [
             },
             {
                 'name': 'Inverter reactive power L1 [0.01 kvar]',
-                'value_id': 'PowerReactiveL1IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL1IndCapDiff',
                 'start_address': 0x089D,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Inverter reactive power L2 [0.01 kvar]',
-                'value_id': 'PowerReactiveL2IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL2IndCapDiff',
                 'start_address': 0x089E,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Inverter reactive power L3 [0.01 kvar]',
-                'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveL3IndCapDiff',
                 'start_address': 0x089F,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Inverter reactive power [0.01 kvar]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
+                'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 0x08A0,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Inverter power factor [0.001]',
