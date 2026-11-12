@@ -148,24 +148,24 @@ specs = [
             },
             {
                 'name': 'Current of A phase [0.1 A]',
-                'value_id': 'CurrentL1ImExDiff',
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 0x0017,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Current of B phase [0.1 A]',
-                'value_id': 'CurrentL2ImExDiff',
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 0x0018,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Current of C phase [0.1 A]',
-                'value_id': 'CurrentL3ImExDiff',
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 0x0019,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Frequency [0.01 Hz]',
@@ -179,28 +179,24 @@ specs = [
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 0x001B,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Active power of B phase [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 0x001D,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Active power of C phase [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 0x001F,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Total active power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 0x0021,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
             },
             {
                 'name': 'Reactive power of A phase [var]',
@@ -263,28 +259,28 @@ specs = [
                 'value_id': 'PowerFactorL1Directional',
                 'start_address': 0x0033,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Power factor of B phase [0.01]',
                 'value_id': 'PowerFactorL2Directional',
                 'start_address': 0x0034,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Power factor of C phase [0.01]',
                 'value_id': 'PowerFactorL3Directional',
                 'start_address': 0x0035,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Total power factor [0.01]',
                 'value_id': 'PowerFactorLSumDirectional',
                 'start_address': 0x0036,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': 0.01,
             },
         ],
     },
