@@ -112,7 +112,7 @@ void Automation::setup()
         }
     }
 
-    // Create Config::Objects here and not during pre-setup so that other module can registertriggers and actions
+    // Create Config::Objects here and not during pre-setup so that other module can register triggers and actions
     // but the automation config can still be loaded at the beginning of the setup stage.
 
     config_tasks_prototype = Config::Object({
