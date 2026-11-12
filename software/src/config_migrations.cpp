@@ -1066,6 +1066,50 @@ static const ConfigMigration migrations[] = {
         }
     },
 #endif
+
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() || OPTIONS_PRODUCT_ID_IS_ELTAKO() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+    {
+        #if OPTIONS_PRODUCT_ID_IS_WARP()
+        2, 13, 6,
+        #elif OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+        2, 13, 7,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
+        2, 9, 7,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+        1, 8, 7,
+        #endif
+        // Changes
+        // - Default charge mode was removed. Migrate automation rule actions that reference it.
+        [](){
+            uint8_t default_charge_mode = 0 /*ConfigChargeMode::Fast*/; // the old default's default was fast.
+
+            {
+                DynamicJsonDocument cfg{16384};
+                if (read_config_file("power_manager/config", cfg)) {
+                    default_charge_mode = cfg["default_mode"];
+                    if (default_charge_mode == 4 /*ConfigChargeMode::Default*/)
+                        default_charge_mode = 0; /*ConfigChargeMode::Fast*/  // the old default's default was fast.
+                }
+            }
+
+            {
+                DynamicJsonDocument cfg{16384};
+                if (read_config_file("automation/config", cfg)) {
+                    for (JsonVariant task : cfg["tasks"].as<JsonArray>()) {
+                        if (task["action"][0] != 12 /*AutomationActionID::PMChargeModeSwitch*/)
+                            continue;
+                        if (task["action"][1]["mode"] != 4 /*ConfigChargeMode::Default*/)
+                            continue;
+
+                        task["action"][1]["mode"] = default_charge_mode;
+                    }
+                    write_config_file("automation/config", cfg);
+                }
+            }
+        }
+    },
+#endif
+
 };
 
 bool prepare_migrations()
