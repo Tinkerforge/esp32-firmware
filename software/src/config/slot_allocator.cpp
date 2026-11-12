@@ -254,6 +254,17 @@ template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
 template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
 template Config::Slot             *get_slot<Config>(uint16_t idx);
 
+#if MODULE_DEBUG_AVAILABLE() && defined(DEBUG_FS_ENABLE)
+[[gnu::noinline]]
+[[gnu::noreturn]]
+void abort_on_notify_free_error(const char *variant_name, uint16_t index, uint16_t batch_size)
+{
+    char msg[96];
+    snprintf(msg, std::size(msg), "Notify free for slot that is not free: %s @ %hu in batch of %hu", variant_name, index, batch_size);
+    esp_system_abort(msg);
+}
+#endif
+
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
 static bool check_slot_accounting()

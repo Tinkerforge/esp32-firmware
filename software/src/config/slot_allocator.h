@@ -192,6 +192,23 @@ extern template uint16_t nextSlots<Config            >(uint16_t batch_size);
 template<typename ConfigT>
 inline uint16_t nextSlot() {return nextSlots<ConfigT>(1);}
 
+template<typename ConfigT>
+typename ConfigT::Slot *get_slot(uint16_t idx);
+
+extern template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
+extern template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
+extern template Config::ConfUint32::Slot *get_slot<Config::ConfUint32>(uint16_t idx);
+extern template Config::ConfInt32::Slot  *get_slot<Config::ConfInt32>(uint16_t idx);
+extern template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
+extern template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
+extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);
+extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(uint16_t idx);
+extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t idx);
+extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
+extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
+extern template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
+extern template Config::Slot             *get_slot<Config>(uint16_t idx);
+
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
 size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_check, size_t superblock_idx)
@@ -236,6 +253,10 @@ size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_
 }
 #endif
 
+#if MODULE_DEBUG_AVAILABLE() && defined(DEBUG_FS_ENABLE)
+void abort_on_notify_free_error(const char *variant_name, uint16_t index, uint16_t batch_size);
+#endif
+
 template<typename ConfigT>
 inline void notify_free_slots(uint16_t idx, uint16_t batch_size)
 {
@@ -250,6 +271,13 @@ inline void notify_free_slots(uint16_t idx, uint16_t batch_size)
     RootBlock<ConfigT>::used_slots -= batch_size;
 #ifdef DEBUG_FS_ENABLE
     RootBlock<ConfigT>::frees += batch_size;
+
+    typename ConfigT::Slot *slot_start = get_slot<ConfigT>(idx);
+    for (uint16_t i = 0; i < batch_size; i++) {
+        if (!ConfigT::slotEmpty(slot_start + i, idx + i)) {
+            abort_on_notify_free_error(ConfigT::variantName, idx + i, batch_size);
+        }
+    }
 #endif
 
     if (idx + batch_size - 1 >= RootBlock<ConfigT>::last_used_slot) {
@@ -270,23 +298,6 @@ inline void notify_free_slots(uint16_t idx, uint16_t batch_size)
 
 template<typename ConfigT>
 inline void notify_free_slot(uint16_t idx) {notify_free_slots<ConfigT>(idx, 1);}
-
-template<typename ConfigT>
-typename ConfigT::Slot *get_slot(uint16_t idx);
-
-extern template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
-extern template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
-extern template Config::ConfUint32::Slot *get_slot<Config::ConfUint32>(uint16_t idx);
-extern template Config::ConfInt32::Slot  *get_slot<Config::ConfInt32>(uint16_t idx);
-extern template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
-extern template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
-extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);
-extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(uint16_t idx);
-extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t idx);
-extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
-extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
-extern template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
-extern template Config::Slot             *get_slot<Config>(uint16_t idx);
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
