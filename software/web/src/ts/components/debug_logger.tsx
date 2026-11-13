@@ -105,12 +105,12 @@ export async function fetch_debug_report(p: Partial<FetchDebugReportParams>) {
         }
         catch (e) {
             const msg = typeof(e) == "string" ? e : e?.message;
-            if (!msg || !msg.startsWith("404")) {
-                await progress('error', __("component.debug_logger.loading_coredump_failed"));
-                throw __("component.debug_logger.loading_coredump_failed") + ": " + e;
-
+            if (msg && msg.startsWith("404")) {
+                text += "No core dump stored\n\n";
+            } else {
+                // Don't abort: The rest of the debug report is still useful without the core dump.
+                text += __("component.debug_logger.loading_coredump_failed") + ": " + (msg ?? e) + "\n\n";
             }
-            text += "No core dump stored\n\n";
         }
 
         text += `___${prefix}CORE_DUMP_END___\n\n`;

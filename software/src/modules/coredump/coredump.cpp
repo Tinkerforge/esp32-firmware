@@ -222,6 +222,9 @@ void Coredump::register_urls()
             if (ret == ESP_ERR_INVALID_SIZE) {
                 return request.send_plain(404, "No core dump stored");
             }
+            if (ret == ESP_ERR_NOT_FOUND) {
+                return request.send_plain(404, "No core dump partition");
+            }
             StringWriter sw(buffer, BUFFER_SIZE);
             sw.printf("No core dump image available: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
             return request.send_plain(503, sw);
