@@ -131,6 +131,7 @@ interface RemoteAccessState {
     };
     removeUsers: number[];
     pingState: API.getType["remote_access/ping_state"];
+    pingUseMtu: boolean;
     authMethod: string;
     invalidFeedback: string;
     authToken: string;
@@ -181,6 +182,7 @@ export class RemoteAccess extends ConfigComponent<
         this.setState({
             status_modal_string: "",
             removeUsers: [],
+            pingUseMtu: false,
             authMethod: "password",
             invalidFeedback: "",
             authToken: "",
@@ -1221,9 +1223,19 @@ export class RemoteAccess extends ConfigComponent<
                                 />
                             </FormRow>
                             <FormRow label={__("remote_access.content.ping")}>
+                                <div class="mb-2" onInput={(e) => e.stopPropagation()}>
+                                    <Switch
+                                        checked={this.state.pingUseMtu}
+                                        desc={__("remote_access.content.ping_use_mtu")}
+                                        onClick={(e) => this.setState({ pingUseMtu: e.currentTarget.checked })}
+                                    />
+                                    <div class="text-muted small">
+                                        {__("remote_access.content.ping_use_mtu_hint")}
+                                    </div>
+                                </div>
                                 <div class="row g-2">
                                     <div class="col">
-                                        <Button className="w-100" onClick={() => API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"))}>
+                                        <Button className="w-100" onClick={() => API.call("remote_access/start_ping", { use_mtu: this.state.pingUseMtu }, () => __("remote_access.content.start_ping_failed"))}>
                                             {__("remote_access.content.start_ping")}
                                         </Button>
                                     </div>

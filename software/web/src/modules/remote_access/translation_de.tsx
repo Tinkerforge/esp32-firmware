@@ -54,6 +54,8 @@ let x = {
             "service_token_register_in_progress": "Fordere Support-Zugriffs-Token vom Relay an",
             "service_token_badge": "Support-Zugriff",
             "ping": "Ping",
+            "ping_use_mtu": "Konfigurierte MTU verwenden",
+            "ping_use_mtu_hint": "Die Konfiguration muss gespeichert werden, damit Änderungen der MTU wirksam werden.",
             "start_ping": "Ping starten",
             "stop_ping": "Ping stoppen",
             "start_ping_failed": "Ping starten fehlgeschlagen",

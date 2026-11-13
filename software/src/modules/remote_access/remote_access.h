@@ -156,7 +156,7 @@ private:
     bool user_already_registered(const String &email);
     void setup_inner_socket();
     void start_timeout_task();
-    int start_ping();
+    int start_ping(bool use_mtu);
     int stop_ping();
     int poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason);
     void release_inner_socket();
@@ -206,6 +206,7 @@ private:
     ConfigRoot registration_state;
     Config     users_config_prototype;
     ConfigRoot registration_config;
+    ConfigRoot ping_command_config;
     ConfigRoot ping_state;
 };
 

@@ -28,6 +28,8 @@
 #include <lwip/err.h>
 #include <lwip/netdb.h>
 #include <lwip/pbuf.h>
+#include <lwip/prot/icmp.h>
+#include <lwip/prot/ip4.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <esp_random.h>
@@ -399,6 +401,10 @@ void RemoteAccess::pre_setup()
         {"email", Config::Str("", 0, 64)},
         {"cert_id", Config::Int8(-1)},
         {"mtu", Config::Uint16(1280)},
+    });
+
+    ping_command_config = Config::Object({
+        {"use_mtu", Config::Bool(false)},
     });
 
     ping_state = Config::Object({
@@ -1268,14 +1274,14 @@ void RemoteAccess::register_urls()
 
     api.addCommand(
         "remote_access/start_ping",
-        Config::Null(),
+        &ping_command_config,
         {},
         [this](Language /*language*/, String &errmsg) {
             if (ping != nullptr) {
                 errmsg = ERR_PING_ALREADY_STARTED;
                 return;
             }
-            int start_err = start_ping();
+            int start_err = start_ping(ping_command_config.get("use_mtu")->asBool());
             if (start_err != 0) {
                 errmsg = String(ERR_FAILED_TO_START_PING) + "\n" + String(start_err);
             }
@@ -3387,10 +3393,10 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
     0_s);
 }
 
-int RemoteAccess::start_ping() {
+int RemoteAccess::start_ping(bool use_mtu) {
     const char *host = config.get("relay_host")->asEphemeralCStr();
 
-    dns_gethostbyname_addrtype_lwip_ctx_async( host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+    dns_gethostbyname_addrtype_lwip_ctx_async( host, [this, host, use_mtu](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
         if (data->err != ERR_OK) {
             if (data->err == ERR_CONN) {
                 logger.printfln("Failed to resolve '%s' for ping: no address associated with hostname", host);
@@ -3405,6 +3411,13 @@ int RemoteAccess::start_ping() {
         esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
         ping_config.target_addr = data->addr;
         ping_config.count = ESP_PING_COUNT_INFINITE;
+        if (use_mtu) {
+            // IPv4, UDP, WireGuard transport header and authentication tag (60 bytes).
+            constexpr uint32_t wireguard_overhead = 20 + 8 + 16 + 16;
+            // substract 8 bytes for the icmp header and add 20 bytes for the inner ip-header
+            const uint32_t inner_packet_size = static_cast<uint32_t>(config.get("mtu")->asUint16()) + wireguard_overhead - 8 + 20;
+            ping_config.data_size = inner_packet_size;
+        }
 
         esp_ping_callbacks_t cbs;
         cbs.on_ping_success = on_ping_success;

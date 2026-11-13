@@ -65,7 +65,9 @@ export interface ping_state {
     time_elapsed_ms: number;
 }
 
-export type start_ping = {};
+export interface start_ping {
+    use_mtu: boolean;
+}
 export type stop_ping = {};
 
 interface StateUser {
