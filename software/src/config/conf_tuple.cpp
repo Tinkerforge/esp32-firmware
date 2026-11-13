@@ -141,9 +141,11 @@ Config::ConfTuple::~ConfTuple()
 
     auto *slot = this->getSlot();
     slot->length = std::numeric_limits<size_t>::max();;
-    slot->values = nullptr;
 
+    // Notify immediately after slot was marked as not in use, before destroying nested Configs.
     notify_free_slot<Config::ConfTuple>(idx);
+
+    slot->values = nullptr;
 }
 
 Config::ConfTuple::ConfTuple(ConfTuple &&cpy) : idx(cpy.idx)

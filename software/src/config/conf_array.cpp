@@ -124,10 +124,11 @@ Config::ConfArray::~ConfArray()
     slot->minElements = 1;
     slot->maxElements = 0;
 
+    // Notify immediately after slot was marked as not in use, before destroying nested Configs.
+    notify_free_slot<Config::ConfArray>(idx);
+
     slot->val.clear();
     slot->prototype = nullptr;
-
-    notify_free_slot<Config::ConfArray>(idx);
 }
 
 Config::ConfArray::ConfArray(ConfArray &&cpy) : idx(cpy.idx)

@@ -212,12 +212,13 @@ Config::ConfObject::~ConfObject()
     auto *slot = this->getSlot();
     slot->schema = nullptr;
 
+    // Notify immediately after slot was marked as not in use, before destroying nested Configs.
+    notify_free_slot<Config::ConfObject>(idx);
+
     if (slot->values != nullptr)
         delete[] slot->values;
 
     slot->values = nullptr;
-
-    notify_free_slot<Config::ConfObject>(idx);
 }
 
 Config::ConfObject::ConfObject(ConfObject &&cpy)  : idx(cpy.idx)

@@ -100,6 +100,7 @@ Config::ConfUnion::~ConfUnion()
     slot->prototypes_len = 0;
     slot->prototypes = nullptr;
 
+    // Notify immediately after slot was marked as not in use; nested Configs destroyed earlier.
     notify_free_slot<Config::ConfUnion>(idx);
 }
 
