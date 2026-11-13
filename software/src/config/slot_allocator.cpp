@@ -273,11 +273,11 @@ static bool check_slot_accounting()
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
     size_t superblock_idx = 0;
-    size_t block_count = 0;
-    size_t last_used_slot = 0;
 
 #if MODULE_DEBUG_AVAILABLE()
     size_t used_slots = 0;
+    size_t block_count = 0;
+    size_t last_used_slot = 0;
 
     while (superblock) {
         for (size_t block_i = 0; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
@@ -319,12 +319,11 @@ static bool check_slot_accounting()
         success = false;
     }
 
-#endif
-
     if (RootBlock<ConfigT>::frees > RootBlock<ConfigT>::allocs) {
         logger.printfln("alloc/free mismatch for %s. %zu frees > %zu allocs.", ConfigT::variantName, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs);
         success = false;
     }
+#endif
 
     superblock = RootBlock<ConfigT>::first_superblock;
     superblock_idx = 0;
@@ -678,6 +677,7 @@ void config_post_setup()
 
     task_scheduler.scheduleUncancelable([]() {
         bool accounting_ok = true;
+
         accounting_ok &= check_slot_accounting<Config::ConfUint>();
         accounting_ok &= check_slot_accounting<Config::ConfInt>();
         accounting_ok &= check_slot_accounting<Config::ConfUint32>();
@@ -691,8 +691,15 @@ void config_post_setup()
         accounting_ok &= check_slot_accounting<Config::ConfInt52>();
         accounting_ok &= check_slot_accounting<Config::ConfTuple>();
         accounting_ok &= check_slot_accounting<Config>();
-        if (!accounting_ok)
+
+#if MODULE_DEBUG_AVAILABLE()
+        if (!accounting_ok) {
             debug.report_slot_accounting_error();
+        }
+#else
+        (void)accounting_ok;
+#endif
+
         slotDebugHookDone();
     }, 0_ms, 10_s);
 #endif
