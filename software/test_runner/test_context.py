@@ -277,6 +277,9 @@ class TestContext:
                 except HTTPError as e:
                     e.msg += ":" + e.read().decode('utf-8')
                     exc = e
+                except URLError as e:
+                    if exc is None or not isinstance(e.reason, ConnectionRefusedError):
+                        exc = e
                 except Exception as e:
                     exc = e
 
