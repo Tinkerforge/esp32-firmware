@@ -237,6 +237,7 @@ export type feature =
     "cp_disconnect" |
     "button_configuration" |
     "ethernet" |
+    "wifi_ap_ethernet_sharing" |
     "meters" |
     "nfc" |
     "phase_switch" |

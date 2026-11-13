@@ -67,6 +67,8 @@ cd ~/esp32-arduino-lib-builder
 
 **Replace .esp32brick with .esp32ethernetbrick in the next sections for ESP32 Ethernet, WARP2, WARP3 and WEM firmwares**
 
+**For WARP4, use .esp32secure instead.**
+
 ### To modify settings:
 
 ```bash
