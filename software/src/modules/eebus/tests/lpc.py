@@ -45,6 +45,17 @@ def expect_p14a(tc: TestContext, active: bool, limit_w: int = 0):
         tc.assert_eq(limit_w, state["limit_w"])
 
 
+# Used by the device while its nominal maximum power is unknown, see EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION
+LPC_INITIAL_NOMINAL_MAX_W = 22000
+
+
+def expect_p14a_failsafe(tc: TestContext, failsafe_w: int):
+    """LPC-901: The failsafe limit only limits if it is below the nominal maximum power of the device.
+    This depends on the testbox, e.g. a WARP2 with a single-phase meter and 16 A supply has 3680 W."""
+    nominal_max_w = lpc_state(tc)["constraints_power_maximum"] or LPC_INITIAL_NOMINAL_MAX_W
+    expect_p14a(tc, failsafe_w < nominal_max_w, failsafe_w)
+
+
 def expect_ack(tc: TestContext, error_number: int):
     tc.assert_eq(ERROR_NO_ERROR, error_number)
 
@@ -404,7 +415,7 @@ def test_failsafe(tc: TestContext):
         time.sleep(max(0, t0 + 125 - time.monotonic()))
         state = wait_for_lpc_state(tc, LPC_FAILSAFE, timeout=10)
         tc.assert_eq(BASE_FAILSAFE[0], state["current_limit"])
-        tc.wait_for(lambda: expect_p14a(tc, True, BASE_FAILSAFE[0]), timeout=3)
+        tc.wait_for(lambda: expect_p14a_failsafe(tc, BASE_FAILSAFE[0]), timeout=3)
         # The other Energy Guard sent heartbeats to the device all the time
         tc.assert_true(len(other.heartbeat_subscribers()) > 0)
         tc.assert_true(other.heartbeat_counter > 5)
@@ -469,7 +480,7 @@ def test_failsafe_values_persistent(tc: TestContext):
     tc.assert_eq(4321, state["failsafe_limit_power_w"])
     tc.assert_eq(3 * 3600, state["failsafe_limit_duration_s"])
     tc.assert_eq(4321, state["current_limit"])
-    tc.wait_for(lambda: expect_p14a(tc, True, 4321), timeout=20, poll_delay=1)
+    tc.wait_for(lambda: expect_p14a_failsafe(tc, 4321), timeout=20, poll_delay=1)
 
     connect_guard(tc)
     values = lpc.read_failsafe()
