@@ -159,6 +159,10 @@ def test_crash_advances_stage(tc: TestContext) -> None:
 
     tc.wait_for_reboot()
 
+    # Remove the coredump of the requested crash, otherwise the device health check fails.
+    tc.assert_true(tc.api('coredump/state/coredump_available'))
+    tc.http_request('GET', '/coredump/erase')
+
     verify_stage_0(tc, last_stage_executed=1)
     verify_stage_1(tc, last_stage_executed=1)
     verify_stage_2(tc, last_stage_executed=1)
