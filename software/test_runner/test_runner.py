@@ -287,17 +287,20 @@ def main():
 
                             case 'notify_test_failure':
                                 test_finished = True
-                                if not meta_test:
-                                    x: list[JTestCase] = jsuite.test_cases
-                                    x[-1].add_failure_info(payload["error"], payload["tb"], "failure")
+                                if meta_test:
+                                    # Otherwise failed setups and teardowns don't show up in the report, only the skipped tests.
+                                    jsuite.test_cases.append(JTestCase(payload["testname"], timestamp=now, classname=module_name, elapsed_sec=time.monotonic() - start))
+                                x: list[JTestCase] = jsuite.test_cases
+                                x[-1].add_failure_info(payload["error"], payload["tb"], "failure")
                                 tprint(red("Failure"), f"({time.monotonic() - start:.3f}s)")
                                 tprint("    " + "\n    ".join(x.removeprefix('  ') for x in payload["error"].split("\n")))
 
                             case 'notify_test_error':
                                 test_finished = True
-                                if not meta_test:
-                                    x: list[JTestCase] = jsuite.test_cases
-                                    x[-1].add_error_info(payload["error"], payload["tb"], "error")
+                                if meta_test:
+                                    jsuite.test_cases.append(JTestCase(payload["testname"], timestamp=now, classname=module_name, elapsed_sec=time.monotonic() - start))
+                                x: list[JTestCase] = jsuite.test_cases
+                                x[-1].add_error_info(payload["error"], payload["tb"], "error")
                                 tprint(purple("Error"), f"({time.monotonic() - start:.3f}s)")
                                 tprint("    " + "\n    ".join(payload["tb"].split("\n")))
 
