@@ -119,7 +119,7 @@ let x = {
             "auto_start_description_help": <><p>If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.</p></>,
             "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",
 
-            "boost_mode_desc": "Boost Mode",
+            "boost_mode_desc": "Boost mode",
             "boost_mode_desc_help": <><p>Some vehicles' charging electronics may interpret the prescribed current __("from_the_device") as too low. Boost mode compensates for this by communicating a slightly higher charging current.</p></>,
             "boost_mode": "Allows the vehicle's charge controller a slightly higher charge current (+ 0.24 A) to compensate measurement errors of the vehicle. Use only if your vehicle charges with less than the allowed charge current!",
 
@@ -229,7 +229,7 @@ let x = {
                         </ul>
                     </>}/*NF*/,
 
-            "ev_wakeup_desc": "EV Wakeup",
+            "ev_wakeup_desc": "Vehicle wakeup",
             "ev_wakeup_desc_help": <><p>Some vehicles' charging electronics enter a power-saving mode if a charging process is not initiated within a certain time. The vehicle wakeup function attempts to automatically wake up such electronics if the vehicle does not respond within 30 seconds when power is available. This is implemented by temporarily disconnecting the Control Pilot (CP) signal.</p></>,
             "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
 
