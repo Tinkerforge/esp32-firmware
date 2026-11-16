@@ -76,10 +76,18 @@ class Evcc:
     def start(self, timeout: float = 60) -> None:
         self.container.start()
         self.wait_ready(timeout)
+        self.assert_started_without_errors()
 
     def restart(self, timeout: float = 60) -> None:
+        self.mark_log()
         self.container.restart()
         self.wait_ready(timeout)
+        self.assert_started_without_errors()
+
+    def assert_started_without_errors(self) -> None:
+        problems = self.log_problems()
+        if problems:
+            raise EvccError("evcc logged errors while starting (another evcc running on this machine?):\n" + "\n".join(problems))
 
     def stop(self) -> None:
         self.container.remove()
