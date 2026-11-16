@@ -1660,6 +1660,11 @@ de_hyph = [
     "Ein-zel-nen",
     "Da-te-n-an-zahl",
     "Power-Ocean",
+    "auf-ge-nom-me-nen",
+    "Fahr-zeu-g-elek-tro-nik",
+    "ver-braucht",
+    "Um-wand-lung",
+    "ge-schätzt",
 ]
 
 en_hyph = [
@@ -2243,6 +2248,9 @@ en_hyph = [
     "de-se-ri-al-ize",
     "ini-tial-ize",
     "Power-Ocean",
+    "con-ver-sion",
+    "ac-cu-rate-ly",
+    "es-ti-mat-ed",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]

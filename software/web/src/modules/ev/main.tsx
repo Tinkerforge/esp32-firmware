@@ -127,7 +127,7 @@ function EvFormContent(props: {
     let rotationActive = is_rotating_mac(props.ev.mac);
 
     return <>
-        <FormRow label={__("ev.content.add_ev_name")} label_muted={__("ev.content.add_ev_name_desc")}>
+        <FormRow label={__("ev.content.add_ev_name")}>
             <InputText
                 value={props.ev.name}
                 onValue={(v) => props.onEvChange({name: v})}
@@ -135,7 +135,7 @@ function EvFormContent(props: {
                 required
             />
         </FormRow>
-        <FormRow label={__("ev.content.add_ev_mac")} label_muted={__("ev.content.add_ev_mac_desc")}>
+        <FormRow label={__("ev.content.add_ev_mac")}>
             {rotationActive
                 ? <div class="input-group">
                     <InputTextPatterned
@@ -158,8 +158,9 @@ function EvFormContent(props: {
                 />
             }
         </FormRow>
-        <FormRow label={__("ev.content.add_ev_rotating_mac")} label_muted={__("ev.content.add_ev_rotating_mac_desc")}>
+        <FormRow label={__("ev.content.add_ev_rotating_mac")} help={__("ev.content.add_ev_rotating_mac_help")}>
             <Switch
+                desc={__("ev.content.add_ev_rotating_mac_desc")}
                 checked={rotationActive}
                 onClick={() => {
                     if (rotationActive) {
@@ -174,7 +175,7 @@ function EvFormContent(props: {
                 }}
             />
         </FormRow>
-        <FormRow label={__("ev.content.add_ev_capacity")} label_muted={__("ev.content.add_ev_capacity_desc")}>
+        <FormRow label={__("ev.content.add_ev_capacity")}>
             <InputFloat
                 value={props.ev.capacity * 10}
                 onValue={(v) => props.onEvChange({capacity: v / 10})}
@@ -184,7 +185,7 @@ function EvFormContent(props: {
                 unit="kWh"
             />
         </FormRow>
-        <FormRow label={__("ev.content.add_ev_efficiency")} label_muted={__("ev.content.add_ev_efficiency_desc")}>
+        <FormRow label={__("ev.content.add_ev_efficiency")} help={__("ev.content.add_ev_efficiency_help")}>
             <InputFloat
                 value={Math.round(props.ev.charging_efficiency * 100)}
                 onValue={(v) => props.onEvChange({charging_efficiency: v / 100})}
