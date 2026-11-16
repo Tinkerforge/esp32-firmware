@@ -1,22 +1,22 @@
 display_names = [
-    ('Janitza', {
+    ('Janitza UMG', {
         'en': 'Janitza (UMG series)',
         'de': 'Janitza (UMG-Serie)',
     }),
 ]
 
 table_prototypes = [
-    ('Janitza', ['device_address']),
+    ('Janitza UMG', ['device_address']),
 ]
 
 default_device_addresses = [
-    ('Janitza', 1),
+    ('Janitza UMG', 1),
 ]
 
 specs = [
     {
-        'name': 'Janitza',
-        'table_id': 'Janitza',
+        'name': 'Janitza UMG',
+        'table_id': 'Janitza UMG',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
