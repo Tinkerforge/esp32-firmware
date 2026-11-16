@@ -28,12 +28,6 @@
 #include <lwip/err.h>
 #include <lwip/netdb.h>
 #include <lwip/pbuf.h>
-<<<<<<< HEAD
-#include <lwip/prot/icmp.h>
-#include <lwip/prot/ip4.h>
-#include <lwip/prot/ip6.h>
-=======
->>>>>>> 6b2d81438 (remote-access: refactor shared code and remove ipv4-tunnel leftovers)
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <esp_random.h>
