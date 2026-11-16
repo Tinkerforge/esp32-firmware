@@ -46,7 +46,6 @@ public:
 private:
     Config config_prototype;
     Config state_prototype;
-    Config errors_prototype;
 
     MeterISO15118 *meter_instance = nullptr;
 };

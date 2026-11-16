@@ -37,10 +37,6 @@ void MetersISO15118::pre_setup()
         {"source", Config::Enum(EVDataSource::None)}
     });
 
-    errors_prototype = Config::Object({
-        // No error tracking for now
-    });
-
     meters.register_meter_generator(get_class(), this);
 }
 
@@ -75,7 +71,7 @@ const Config *MetersISO15118::get_state_prototype()
 [[gnu::const]]
 const Config *MetersISO15118::get_errors_prototype()
 {
-    return &errors_prototype;
+    return Config::Null();
 }
 
 void MetersISO15118::update_values(float soc, float capacity, float power, EVDataSource source)
