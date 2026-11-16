@@ -124,13 +124,9 @@ let x = {
         },
         "debug_logger": {
             "loading_debug_report": "Lade Debug-Report",
-            "loading_debug_report_failed": "Laden des Debug-Reports fehlgeschlagen",
             "loading_event_log": "Lade Event-Log",
-            "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
             "loading_trace_log": "Lade Trace-Log",
-            "loading_trace_log_failed": "Laden des Trace-Logs fehlgeschlagen",
             "loading_coredump": "Lade Coredump",
-            "loading_coredump_failed": "Laden des Coredumps fehlgeschlagen",
             "tab_close_warning": /*SFN*/ (debug_module: string) => `Die Aufzeichnung des ${debug_module}-Logs wird abgebrochen, wenn der Tab geschlossen wird.`/*NF*/,
             "starting_debug": /*SFN*/ (debug_module: string) => `Aktiviere Aufzeichnung des ${debug_module}-Logs.`/*NF*/,
             "starting_debug_failed": /*SFN*/ (debug_module: string) => `Aktivierung der Aufzeichnung des ${debug_module}-Logs fehlgeschlagen.`/*NF*/,

@@ -124,13 +124,9 @@ let x = {
         },
         "debug_logger": {
             "loading_debug_report": "Loading debug report",
-            "loading_debug_report_failed": "Loading debug report failed",
             "loading_event_log": "Loading event log",
-            "loading_event_log_failed": "Loading event log failed",
             "loading_trace_log": "Loading trace log",
-            "loading_trace_log_failed": "Loading trace log failed",
             "loading_coredump": "Loading coredump",
-            "loading_coredump_failed": "Loading coredump failed",
             "tab_close_warning": /*SFN*/ (debug_module: string) => `${debug_module} capture will be aborted if this tab is closed.`/*NF*/,
             "starting_debug": /*SFN*/ (debug_module: string) => `Starting to record ${debug_module} log`/*NF*/,
             "starting_debug_failed": /*SFN*/ (debug_module: string) => `Starting to record ${debug_module} log failed`/*NF*/,
