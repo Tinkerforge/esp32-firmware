@@ -120,15 +120,17 @@ Config::ConfArray::~ConfArray()
         return;
 
     auto *slot = this->getSlot();
-    // Mark slot as not in use
+
+    // Destroy nested configs.
+    slot->val.clear();
+    slot->prototype = nullptr;
+
+    // Mark slot as not in use.
     slot->minElements = 1;
     slot->maxElements = 0;
 
-    // Notify immediately after slot was marked as not in use, before destroying nested Configs.
+    // Notify immediately after slot was marked as not in use; nested Configs destroyed earlier.
     notify_free_slot<Config::ConfArray>(idx);
-
-    slot->val.clear();
-    slot->prototype = nullptr;
 }
 
 Config::ConfArray::ConfArray(ConfArray &&cpy) : idx(cpy.idx)

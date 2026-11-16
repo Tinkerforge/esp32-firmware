@@ -95,9 +95,14 @@ Config::ConfUnion::~ConfUnion()
         return;
 
     auto *slot = this->getSlot();
+
+    // Destroy nested configs.
     slot->val = *Config::Null();
+
     slot->tag.updateUint(0);
     slot->prototypes_len = 0;
+
+    // Mark slot as not in use.
     slot->prototypes = nullptr;
 
     // Notify immediately after slot was marked as not in use; nested Configs destroyed earlier.
