@@ -95,13 +95,17 @@ class TestContext:
         if self._brickd_host is None:
             return False
 
-        if self._brickd_host.startswith('warp4'):
+        testbox_host = self._brickd_host
+        if testbox_host in ('localhost', '127.0.0.1', '::1'):
+            testbox_host = socket.gethostname()
+
+        if testbox_host.startswith('warp4'):
             self._testbox = WARP4TestBox()
-        elif self._brickd_host.startswith('warp3'):
+        elif testbox_host.startswith('warp3'):
             self._testbox = WARP3TestBox()
-        elif self._brickd_host.startswith('warp2'):
+        elif testbox_host.startswith('warp2'):
             self._testbox = WARP2TestBox()
-        elif self._brickd_host.startswith('wem'):
+        elif testbox_host.startswith('wem'):
             self._testbox = WEMTestBox()
         else:
             return False
