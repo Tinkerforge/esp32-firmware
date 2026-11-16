@@ -669,13 +669,9 @@ size_t EVSEV2::get_debug_line_length() const
 
 void EVSEV2::get_debug_line(StringBuilder *sb)
 {
-    if (!io_scheduler.await([this, sb]() { this->get_debug_line_impl(sb); })) {
-        sb->puts("io await failed");
-    }
-}
-
-void EVSEV2::get_debug_line_impl(StringBuilder *sb)
-{
+    // Only the Bricklet getters run on the IO task.
+    // The results stay on this (main) task's stack and are formatted here.
+    // The printf doesn't always fit on the IO task's small stack.
     uint8_t iec61851_state;
     uint8_t charger_state;
     uint8_t contactor_state;
@@ -710,7 +706,14 @@ void EVSEV2::get_debug_line_impl(StringBuilder *sb)
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
-    int rc = tf_evse_v2_get_all_data_1(&device,
+    float all_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
+    uint16_t all_values_len = 0;
+
+    int rc = TF_E_OK;
+    const char *failed_getter = nullptr;
+
+    const bool executed = io_scheduler.await([&]() {
+        rc = tf_evse_v2_get_all_data_1(&device,
                                        &iec61851_state,
                                        &charger_state,
                                        &contactor_state,
@@ -729,49 +732,52 @@ void EVSEV2::get_debug_line_impl(StringBuilder *sb)
                                        phases_connected,
                                        error_count);
 
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_data_1 %d", rc);
-        is_in_bootloader(rc);
-        sb->puts("get_all_data_1 failed");
+        if (rc != TF_E_OK) {
+            failed_getter = "get_all_data_1";
+            return;
+        }
+
+        rc = tf_evse_v2_get_low_level_state(&device,
+                                            &led_state,
+                                            &cp_pwm_duty_cycle,
+                                            adc_values,
+                                            voltages,
+                                            resistances,
+                                            gpio,
+                                            &car_stopped_charging,
+                                            &time_since_state_change,
+                                            &time_since_dc_fault_check,
+                                            &uptime);
+
+        if (rc != TF_E_OK) {
+            failed_getter = "get_low_level_state";
+            return;
+        }
+
+        rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
+
+        if (rc != TF_E_OK) {
+            failed_getter = "get_all_charging_slots";
+            return;
+        }
+
+        rc = tf_evse_v2_get_all_energy_meter_values(&device, all_values, &all_values_len);
+
+        if (rc != TF_E_OK) {
+            failed_getter = "get_all_energy_meter_values";
+            return;
+        }
+    });
+
+    if (!executed) {
+        sb->puts("io await failed");
         return;
     }
 
-    rc = tf_evse_v2_get_low_level_state(&device,
-                                        &led_state,
-                                        &cp_pwm_duty_cycle,
-                                        adc_values,
-                                        voltages,
-                                        resistances,
-                                        gpio,
-                                        &car_stopped_charging,
-                                        &time_since_state_change,
-                                        &time_since_dc_fault_check,
-                                        &uptime);
-
     if (rc != TF_E_OK) {
-        logger.printfln("get_low_level_state %d", rc);
+        logger.printfln("%s %d", failed_getter, rc);
         is_in_bootloader(rc);
-        sb->puts("get_low_level_state failed");
-        return;
-    }
-
-    rc = tf_evse_v2_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
-
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_charging_slots %d", rc);
-        is_in_bootloader(rc);
-        sb->puts("get_all_charging_slots failed");
-        return;
-    }
-
-    float all_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
-    uint16_t all_values_len = 0;
-    rc = tf_evse_v2_get_all_energy_meter_values(&device, all_values, &all_values_len);
-
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_energy_meter_values %d", rc);
-        is_in_bootloader(rc);
-        sb->puts("get_all_energy_meter_values failed");
+        sb->printf("%s failed", failed_getter);
         return;
     }
 

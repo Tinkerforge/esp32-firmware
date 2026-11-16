@@ -281,13 +281,9 @@ size_t EVSE::get_debug_line_length() const
 
 void EVSE::get_debug_line(StringBuilder *sb)
 {
-    if (!io_scheduler.await([this, sb]() { this->get_debug_line_impl(sb); })) {
-        sb->puts("io await failed");
-    }
-}
-
-void EVSE::get_debug_line_impl(StringBuilder *sb)
-{
+    // Only the Bricklet getters run on the IO task.
+    // The results stay on this (main) task's stack and are formatted here.
+    // The printf doesn't always fit on the IO task's small stack.
     uint8_t iec61851_state;
     uint8_t charger_state;
     uint8_t contactor_state;
@@ -313,7 +309,11 @@ void EVSE::get_debug_line_impl(StringBuilder *sb)
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
-    int rc = tf_evse_get_all_data_1(&device,
+    int rc = TF_E_OK;
+    const char *failed_getter = nullptr;
+
+    const bool executed = io_scheduler.await([&]() {
+        rc = tf_evse_get_all_data_1(&device,
                                     &iec61851_state,
                                     &charger_state,
                                     &contactor_state,
@@ -341,19 +341,28 @@ void EVSE::get_debug_line_impl(StringBuilder *sb)
                                     nullptr,
                                     nullptr);
 
-    if (rc != TF_E_OK) {
-        logger.printfln("get_all_data_1 %d", rc);
-        is_in_bootloader(rc);
-        sb->puts("get_all_data_1 failed");
+        if (rc != TF_E_OK) {
+            failed_getter = "get_all_data_1";
+            return;
+        }
+
+        rc = tf_evse_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
+
+        if (rc != TF_E_OK) {
+            failed_getter = "get_all_charging_slots";
+            return;
+        }
+    });
+
+    if (!executed) {
+        sb->puts("io await failed");
         return;
     }
 
-    rc = tf_evse_get_all_charging_slots(&device, max_current, active_and_clear_on_disconnect);
-
     if (rc != TF_E_OK) {
-        logger.printfln("get_all_charging_slots %d", rc);
+        logger.printfln("%s %d", failed_getter, rc);
         is_in_bootloader(rc);
-        sb->puts("get_all_charging_slots failed");
+        sb->printf("%s failed", failed_getter);
         return;
     }
 

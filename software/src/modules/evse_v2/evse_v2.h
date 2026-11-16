@@ -218,8 +218,6 @@ public:
     bool is_shutdown_input_closed();
 
 private:
-    void get_debug_line_impl(StringBuilder *sb);
-
     EVSEV2AllData all_data;
 
     float *all_energy_meter_values = nullptr;

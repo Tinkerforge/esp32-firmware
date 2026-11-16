@@ -148,8 +148,6 @@ protected:
     ConfigRoot user_calibration;
 
 private:
-    void get_debug_line_impl(StringBuilder *sb);
-
     EVSEAllData all_data;
 };
 
