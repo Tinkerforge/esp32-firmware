@@ -246,7 +246,7 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 3170,
                 'value_type': 'S16',
-                'drop_sign': True,
+                'drop_sign': True,  # battery current might be signed, but we drop it and copy the sign from the battery power
                 'scale_factor': 0.1,
             },
             {
