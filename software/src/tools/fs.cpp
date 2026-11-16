@@ -522,6 +522,9 @@ void remove_directory(const char *path)
                 remove_directory(file_path.c_str());
             else
                 LittleFS.remove(file_path.c_str());
+
+            // Removing many files can take longer than the task watchdog timeout.
+            vTaskDelay(1);
             return true;
         }, false);
 
