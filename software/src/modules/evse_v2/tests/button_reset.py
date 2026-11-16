@@ -179,9 +179,10 @@ def test_power_cycle_w_o_button_is_nop(tc: TestContext) -> None:
 
     tc.wait_for_reboot()
 
-    verify_stage_0(tc, last_stage_executed=1)
-    verify_stage_1(tc, last_stage_executed=1)
-    verify_stage_2(tc, last_stage_executed=1)
+    # Without the button pressed, the recovery handler does nothing: Still only stage 0 was executed.
+    verify_stage_0(tc, last_stage_executed=0)
+    verify_stage_1(tc, last_stage_executed=0)
+    verify_stage_2(tc, last_stage_executed=0)
 
 
 def test_no_crash_clears_recovery_state(tc: TestContext) -> None:
