@@ -41,6 +41,10 @@ Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
     return static_cast<Config::ConfObject::Slot *>(calloc_32bit_addressed(elements, sizeof(Config::ConfObject::Slot)));
 }
 
+Config &Config::ConfObject::Slot::get_val(size_t i) const {
+    return *get_slot<Config>(static_cast<uint16_t>(this->values_idx() + i));
+}
+
 [[gnu::noinline]]
 [[gnu::noreturn]]
 static void abort_on_key_not_found(const char *needle)
@@ -58,7 +62,7 @@ Config *Config::ConfObject::get(const char *needle, size_t needle_len)
     if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].get_val() == needle) { // Address comparison, not string comparison
-                return &slot->values[i];
+                return &(slot->get_val(i));
             }
         }
 #ifdef DEBUG_FS_ENABLE
@@ -75,7 +79,7 @@ Config *Config::ConfObject::get(const char *needle, size_t needle_len)
             continue;
 
         if (memcmp(keys[i].get_val(), needle, needle_len) == 0)
-            return &slot->values[i];
+            return &(slot->get_val(i));
     }
 
     abort_on_key_not_found(needle);
@@ -91,7 +95,7 @@ Config *Config::ConfObject::get_or_null(const char *needle, size_t needle_len)
     if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].get_val() == needle) { // Address comparison, not string comparison
-                return &slot->values[i];
+                return &(slot->get_val(i));
             }
         }
 #ifdef DEBUG_FS_ENABLE
@@ -108,7 +112,7 @@ Config *Config::ConfObject::get_or_null(const char *needle, size_t needle_len)
             continue;
 
         if (memcmp(keys[i].get_val(), needle, needle_len) == 0)
-            return &slot->values[i];
+            return &(slot->get_val(i));
     }
 
     return nullptr;
@@ -124,7 +128,7 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
     if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].get_val() == needle) { // Address comparison, not string comparison
-                return &slot->values[i];
+                return &(slot->get_val(i));
             }
         }
 #ifdef DEBUG_FS_ENABLE
@@ -141,7 +145,7 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
             continue;
 
         if (memcmp(keys[i].get_val(), needle, needle_len) == 0)
-            return &slot->values[i];
+            return &(slot->get_val(i));
     }
 
     abort_on_key_not_found(needle);
@@ -178,10 +182,13 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     auto *slot = this->getSlot();
     slot->schema = schema;
 
-    slot->values = new Config[len]();
+    uint16_t val_idx = nextSlots<Config>(static_cast<uint16_t>(len));
+    slot->set_values_idx(val_idx);
 
-    for (size_t i = 0; i < len; ++i) {
-        this->getSlot()->values[i] = std::move(val[i].second); //TODO: move here?
+    memset(get_slot<Config>(val_idx), to_underlying(Config::ConfVariant::Tag::EMPTY), static_cast<uint16_t>(len) * sizeof(Config));
+
+    for (uint16_t i = 0; i < len; ++i) {
+        new (get_slot<Config>(val_idx + i)) Config{std::move(val[i].second)};
     }
 }
 
@@ -195,13 +202,16 @@ Config::ConfObject::ConfObject(const ConfObject &cpy) : idx(nextSlot<Config::Con
     this->getSlot()->schema = cpy.getSlot()->schema;
 
     const size_t len = cpy.getSlot()->schema->length;
-    auto values = new Config[len]();
-    for (size_t i = 0; i < len; ++i)
-        values[i] = cpy.getSlot()->values[i];
+    auto val_idx = nextSlots<Config>(static_cast<uint16_t>(len));
+
+    memset(get_slot<Config>(val_idx), to_underlying(Config::ConfVariant::Tag::EMPTY), static_cast<uint16_t>(len) * sizeof(Config));
+
+    for (uint16_t i = 0; i < len; ++i)
+        new (get_slot<Config>(val_idx + i)) Config{cpy.getSlot()->get_val(i)};
 
     // Must call getSlot() again because any reference would be invalidated
     // if the copy triggers a move of the slots.
-    this->getSlot()->values = values;
+    this->getSlot()->set_values_idx(val_idx);
 }
 
 Config::ConfObject::~ConfObject()
@@ -210,13 +220,23 @@ Config::ConfObject::~ConfObject()
         return;
 
     auto *slot = this->getSlot();
+    size_t val_idx = slot->values_idx();
 
+    if (val_idx != SIZE_MAX) {
+        // Destroy nested configs.
+        size_t len = slot->schema->length;
+        asm("" : : "r" (len));
 
-    // Destroy nested configs.
-    if (slot->values != nullptr)
-        delete[] slot->values;
+        for (size_t i = 0; i < len; ++i) {
+            slot->get_val(i).~Config();
+        }
+        memset(&slot->get_val(0), to_underlying(Config::ConfVariant::Tag::UNINITIALIZED), len * sizeof(Config));
 
-    slot->values = nullptr;
+        // Notify immediately after slots were marked as not in use
+        notify_free_slots<Config>(static_cast<uint16_t>(val_idx), static_cast<uint16_t>(len));
+
+        slot->set_values_idx(SIZE_MAX);
+    }
 
     // Mark slot as not in use.
     slot->schema = nullptr;

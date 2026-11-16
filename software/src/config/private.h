@@ -93,7 +93,21 @@ struct ConfObjectSchema {
 
 struct ConfObjectSlot {
     const ConfObjectSchema *schema = nullptr;
-    Config *values;
+private:
+    size_t idx = SIZE_MAX;
+
+public:
+    Config &get_val(size_t i) const;
+
+    [[gnu::always_inline]] size_t values_idx() const {
+        asm("" : : "r" (idx));
+        return idx;
+    }
+
+    [[gnu::always_inline]] void set_values_idx(size_t v) {
+        asm("" : : "r" (v));
+        idx = v;
+    }
 };
 
 struct ConfUnionSlot {

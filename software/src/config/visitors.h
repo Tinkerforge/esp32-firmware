@@ -175,7 +175,7 @@ struct default_validator {
     String operator()(const Config::ConfObject &x) const
     {
         for (size_t i = 0; i < x.getSlot()->schema->length; ++i) {
-            String err = Config::apply_visitor(default_validator{}, x.getSlot()->values[i].value);
+            String err = Config::apply_visitor(default_validator{}, x.getSlot()->get_val(i).value);
 
             if (!err.isEmpty())
                 return String("[\"") + x.getSlot()->schema->keys[i].get_val() + "\"] " + err;
@@ -291,7 +291,7 @@ struct to_json {
         JsonObject obj = insertHere.as<JsonObject>();
         for (size_t i = 0; i < size; ++i) {
             const char *key = schema->keys[i].get_val();
-            const Config &child = slot->values[i];
+            const Config &child = slot->get_val(i);
 
             bool censored = false;
             for (size_t ktc = 0; ktc < keys_to_censor_len; ++ktc) {
@@ -522,9 +522,9 @@ struct max_string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
-            size_t val_len = Config::apply_visitor(*this, slot->values[i].value);
+            size_t val_len = Config::apply_visitor(*this, slot->get_val(i).value);
 
-            val_len = handle_censored_len(schema->keys[i], slot->values[i], val_len, this->keys_to_censor, this->keys_to_censor_len);
+            val_len = handle_censored_len(schema->keys[i], slot->get_val(i), val_len, this->keys_to_censor, this->keys_to_censor_len);
 
             sum += schema->keys[i].get_length() + 3; // "":
             sum += val_len;
@@ -644,9 +644,9 @@ struct string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
-            size_t val_len = Config::apply_visitor(*this, slot->values[i].value);
+            size_t val_len = Config::apply_visitor(*this, slot->get_val(i).value);
 
-            val_len = handle_censored_len(schema->keys[i], slot->values[i], val_len, this->keys_to_censor, this->keys_to_censor_len);
+            val_len = handle_censored_len(schema->keys[i], slot->get_val(i), val_len, this->keys_to_censor, this->keys_to_censor_len);
 
             sum += schema->keys[i].get_length() + 3; // "":
             sum += val_len;
@@ -751,7 +751,7 @@ struct json_length_visitor {
             if (!zero_copy)
                 sum += schema->keys[i].get_length() + 1;
 
-            sum += Config::apply_visitor(json_length_visitor{zero_copy}, slot->values[i].value);
+            sum += Config::apply_visitor(json_length_visitor{zero_copy}, slot->get_val(i).value);
         }
         return sum + JSON_OBJECT_SIZE(size);
     }
@@ -1017,11 +1017,11 @@ struct from_json {
             // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
             // Only allow this if the omitted key is not the confirm key.
             if (!json_node.is<JsonObject>() && is_root && size == 1 && Config::ConfirmKey() != schema->keys[0].get_val()) {
-                auto res =  Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->values[0].value);
+                auto res =  Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->get_val(0).value);
                 if (!res.message.isEmpty())
                     return {String("(inferred) [\"") + schema->keys[0].get_val() + "\"] " + res.message + "\n", false};
                 else {
-                    x.getSlot()->values[0].set_updated(res.changed ? 0xFF : 0);
+                    x.getSlot()->get_val(0).set_updated(res.changed ? 0xFF : 0);
                     return res;
                 }
             }
@@ -1052,7 +1052,7 @@ struct from_json {
                     more_errors = true;
             }
 
-            auto res = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->values[i].value);
+            auto res = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->get_val(i).value);
             if (obj.size() > 0)
                 obj.remove(key);
             if (!res.message.isEmpty()) {
@@ -1063,7 +1063,7 @@ struct from_json {
             }
             changed |= res.changed;
             // Don't use slot: Could already be invalidated by Config::apply_visitor!
-            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
+            x.getSlot()->get_val(i).set_updated(res.changed ? 0xFF : 0);
         }
 
         if (force_same_keys) {
@@ -1464,7 +1464,7 @@ struct from_update {
             size_t obj_idx = 0xFFFFFFFF;
             // Don't cache x.getSlot(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
             const char *key = x.getSlot()->schema->keys[i].get_val();
-            Config &value = x.getSlot()->values[i];
+            Config &value = x.getSlot()->get_val(i);
             for (size_t j = 0; j < size; ++j) {
                 if (obj_elements[j].first != key)
                     continue;
@@ -1479,7 +1479,7 @@ struct from_update {
                 return {String("[\"") + key + "\"] " + res.message, false};
 
             changed |= res.changed;
-            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
+            x.getSlot()->get_val(i).set_updated(res.changed ? 0xFF : 0);
         }
 
         return {"", changed};
@@ -1621,8 +1621,8 @@ struct is_updated {
 
         uint8_t result = 0;
         for (size_t i = 0; i < size; ++i) {
-            result |= slot->values[i].value.updated & api_backend_flag;
-            result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->values[i].value);
+            result |= static_cast<uint8_t>(slot->get_val(i).value.updated & api_backend_flag); //TODO: why is this cast necessary? Works above for ConfArray and Union
+            result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->get_val(i).value);
 
             // Short-circuit if the the maximum possible amount of bits is set.
             if (result == api_backend_flag) {
@@ -1643,7 +1643,7 @@ struct is_updated {
 
         uint8_t result = 0;
         for (size_t i = 0; i < size; ++i) {
-            result |= static_cast<uint8_t>(slot->values[i].value.updated & api_backend_flag); //TODO: why is this cast necessary? Works above for ConfArray, Object and Union
+            result |= static_cast<uint8_t>(slot->values[i].value.updated & api_backend_flag); //TODO: why is this cast necessary? Works above for ConfArray and Union
             result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->values[i].value);
 
             // Short-circuit if the the maximum possible amount of bits is set.
@@ -1713,8 +1713,8 @@ struct set_updated_false {
         const auto size = slot->schema->length;
 
         for (size_t i = 0; i < size; ++i) {
-            slot->values[i].value.updated &= ~api_backend_flag;
-            Config::apply_visitor(set_updated_false{api_backend_flag}, slot->values[i].value);
+            slot->get_val(i).value.updated &= ~api_backend_flag;
+            Config::apply_visitor(set_updated_false{api_backend_flag}, slot->get_val(i).value);
         }
     }
     void operator()(Config::ConfUnion &x)
@@ -1823,7 +1823,7 @@ struct api_info {
             }
             first = false;
             sw.printf("{\"key\":\"%.*s\",\"value\":", static_cast<int>(slot->schema->keys[i].get_length()), slot->schema->keys[i].get_val());
-            Config::apply_visitor(api_info{sw}, slot->values[i].value);
+            Config::apply_visitor(api_info{sw}, slot->get_val(i).value);
             sw.printf("}");
         }
         sw.printf("]}");
