@@ -76,16 +76,16 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             uint32_t *custom_index = new uint32_t[registers_count];
 
             for (size_t i = 0; i < registers_count; ++i) {
-                MeterValueID value_id = registers->get(i)->get("id")->asEnum<MeterValueID>();
+                const Config *register_ = static_cast<const Config *>(registers->get(i));
 
-                custom_specs[i].start_address = registers->get(i)->get("addr")->asUint();
-                custom_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
-                custom_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
+                custom_specs[i].start_address = register_->get("addr")->asUint();
+                custom_specs[i].register_type = register_->get("rtype")->asEnum<ModbusRegisterType>();
+                custom_specs[i].value_type = register_->get("vtype")->asEnum<ModbusValueType>();
                 custom_specs[i].drop_sign = false; // FIXME: expose in API?
-                custom_specs[i].offset = registers->get(i)->get("off")->asFloat();
-                custom_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
+                custom_specs[i].offset = register_->get("off")->asFloat();
+                custom_specs[i].scale_factor = register_->get("scale")->asFloat();
 
-                custom_ids[i] = value_id;
+                custom_ids[i] = register_->get("id")->asEnum<MeterValueID>();
 
                 custom_index[i] = i;
             }
