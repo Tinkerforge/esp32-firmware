@@ -78,8 +78,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             for (size_t i = 0; i < registers_count; ++i) {
                 MeterValueID value_id = registers->get(i)->get("id")->asEnum<MeterValueID>();
 
-                custom_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
                 custom_specs[i].start_address = registers->get(i)->get("addr")->asUint();
+                custom_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
                 custom_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
                 custom_specs[i].drop_sign = false; // FIXME: expose in API?
                 custom_specs[i].offset = registers->get(i)->get("off")->asFloat();
