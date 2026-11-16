@@ -10,10 +10,15 @@ import requests
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
-from software.test_runner.docker_container import Container
+from software.test_runner.docker_container import Container, MB
 
 EVCC_IMAGE = os.environ.get("EVCC_TEST_IMAGE", "evcc/evcc:latest")
 EVCC_CONTAINER_NAME = "evcc-warp-test"
+
+# Disk usage while pulling (compressed layers and extracted image): 100 MB extracted.
+DOCKER_IMAGES = {
+    EVCC_IMAGE: 200 * MB,
+}
 
 # The grid meter is required by evcc but irrelevant for the tests.
 EVCC_YAML = """\

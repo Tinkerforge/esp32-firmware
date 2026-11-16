@@ -5,7 +5,8 @@
 # Mosquitto and Home Assistant run in Docker containers (host network) on the test machine.
 # Home Assistant is onboarded headlessly. The DUT and Home Assistant are both connected to the broker.
 #
-# Requires Docker. The images can be overridden with the HA_TEST_IMAGE and MOSQUITTO_TEST_IMAGE environment variables.
+# Requires Docker; skipped without it or without enough free disk space for the images.
+# The images can be overridden with the HA_TEST_IMAGE and MOSQUITTO_TEST_IMAGE environment variables.
 # Set HA_TEST_KEEP=1 to keep the containers running after the suite for debugging.
 
 import json
@@ -20,8 +21,8 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext, MeterValueID
 from software.src.modules.mqtt.tests._common import MqttHelper, ensure_mqtt_connected, wait_mqtt_state, CONN_NOT_CONFIGURED
-from software.test_runner.docker_container import docker_available
-from software.src.modules.mqtt_auto_discovery.tests._home_assistant import HomeAssistant, MosquittoBroker
+from software.test_runner.docker_container import docker_skip_reason
+from software.src.modules.mqtt_auto_discovery.tests._home_assistant import HomeAssistant, MosquittoBroker, DOCKER_IMAGES
 
 CLIENT_NAME = "tf-ha-test"
 RENAMED_CLIENT_NAME = "tf-ha-renamed"
@@ -281,8 +282,9 @@ def suite_setup(tc: TestContext) -> None:
         original_mqtt_config, original_auto_discovery_config, original_i18n_config, \
         original_charge_manager_config, original_meter_config, original_charge_mode
 
-    if not docker_available():
-        tc.skip("Docker is not available")
+    skip_reason = docker_skip_reason(DOCKER_IMAGES)
+    if skip_reason is not None:
+        tc.skip(skip_reason)
 
     # Starting Home Assistant (and pulling the image on the first run) takes a while.
     tc.set_test_timeout(15 * 60)

@@ -6,7 +6,8 @@
 # Tests that need a vehicle use the testbox (--brickd) and are skipped without it.
 # Tests that control charging need an EVSE and are skipped on devices without one (e.g. an ESP32 Ethernet Brick).
 #
-# Requires Docker. The image can be overridden with the EVCC_TEST_IMAGE environment variable.
+# Requires Docker; skipped without it or without enough free disk space for the image.
+# The image can be overridden with the EVCC_TEST_IMAGE environment variable.
 # Set EVCC_TEST_KEEP=1 to keep the evcc container running after the suite for debugging.
 
 import os
@@ -17,8 +18,8 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
 from software.test_runner.test_context import run_testsuite, TestContext, MeterValueID
-from software.test_runner.docker_container import docker_available
-from software.src.modules.evse_common.tests._evcc import Evcc, format_state
+from software.test_runner.docker_container import docker_skip_reason
+from software.src.modules.evse_common.tests._evcc import Evcc, format_state, DOCKER_IMAGES
 
 METER_CLASS_NONE = 0
 METER_CLASS_API = 4
@@ -115,11 +116,12 @@ def connect_vehicle(tc: TestContext, cp: str, iec_state: int) -> None:
 def suite_setup(tc: TestContext) -> None:
     global evcc, meter_slot, has_evse, original_meter_config, original_external_current, original_phase_auto_switch
 
-    if not docker_available():
-        tc.skip("Docker is not available")
-
     if not tc.device_type().is_warp():
         tc.skip("Not a WARP charger")
+
+    skip_reason = docker_skip_reason(DOCKER_IMAGES)
+    if skip_reason is not None:
+        tc.skip(skip_reason)
 
     tc.set_test_timeout(10 * 60)
 

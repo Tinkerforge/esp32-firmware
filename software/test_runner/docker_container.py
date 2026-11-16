@@ -5,10 +5,17 @@ via TestContext.get_local_ip() and the test can reach them on 127.0.0.1.
 """
 
 import os
+import shutil
 import socket
 import subprocess
 import tempfile
 import time
+
+MB = 1000 * 1000
+GB = 1000 * MB
+
+# Space that has to stay free on the test machine (e.g. the SD card of a CI Raspberry Pi) after pulling images.
+MIN_FREE_SPACE = 2 * GB
 
 
 class ContainerError(Exception):
@@ -22,10 +29,40 @@ def docker_available() -> bool:
         return False
 
 
+def image_present(image: str) -> bool:
+    return subprocess.run(["docker", "image", "inspect", image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
+
 def pull_image_if_missing(image: str) -> None:
     # docker create would pull silently, making startup timeouts include the download.
-    if subprocess.run(["docker", "image", "inspect", image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0:
+    if not image_present(image):
         subprocess.run(["docker", "pull", image], check=True, stdout=subprocess.DEVNULL)
+
+
+def docker_free_space() -> int:
+    path = subprocess.run(["docker", "info", "--format", "{{.DockerRootDir}}"], capture_output=True, text=True, check=True).stdout.strip() or "/"
+    # The Docker root dir may not be accessible (rootful Docker) or not exist locally; use the closest accessible parent.
+    while True:
+        try:
+            return shutil.disk_usage(path).free
+        except OSError:
+            parent = os.path.dirname(path)
+            if parent == path:
+                raise
+            path = parent
+
+
+def docker_skip_reason(images: dict[str, int]) -> str | None:
+    """Returns why a suite using the given images (image -> disk usage in bytes while pulling) can't run, or None if it can."""
+    if not docker_available():
+        return "Docker is not available"
+
+    needed = MIN_FREE_SPACE + sum(size for image, size in images.items() if not image_present(image))
+    free = docker_free_space()
+    if free < needed:
+        return f"Not enough free space for Docker images: {free / GB:.1f} GB free, {needed / GB:.1f} GB needed"
+
+    return None
 
 
 class Container:

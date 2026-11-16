@@ -15,13 +15,19 @@ from websockets.sync.client import connect as ws_connect
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, "software")
-from software.test_runner.docker_container import Container
+from software.test_runner.docker_container import Container, GB, MB
 
 HA_IMAGE = os.environ.get("HA_TEST_IMAGE", "ghcr.io/home-assistant/home-assistant:stable")
 HA_CONTAINER_NAME = "ha-mqtt-discovery-test"
 
 MOSQUITTO_IMAGE = os.environ.get("MOSQUITTO_TEST_IMAGE", "eclipse-mosquitto:2")
 MOSQUITTO_CONTAINER_NAME = "ha-mqtt-discovery-test-broker"
+
+# Disk usage while pulling (compressed layers and extracted image): 2.4 GB and 25 MB extracted.
+DOCKER_IMAGES = {
+    HA_IMAGE: int(3.5 * GB),
+    MOSQUITTO_IMAGE: 50 * MB,
+}
 
 MOSQUITTO_CONF = """\
 listener {port}
