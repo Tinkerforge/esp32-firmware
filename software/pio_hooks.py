@@ -1135,6 +1135,7 @@ def main():
     dirty_suffix = ""
     git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True).stdout.decode("utf-8").strip()
     git_commit_id = subprocess.run(["git", "rev-parse", "--short=15", "HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip()
+    git_commit_id_full = subprocess.run(["git", "rev-parse", "HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip()
     branch_name = subprocess.run(["git", "branch", "--show-current"], check=True, capture_output=True).stdout.decode("utf-8").strip()
 
     if is_dirty or not is_release:
@@ -1793,7 +1794,12 @@ def main():
         'firmware_info_product_id': firmware_info_product_id,
         'firmware_info_product_name': firmware_info_product_name,
         'version': version,
+        'version_full_str': version_full_str,
         'build_timestamp': build_timestamp,
+        'pio_env': env['PIOENV'],
+        'git_url': git_url,
+        'git_commit': git_commit_id_full,
+        'git_dirty': is_dirty,
     }, separators=(',', ':'))
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'metadata.json'), 'w', encoding='utf-8') as f:
