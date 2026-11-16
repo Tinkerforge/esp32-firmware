@@ -182,9 +182,13 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     auto *slot = this->getSlot();
     slot->schema = schema;
 
+    if (len == 0) {
+        slot->set_values_idx(SIZE_MAX);
+        return;
+    }
+
     uint16_t val_idx = nextSlots<Config>(static_cast<uint16_t>(len));
     slot->set_values_idx(val_idx);
-
     memset(get_slot<Config>(val_idx), to_underlying(Config::ConfVariant::Tag::EMPTY), static_cast<uint16_t>(len) * sizeof(Config));
 
     for (uint16_t i = 0; i < len; ++i) {
@@ -202,6 +206,12 @@ Config::ConfObject::ConfObject(const ConfObject &cpy) : idx(nextSlot<Config::Con
     this->getSlot()->schema = cpy.getSlot()->schema;
 
     const size_t len = cpy.getSlot()->schema->length;
+
+    if (len == 0) {
+        this->getSlot()->set_values_idx(SIZE_MAX);
+        return;
+    }
+
     auto val_idx = nextSlots<Config>(static_cast<uint16_t>(len));
 
     memset(get_slot<Config>(val_idx), to_underlying(Config::ConfVariant::Tag::EMPTY), static_cast<uint16_t>(len) * sizeof(Config));
