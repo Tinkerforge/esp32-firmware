@@ -2,7 +2,8 @@
 
 # Tests for calendar prices
 
-import time
+import datetime
+from zoneinfo import ZoneInfo
 import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
 from software.test_runner.test_context import run_testsuite, TestContext
@@ -79,18 +80,23 @@ def test_per_day_pattern(tc: TestContext):
     tc.assert_eq(cal_prices, calendar['prices'])
 
     # The prices endpoint should contain today's and tomorrow's values.
-    # Determine today's weekday and verify the first 96 slots match.
-    now = time.time()
-    wday = time.gmtime(now).tm_wday
-    expected_today = (wday + 1) * 100 * 10  # ct/100 -> ct/1000
+    # The device uses its local time zone to determine today's weekday.
+    tz = ZoneInfo(tc.api('ntp/config')['timezone'])
 
-    prices_state = tc.api('day_ahead_prices/prices')
-    actual_prices = prices_state.get('prices', [])
-    tc.assert_ge(SLOTS_PER_DAY, len(actual_prices))
+    def check():
+        wday = datetime.datetime.now(tz).weekday()  # Monday=0, as in the calendar
+        expected_today = (wday + 1) * 100 * 10  # ct/100 -> ct/1000
 
-    # First slots should be today's price
-    for p in actual_prices[:SLOTS_PER_DAY]:
-        tc.assert_eq(expected_today, p)
+        prices_state = tc.api('day_ahead_prices/prices')
+        actual_prices = prices_state.get('prices', [])
+        tc.assert_ge(SLOTS_PER_DAY, len(actual_prices))
+
+        # First slots should be today's price
+        for p in actual_prices[:SLOTS_PER_DAY]:
+            tc.assert_eq(expected_today, p)
+
+    # Around midnight the device regenerates the prices for the new day.
+    tc.wait_for(check)
 
 
 def test_push_plus_calendar(tc: TestContext):
