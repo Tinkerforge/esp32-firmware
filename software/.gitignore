@@ -38,6 +38,7 @@ web/src/ts/translation.json
 web/src/modules/*/generated/
 web/src_tfpp/
 coredump_py_gdb_cmds
+test_runner/coredumps/
 api_info.json
 signature/config.ini
 signature/keys/

@@ -26,6 +26,32 @@ from urllib.request import urlopen
 from urllib.error import HTTPError
 
 DEFAULT_TEST_TIMEOUT = 5 * 60
+COREDUMP_DIR = Path(__file__).parent / "coredumps"
+
+def save_and_erase_coredump(host, tprint):
+    """
+    A core dump that exists before the first test would fail the device health check of every test.
+    """
+    try:
+        with urlopen(f'http://{host}/coredump/state', timeout=5) as req:
+            if not json.loads(req.read())['coredump_available']:
+                return
+    except HTTPError as e:
+        if e.code == 404:
+            return  # No coredump module or no HTTP API (e.g. minimal)
+        raise
+
+    with urlopen(f'http://{host}/coredump/coredump.elf', timeout=30) as req:
+        coredump = req.read()
+
+    COREDUMP_DIR.mkdir(exist_ok=True)
+    path = COREDUMP_DIR / f"{host}_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.elf"
+    path.write_bytes(coredump)
+
+    with urlopen(f'http://{host}/coredump/erase', timeout=10) as req:
+        req.read()
+
+    tprint(red(f"Device had a core dump before the first test. Saved it to {path.resolve()} and erased it on the device."))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -84,6 +110,9 @@ def main():
             paths += Path(__file__).parent.glob(f"./tests/{suite_filter}.py")
         for p in paths:
             suite_runs.append((p, test_filter))
+
+    if args.host is not None and not args.list_tests:
+        save_and_erase_coredump(args.host, tprint)
 
     # Skip underscore-prefixed helper modules and modules without "run_testsuite"
     suite_runs = [(p, f) for p, f in suite_runs if not p.name.startswith('_') and 'run_testsuite' in p.read_text()]
