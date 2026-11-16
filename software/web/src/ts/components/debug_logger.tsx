@@ -214,7 +214,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             });
             this.setState({debug_status: __("component.debug_logger.debug_done")});
         } catch (error) {
-            this.debug_suffix = "\nError while stopping charge protocol: " + error;
+            this.debug_suffix = "\nError while stopping debug protocol: " + error;
             this.setState({debug_status: error});
         }
 
