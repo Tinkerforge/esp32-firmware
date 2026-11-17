@@ -15,6 +15,9 @@ from software.test_runner.docker_container import Container, MB
 EVCC_IMAGE = os.environ.get("EVCC_TEST_IMAGE", "evcc/evcc:latest")
 EVCC_CONTAINER_NAME = "evcc-warp-test"
 
+EVCC_EEBUS_PORT = 4712
+EVCC_OCPP_PORT = 8887
+
 # Disk usage while pulling (compressed layers and extracted image): 100 MB extracted.
 DOCKER_IMAGES = {
     EVCC_IMAGE: 200 * MB,
@@ -70,7 +73,8 @@ class Evcc:
         self.interval = interval
         self.base_url = f"http://127.0.0.1:{port}"
         config = EVCC_YAML.format(port=port, interval=interval, uri=charger_uri, meter_index=meter_index)
-        self.container = Container(container_name, image, {"/etc/evcc.yaml": config}, command=["evcc", "--config", "/etc/evcc.yaml"])
+        self.container = Container(container_name, image, {"/etc/evcc.yaml": config}, command=["evcc", "--config", "/etc/evcc.yaml"],
+                                   ports=[port, EVCC_EEBUS_PORT, EVCC_OCPP_PORT])
         self._log_offset = 0
 
     def start(self, timeout: float = 60) -> None:

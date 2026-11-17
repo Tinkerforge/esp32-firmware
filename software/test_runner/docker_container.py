@@ -4,7 +4,9 @@ Containers run in the host network: The DUT can reach services on the test machi
 via TestContext.get_local_ip() and the test can reach them on 127.0.0.1.
 """
 
+import errno
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -65,19 +67,82 @@ def docker_skip_reason(images: dict[str, int]) -> str | None:
     return None
 
 
+def port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Ignore connections in TIME_WAIT, only listeners matter.
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(("0.0.0.0", port))
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                return True
+            raise
+    return False
+
+
+def _describe_process(pid: str) -> str:
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            cmdline = f.read().replace(b"\0", b" ").decode(errors="replace").strip()
+    except OSError:
+        cmdline = "?"
+
+    container = ""
+    try:
+        with open(f"/proc/{pid}/cgroup") as f:
+            m = re.search(r"docker-([0-9a-f]{64})\.scope|/docker/([0-9a-f]{64})", f.read())
+        if m:
+            container_id = m.group(1) or m.group(2)
+            name = subprocess.run(["docker", "inspect", "-f", "{{.Name}}", container_id], capture_output=True, text=True).stdout.strip().lstrip("/")
+            container = f" (Docker container {name or container_id[:12]})"
+    except OSError:
+        pass
+
+    return f"pid {pid}: {cmdline}{container}"
+
+
+def describe_port_listeners(port: int) -> str:
+    """Listening sockets on the TCP port and their processes. ss only shows processes of the current user (unless run as root)."""
+    try:
+        out = subprocess.run(["ss", "-Hltnp", f"sport = :{port}"], capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return f"ss failed: {e}"
+
+    lines = []
+    for line in out.splitlines():
+        lines.append(" ".join(line.split()))
+        pids = list(dict.fromkeys(re.findall(r"pid=(\d+)", line)))
+        if not pids:
+            lines.append("    process not visible (owned by another user?)")
+        for pid in pids:
+            lines.append(f"    {_describe_process(pid)}")
+
+    return "\n".join(lines) if lines else "no listener found by ss"
+
+
 class Container:
     """A container in the host network. Files (container path -> content) are copied into it before it starts."""
 
-    def __init__(self, name: str, image: str, files: dict[str, str] | None = None, args: list[str] | None = None, command: list[str] | None = None):
+    def __init__(self, name: str, image: str, files: dict[str, str] | None = None, args: list[str] | None = None, command: list[str] | None = None, ports: list[int] | None = None):
         self.name = name
         self.image = image
         self.files = files or {}
         self.args = args or []
         self.command = command or []
+        self.ports = ports or []
+
+    def assert_ports_free(self) -> None:
+        used = [port for port in self.ports if port_in_use(port)]
+        if used:
+            msg = f"Port(s) needed by container {self.name} already in use on this machine:\n" + "\n".join(f"Port {port}:\n{describe_port_listeners(port)}" for port in used)
+            containers = subprocess.run(["docker", "ps", "--filter", "network=host", "--format", "{{.Names}} ({{.Image}}, {{.Status}})"], capture_output=True, text=True).stdout.strip()
+            msg += "\nRunning containers in the host network: " + (", ".join(containers.splitlines()) if containers else "none")
+            raise ContainerError(msg)
 
     def start(self) -> None:
         pull_image_if_missing(self.image)
         self.remove()
+        self.assert_ports_free()
         subprocess.run(["docker", "create", "--name", self.name, "--network", "host", *self.args, self.image, *self.command], check=True, stdout=subprocess.DEVNULL)
 
         with tempfile.TemporaryDirectory() as d:
@@ -90,7 +155,10 @@ class Container:
         subprocess.run(["docker", "start", self.name], check=True, stdout=subprocess.DEVNULL)
 
     def restart(self) -> None:
-        subprocess.run(["docker", "restart", "-t", "0", self.name], check=True, stdout=subprocess.DEVNULL)
+        # Not docker restart: The ports can only be checked while the container is stopped.
+        subprocess.run(["docker", "stop", "-t", "0", self.name], check=True, stdout=subprocess.DEVNULL)
+        self.assert_ports_free()
+        subprocess.run(["docker", "start", self.name], check=True, stdout=subprocess.DEVNULL)
 
     def remove(self) -> None:
         subprocess.run(["docker", "rm", "-f", self.name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
