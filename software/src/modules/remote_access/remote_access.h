@@ -50,8 +50,6 @@ struct Connection {
     std::unique_ptr<RemoteAccessTunnel> conn = nullptr;
     bool in_progress = false;
     uint8_t connection_uuid[16] = {};
-    micros_t answer_sent_at = 0_us;
-    bool lost_answer_logged = false;
 };
 
 struct ClosedConnect {
@@ -165,7 +163,6 @@ private:
     int stop_ping();
     int poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason);
     void release_inner_socket();
-    bool should_log_dropped_management_command();
     void remember_closed_connect(const uint8_t *connection_uuid);
     bool was_connect_closed(const uint8_t *connection_uuid);
     int begin_charge_log_send(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, const char *user_uuid_str, Language language);
@@ -188,8 +185,6 @@ private:
     bool management_auth_failed = false;
     std::atomic<bool> charge_log_sending = false;
     micros_t last_mgmt_alive = 0_us;
-    micros_t last_dropped_mgmt_command_log = 0_us;
-    uint32_t suppressed_dropped_mgmt_command_logs = 0;
     uint8_t connected_interfaces = 0;
     uint8_t route_interface = 0;
     uint64_t task_id = 0;

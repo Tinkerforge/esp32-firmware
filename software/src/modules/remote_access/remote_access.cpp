@@ -2497,7 +2497,6 @@ static std::vector<int> find_charge_tracker_configs(const uint8_t user_id) {
 void RemoteAccess::resolve_management()
 {
     if (!this->management_request_allowed) {
-        logger.printfln("Management request not allowed, skipping resolve_management");
         return;
     }
 
@@ -3000,34 +2999,6 @@ uint8_t RemoteAccess::get_connection(int32_t conn_id)
     return first_free_idx;
 }
 
-static const char *management_command_name(management_command_id id)
-{
-    switch (id) {
-        case management_command_id::Connect:
-            return "Connect";
-        case management_command_id::Disconnect:
-            return "Disconnect";
-        default:
-            return "unknown";
-    }
-}
-
-bool RemoteAccess::should_log_dropped_management_command()
-{
-    if (last_dropped_mgmt_command_log != 0_us && !deadline_elapsed(last_dropped_mgmt_command_log + 10_s)) {
-        suppressed_dropped_mgmt_command_logs++;
-        return false;
-    }
-
-    if (suppressed_dropped_mgmt_command_logs > 0) {
-        logger.printfln("Suppressed %lu dropped management command messages", suppressed_dropped_mgmt_command_logs);
-        suppressed_dropped_mgmt_command_logs = 0;
-    }
-
-    last_dropped_mgmt_command_log = now_us();
-    return true;
-}
-
 void RemoteAccess::remember_closed_connect(const uint8_t *connection_uuid)
 {
     ClosedConnect &entry = recently_closed_connects[next_closed_connect];
@@ -3051,7 +3022,6 @@ bool RemoteAccess::was_connect_closed(const uint8_t *connection_uuid)
 void RemoteAccess::run_management()
 {
     if (inner_socket < 0) {
-        logger.printfln("inner socket error");
         return;
     }
 
@@ -3060,10 +3030,6 @@ void RemoteAccess::run_management()
     socklen_t from_len = sizeof(from);
     int ret = recvfrom(inner_socket, &buf, sizeof(management_command_packet), 0,
                        reinterpret_cast<struct sockaddr *>(&from), &from_len);
-    if (ret > 0) {
-        logger.printfln("Received %d bytes from management server", ret);
-    }
-
     if (ret < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return;
@@ -3104,17 +3070,11 @@ void RemoteAccess::run_management()
     }
 
     if (ret != sizeof(management_command_packet)) {
-        logger.printfln("Didnt receive Management command.");
         return;
     }
 
     management_command_packet *command_packet = reinterpret_cast<management_command_packet *>(buf);
     if (command_packet->header.magic != 0x1234 || command_packet->header.length != sizeof(management_command)) {
-        if (should_log_dropped_management_command()) {
-            logger.printfln("Dropped management command with invalid header: magic=0x%04X length=%u",
-                            static_cast<unsigned>(command_packet->header.magic),
-                            static_cast<unsigned>(command_packet->header.length));
-        }
         return;
     }
 
@@ -3126,29 +3086,14 @@ void RemoteAccess::run_management()
     const bool relay_started_new_sequence = seq_num == 1 && in_seq_number != 1;
 
     if (!in_seq_number_valid || seq_num_is_newer || relay_started_new_sequence) {
-        if (in_seq_number_valid && !seq_num_is_newer) {
-            logger.printfln("Relay started a new management command sequence (last seq_num was %u)", static_cast<unsigned>(in_seq_number));
-        }
         in_seq_number = seq_num;
         in_seq_number_valid = true;
     } else {
-        if (should_log_dropped_management_command()) {
-            logger.printfln("Dropped %s command for connection %i: seq_num %u is not newer than last seq_num %u",
-                            management_command_name(command_packet->command.command_id),
-                            static_cast<int>(command_packet->command.connection_no),
-                            static_cast<unsigned>(seq_num),
-                            static_cast<unsigned>(in_seq_number));
-        }
         return;
     }
 
     management_command *command = &command_packet->command;
     if (static_cast<uint32_t>(command->connection_no) >= OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() * OPTIONS_REMOTE_ACCESS_MAX_USERS()) {
-        if (should_log_dropped_management_command()) {
-            logger.printfln("Dropped %s command: connection %i out of range",
-                            management_command_name(command->command_id),
-                            static_cast<int>(command->connection_no));
-        }
         return;
     }
 
@@ -3161,42 +3106,17 @@ void RemoteAccess::run_management()
     switch (command->command_id) {
         case management_command_id::Connect: {
             if (was_connect_closed(command->connection_uuid)) {
-                if (should_log_dropped_management_command()) {
-                    const uint8_t no = static_cast<uint8_t>(command->connection_no);
-                    logger.printfln("Ignoring Connect for connection %u of user %u: it was already closed",
-                                    no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(),
-                                    no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER());
-                }
                 return;
             }
 
             Connection &slot = remote_connections[conn_idx];
             slot.id = static_cast<uint8_t>(command->connection_no);
             if (conn != nullptr || slot.in_progress) {
-                const uint8_t no = static_cast<uint8_t>(command->connection_no);
-                const unsigned conn_id = no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
-                const unsigned user_id = no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
-
-                if (memcmp(slot.connection_uuid, command->connection_uuid, sizeof(slot.connection_uuid)) != 0) {
-                    // Most likely we missed the Disconnect for the previous client.
-                    if (should_log_dropped_management_command()) {
-                        logger.printfln("Ignoring Connect for connection %u of user %u: %s",
-                                        conn_id, user_id,
-                                        conn != nullptr ? "a previous connection is still open" : "a previous connection is still being set up");
-                    }
-                } else if (!slot.lost_answer_logged && slot.answer_sent_at != 0_us && deadline_elapsed(slot.answer_sent_at + 5_s)) {
-                    // Repetitions shortly after answering are expected, as they cross our answer on the way.
-                    logger.printfln("Relay still repeats Connect for connection %u of user %u, it probably didn't receive our answer",
-                                    conn_id, user_id);
-                    slot.lost_answer_logged = true;
-                }
                 return;
             }
 
             slot.in_progress = true;
             memcpy(slot.connection_uuid, command->connection_uuid, sizeof(slot.connection_uuid));
-            slot.answer_sent_at = 0_us;
-            slot.lost_answer_logged = false;
 
             uint8_t conn_no = static_cast<uint8_t>(command->connection_no);
 
@@ -3247,7 +3167,6 @@ void RemoteAccess::run_management()
                     setup_slot.in_progress = false;
                     return;
                 }
-                setup_slot.answer_sent_at = now_us();
                 connect_remote_access(conn_no, local_port, data->addr);
                 setup_slot.in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);
@@ -3261,7 +3180,6 @@ void RemoteAccess::run_management()
             slot.id = 255;
             slot.in_progress = false;
             if (conn == nullptr) {
-                logger.printfln("Not found");
                 break;
             }
             auto conn_state = connection_state.get(conn_idx + 1);
@@ -3563,8 +3481,6 @@ int RemoteAccess::begin_charge_log_send(
         return -5;
     }
 
-    logger.printfln("Sent RequestChargeLogSend packet");
-
     // Step 2: Wait for potential Nack (2 seconds)
     uint8_t nack_reason = 0;
     int poll_ret = poll_for_mgmt_response(2000, &nack_reason);
@@ -3642,8 +3558,6 @@ int RemoteAccess::begin_charge_log_send(
         return -9;
     }
 
-    logger.printfln("Sent MetadataForChargeLog packet (%zu bytes)", written);
-
     // Step 5: Wait for Ack from server (up to 2 seconds)
     nack_reason = 0;
     poll_ret = poll_for_mgmt_response(2000, &nack_reason);
@@ -3665,10 +3579,6 @@ int RemoteAccess::begin_charge_log_send(
         release_inner_socket();
         return -12;
     }
-    char server_address[INET6_ADDRSTRLEN];
-    inet_ntop(AF_INET6, &tcp_dest.sin6_addr, server_address, sizeof(server_address));
-    logger.printfln("Received Ack, opening TCP connection to [%s]:8080...", server_address);
-
     // Step 6: Open TCP connection to management server
     int tcp_sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_sock < 0) {
@@ -3688,8 +3598,6 @@ int RemoteAccess::begin_charge_log_send(
     struct sockaddr_in6 src_addr;
     socklen_t addr_len = sizeof(src_addr);
     getsockname(tcp_sock, reinterpret_cast<struct sockaddr *>(&src_addr), &addr_len);
-    logger.printfln("Connected from %u", ntohs(src_addr.sin6_port));
-
     send_port = ntohs(src_addr.sin6_port);
 
     ret = connect(tcp_sock, reinterpret_cast<const struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
@@ -3700,7 +3608,6 @@ int RemoteAccess::begin_charge_log_send(
         return -14;
     }
 
-    logger.printfln("TCP connection established");
     return tcp_sock;
 }
 
@@ -3709,8 +3616,6 @@ int RemoteAccess::end_charge_log_send(int tcp_sock)
     // Send FIN to signal end of data
     shutdown(tcp_sock, SHUT_WR);
     close(tcp_sock);
-
-    logger.printfln("TCP connection closed, waiting for final Ack...");
 
     // Wait for final Ack (up to 60 seconds - server processes and emails the file)
     uint8_t nack_reason = 0;
@@ -3822,7 +3727,6 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -12;
     }
 
-    logger.printfln("Sent charge log metadata packet (%zu bytes)", written);
     return 0;
 }
 

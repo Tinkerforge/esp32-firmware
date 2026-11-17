@@ -20,8 +20,6 @@
 #include "remote_access_tunnel.h"
 
 #include <array>
-#include <cstdarg>
-#include <cstdio>
 #include <memory>
 #include <utility>
 #include <esp_netif.h>
@@ -30,24 +28,7 @@
 #include <lwip/ip6.h>
 #include <lwip/prot/ip6.h>
 
-#include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
-#include "tools/net.h"
-
-void remote_access_log_packet(const char *fmt, ...)
-{
-    char message[256];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(message, sizeof(message), fmt, args);
-    va_end(args);
-
-    // Copy formatted values before the packet and stack-local addresses expire.
-    // Never enter the event log (and its WebSocket locks) from the TCP/IP task.
-    task_scheduler.scheduleOnce([message = String(message)]() {
-        logger.printfln("%s", message.c_str());
-    });
-}
 
 namespace {
 struct TunnelState {
@@ -68,51 +49,24 @@ bool valid_peer(const ip6_addr_t &address)
            !ip6_addr_isipv4mappedipv6(&address);
 }
 
-void log_packet(size_t slot, const struct pbuf *packet, bool incoming, const char *reason)
-{
-    const char *kind = slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? "management" : "user";
-    uint8_t header[42];
-    const uint16_t copied = pbuf_copy_partial(packet, header, sizeof(header), 0);
-    if (copied >= IP6_HLEN && (header[0] >> 4) == 6) {
-        ip6_addr_t source = {}, destination = {};
-        memcpy(source.addr, header + 8, sizeof(source.addr));
-        memcpy(destination.addr, header + 24, sizeof(destination.addr));
-        char source_str[IP6ADDR_STRLEN_MAX], destination_str[IP6ADDR_STRLEN_MAX];
-        tf_ip6addr_ntoa(&source, source_str, sizeof(source_str));
-        tf_ip6addr_ntoa(&destination, destination_str, sizeof(destination_str));
-        if (header[6] == IP6_NEXTH_ICMP6 && copied == sizeof(header)) {
-            remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes, ICMPv6 type %hhu, code %hhu): %s -> %s: %s",
-                                    incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[40], header[41],
-                                    source_str, destination_str, reason);
-        } else {
-            remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes, IPv6 next header %hhu): %s -> %s: %s",
-                                    incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, header[6],
-                                    source_str, destination_str, reason);
-        }
-    } else {
-        remote_access_log_packet("%s packet on %s tunnel slot %zu (%hu bytes): %s",
-                                incoming ? "incoming" : "outgoing", kind, slot, packet->tot_len, reason);
-    }
-}
-
 // The IPv6 header and total length have already been checked by filter_packet.
 // Walk extension headers before reading ports, including across pbuf segments.
-const char *management_packet_error(const struct pbuf *packet, uint8_t protocol, bool incoming)
+bool management_packet_valid(const struct pbuf *packet, uint8_t protocol, bool incoming)
 {
     uint16_t offset = IP6_HLEN;
     while (protocol == IP6_NEXTH_HOPBYHOP || protocol == IP6_NEXTH_ROUTING ||
            protocol == IP6_NEXTH_DESTOPTS || protocol == IP6_NEXTH_FRAGMENT) {
         uint8_t extension[8];
         if (pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
-            return "truncated IPv6 extension header";
+            return false;
         }
         const uint16_t length = protocol == IP6_NEXTH_FRAGMENT ? sizeof(extension) : (extension[1] + 1) * 8;
         // Later fragments cannot be checked for a permitted destination port.
         if (protocol == IP6_NEXTH_FRAGMENT && (extension[2] != 0 || extension[3] != 0)) {
-            return "fragmented traffic is not allowed";
+            return false;
         }
         if (offset + length > packet->tot_len) {
-            return "IPv6 extension header exceeds packet length";
+            return false;
         }
         offset += length;
         protocol = extension[0];
@@ -120,52 +74,44 @@ const char *management_packet_error(const struct pbuf *packet, uint8_t protocol,
 
     // ICMPv6 has no ports; it is required for echo and Packet Too Big handling.
     if (protocol != IP6_NEXTH_ICMP6 && protocol != IP6_NEXTH_TCP && protocol != IP6_NEXTH_UDP) {
-        return "unsupported transport protocol";
+        return false;
     }
     if (offset + (protocol == IP6_NEXTH_TCP ? 20 : 8) > packet->tot_len) {
-        return "truncated transport header";
+        return false;
     }
     if (incoming && protocol != IP6_NEXTH_ICMP6) {
         uint8_t ports[4];
         if (pbuf_copy_partial(packet, ports, sizeof(ports), offset) != sizeof(ports)) {
-            return "cannot read transport ports";
+            return false;
         }
         const uint16_t port = (static_cast<uint16_t>(ports[2]) << 8) | ports[3];
         if (port != 12345 && (remote_access.send_port == 0 || port != remote_access.send_port)) {
-            return "destination port is not allowed";
+            return false;
         }
     }
-    return nullptr;
+    return true;
 }
 
 int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
 {
-    const auto filtered = [slot, packet, incoming](const char *reason, int result = ERR_VAL) {
-        log_packet(slot, packet, incoming, reason);
-        return result;
-    };
-    if (slot == RemoteAccessTunnel::MANAGEMENT_SLOT && incoming) {
-        log_packet(slot, packet, incoming, "received");
-    }
-
     TunnelState &state = tunnels[slot];
     uint8_t header[IP6_HLEN];
     if (state.tunnel == nullptr) {
-        return filtered("tunnel is not configured");
+        return ERR_VAL;
     }
     if (pbuf_copy_partial(packet, header, sizeof(header), 0) != sizeof(header)) {
-        return filtered("truncated IPv6 header");
+        return ERR_VAL;
     }
     if ((header[0] >> 4) != 6) {
-        return filtered("expected IPv6");
+        return ERR_VAL;
     }
     const uint16_t payload_length = static_cast<uint16_t>((header[4] << 8) | header[5]);
     if (sizeof(header) + payload_length != packet->tot_len) {
-        return filtered("IPv6 payload length does not match packet length");
+        return ERR_VAL;
     }
     if (slot == RemoteAccessTunnel::MANAGEMENT_SLOT) {
-        if (const char *error = management_packet_error(packet, header[6], incoming)) {
-            return filtered(error);
+        if (!management_packet_valid(packet, header[6], incoming)) {
+            return ERR_VAL;
         }
     }
     ip6_addr_t source = {}, destination = {};
@@ -177,41 +123,41 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
         // echo from our service ULA, before lwIP's multicast echo policy and
         // source selection, so the peer learns the usable random address.
         if (header[6] != IP6_NEXTH_ICMP6) {
-            return filtered("discovery requires ICMPv6");
+            return ERR_VAL;
         }
         if (payload_length != DISCOVERY_PAYLOAD_LENGTH) {
-            return filtered("invalid discovery payload length");
+            return ERR_VAL;
         }
         if (!valid_peer(source) || ip6_addr_cmp_zoneless(&source, &state.local)) {
-            return filtered("invalid discovery source address");
+            return ERR_VAL;
         }
         // The authenticated management server can restart independently and
         // choose a new address. User peers remain pinned until their tunnel ends.
         if (slot != RemoteAccessTunnel::MANAGEMENT_SLOT && state.discovered &&
             !ip6_addr_cmp_zoneless(&state.peer, &source)) {
-            return filtered("discovery source does not match the learned peer");
+            return ERR_VAL;
         }
         std::unique_ptr<struct pbuf, decltype(&pbuf_free)> reply(pbuf_alloc(PBUF_IP, payload_length, PBUF_RAM), pbuf_free);
         if (reply == nullptr) {
-            return filtered("cannot allocate discovery reply", ERR_MEM);
+            return ERR_MEM;
         }
         if (pbuf_copy_partial(packet, reply->payload, payload_length, sizeof(header)) != payload_length) {
-            return filtered("truncated discovery payload");
+            return ERR_VAL;
         }
         auto *echo = static_cast<uint8_t *>(reply->payload);
         if (echo[0] != 128 || echo[1] != 0) {
-            return filtered("discovery requires an echo request with code zero");
+            return ERR_VAL;
         }
         const uint16_t discovery_ident = slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? 0x4d47 : 0x5757;
         if (((echo[4] << 8) | echo[5]) != discovery_ident) {
-            return filtered("invalid discovery identifier");
+            return ERR_VAL;
         }
         if (ip6_chksum_pseudo(reply.get(), IP6_NEXTH_ICMP6, payload_length, &source, &destination) != 0) {
-            return filtered("invalid discovery checksum");
+            return ERR_VAL;
         }
         struct netif *interface = state.tunnel->routeIPv6(&source);
         if (interface == nullptr) {
-            return filtered("no route for discovery reply", ERR_RTE);
+            return ERR_RTE;
         }
         // Pin the authenticated peer for this session. The output filter and
         // routing hook already need the learned address while sending the reply.
@@ -222,31 +168,21 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
         echo[3] = 0;
         const uint16_t checksum = ip6_chksum_pseudo(reply.get(), IP6_NEXTH_ICMP6, payload_length, &state.local, &source);
         memcpy(echo + 2, &checksum, sizeof(checksum));
-        const err_t result = ip6_output_if_src(reply.get(), &state.local, &source, 64, 0, IP6_NEXTH_ICMP6, interface);
-        if (result != ERR_OK) {
-            remote_access_log_packet("Discovery reply failed on tunnel slot %zu: lwIP error %hhi", slot, result);
-            return filtered("cannot send discovery reply");
-        }
-        char local_str[IP6ADDR_STRLEN_MAX], peer_str[IP6ADDR_STRLEN_MAX];
-        tf_ip6addr_ntoa(&state.local, local_str, sizeof(local_str));
-        tf_ip6addr_ntoa(&state.peer, peer_str, sizeof(peer_str));
-        remote_access_log_packet("Handled incoming discovery packet on %s tunnel slot %zu (%hu bytes): %s -> %s reply sent",
-                       slot == RemoteAccessTunnel::MANAGEMENT_SLOT ? "management" : "user",
-                       slot, packet->tot_len, local_str, peer_str);
+        ip6_output_if_src(reply.get(), &state.local, &source, 64, 0, IP6_NEXTH_ICMP6, interface);
         // WireGuard retains ownership and frees the consumed request.
         return ERR_VAL;
     }
 
     if (!state.discovered) {
-        return filtered("peer discovery is incomplete");
+        return ERR_VAL;
     }
     const ip6_addr_t &expected_source = incoming ? state.peer : state.local;
     const ip6_addr_t &expected_destination = incoming ? state.local : state.peer;
     if (!ip6_addr_cmp_zoneless(&source, &expected_source)) {
-        return filtered("source address does not match the discovered pair");
+        return ERR_VAL;
     }
     if (!ip6_addr_cmp_zoneless(&destination, &expected_destination)) {
-        return filtered("destination address does not match the discovered pair");
+        return ERR_VAL;
     }
     return ERR_OK;
 }

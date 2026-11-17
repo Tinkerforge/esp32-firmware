@@ -49,8 +49,3 @@ private:
 
 // Generate a fresh ULA, without a shared subnet or connection-number encoding.
 IPAddress random_remote_access_address();
-
-// Packet filters run in lwIP context. Defer logging to the main task because
-// the event log takes WebSocket locks whose owners may be waiting for lwIP.
-[[gnu::format(__printf__, 1, 2)]]
-void remote_access_log_packet(const char *fmt, ...);
