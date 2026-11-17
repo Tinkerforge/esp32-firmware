@@ -37,6 +37,7 @@ public:
     NFCBricklet();
 
     void setup() override;
+    void pre_reboot() override;
 
     void setup_nfc();
 
@@ -45,6 +46,7 @@ public:
 
 private:
     void check_state();
+    static void static_tag_seen_cb(struct TF_NFC *nfc, uint8_t tag_type, uint8_t tag_id_length, uint8_t tag_id_data[10], void *user_data);
 };
 
 #include "options_end.h"

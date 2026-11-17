@@ -40,12 +40,24 @@ void NFCBricklet::setup()
     if (!device_found)
         return;
 
-    // nfc.register_backend() schedules the periodic check_state() call.
-    nfc.register_backend(this);
-
     api.addFeature("nfc");
 
-    initialized = true;
+#if MODULE_IO_SCHEDULER_AVAILABLE()
+#define SCHEDULER io_scheduler
+#else
+#define SCHEDULER task_scheduler
+#endif
+    SCHEDULER.scheduleUncancelable([this]() {
+        this->check_state();
+    }, 30_s, 30_s); // DeviceModule polls bootloader mode every 10s; no point in using minutes for the NFC mode check.
+}
+
+void NFCBricklet::pre_reboot()
+{
+    // Unregister callback handler. The callback can't be disabled at this point
+    // because the IO scheduler doesn't process requests during the pre-reboot stage.
+    // Updating the callback (pointer) is atomic and should be safe without locking.
+    tf_nfc_register_simple_tag_seen_callback(&device, nullptr, nullptr);
 }
 
 void NFCBricklet::setup_nfc()
@@ -71,6 +83,17 @@ void NFCBricklet::setup_nfc()
         return;
     }
 
+    // Enable callback
+    tf_nfc_register_simple_tag_seen_callback(&device, &static_tag_seen_cb, nullptr);
+
+    result = tf_nfc_set_simple_tag_seen_callback_configuration(&device, 900);
+    if (result != TF_E_OK) {
+        if (!is_in_bootloader(result)) {
+            logger.printfln("Enabling tag seen callback failed (rc %d). Disabling NFC support.", result);
+        }
+        return;
+    }
+
     initialized = true;
 }
 
@@ -84,6 +107,33 @@ bool NFCBricklet::get_tag_id(uint8_t index, uint8_t *tag_type, uint8_t *tag_id, 
         return false;
     }
     return true;
+}
+
+// Called by IO scheduler, if present.
+void NFCBricklet::static_tag_seen_cb(struct TF_NFC * /*nfc*/, uint8_t tag_type, uint8_t tag_id_length, uint8_t tag_id_data[10], void * /*user_data*/)
+{
+    struct closure_t {
+        aligned_storage<Task> task_buf;
+        NFC::tag_t tag;
+    };
+
+    closure_t *closure = new(std::nothrow) closure_t;
+
+    if (closure == nullptr) {
+        logger.printfln("No memory for seen tag");
+        return;
+    }
+
+    NFC::tag_t *tag = &closure->tag;
+
+    tag->type = tag_type;
+    tag->id_length = tag_id_length;
+    memcpy(tag->id_bytes, tag_id_data, tag_id_length);
+
+    // Transfer ownership, will free the whole closure.
+    task_scheduler.scheduleOnceNoAlloc(&closure->task_buf, true, [tag]() {
+        nfc.local_tag_seen(tag);
+    });
 }
 
 void NFCBricklet::check_state()

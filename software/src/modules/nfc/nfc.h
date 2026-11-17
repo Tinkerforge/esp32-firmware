@@ -37,8 +37,6 @@
 #define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3 - 1)
 #define NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH (NFC_TAG_ID_LENGTH * 2)
 
-#define TAG_LIST_LENGTH 9
-
 class INfcBackend
 {
 public:
@@ -47,8 +45,6 @@ public:
 
     // Get tag at given index. Returns true on success, false on error.
     virtual bool get_tag_id(uint8_t index, uint8_t *tag_type, uint8_t *tag_id, uint8_t *tag_id_length, uint32_t *last_seen) = 0;
-    // Check and recover the backend state.
-    virtual void check_state() = 0;
 
     virtual void reset() {}
 };
@@ -70,11 +66,10 @@ public:
     };
 
     struct tag_info_t {
-        uint32_t last_seen;
+        millis_t last_seen_at_ms; // Absolute uptime
+        uint32_t last_seen;       // Relative before now
         tag_t tag;
     };
-
-    void register_backend(INfcBackend *backend);
 
     int16_t get_user_id(const tag_t &tag);
 
@@ -87,6 +82,7 @@ public:
         int8_t charger_index;
     };
 
+    void local_tag_seen(const tag_t *tag);
     void remote_tag_seen(uint8_t tag_type, const uint8_t *tag_id, uint8_t tag_id_length, int8_t charger_index);
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -96,14 +92,15 @@ public:
     micros_t get_deadtime_post_start() const { return this->deadtime_post_start; }
 
 private:
+    ConfigRoot seen_tags_state;
+
     Config config_authorized_tags_prototype;
     ConfigRoot config;
-    ConfigRoot auth_info;
 
-    INfcBackend *backend = nullptr;
+    ConfigRoot inject_tag;
+    Config auth_info;
 
-    micros_t deadtime_post_start = 0_us;
-    size_t auth_tag_count = 0;
+    tag_info_t *seen_tags = nullptr;
 
     struct auth_tag_t {
         uint8_t user_id;
@@ -111,20 +108,15 @@ private:
     };
 
     std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
+    size_t auth_tag_count = 0;
+
+    micros_t deadtime_post_start = 0_us;
+
     void setup_auth_tags();
+    bool setup_seen_tags();
 
-    void fetch_seen_tags();
-    void update_seen_tags();
-    void tag_seen(tag_info_t *info, bool injected);
-
-public:
-    ConfigRoot seen_tags;
-    ConfigRoot inject_tag;
-    micros_t last_tag_injection = 0_us;
-    int tag_injection_action = 0;
-
-    tag_info_t *old_tags = nullptr;
-    tag_info_t *new_tags = nullptr;
+    void tag_injected(int action);
+    void tag_seen(const tag_t *tag, int injection_action);
 };
 
 #include "options_end.h"
