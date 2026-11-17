@@ -56,5 +56,17 @@ public:
 
     bool haveActiveClient();
 
+    struct FirstPacketCb {
+        const char *path;
+        size_t path_len;
+        size_t max_length;
+        std::function<void(StringWriter *sb)> cb;
+    };
+    CoolArray<FirstPacketCb, 4> init_packet_cbs;
+
+    void addFirstPacketCb(const char * const path, size_t path_len, size_t max_length, std::function<void(StringWriter *sb)> &&cb);
+
+
     WebSockets web_sockets;
+
 };

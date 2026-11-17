@@ -46,6 +46,26 @@ void WS::setup()
     initialized = true;
 }
 
+static bool send_first_packet_payload(StringWriter *sw, const char * path, size_t path_len, size_t payload_max_len, std::function<void(StringWriter *sw)> cb) {
+    size_t req = prefix_len + path_len + infix_len + payload_max_len + suffix_len + 1; // +1 for the second \n
+
+    if (sw->getRemainingLength() < req) {
+        if (req > sw->getCapacity()) {
+            logger.printfln("%s exceeds max WS buffer capacity! Required %u, buffer capacity %u", path, req, sw->getCapacity());
+        }
+
+        return false;
+    }
+
+    sw->puts(prefix, prefix_len);
+    sw->puts(path, path_len);
+    sw->puts(infix, infix_len);
+    cb(sw);
+    sw->puts(suffix, suffix_len);
+
+    return true;
+}
+
 void WS::register_urls()
 {
     // TODO: Merge this and the very similar function print_regs_to_debug_report in api.cpp
@@ -69,37 +89,61 @@ void WS::register_urls()
         sb.printf("{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
 
         size_t i = 0;
-        bool done = false;
+        enum class State {
+            Api, Callbacks, Done
+        };
+        State state = State::Api;
 
-        while (!done) {
-            auto result = task_scheduler.await([&i, &done, &sb]() {
-                for (; i < api.states.size(); ++i) {
-                    auto &reg = api.states[i];
-                    auto path = reg.path;
-                    auto path_len = reg.get_path_len();
-                    auto config_len = reg.config->string_length(reg.keys_to_censor, reg.get_keys_to_censor_len());
-                    size_t req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
+        while (state != State::Done) {
+            auto result = task_scheduler.await([this, &i, &state, &sb]() {
+                switch (state) {
+                    case State::Api:
+                        for (; i < api.states.size(); ++i) {
+                            auto &reg = api.states[i];
 
-                    if (sb.getRemainingLength() < req) {
-                        done = false;
+                            bool sent = send_first_packet_payload(
+                                &sb,
+                                reg.path,
+                                reg.get_path_len(),
+                                reg.config->string_length(reg.keys_to_censor, reg.get_keys_to_censor_len()),
+                                [&reg](StringWriter *sw){reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len(), sw);}
+                            );
 
-                        if (req > sb.getCapacity()) {
-                            logger.printfln("API %s exceeds max WS buffer capacity! Required %u, buffer capacity %u", path, req, sb.getCapacity());
+                            if (!sent){
+                                return;
+                            }
                         }
 
-                        return;
-                    }
+                        state = static_cast<State>(to_underlying(state) + 1);
+                        i = 0;
+                        [[fallthrough]];
 
-                    sb.puts(prefix, prefix_len);
-                    sb.puts(path, path_len);
-                    sb.puts(infix, infix_len);
+                    case State::Callbacks:
+                        for (; i < this->init_packet_cbs.size(); ++i) {
+                            auto &reg = this->init_packet_cbs[i];
 
-                    reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len(), &sb);
+                            bool sent = send_first_packet_payload(
+                                &sb,
+                                reg.path,
+                                reg.path_len,
+                                reg.max_length,
+                                reg.cb
+                            );
 
-                    sb.puts(suffix, suffix_len);
+                            if (!sent){
+                                return;
+                            }
+                        }
+
+                        state = static_cast<State>(to_underlying(state) + 1);
+                        i = 0;
+                        [[fallthrough]];
+
+                    case State::Done:
+                    default:
+                        break;
                 }
 
-                done = true;
             });
 
             if (!result) {
@@ -107,12 +151,12 @@ void WS::register_urls()
                 return false;
             }
 
-            if (!done && sb.getLength() == 0) {
+            if (state != State::Done && sb.getLength() == 0) {
                 client->close_HTTPThread();
                 return false;
             }
 
-            if (done) {
+            if (state == State::Done) {
                 sb.putc('\n');
             }
 
@@ -213,6 +257,11 @@ IAPIBackend::WantsStateUpdate WS::wantsStateUpdate(size_t stateIdx)
 bool WS::haveActiveClient()
 {
     return web_sockets.haveActiveClient();
+}
+
+void WS::addFirstPacketCb(const char * const path, size_t path_len, size_t max_length, std::function<void(StringWriter *sb)> &&cb)
+{
+    this->init_packet_cbs.add({path, path_len, max_length, cb});
 }
 
 void WS::pre_reboot() {
