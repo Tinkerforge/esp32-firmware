@@ -180,7 +180,7 @@ def discover(local, identifier, interface="wg0"):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, interface.encode() + b"\0")
         sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, index)
         sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 1)
-        sock.bind((local, 0))
+        sock.bind((local, 0, 0, index))
         for sequence in range(20):
             # Linux computes the ICMPv6 checksum, including its pseudo-header.
             request = struct.pack("!BBHHH", 128, 0, 0, identifier, sequence) + nonce
@@ -199,7 +199,7 @@ def discover(local, identifier, interface="wg0"):
                 if (kind, code, ident) != (129, 0, identifier) or seq not in outstanding or reply[8:] != nonce:
                     continue
                 address = ipaddress.IPv6Address(source[0])
-                if address.packed[0] != 0xfd or str(address) == local:
+                if not address.is_link_local or str(address) == local or source[3] != index:
                     continue
                 pseudo_header = (address.packed + ipaddress.IPv6Address(local).packed
                                  + struct.pack("!I3xB", len(reply), socket.IPPROTO_ICMPV6))
@@ -293,8 +293,8 @@ class WireGuardTestPeer:
     - Host kernel with WireGuard support (Linux 5.6+ or wireguard-dkms)
     - Port 51820/UDP available on the host
 
-    The container listens on port 51820/UDP with a random IPv6 ULA. Each
-    device tunnel's service address is learned with multicast ICMPv6 echo.
+    The container listens on port 51820/UDP with a random IPv6 link-local
+    address. Each device tunnel's address is learned with multicast ICMPv6 echo.
     """
 
     def __init__(self) -> None:
@@ -303,7 +303,7 @@ class WireGuardTestPeer:
         self.device_private: str = ""
         self.device_public: str = ""
         self.psk: str = ""
-        self.relay_ip = str(ipaddress.IPv6Address(b"\xfd" + os.urandom(15)))
+        self.relay_ip = str(ipaddress.IPv6Address(b"\xfe\x80" + b"\0" * 6 + os.urandom(8)))
         self.device_ip: str | None = None
         self.user_peers: dict[int, str] = {}
         self.user_addresses: dict[int, str] = {}
@@ -483,8 +483,9 @@ class WireGuardTestPeer:
         script = (
             "import socket; "
             "s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM); "
-            f"s.bind(('{self.relay_ip}', 0)); "
-            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345)); "
+            "index = socket.if_nametoindex('wg0'); "
+            f"s.bind(('{self.relay_ip}', 0, 0, index)); "
+            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345, 0, index)); "
             "s.close()"
         )
         subprocess.run(
@@ -519,8 +520,9 @@ class WireGuardTestPeer:
         script = (
             "import socket; "
             "s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM); "
-            f"s.bind(('{self.relay_ip}', 0)); "
-            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345)); "
+            "index = socket.if_nametoindex('wg0'); "
+            f"s.bind(('{self.relay_ip}', 0, 0, index)); "
+            f"s.sendto(bytes.fromhex('{packet_hex}'), ('{self.device_ip}', 12345, 0, index)); "
             "s.close()"
         )
         subprocess.run(
@@ -706,10 +708,11 @@ class WireGuardTestPeer:
         if conn_no not in self.user_addresses:
             self.user_addresses[conn_no] = self._discover_peer(self.user_peers[conn_no], 0x5757)
         address = self.user_addresses[conn_no]
+        interface = self._user_interfaces.get(self.user_peers[conn_no], "wg0")
         script = (
             "import urllib.request; "
             "opener = urllib.request.build_opener(urllib.request.ProxyHandler({})); "
-            f"response = opener.open('http://[{address}]/remote_access/config', timeout=3); "
+            f"response = opener.open('http://[{address}%{interface}]/remote_access/config', timeout=3); "
             "print(response.read().decode())"
         )
         result = subprocess.run(
@@ -741,7 +744,10 @@ class WireGuardTestPeer:
         execute("wg", "set", interface, "peer", public_key, "allowed-ips", "::/0")
         execute("ip", "-6", "route", "replace", "ff02::1/128", "dev", interface, "src", self.relay_ip)
         address = execute("python3", "/discovery.py", self.relay_ip, hex(identifier), interface, timeout=15)
-        address = str(ipaddress.IPv6Address(address))
+        address = ipaddress.IPv6Address(address)
+        if not address.is_link_local:
+            raise AssertionError(f"Discovery returned a non-link-local address: {address}")
+        address = str(address)
         execute("wg", "set", interface, "peer", public_key, "allowed-ips", f"{address}/128")
         execute("ip", "-6", "route", "replace", f"{address}/128", "dev", interface, "src", self.relay_ip)
         return address
@@ -865,6 +871,9 @@ def _do_full_registration(tc: TestContext, *, user_tunnels: bool = False) -> Wir
                 raise AssertionError(
                     f"Could not extract management tunnel keys from registration body: {exc}"
                 ) from exc
+            tc.assert_true(ipaddress.IPv6Address(body["charger"]["wg_server_ip"]).is_link_local)
+            for key in body["keys"]:
+                tc.assert_true(ipaddress.IPv6Address(key["web_address"]).is_link_local)
             wg.set_management_peer(charger_pub, psk)
             break
     else:

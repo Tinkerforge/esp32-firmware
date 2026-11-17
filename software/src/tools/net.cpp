@@ -78,7 +78,7 @@ IPAddress tf_sockaddr_storage2IPAddress(const struct sockaddr_storage *addr, soc
             return IPAddress(addr6_bytes + sizeof(ipv4_mapped_prefix));
         }
 
-        return IPAddress(IPType::IPv6, addr6_bytes);
+        return IPAddress(IPType::IPv6, addr6_bytes, static_cast<uint8_t>(addr6->sin6_scope_id));
     }
 #endif
 

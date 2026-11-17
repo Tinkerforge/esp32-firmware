@@ -32,8 +32,8 @@ PACKET_REQUEST = 4
 NACK_BUSY = 0
 NACK_ALREADY_SENT = 6
 
-# Both sockets use the relay's random ULA. Discovery also runs after reboots,
-# which replace the device's service address during the monthly upload tests.
+# Both sockets use the relay's random link-local address. Discovery also runs
+# after reboots, which replace the device's address during monthly upload tests.
 RELAY_SCRIPT = r"""
 import base64
 import json
@@ -47,6 +47,7 @@ import time
 from discovery import discover
 
 local = sys.argv[1]
+index = socket.if_nametoindex("wg0")
 
 def keep_discovering():
     while True:
@@ -59,10 +60,10 @@ def keep_discovering():
 threading.Thread(target=keep_discovering, daemon=True).start()
 
 udp = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-udp.bind((local, 12345))
+udp.bind((local, 12345, 0, index))
 tcp = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-tcp.bind((local, 8080))
+tcp.bind((local, 8080, 0, index))
 tcp.listen(1)
 print(json.dumps({'kind': 'ready'}), flush=True)
 
@@ -86,10 +87,10 @@ while True:
                 command = json.loads(line)
                 payload = bytes.fromhex(command['packet'])
                 assert peer is not None
-                udp.sendto(payload, (peer, 12345))
+                udp.sendto(payload, peer)
         elif source is udp:
             packet, source_address = udp.recvfrom(2048)
-            peer = source_address[0]
+            peer = source_address
             print(json.dumps({'kind': 'udp', 'packet': packet.hex()}), flush=True)
         elif source is tcp:
             client, _ = tcp.accept()
@@ -115,7 +116,7 @@ class ChargeLogRelay:
         self.reader: threading.Thread | None = None
 
     def start(self, peer: WireGuardTestPeer):
-        # This suite has only one management peer. Keep its wildcard and ULA
+        # This suite has only one management peer. Keep its wildcard and link-local
         # route so discovery and replies still work when a reboot changes IPs.
         subprocess.run(
             ["docker", "exec", WG_CONTAINER_NAME, "wg", "set", "wg0",
@@ -124,7 +125,7 @@ class ChargeLogRelay:
         )
         subprocess.run(
             ["docker", "exec", WG_CONTAINER_NAME, "ip", "-6", "route",
-             "replace", "fd00::/8", "dev", "wg0", "src", peer.relay_ip],
+             "replace", "fe80::/64", "dev", "wg0", "src", peer.relay_ip],
             check=True, capture_output=True, text=True,
         )
         self.process = subprocess.Popen(
