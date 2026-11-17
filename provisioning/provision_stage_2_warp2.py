@@ -28,7 +28,6 @@ from provisioning.tinkerforge.bricklet_evse_v2 import BrickletEVSEV2
 from provisioning.provision_common.provision_common import *
 from provisioning.provision_common.zbase32 import ZBASE32
 from provisioning.provision_stage_3_warp2 import Stage3
-from provisioning.pib_compare import compare_data as pib_compare_data
 
 WARP_CHARGER_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger'))
 
@@ -706,42 +705,60 @@ def get_iso15118_attenuation_profile():
     except Exception as e:
         fatal_error("Failed to get ISO 15118 attenuation profile: {}".format(e), other_exception=e)
 
-def upload_iso15118_pib():
+# Values of ModemUpdateState (src/modules/iso15118/Modem Update State.uint8.enum)
+MODEM_UPDATE_STATE_UP_TO_DATE = 2
+MODEM_UPDATE_STATE_FAILED = 6
+
+def update_iso15118_modem_firmware():
     set_iso15118_enabled(True)
-    time.sleep(3)
 
-    pib_filename = "qca7000_lab_x2.pib"
-    pib = Path(pib_filename).read_bytes()
-    req = urllib.request.Request("http://{}/iso15118/pib_write".format(host), data=pib)
-    try:
-        with urllib.request.urlopen(req, timeout=6) as f:
-            f.read()
-    except urllib.error.HTTPError as e:
-        fatal_error("Failed to upload ISO 15118 PIB: {} {}".format(e, e.read()), other_exception=e)
-    except Exception as e:
-        fatal_error("Failed to upload ISO 15118 PIB: {}".format(e), other_exception=e)
-
+    # Always rewrite firmware and PIB once, also if the modem is already up to date: The PIB contains our calibration.
+    # The automatic check after boot might still be running, retry until the forced update is accepted.
+    req = urllib.request.Request("http://{}/iso15118/modem_firmware_update".format(host),
+                                 data=json.dumps({"force": True}).encode('utf-8'))
     start = time.time()
-    ex = None
-    while time.time() - start < 10:
-        time.sleep(0.1)
-        req = urllib.request.Request("http://{}/iso15118/pib_read".format(host))
+    while True:
         try:
-            with urllib.request.urlopen(req, timeout=2) as f:
-                pid_readback = f.read()
-                if not pib_compare_data(pib, pid_readback):
-                    Path(pib_filename + ".readback").write_bytes(pid_readback)
-                    fatal_error(f"ISO 15118 PIB not applied! See {pib_filename} vs {pib_filename}.readback file")
-                ex = None
-                break
+            with urllib.request.urlopen(req, timeout=6) as f:
+                f.read()
+            break
         except urllib.error.HTTPError as e:
-            ex = str(e) + e.read().decode('utf-8')
-            #fatal_error("Failed to read back ISO 15118 PIB: {} {}".format(e, e.read()), other_exception=e)
+            message = e.read().decode('utf-8')
+
+            if "already in progress" not in message or time.time() - start > 120:
+                fatal_error("Failed to start PLC modem firmware update: {} {}".format(e, message), other_exception=e)
         except Exception as e:
-            ex = e
-            #fatal_error("Failed to read back ISO 15118 PIB: {}".format(e), other_exception=e)
-    if ex is not None:
-        fatal_error("Failed to read back ISO 15118 PIB: {}".format(ex), other_exception=ex)
+            fatal_error("Failed to start PLC modem firmware update: {}".format(e), other_exception=e)
+
+        time.sleep(1)
+
+    modem_firmware = None
+    start = time.time()
+    while time.time() - start < 180:
+        time.sleep(1)
+        try:
+            with urllib.request.urlopen("http://{}/iso15118/modem_firmware".format(host), timeout=5) as f:
+                modem_firmware = json.loads(f.read())
+        except Exception:
+            continue
+
+        if not modem_firmware["available"]:
+            fatal_error("Firmware was built without PLC modem firmware")
+
+        if modem_firmware["state"] == MODEM_UPDATE_STATE_FAILED:
+            fatal_error("PLC modem firmware update failed: {}".format(modem_firmware["error"]))
+
+        if modem_firmware["state"] == MODEM_UPDATE_STATE_UP_TO_DATE:
+            break
+    else:
+        fatal_error("PLC modem firmware update timed out: {}".format(modem_firmware))
+
+    # Progress is only 100 after firmware and PIB were written and verified.
+    if modem_firmware["progress"] != 100:
+        fatal_error("PLC modem firmware was not written: {}".format(modem_firmware))
+
+    if not modem_firmware["modem_version"].endswith("-" + modem_firmware["embedded_version"]):
+        fatal_error("PLC modem reports firmware {}, expected {}".format(modem_firmware["modem_version"], modem_firmware["embedded_version"]))
 
     set_iso15118_enabled(False)
 
@@ -1377,8 +1394,8 @@ def main(stage3, scanner, result):
         dprint("post bricklet tests")
 
         if generation >= 4:
-            upload_iso15118_pib()
-            dprint("post iso15118 pib")
+            update_iso15118_modem_firmware()
+            dprint("post iso15118 modem firmware")
 
         user_config = json.loads(connect_to_ethernet(ssid, "users/config").decode('utf-8'))
         do_factory_reset = False
