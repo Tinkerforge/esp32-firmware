@@ -49,15 +49,16 @@ bool valid_peer(const ip6_addr_t &address)
            !ip6_addr_isipv4mappedipv6(&address);
 }
 
-// The IPv6 header and total length have already been checked by filter_packet.
+// The IPv6 header and declared length have already been checked by filter_packet.
 // Walk extension headers before reading ports, including across pbuf segments.
-bool management_packet_valid(const struct pbuf *packet, uint8_t protocol, bool incoming)
+bool management_packet_valid(const struct pbuf *packet, size_t packet_length, uint8_t protocol, bool incoming)
 {
-    uint16_t offset = IP6_HLEN;
+    size_t offset = IP6_HLEN;
     while (protocol == IP6_NEXTH_HOPBYHOP || protocol == IP6_NEXTH_ROUTING ||
            protocol == IP6_NEXTH_DESTOPTS || protocol == IP6_NEXTH_FRAGMENT) {
         uint8_t extension[8];
-        if (pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
+        if (offset + sizeof(extension) > packet_length ||
+            pbuf_copy_partial(packet, extension, sizeof(extension), offset) != sizeof(extension)) {
             return false;
         }
         const uint16_t length = protocol == IP6_NEXTH_FRAGMENT ? sizeof(extension) : (extension[1] + 1) * 8;
@@ -65,7 +66,7 @@ bool management_packet_valid(const struct pbuf *packet, uint8_t protocol, bool i
         if (protocol == IP6_NEXTH_FRAGMENT && (extension[2] != 0 || extension[3] != 0)) {
             return false;
         }
-        if (offset + length > packet->tot_len) {
+        if (offset + length > packet_length) {
             return false;
         }
         offset += length;
@@ -76,7 +77,7 @@ bool management_packet_valid(const struct pbuf *packet, uint8_t protocol, bool i
     if (protocol != IP6_NEXTH_ICMP6 && protocol != IP6_NEXTH_TCP && protocol != IP6_NEXTH_UDP) {
         return false;
     }
-    if (offset + (protocol == IP6_NEXTH_TCP ? 20 : 8) > packet->tot_len) {
+    if (offset + (protocol == IP6_NEXTH_TCP ? 20 : 8) > packet_length) {
         return false;
     }
     if (incoming && protocol != IP6_NEXTH_ICMP6) {
@@ -106,11 +107,14 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
         return ERR_VAL;
     }
     const uint16_t payload_length = static_cast<uint16_t>((header[4] << 8) | header[5]);
-    if (sizeof(header) + payload_length != packet->tot_len) {
+    const size_t packet_length = sizeof(header) + payload_length;
+    // Incoming WireGuard packets may still include authenticated padding.
+    // lwIP trims it on input; our parsing must stay within the IPv6 length.
+    if (packet_length > packet->tot_len || (!incoming && packet_length != packet->tot_len)) {
         return ERR_VAL;
     }
     if (slot == RemoteAccessTunnel::MANAGEMENT_SLOT) {
-        if (!management_packet_valid(packet, header[6], incoming)) {
+        if (!management_packet_valid(packet, packet_length, header[6], incoming)) {
             return ERR_VAL;
         }
     }
