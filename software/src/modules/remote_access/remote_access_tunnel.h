@@ -47,5 +47,5 @@ private:
     uint8_t slot;
 };
 
-// Generate a fresh ULA, without a shared subnet or connection-number encoding.
+// Generate a fresh link-local address with a random interface identifier.
 IPAddress random_remote_access_address();

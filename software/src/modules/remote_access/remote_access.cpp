@@ -171,6 +171,7 @@ bool RemoteAccess::management_socket_address(bool peer, uint16_t port, sockaddr_
     result = {};
     result.sin6_family = AF_INET6;
     result.sin6_port = htons(port);
+    result.sin6_scope_id = ip6_addr_zone(&address);
     memcpy(&result.sin6_addr, address.addr, sizeof(result.sin6_addr));
     return true;
 }

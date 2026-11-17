@@ -44,9 +44,7 @@ constexpr uint16_t DISCOVERY_PAYLOAD_LENGTH = 24; // Echo header plus 16-byte se
 
 bool valid_peer(const ip6_addr_t &address)
 {
-    return !ip6_addr_isany_val(address) && !ip6_addr_ismulticast(&address) &&
-           !ip6_addr_islinklocal(&address) && !ip6_addr_isloopback(&address) &&
-           !ip6_addr_isipv4mappedipv6(&address);
+    return ip6_addr_islinklocal(&address) && (address.addr[2] != 0 || address.addr[3] != 0);
 }
 
 // The IPv6 header and declared length have already been checked by filter_packet.
@@ -124,7 +122,7 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
 
     if (incoming && ip6_addr_isallnodes_linklocal(&destination)) {
         // Each authenticated tunnel has one peer. Answer all-nodes multicast
-        // echo from our service ULA, before lwIP's multicast echo policy and
+        // echo from our link-local address, before lwIP's multicast echo policy and
         // source selection, so the peer learns the usable random address.
         if (header[6] != IP6_NEXTH_ICMP6) {
             return ERR_VAL;
@@ -163,8 +161,8 @@ int filter_packet(size_t slot, struct pbuf *packet, bool incoming)
         if (interface == nullptr) {
             return ERR_RTE;
         }
-        // Pin the authenticated peer for this session. The output filter and
-        // routing hook already need the learned address while sending the reply.
+        ip6_addr_assign_zone(&source, IP6_UNICAST, interface);
+        // Pin the authenticated peer before the output filter checks the reply.
         state.peer = source;
         state.discovered = true;
         echo[0] = 129;
@@ -203,9 +201,12 @@ constexpr auto output_filters = make_filters<false>(std::make_index_sequence<TUN
 
 IPAddress random_remote_access_address()
 {
-    uint8_t bytes[16];
-    esp_fill_random(bytes, sizeof(bytes));
-    bytes[0] = 0xfd;
+    uint8_t bytes[16] = {0xfe, 0x80};
+    uint64_t identifier;
+    do {
+        esp_fill_random(&identifier, sizeof(identifier));
+    } while (identifier == 0);
+    memcpy(bytes + 8, &identifier, sizeof(identifier));
     return IPAddress(IPv6, bytes);
 }
 
@@ -233,10 +234,18 @@ bool RemoteAccessTunnel::configure_ipv6()
     address.to_ip_addr_t(&parameters.address);
     return esp_netif_tcpip_exec([](void *arg) -> esp_err_t {
         const auto *data = static_cast<decltype(parameters) *>(arg);
-        tunnels[data->slot] = {};
-        tunnels[data->slot].tunnel = data->tunnel;
-        tunnels[data->slot].local = *ip_2_ip6(&data->address);
-        return ESP_OK;
+        // Copy the configured address including its interface zone, even before
+        // the peer handshake brings the link up and makes routeIPv6 usable.
+        for (struct netif *interface = netif_list; interface != nullptr; interface = interface->next) {
+            const ip6_addr_t *local = netif_ip6_addr(interface, 0);
+            if (ip6_addr_cmp_zoneless(local, ip_2_ip6(&data->address))) {
+                tunnels[data->slot] = {};
+                tunnels[data->slot].tunnel = data->tunnel;
+                tunnels[data->slot].local = *local;
+                return ESP_OK;
+            }
+        }
+        return ESP_FAIL;
     }, &parameters) == ESP_OK;
 }
 
@@ -303,8 +312,8 @@ bool RemoteAccessTunnel::is_connected_address(const IPAddress &local, const IPAd
         for (size_t i = 0; i < MAX_USER_CONNECTIONS; ++i) {
             const auto &state = tunnels[i];
             if (state.tunnel != nullptr && state.discovered &&
-                ip6_addr_cmp_zoneless(&state.local, ip_2_ip6(&data->local)) &&
-                ip6_addr_cmp_zoneless(&state.peer, ip_2_ip6(&data->peer))) {
+                ip6_addr_cmp(&state.local, ip_2_ip6(&data->local)) &&
+                ip6_addr_cmp(&state.peer, ip_2_ip6(&data->peer))) {
                 data->connected = true;
                 break;
             }
@@ -312,21 +321,4 @@ bool RemoteAccessTunnel::is_connected_address(const IPAddress &local, const IPAd
         return ESP_OK;
     }, &parameters);
     return result == ESP_OK && parameters.connected;
-}
-
-// Random peers may be in unrelated /64s. Match this tunnel's source address,
-// rather than installing a default route for its bootstrap ::/0 allowed prefix.
-extern "C" struct netif *lwip_hook_ip6_route(const ip6_addr_t *source, const ip6_addr_t *destination)
-{
-    if (source == nullptr || ip6_addr_isany(source)) {
-        return nullptr;
-    }
-    for (const auto &state : tunnels) {
-        if (state.tunnel != nullptr && state.discovered &&
-            ip6_addr_cmp_zoneless(source, &state.local) &&
-            ip6_addr_cmp_zoneless(destination, &state.peer)) {
-            return state.tunnel->routeIPv6(destination);
-        }
-    }
-    return nullptr;
 }
