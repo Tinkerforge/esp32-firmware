@@ -25,6 +25,22 @@ let x = {
             "pib_upload": "Upload PIB",
             "pib_upload_desc": "upload a PIB file to the PLC modem",
             "pib_upload_button": "Upload PIB",
+            "modem_firmware_update": "Update PLC modem firmware",
+            "modem_firmware_update_desc": "rewrite firmware and PIB of the PLC modem",
+            "modem_firmware_update_button": "Update",
+            "modem_firmware_update_confirm": "Rewrite the firmware and parameters of the PLC modem?",
+
+            "modem_firmware_version": "PLC modem firmware",
+            "modem_firmware_embedded_version": "Included PLC modem firmware",
+            "modem_firmware_not_included": "Not included",
+            "modem_firmware_state": "PLC modem firmware update",
+            "modem_firmware_state_unknown": "Not checked yet",
+            "modem_firmware_state_checking": "Checking",
+            "modem_firmware_state_up_to_date": "Up to date",
+            "modem_firmware_state_pending": "Waiting for the vehicle to be unplugged",
+            "modem_firmware_state_flashing": /*SFN*/(progress: number) => "Updating (" + progress + " %)"/*NF*/,
+            "modem_firmware_state_verifying": "Verifying",
+            "modem_firmware_state_failed": /*SFN*/(error: string) => "Failed: " + error/*NF*/,
 
             "slac_state": "SLAC state",
             "slac_state_muted": "Signal Level Attenuation Characterisation",
@@ -107,6 +123,7 @@ let x = {
             "slac_state_modem_disabled": "Modem disabled",
             "slac_state_slac_init_ef": "SLAC Init E/F",
             "slac_state_slac_init_failed": "SLAC Init failed",
+            "slac_state_modem_update": "Modem firmware update",
 
             "din70121_state_idle": "Idle",
             "din70121_state_bitstream_received": "Bitstream received",
@@ -155,7 +172,8 @@ let x = {
             "pib_download_failed": "Failed to download PIB",
             "pib_upload_failed": "Failed to upload PIB",
             "pib_upload_success": "PIB successfully uploaded. The PLC modem is resetting.",
-            "pib_write_failed": "PIB write failed"
+            "pib_write_failed": "PIB write failed",
+            "modem_firmware_update_failed": "Failed to start the PLC modem firmware update"
         }
     }
 }

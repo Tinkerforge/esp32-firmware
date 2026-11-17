@@ -1,5 +1,7 @@
 //#include "../../options.inc"
 
+import { ModemUpdateState } from "./generated/modem_update_state.enum";
+
 export interface config {
     autocharge: boolean;
     read_soc: boolean;
@@ -74,4 +76,17 @@ export interface state_iso20 {
     soc: number;
     active_power: number;
     energy_capacity: number;
+}
+
+export interface modem_firmware {
+    available: boolean;
+    embedded_version: string;
+    modem_version: string;
+    state: ModemUpdateState;
+    progress: number; // [0..100]
+    error: string;
+}
+
+export interface modem_firmware_update {
+    force: boolean;
 }

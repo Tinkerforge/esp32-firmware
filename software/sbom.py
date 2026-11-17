@@ -788,6 +788,7 @@ class SbomBuilder:
         self.add_vendored()
         self.add_embedded_firmwares()
         self.add_embedded_data()
+        self.add_qca_firmware()
         self.add_tzdata()
         self.add_web_interface()
 
@@ -1312,6 +1313,37 @@ class SbomBuilder:
 
             for info in data['third_party']:
                 self.depend(ref, self.add_third_party(f'data/{data["name"]}/{info["name"]}', info | {'type': 'data'}))
+
+    def add_qca_firmware(self):
+        # The proprietary QCA PLC modem firmware is only embedded if it is present
+        # in src/modules/iso15118/qca_firmware/ (not part of the public repository).
+        source = 'src/modules/iso15118/generated/qca_firmware_nvm.embedded.cpp'
+
+        if source not in self.compiled_sources:
+            return
+
+        firmware_dir = os.path.join(self.project_dir, 'src', 'modules', 'iso15118', 'qca_firmware')
+
+        for pattern, name, description, supplier, license in [
+            ('*.nvm', 'qca-plc-modem-firmware', 'Firmware for the Qualcomm QCA7006 PLC modem, written to the modem by the firmware '
+                                                '(src/modules/iso15118/qca_firmware/)', {'name': 'Qualcomm Technologies, Inc.'}, 'Qualcomm proprietary license'),
+            ('*.pib', 'qca-plc-modem-pib', 'Parameter Information Block (PIB) for the QCA7006 PLC modem, written to the modem by the firmware '
+                                           '(src/modules/iso15118/qca_firmware/)', TINKERFORGE, None),
+        ]:
+            paths = sorted(glob.glob(os.path.join(firmware_dir, pattern)))
+
+            if len(paths) != 1:
+                warn(f'Expected exactly one {pattern} file in {firmware_dir}, found {len(paths)}')
+                continue
+
+            self.add(make_component(f'data/{name}', name,
+                                    os.path.splitext(os.path.basename(paths[0]))[0],
+                                    type='firmware' if pattern == '*.nvm' else 'data',
+                                    supplier=supplier,
+                                    description=description,
+                                    license=license,
+                                    hashes=file_hashes(paths[0])),
+                     depended_on_by=self.root_ref)
 
     def add_tzdata(self):
         source = 'src/modules/ntp/timezones.c'

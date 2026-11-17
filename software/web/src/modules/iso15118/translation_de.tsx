@@ -25,6 +25,22 @@ let x = {
             "pib_upload": "PIB hochladen",
             "pib_upload_desc": "PIB-Datei auf das PLC-Modem hochladen",
             "pib_upload_button": "PIB hochladen",
+            "modem_firmware_update": "PLC-Modem-Firmware aktualisieren",
+            "modem_firmware_update_desc": "Firmware und PIB des PLC-Modems neu schreiben",
+            "modem_firmware_update_button": "Aktualisieren",
+            "modem_firmware_update_confirm": "Firmware und Parameter des PLC-Modems wirklich neu schreiben?",
+
+            "modem_firmware_version": "PLC-Modem-Firmware",
+            "modem_firmware_embedded_version": "Enthaltene PLC-Modem-Firmware",
+            "modem_firmware_not_included": "Nicht enthalten",
+            "modem_firmware_state": "PLC-Modem-Firmware-Update",
+            "modem_firmware_state_unknown": "Noch nicht geprüft",
+            "modem_firmware_state_checking": "Wird geprüft",
+            "modem_firmware_state_up_to_date": "Aktuell",
+            "modem_firmware_state_pending": "Warte auf Abstecken des Fahrzeugs",
+            "modem_firmware_state_flashing": /*SFN*/(progress: number) => "Wird aktualisiert (" + progress + " %)"/*NF*/,
+            "modem_firmware_state_verifying": "Wird überprüft",
+            "modem_firmware_state_failed": /*SFN*/(error: string) => "Fehlgeschlagen: " + error/*NF*/,
 
             "slac_state": "SLAC-Status",
             "slac_state_muted": "Signal Level Attenuation Characterisation",
@@ -107,6 +123,7 @@ let x = {
             "slac_state_modem_disabled": "Modem disabled",
             "slac_state_slac_init_ef": "SLAC Init E/F",
             "slac_state_slac_init_failed": "SLAC Init failed",
+            "slac_state_modem_update": "Modem firmware update",
 
             "din70121_state_idle": "Idle",
             "din70121_state_bitstream_received": "Bitstream received",
@@ -155,7 +172,8 @@ let x = {
             "pib_download_failed": "PIB-Download fehlgeschlagen",
             "pib_upload_failed": "PIB-Upload fehlgeschlagen",
             "pib_upload_success": "PIB erfolgreich hochgeladen. Das PLC-Modem wird zurückgesetzt.",
-            "pib_write_failed": "PIB-Schreibvorgang fehlgeschlagen"
+            "pib_write_failed": "PIB-Schreibvorgang fehlgeschlagen",
+            "modem_firmware_update_failed": "Starten des PLC-Modem-Firmware-Updates fehlgeschlagen"
         }
     }
 }

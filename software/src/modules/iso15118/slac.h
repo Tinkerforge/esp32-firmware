@@ -74,8 +74,12 @@
 #define PIB_MOD_OP_WRITE_MODULE   0x0011
 #define PIB_MOD_OP_CLOSE_SESSION  0x0012
 
+#define PIB_MODULE_ID_FIRMWARE    0x7001
 #define PIB_MODULE_ID_PARAMETERS  0x7002
 #define PIB_MODULE_SIZE           1400
+
+// Maximum number of modules in one VS_MODULE_OPERATION session (PIB + firmware)
+#define PIB_SESSION_MAX_MODULES   2
 
 // Commit code flags
 #define PIB_COMMIT_FORCE          (1 << 0)
@@ -455,12 +459,11 @@ struct [[gnu::packed]] VS_ModuleOperationSessionRequest {
     uint32_t reserved        = 0;
     uint8_t  num_op_data     = 1;
     uint16_t mod_op          = PIB_MOD_OP_START_SESSION;
-    uint16_t mod_op_data_len = 13 + 12; // 13 bytes fixed + 12 bytes per module spec
+    uint16_t mod_op_data_len;           // 13 bytes fixed + 12 bytes per module spec
     uint32_t mod_op_rsvd     = 0;
     uint32_t session_id;                // Random session cookie
-    uint8_t  num_modules     = 1;
-    VS_ModuleSpec module_spec;          // Module descriptor
-    uint8_t  padding[10] = {0};         // Padding to 60 bytes
+    uint8_t  num_modules;
+    VS_ModuleSpec module_spec[PIB_SESSION_MAX_MODULES]; // Module descriptors, unused entries stay zero (>= 60 bytes frame)
 };
 
 // VS_MODULE_OPERATION 0xA0B1: Session confirmation
@@ -481,7 +484,7 @@ struct [[gnu::packed]] VS_ModuleOperationSessionConfirmation {
     uint32_t mod_op_rsvd;
     uint32_t session_id;
     uint8_t  num_modules;
-    VS_ModuleStatusEntry module_status; // Status for our single module
+    VS_ModuleStatusEntry module_status[1]; // Status for each module, num_modules entries
 };
 
 // VS_MODULE_OPERATION 0xA0B0: Write module request
@@ -494,7 +497,7 @@ struct [[gnu::packed]] VS_ModuleOperationWriteRequest {
     uint16_t mod_op_data_len;      // 19 + data_length
     uint32_t mod_op_rsvd      = 0;
     uint32_t session_id;
-    uint8_t  module_idx       = 0; // First module
+    uint8_t  module_idx;           // Index of the module in the session
     uint16_t module_id;
     uint16_t module_sub_id    = 0;
     uint16_t module_length;        // Bytes in this chunk (up to 1400)
@@ -549,7 +552,7 @@ struct [[gnu::packed]] VS_ModuleOperationCommitConfirmation {
     uint32_t session_id;
     uint32_t commit_code;
     uint8_t  num_modules;
-    VS_ModuleStatusEntry module_status; // Status for our single module
+    VS_ModuleStatusEntry module_status[1]; // Status for each module, num_modules entries
 };
 
 // VS_MODULE_OPERATION 0xA0B0: Reset request (Qualcomm RS_DEV)

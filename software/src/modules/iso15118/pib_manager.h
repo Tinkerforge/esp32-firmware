@@ -17,8 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// PIB (Parameter Information Block) Manager for QCA7000/7005 PLC modules.
-// Allows reading and writing the PIB over the existing SPI connection.
+// PIB (Parameter Information Block) Manager for QCA7000/7005/7006aq PLC modules.
+// Allows reading and writing the PIB over the existing SPI connection and
+// flashing PIB + firmware (NVM) in a single session.
 //
 // Protocol: VS_MODULE_OPERATION (0xA0B0/0xA0B1) with fragmented transfers.
 
@@ -28,6 +29,8 @@
 #include <cstddef>
 
 #include <TFTools/Micros.h>
+
+#include "slac.h"
 
 // Maximum PIB size we support (QCA7000 PIBs are typically ~8-10 KB)
 #define PIB_BUFFER_SIZE 16384
@@ -72,6 +75,9 @@ public:
     // Returns false if busy.
     bool start_write();
 
+    // Start writing PIB and firmware (NVM) in one session, like plctool -P <pib> -N <nvm>.
+    bool start_flash(const uint8_t *pib, size_t pib_size, const uint8_t *nvm, size_t nvm_size);
+
     // Copy PIB data into the internal buffer for writing (called from http thread).
     // Returns false if size exceeds PIB_BUFFER_SIZE or if busy.
     bool set_write_data(const uint8_t *data, size_t size);
@@ -82,13 +88,27 @@ public:
     size_t get_buffer_length() const { return pib_length; }
     const char *get_error() const { return error_message; }
 
+    // Bytes of all modules of the current write session that were confirmed by the modem.
+    size_t get_write_progress() const { return bytes_written; }
+    size_t get_write_total() const { return bytes_total; }
+
     void format_error(char *out, size_t out_len) const;
 
     void reset() { state = PibState::Idle; error_message = nullptr; }
 
     [[gnu::const]] static const char *validate_pib_size(size_t size);
+    [[gnu::pure]] static uint32_t fdchecksum32(const uint8_t *data, size_t size);
 
 private:
+    struct Module {
+        uint16_t module_id;
+        const uint8_t *data;
+        size_t length;
+        uint32_t checksum;
+    };
+
+    void start_session();
+
     void state_machine_loop();
     void schedule_task();
 
@@ -106,15 +126,21 @@ private:
     void set_error(const char *msg);
     void set_modem_error(const char *msg, uint16_t mstatus, uint16_t err_rec_code, uint16_t mod_status, uint16_t mod_err_rec_code);
 
-    static uint32_t fdchecksum32(const uint8_t *data, size_t size);
-
     PibState state = PibState::Idle;
 
     uint8_t *pib_buffer = nullptr;
     size_t pib_length = 0;      // Current valid data length in buffer
 
+    // Modules of the current write session
+    Module modules[PIB_SESSION_MAX_MODULES];
+    uint8_t module_count = 0;
+    uint8_t module_index = 0;   // Module currently being written
+    bool modem_update = false;  // Session started by ModemFirmware, which owns the SLAC state
+    size_t bytes_written = 0;
+    size_t bytes_total = 0;
+
     // Transfer tracking
-    size_t transfer_offset = 0; // Current byte offset within the PIB
+    size_t transfer_offset = 0; // Current byte offset within the PIB (read) or the current module (write)
     uint32_t session_id = 0;    // Random session ID for write operations
     micros_t timeout_deadline = 0_us;
 

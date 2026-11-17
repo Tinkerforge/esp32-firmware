@@ -340,6 +340,10 @@ void ISO15118::pre_setup()
                                      update.get("charge_via_iso15118")->asBool();
 
         if (will_be_enabled != was_enabled) {
+            if (!will_be_enabled && modem_firmware.is_flashing()) {
+                return "PLC modem firmware update in progress, try again later.";
+            }
+
             if (will_be_enabled) {
                 if (!is_setup) {
                     task_scheduler.scheduleOnce([this]() {
@@ -399,6 +403,7 @@ void ISO15118::pre_setup()
     iso2.pre_setup();
     iso20.pre_setup();
     debug_mode.pre_setup();
+    modem_firmware.pre_setup();
 }
 
 void ISO15118::setup()
@@ -414,6 +419,8 @@ void ISO15118::setup()
     api.restorePersistentConfig("iso15118/config_experimental", &config_experimental);
 #endif
     api.restorePersistentConfig("iso15118/config", &config);
+
+    modem_firmware.setup();
 
     // Generate EVSEID for ISO 15118-2 / ISO 15118-20
     // Format: "DEWRPE" + base32(local_uid_num)
@@ -469,9 +476,11 @@ void ISO15118::register_urls()
         debug_mode.handle_update(language, errmsg);
     }, true);
 
+    modem_firmware.register_urls();
+
     // PIB read endpoint: Blocking GET (only used during testing and provisioning)
     server.on_HTTPThread("/iso15118/pib_read", HTTP_GET, [this](WebServerRequest request) {
-        if (pib_manager.is_busy()) {
+        if (pib_manager.is_busy() || modem_firmware.is_busy()) {
             return request.send_plain(409, "PIB operation already in progress");
         }
 
@@ -508,7 +517,7 @@ void ISO15118::register_urls()
 
     // PIB write endpoint: POST with raw PIB binary body. Starts async write.
     server.on_HTTPThread("/iso15118/pib_write", HTTP_POST, [this](WebServerRequest request) {
-        if (pib_manager.is_busy()) {
+        if (pib_manager.is_busy() || modem_firmware.is_busy()) {
             return request.send_plain(409, "PIB operation already in progress");
         }
 
@@ -635,10 +644,17 @@ void ISO15118::rearm_for_next_ev()
     // Clean up session state
     common.reset_active_socket();
     common.reset_evcc_vendor();
-    qca700x.link_down();
-    slac.cancel_link_up_task();
-    slac.state = SLACState::ModemReset;
-    slac.api_state.get("modem_initialization_tries")->updateUint(0);
+
+    // While the PLC modem firmware is updated, the modem must not be reset.
+    if (modem_firmware.is_flashing()) {
+        iso15118.trace("ISO15118: PLC modem firmware update in progress, not resetting modem");
+    } else {
+        qca700x.link_down();
+        slac.cancel_link_up_task();
+        slac.state = SLACState::ModemReset;
+        slac.api_state.get("modem_initialization_tries")->updateUint(0);
+    }
+
     iso2.reset_dc_soc_done();
     iso2.reset_session();
     din70121.reset_session();
@@ -661,6 +677,9 @@ void ISO15118::state_machines_loop()
 
     // SLAC state machine for timeouts and protocol handling
     slac.state_machine_loop();
+
+    // PLC modem firmware check and update
+    modem_firmware.state_machine_loop();
 
     // If the EV did not reconnect (re-SLAC or SDP/TCP) within the deadline after a
     // gracefully ended SoC session, fall back to IEC 61851 PWM charging.
@@ -710,7 +729,9 @@ void ISO15118::state_machines_loop()
         if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
             iso15118.trace("ISO15118: L2TAP error (revents=0x%x)", static_cast<unsigned>(fds[FDS_TAP_INDEX].revents));
             // L2TAP error likely means modem issue, trigger SLAC reset
-            slac.state = SLACState::ModemReset;
+            if (!modem_firmware.is_flashing()) {
+                slac.state = SLACState::ModemReset;
+            }
         } else if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & POLLIN) {
             slac.handle_tap();
         }
@@ -928,6 +949,11 @@ void ISO15118::disable_plc_modem()
 {
     plc_modem_off_task = 0;
 
+    if (modem_firmware.is_flashing()) {
+        iso15118.trace("ISO15118: PLC modem firmware update in progress, not disabling PLC modem");
+        return;
+    }
+
     iso15118.trace("ISO15118: Disabling PLC modem");
     evse_v2.set_plc_modem(false);
     slac.state = SLACState::ModemDisabled;
@@ -937,6 +963,24 @@ void ISO15118::disable_plc_modem()
         common.reset_active_socket();
     }
 
+    qca700x.disable();
+}
+
+void ISO15118::stop_modem_if_disabled()
+{
+    if (is_enabled()) {
+        return;
+    }
+
+    iso15118.trace("ISO15118: Disabled, powering off PLC modem after firmware check");
+
+    if (state_machine_task != 0) {
+        task_scheduler.cancel(state_machine_task);
+        state_machine_task = 0;
+    }
+
+    evse_v2.set_plc_modem(false);
+    slac.state = SLACState::ModemDisabled;
     qca700x.disable();
 }
 

@@ -19,7 +19,9 @@
 
 #include "pib_manager.h"
 
+#include <cstddef>
 #include <cstdio>
+#include <cstring>
 
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
@@ -187,7 +189,60 @@ bool PibManager::start_write()
         return false;
     }
 
+    modules[0] = {PIB_MODULE_ID_PARAMETERS, pib_buffer, pib_length, fdchecksum32(pib_buffer, pib_length)};
+    module_count = 1;
+    modem_update = false;
+
+    start_session();
+    return true;
+}
+
+bool PibManager::start_flash(const uint8_t *pib, size_t pib_size, const uint8_t *nvm, size_t nvm_size)
+{
+    if (is_busy()) {
+        return false;
+    }
+
+    if (!iso15118.qca700x.is_modem_detected() || !iso15118.qca700x.is_l2tap_ready()) {
+        set_error("PLC modem not ready");
+        return false;
+    }
+
+    const char *err = validate_pib_size(pib_size);
+    if (err == nullptr && nvm != nullptr && (nvm_size == 0 || (nvm_size % 4) != 0)) {
+        err = "Firmware size must be a non-zero multiple of 4 bytes";
+    }
+    if (err != nullptr) {
+        set_error(err);
+        state = PibState::WriteError;
+        return false;
+    }
+
+    // Same module order as plctool (FlashFirmware.c): PIB first, then the firmware.
+    modules[0] = {PIB_MODULE_ID_PARAMETERS, pib, pib_size, fdchecksum32(pib, pib_size)};
+    module_count = 1;
+
+    if (nvm != nullptr) {
+        modules[1] = {PIB_MODULE_ID_FIRMWARE, nvm, nvm_size, fdchecksum32(nvm, nvm_size)};
+        module_count = 2;
+    }
+
+    modem_update = true;
+
+    start_session();
+    return true;
+}
+
+void PibManager::start_session()
+{
+    module_index = 0;
     transfer_offset = 0;
+    bytes_written = 0;
+    bytes_total = 0;
+    for (size_t i = 0; i < module_count; i++) {
+        bytes_total += modules[i].length;
+    }
+
     error_message = nullptr;
     modem_mstatus = 0;
     modem_err_rec_code = 0;
@@ -202,7 +257,6 @@ bool PibManager::start_write()
 
     state = PibState::WriteSessionSendRequest;
     schedule_task();
-    return true;
 }
 
 void PibManager::schedule_task()
@@ -288,11 +342,15 @@ void PibManager::send_session_request()
     VS_ModuleOperationSessionRequest req = {};
     iso15118.slac.fill_header_v0(&req.header, slac_mac_plc_peer, iso15118.slac.evse_mac,
                                   SLAC_MMTYPE_QUALCOMM_MODULE_OP | SLAC_MMTYPE_MODE_REQUEST);
-    req.session_id                = session_id;
-    req.module_spec.module_id     = PIB_MODULE_ID_PARAMETERS;
-    req.module_spec.module_sub_id = 0;
-    req.module_spec.module_length = static_cast<uint32_t>(pib_length);
-    req.module_spec.module_chksum = fdchecksum32(pib_buffer, pib_length);
+    req.mod_op_data_len = static_cast<uint16_t>(13 + 12 * module_count);
+    req.session_id      = session_id;
+    req.num_modules     = module_count;
+    for (size_t i = 0; i < module_count; i++) {
+        req.module_spec[i].module_id     = modules[i].module_id;
+        req.module_spec[i].module_sub_id = 0;
+        req.module_spec[i].module_length = static_cast<uint32_t>(modules[i].length);
+        req.module_spec[i].module_chksum = modules[i].checksum;
+    }
 
     iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t *>(&req), sizeof(req));
 
@@ -302,7 +360,8 @@ void PibManager::send_session_request()
 
 void PibManager::send_write_fragment()
 {
-    size_t remaining = pib_length - transfer_offset;
+    const Module &module = modules[module_index];
+    size_t remaining = module.length - transfer_offset;
     size_t chunk_size = remaining > PIB_MODULE_SIZE ? PIB_MODULE_SIZE : remaining;
 
     VS_ModuleOperationWriteRequest req = {};
@@ -310,10 +369,11 @@ void PibManager::send_write_fragment()
                                   SLAC_MMTYPE_QUALCOMM_MODULE_OP | SLAC_MMTYPE_MODE_REQUEST);
     req.mod_op_data_len = static_cast<uint16_t>(19 + chunk_size);
     req.session_id      = session_id;
-    req.module_id       = PIB_MODULE_ID_PARAMETERS;
+    req.module_idx      = module_index;
+    req.module_id       = module.module_id;
     req.module_length   = static_cast<uint16_t>(chunk_size);
     req.module_offset   = static_cast<uint32_t>(transfer_offset);
-    memcpy(req.module_data, pib_buffer + transfer_offset, chunk_size);
+    memcpy(req.module_data, module.data + transfer_offset, chunk_size);
 
     // Send the full struct (includes the full 1400-byte data array, to match the plctool behavior)
     iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t *>(&req), sizeof(req));
@@ -346,50 +406,80 @@ void PibManager::send_reset_request()
     // The modem resets immediately upon receiving this command and will not
     // send a confirmation back over SPI.
     iso15118.qca700x.set_modem_detected(false);
-    iso15118.slac.state = SLACState::ModemDisabled;
 
-    iso15118.trace("PIB write complete (modem reset sent)");
+    if (modem_update) {
+        // The firmware update owns the SLAC state (ModemUpdate) and re-initializes the modem.
+        iso15118.trace("PIB/firmware write complete (modem reset sent)");
+    } else {
+        iso15118.slac.state = SLACState::ModemDisabled;
+        iso15118.trace("PIB write complete (modem reset sent)");
+    }
+
     state = PibState::WriteComplete;
+}
+
+// Module status entries follow the fixed part of session and commit confirmations.
+// Returns false if the entry is not contained in the frame.
+static bool get_module_status(const uint8_t *data, size_t length, size_t status_offset, size_t index, VS_ModuleStatusEntry *entry)
+{
+    const size_t offset = status_offset + index * sizeof(VS_ModuleStatusEntry);
+    if (offset + sizeof(VS_ModuleStatusEntry) > length) {
+        return false;
+    }
+
+    memcpy(entry, data + offset, sizeof(VS_ModuleStatusEntry));
+    return true;
 }
 
 void PibManager::handle_confirmation(const uint8_t *data, size_t length)
 {
-    // Minimum size: header(14) + mmv(1) + mmtype(2) + oui(3) + mstatus(2) = 22
-    // For read CNF we need the mod_op field to distinguish, which is at OUI+9
-    if (length < 22) {
+    // Minimum size: header(14) + mmv(1) + mmtype(2) + oui(3) + mstatus(2) + err_rec_code(2) + reserved(4) + num_op_data(1) + mod_op(2) = 31
+    constexpr size_t mod_op_offset = offsetof(VS_ModuleOperationReadConfirmation, mod_op);
+    if (length < mod_op_offset + sizeof(uint16_t)) {
         iso15118.trace("PIB: Confirmation too short (%u bytes)", static_cast<unsigned>(length));
         return;
     }
 
-    iso15118.trace("PIB: Received confirmation (%u bytes, state=%u)",
-                    static_cast<unsigned>(length), static_cast<unsigned>(state));
+    uint16_t mod_op;
+    memcpy(&mod_op, data + mod_op_offset, sizeof(mod_op));
 
-    // The mod_op field tells us which sub-operation this confirms.
-    // In a confirmation, the layout after OUI is:
-    //   mstatus(2) + err_rec_code(2) + reserved(4) + num_op_data(1) + mod_op(2)
-    // That's at offset OUI+9 from the OUI start, which is header(14)+mmv(1)+mmtype(2)+OUI(3)+9 = offset 29
-    // But we receive the raw frame, so parse from the struct offsets directly.
+    iso15118.trace("PIB: Received confirmation (%u bytes, mod_op=0x%04X, state=%u)",
+                    static_cast<unsigned>(length), static_cast<unsigned>(mod_op), static_cast<unsigned>(state));
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (state) {
         case PibState::ReadWaitConfirmation:
-            handle_read_confirmation(data, length);
+            if (mod_op == PIB_MOD_OP_READ_MEMORY) {
+                handle_read_confirmation(data, length);
+                return;
+            }
             break;
         case PibState::WriteSessionWaitConfirmation:
-            handle_session_confirmation(data, length);
+            if (mod_op == PIB_MOD_OP_START_SESSION) {
+                handle_session_confirmation(data, length);
+                return;
+            }
             break;
         case PibState::WriteFragmentWaitConfirmation:
-            handle_write_confirmation(data, length);
+            if (mod_op == PIB_MOD_OP_WRITE_MODULE) {
+                handle_write_confirmation(data, length);
+                return;
+            }
             break;
         case PibState::WriteCommitWaitConfirmation:
-            handle_commit_confirmation(data, length);
+            if (mod_op == PIB_MOD_OP_CLOSE_SESSION) {
+                handle_commit_confirmation(data, length);
+                return;
+            }
             break;
         default:
-            // Unexpected confirmation, ignore
             break;
     }
 #pragma GCC diagnostic pop
+
+    iso15118.trace("PIB: Ignoring unexpected confirmation (mod_op=0x%04X) in state %u",
+                   static_cast<unsigned>(mod_op), static_cast<unsigned>(state));
 }
 
 void PibManager::handle_read_confirmation(const uint8_t *data, size_t length)
@@ -467,14 +557,18 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
     }
 
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationSessionConfirmation *>(data);
+    constexpr size_t status_offset = offsetof(VS_ModuleOperationSessionConfirmation, module_status);
 
     if (cnf->mstatus != 0) {
+        VS_ModuleStatusEntry status = {};
+        get_module_status(data, length, status_offset, 0, &status);
+
         static constexpr uint8_t PIB_SESSION_MAX_ATTEMPTS = 8;
         if (retry_attempt + 1 < PIB_SESSION_MAX_ATTEMPTS) {
             retry_attempt++;
             iso15118.trace("PIB: session start rejected (mstatus=0x%04X, err_rec_code=0x%04X, mod_status=0x%04X/0x%04X), retry %u/%u",
                            static_cast<unsigned>(cnf->mstatus), static_cast<unsigned>(cnf->err_rec_code),
-                           static_cast<unsigned>(cnf->module_status.mod_status), static_cast<unsigned>(cnf->module_status.err_rec_code),
+                           static_cast<unsigned>(status.mod_status), static_cast<unsigned>(status.err_rec_code),
                            static_cast<unsigned>(retry_attempt), static_cast<unsigned>(PIB_SESSION_MAX_ATTEMPTS - 1));
             session_id = esp_random();
             timeout_deadline = 0_us;
@@ -484,7 +578,7 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
         }
 
         set_modem_error("Session start failed: modem returned error",
-                        cnf->mstatus, cnf->err_rec_code, cnf->module_status.mod_status, cnf->module_status.err_rec_code);
+                        cnf->mstatus, cnf->err_rec_code, status.mod_status, status.err_rec_code);
         state = PibState::WriteError;
         return;
     }
@@ -495,16 +589,25 @@ void PibManager::handle_session_confirmation(const uint8_t *data, size_t length)
         return;
     }
 
-    if (cnf->module_status.mod_status != 0) {
-        set_modem_error("Session start: module status error",
-                        0, 0, cnf->module_status.mod_status, cnf->module_status.err_rec_code);
-        state = PibState::WriteError;
-        return;
+    for (size_t i = 0; i < module_count && i < cnf->num_modules; i++) {
+        VS_ModuleStatusEntry status;
+        if (!get_module_status(data, length, status_offset, i, &status)) {
+            break;
+        }
+
+        if (status.mod_status != 0) {
+            set_modem_error("Session start: module status error",
+                            0, 0, status.mod_status, status.err_rec_code);
+            state = PibState::WriteError;
+            return;
+        }
     }
 
-    iso15118.trace("PIB write session started (session_id=%08lx)", session_id);
+    iso15118.trace("PIB write session started (session_id=%08lx, modules=%u, bytes=%u)",
+                   session_id, static_cast<unsigned>(module_count), static_cast<unsigned>(bytes_total));
 
     // Start writing fragments
+    module_index = 0;
     transfer_offset = 0;
     state = PibState::WriteFragmentSendRequest;
 }
@@ -520,7 +623,7 @@ void PibManager::handle_write_confirmation(const uint8_t *data, size_t length)
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationWriteConfirmation *>(data);
 
     if (cnf->mstatus != 0) {
-        set_error("Write fragment failed: modem returned error");
+        set_modem_error("Write fragment failed: modem returned error", cnf->mstatus, cnf->err_rec_code, 0, 0);
         state = PibState::WriteError;
         return;
     }
@@ -531,15 +634,36 @@ void PibManager::handle_write_confirmation(const uint8_t *data, size_t length)
         return;
     }
 
-    transfer_offset += cnf->module_length;
+    const Module &module = modules[module_index];
+    const size_t remaining = module.length - transfer_offset;
+    const size_t expected_length = remaining > PIB_MODULE_SIZE ? PIB_MODULE_SIZE : remaining;
 
-    if (transfer_offset >= pib_length) {
+    if (cnf->module_offset != transfer_offset || cnf->module_length != expected_length) {
+        iso15118.trace("PIB: Write confirmation for module %u: offset %lu, length %u (expected %u, %u)",
+                       static_cast<unsigned>(module_index), cnf->module_offset, static_cast<unsigned>(cnf->module_length),
+                       static_cast<unsigned>(transfer_offset), static_cast<unsigned>(expected_length));
+        set_error("Write confirmation: unexpected offset or length");
+        state = PibState::WriteError;
+        return;
+    }
+
+    transfer_offset += expected_length;
+    bytes_written += expected_length;
+
+    if (transfer_offset >= module.length) {
+        iso15118.trace("PIB: Module %u (0x%04X, %u bytes) written",
+                       static_cast<unsigned>(module_index), static_cast<unsigned>(module.module_id), static_cast<unsigned>(module.length));
+        module_index++;
+        transfer_offset = 0;
+    }
+
+    if (module_index >= module_count) {
         // All fragments written, commit
-        iso15118.trace("PIB write fragments complete (%u bytes), committing", static_cast<unsigned>(pib_length));
+        iso15118.trace("PIB write fragments complete (%u bytes), committing", static_cast<unsigned>(bytes_written));
         state = PibState::WriteCommitSendRequest;
     } else {
-        // More fragments to write
-        state = PibState::WriteFragmentSendRequest;
+        // More fragments to write. Send the next one right away instead of waiting for the next state machine tick, a firmware has ~300 fragments.
+        send_write_fragment();
     }
 }
 
@@ -552,11 +676,13 @@ void PibManager::handle_commit_confirmation(const uint8_t *data, size_t length)
     }
 
     const auto *cnf = reinterpret_cast<const VS_ModuleOperationCommitConfirmation *>(data);
+    constexpr size_t status_offset = offsetof(VS_ModuleOperationCommitConfirmation, module_status);
 
     if (cnf->mstatus != 0) {
-        iso15118.trace("PIB: Commit failed: mstatus=0x%04X, err_rec_code=0x%04X",
-                        static_cast<unsigned>(cnf->mstatus), static_cast<unsigned>(cnf->err_rec_code));
-        set_error("Commit failed: modem returned error");
+        VS_ModuleStatusEntry status = {};
+        get_module_status(data, length, status_offset, 0, &status);
+        set_modem_error("Commit failed: modem returned error",
+                        cnf->mstatus, cnf->err_rec_code, status.mod_status, status.err_rec_code);
         state = PibState::WriteError;
         return;
     }
@@ -565,6 +691,20 @@ void PibManager::handle_commit_confirmation(const uint8_t *data, size_t length)
         set_error("Commit confirmation: session ID mismatch");
         state = PibState::WriteError;
         return;
+    }
+
+    for (size_t i = 0; i < module_count && i < cnf->num_modules; i++) {
+        VS_ModuleStatusEntry status;
+        if (!get_module_status(data, length, status_offset, i, &status)) {
+            break;
+        }
+
+        if (status.mod_status != 0) {
+            set_modem_error("Commit: module status error",
+                            0, 0, status.mod_status, status.err_rec_code);
+            state = PibState::WriteError;
+            return;
+        }
     }
 
     iso15118.trace("PIB commit successful, resetting modem");

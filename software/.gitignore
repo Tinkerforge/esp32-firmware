@@ -15,6 +15,7 @@ src/index_html.embedded.h
 src/index_html.embedded.cpp
 src/modules/*/generated/
 src/modules.cpp
+src/modules/iso15118/qca_firmware/*.nvm
 src/build.h
 src/build.cpp
 src/options.h

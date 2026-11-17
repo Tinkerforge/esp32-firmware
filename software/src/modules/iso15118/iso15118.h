@@ -31,6 +31,7 @@
 #include "iso20.h"
 #include "debug_mode.h"
 #include "pib_manager.h"
+#include "modem_firmware.h"
 #include "bindings/bricklet_evse_v2.h"
 
 #include "options.h"
@@ -213,6 +214,8 @@ public:
     bool prepare_for_pib_blocking(uint32_t timeout_ms);
     bool is_pib_modem_ready() const { return qca700x.is_modem_detected() && qca700x.is_l2tap_ready() && slac.state == SLACState::WaitForSlacParamRequest; }
 
+    void stop_modem_if_disabled();
+
     // Returns current limit and phase info
     ChargingInformation get_charging_information() const;
 
@@ -225,6 +228,7 @@ public:
     ISO20 iso20;
     DebugMode debug_mode;
     PibManager pib_manager;
+    ModemFirmware modem_firmware;
 
     char evseid_iso[14];
     uint16_t evseid_iso_len;

@@ -37,6 +37,7 @@ import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_w
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { InputFile } from "../../ts/components/input_file";
 import { Button } from "react-bootstrap";
+import { ModemUpdateState } from "./generated/modem_update_state.enum";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO 15118" symbol={<Activity />} />;
@@ -178,6 +179,22 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
             () => "Timed out waiting for write to complete");
     }
 
+    async modem_firmware_update() {
+        const modal = util.async_modal_ref.current;
+        if (!await modal.show({
+                title: () => __("iso15118.content.modem_firmware_update"),
+                body: () => __("iso15118.content.modem_firmware_update_confirm"),
+                no_text: () => __("main.abort"),
+                yes_text: () => __("iso15118.content.modem_firmware_update_button"),
+                no_variant: "secondary",
+                yes_variant: "danger",
+            })) {
+            return;
+        }
+
+        await API.call("iso15118/modem_firmware_update", {force: true}, () => __("iso15118.script.modem_firmware_update_failed"));
+    }
+
     update_uplot() {
         if (this.uplot_wrapper_ref.current == null) {
             return;
@@ -263,7 +280,26 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
             17: __("iso15118.content.slac_state_modem_disabled"),
             18: __("iso15118.content.slac_state_slac_init_ef"),
             19: __("iso15118.content.slac_state_slac_init_failed"),
+            20: __("iso15118.content.slac_state_modem_update"),
         };
+
+        const modem_firmware = API.get('iso15118/modem_firmware');
+        const modem_firmware_busy = modem_firmware.state == ModemUpdateState.Checking ||
+                                    modem_firmware.state == ModemUpdateState.Flashing ||
+                                    modem_firmware.state == ModemUpdateState.Verifying;
+
+        const modem_firmware_state_text = (() => {
+            switch (modem_firmware.state) {
+                case ModemUpdateState.Unknown:   return __("iso15118.content.modem_firmware_state_unknown");
+                case ModemUpdateState.Checking:  return __("iso15118.content.modem_firmware_state_checking");
+                case ModemUpdateState.UpToDate:  return __("iso15118.content.modem_firmware_state_up_to_date");
+                case ModemUpdateState.Pending:   return __("iso15118.content.modem_firmware_state_pending");
+                case ModemUpdateState.Flashing:  return __("iso15118.content.modem_firmware_state_flashing")(modem_firmware.progress);
+                case ModemUpdateState.Verifying: return __("iso15118.content.modem_firmware_state_verifying");
+                case ModemUpdateState.Failed:    return __("iso15118.content.modem_firmware_state_failed")(modem_firmware.error);
+            }
+            return String(modem_firmware.state);
+        })();
 
         const din70121_state_names: {[key: number]: string} = {
             0: __("iso15118.content.din70121_state_idle"),
@@ -359,6 +395,11 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                     <FormRow label={__("iso15118.content.slac_state")} label_muted={__("iso15118.content.slac_state_muted")}>
                         <InputText value={slac_state_names[state_slac.state] ?? state_slac.state.toString()}/>
                     </FormRow>
+                    {(modem_firmware_busy || modem_firmware.state == ModemUpdateState.Failed) &&
+                        <FormRow label={__("iso15118.content.modem_firmware_state")}>
+                            <InputText value={modem_firmware_state_text}/>
+                        </FormRow>
+                    }
                     <FormRow label={__("iso15118.content.protocol_state")} label_muted={
                             state_din70121.state !== 0 ? "DIN 70121" :
                             state_iso2.state !== 0 ? "ISO 15118-2" :
@@ -401,6 +442,15 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                         </FormRow>
                         <FormRow label={__("iso15118.content.modem_found")}>
                             <InputText value={state_slac.modem_found ? __("iso15118.content.yes") : __("iso15118.content.no") }/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.modem_firmware_version")}>
+                            <InputText value={modem_firmware.modem_version || "-"}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.modem_firmware_embedded_version")}>
+                            <InputText value={modem_firmware.available ? modem_firmware.embedded_version : __("iso15118.content.modem_firmware_not_included")}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.modem_firmware_state")}>
+                            <InputText value={modem_firmware_state_text}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.modem_initialization_tries")}>
                             <InputNumber value={state_slac.modem_initialization_tries}/>
@@ -633,6 +683,15 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                                 }}
                             />
                         </FormRow>
+                        {modem_firmware.available &&
+                            <FormRow label={__("iso15118.content.modem_firmware_update")} label_muted={__("iso15118.content.modem_firmware_update_desc")}>
+                                <Button variant="primary" className="w-100"
+                                    disabled={modem_firmware_busy}
+                                    onClick={() => this.modem_firmware_update()}>
+                                    {modem_firmware_busy ? modem_firmware_state_text : __("iso15118.content.modem_firmware_update_button")}
+                                </Button>
+                            </FormRow>
+                        }
                     </CollapsedSection>
 {/*#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS*/}
                     <CollapsedSection heading={__("iso15118.content.experimental_settings")}>

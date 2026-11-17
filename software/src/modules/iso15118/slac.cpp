@@ -797,8 +797,21 @@ void SLAC::handle_cm_qualcomm_op_attr_request()
 void SLAC::handle_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirmation &cm_qualcomm_get_sw_confirmation)
 {
     log_cm_qualcomm_get_sw_confirmation(cm_qualcomm_get_sw_confirmation);
+
+    if (cm_qualcomm_get_sw_confirmation.status == 0) {
+        size_t version_length = cm_qualcomm_get_sw_confirmation.version_length;
+        if (version_length > sizeof(cm_qualcomm_get_sw_confirmation.version)) {
+            version_length = sizeof(cm_qualcomm_get_sw_confirmation.version);
+        }
+
+        // The version string may contain trailing NUL bytes.
+        version_length = strnlen(reinterpret_cast<const char *>(cm_qualcomm_get_sw_confirmation.version), version_length);
+        iso15118.modem_firmware.handle_sw_version(cm_qualcomm_get_sw_confirmation.version, version_length);
+    } else {
+        iso15118.trace("VS_SW_VER.CNF status %u", cm_qualcomm_get_sw_confirmation.status);
+    }
+
     if (state != SLACState::WaitForCMQualcommGetSwResponse) {
-        iso15118.trace("VS_SW_VER.CNF ignored in state %s", get_slac_state_name(state));
         return;
     }
     next_timeout = now_us() + 100_ms;
@@ -941,6 +954,7 @@ void SLAC::check_modem_detected_invariant(void)
         case SLACState::ModemReset:
         case SLACState::ModemInitialization:
         case SLACState::ModemDisabled:
+        case SLACState::ModemUpdate:
             return;
         default:
             break;
@@ -1031,7 +1045,8 @@ void SLAC::state_machine_loop()
     }
 
     // In ModemDisabled state the PLC modem is held in hardware reset.
-    if (state == SLACState::ModemDisabled) {
+    // In ModemUpdate state the PLC modem firmware is written, the modem must not be used.
+    if (state == SLACState::ModemDisabled || state == SLACState::ModemUpdate) {
         api_state.get("state")->updateEnum(state);
         return;
     }
