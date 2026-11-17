@@ -72,14 +72,9 @@ def main():
 
     suite_runs: list[tuple[Path, str]] = []  # (suite_path, test_filter)
 
-    if len(args.test_filter) > 0:
-        test_filter = args.test_filter
-    else:
-        if args.host is None:
-            print(red("A test filter or host is required"))
-            parser.print_help()
-            sys.exit(1)
+    modules = []
 
+    if args.host != None:
         BOOTUP_TIMEOUT = 30
 
         for retry in range(BOOTUP_TIMEOUT):
@@ -100,6 +95,14 @@ def main():
                     time.sleep(1)
                     continue
                 raise
+
+    if len(args.test_filter) > 0:
+        test_filter = args.test_filter
+    else:
+        if args.host is None:
+            print(red("A test filter or host is required"))
+            parser.print_help()
+            sys.exit(1)
 
         test_filter = [f'{x}/*/*' for x in modules]
 
