@@ -388,9 +388,8 @@ template SelfTest::Slot *get_slot<SelfTest>(uint16_t idx);
 
 SelfTest::Slot *SelfTest::allocSlotBuf(size_t elements)
 {
-    const size_t buf_size = sizeof(SelfTest::Slot) * elements;
-    auto result = heap_caps_calloc_prefer(buf_size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
-    return static_cast<SelfTest::Slot *>(result);
+    void *block = heap_caps_calloc_prefer(elements, sizeof(SelfTest::Slot), 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    return static_cast<SelfTest::Slot *>(block);
 }
 
 uint16_t SelfTest::allocSlot(uint16_t batch_size)
