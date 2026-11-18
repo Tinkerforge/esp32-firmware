@@ -264,7 +264,7 @@ add_post_action_elf(f'Symlinking build{os.sep}{firmware_basename}.elf -> build{o
                     lambda: symlink(f'{firmware_basename}.elf',
                                     f'build{os.sep}firmware_latest.elf'))
 
-add_post_action_bin(f'Writing firmware info', write_firmware_info)
+add_post_action_bin('Writing firmware info', write_firmware_info)
 
 if split_esptool_ota:
     add_post_action_bin(f'Merging {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}.bin -> {env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")}_esptool.bin', merge_firmware_esptool)
@@ -305,7 +305,7 @@ for suffix in signed_suffixes:
 for suffix in unsigned_suffixes:
     add_post_action_bin(f'Copying $BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin -> build{os.sep}{firmware_basename}_{suffix}.bin',
                         lambda suffix=suffix: shutil.copy2(env.subst(f'$BUILD_DIR{os.sep}${{PROGNAME}}_{suffix}.bin'),
-                                            f'build{os.sep}{firmware_basename}_{suffix}.bin'))
+                                                           f'build{os.sep}{firmware_basename}_{suffix}.bin'))
 
 for suffix in all_suffixes:
     add_post_action_bin(f'Symlinking build{os.sep}{firmware_basename}_{suffix}.bin -> build_latest{os.sep}{firmware_basename}_{suffix}.bin',
