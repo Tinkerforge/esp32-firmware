@@ -1341,7 +1341,7 @@ class Stage3:
         if not report['rcdi_positive']['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_positive"], indent=4)}')
 
-        if float(report['rcdi_positive']['results']['Id'].split(' ')[0]) < 5.4:
+        if self.generation >= 3 and float(report['rcdi_positive']['results']['Id'].split(' ')[0]) < 5.4:
             fatal_error(f'Electrical test failed (Id < 5.4 mA): {json.dumps(report["rcdi_positive"], indent=4)}')
 
         self.reset_dc_fault('C')
@@ -1355,7 +1355,7 @@ class Stage3:
         if not report['rcdi_negative']['passed']:
             fatal_error(f'Electrical test failed: {json.dumps(report["rcdi_negative"], indent=4)}')
 
-        if float(report['rcdi_negative']['results']['Id'].split(' ')[0]) < 5.4:
+        if self.generation >= 3 and float(report['rcdi_negative']['results']['Id'].split(' ')[0]) < 5.4:
             fatal_error(f'Electrical test failed (Id < 5.4 mA): {json.dumps(report["rcdi_negative"], indent=4)}')
 
         self.reset_dc_fault('C')
