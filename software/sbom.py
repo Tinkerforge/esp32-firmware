@@ -1655,9 +1655,7 @@ def collect_web_inputs(project_dir):
     }
 
 
-def link_build_latest(project_dir, metadata):
-    # Same scheme as the .elf and .bin files in merge_firmware_hook.py: build_latest/ only contains the most recent files of each product
-    filename = f'{metadata["firmware_basename"]}.cdx.json'
+def remove_build_latest(project_dir, metadata):
     build_latest_dir = os.path.join(project_dir, 'build_latest')
 
     os.makedirs(build_latest_dir, exist_ok=True)
@@ -1667,6 +1665,16 @@ def link_build_latest(project_dir, metadata):
             os.remove(path)
         except FileNotFoundError:
             pass
+
+
+def update_build_latest(project_dir, metadata):
+    # Same scheme as the .elf and .bin files in merge_firmware_hook.py: build_latest/ only contains the most recent files of each product
+    filename = f'{metadata["firmware_basename"]}.cdx.json'
+    build_latest_dir = os.path.join(project_dir, 'build_latest')
+
+    os.makedirs(build_latest_dir, exist_ok=True)
+
+    remove_build_latest(project_dir, metadata)
 
     if sys.platform == 'win32':
         shutil.copy2(os.path.join(project_dir, 'build', filename), os.path.join(build_latest_dir, filename))
@@ -1681,6 +1689,10 @@ def register_post_build_action(env):
     try:
         metadata = read_json(os.path.join(build_dir, 'metadata.json'))
     except FileNotFoundError:
+        return
+
+    if env.GetProjectOption('custom_create_sbom', 'true') != 'true':
+        remove_build_latest(project_dir, metadata)
         return
 
     def action(**kwargs):
@@ -1716,7 +1728,7 @@ def register_post_build_action(env):
                 json.dump(inputs, f, indent=4)
 
             generate(project_dir, build_dir)
-            link_build_latest(project_dir, metadata)
+            update_build_latest(project_dir, metadata)
         except:
             traceback.print_exc()
             raise
