@@ -689,6 +689,7 @@ class SbomBuilder:
 
         self.components = {}
         self.dependencies = {}
+        self.self_built_libs = False
         self.tools = []
         self.root_ref = 'firmware'
         self.firmware_commit = self.metadata.get('git_commit')
@@ -734,8 +735,11 @@ class SbomBuilder:
 
             patches.append(patch)
 
+        if self.self_built_libs:
+            notes += '. The ESP-IDF libraries are self-built and may contain changes beyond these patches'
+
         if len(patches) == 0:
-            return None
+            return {'notes': notes} if self.self_built_libs else None
 
         return {'patches': patches, 'notes': notes}
 
@@ -844,8 +848,11 @@ class SbomBuilder:
         self.dependencies[self.root_ref] = []
 
     def add_esp32_arduino_libs(self, package_dir, idf_archives):
-        versions = parse_versions_txt(os.path.join(package_dir, 'versions.txt'))
-        lock = parse_dependencies_lock(os.path.join(package_dir, 'esp32', 'dependencies.lock'))
+        try:
+            versions = parse_versions_txt(os.path.join(package_dir, 'versions.txt'))
+            lock = parse_dependencies_lock(os.path.join(package_dir, 'esp32', 'dependencies.lock'))
+        except FileNotFoundError as e:
+            raise SbomError(f'ESP-IDF libraries in {package_dir} have no version information: {e}')
 
         try:
             tinkerforge_json = read_json(os.path.join(package_dir, 'tinkerforge.json'))
@@ -855,19 +862,30 @@ class SbomBuilder:
         package_name = os.path.basename(package_dir)  # esp32-arduino-libs#<branch>_<commit>
         m = re.fullmatch(r'(.+?)#(.+)_([0-9a-f]{40})', package_name)
 
-        if m == None:
-            raise SbomError(f'Unexpected package directory name {package_name}')
+        self.self_built_libs = m == None
 
-        base, branch, commit = m.groups()
-        url = normalize_git_url(tinkerforge_json.get('url', f'https://github.com/Tinkerforge/{base}'))
+        if m != None:
+            base, branch, commit = m.groups()
+            url = normalize_git_url(tinkerforge_json.get('url', f'https://github.com/Tinkerforge/{base}'))
 
-        libs_ref = self.add(make_component(f'{base}@{commit}', base, commit,
-                                           supplier=TINKERFORGE,
-                                           description='Precompiled ESP-IDF libraries, built with esp32-arduino-lib-builder and patches from esp32-firmware/software/patches/lib-builder',
-                                           purl=github_purl(url, commit),
-                                           vcs=url,
-                                           properties={'tf:branch': branch} | {f'tf:versions:{key}': value for key, value in versions.items()}),
-                            depended_on_by=self.root_ref)
+            libs_ref = self.add(make_component(f'{base}@{commit}', base, commit,
+                                               supplier=TINKERFORGE,
+                                               description='Precompiled ESP-IDF libraries, built with esp32-arduino-lib-builder and patches from esp32-firmware/software/patches/lib-builder',
+                                               purl=github_purl(url, commit),
+                                               vcs=url,
+                                               properties={'tf:branch': branch} | {f'tf:versions:{key}': value for key, value in versions.items()}),
+                                depended_on_by=self.root_ref)
+        else:
+            # Self-built libraries (e.g. debug builds of the lib-builder output) are not published,
+            # so describe them by the versions they were built from
+            warn(f'ESP-IDF libraries in {package_dir} are self-built, the SBOM describes them by their versions.txt')
+
+            libs_ref = self.add(make_component('esp32-arduino-libs@self-built', 'esp32-arduino-libs',
+                                               supplier=TINKERFORGE,
+                                               description='Self-built ESP-IDF libraries, built with esp32-arduino-lib-builder. Not a published package, '
+                                                           'the exact build configuration and patches are unknown',
+                                               properties={'tf:self-built': 'True'} | {f'tf:versions:{key}': value for key, value in versions.items()}),
+                                depended_on_by=self.root_ref)
 
         # ESP-IDF
         idf_version = lock.get('idf')
@@ -1658,8 +1676,6 @@ def collect_web_inputs(project_dir):
 def remove_build_latest(project_dir, metadata):
     build_latest_dir = os.path.join(project_dir, 'build_latest')
 
-    os.makedirs(build_latest_dir, exist_ok=True)
-
     for path in glob.glob(os.path.join(build_latest_dir, f'{glob.escape(metadata["product_id"])}_firmware*.cdx.json')):
         try:
             os.remove(path)
@@ -1729,6 +1745,16 @@ def register_post_build_action(env):
 
             generate(project_dir, build_dir)
             update_build_latest(project_dir, metadata)
+        except SbomError as e:
+            # Signed builds are release builds and must have an SBOM. Other builds, for example
+            # with self-built ESP-IDF libraries or while offline, are built without one.
+            if len(metadata['signature_preset']) > 0:
+                print(f'Error: Could not generate SBOM: {e}', file=sys.stderr)
+                raise
+
+            # Don't leave the SBOM of a previous build next to this build's files
+            remove_build_latest(project_dir, metadata)
+            warn(f'Skipping SBOM: {e}')
         except:
             traceback.print_exc()
             raise
