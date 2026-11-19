@@ -23,6 +23,7 @@ specs = [
     {
         'name': 'VARTA Element Grid',  # for models element, one, pulse and link
         'table_id': 'VARTA Element',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
@@ -39,6 +40,7 @@ specs = [
     {
         'name': 'VARTA Element Battery',  # for models element, one, pulse and link
         'table_id': 'VARTA Element',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -73,6 +75,7 @@ specs = [
     {
         'name': 'VARTA Flex Grid',  # for models pulse neo and flex storage
         'table_id': 'VARTA Flex',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
@@ -107,6 +110,7 @@ specs = [
     {
         'name': 'VARTA Flex Battery',  # for models pulse neo and flex storage
         'table_id': 'VARTA Flex',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',

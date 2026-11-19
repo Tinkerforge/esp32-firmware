@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Solaredge Hybrid Inverter Battery 1',
         'table_id': 'Solaredge Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery 1',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -85,6 +86,7 @@ specs = [
     {
         'name': 'Solaredge Hybrid Inverter Battery 2',
         'table_id': 'Solaredge Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery 2',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -153,6 +155,7 @@ specs = [
     {
         'name': 'Solaredge Hybrid Inverter Battery 1 Plus 2',
         'table_id': 'Solaredge Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery 1 Plus 2',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -331,6 +334,7 @@ specs = [
     {
         'name': 'Solaredge Hybrid Inverter PV',
         'table_id': 'Solaredge Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',

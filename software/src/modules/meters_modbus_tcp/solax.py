@@ -23,6 +23,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter',
         'table_id': 'Solax Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
@@ -39,6 +40,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter Grid',
         'table_id': 'Solax Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
@@ -184,6 +186,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter Battery',
         'table_id': 'Solax Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
@@ -258,6 +261,7 @@ specs = [
     {
         'name': 'Solax Hybrid Inverter PV',  # FIXME: some models have PV3, but it's unclear how to detect it properly: https://github.com/evcc-io/evcc/issues/19598
         'table_id': 'Solax Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',
@@ -329,6 +333,7 @@ specs = [
     {
         'name': 'Solax String Inverter',
         'table_id': 'Solax String Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
@@ -403,6 +408,7 @@ specs = [
     {
         'name': 'Solax String Inverter Grid',
         'table_id': 'Solax String Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
@@ -496,6 +502,7 @@ specs = [
     {
         'name': 'Solax String Inverter PV',
         'table_id': 'Solax String Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',

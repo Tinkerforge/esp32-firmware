@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Ecoflow Powerocean',
         'table_id': 'Ecoflow Powerocean',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
@@ -92,6 +93,7 @@ specs = [
     {
         'name': 'Ecoflow Powerocean Grid',
         'table_id': 'Ecoflow Powerocean',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
@@ -155,6 +157,7 @@ specs = [
     {
         'name': 'Ecoflow Powerocean Battery',
         'table_id': 'Ecoflow Powerocean',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -213,6 +216,7 @@ specs = [
     {
         'name': 'Ecoflow Powerocean Load',
         'table_id': 'Ecoflow Powerocean',
+        'selection': 'primary',
         'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
@@ -235,6 +239,7 @@ specs = [
     {
         'name': 'Ecoflow Powerocean PV',
         'table_id': 'Ecoflow Powerocean',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',

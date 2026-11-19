@@ -290,6 +290,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter Output Type',
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
@@ -306,6 +307,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'secondary',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': list(sorted(inverter_values +
@@ -320,6 +322,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'secondary',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': list(sorted(inverter_values +
@@ -332,6 +335,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'secondary',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': list(sorted(inverter_values +
@@ -344,6 +348,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter Grid',
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
@@ -444,6 +449,7 @@ specs = [
     {
         'name': 'Sungrow Hybrid Inverter Battery',
         'table_id': 'Sungrow Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
@@ -544,6 +550,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter Load',
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
@@ -568,6 +575,7 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'name': 'Sungrow {variant} Inverter PV',
         'table_id': 'Sungrow {variant} Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',

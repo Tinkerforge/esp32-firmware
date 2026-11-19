@@ -237,6 +237,14 @@ for spec in specs:
         if spec['values'] == None:
             continue
 
+        if spec['selection'] == 'secondary' and 'virtual_meter' in spec:
+            print(f'Error: {spec["name"]} has virtual_meter while having secondary selection')
+            sys.exit(1)
+
+        if spec['selection'] == 'primary' and 'virtual_meter' not in spec:
+            for i, line in enumerate(list(table_lookup_cases)):
+                table_lookup_cases[i] = line.replace(f'table = &{table_id.under}_table;', f'table = &{spec_name.under}_table;')
+
         value_names = []
         value_addresses = []
         value_specs = []

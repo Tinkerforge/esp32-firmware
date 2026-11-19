@@ -258,6 +258,7 @@ battery_integer_values_verto = [
     },
 ]
 
+
 def make_battery_values(battery_integer_values, start_number_offset):
     battery_values = deepcopy(battery_integer_values)
 
@@ -267,10 +268,12 @@ def make_battery_values(battery_integer_values, start_number_offset):
 
     return battery_values
 
+
 specs = [
     {
         'name': 'Fronius GEN24 Plus Battery Type',
         'table_id': 'Fronius GEN24 Plus',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -286,6 +289,7 @@ specs = [
     {
         'name': 'Fronius GEN24 Plus Battery Integer',
         'table_id': 'Fronius GEN24 Plus',
+        'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_gen24, 0),
@@ -293,6 +297,7 @@ specs = [
     {
         'name': 'Fronius GEN24 Plus Battery Float',
         'table_id': 'Fronius GEN24 Plus',
+        'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_gen24, 10),
@@ -300,6 +305,7 @@ specs = [
     {
         'name': 'Fronius Verto Plus Battery Type',
         'table_id': 'Fronius Verto Plus',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -315,6 +321,7 @@ specs = [
     {
         'name': 'Fronius Verto Plus Battery Integer',
         'table_id': 'Fronius Verto Plus',
+        'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_verto, 0),
@@ -322,6 +329,7 @@ specs = [
     {
         'name': 'Fronius Verto Plus Battery Float',
         'table_id': 'Fronius Verto Plus',
+        'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': make_battery_values(battery_integer_values_verto, 10),

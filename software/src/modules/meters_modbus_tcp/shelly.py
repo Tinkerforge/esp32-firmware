@@ -318,6 +318,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 1 As L1',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L1', 0)
@@ -325,6 +326,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 1 As L2',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L2', 0)
@@ -332,6 +334,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 1 As L3',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L3', 0)
@@ -339,6 +342,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 2 As L1',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L1', 20)
@@ -346,6 +350,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 2 As L2',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L2', 20)
@@ -353,6 +358,7 @@ specs = [
     {
         'name': 'Shelly Pro EM Monophase Channel 2 As L3',
         'table_id': 'Shelly Pro EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L3', 20)
@@ -360,6 +366,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Triphase',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -640,6 +647,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 1 As L1',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L1', 0)
@@ -647,6 +655,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 1 As L2',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L2', 0)
@@ -654,6 +663,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 1 As L3',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L3', 0)
@@ -661,6 +671,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 2 As L1',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L1', 20)
@@ -668,6 +679,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 2 As L2',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L2', 20)
@@ -675,6 +687,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 2 As L3',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L3', 20)
@@ -682,6 +695,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 3 As L1',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L1', 40)
@@ -689,6 +703,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 3 As L2',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L2', 40)
@@ -696,6 +711,7 @@ specs = [
     {
         'name': 'Shelly Pro 3EM Monophase Channel 3 As L3',
         'table_id': 'Shelly Pro 3EM',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L3', 40)

@@ -21,6 +21,7 @@ specs = [
     {
         'name': 'Eastron SDM630 TCP',
         'table_id': 'Eastron SDM630 TCP',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

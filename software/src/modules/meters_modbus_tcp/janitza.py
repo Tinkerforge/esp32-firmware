@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Janitza UMG',
         'table_id': 'Janitza UMG',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

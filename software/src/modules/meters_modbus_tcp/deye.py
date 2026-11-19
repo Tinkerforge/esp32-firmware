@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'HoldingRegister',
@@ -153,6 +154,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Grid',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
@@ -372,6 +374,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Battery Device Type',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -388,6 +391,7 @@ specs = [
         'variants': ['Low Voltage', 'High Voltage'],
         'name': 'Deye Hybrid Inverter Battery {variant}',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -469,6 +473,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter Load',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'HoldingRegister',
@@ -569,6 +574,7 @@ specs = [
     {
         'name': 'Deye Hybrid Inverter PV Device Type',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
@@ -585,6 +591,7 @@ specs = [
         'variants': ['Low Voltage', 'High Voltage'],
         'name': 'Deye Hybrid Inverter PV {variant}',
         'table_id': 'Deye Hybrid Inverter',
+        'selection': 'secondary',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

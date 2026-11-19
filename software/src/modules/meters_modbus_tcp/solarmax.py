@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Solarmax Max Storage Inverter',
         'table_id': 'Solarmax Max Storage',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
@@ -50,6 +51,7 @@ specs = [
     {
         'name': 'Solarmax Max Storage Grid',
         'table_id': 'Solarmax Max Storage',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
@@ -66,6 +68,7 @@ specs = [
     {
         'name': 'Solarmax Max Storage Battery',
         'table_id': 'Solarmax Max Storage',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',

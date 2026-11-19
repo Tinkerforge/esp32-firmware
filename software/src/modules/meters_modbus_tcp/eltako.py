@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Eltako DSZ16DZE',
         'table_id': 'Eltako DSZ16DZE',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

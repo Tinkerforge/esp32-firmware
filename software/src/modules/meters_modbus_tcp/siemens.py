@@ -47,6 +47,7 @@ specs = [
     {
         'name': 'Siemens PAC2200',
         'table_id': 'Siemens PAC2200',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -508,6 +509,7 @@ specs = [
     {
         'name': 'Siemens PAC3120',
         'table_id': 'Siemens PAC3120',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1010,6 +1012,7 @@ specs = [
     {
         'name': 'Siemens PAC3200',
         'table_id': 'Siemens PAC3200',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1291,6 +1294,7 @@ specs = [
     {
         'name': 'Siemens PAC4200',
         'table_id': 'Siemens PAC4200',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
@@ -1578,6 +1582,7 @@ specs = [
     {
         'name': 'Siemens PAC4220',
         'table_id': 'Siemens PAC4220',
+        'selection': 'primary',
         'fixed_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [

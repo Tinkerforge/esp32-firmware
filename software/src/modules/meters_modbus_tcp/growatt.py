@@ -17,6 +17,7 @@ specs = [
     {
         'name': 'Growatt Hybrid Inverter',
         'table_id': 'Growatt Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Inverter',
         'fixed_location': 'Inverter',
         'register_type': 'InputRegister',
@@ -153,6 +154,7 @@ specs = [
     {
         'name': 'Growatt Hybrid Inverter Grid',
         'table_id': 'Growatt Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'InputRegister',
@@ -209,6 +211,7 @@ specs = [
     {
         'name': 'Growatt Hybrid Inverter Battery',
         'table_id': 'Growatt Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Battery',
         'fixed_location': 'Battery',
         'register_type': 'InputRegister',
@@ -298,6 +301,7 @@ specs = [
     {
         'name': 'Growatt Hybrid Inverter Load',
         'table_id': 'Growatt Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'Load',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
@@ -326,6 +330,7 @@ specs = [
     {
         'name': 'Growatt Hybrid Inverter PV',
         'table_id': 'Growatt Hybrid Inverter',
+        'selection': 'primary',
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'InputRegister',

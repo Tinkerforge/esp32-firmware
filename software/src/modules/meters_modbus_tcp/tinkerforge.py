@@ -24,6 +24,7 @@ specs = [
     {
         'name': 'Tinkerforge WARP Charger',
         'table_id': 'Tinkerforge WARP Charger',
+        'selection': 'primary',
         'fixed_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
