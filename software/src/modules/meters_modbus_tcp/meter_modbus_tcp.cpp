@@ -320,7 +320,6 @@ bool MeterModbusTCP::parse()
         uint16_t r[4];
     } c64;
 
-    float value = NAN;
     const ValueSpec *spec = &table->specs[read_index];
     size_t register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(spec->value_type);
     const char *endian = "?";
@@ -384,6 +383,9 @@ bool MeterModbusTCP::parse()
         esp_system_abort("Value has unsupported register count");
     }
 
+    float value_f32 = NAN;
+    double value_f64 = NAN;
+
     switch (spec->value_type) {
     case ModbusValueType::None:
         break;
@@ -396,7 +398,7 @@ bool MeterModbusTCP::parse()
               register_buffer_index,
               c16.u);
 
-        value = static_cast<float>(c16.u);
+        value_f32 = static_cast<float>(c16.u);
         break;
 
     case ModbusValueType::S16:
@@ -407,7 +409,7 @@ bool MeterModbusTCP::parse()
               register_buffer_index,
               static_cast<int16_t>(c16.u));
 
-        value = static_cast<float>(static_cast<int16_t>(c16.u));
+        value_f32 = static_cast<float>(static_cast<int16_t>(c16.u));
         break;
 
     case ModbusValueType::U32BE:
@@ -420,7 +422,7 @@ bool MeterModbusTCP::parse()
               endian,
               c32.u);
 
-        value = static_cast<float>(c32.u);
+        value_f32 = static_cast<float>(c32.u);
         break;
 
     case ModbusValueType::S32BE:
@@ -433,7 +435,7 @@ bool MeterModbusTCP::parse()
               endian,
               static_cast<int32_t>(c32.u));
 
-        value = static_cast<float>(static_cast<int32_t>(c32.u));
+        value_f32 = static_cast<float>(static_cast<int32_t>(c32.u));
         break;
 
     case ModbusValueType::F32BE:
@@ -447,7 +449,7 @@ bool MeterModbusTCP::parse()
               static_cast<double>(c32.f));
 
         if (!table->f32_negative_max_as_nan || !is_exactly_equal(c32.f, -FLT_MAX)) {
-            value = c32.f;
+            value_f32 = c32.f;
         }
 
         break;
@@ -462,7 +464,7 @@ bool MeterModbusTCP::parse()
               endian,
               c64.u);
 
-        value = static_cast<float>(c64.u);
+        value_f64 = static_cast<double>(c64.u);
         break;
 
     case ModbusValueType::S64BE:
@@ -475,7 +477,7 @@ bool MeterModbusTCP::parse()
               endian,
               static_cast<int64_t>(c64.u));
 
-        value = static_cast<float>(static_cast<int64_t>(c64.u));
+        value_f64 = static_cast<double>(static_cast<int64_t>(c64.u));
         break;
 
     case ModbusValueType::F64BE:
@@ -488,22 +490,42 @@ bool MeterModbusTCP::parse()
               endian,
               c64.f);
 
-        value = static_cast<float>(c64.f);
+        value_f64 = c64.f;
         break;
 
     default:
         esp_system_abort("Value has unsupported type");
     }
 
-    if (spec->drop_sign) {
-        value = fabs(value);
+    float value = NAN;
+
+    if (!isnan(value_f32)) {
+        if (spec->drop_sign) {
+            value_f32 = fabs(value_f32);
+        }
+
+        value_f32 += spec->offset;
+
+        if (!is_exactly_zero(value_f32)) {
+            // Don't convert 0.0f into -0.0f if the scale factor is negative
+            value_f32 *= spec->scale_factor;
+        }
+
+        value = value_f32;
     }
+    else if (!isnan(value_f64)) {
+        if (spec->drop_sign) {
+            value_f64 = fabs(value_f64);
+        }
 
-    value += spec->offset;
+        value_f64 = value_f64 + static_cast<double>(spec->offset);
 
-    if (!is_exactly_zero(value)) {
-        // Don't convert 0.0f into -0.0f if the scale factor is negative
-        value *= spec->scale_factor;
+        if (!is_exactly_zero(value_f64)) {
+            // Don't convert 0.0 into -0.0 if the scale factor is negative
+            value_f64 = value_f64 * static_cast<double>(spec->scale_factor);
+        }
+
+        value = static_cast<float>(value_f64);
     }
 
     if (table == &sungrow_hybrid_inverter_output_type_table

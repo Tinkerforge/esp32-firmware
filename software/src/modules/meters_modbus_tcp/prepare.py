@@ -375,13 +375,18 @@ for spec in specs:
 
             value_addresses.append(f'    {address_name.replace(" ", "")} = {start_address},')
 
+            scale_factor = value.get('scale_factor', 1.0)
+
+            if isinstance(scale_factor, float):
+                scale_factor = f'{scale_factor}f'
+
             value_specs.append('    {\n'
                               f'        {spec_name.camel}Address::{address_name.replace(" ", "")},\n'
                               f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
                               f'        ModbusValueType::{value.get("value_type", "None")},\n'
                               f'        {"true" if value.get("drop_sign", False) else "false"},\n'
                               f'        {value.get("offset", 0.0)}f,\n'
-                              f'        {value.get("scale_factor", 1.0)}f,\n'
+                              f'        {scale_factor},\n'
                                '    },')
 
             if value['value_id'] == 'VALUE_ID_META':

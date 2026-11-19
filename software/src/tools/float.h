@@ -24,3 +24,9 @@ inline bool is_exactly_zero(float f) { return is_exactly_equal(f, 0.0f); }
 float nan_safe_sum(float a, float b);
 float nan_safe_avg(float a, float b);
 float zero_safe_negation(float f);
+
+bool is_exactly_equal(double a, double b);
+inline bool is_exactly_zero(double f) { return is_exactly_equal(f, 0.0); }
+double nan_safe_sum(double a, double b);
+double nan_safe_avg(double a, double b);
+double zero_safe_negation(double f);

@@ -74,3 +74,55 @@ float zero_safe_negation(float f)
 
     return f;
 }
+
+[[gnu::const]]
+bool is_exactly_equal(double a, double b)
+{
+    #if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+    return a == b;
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+}
+
+[[gnu::const]]
+double nan_safe_sum(double a, double b)
+{
+    if (isnan(a)) {
+        return b;
+    }
+
+    if (isnan(b)) {
+        return a;
+    }
+
+    return a + b;
+}
+
+[[gnu::const]]
+double nan_safe_avg(double a, double b)
+{
+    if (isnan(a)) {
+        return b;
+    }
+
+    if (isnan(b)) {
+        return a;
+    }
+
+    return (a + b) / 2.0;
+}
+
+[[gnu::const]]
+double zero_safe_negation(double f)
+{
+    if (!is_exactly_zero(f)) {
+        // Don't convert 0.0f into -0.0f
+        f *= -1.0;
+    }
+
+    return f;
+}
