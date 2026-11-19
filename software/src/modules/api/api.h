@@ -156,7 +156,9 @@ public:
     void addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false, bool persistent_config = false);
     void addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false, bool persistent_config = false);
 
+    bool addPersistentConfig(const char *path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
     bool addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
+
     void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, ResponseCallback &&callback);
 
     bool hasFeature(const char *name);
@@ -221,6 +223,8 @@ public:
     });
 
 private:
+    bool addPersistentConfig(const char *path, size_t path_len, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
+
     void push_state_updates();
     bool already_registered(const char *path, size_t path_len, const char *api_type);
 

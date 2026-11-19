@@ -230,8 +230,11 @@ void API::addCommand(const String &path, ConfigRoot *config, const std::vector<c
     this->addCommand(perm_strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
-void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency, bool persistent_config)
+void API::addState(const char *path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency, bool persistent_config)
 {
+    if (!address_is_in_rodata(path)) {
+        path = perm_strdup(path);
+    }
     if (boot_stage != BootStage::REGISTER_URLS)
         esp_system_abort("Registering APIs is only allowed in register_urls!");
 
@@ -317,16 +320,26 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 
 void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency, bool persistent_config)
 {
-    this->addState(perm_strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency, persistent_config);
+    this->addState(path.c_str(), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency, persistent_config);
+}
+
+bool API::addPersistentConfig(const char *path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
+{
+    return addPersistentConfig(path, strlen(path), config, keys_to_censor, keys_to_censor_in_debug_report);
 }
 
 bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
 {
+    return addPersistentConfig(path.c_str(), path.length(), config, keys_to_censor, keys_to_censor_in_debug_report);
+}
+
+bool API::addPersistentConfig(const char *path, size_t path_len, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
+{
     if (boot_stage != BootStage::REGISTER_URLS)
         esp_system_abort("Registering APIs is only allowed in register_urls!");
 
-    if (path.length() > 63) {
-        logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
+    if (path_len > 63) {
+        logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path_len);
         return false;
     }
 
@@ -356,7 +369,14 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         API::writeConfig(base_path, reg.config);
     };
 
-    addCommand(path + "_update", config, ktc, std::move(cb), false);
+    const size_t update_path_len = path_len + 7 + 1;
+    char *update_path_buf = static_cast<char *>(perm_aligned_alloc(1, update_path_len, DRAM));
+    StringWriter update_path{update_path_buf, update_path_len};
+
+    update_path.puts(path, path_len);
+    update_path.puts("_update");
+
+    addCommand(update_path_buf, config, ktc, std::move(cb), false);
 
     return true;
 }
