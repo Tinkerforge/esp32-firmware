@@ -1219,6 +1219,12 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         return;
     }
 
+    if (value_id_count > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
+        logger.printfln_meter("Meter tries to declare too many values IDs, truncating %lu to %d value IDs", value_id_count, OPTIONS_METERS_MAX_VALUES_PER_METER());
+
+        value_id_count = OPTIONS_METERS_MAX_VALUES_PER_METER();
+    }
+
     MeterValueID total_value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     memcpy(total_value_ids, new_value_ids, sizeof(MeterValueID) * value_id_count);
 
