@@ -195,10 +195,6 @@ void FactoryData::register_urls()
             return;
         }
 
-        if (factorydata_fs.exists("/sku")) {
-            factorydata_fs.remove("/sku");
-        }
-
         if (!factorydata_fs.rename("/sku.tmp", "/sku")) {
             errmsg = "Could not rename factory SKU file";
             factorydata_fs.end();
@@ -213,10 +209,6 @@ void FactoryData::register_urls()
         File nfc_tags_file = factorydata_fs.open("/nfc_tags.tmp", FILE_WRITE);
         static_cast<Config *>(write_config.get("nfc_tags"))->save_to_file(nfc_tags_file, nullptr, 0);
         nfc_tags_file.close();
-
-        if (factorydata_fs.exists("/nfc_tags")) {
-            factorydata_fs.remove("/nfc_tags");
-        }
 
         if (!factorydata_fs.rename("/nfc_tags.tmp", "/nfc_tags")) {
             errmsg = "Could not rename factory NFC tags file";

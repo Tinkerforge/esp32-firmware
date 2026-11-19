@@ -471,10 +471,6 @@ void API::writeConfig(const String &path, Config *config)
     config->save_to_file(file, nullptr, 0);
     file.close();
 
-    if (LittleFS.exists(cfg_path)) {
-        LittleFS.remove(cfg_path);
-    }
-
     LittleFS.rename(tmp_path, cfg_path);
 }
 
