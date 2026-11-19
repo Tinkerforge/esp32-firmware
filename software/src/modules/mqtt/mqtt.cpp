@@ -289,6 +289,19 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 
 static ssize_t find_state_idx(const char *path)
 {
+    // For consistency with other uses of registration paths, the path comparison should first perform
+    // an address comparison with strings from rodata. However, this function is currently used for paths
+    // that are about 80% run-time constructed and fail the rodata address check. Therefore, the rodata
+    // check is currently skipped.
+    // if (address_is_in_rodata(path)) {
+    //     for (size_t i = 0; i < api.states.size(); ++i) {
+    //         const auto &reg = api.states[i];
+    //         if (reg.path == path) { // Address comparison, not string comparison
+    //             return static_cast<ssize_t>(i);
+    //         }
+    //     }
+    // }
+
     const size_t path_len = strlen(path);
 
     for (size_t i = 0; i < api.states.size(); ++i) {
