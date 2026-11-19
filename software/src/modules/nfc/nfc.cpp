@@ -459,6 +459,10 @@ void NFC::tag_seen(const tag_t *new_tag, int injection_action)
         return;
     }
 
+    if (new_tag->id_length == 0 || new_tag->id_length > std::size(new_tag->id_bytes)) {
+        return;
+    }
+
     size_t old_tag_count     = TAG_LIST_LENGTH;
     size_t found_in_position = TAG_LIST_LENGTH;
 
