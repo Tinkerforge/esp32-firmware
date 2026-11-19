@@ -33,6 +33,7 @@ import eltako
 import qcells
 import chint_power
 import ecoflow
+import phoenix_contact
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -73,6 +74,7 @@ modules = [
     qcells,
     chint_power,
     ecoflow,
+    phoenix_contact,
 ]
 
 display_names = {}

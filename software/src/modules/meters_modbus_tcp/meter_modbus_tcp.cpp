@@ -858,6 +858,25 @@ bool MeterModbusTCP::parse()
         return false;
     }
 
+    if (table == &phoenix_contact_empro_detect_table
+     && spec->start_address == PhoenixContactEMproDetectAddress::DayOrYear) {
+        if (c16.u >= 1 && c16.u <= 31) {
+            table = &phoenix_contact_empro_v160_table;
+            logger.printfln_meter("Phoenix Contact EMpro meter with register table 1.6.0 detected");
+        }
+        else if (c16.u >= 2000 && c16.u <= 2099) {
+            table = &phoenix_contact_empro_v201_table;
+            logger.printfln_meter("Phoenix Contact EMpro meter with register table 2.0.1 detected");
+        }
+        else {
+            logger.printfln_meter("Phoenix Contact EMpro meter day/year register has unexpected value: %u", c16.u);
+            return false;
+        }
+
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
+        return false;
+    }
+
     if (is_sungrow_hybrid_inverter_grid_meter()) {
         if (spec->start_address == SungrowHybridInverterGridAddress::GridFrequency) {
             if (value > 100) {
