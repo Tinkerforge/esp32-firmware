@@ -1543,7 +1543,7 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
 
 void Debug::TaskAccounting::init(size_t max_entries)
 {
-    tinfo = static_cast<decltype(tinfo)>(malloc_prefer(max_entries * sizeof(TaskInfo), DRAM));
+    tinfo = static_cast<decltype(tinfo)>(malloc_to(max_entries * sizeof(TaskInfo), DRAM));
     tdata = static_cast<decltype(tdata)>(malloc_prefer(max_entries * sizeof(TaskData), PSRAM, DRAM));
 
     if (tinfo == nullptr || tdata == nullptr) {
