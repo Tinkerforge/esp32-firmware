@@ -41,6 +41,8 @@ from software import util
 INCLUDE_DEBUG_VALUES = False
 START_ADDRESS_VIRTUAL_BASE = 100000
 
+meters_max_values_per_meter = util.get_env_metadata()['options']['meters_max_values_per_meter']
+
 modules = [
     sungrow,
     solarmax,
@@ -231,19 +233,22 @@ for spec in specs:
         if 'virtual_meter' in spec:
             virtual_meters.setdefault(table_id, []).append((util.FlavoredName(spec['virtual_meter']).get(), spec_name, spec['fixed_location']))
 
-        if not INCLUDE_DEBUG_VALUES:
-            spec['values'] = [value for value in spec['values'] if value['value_id'] != 'VALUE_ID_DEBUG']
-
-        if spec['values'] == None:
-            continue
-
         if spec['selection'] == 'secondary' and 'virtual_meter' in spec:
-            print(f'Error: {spec["name"]} has virtual_meter while having secondary selection')
+            print(f'Error: {spec_name.space} has virtual_meter while having secondary selection')
             sys.exit(1)
 
         if spec['selection'] == 'primary' and 'virtual_meter' not in spec:
             for i, line in enumerate(list(table_lookup_cases)):
                 table_lookup_cases[i] = line.replace(f'table = &{table_id.under}_table;', f'table = &{spec_name.under}_table;')
+
+        if not INCLUDE_DEBUG_VALUES:
+            spec['values'] = [value for value in spec['values'] if value['value_id'] != 'VALUE_ID_DEBUG']
+
+        spec_values = [value for value in spec['values'] if variant_spec in value.get('variants', [variant_spec])]
+
+        if len(spec_values) > meters_max_values_per_meter:
+            print(f'Error: {spec_name.space} has {len(spec_values)} values, more than {meters_max_values_per_meter}')
+            sys.exit(1)
 
         value_names = []
         value_addresses = []
@@ -268,12 +273,7 @@ for spec in specs:
             if m != None:
                 max_register_count = min(max_register_count, int(m.group(1)))
 
-        for i, value in enumerate(spec['values']):
-            variants_value = value.get('variants')
-
-            if variants_value != None and variant_spec not in variants_value:
-                continue
-
+        for i, value in enumerate(spec_values):
             if value['name'] in value_names:
                 print(f'Error: Value {spec_name.space} / {value["name"]} is duplicate')
                 sys.exit(1)
