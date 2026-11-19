@@ -40,6 +40,7 @@
 #include "bindings/hal_common.h"
 
 #include "tools/freertos.h"
+#include "tools/malloc.h"
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
@@ -108,7 +109,7 @@ bool QCA700x::spi_init()
         return false;
     }
 
-    dma_scratch = static_cast<uint8_t *>(heap_caps_malloc(QCA700X_DMA_SCRATCH_SIZE + 4, MALLOC_CAP_DMA));
+    dma_scratch = static_cast<uint8_t *>(malloc_to(QCA700X_DMA_SCRATCH_SIZE + 4, DMA_CAPABLE));
     if (dma_scratch == nullptr) {
         iso15118.trace("QCA700x: Failed to allocate DMA scratch buffer");
         spi_bus_remove_device(spi_dev);
@@ -441,7 +442,7 @@ void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
     // buffer, so everything goes out in a single transaction with CS
     // continuously asserted, as the QCA700x requires. The buffer is freed
     // by finish_burst_write() once the frame was sent.
-    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(total_length, MALLOC_CAP_DMA));
+    uint8_t *buffer = static_cast<uint8_t *>(malloc_to(total_length, DMA_CAPABLE));
     if (buffer == nullptr) {
         iso15118.trace("QCA700x: Failed to allocate TX frame of %u bytes", total_length);
         return;

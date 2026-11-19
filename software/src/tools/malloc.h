@@ -32,6 +32,10 @@ void tools_malloc_pre_setup();
 
 enum RAM {
     DRAM,
+    // On the ESP32, only DRAM has MALLOC_CAP_DMA:
+    // https://github.com/espressif/esp-idf/blob/ad20ded6/components/heap/port/esp32/memory_layout.c#L47-L59
+    // Also code that currently uses DMA_CAPABLE assumes that this memory is byte-addressable, (so no IRAM).
+    DMA_CAPABLE = DRAM,
     IRAM,
     PSRAM,
     _NONE
@@ -127,6 +131,26 @@ std::span<T> make_permanent(std::vector<T> &&src, RAM r) {
     src.shrink_to_fit();
     return {dst, size};
 }
+
+[[gnu::malloc]]
+void *calloc_prefer(size_t count, size_t size, RAM r1, RAM r2 = RAM::_NONE, RAM r3 = RAM::_NONE);
+[[gnu::malloc]]
+void *malloc_prefer(size_t size, RAM r1, RAM r2 = RAM::_NONE, RAM r3 = RAM::_NONE);
+[[gnu::malloc]]
+void *realloc_prefer(void *ptr, size_t size, RAM r1, RAM r2 = RAM::_NONE, RAM r3 = RAM::_NONE);
+
+[[gnu::malloc, gnu::always_inline]]
+inline void *calloc_to(size_t count, size_t size, RAM r) { return calloc_prefer(count, size, r, RAM::_NONE, RAM::_NONE); }
+[[gnu::malloc, gnu::always_inline]]
+inline void *malloc_to(size_t size, RAM r) { return malloc_prefer(size, r, RAM::_NONE, RAM::_NONE); }
+[[gnu::malloc, gnu::always_inline]]
+inline void *realloc_to(void *ptr, size_t size, RAM r) { return realloc_prefer(ptr, size, r, RAM::_NONE, RAM::_NONE); }
+
+[[gnu::malloc, gnu::alloc_align(1)]]
+void *aligned_alloc_to(size_t alignment, size_t size, RAM r);
+
+[[gnu::malloc, gnu::alloc_align(1)]]
+void *aligned_calloc_to(size_t alignment, size_t count, size_t size, RAM r);
 
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);

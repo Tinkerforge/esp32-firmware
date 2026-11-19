@@ -731,7 +731,7 @@ static esp_err_t write_and_verify_boot_data(BootloaderAccess access_type, const 
         return read_protect_err;
     }
 
-    uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(length, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    uint8_t *buf = static_cast<uint8_t *>(malloc_prefer(length, DRAM));
 
     if (buf == nullptr) {
         return ESP_ERR_NO_MEM;
@@ -1064,7 +1064,7 @@ void Debug::register_urls()
     server.on_HTTPThread("/debug/bootloader", HTTP_GET, [](WebServerRequest req) {
         constexpr size_t BOOTLOADER_SIZE = CONFIG_PARTITION_TABLE_OFFSET - CONFIG_BOOTLOADER_OFFSET_IN_FLASH;
 
-        uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(BOOTLOADER_SIZE, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+        uint8_t *buf = static_cast<uint8_t *>(malloc_prefer(BOOTLOADER_SIZE, DRAM));
 
         if (buf == nullptr) {
             return req.send_plain(500, "No memory");
@@ -1543,8 +1543,8 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
 
 void Debug::TaskAccounting::init(size_t max_entries)
 {
-    tinfo = static_cast<decltype(tinfo)>(heap_caps_malloc_prefer(max_entries * sizeof(TaskInfo), 1,                                      MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-    tdata = static_cast<decltype(tdata)>(heap_caps_malloc_prefer(max_entries * sizeof(TaskData), 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+    tinfo = static_cast<decltype(tinfo)>(malloc_prefer(max_entries * sizeof(TaskInfo), DRAM));
+    tdata = static_cast<decltype(tdata)>(malloc_prefer(max_entries * sizeof(TaskData), PSRAM, DRAM));
 
     if (tinfo == nullptr || tdata == nullptr) {
         logger.printfln("Failed to allocate memory for task accounting: %p %p", static_cast<void *>(tinfo), static_cast<void *>(tdata));

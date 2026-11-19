@@ -63,6 +63,7 @@
 #include "event_log_prefix.h"
 #include "tools.h"
 #include "tools/fs.h"
+#include "tools/malloc.h"
 #include "tools/mbedtls.h"
 
 #include "gcc_warnings.h"
@@ -368,7 +369,7 @@ bool ESP32CommonEncryption::encrypt_app(String *errmsg, const esp_partition_t *r
         return false;
     }
 
-    void *ptr = heap_caps_malloc(copy_block_size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    void *ptr = malloc_to(copy_block_size, DRAM);
 
     if (ptr == nullptr) {
         logger.printfln("Failed to allocate DRAM");
@@ -483,7 +484,7 @@ bool ESP32CommonEncryption::encrypt_bootloader_partition_table(const esp_partiti
     const uint32_t bootloader_len_signed = bootloader_len_padded + sizeof(ets_secure_boot_sig_block_t);
     const uint32_t bootloader_len_erase  = align_up(bootloader_len_signed, sector_size);
 
-    void *bootloader_buf = heap_caps_malloc(bootloader_len_signed, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL); //malloc_psram_or_dram(bootloader_len);
+    void *bootloader_buf = malloc_to(bootloader_len_signed, DRAM); //malloc_psram_or_dram(bootloader_len);
 
     if (bootloader_buf == nullptr) {
         logger.printfln("Failed to allocate DRAM");
@@ -492,7 +493,7 @@ bool ESP32CommonEncryption::encrypt_bootloader_partition_table(const esp_partiti
 
     std::unique_ptr<uint8_t[]> ubootloader_buf{static_cast<uint8_t *>(bootloader_buf)};
 
-    void *pt_buf = heap_caps_malloc(ESP_PARTITION_TABLE_SIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL); //malloc_psram_or_dram(ESP_PARTITION_TABLE_SIZE);
+    void *pt_buf = malloc_to(ESP_PARTITION_TABLE_SIZE, DRAM); //malloc_psram_or_dram(ESP_PARTITION_TABLE_SIZE);
 
     if (pt_buf == nullptr) {
         logger.printfln("Failed to allocate DRAM");
@@ -748,7 +749,7 @@ bool ESP32CommonEncryption::mark_and_erase_data_partition()
 {
     const bool flash_encryption_enabled = efuse_hal_flash_encryption_enabled();
 
-    void *pt_buf = heap_caps_malloc(ESP_PARTITION_TABLE_SIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    void *pt_buf = malloc_to(ESP_PARTITION_TABLE_SIZE, DRAM);
 
     if (pt_buf == nullptr) {
         logger.printfln("Failed to allocate DRAM");

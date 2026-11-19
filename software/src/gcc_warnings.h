@@ -482,4 +482,14 @@ static_assert(__cplusplus == 202002L);
 #if defined(__GNUC__)
 #pragma GCC poison millis
 #pragma GCC poison micros
+#ifndef ALLOW_HEAP_CAPS_ALLOC_API
+#pragma GCC poison heap_caps_calloc_prefer // Use calloc_prefer from tools/malloc.h
+#pragma GCC poison heap_caps_malloc_prefer // Use malloc_prefer from tools/malloc.h
+#pragma GCC poison heap_caps_realloc_prefer // Use realloc_prefer from tools/malloc.h
+#pragma GCC poison heap_caps_calloc // Use calloc_to from tools/malloc.h
+#pragma GCC poison heap_caps_malloc // Use malloc_to from tools/malloc.h
+#pragma GCC poison heap_caps_realloc // Use realloc_to from tools/malloc.h
+#pragma GCC poison heap_caps_aligned_alloc // Use aligned_alloc_to from tools/malloc.h
+#pragma GCC poison heap_caps_aligned_calloc // Use caligned_alloc_to from tools/malloc.h
+#endif
 #endif

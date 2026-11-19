@@ -25,17 +25,25 @@
 
 #include "arena.h"
 
+#define ALLOW_HEAP_CAPS_ALLOC_API
 #include "gcc_warnings.h"
+
+static constexpr const uint32_t heap_capabilities[3] = {
+    MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL,
+    MALLOC_CAP_IRAM,
+    MALLOC_CAP_SPIRAM
+};
+
 Arena dram_arena{
-    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);},
+    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, heap_capabilities[DRAM]);},
     1, 8192, 1024};
 
 Arena iram_arena{
-    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_IRAM);},
+    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, heap_capabilities[IRAM]);},
     4, 8192, 1024};
 #if defined(BOARD_HAS_PSRAM)
 Arena psram_arena{
-    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_SPIRAM);},
+    [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, heap_capabilities[PSRAM]);},
     1, 8192, 8192};
 #endif
 
@@ -115,6 +123,50 @@ char *perm_strdup(const char *c) {
         return nullptr;
     memcpy(dst, c, len);
     return static_cast<char *>(dst);
+}
+
+void *calloc_prefer(size_t count, size_t size, RAM r1, RAM r2, RAM r3) {
+    if (r1 == _NONE)
+        return nullptr;
+    if (r2 == _NONE)
+        return heap_caps_calloc(count, size, heap_capabilities[r1]);
+    if (r3 == _NONE)
+        return heap_caps_calloc_prefer(count, size, 2, heap_capabilities[r1], heap_capabilities[r2]);
+    return heap_caps_calloc_prefer(count, size, 3, heap_capabilities[r1], heap_capabilities[r2], heap_capabilities[r3]);
+}
+
+void *malloc_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
+    if (r1 == _NONE)
+        return nullptr;
+    if (r2 == _NONE)
+        return heap_caps_malloc(size, heap_capabilities[r1]);
+    if (r3 == _NONE)
+        return heap_caps_malloc_prefer(size, 2, heap_capabilities[r1], heap_capabilities[r2]);
+    return heap_caps_malloc_prefer(size, 3, heap_capabilities[r1], heap_capabilities[r2], heap_capabilities[r3]);
+}
+
+void *realloc_prefer(void *ptr, size_t size, RAM r1, RAM r2, RAM r3) {
+    if (r1 == _NONE)
+        return nullptr;
+    if (r2 == _NONE)
+        return heap_caps_realloc(ptr, size, heap_capabilities[r1]);
+    if (r3 == _NONE)
+        return heap_caps_realloc_prefer(ptr, size, 2, heap_capabilities[r1], heap_capabilities[r2]);
+    return heap_caps_realloc_prefer(ptr, size, 3, heap_capabilities[r1], heap_capabilities[r2], heap_capabilities[r3]);
+}
+
+void *aligned_alloc_to(size_t alignment, size_t size, RAM r) {
+    if (r == _NONE)
+        return nullptr;
+
+    return heap_caps_aligned_alloc(alignment, size, heap_capabilities[r]);
+}
+
+void *aligned_calloc_to(size_t alignment, size_t count, size_t size, RAM r) {
+    if (r == _NONE)
+        return nullptr;
+
+    return heap_caps_aligned_calloc(alignment, count, size, heap_capabilities[r]);
 }
 
 void *malloc_32bit_addressed(size_t size)

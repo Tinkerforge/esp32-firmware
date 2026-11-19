@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "config/visitors.h"
+#include "tools/malloc.h"
 #include "tools/printf.h"
 #include "tools/string_builder.h"
 
@@ -80,7 +81,7 @@ void Config::slotDebugHook(const Slot *slot, size_t slotIdx)
 Config::Slot *Config::allocSlotBuf(size_t elements)
 {
     const size_t buf_size = sizeof(Config::Slot) * elements;
-    auto result = heap_caps_malloc_prefer(buf_size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    auto result = malloc_prefer(buf_size, DRAM, PSRAM);
     memset(result, to_underlying(Config::ConfVariant::Tag::UNINITIALIZED), buf_size);
     return static_cast<Config::Slot *>(result);
 }

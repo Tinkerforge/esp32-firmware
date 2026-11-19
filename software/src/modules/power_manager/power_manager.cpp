@@ -1120,7 +1120,7 @@ void PowerManager::MinMaxFilter::init(size_t values_count, PowerManager::FilterT
     }
 
     history_length = static_cast<decltype(history_length)>(values_count);
-    history_values = static_cast<decltype(history_values)>(heap_caps_malloc_prefer(values_count * sizeof(history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM)); // Prefer IRAM
+    history_values = static_cast<decltype(history_values)>(malloc_prefer(values_count * sizeof(history_values[0]), IRAM, PSRAM));
     type = filter_type;
 }
 
@@ -1264,7 +1264,7 @@ void PowerManager::MavgFilter::init(size_t values_count)
     }
 
     mavg_values_count = static_cast<decltype(mavg_values_count)>(values_count);
-    mavg_values       = static_cast<decltype(mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
+    mavg_values       = static_cast<decltype(mavg_values)>(malloc_prefer(values_count * sizeof(mavg_values[0]), PSRAM, IRAM));
 }
 
 void PowerManager::MavgFilter::deinit()

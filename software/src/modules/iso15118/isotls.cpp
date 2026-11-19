@@ -1066,7 +1066,7 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
                 assert(verification_context == nullptr);
 
-                verification_context = static_cast<decltype(verification_context)>(heap_caps_calloc(1, sizeof(*verification_context), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+                verification_context = static_cast<decltype(verification_context)>(calloc_to(1, sizeof(*verification_context), DRAM));
 
                 if (verification_context == nullptr) {
                     return MBEDTLS_ERR_SSL_ALLOC_FAILED;

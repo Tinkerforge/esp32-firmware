@@ -92,13 +92,13 @@ MeterClassID MetersSonnenbatterie::get_class() const
 IMeter *MetersSonnenbatterie::new_meter(uint32_t slot, Config *state, Config * /*errors*/)
 {
     if (runtime_data == nullptr) {
-        void *data_ptr = heap_caps_malloc(sizeof(sonnen_runtime_data), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        void *data_ptr = malloc_to(sizeof(sonnen_runtime_data), DRAM);
         if (data_ptr == nullptr) {
             logger.printfln("Failed to allocate runtime data");
             return nullptr;
         }
 
-        void *api_buf = heap_caps_malloc_prefer(API_RESPONSE_BUFFER_SIZE, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        void *api_buf = malloc_prefer(API_RESPONSE_BUFFER_SIZE, PSRAM, DRAM);
         if (api_buf == nullptr) {
             free(data_ptr);
             logger.printfln("Failed to allocate API buffer");

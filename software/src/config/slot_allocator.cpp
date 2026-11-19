@@ -386,9 +386,10 @@ template<> Superblock<SelfTest> *RootBlock<SelfTest>::first_superblock = nullptr
 template uint16_t nextSlots<SelfTest>(uint16_t batch_size);
 template SelfTest::Slot *get_slot<SelfTest>(uint16_t idx);
 
+[[gnu::malloc]]
 SelfTest::Slot *SelfTest::allocSlotBuf(size_t elements)
 {
-    void *block = heap_caps_calloc_prefer(elements, sizeof(SelfTest::Slot), 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    void *block = calloc_prefer(elements, sizeof(SelfTest::Slot), DRAM, PSRAM);
     return static_cast<SelfTest::Slot *>(block);
 }
 
