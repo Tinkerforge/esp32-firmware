@@ -25,6 +25,7 @@
 
 #include "arena.h"
 
+#include "gcc_warnings.h"
 Arena dram_arena{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);},
     1, 8192, 1024};
@@ -73,6 +74,7 @@ void *perm_aligned_alloc(size_t alignment, size_t size, RAM r) {
         break;
 #endif
         case _NONE:
+        default:
             break;
     }
     return nullptr;
