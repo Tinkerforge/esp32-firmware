@@ -53,8 +53,8 @@ String ConfigRoot::update_from_cstr(char *payload, size_t payload_len, const Con
     if (!err.isEmpty())
         return err;
 
-    this->update_from_copy(&copy);
-    return "";
+    this->value = std::move(copy.value);
+    return {};
 }
 
 // Don't inline; keeps the buffer off the stack when there isn't any error.
@@ -113,8 +113,8 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, Conf
     if (!err.isEmpty())
         return err;
 
-    this->update_from_copy(&copy);
-    return "";
+    this->value = std::move(copy.value);
+    return {};
 }
 
 String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
@@ -152,7 +152,7 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
         if (!err.isEmpty())
             return err;
     }
-    return "";
+    return {};
 }
 
 template<typename T>
@@ -164,8 +164,8 @@ String ConfigRoot::update_from_visitor(T visitor, ConfigSource source, const Con
     if (!err.isEmpty())
         return err;
 
-    this->update_from_copy(&copy);
-    return "";
+    this->value = std::move(copy.value);
+    return {};
 }
 
 String ConfigRoot::update(const Config::ConfUpdate *val)
@@ -182,13 +182,7 @@ String ConfigRoot::validate(ConfigSource source)
     if (validator_ != nullptr) {
         return (*validator_)(*this, source);
     }
-    return "";
-}
-
-void ConfigRoot::update_from_copy(Config *copy)
-{
-    ASSERT_MAIN_THREAD();
-    this->value = copy->value;
+    return {};
 }
 
 void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
