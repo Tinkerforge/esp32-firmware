@@ -1217,13 +1217,21 @@ void EVSEV2::publish_all_data()
             }
 
             auto print_contactor_error = [](const uint8_t error, const bool contactor, const bool phase_switch, const bool contactor_aux, const bool phase_switch_aux) {
-                logger.printfln("Contactor error (%u): Set C1 to '%s' and C2 to '%s' [%s] but see AuxC1 as '%s' and AuxC2 as '%s'",
+                // C2 can only close if C1 is closed too.
+                const bool expected_contactor_aux    = contactor;
+                const bool expected_phase_switch_aux = contactor && phase_switch;
+
+                logger.printfln("Contactor error (%u): Requested %s (C1 %s, C2 %s). Expected AuxC1 %s, AuxC2 %s. Measured AuxC1 %s (%s), AuxC2 %s (%s)",
                                 error,
-                                contactor        ? "closed" : "open",
-                                phase_switch     ? "closed" : "open",
-                                !contactor       ? "no charging" : (contactor_aux ? "3-phase charging" : "1-phase charging"),
-                                contactor_aux    ? "closed" : "open",
-                                phase_switch_aux ? "closed" : "open");
+                                !contactor ? "no charging" : (phase_switch ? "3-phase charging" : "1-phase charging"),
+                                contactor                 ? "closed" : "open",
+                                phase_switch              ? "closed" : "open",
+                                expected_contactor_aux    ? "closed" : "open",
+                                expected_phase_switch_aux ? "closed" : "open",
+                                contactor_aux             ? "closed" : "open",
+                                contactor_aux    == expected_contactor_aux    ? "ok" : "wrong",
+                                phase_switch_aux          ? "closed" : "open",
+                                phase_switch_aux == expected_phase_switch_aux ? "ok" : "wrong");
             };
 
 
