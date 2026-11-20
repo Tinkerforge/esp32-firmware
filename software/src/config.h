@@ -404,7 +404,7 @@ struct Config {
         const Slot *getSlot() const;
         Slot *getSlot();
 
-        ConfObject(std::vector<std::pair<const char *, Config>> &&val);
+        ConfObject(std::initializer_list<std::pair<const char *, Config>> val);
         ConfObject(const ConfObject &cpy);
         ~ConfObject();
 

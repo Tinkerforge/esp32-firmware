@@ -154,30 +154,12 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return get_slot<Config::ConfObject>(idx); }
 Config::ConfObject::Slot *Config::ConfObject::getSlot() { return get_slot<Config::ConfObject>(idx); }
 
-Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val) : idx(nextSlot<Config::ConfObject>())
+Config::ConfObject::ConfObject(std::initializer_list<std::pair<const char *, Config>> val) : idx(nextSlot<Config::ConfObject>())
 {
     const size_t len = val.size();
 
     auto schema = static_cast<ConfObjectSchema *>(perm_aligned_alloc_prefer(4, sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), IRAM, PSRAM, DRAM));
     schema->length = len;
-
-    for (size_t i = 0; i < len; ++i) {
-        const char *key = val[i].first;
-        size_t key_len = strlen(key);
-
-        if (!address_is_in_rodata(key))
-            esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
-
-        if (key_len > 255)
-            esp_system_abort("ConfObject key too long! Max length is 255");
-
-        for (size_t j = i + 1; j < len; ++j) {
-            if (key == val[j].first)
-                esp_system_abort("ConfObject key not unique in this ConfObject! Remove duplicates!");
-        }
-
-        schema->keys[i].set(key_len, key);
-    }
 
     auto *slot = this->getSlot();
     slot->schema = schema;
@@ -191,8 +173,29 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     slot->set_values_idx(val_idx);
     memset(get_slot<Config>(val_idx), to_underlying(Config::ConfVariant::Tag::EMPTY), static_cast<uint16_t>(len) * sizeof(Config));
 
-    for (uint16_t i = 0; i < len; ++i) {
-        new (get_slot<Config>(val_idx + i)) Config{std::move(val[i].second)};
+    {
+        uint16_t i = 0;
+        for (auto &p : val) {
+            const char *key = p.first;
+            size_t key_len = strlen(key);
+
+            if (!address_is_in_rodata(key))
+                esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
+
+            if (key_len > 255)
+                esp_system_abort("ConfObject key too long! Max length is 255");
+
+            schema->keys[i].set(key_len, key);
+            new (get_slot<Config>(val_idx + i)) Config{std::move(p.second)};
+            ++i;
+        }
+    }
+
+    for (size_t i = 0; i < len; ++i) {
+        for (size_t j = i + 1; j < len; ++j) {
+            if (schema->keys[i].get_val() == schema->keys[j].get_val())
+                esp_system_abort("ConfObject key not unique in this ConfObject! Remove duplicates!");
+        }
     }
 }
 
