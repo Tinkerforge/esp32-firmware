@@ -2347,7 +2347,11 @@ int allocate_current(
             // It is not an error if the charger reports != 0 phases but 0 are allocated,
             // because the charger reports the number of phases that would be active if
             // it was charging. Check is_charging instead.
-            if ((charger_alloc.allocated_current < charger.allowed_current
+            // Don't compare allocations at all when charger is not reachable.
+            // If we've shut down this charger above (charger.off = true),
+            // it is expected that the allocation read back from it is more than 0.
+            if (last_update_age < CHARGER_UNREACHABLE_TIMEOUT
+               && (charger_alloc.allocated_current < charger.allowed_current
                 || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
                 || (charger_alloc.allocated_phases == 0 && charger.is_charging))
                && sc.elapsed(charger_alloc.last_sent_config + CHARGER_UNREACHABLE_TIMEOUT)) {
