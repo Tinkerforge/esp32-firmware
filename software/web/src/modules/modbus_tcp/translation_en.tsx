@@ -21,7 +21,7 @@ let x = {
             "port_muted": "typically 502",
             "debug": "Debug client",
             "table_docu": "Register documentation",
-            "table_content": <>
+            "table_content": /*FFN*/(meter_infos: {display_name: string}[]) => <>
                 <thead>
                     <tr>
                         <th scope="col">Register address</th>
@@ -297,6 +297,16 @@ let x = {
                             Currently used NFC tags use IDs of length 4, 7 or (Tag type 5) 8 bytes.
                             Thus the registers 4020 up to and including 4023 can be interpreted as uint64.</td>
                     </tr>
+                    {meter_infos.map((x, i, _) => <tr>
+                            <td>{30000 + i * 1000} to {30999 + i * 1000}</td>
+                            <td>Meter value IDs of the energy meter "{x.display_name}"</td>
+                            <td>uint32 (500x)</td>
+                            <td>---</td>
+                            <td>{i != 0 ? null : <><p>Meter value IDs indicate how to interpret the meter values readable on <strong>holding</strong> registers {30000 + i * 1000} to {30999 + i * 1000}.</p>
+                                    {options.WARP_DOC_BASE_URL.length > 0 ? <p>See <a href={`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/meters/#meters_X_value_ids_any`}>API documentation</a></p> : undefined}</>}
+                            </td>
+                        </tr>)
+                    }
                 </tbody>
                 <thead>
                     <tr>
@@ -443,6 +453,17 @@ let x = {
                         <td>nfc</td>
                         <td>See description of holding registers 4000 to 4009.</td>
                     </tr>
+                    {meter_infos.map((x, i, _) => <tr>
+                            <td>{30000 + i * 1000} to {30999 + i * 1000}</td>
+                            <td>Meter values of the energy meter "{x.display_name}"</td>
+                            <td>float (500x)</td>
+                            <td>---</td>
+                            <td>{i != 0 ? null : <><p>The Meter value IDs (readable on the <strong>input</strong> registers {30000 + i * 1000} to {30999 + i * 1000}) indicate how to interpret these values.</p>
+                                    {options.WARP_DOC_BASE_URL.length > 0 ? <p>See <a href={`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/meters/#meters_X_value_ids_any`}>API documentation</a></p> : undefined}
+                                    <p>If this is an API meter, new meter values can be written to these holding registers.</p></>}
+                            </td>
+                        </tr>)
+                    }
                 </tbody>
                 <thead>
                     <tr>
@@ -608,7 +629,7 @@ let x = {
                         <td>0 - connected to ground, 1 - high impedance</td>
                     </tr>
                 </tbody>
-            </>
+            </>/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the Modbus/TCP settings."

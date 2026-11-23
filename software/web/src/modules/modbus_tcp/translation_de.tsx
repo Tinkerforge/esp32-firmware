@@ -21,7 +21,7 @@ let x = {
             "port_muted": "typischerweise 502",
             "debug": "Debug-Client",
             "table_docu": "Register-Dokumentation",
-            "table_content": <>
+            "table_content": /*FFN*/(meter_infos: {display_name: string}[]) => <>
                 <thead>
                     <tr>
                         <th scope="col">Registeradresse</th>
@@ -232,7 +232,8 @@ let x = {
                         <td>weitere Stromzähler-Werte</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>Siehe <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meter/#meter_all_values_any`}>API-Dokumentation</a></span> : undefined}</td>
+                        <td><strong>Veraltet. Stattdessen die Input- und Holding-Register 30000 ff. nutzen</strong>
+                            {options.WARP_DOC_BASE_URL.length > 0 ? <span>Siehe <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meter/#meter_all_values_any`}>API-Dokumentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>
@@ -298,6 +299,16 @@ let x = {
                             Aktuell verbreitete NFC-Tags benutzen IDs mit einer Länge von 4, 7 oder (bei Tag Typ 5) 8 Byte.
                             Die Register 4020 bis einschließlich 4023 können also als uint64 interpretiert werden.</td>
                     </tr>
+                    {meter_infos.map((x, i, _) => <tr>
+                            <td>{30000 + i * 1000} bis {30999 + i * 1000}</td>
+                            <td>Meter-Value-IDs des Stromzählers "{x.display_name}"</td>
+                            <td>uint32 (500x)</td>
+                            <td>---</td>
+                            <td>{i != 0 ? null : <><p>Die Meter-Value-IDs geben an, wie die Zählerwerte auf den <strong>Holding</strong>-Registern {30000 + i * 1000} bis {30999 + i * 1000} zu interpretieren sind.</p>
+                                    {options.WARP_DOC_BASE_URL.length > 0 ? <p>Siehe <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meters/#meters_X_value_ids_any`}>API-Dokumentation</a></p> : undefined}</>}
+                            </td>
+                        </tr>)
+                    }
                 </tbody>
                 <thead>
                     <tr>
@@ -445,6 +456,17 @@ let x = {
                         <td>nfc</td>
                         <td>Siehe Beschreibung der Holding Register 4000 bis 4009.</td>
                     </tr>
+                    {meter_infos.map((x, i, _) => <tr>
+                            <td>{30000 + i * 1000} bis {30999 + i * 1000}</td>
+                            <td>Zählerwerte des Stromzählers "{x.display_name}"</td>
+                            <td>float (500x)</td>
+                            <td>---</td>
+                            <td>{i != 0 ? null : <><p>Die Meter-Value-IDs (auf den <strong>Input</strong>-Registern {30000 + i * 1000} bis {30999 + i * 1000}) geben an, wie diese Zählerwerte zu interpretieren sind.</p>
+                                    {options.WARP_DOC_BASE_URL.length > 0 ? <p>Siehe <a href={`${options.WARP_DOC_BASE_URL}/de/docs/interfaces/mqtt_http/api_reference/meters/#meters_X_value_ids_any`}>API-Dokumentation</a></p> : undefined}
+                                    <p>Falls dieser Zähler ein API-Zähler ist, können die Holding-Register mit neuen Zählerwerten geschrieben werden.</p></>}
+                            </td>
+                        </tr>)
+                    }
                 </tbody>
                 <thead>
                     <tr>
@@ -612,7 +634,7 @@ let x = {
                         <td>0 - Verbunden mit Masse, 1 - Hochohmig</td>
                     </tr>
                 </tbody>
-            </>
+            </>/*NF*/
         },
         "script": {
             "save_failed": "Speichern der Modbus/TCP-Einstellungen fehlgeschlagen."

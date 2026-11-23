@@ -31,6 +31,7 @@
 #include "tools/net.h"
 #include "tools/hexdump.h"
 #include "tools/printf.h"
+#include "options.h"
 
 #if !MODULE_NFC_AVAILABLE()
 // Keep the register layout independent of the NFC module.
@@ -380,6 +381,20 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInp
         }
 #endif
     }
+#if MODULE_METERS_AVAILABLE()
+    else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
+        static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+        report_illegal_data_address = false;
+
+        reg -= 30000;
+        uint32_t slot = reg / 1000;
+        uint32_t index = (reg % 1000) / 2;
+        const Config *value_ids = nullptr;
+        meters.get_value_ids(slot, &value_ids);
+        if (value_ids != nullptr && index < value_ids->count())
+            val.u = value_ids->get(index)->asUint16();
+    }
+#endif
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -479,6 +494,22 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
         }
 #endif
     }
+#if MODULE_METERS_AVAILABLE()
+    else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
+        static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+        report_illegal_data_address = false;
+
+        reg -= 30000;
+        uint32_t slot = reg / 1000;
+        uint32_t index = (reg % 1000) / 2;
+        const Config *values = nullptr;
+        meters.get_values(slot, &values);
+        if (values == nullptr || values->count() <= index)
+            val.f = NAN;
+        else
+            val.f = values->get(index)->asFloat();
+    }
+#endif
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -846,6 +877,51 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
             }
 #endif
         }
+#if MODULE_METERS_AVAILABLE()
+        else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
+            static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+
+            if (reg == start_address) {
+                // Only support writing complete floats
+                if (reg % 2 != 0 || data_count % 2 != 0) {
+                    return TFModbusTCPExceptionCode::IllegalDataAddress;
+                }
+
+                reg -= 30000;
+
+                uint32_t slot = reg / 1000;
+                uint32_t end_slot = (reg + data_count - 1) / 1000;
+
+                // Don't support writing across two meter slots
+                if (slot != end_slot) {
+                    return TFModbusTCPExceptionCode::IllegalDataAddress;
+                }
+
+                reg = reg % 1000;
+
+                uint32_t start_idx = reg / 2;
+                uint32_t end_idx = start_idx + data_count / 2 - 1;
+
+                if (meters.get_meter_class(slot) != MeterClassID::API) {
+                    return TFModbusTCPExceptionCode::IllegalDataAddress;
+                }
+
+                const Config *value_ids = nullptr;
+                meters.get_value_ids(slot, &value_ids);
+                if (value_ids == nullptr || end_idx >= value_ids->count()) {
+                    return TFModbusTCPExceptionCode::IllegalDataAddress;
+                }
+
+                reg = start_address;
+            }
+
+            report_illegal_data_address = false;
+
+            uint32_t slot = (reg - 30000) / 1000;
+            uint32_t idx = (reg % 1000) / 2;
+            meters.update_value(slot, idx, val.f, true);
+        }
+#endif
     }
 
     if (this->send_illegal_data_address && report_illegal_data_address) {

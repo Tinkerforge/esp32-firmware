@@ -20,6 +20,7 @@
 //#include "generated/module_available.inc"
 
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import * as util from "../../ts/util";
 import { h,  Fragment } from "preact";
 import { __ } from "../../ts/translation";
@@ -112,7 +113,11 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         <FormSeparator heading={__("modbus_tcp.content.table_docu")} />
 {/*#endif*/}
                         <table class="table table-bordered table-sm">
-                            {__("modbus_tcp.content.table_content")}
+{/*#if MODULE_METERS_AVAILABLE*/}
+                            {__("modbus_tcp.content.table_content")(util.range(options.METERS_MAX_SLOTS).map(i => ({display_name: API.get_unchecked(`meters/${i}/config`)?.[1]?.display_name ?? __("meters.script.meter")(i)})) as any)}
+{/*#else*/}
+                            {__("modbus_tcp.content.table_content")([])}
+{/*#endif*/}
                         </table>
 {/*#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE*/}
                         </CollapsedSection>
