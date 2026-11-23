@@ -52,6 +52,12 @@ public:
     bool supports_currents()      override {return true;}
 
 private:
+    enum class PhaseVoltageCheckState {
+        Disabled,
+        Pending,
+        Finished,
+    };
+
     void connect_callback(TFGenericTCPClientConnectResult result, TFGenericTCPClientPoolShareLevel share_level) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason, TFGenericTCPClientPoolShareLevel share_level) override;
 
@@ -86,7 +92,7 @@ private:
     IMetersSunSpecParser *model_parser;
     MeterLocation location;
 
-    bool check_phase_voltages = false;
+    PhaseVoltageCheckState phase_voltage_check_state = PhaseVoltageCheckState::Disabled;
     uint32_t phase_voltage_index_cache[3];
 
     micros_t last_connect = 0_us;

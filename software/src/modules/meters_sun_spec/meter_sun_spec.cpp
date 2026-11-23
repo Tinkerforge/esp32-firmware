@@ -171,6 +171,11 @@ void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result, TFGe
     last_connect = now_us();
     last_successful_parse = now_us();
 
+    if (phase_voltage_check_state != PhaseVoltageCheckState::Disabled) {
+        logger.printfln_meter("Checking phase voltages for float-is-le32 quirk again");
+        phase_voltage_check_state = PhaseVoltageCheckState::Pending;
+    }
+
     resolve_start();
 }
 
@@ -278,7 +283,7 @@ void MeterSunSpec::read_done()
         for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
             if (phase_voltage_index_cache[i] != UINT32_MAX) {
                 logger.printfln_meter("Checking phase voltages for float-is-le32 quirk");
-                check_phase_voltages = true;
+                phase_voltage_check_state = PhaseVoltageCheckState::Pending;
                 break;
             }
         }
@@ -307,7 +312,7 @@ void MeterSunSpec::read_done()
         last_successful_parse = now_us();
     }
 
-    if (check_phase_voltages) {
+    if (phase_voltage_check_state == PhaseVoltageCheckState::Pending) {
         bool parse_again = false;
 
         for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
@@ -331,7 +336,7 @@ void MeterSunSpec::read_done()
                 continue; // phase voltage in no-mans-land, cannot decide
             }
 
-            check_phase_voltages = false;
+            phase_voltage_check_state = PhaseVoltageCheckState::Finished;
             break;
         }
 
