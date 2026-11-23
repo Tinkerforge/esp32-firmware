@@ -79,15 +79,14 @@ public:
 
     static IMetersSunSpecParser *new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type);
 
-    bool detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read) override;
-    bool parse_values(const uint16_t *const register_data, uint32_t quirks) override;
+    bool detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3]) override;
+    bool parse_values(float *values, const uint16_t *const register_data, uint32_t quirks) override;
     bool is_model_length_supported(uint32_t model_length) override;
     uint32_t get_interesting_registers_count() override;
 
 private:
-    MetersSunSpecParser(uint32_t meter_slot_, const ModelData *model_) : meter_slot(meter_slot_), model(model_) {}
+    MetersSunSpecParser(const ModelData *model_) : model(model_) {}
 
-    const uint32_t meter_slot;
     const ModelData *const model;
     std::vector<const ValueData *> detected_values;
 };

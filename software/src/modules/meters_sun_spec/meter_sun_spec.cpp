@@ -25,10 +25,11 @@
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"
 
+#include "options.h"
 #include "gcc_warnings.h"
 
 #define RESOLVE_TIMEOUT 1_min
-#define SUCCESSFUL_PARSE_TIMEOUT 1_min
+#define UPDATE_TIMEOUT 1_min
 
 #define trace(fmt, ...) \
     do { \
@@ -124,8 +125,8 @@ void MeterSunSpec::setup(Config *ephemeral_config)
         if (read_allowed) {
             read_allowed = false;
 
-            if (deadline_elapsed(last_successful_parse + SUCCESSFUL_PARSE_TIMEOUT)) {
-                logger.printfln("Last successful parse occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
+            if (deadline_elapsed(last_update + UPDATE_TIMEOUT)) {
+                logger.printfln("Last update occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
                 force_reconnect();
                 return;
             }
@@ -169,7 +170,7 @@ void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result, TFGe
     }
 
     last_connect = now_us();
-    last_successful_parse = now_us();
+    last_update = now_us();
 
     if (phase_voltage_check_state != PhaseVoltageCheckState::Disabled) {
         logger.printfln_meter("Checking phase voltages for float-is-le32 quirk again");
@@ -267,21 +268,13 @@ void MeterSunSpec::read_done()
     if (!values_declared) {
         size_t registers_to_read = generic_read_request.register_count;
 
-        if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
+        if (!model_parser->detect_values(slot, generic_read_request.data, quirks, &registers_to_read, phase_voltage_indices)) {
             logger.printfln_meter("Detecting values of model %hu failed", model_id);
             return;
         }
 
-        MeterValueID phase_voltage_ids[3] = {
-            MeterValueID::VoltageL1N,
-            MeterValueID::VoltageL2N,
-            MeterValueID::VoltageL3N,
-        };
-
-        meters.fill_index_cache(slot, ARRAY_SIZE(phase_voltage_ids), phase_voltage_ids, phase_voltage_index_cache);
-
-        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
-            if (phase_voltage_index_cache[i] != UINT32_MAX) {
+        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_indices); ++i) {
+            if (phase_voltage_indices[i] != UINT32_MAX) {
                 logger.printfln_meter("Checking phase voltages for float-is-le32 quirk");
                 phase_voltage_check_state = PhaseVoltageCheckState::Pending;
                 break;
@@ -303,28 +296,23 @@ void MeterSunSpec::read_done()
         }
     }
 
-    if (!model_parser->parse_values(generic_read_request.data, quirks)) {
+    float values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
+
+    if (!model_parser->parse_values(values, generic_read_request.data, quirks)) {
         auto inconsistency = errors->get("inconsistency");
         inconsistency->updateUint(inconsistency->asUint() + 1);
         return;
-    }
-    else {
-        last_successful_parse = now_us();
     }
 
     if (phase_voltage_check_state == PhaseVoltageCheckState::Pending) {
         bool parse_again = false;
 
-        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
-            if (phase_voltage_index_cache[i] == UINT32_MAX) {
+        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_indices); ++i) {
+            if (phase_voltage_indices[i] == UINT32_MAX) {
                 continue;
             }
 
-            float value = NAN;
-
-            if (meters.get_value_by_index(slot, phase_voltage_index_cache[i], &value) != MeterValueAvailability::Fresh) {
-                continue;
-            }
+            float value = values[phase_voltage_indices[i]];
 
             if (value < -5 || value > 280) {
                 logger.printfln_meter("Enabling float-is-le32 quirk due to abnormal L%zu-N voltage value: %.1f V", i + 1, static_cast<double>(value));
@@ -342,16 +330,20 @@ void MeterSunSpec::read_done()
             break;
         }
 
-        if (parse_again) {
-            if (!model_parser->parse_values(generic_read_request.data, quirks)) {
-                auto inconsistency = errors->get("inconsistency");
-                inconsistency->updateUint(inconsistency->asUint() + 1);
-            }
-            else {
-                last_successful_parse = now_us();
-            }
+        if (phase_voltage_check_state != PhaseVoltageCheckState::Finished) {
+            return;
+        }
+
+        if (parse_again && !model_parser->parse_values(values, generic_read_request.data, quirks)) {
+            auto inconsistency = errors->get("inconsistency");
+            inconsistency->updateUint(inconsistency->asUint() + 1);
+            return;
         }
     }
+
+    last_update = now_us();
+
+    meters.update_all_values(slot, values);
 }
 
 void MeterSunSpec::record_timeout()

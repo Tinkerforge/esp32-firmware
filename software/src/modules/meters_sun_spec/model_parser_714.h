@@ -25,17 +25,16 @@
 class MetersSunSpecParser714 final : public IMetersSunSpecParser
 {
 public:
-    MetersSunSpecParser714(uint32_t slot_, DCPortType port_type_) : slot(slot_), port_type(port_type_) {}
+    MetersSunSpecParser714(DCPortType port_type_) : port_type(port_type_) {}
 
-    bool detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read) override;
-    bool parse_values(const uint16_t *const register_data, uint32_t quirks) override;
+    bool detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3]) override;
+    bool parse_values(float *values, const uint16_t *const register_data, uint32_t quirks) override;
     bool is_model_length_supported(uint32_t model_length) override;
     uint32_t get_interesting_registers_count() override;
 
 private:
     bool is_valid(const uint16_t *const register_data);
 
-    const uint32_t slot;
     const DCPortType port_type;
     size_t cached_port_count = 0;
 };

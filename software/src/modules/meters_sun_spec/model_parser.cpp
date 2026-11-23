@@ -28,7 +28,6 @@
 #include "model_parser_714.h"
 #include "modules/sun_spec/sun_spec_resolver.h"
 
-#include "options.h"
 #include "gcc_warnings.h"
 
 IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type)
@@ -53,7 +52,7 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char 
             }
         }
 
-        return new MetersSunSpecParser160(slot, mode);
+        return new MetersSunSpecParser160(mode);
     }
 
     if (model_id == 714) {
@@ -62,7 +61,7 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char 
             return nullptr;
         }
 
-        return new MetersSunSpecParser714(slot, dc_port_type);
+        return new MetersSunSpecParser714(dc_port_type);
     }
 
     for (size_t i = 0; i < meters_sun_spec_all_model_data.model_count; i++) {
@@ -119,24 +118,40 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char 
                 actual_model_data = patched_model_data;
             }
 
-            return new MetersSunSpecParser(slot, actual_model_data);
+            return new MetersSunSpecParser(actual_model_data);
         }
     }
 
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser::detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3])
 {
-    if (!model->validator(register_data))
+    phase_voltage_indices[0] = UINT32_MAX;
+    phase_voltage_indices[1] = UINT32_MAX;
+    phase_voltage_indices[2] = UINT32_MAX;
+
+    if (!model->validator(register_data)) {
         return false;
+    }
 
     uint8_t max_register = 0;
 
     detected_values.reserve(model->value_count);
 
-    for (size_t i = 0; i < model->value_count; i++) {
+    for (uint32_t i = 0; i < model->value_count; i++) {
         const ValueData *value_data = &model->value_data[i];
+
+        if (value_data->value_id == MeterValueID::VoltageL1N) {
+            phase_voltage_indices[0] = i;
+        }
+        else if (value_data->value_id == MeterValueID::VoltageL2N) {
+            phase_voltage_indices[1] = i;
+        }
+        else if (value_data->value_id == MeterValueID::VoltageL3N) {
+            phase_voltage_indices[2] = i;
+        }
+
         if (!model->is_meter || !isnan(value_data->get_value(register_data, quirks, true))) {
             detected_values.push_back(value_data);
 
@@ -155,23 +170,24 @@ bool MetersSunSpecParser::detect_values(const uint16_t *const register_data, uin
     for (uint16_t i = 0; i < detected_value_count; i++) {
         ids[i] = detected_values[i]->value_id;
     }
-    meters.declare_value_ids(meter_slot, ids, detected_value_count);
+    meters.declare_value_ids(slot, ids, detected_value_count);
     free(ids);
 
     return true;
 }
 
-bool MetersSunSpecParser::parse_values(const uint16_t *const register_data, uint32_t quirks)
+bool MetersSunSpecParser::parse_values(float *values, const uint16_t *const register_data, uint32_t quirks)
 {
-    if (!model->validator(register_data))
+    if (!model->validator(register_data)) {
         return false;
-
-    float meter_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
-    size_t value_count = detected_values.size();
-    for (size_t i = 0; i < value_count; i++) {
-        meter_values[i] = detected_values[i]->get_value(register_data, quirks, false);
     }
-    meters.update_all_values(meter_slot, meter_values);
+
+    size_t value_count = detected_values.size();
+
+    for (size_t i = 0; i < value_count; i++) {
+        values[i] = detected_values[i]->get_value(register_data, quirks, false);
+    }
+
     return true;
 }
 

@@ -93,10 +93,10 @@ private:
     MeterLocation location;
 
     PhaseVoltageCheckState phase_voltage_check_state = PhaseVoltageCheckState::Disabled;
-    uint32_t phase_voltage_index_cache[3];
+    uint32_t phase_voltage_indices[3];
 
     micros_t last_connect = 0_us;
-    micros_t last_successful_parse = 0_us;
+    micros_t last_update = 0_us;
 };
 
 #if defined(__GNUC__)

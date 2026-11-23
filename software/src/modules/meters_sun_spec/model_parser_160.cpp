@@ -136,8 +136,12 @@ static float acc32_to_float(uint32_t val, int32_t sunssf)
     return static_cast<float>(u.u32) * get_sun_spec_scale_factor(sunssf);
 }
 
-bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser160::detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3])
 {
+    phase_voltage_indices[0] = UINT32_MAX;
+    phase_voltage_indices[1] = UINT32_MAX;
+    phase_voltage_indices[2] = UINT32_MAX;
+
     if (!is_valid(register_data)) {
         return false;
     }
@@ -194,14 +198,13 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data, 
     return true;
 }
 
-bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data, uint32_t quirks)
+bool MetersSunSpecParser160::parse_values(float *values, const uint16_t *const register_data, uint32_t quirks)
 {
     if (!is_valid(register_data)) {
         return false;
     }
 
     const struct Model160_s *block = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data));
-    float values[ARRAY_SIZE(model_160_ids)];
 
     values[0] = NAN;
     values[1] = NAN;
@@ -238,8 +241,6 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data, u
     }
 
     values[3] = zero_safe_negation(values[2]);
-
-    meters.update_all_values(slot, values);
 
     return true;
 }

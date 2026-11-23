@@ -156,8 +156,12 @@ static float uint64_to_float(uint64_t val, int32_t sunssf)
     return static_cast<float>(u.u64) * get_sun_spec_scale_factor(sunssf);
 }
 
-bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser714::detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3])
 {
+    phase_voltage_indices[0] = UINT32_MAX;
+    phase_voltage_indices[1] = UINT32_MAX;
+    phase_voltage_indices[2] = UINT32_MAX;
+
     if (!is_valid(register_data)) {
         return false;
     }
@@ -199,7 +203,7 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data, 
     return true;
 }
 
-bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data, uint32_t quirks)
+bool MetersSunSpecParser714::parse_values(float *values, const uint16_t *const register_data, uint32_t quirks)
 {
     if (!is_valid(register_data)) {
         return false;
@@ -211,8 +215,6 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data, u
     if (port_count > cached_port_count) {
         port_count = cached_port_count;
     }
-
-    float values[ARRAY_SIZE(model_714_pv_ids)];
 
     values[0] = NAN;
     values[1] = NAN;
@@ -267,8 +269,6 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data, u
     if (port_type == DCPortType::Photovoltaic) {
         values[4] = zero_safe_negation(values[2]);
     }
-
-    meters.update_all_values(slot, values);
 
     return true;
 }

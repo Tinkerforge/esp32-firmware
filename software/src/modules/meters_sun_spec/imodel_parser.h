@@ -22,13 +22,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "modules/meters/generated/meter_value_id.h"
+
 class IMetersSunSpecParser
 {
 public:
     virtual ~IMetersSunSpecParser() = default;
 
-    virtual bool detect_values(const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read) = 0;
-    virtual bool parse_values(const uint16_t *const register_data, uint32_t quirks) = 0;
+    virtual bool detect_values(uint32_t slot, const uint16_t *const register_data, uint32_t quirks, size_t *registers_to_read, uint32_t phase_voltage_indices[3]) = 0;
+    virtual bool parse_values(float *values, const uint16_t *const register_data, uint32_t quirks) = 0;
     virtual bool is_model_length_supported(uint32_t model_length) = 0;
     virtual uint32_t get_interesting_registers_count() = 0;
 };
