@@ -92,7 +92,7 @@ function printable_ascii(x: number) {
         return String.fromCharCode(x);
     }
 
-    return '.';
+    return "·";
 }
 
 function to_value_hex(value: number, nibble_count: number) {
@@ -215,7 +215,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     }
                 }
                 else {
-                    let header = ["AdrD", "AdrH", "NumD", "NumH", "Idx", "Hex", "AS", "Binary [15..0]", "U16", "S16", "U32BE", "U32LE", "S32BE", "S32LE", "F32BE", "F32LE", "U64BE", "U64LE", "S64BE", "S64LE", "F64BE", "F64LE"];
+                    let header = ["AdrD", "AdrH", "NumD", "NumH", "Idx", "Hex", "AS", "Binary·[15..0]", "U16", "S16", "U32BE", "U32LE", "S32BE", "S32LE", "F32BE", "F32LE", "U64BE", "U64LE", "S64BE", "S64LE", "F64BE", "F64LE"];
 
                     rows.push(header);
                     rows.push(null);
@@ -250,12 +250,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         let s16_s = ((u16 << 16) >> 16).toString(10);
 
-                        let u32be_s = "";
-                        let u32le_s = "";
-                        let s32be_s = "";
-                        let s32le_s = "";
-                        let f32be_s = "";
-                        let f32le_s = "";
+                        let u32be_s = "·";
+                        let u32le_s = "·";
+                        let s32be_s = "·";
+                        let s32le_s = "·";
+                        let f32be_s = "·";
+                        let f32le_s = "·";
 
                         if ((i % 2) == 1) {
                             let u32be = parseInt(transact_result.read_data.substring((i - 1) * 4,     (i - 1) * 4 + 8), 16);
@@ -281,12 +281,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             f32le_s = f32le.toString();
                         }
 
-                        let u64be_s = "";
-                        let u64le_s = "";
-                        let s64be_s = "";
-                        let s64le_s = "";
-                        let f64be_s = "";
-                        let f64le_s = "";
+                        let u64be_s = "·";
+                        let u64le_s = "·";
+                        let s64be_s = "·";
+                        let s64le_s = "·";
+                        let f64be_s = "·";
+                        let f64le_s = "·";
 
                         if ((i % 4) == 3) {
                             let u64be = BigInt("0x" + transact_result.read_data.substring((i - 3) * 4,      (i - 3) * 4 + 16));
@@ -318,12 +318,13 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         if (i % 20 == 19 && i < transact_result.read_data.length / 4 - 1) {
                             rows.push(null);
+                            rows.push(null);
                             rows.push(header);
                             rows.push(null);
                         }
                     }
 
-                    footer = "\n\nASCII: " + ascii_all;
+                    footer = "\n\n\nASCII: " + ascii_all;
                 }
 
                 let column_widths: number[] = [];
@@ -346,10 +347,25 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     }
 
                     if (row !== null) {
+                        let spacer = row[0] == "AdrD" ? "·" : " ";
+
                         for (let i = 0; i < row.length; ++i) {
-                            let cell = " ".repeat(column_widths[i]) + row[i];
+                            let cell = spacer.repeat(column_widths[i]) + row[i];
 
                             cell = cell.substring(cell.length - column_widths[i]);
+
+                            if (i > 0) {
+                                result += spacer + spacer;
+                            }
+
+                            result += cell;
+                        }
+
+                        result += " ";
+                    }
+                    else {
+                        for (let i = 0; i < column_widths.length; ++i) {
+                            let cell = " ".repeat(column_widths[i] - 1) + "·";
 
                             if (i > 0) {
                                 result += "  ";
@@ -357,8 +373,6 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                             result += cell;
                         }
-
-                        result += " ";
                     }
                 }
 
@@ -937,13 +951,13 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
             {this.state.waiting || this.state.result.length > 0 ?
                 <FormRow label={__("modbus_tcp_debug.content.result")}>
-                    <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
+                    <OutputTextarea rows={30} resize="both" value={this.state.waiting ? "Waiting..." : this.state.result} />
                 </FormRow>
                 : undefined}
 
             {this.state.transfer.length > 0 ?
                 <FormRow label={__("modbus_tcp_debug.content.transfer")}>
-                    <OutputTextarea rows={5} resize="vertical" value={this.state.transfer} />
+                    <OutputTextarea rows={5} resize="both" value={this.state.transfer} />
                 </FormRow>
                 : undefined}
         </form>;
