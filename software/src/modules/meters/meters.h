@@ -138,7 +138,7 @@ public:
     MeterValueAvailability get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_us);
 
     // Remember to call finish_update when done updating all values for one read-out.
-    void update_value(uint32_t slot, uint32_t index, float new_value);
+    bool update_value(uint32_t slot, uint32_t index, float new_value, bool silent=false);
     void update_batch_values(uint32_t slot, size_t count, const uint32_t *indices, const float *new_values);
     void finish_update(uint32_t slot);
 

@@ -1030,27 +1030,33 @@ void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const
     }
 }
 
-void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
+bool Meters::update_value(uint32_t slot, uint32_t index, float new_value, bool silent)
 {
     if (isnan(new_value))
-        return;
+        return true;
 
     if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
-        logger.printfln_meter("Tried to update value %lu for non-existent slot", index);
-        return;
+        if (!silent) {
+            logger.printfln_meter("Tried to update value %lu for non-existent slot", index);
+        }
+        return false;
     }
 
     if (index == UINT32_MAX) {
-        logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
-        return;
+        if (!silent) {
+            logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
+        }
+        return false;
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
     Config &values = meter_slot.values;
 
     if (index >= values.count()) {
-        logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, values.count());
-        return;
+        if (!silent) {
+            logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, values.count());
+        }
+        return false;
     }
 
     Config *conf_val = static_cast<Config *>(values.get(index));
@@ -1070,6 +1076,8 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
         apply_filters(meter_slot, base_value_count, base_values);
     }
+
+    return true;
 }
 
 void Meters::update_batch_values(uint32_t slot, size_t count, const uint32_t *indices, const float *new_values)
