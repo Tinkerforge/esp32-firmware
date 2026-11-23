@@ -383,7 +383,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInp
     }
 #if MODULE_METERS_AVAILABLE()
     else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
-        static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+        static_assert(OPTIONS_METERS_MAX_SLOTS() <= OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
         report_illegal_data_address = false;
 
         reg -= 30000;
@@ -496,7 +496,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
     }
 #if MODULE_METERS_AVAILABLE()
     else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
-        static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+        static_assert(OPTIONS_METERS_MAX_SLOTS() <= OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
         report_illegal_data_address = false;
 
         reg -= 30000;
@@ -879,7 +879,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
         }
 #if MODULE_METERS_AVAILABLE()
         else if (reg >= 30000 && reg < 30000 + OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES() * 1000) {
-            static_assert(OPTIONS_METERS_MAX_SLOTS() < OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
+            static_assert(OPTIONS_METERS_MAX_SLOTS() <= OPTIONS_MODBUS_TCP_HIGHEST_METERS_MAX_SLOTS_OVER_ALL_FIRMWARES());
 
             if (reg == start_address) {
                 // Only support writing complete floats
