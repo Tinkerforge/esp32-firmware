@@ -365,9 +365,18 @@ const wsOnMessageCallback = (e: MessageEvent) => {
 
     batch(() => {
         for (let item of messages.split("\n")) {
-            let obj = JSON.parse(item);
+            let obj;
+
+            try {
+                obj = JSON.parse(item);
+            }
+            catch (err) {
+                console.log("Received malformed JSON:", err, "-->", item);
+                return;
+            }
+
             if (!("topic" in obj) || !("payload" in obj)) {
-                console.log("Received malformed event", obj);
+                console.log("Received malformed event:", obj);
                 return;
             }
 
