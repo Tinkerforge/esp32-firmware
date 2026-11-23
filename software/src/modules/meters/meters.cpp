@@ -433,7 +433,7 @@ void Meters::setup()
                     }
                 }
 
-                sb.puts("]}\n");
+                sb.puts("]}");
 
                 ws.pushRawStateUpdateEnd(&sb);
             }
