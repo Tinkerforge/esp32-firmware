@@ -286,7 +286,7 @@ void ISO15118::trace(const char *fmt, ...)
 #if defined(BOARD_HAS_PSRAM)
     uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
     char buffer[32];
-    size_t len = snprintf_u(buffer, sizeof(buffer), "%04lu ", secs % 10000);
+    size_t len = snprintf_u(buffer, sizeof(buffer), "%lu ", secs);
     logger.trace_plain(trace_buffer_index, buffer, len);
 
     va_list args;
