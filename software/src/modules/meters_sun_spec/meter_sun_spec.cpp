@@ -320,9 +320,11 @@ void MeterSunSpec::read_done()
                 continue;
             }
 
-            float value = 0;
+            float value = NAN;
 
-            meters.get_value_by_index(slot, phase_voltage_index_cache[i], &value);
+            if (meters.get_value_by_index(slot, phase_voltage_index_cache[i], &value) != MeterValueAvailability::Fresh) {
+                continue;
+            }
 
             if (value < -5 || value > 280) {
                 logger.printfln_meter("Enabling float-is-le32 quirk due to abnormal L%zu-N voltage value: %.1f V", i + 1, static_cast<double>(value));
