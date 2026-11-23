@@ -158,7 +158,7 @@ struct WgKey {
     }
 };
 
-static constexpr uint16_t MIN_INNER_MTU = 1280;
+static constexpr uint16_t DEFAULT_INNER_MTU = 1240;
 
 static constexpr char MULTICAST_ADDRESS[] = "ff02::1";
 
@@ -404,25 +404,20 @@ void RemoteAccess::pre_setup()
         {"relay_host", Config::Str(OPTIONS_REMOTE_ACCESS_HOST(), 0, 64)},
         {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)},
-        {"mtu", Config::Uint16(MIN_INNER_MTU)},
+        {"mtu", Config::Uint16(DEFAULT_INNER_MTU)},
         {"service_token_user_uuid", Config::Str("", 0, 36)},
         {"service_token_timestamp_minutes", Config::Uint32(0)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
 
-    registration_config = ConfigRoot{Config::Object({
+    registration_config = Config::Object({
         {"enable", Config::Bool(false)},
         {"relay_host", Config::Str("", 0, 32)},
         {"relay_port", Config::Uint16(443)},
         {"email", Config::Str("", 0, 64)},
         {"cert_id", Config::Int8(-1)},
-        {"mtu", Config::Uint16(MIN_INNER_MTU)},
-    }), [](Config &cfg, ConfigSource /*source*/) -> String {
-        if (cfg.get("mtu")->asUint16() < MIN_INNER_MTU) {
-            return "Remote access requires an MTU of at least 1280 for IPv6.";
-        }
-        return "";
-    }};
+        {"mtu", Config::Uint16(1280)},
+    });
 
     ping_command_config = Config::Object({
         {"use_mtu", Config::Bool(false)},
@@ -449,11 +444,6 @@ void RemoteAccess::setup()
     LittleFS.mkdir(KEY_DIRECTORY);
 
     api.restorePersistentConfig("remote_access/config", &config);
-    // Older configurations used an IPv4-only MTU of 1240.
-    if (config.get("mtu")->asUint16() < MIN_INNER_MTU) {
-        config.get("mtu")->updateUint(MIN_INNER_MTU);
-        api.writeConfig("remote_access/config", &config);
-    }
     initialized = true;
 
     if (!config.get("service_token_user_uuid")->asString().isEmpty()) {

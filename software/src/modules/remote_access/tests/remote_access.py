@@ -1369,18 +1369,16 @@ def test_all_disconnected_when_disabled(tc: TestContext) -> None:
     _assert_all_disconnected(tc)
 
 
-def test_mtu_below_ipv6_minimum_rejected(tc: TestContext) -> None:
-    """Reject IPv4-era MTUs without changing the current configuration."""
-    before = tc.api("remote_access/config")
-    for mtu in (576, 1240, 1279):
-        try:
-            tc.api("remote_access/config_update", _make_config_update(tc, mtu=mtu), timeout=3)
-        except HTTPError as exc:
-            tc.assert_eq(400, exc.code)
-            tc.assert_contains("1280", str(exc))
-        else:
-            raise AssertionError(f"Accepted an MTU below the IPv6 minimum: {mtu}")
-    tc.assert_eq(before, tc.api("remote_access/config"))
+def test_mtu_below_ipv6_minimum_persists(tc: TestContext) -> None:
+    """Verify that the configuration accepts MTUs below 1280 and restores them after reboot."""
+    tc.set_test_timeout(60)
+    stored_mtu = 1279
+    for mtu in (576, 1240, stored_mtu):
+        tc.api("remote_access/config_update", _make_config_update(tc, enable=False, mtu=mtu), timeout=3)
+        tc.assert_eq(mtu, tc.api("remote_access/config")["mtu"])
+
+    tc.reboot()
+    tc.assert_eq(stored_mtu, tc.api("remote_access/config")["mtu"])
 
 
 def test_enable_triggers_management_request(tc: TestContext) -> None:
