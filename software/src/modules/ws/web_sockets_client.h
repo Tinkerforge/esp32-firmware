@@ -31,7 +31,7 @@ public:
     enum class Frag {
         No,
         First,
-        Intermediate,
+        Middle,
         Last
     };
 
