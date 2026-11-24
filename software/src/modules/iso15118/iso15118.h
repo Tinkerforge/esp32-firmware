@@ -181,6 +181,7 @@ public:
     micros_t communication_setup_deadline = 0_us;
     void begin_reslac_for_nonegotiation();
     bool end_hlc_after_session_stop(uint64_t &next_timeout);
+    void handle_avln_disconnected();
 
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();

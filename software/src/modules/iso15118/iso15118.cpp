@@ -141,16 +141,21 @@
 //
 // Real-world EV behaviors
 // -----------------------
-// For now we were able to observe two distinct behaviors:
+// For now we were able to observe three distinct behaviors:
 //    1. EV closes TCP connection immediately after EVSE_Shutdown response
 //    2. EV does not react on *any* EVSE failure responses and keeps the
 //       session alive.
+//    3. EV (e.g. BMW iX2) stops sending requests after EVSE_Shutdown without
+//       SessionStopReq or TCP close and leaves the logical network ~10s later.
 //
-// The former will close the socket on the second ChargeParameterDiscoveryReq
-// and cleanly transition to IEC 61851 mode. For the latter we rely on the
+// The first will close the socket on the second ChargeParameterDiscoveryReq
+// and cleanly transition to IEC 61851 mode. For the second we rely on the
 // internal timeout that is triggered after ~10s of receiving the "ongoing"
 // ChargeParameterDiscoveryRes in a loop. After that the EV will give up
 // and send a SessionStopReq, after which we can transition to IEC 61851 mode.
+// For the third the PLC modem reports "AVLN disconnected" (VS_HOST_ACTION.IND),
+// on which we transition to IEC 61851 mode immediately instead of waiting for
+// the 60s V2G_SECC_SequenceTimeout.
 // ============================================================================
 
 
@@ -1152,6 +1157,26 @@ bool ISO15118::end_hlc_after_session_stop(uint64_t &next_timeout)
     // tell if we close the socket on any MEB EV, it will not reconnect via ISO 15118
     // and not react to PWM changes anymore until re-plugged.
     return false;
+}
+
+// Called when the PLC modem reports that the EV left the logical network (AVLN).
+// Per [V2G3-M07-03] the loss of the data link has to be handled by HLE.
+void ISO15118::handle_avln_disconnected()
+{
+    if (iec_temporary_active || nonegotiation_pending || !is_read_soc_only()) {
+        return;
+    }
+
+    if (slac.state != SLACState::LinkDetected) {
+        return;
+    }
+
+    if (!iso2.soc_was_read() && !din70121.soc_was_read()) {
+        return;
+    }
+
+    iso15118.trace("ISO15118: EV left logical network after SoC read, beginning IEC transition");
+    begin_iec_transition(ModemOff::Immediate);
 }
 
 // TODO: Upgrade to per-phase power control based on protocol version and EV capabilities.

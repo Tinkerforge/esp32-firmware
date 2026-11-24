@@ -862,6 +862,10 @@ void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostAction
 
     iso15118.trace("SLAC: VS_HOST_ACTION.IND: %s (action=0x%02x, version=%u.%u)",
                    name, ind.maction, ind.major_version, ind.minor_version);
+
+    if (ind.maction == 0x0B) {
+        iso15118.handle_avln_disconnected();
+    }
 }
 
 void SLAC::handle_vs_module_operation_confirmation(const uint8_t *data, size_t length)
