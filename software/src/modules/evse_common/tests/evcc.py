@@ -43,6 +43,13 @@ IEC_A = 0
 IEC_B = 1
 IEC_C = 2
 
+# external_control as reported in power_manager/state
+EXTERNAL_CONTROL_AVAILABLE = 0
+EXTERNAL_CONTROL_SWITCHING = 3
+
+# A phase switch after the contactor was switched on disconnects CP for about a minute.
+PHASE_SWITCH_TIMEOUT = 90
+
 EVCC_INTERVAL = 5
 # evcc applies changes in its control loop; allow a few cycles.
 EVCC_TIMEOUT = 6 * EVCC_INTERVAL
@@ -105,10 +112,50 @@ def require_evse(tc: TestContext) -> None:
         tc.skip("No EVSE")
 
 
+def evse_phase_control(tc: TestContext) -> dict:
+    state = tc.api("evse/low_level_state")
+    return {k: state.get(k) for k in ("phases_current", "phases_requested", "phases_state", "phases_info")}
+
+
+def assert_iec_state(tc: TestContext, iec_state: int) -> None:
+    actual = tc.api("evse/state")["iec61851_state"]
+    if actual != iec_state:
+        raise AssertionError(f"Expected IEC 61851 state {iec_state}, got {actual}. EVSE phase control: {evse_phase_control(tc)}")
+
+
+def ensure_three_phases(tc: TestContext) -> None:
+    """Switches the charger to three phases while no vehicle is connected.
+
+    In mode "now" evcc switches a 1p charger to 3p. If that happens after the contactor was switched on,
+    the EVSE disconnects CP for about a minute and keeps reporting the last IEC 61851 state meanwhile,
+    so CP changes by the testbox only take effect after the switch.
+    """
+    try:
+        tc.api("power_manager/state")
+    except HTTPError as e:
+        if e.code == 404:
+            return
+        raise
+
+    external_control = tc.wait_for(lambda: tc.assert_ne(EXTERNAL_CONTROL_SWITCHING, tc.api("power_manager/state")["external_control"]),
+                                   timeout=PHASE_SWITCH_TIMEOUT, poll_delay=1)
+    if external_control != EXTERNAL_CONTROL_AVAILABLE:
+        return
+
+    if not tc.api("power_manager/low_level_state")["is_3phase"]:
+        tc.api("power_manager/external_control_update", {"phases_wanted": 3})
+
+    def check() -> None:
+        tc.assert_true(tc.api("power_manager/low_level_state")["is_3phase"])
+        tc.assert_eq(EXTERNAL_CONTROL_AVAILABLE, tc.api("power_manager/state")["external_control"])
+
+    tc.wait_for(check, timeout=10, poll_delay=0.5)
+
+
 def connect_vehicle(tc: TestContext, cp: str, iec_state: int) -> None:
     require_evse(tc)
     tc.get_testbox().set_cp(cp)
-    tc.wait_for(lambda: tc.assert_eq(iec_state, tc.api("evse/state")["iec61851_state"]), timeout=10)
+    tc.wait_for(lambda: assert_iec_state(tc, iec_state), timeout=10)
 
 
 # ---- Suite -------------------------------------------------------------------
@@ -160,13 +207,15 @@ def suite_setup(tc: TestContext) -> None:
 def setup(tc: TestContext) -> None:
     get_evcc().set_mode("off")
     get_evcc().set_max_current(16)
+    if has_evse:
+        ensure_three_phases(tc)
     get_evcc().mark_log()
 
 
 def teardown(tc: TestContext) -> None:
     if has_evse and tc._brickd_host is not None:
         tc.get_testbox().set_cp("A")
-        tc.wait_for(lambda: tc.assert_eq(IEC_A, tc.api("evse/state")["iec61851_state"]), timeout=10)
+        tc.wait_for(lambda: assert_iec_state(tc, IEC_A), timeout=10)
 
 
 def test_charger_detected(tc: TestContext) -> None:
