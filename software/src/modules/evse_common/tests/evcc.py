@@ -22,6 +22,7 @@ from software.test_runner.docker_container import docker_skip_reason
 from software.src.modules.evse_common.tests._evcc import Evcc, format_state, DOCKER_IMAGES
 
 METER_CLASS_NONE = 0
+METER_CLASS_EVSE_V2 = 2
 METER_CLASS_API = 4
 METER_LOCATION_CHARGER = 2
 
@@ -43,9 +44,8 @@ IEC_A = 0
 IEC_B = 1
 IEC_C = 2
 
-# external_control as reported in power_manager/state
-EXTERNAL_CONTROL_AVAILABLE = 0
-EXTERNAL_CONTROL_SWITCHING = 3
+# The EVSE considers a phase connected if its meter measures more than this voltage.
+PHASE_CONNECTED_VOLTAGE = 180.0
 
 # A phase switch after the contactor was switched on disconnects CP for about a minute.
 PHASE_SWITCH_TIMEOUT = 90
@@ -123,33 +123,52 @@ def assert_iec_state(tc: TestContext, iec_state: int) -> None:
         raise AssertionError(f"Expected IEC 61851 state {iec_state}, got {actual}. EVSE phase control: {evse_phase_control(tc)}")
 
 
-def ensure_three_phases(tc: TestContext) -> None:
-    """Switches the charger to three phases while no vehicle is connected.
+def evse_meter_voltages(tc: TestContext) -> list[float] | None:
+    """Returns the L1-L3 voltages measured by the EVSE's meter, or None without an EVSE meter."""
+    slot = 0
+    while True:
+        try:
+            cfg = tc.api(f"meters/{slot}/config")
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            raise
+        if cfg[0] == METER_CLASS_EVSE_V2:
+            break
+        slot += 1
 
-    In mode "now" evcc switches a 1p charger to 3p. If that happens after the contactor was switched on,
-    the EVSE disconnects CP for about a minute and keeps reporting the last IEC 61851 state meanwhile,
-    so CP changes by the testbox only take effect after the switch.
+    def get() -> list[float]:
+        value_ids = tc.api(f"meters/{slot}/value_ids")
+        values = tc.api(f"meters/{slot}/values")
+        voltages = []
+        for value_id in (MeterValueID.VoltageL1N, MeterValueID.VoltageL2N, MeterValueID.VoltageL3N):
+            tc.assert_true(value_id in value_ids)
+            voltage = values[value_ids.index(value_id)] if len(values) == len(value_ids) else None
+            tc.assert_true(voltage is not None)
+            voltages.append(voltage)
+        return voltages
+
+    return tc.wait_for(get, timeout=30, poll_delay=1)
+
+
+def wait_phases_settled(tc: TestContext) -> None:
+    """Waits until the EVSE does not switch phases on its own anymore.
+
+    If the EVSE's meter measures voltage only on L1 (e.g. a testbox with single-phase supply), the EVSE switches
+    to 1p about 10 s after booting. If that happens after the contactor was switched on, the EVSE disconnects CP
+    for about a minute and keeps reporting the last IEC 61851 state meanwhile, so CP changes by the testbox only
+    take effect after the switch.
     """
-    try:
-        tc.api("power_manager/state")
-    except HTTPError as e:
-        if e.code == 404:
-            return
-        raise
-
-    external_control = tc.wait_for(lambda: tc.assert_ne(EXTERNAL_CONTROL_SWITCHING, tc.api("power_manager/state")["external_control"]),
-                                   timeout=PHASE_SWITCH_TIMEOUT, poll_delay=1)
-    if external_control != EXTERNAL_CONTROL_AVAILABLE:
-        return
-
-    if not tc.api("power_manager/low_level_state")["is_3phase"]:
-        tc.api("power_manager/external_control_update", {"phases_wanted": 3})
+    voltages = evse_meter_voltages(tc)
+    if voltages is not None and voltages[0] > PHASE_CONNECTED_VOLTAGE and all(v <= PHASE_CONNECTED_VOLTAGE for v in voltages[1:]):
+        tc.wait_for(lambda: tc.assert_eq(1, tc.api("evse/phases_connected")["phases"]), timeout=30, poll_delay=1)
 
     def check() -> None:
-        tc.assert_true(tc.api("power_manager/low_level_state")["is_3phase"])
-        tc.assert_eq(EXTERNAL_CONTROL_AVAILABLE, tc.api("power_manager/state")["external_control"])
+        phase_control = evse_phase_control(tc)
+        tc.assert_eq(0, phase_control["phases_state"])
+        tc.assert_eq(phase_control["phases_requested"], phase_control["phases_current"])
 
-    tc.wait_for(check, timeout=10, poll_delay=0.5)
+    tc.wait_for(check, timeout=PHASE_SWITCH_TIMEOUT, poll_delay=1)
 
 
 def connect_vehicle(tc: TestContext, cp: str, iec_state: int) -> None:
@@ -208,7 +227,7 @@ def setup(tc: TestContext) -> None:
     get_evcc().set_mode("off")
     get_evcc().set_max_current(16)
     if has_evse:
-        ensure_three_phases(tc)
+        wait_phases_settled(tc)
     get_evcc().mark_log()
 
 
