@@ -178,3 +178,5 @@ static constexpr int16_t DC_SOC_MAX_VOLTAGE_V   = 800;
 static constexpr int16_t DC_SOC_PEAK_RIPPLE_A   = 1;
 static constexpr int16_t DC_SOC_MAX_POWER_VALUE = 20000;
 static constexpr int8_t  DC_SOC_MAX_POWER_EXP   = 1;
+
+static constexpr int16_t SOC_SHUTDOWN_NONZERO_PMAX_W = 22080;

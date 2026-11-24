@@ -313,13 +313,16 @@ void ISO15118::pre_setup()
         {"nonegotiation_after_soc", Config::Bool(false)},
         {"ignore_soc_compatibility", Config::Bool(false)},
         {"prefer_din", Config::Bool(false)},
+        {"shutdown_omit_schedule", Config::Bool(false)},
+        {"shutdown_nonzero_pmax", Config::Bool(false)},
     }), [this](Config &update, ConfigSource source) -> String {
         // Restoring settings at boot must also work with a vehicle connected.
         if (source == ConfigSource::File) {
             return "";
         }
 
-        for (const char *key : {"ef_teardown", "nonegotiation_autocharge", "nonegotiation_after_soc", "ignore_soc_compatibility", "prefer_din"}) {
+        for (const char *key : {"ef_teardown", "nonegotiation_autocharge", "nonegotiation_after_soc", "ignore_soc_compatibility", "prefer_din",
+                                "shutdown_omit_schedule", "shutdown_nonzero_pmax"}) {
             if (update.get(key)->asBool() != config_experimental.get(key)->asBool()) {
                 const auto *evse_state = api.getState("evse/state", false);
                 if (evse_state == nullptr || evse_state->get("charger_state")->asUint() != 0) {

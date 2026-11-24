@@ -20,7 +20,13 @@ let x = {
             "ignore_soc_compatibility_help": "Fahrzeugbezogene Kompatibilitätsausschlüsse beim Auslesen des Ladestands ignorieren. Die normale Einstellung Ladestand auslesen muss weiterhin aktiviert sein.",
             "prefer_din": "DIN 70121 bevorzugen",
             "prefer_din_desc": "DIN 70121 statt ISO 15118-2 zum Auslesen des Ladestands",
-            "prefer_din_help": "Wenn das Fahrzeug beide Protokolle unterstützt, den Ladestand über DIN 70121 statt ISO 15118-2 auslesen. Gilt nur, wenn Ladestand auslesen aktiviert und Laden über ISO 15118 deaktiviert ist."
+            "prefer_din_help": "Wenn das Fahrzeug beide Protokolle unterstützt, den Ladestand über DIN 70121 statt ISO 15118-2 auslesen. Gilt nur, wenn Ladestand auslesen aktiviert und Laden über ISO 15118 deaktiviert ist.",
+            "shutdown_omit_schedule": "Kein Ladeplan beim Beenden",
+            "shutdown_omit_schedule_desc": "SAScheduleList beim Beenden der SoC-Sitzung weglassen",
+            "shutdown_omit_schedule_help": "In der Antwort, die die DC-Sitzung zum Auslesen des Ladestands beendet, keine SAScheduleList (Leistungsplan) senden. Bei DIN 70121 wird stattdessen ein leeres Ladeplan-Element gesendet, da das Protokoll eines vorschreibt.",
+            "shutdown_nonzero_pmax": "Ladeplan mit Leistung",
+            "shutdown_nonzero_pmax_desc": "22 kW statt 0 W als PMax beim Beenden der SoC-Sitzung verwenden",
+            "shutdown_nonzero_pmax_help": "Die maximale Leistung (PMax) in der SAScheduleList der Antwort, die die DC-Sitzung zum Auslesen des Ladestands beendet, auf 22 kW statt 0 W setzen. Manche Fahrzeuge könnten 0 W so interpretieren, dass für 24 Stunden nicht geladen werden darf. Hat keine Wirkung, wenn Kein Ladeplan beim Beenden aktiviert ist."
         },
         "script": {
             "experimental_save_failed": "Speichern der experimentellen ISO15118-Einstellungen fehlgeschlagen."

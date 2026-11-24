@@ -17,6 +17,8 @@ export interface config_experimental {
     nonegotiation_after_soc: boolean;
     ignore_soc_compatibility: boolean;
     prefer_din: boolean;
+    shutdown_omit_schedule: boolean;
+    shutdown_nonzero_pmax: boolean;
 }
 //#endif
 

@@ -20,7 +20,13 @@ let x = {
             "ignore_soc_compatibility_help": "Ignore vehicle compatibility exclusions for SoC reading. The normal Read state of charge setting must still be enabled.",
             "prefer_din": "Prefer DIN 70121",
             "prefer_din_desc": "Use DIN 70121 instead of ISO 15118-2 to read SoC",
-            "prefer_din_help": "If the vehicle supports both protocols, read the state of charge via DIN 70121 instead of ISO 15118-2. Only applies if Read state of charge is enabled and Charge via ISO 15118 is disabled."
+            "prefer_din_help": "If the vehicle supports both protocols, read the state of charge via DIN 70121 instead of ISO 15118-2. Only applies if Read state of charge is enabled and Charge via ISO 15118 is disabled.",
+            "shutdown_omit_schedule": "No schedule on stop",
+            "shutdown_omit_schedule_desc": "Omit SAScheduleList when ending the SoC session",
+            "shutdown_omit_schedule_help": "Do not send an SAScheduleList (power schedule) in the response that ends the DC state-of-charge session. With DIN 70121 an empty schedule element is sent instead, because the protocol requires one.",
+            "shutdown_nonzero_pmax": "Non-zero power in schedule",
+            "shutdown_nonzero_pmax_desc": "Use 22 kW instead of 0 W as PMax when ending the SoC session",
+            "shutdown_nonzero_pmax_help": "Set the maximum power (PMax) in the SAScheduleList of the response that ends the DC state-of-charge session to 22 kW instead of 0 W. Some vehicles may treat 0 W as charging not being allowed for 24 hours. Has no effect if No schedule on stop is enabled."
         },
         "script": {
             "experimental_save_failed": "Failed to save the experimental ISO15118 settings."

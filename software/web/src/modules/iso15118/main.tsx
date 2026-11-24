@@ -69,6 +69,8 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                   nonegotiation_after_soc: false,
                   ignore_soc_compatibility: false,
                   prefer_din: false,
+                  shutdown_omit_schedule: false,
+                  shutdown_nonzero_pmax: false,
                   saving: false,
 //#endif
                   pib_downloading: false
@@ -722,6 +724,18 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}, ISO15118Sta
                                     checked={state.prefer_din}
                                     disabled={experimental_disabled}
                                     onClick={this.toggle('prefer_din')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.shutdown_omit_schedule")} help={__("iso15118.content.shutdown_omit_schedule_help")}>
+                            <Switch desc={__("iso15118.content.shutdown_omit_schedule_desc")}
+                                    checked={state.shutdown_omit_schedule}
+                                    disabled={experimental_disabled}
+                                    onClick={this.toggle('shutdown_omit_schedule')}/>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.shutdown_nonzero_pmax")} help={__("iso15118.content.shutdown_nonzero_pmax_help")}>
+                            <Switch desc={__("iso15118.content.shutdown_nonzero_pmax_desc")}
+                                    checked={state.shutdown_nonzero_pmax}
+                                    disabled={experimental_disabled || state.shutdown_omit_schedule}
+                                    onClick={this.toggle('shutdown_nonzero_pmax')}/>
                         </FormRow>
                         <FormRow label={__("iso15118.content.ignore_soc_compatibility")} help={__("iso15118.content.ignore_soc_compatibility_help")}>
                             <Switch desc={__("iso15118.content.ignore_soc_compatibility_desc")}

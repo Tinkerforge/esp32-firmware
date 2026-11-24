@@ -172,6 +172,24 @@ public:
 #endif
     }
 
+    // When true, the ChargeParameterDiscoveryRes with EVSE_Shutdown that ends the DC SoC session does not contain an SAScheduleList.
+    bool use_shutdown_omit_schedule() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        return config_experimental.get("shutdown_omit_schedule")->asBool();
+#else
+        return false;
+#endif
+    }
+
+    // When true, the SAScheduleList in the ChargeParameterDiscoveryRes with EVSE_Shutdown that ends the DC SoC session uses a non-zero PMax instead of 0 W.
+    bool use_shutdown_nonzero_pmax() const {
+#if OPTIONS_ISO15118_ENABLE_TESTING_OPTIONS()
+        return config_experimental.get("shutdown_nonzero_pmax")->asBool();
+#else
+        return false;
+#endif
+    }
+
     // Post-SoC round pending, ending at SLAC matching or with Failed_NoNegotiation.
     bool nonegotiation_pending = false;
     // Deadline for the reconnect wait, polled in state_machines_loop().

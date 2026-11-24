@@ -542,8 +542,12 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
             // SAScheduleList is included for EV compatibility even though EVSEProcessing=Ongoing.
-            res->SAScheduleList_isUsed = 1;
-            fill_sa_schedule_24h(&res->SAScheduleList, 0, 0);
+            if (iso15118.use_shutdown_omit_schedule()) {
+                res->SAScheduleList_isUsed = 0;
+            } else {
+                res->SAScheduleList_isUsed = 1;
+                fill_sa_schedule_24h(&res->SAScheduleList, iso15118.use_shutdown_nonzero_pmax() ? SOC_SHUTDOWN_NONZERO_PMAX_W : 0, 0);
+            }
 
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;

@@ -435,8 +435,12 @@ void DIN70121::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
-        res->SAScheduleList_isUsed = 1;
-        fill_sa_schedule_24h(&res->SAScheduleList, 0);
+        if (iso15118.use_shutdown_omit_schedule()) {
+            res->SAScheduleList_isUsed = 0;
+        } else {
+            res->SAScheduleList_isUsed = 1;
+            fill_sa_schedule_24h(&res->SAScheduleList, iso15118.use_shutdown_nonzero_pmax() ? SOC_SHUTDOWN_NONZERO_PMAX_W : 0);
+        }
         res->SASchedules_isUsed = 0;
         res->EVSEChargeParameter_isUsed = 0;
         res->AC_EVSEChargeParameter_isUsed = 0;
