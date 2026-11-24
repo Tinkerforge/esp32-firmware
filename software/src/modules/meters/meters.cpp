@@ -1037,14 +1037,14 @@ bool Meters::update_value(uint32_t slot, uint32_t index, float new_value, bool s
 
     if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         if (!silent) {
-            logger.printfln_meter("Tried to update value %lu for non-existent slot", index);
+            logger.printfln_meter("Tried to update value at %lu for non-existent slot", index);
         }
         return false;
     }
 
     if (index == UINT32_MAX) {
         if (!silent) {
-            logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
+            logger.printfln_meter("Tried to update a value that is known to not exist (index == UINT32_MAX)");
         }
         return false;
     }
@@ -1054,7 +1054,7 @@ bool Meters::update_value(uint32_t slot, uint32_t index, float new_value, bool s
 
     if (index >= values.count()) {
         if (!silent) {
-            logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, values.count());
+            logger.printfln_meter("Tried to update value at %lu that is known to not exist (index >= %zu)", index, values.count());
         }
         return false;
     }
@@ -1106,10 +1106,10 @@ void Meters::update_batch_values(uint32_t slot, size_t count, const uint32_t *in
 
             if (index >= base_value_count) {
                 if (index == UINT32_MAX) {
-                    logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
+                    logger.printfln_meter("Tried to batch update a value that is known to not exist (index == UINT32_MAX)");
                     continue;
                 } else {
-                    logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, base_value_count);
+                    logger.printfln_meter("Tried to batch update value at %lu that is known to not exist (index >= %zu)", index, base_value_count);
                     continue;
                 }
             }
