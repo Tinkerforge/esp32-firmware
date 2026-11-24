@@ -93,7 +93,6 @@ void WS::register_urls()
             Api, Callbacks, Done
         };
         State state = State::Api;
-        bool send_called = false;
 
         while (state != State::Done) {
             auto result = task_scheduler.await([this, &i, &state, &sb]() {
@@ -161,25 +160,9 @@ void WS::register_urls()
                 sb.putc('\n');
             }
 
-            WebSocketsClient::Frag f;
-            if (send_called) {
-                if (state == State::Done) {
-                    f = WebSocketsClient::Frag::Last;
-                } else {
-                    f = WebSocketsClient::Frag::Middle;
-                }
-            } else {
-                if (state == State::Done) {
-                    f = WebSocketsClient::Frag::No;
-                } else {
-                    f = WebSocketsClient::Frag::First;
-                }
-            }
-
-            if (!client->sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength(), HTTPD_WS_TYPE_TEXT, f)) {
+            if (!client->sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
                 return false;
             }
-            send_called = true;
 
             sb.clear();
         }
