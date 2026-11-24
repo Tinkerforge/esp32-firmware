@@ -267,7 +267,7 @@ void abort_on_notify_free_error(const char *variant_name, uint16_t index, uint16
 
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
-static bool check_slot_accounting()
+static bool check_slot_accounting(bool silent = false)
 {
     bool success = true;
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
@@ -304,23 +304,31 @@ static bool check_slot_accounting()
     }
 
     if (used_slots != RootBlock<ConfigT>::used_slots) {
-        logger.printfln("used_slots mismatch for %s. Counted %zu, expected %hu. allocs %zu  frees %zu  diff %zu",
+        if (!silent) {
+            logger.printfln("used_slots mismatch for %s. Counted %zu, expected %hu. allocs %zu  frees %zu  diff %zu",
             ConfigT::variantName, used_slots, RootBlock<ConfigT>::used_slots, RootBlock<ConfigT>::allocs, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs - RootBlock<ConfigT>::frees);
+        }
         success = false;
     }
 
     if (block_count != RootBlock<ConfigT>::allocated_blocks) {
-        logger.printfln("allocated_blocks mismatch for %s. Counted %zu, expected %hu.", ConfigT::variantName, block_count, RootBlock<ConfigT>::allocated_blocks);
+        if (!silent) {
+            logger.printfln("allocated_blocks mismatch for %s. Counted %zu, expected %hu.", ConfigT::variantName, block_count, RootBlock<ConfigT>::allocated_blocks);
+        }
         success = false;
     }
 
     if (last_used_slot != RootBlock<ConfigT>::last_used_slot) {
-        logger.printfln("last_used_slot mismatch for %s. Found %zu, expected %hu.", ConfigT::variantName, last_used_slot, RootBlock<ConfigT>::last_used_slot);
+        if (!silent) {
+            logger.printfln("last_used_slot mismatch for %s. Found %zu, expected %hu.", ConfigT::variantName, last_used_slot, RootBlock<ConfigT>::last_used_slot);
+        }
         success = false;
     }
 
     if (RootBlock<ConfigT>::frees > RootBlock<ConfigT>::allocs) {
-        logger.printfln("alloc/free mismatch for %s. %zu frees > %zu allocs.", ConfigT::variantName, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs);
+        if (!silent) {
+            logger.printfln("alloc/free mismatch for %s. %zu frees > %zu allocs.", ConfigT::variantName, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs);
+        }
         success = false;
     }
 #endif
@@ -335,7 +343,9 @@ static bool check_slot_accounting()
                 return success;
             }
 
-            logger.printfln("First free slot %zu points into an unallocated superblock for %s", last_idx, ConfigT::variantName);
+            if (!silent) {
+                logger.printfln("First free slot %zu points into an unallocated superblock for %s", last_idx, ConfigT::variantName);
+            }
             success = false;
             return success;
         }
@@ -349,7 +359,9 @@ static bool check_slot_accounting()
                     return success;
                 }
 
-                logger.printfln("First free slot %zu points into an unallocated block %zu for %s", last_idx, block_i, ConfigT::variantName);
+                if (!silent) {
+                    logger.printfln("First free slot %zu points into an unallocated block %zu for %s", last_idx, block_i, ConfigT::variantName);
+                }
                 success = false;
                 return success;
             }
@@ -362,7 +374,9 @@ static bool check_slot_accounting()
                 const size_t abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
                 if (ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     if (slot_i != last_idx) {
-                        logger.printfln("First free slot mismatch. Expected %zu but found %zu in block %zu for %s.", last_idx, slot_i, block_i, ConfigT::variantName);
+                        if (!silent) {
+                            logger.printfln("First free slot mismatch. Expected %zu but found %zu in block %zu for %s.", last_idx, slot_i, block_i, ConfigT::variantName);
+                        }
                         success = false;
                     }
 
@@ -470,11 +484,10 @@ static void check_dummy_slots()
 
     get_slot<SelfTest>(2)->inuse = false;
 
-    if (check_slot_accounting<SelfTest>()) {
+    if (check_slot_accounting<SelfTest>(true)) {
         esp_system_abort("check_slot_accounting passed even though it should have failed");
     }
 
-    logger.printfln("Error test ok, ignore previous errors");
 
     // xx|x xxxx
 
