@@ -42,6 +42,11 @@ static uint32_t ms_since(const micros_t t)
     return (now_us() - t).to<millis_t>().as<uint32_t>();
 }
 
+static seconds_t slac_init_timeout()
+{
+    return iso15118.is_fast_timeout() ? SLAC_TT_EVSE_SLAC_INIT_FAST : SLAC_TT_EVSE_SLAC_INIT;
+}
+
 void SLAC::pre_setup()
 {
     api_state = Config::Object({
@@ -1063,8 +1068,8 @@ void SLAC::state_machine_loop()
         uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
         if (iec_state != 0) { // Not State A: EV is connected
             iso15118.trace("SLAC: EV connected (IEC state %lu), starting TT_EVSE_SLAC_init timeout (%llus)",
-                            iec_state, SLAC_TT_EVSE_SLAC_INIT.as<uint64_t>());
-            next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT;
+                            iec_state, slac_init_timeout().as<uint64_t>());
+            next_timeout = now_us() + slac_init_timeout();
         }
     }
 
@@ -1195,7 +1200,7 @@ void SLAC::state_machine_loop()
             // T_step_EF expired: return to 5% duty and restart TT_EVSE_SLAC_init.
             iso15118.trace("SLAC: T_step_EF expired, returning to 5%% duty cycle");
             iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-            next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT;
+            next_timeout = now_us() + slac_init_timeout();
             state = SLACState::WaitForSlacParamRequest;
         } else {
             handle_modem_reset();

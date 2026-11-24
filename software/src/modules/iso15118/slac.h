@@ -114,9 +114,12 @@
 #define SLAC_TT_EVSE_MATCH_SESSION            10_s
 #define SLAC_TT_EVSE_SLAC_INIT_MIN            20_s
 #define SLAC_TT_EVSE_SLAC_INIT_MAX            50_s
-// [HUB20-51-001] requires PWM fallback to be configurable by the CPMS with a default of 7s.
-// This is an explicit deviation to the timeouts defined in ISO 15118-20.
-#define SLAC_TT_EVSE_SLAC_INIT                 7_s
+// [HUB20-51-001] requires PWM fallback to be configurable by the CPMS. We use 60 s as default.
+// We use this as default since we have seen EVs that take 20 to 30 seconds.
+#define SLAC_TT_EVSE_SLAC_INIT                60_s
+// Non-standard: Used instead of TT_EVSE_SLAC_init when the fast_timeout config is enabled.
+// Matches the 7 s default of [HUB20-51-001].
+#define SLAC_TT_EVSE_SLAC_INIT_FAST            7_s
 #define SLAC_TT_MATCH_JOIN                    12_s
 #define SLAC_TT_MATCH_RESPONSE               200_ms
 #define SLAC_TT_MATCH_SEQUENCE               400_ms

@@ -18,7 +18,7 @@ let x = {
             "min_charge_current_help": <><p>Der standardmäßige minimale Ladestrom, der Fahrzeugen beim Laden über ISO 15118-20 angeboten wird. Dieser Wert gilt für alle Fahrzeuge, sofern er nicht durch eine fahrzeugspezifische Konfiguration überschrieben wird.</p><p>Manche Fahrzeuge können bei niedrigen Strömen effizient laden, während andere dabei Energie verschwenden oder nur sehr langsam laden. Falls ein Fahrzeug bei niedriger Leistung ineffizient lädt, sollte dieser Wert erhöht werden.</p></>,
             "fast_timeout": "Schneller Timeout",
             "fast_timeout_desc": "Schnellerer Wechsel zum normalen Laden für Fahrzeuge ohne ISO 15118",
-            "fast_timeout_help": <><p>Wenn aktiviert, versucht die Wallbox den Verbindungsaufbau nur einmal statt dreimal. Fahrzeuge ohne ISO 15118 können dadurch früher mit dem Laden beginnen.</p></>,
+            "fast_timeout_help": <><p>Standardmäßig wartet die Wallbox 60 Sekunden auf einen ISO-15118-Verbindungsaufbau und unternimmt bis zu drei Versuche, bevor sie auf normales Laden wechselt. Wenn aktiviert, wartet die Wallbox nur 7 Sekunden und unternimmt einen einzigen Versuch. Fahrzeuge ohne ISO 15118 können dadurch früher mit dem Laden beginnen, manche Fahrzeuge mit ISO 15118 benötigen für den Verbindungsaufbau aber mehr Zeit.</p></>,
             "advanced_settings": "Experteneinstellungen",
             "pib_download": "PIB herunterladen",
             "pib_download_desc": "Parameter Information Block herunterladen",

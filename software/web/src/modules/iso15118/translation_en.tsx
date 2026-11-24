@@ -18,7 +18,7 @@ let x = {
             "min_charge_current_help": <><p>The default minimum charging current that will be offered to vehicles during ISO 15118-20 charging. This value applies to all vehicles unless overridden by a vehicle-specific configuration.</p><p>Some vehicles can charge efficiently at low currents, while others may waste energy or charge very slowly. If a vehicle charges inefficiently at low power, increase this value.</p></>,
             "fast_timeout": "Fast timeout",
             "fast_timeout_desc": "Faster fallback to normal charging for vehicles without ISO 15118",
-            "fast_timeout_help": <><p>When enabled, the charger makes one ISO 15118 connection attempt instead of three before falling back to normal charging. This lets vehicles without ISO 15118 support start charging sooner.</p></>,
+            "fast_timeout_help": <><p>By default, the charger waits 60 seconds for an ISO 15118 connection and makes up to three attempts before falling back to normal charging. When enabled, the charger waits only 7 seconds and makes a single attempt. This lets vehicles without ISO 15118 support start charging sooner, but some vehicles with ISO 15118 support may need more time to establish the connection.</p></>,
             "advanced_settings": "Advanced settings",
             "pib_download": "Download PIB",
             "pib_download_desc": "download Parameter Information Block",
