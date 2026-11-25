@@ -63,14 +63,14 @@ let x = {
             "save_failed": "Failed to save the §14a EnWG settings"
         },
         "automation": {
-            "automation_trigger": "§14a EnWG",
+            "automation_trigger": "§14a EnWG (consumption limitation)",
             "state": "State",
             "triggered": "Triggered",
             "not_triggered": "Not triggered",
             "trigger_disabled": "§14a EnWG is disabled",
             "automation_trigger_text": /*FFN*/(active: boolean) => active
-                ? <>If <b>§14a EnWG</b> is <b>triggered</b>,{" "}</>
-                : <>If <b>§14a EnWG</b> is <b>no longer triggered</b>,{" "}</>/*NF*/
+                ? <>If <b>§14a EnWG</b> (consumption limitation) is <b>triggered</b>,{" "}</>
+                : <>If <b>§14a EnWG</b> (consumption limitation) is <b>no longer triggered</b>,{" "}</>/*NF*/
         }
     }
 }

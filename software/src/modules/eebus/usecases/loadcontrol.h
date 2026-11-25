@@ -44,6 +44,7 @@ struct LoadPowerLimitConfig {
     ElectricalConnectionCharacteristicTypeEnumType contractual_max_type; ///< contractualConsumptionNominalMax or contractualProductionNominalMax (LPC-042, LPP-042)
     DeviceConfigurationKeyNameEnumType failsafe_key_name;               ///< failsafeConsumptionActivePowerLimit or failsafeProductionActivePowerLimit
     bool limit_is_positive;                                             ///< true for LPC (power > 0), false for LPP (power < 0)
+    int default_nominal_max_w;                                          ///< Nominal maximum power used while it is not known (default failsafe limit)
     // ID offsets from EVSEEntity
     uint8_t loadcontrol_limit_id_offset;
     uint8_t measurement_id_offset;
@@ -171,14 +172,28 @@ public:
      * @brief Whether the power currently has to be limited to get_current_limit_w().
      *
      * True in state "limited", and in states "init" and "failsafe" if the
-     * Failsafe Active Power Limit is below the nominal maximum power (LPC-901).
+     * Failsafe Active Power Limit is below the nominal maximum power (LPC-901, LPP-901).
+     * For LPP with an unknown nominal maximum power, the failsafe limit counts as
+     * limiting once it was written by the Energy Guard.
      */
     [[nodiscard]] bool is_power_limited() const;
 
+    /**
+     * @brief The currently effective limit in W.
+     *
+     * Always >= 0. For LPP this is the absolute value of the production limit (LPP-001).
+     */
     [[nodiscard]] int get_current_limit_w() const
     {
         return current_active_limit_w;
     }
+
+    /**
+     * @brief The Failsafe Duration Minimum.
+     *
+     * LPP 2.7.1: If LPC and LPP are both supported, the data point is provided only once (by LPC) and is used for both.
+     */
+    [[nodiscard]] seconds_t get_failsafe_duration() const;
 
     void receive_heartbeat(const FeatureAddressType &source) override;
     void inform_spineconnection_usecase_update(SpineConnection *conn) override;
@@ -243,17 +258,33 @@ private:
 
     void update_api() const;
 
-    /** @brief The nominal maximum power used as the default failsafe limit. EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION if not known. */
+    /** @brief The nominal maximum power used as the default failsafe limit. LoadPowerLimitConfig::default_nominal_max_w if not known. */
     [[nodiscard]] int nominal_max_w() const;
+    /** @brief True if the nominal maximum power or the contractual nominal maximum power is known. */
+    [[nodiscard]] bool nominal_max_known() const
+    {
+        return power_max_w > 0 || power_contract_max_w > 0;
+    }
+    /** @brief The effective limit in the states "unlimited/controlled" and "unlimited/autonomous". */
+    [[nodiscard]] int unlimited_limit_w() const;
     /** @brief Restore the failsafe values written by the Energy Guard before the last restart (LPC 2.6.2.1, LPC-903). */
     void load_persisted_failsafe();
     /** @brief Store the failsafe values persistently (LPC 2.6.2.1). Only writes to flash if they changed. */
     void persist_failsafe();
 
+    /** @brief True if this use case provides the Failsafe Duration Minimum data point (LPP 2.7.1). */
+    [[nodiscard]] bool owns_failsafe_duration() const;
+    /** @brief The use case that provides the Failsafe Duration Minimum data point (LPP 2.7.1). */
+    [[nodiscard]] const LoadPowerLimitUsecase *failsafe_duration_owner() const;
+    /** @brief Set the Failsafe Duration Minimum of all use cases sharing it and store it persistently. */
+    void set_failsafe_duration(seconds_t duration);
+    /** @brief Process a write on the DeviceConfiguration feature that is shared by LPC and LPP. */
+    MessageReturn write_failsafe_values(const DeviceConfigurationKeyValueListDataType &new_config, JsonObject response);
+
     // LoadControl configuration
     bool limit_active = false;
-    int current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; ///< Effective limit, always >= 0 (see get_current_limit_w())
+    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;       ///< The Active Power Limit data point as written by the Energy Guard, LPP: <= 0
     static constexpr bool limit_fixed = false;
     int limit_description_id;
     int limit_measurement_description_id;
@@ -261,9 +292,9 @@ private:
     uint64_t limit_endtime_timer = 0;
 
     // Device Configuration Data (Failsafe)
-    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; ///< Always >= 0 (LPC: IG-LPC 3.6, LPP-010)
     bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit. Otherwise it follows the nominal maximum power.
-    seconds_t failsafe_duration = 2_h;
+    seconds_t failsafe_duration = 2_h; ///< Only used if owns_failsafe_duration(), see get_failsafe_duration()
     uint64_t failsafe_expiry_timer = 0;
     micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())
     uint16_t failsafe_power_key_id;

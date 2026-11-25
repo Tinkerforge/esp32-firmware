@@ -590,6 +590,16 @@ void EEBus::pre_setup()
         {"lpp", failsafe_prototype},
     })};
 
+#if EEBUS_LPP_AUTOMATION_TRIGGER()
+    automation.register_trigger(
+        AutomationTriggerID::EEBusLPP,
+        Config::Object({
+            {"limited", Config::Bool(true)} // true = power production limited, false = not limited
+        }),
+        nullptr,
+        false);
+#endif
+
     ship.pre_setup();
 }
 
@@ -604,6 +614,10 @@ void EEBus::setup()
     api.restorePersistentConfig("eebus/config", &config);
     api.restorePersistentConfig(EEBUS_FAILSAFE_CONFIG_PATH, &failsafe_config);
     eebus_name = device_name.name.get("name")->asEphemeralCStr();
+
+#if EEBUS_LPP_AUTOMATION_TRIGGER()
+    automation.set_enabled(AutomationTriggerID::EEBusLPP, config.get("enable")->asBool());
+#endif
 
     // Initialize SHIP layer
     ship.setup();
@@ -948,6 +962,10 @@ void EEBus::toggle_module()
 #if EEBUS_MODE_EM()
         update_lpc_constraints();
 #endif
+#if EEBUS_ENABLE_LPP_USECASE()
+        // Report the initial state to the automation module once the module gets enabled, same as on boot.
+        lpp_trigger_state = LppTriggerState::Unknown;
+#endif
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.enable_ship();
         logger.printfln("Module enabled");
@@ -961,8 +979,71 @@ void EEBus::toggle_module()
         // update_limit() does not run without usecases. Remove the last EEBUS limit, otherwise §14a would keep it forever.
         p14a_enwg.set_eebus_limit(false, 0);
 #endif
+#if EEBUS_ENABLE_LPP_USECASE()
+        // Without use cases the production is not limited by EEBUS anymore
+        report_lpp_limited(false);
+#endif
     }
+
+#if EEBUS_LPP_AUTOMATION_TRIGGER()
+    automation.set_enabled(AutomationTriggerID::EEBusLPP, module_enabled);
+#endif
 }
+
+#if EEBUS_ENABLE_LPP_USECASE()
+void EEBus::report_lpp_limited(bool limited)
+{
+    // Deferred, so that the automation actions do not run while a SPINE message is processed.
+    // The state is captured, so that every change is reported in order.
+    const LppTriggerState new_state = limited ? LppTriggerState::Limited : LppTriggerState::NotLimited;
+    task_scheduler.scheduleOnce([this, new_state]() {
+        set_lpp_trigger_state(new_state);
+    });
+}
+
+void EEBus::set_lpp_trigger_state(LppTriggerState new_state)
+{
+    if (new_state == lpp_trigger_state) {
+        return;
+    }
+
+    const bool was_unknown = lpp_trigger_state == LppTriggerState::Unknown;
+    if (was_unknown && !module_enabled) {
+        // The initial state is only reported if EEBUS is enabled
+        return;
+    }
+    lpp_trigger_state = new_state;
+
+    logger.printfln("LPP: Power production %s", new_state == LppTriggerState::Limited ? "limited" : "not limited");
+
+#if EEBUS_LPP_AUTOMATION_TRIGGER()
+    bool limited = new_state == LppTriggerState::Limited;
+    automation.trigger(AutomationTriggerID::EEBusLPP, &limited, this);
+#endif
+}
+#endif // EEBUS_ENABLE_LPP_USECASE()
+
+#if EEBUS_LPP_AUTOMATION_TRIGGER()
+bool EEBus::has_triggered(const Config *conf, void *data)
+{
+    const Config *cfg = static_cast<const Config *>(conf->get());
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    switch (conf->getTag<AutomationTriggerID>()) {
+        case AutomationTriggerID::EEBusLPP:
+            return *static_cast<bool *>(data) == cfg->get("limited")->asBool();
+
+        default:
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+    return false;
+}
+#endif
 
 // ManufacturerName-Model-UniqueID
 String EEBus::get_eebus_name()

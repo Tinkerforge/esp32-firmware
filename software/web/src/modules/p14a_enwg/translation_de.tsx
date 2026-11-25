@@ -62,14 +62,14 @@ let x = {
             "save_failed": "Speichern der §14a-EnWG-Einstellungen fehlgeschlagen"
         },
         "automation": {
-            "automation_trigger": "§14a EnWG",
+            "automation_trigger": "§14a EnWG (Bezugsbegrenzung)",
             "state": "Zustand",
             "triggered": "Ausgelöst",
             "not_triggered": "Nicht ausgelöst",
             "trigger_disabled": "§14a EnWG ist deaktiviert",
             "automation_trigger_text": /*FFN*/(active: boolean) => active
-                ? <>Wenn <b>§14a EnWG</b> <b>ausgelöst</b> wird,{" "}</>
-                : <>Wenn <b>§14a EnWG</b> <b>nicht mehr ausgelöst</b> ist,{" "}</>/*NF*/
+                ? <>Wenn <b>§14a EnWG</b> (Bezugsbegrenzung) <b>ausgelöst</b> wird,{" "}</>
+                : <>Wenn <b>§14a EnWG</b> (Bezugsbegrenzung) <b>nicht mehr ausgelöst</b> ist,{" "}</>/*NF*/
         }
     }
 }

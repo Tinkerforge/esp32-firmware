@@ -84,7 +84,7 @@
 #define EEBUS_ENABLE_EVCS_USECASE()   0
 #define EEBUS_ENABLE_EVSECC_USECASE() 0
 #define EEBUS_ENABLE_LPC_USECASE()    1
-#define EEBUS_ENABLE_LPP_USECASE()    0
+#define EEBUS_ENABLE_LPP_USECASE()    1
 #define EEBUS_ENABLE_MGCP_USECASE()   1
 #define EEBUS_ENABLE_MPC_USECASE()    0
 #define EEBUS_ENABLE_OPEV_USECASE()   0
@@ -115,6 +115,10 @@
 
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
+
+// The production nominal maximum in W used by LPP as long as the contractual production nominal maximum (LPP-042) is unknown.
+// It is the default failsafe limit (LPP-021/1) and does not limit the production.
+#define EEBUS_LPP_INITIAL_ACTIVE_POWER_PRODUCTION 30000
 
 // Enable LPC heartbeat
 #define EEBUS_LPC_ENABLE_HEARTBEAT true

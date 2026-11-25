@@ -858,11 +858,15 @@ class EebusPeer:
 
 
 # ---------------------------------------------------------------------------
-# LPC Energy Guard
+# LPC/LPP Energy Guard
 # ---------------------------------------------------------------------------
 
 class LpcEnergyGuard:
     """Energy Guard side of the LPC use case on top of an EebusPeer."""
+
+    USE_CASE = "limitationOfPowerConsumption"
+    LIMIT_DIRECTION = "consume"
+    FAILSAFE_POWER_KEY_NAME = "failsafeConsumptionActivePowerLimit"
 
     def __init__(self, peer: EebusPeer, entity: list[int] = [1], lc_client: int | None = None, dc_client: int | None = None):
         self.peer = peer
@@ -890,16 +894,16 @@ class LpcEnergyGuard:
         self.failsafe_duration_key: int | None = None
 
     def find_servers(self):
-        uc = self.peer.find_remote_use_case("ControllableSystem", "limitationOfPowerConsumption")
+        uc = self.peer.find_remote_use_case("ControllableSystem", self.USE_CASE)
         if uc is None:
-            raise PeerError("remote does not announce LPC as ControllableSystem")
+            raise PeerError(f"remote does not announce {self.USE_CASE} as ControllableSystem")
         entity = uc.get("address", {}).get("entity")
         self.lc_server = self.peer.find_remote_feature("LoadControl", "server", entity)
         self.dc_server = self.peer.find_remote_feature("DeviceConfiguration", "server", entity)
         self.ec_server = self.peer.find_remote_feature("ElectricalConnection", "server", entity)
 
     def setup(self, *, subscribe: bool = True, bind: bool = True):
-        """Finds the LPC features of the remote, subscribes, binds and reads the limit and key ids."""
+        """Finds the LPC/LPP features of the remote, subscribes, binds and reads the limit and key ids."""
         if not self.peer.remote_features:
             self.peer.discover()
         self.find_servers()
@@ -917,14 +921,14 @@ class LpcEnergyGuard:
     def read_ids(self):
         desc = self.peer.read(self.lc_client, self.lc_server, "loadControlLimitDescriptionListData")
         for d in as_list(desc.get("loadControlLimitDescriptionData")):
-            if d.get("limitDirection") == "consume" and d.get("scopeType") == "activePowerLimit":
+            if d.get("limitDirection") == self.LIMIT_DIRECTION and d.get("scopeType") == "activePowerLimit":
                 self.limit_id = d.get("limitId")
         if self.limit_id is None:
-            raise PeerError(f"no consumption limit in {desc}")
+            raise PeerError(f"no {self.LIMIT_DIRECTION} limit in {desc}")
 
         desc = self.peer.read(self.dc_client, self.dc_server, "deviceConfigurationKeyValueDescriptionListData")
         for d in as_list(desc.get("deviceConfigurationKeyValueDescriptionData")):
-            if d.get("keyName") == "failsafeConsumptionActivePowerLimit":
+            if d.get("keyName") == self.FAILSAFE_POWER_KEY_NAME:
                 self.failsafe_power_key = d.get("keyId")
             elif d.get("keyName") == "failsafeDurationMinimum":
                 self.failsafe_duration_key = d.get("keyId")
@@ -933,7 +937,7 @@ class LpcEnergyGuard:
 
     def write_limit(self, value: float | None = None, *, active: bool | None = None, duration: int | str | None = None,
                     delete_duration: bool = False, limit_id: int | None = None) -> int:
-        """Writes the consumption limit. duration in seconds (or as ISO 8601 string). Returns the SPINE error number."""
+        """Writes the limit. duration in seconds (or as ISO 8601 string). Returns the SPINE error number."""
         limit_id = self.limit_id if limit_id is None else limit_id
         data: dict[str, Any] = {"limitId": limit_id}
         if active is not None:
@@ -988,6 +992,14 @@ class LpcEnergyGuard:
     def read_failsafe(self) -> dict:
         data = self.peer.read(self.dc_client, self.dc_server, "deviceConfigurationKeyValueListData")
         return {d.get("keyId"): d.get("value") for d in as_list(data.get("deviceConfigurationKeyValueData"))}
+
+
+class LppEnergyGuard(LpcEnergyGuard):
+    """Energy Guard side of the LPP use case on top of an EebusPeer. Production limits are <= 0 W (LPP-001)."""
+
+    USE_CASE = "limitationOfPowerProduction"
+    LIMIT_DIRECTION = "produce"
+    FAILSAFE_POWER_KEY_NAME = "failsafeProductionActivePowerLimit"
 
 
 # ---------------------------------------------------------------------------

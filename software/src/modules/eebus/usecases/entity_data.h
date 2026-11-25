@@ -131,7 +131,7 @@ public:
     // Measurement Feature ID Offsets
     // ========================================================================
     static constexpr uint8_t lpcMeasurementIdOffset = 0;   ///< LPC measurement IDs start at 0
-    static constexpr uint8_t lppMeasurementIdOffset = 40;  ///< LPP measurement IDs start at 40
+    static constexpr uint8_t lppMeasurementIdOffset = 40;  ///< LPP measurement IDs start at 40. Same as MGCP: The LPP limit refers to the MGCP power measurement (LPP 3.2.2.2.2.1)
     static constexpr uint8_t mpcMeasurementIdOffset = 10;  ///< MPC measurement IDs start at 10 (next offset should be +20)
     static constexpr uint8_t mgcpMeasurementIdOffset = 40; ///< MGCP uses high offsets to avoid conflicts
 
