@@ -527,6 +527,7 @@ em270_and_em280_current_transformer_1_values = [
         'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: direction?
         'start_address': 0x0140,
         'value_type': 'S32LE',
+        'scale_factor': 0.1,
     },
     {
         'name': 'PF L1 [0.001]',
@@ -676,6 +677,7 @@ em270_and_em280_current_transformer_2_values = [
         'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: direction?
         'start_address': 0x0240,
         'value_type': 'S32LE',
+        'scale_factor': 0.1,
     },
     {
         'name': 'PF L1 [0.001]',
